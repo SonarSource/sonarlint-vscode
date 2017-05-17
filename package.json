@@ -1,0 +1,47 @@
+{
+    "name": "sonarlint-vscode",
+    "displayName": "SonarLint for Visual Studio Code",
+    "description": "Provide static analysis for many languages",
+    "version": "0.0.1",
+    "icon": "icon.png",
+    "publisher": "SonarSource",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/SonarSource/sonarlint-vscode.git"
+    },
+    "license": "LGPL-3.0",
+    "engines": {
+        "vscode": "^1.12.0"
+    },
+    "categories": [
+        "Languages",
+        "Linters"
+    ],
+    "keywords": [
+        "SonarLint"
+    ],
+    "activationEvents": [
+        "onLanguage:javascript"
+    ],
+    "main": "./out/src/extension",
+    "files": [
+        "lib/sonarlint-server.jar"
+    ],
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "dependencies": {
+        "portfinder": "^1.0.13",
+        "vscode-languageclient": "3.2.2"
+    },
+    "devDependencies": {
+        "typescript": "^2.2.1",
+        "vscode": "^1.1.0",
+        "mocha": "^2.4.5",
+        "@types/node": "^6.0.40",
+        "@types/mocha": "^2.2.32"
+    }
+}
