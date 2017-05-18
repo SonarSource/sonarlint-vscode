@@ -8,6 +8,7 @@ import * as PortFinder from "portfinder";
 import * as Net from "net";
 import * as ChildProcess from "child_process";
 import {LanguageClient, LanguageClientOptions, StreamInfo} from "vscode-languageclient";
+import * as open from "open";
 
 export function activate(context: VSCode.ExtensionContext) {
     console.log('Activating SonarLint');
@@ -42,37 +43,46 @@ export function activate(context: VSCode.ExtensionContext) {
         
         function createServer(): Promise<StreamInfo> {
             return new Promise((resolve, reject) => {
-                PortFinder.getPort({port: 55282}, (err, port) => {
-                    let serverJar = Path.resolve(context.extensionPath, "lib", "sonarlint-server.jar");
-                    
-                    let args = [
-                        '-Dsonarlint.port=' + port,
-                        '-jar', serverJar
-                    ];
-                    if (startedInDebugMode()) {
-                        console.log("DEBUG MODE");
-                        args = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000'].concat(args);
-                    }
-                    
-                    console.log(javaExecutablePath + ' ' + args.join(' '));
-                    
-                    Net.createServer(socket => {
-                        console.log('Child process connected on port ' + port);
+                PortFinder.getPort({port: 55282}, (err, languageServerPort) => {
+                    PortFinder.getPort({port: languageServerPort + 1}, (err2, rulePort) => {
+                        let serverJar = Path.resolve(context.extensionPath, "lib", "sonarlint-server.jar");
 
-                        resolve({
-                            reader: socket,
-                            writer: socket
+                        let disposableCommand = VSCode.commands.registerCommand('SonarLint.OpenRuleDesc', (ruleKey) => {
+                            open("http://localhost:" + rulePort + "/?ruleKey=" + encodeURIComponent(ruleKey));
                         });
-                    }).listen(port, () => {
-                        // Start the child java process
-                        let options = { cwd: VSCode.workspace.rootPath };
-                        let process = ChildProcess.spawn(javaExecutablePath, args, options);
 
-                        process.stdout.on('data', function(data) {
-                            console.log(data.toString()); 
-                        });
-                        process.stderr.on('data', function(data) {
-                            console.log(data.toString()); 
+                        context.subscriptions.push(disposableCommand);
+                        
+                        let args = [
+                            '-Dsonarlint.port=' + languageServerPort,
+                            '-Dsonarlint.rulePort=' + rulePort,
+                            '-jar', serverJar
+                        ];
+                        if (startedInDebugMode()) {
+                            console.log("DEBUG MODE");
+                            args = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000'].concat(args);
+                        }
+                        
+                        console.log(javaExecutablePath + ' ' + args.join(' '));
+                        
+                        Net.createServer(socket => {
+                            console.log('Child process connected on port ' + languageServerPort);
+
+                            resolve({
+                                reader: socket,
+                                writer: socket
+                            });
+                        }).listen(languageServerPort, () => {
+                            // Start the child java process
+                            let options = { cwd: VSCode.workspace.rootPath };
+                            let process = ChildProcess.spawn(javaExecutablePath, args, options);
+
+                            process.stdout.on('data', function(data) {
+                                console.log(data.toString()); 
+                            });
+                            process.stderr.on('data', function(data) {
+                                console.log(data.toString()); 
+                            });
                         });
                     });
                 });

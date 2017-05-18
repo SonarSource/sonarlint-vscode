@@ -23,6 +23,19 @@
     "activationEvents": [
         "onLanguage:javascript"
     ],
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "SonarLint configuration",
+            "properties": {
+                "sonarlint.testFilePattern": {
+                    "type": ["string", "null"],
+                    "default": ".*[tT]est.*",
+                    "description": "Files whose name match this pattern are considered as test files"
+                }
+            }
+        }
+    },
     "main": "./out/src/extension",
     "files": [
         "lib/sonarlint-server.jar"
@@ -35,7 +48,8 @@
     },
     "dependencies": {
         "portfinder": "^1.0.13",
-        "vscode-languageclient": "3.2.2"
+        "vscode-languageclient": "3.2.2",
+        "open": "0.0.5"
     },
     "devDependencies": {
         "typescript": "^2.2.1",
