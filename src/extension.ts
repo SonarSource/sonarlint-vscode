@@ -1,6 +1,4 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as VSCode from 'vscode';
 import * as Path from "path";
 import * as FS from "fs";
@@ -23,19 +21,22 @@ export function activate(context: VSCode.ExtensionContext) {
         
     isJava8(javaExecutablePath).then(eight => {
         if (!eight) {
-            VSCode.window.showErrorMessage('Java language support requires Java 8 (using ' + javaExecutablePath + ')');
+            VSCode.window.showErrorMessage('SonarLint requires Java 8 (using ' + javaExecutablePath + ')');
             
             return;
         }
                     
-        // Options to control the language client
         let clientOptions: LanguageClientOptions = {
-            // Register the server for javascript documents
-            documentSelector: [{ language: 'javascript' }],
+            documentSelector: ['javascript', 'javascriptreact'],
             synchronize: {
-                // Synchronize the setting section 'sonarlint' to the server
-                // NOTE: this currently doesn't do anything
                 configurationSection: 'sonarlint'
+            },
+            diagnosticCollectionName: 'sonarlint',
+            initializationOptions: () => {
+                let configuration = VSCode.workspace.getConfiguration('sonarlint');
+                return {
+                    testFilePattern: configuration ? configuration.get('testFilePattern', undefined) : undefined
+                };
             },
             outputChannelName: 'SonarLint',
             revealOutputChannelOn: 4 // never
@@ -54,9 +55,7 @@ export function activate(context: VSCode.ExtensionContext) {
                         context.subscriptions.push(disposableCommand);
                         
                         let args = [
-                            '-Dsonarlint.port=' + languageServerPort,
-                            '-Dsonarlint.rulePort=' + rulePort,
-                            '-jar', serverJar
+                            '-jar', serverJar, '' + languageServerPort, '' + rulePort
                         ];
                         if (startedInDebugMode()) {
                             console.log("DEBUG MODE");
@@ -89,12 +88,9 @@ export function activate(context: VSCode.ExtensionContext) {
             });
         }
 
-        // Create the language client and start the client.
-        let disposable = new LanguageClient('vscode-sonarlint', 'SonarLint Language Server', createServer, clientOptions).start();
-
-        // Push the disposable to the context's subscriptions so that the 
-        // client can be deactivated on extension deactivation
-        context.subscriptions.push(disposable);
+        context.subscriptions.push(
+            new LanguageClient('vscode-sonarlint', 'SonarLint Language Server', createServer, clientOptions).start()
+        );
     });
 }
 
@@ -153,6 +149,5 @@ function correctBinname(binname: string) {
 		return binname;
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {
 }

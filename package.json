@@ -1,14 +1,17 @@
 {
     "name": "sonarlint-vscode",
-    "displayName": "SonarLint for Visual Studio Code",
-    "description": "Provide static analysis for many languages",
-    "version": "0.0.1",
+    "displayName": "SonarLint",
+    "description": "SonarLint for Visual Studio Code",
+    "version": "1.0.0-alpha.2",
     "icon": "icon.png",
     "publisher": "SonarSource",
     "repository": {
         "type": "git",
         "url": "https://github.com/SonarSource/sonarlint-vscode.git"
     },
+    "bugs": {
+		"url": "https://jira.sonarsource.com/browse/SLVSCODE"
+	},
     "license": "LGPL-3.0",
     "engines": {
         "vscode": "^1.12.0"
@@ -21,17 +24,18 @@
         "SonarLint"
     ],
     "activationEvents": [
-        "onLanguage:javascript"
+        "onLanguage:javascript",
+		"onLanguage:typescriptreact"
     ],
     "contributes": {
         "configuration": {
             "type": "object",
-            "title": "SonarLint configuration",
+            "title": "SonarLint",
             "properties": {
                 "sonarlint.testFilePattern": {
                     "type": ["string", "null"],
                     "default": ".*[tT]est.*",
-                    "description": "Files whose name match this pattern are considered as test files"
+                    "description": "Files whose name match this regexp pattern are considered as test files"
                 }
             }
         }
