@@ -35,7 +35,12 @@ export function activate(context: VSCode.ExtensionContext) {
             initializationOptions: () => {
                 let configuration = VSCode.workspace.getConfiguration('sonarlint');
                 return {
-                    testFilePattern: configuration ? configuration.get('testFilePattern', undefined) : undefined
+                    testFilePattern: configuration ? configuration.get('testFilePattern', undefined) : undefined,
+                    analyzerProperties: configuration ? configuration.get('analyzerProperties', undefined) : undefined,
+                    telemetryStorage: Path.resolve(context.extensionPath, "sonarlint_usage"),
+                    productName: 'SonarLint VSCode',
+                    productVersion: VSCode.extensions.getExtension('SonarSource.sonarlint-vscode').packageJSON.version,
+                    disableTelemetry: configuration ? configuration.get('disableTelemetry', false) : false
                 };
             },
             outputChannelName: 'SonarLint',
@@ -45,43 +50,41 @@ export function activate(context: VSCode.ExtensionContext) {
         function createServer(): Promise<StreamInfo> {
             return new Promise((resolve, reject) => {
                 PortFinder.getPort({port: 55282}, (err, languageServerPort) => {
-                    PortFinder.getPort({port: languageServerPort + 1}, (err2, rulePort) => {
-                        let serverJar = Path.resolve(context.extensionPath, "lib", "sonarlint-server.jar");
+                    let serverJar = Path.resolve(context.extensionPath, "lib", "sonarlint-server.jar");
 
-                        let disposableCommand = VSCode.commands.registerCommand('SonarLint.OpenRuleDesc', (ruleKey) => {
-                            open("http://localhost:" + rulePort + "/?ruleKey=" + encodeURIComponent(ruleKey));
+                    let disposableCommand = VSCode.commands.registerCommand('SonarLint.OpenRuleDesc', (ruleKey, ruleServerPort) => {
+                        open("http://localhost:" + ruleServerPort + "/?ruleKey=" + encodeURIComponent(ruleKey));
+                    });
+
+                    context.subscriptions.push(disposableCommand);
+                    
+                    let args = [
+                        '-jar', serverJar, '' + languageServerPort
+                    ];
+                    if (startedInDebugMode()) {
+                        console.log("DEBUG MODE");
+                        args = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000', '-Dsonarlint.telemetry.disabled=true'].concat(args);
+                    }
+                    
+                    console.log(javaExecutablePath + ' ' + args.join(' '));
+                    
+                    Net.createServer(socket => {
+                        console.log('Child process connected on port ' + languageServerPort);
+
+                        resolve({
+                            reader: socket,
+                            writer: socket
                         });
+                    }).listen(languageServerPort, () => {
+                        // Start the child java process
+                        let options = { cwd: VSCode.workspace.rootPath };
+                        let process = ChildProcess.spawn(javaExecutablePath, args, options);
 
-                        context.subscriptions.push(disposableCommand);
-                        
-                        let args = [
-                            '-jar', serverJar, '' + languageServerPort, '' + rulePort
-                        ];
-                        if (startedInDebugMode()) {
-                            console.log("DEBUG MODE");
-                            args = ['-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000'].concat(args);
-                        }
-                        
-                        console.log(javaExecutablePath + ' ' + args.join(' '));
-                        
-                        Net.createServer(socket => {
-                            console.log('Child process connected on port ' + languageServerPort);
-
-                            resolve({
-                                reader: socket,
-                                writer: socket
-                            });
-                        }).listen(languageServerPort, () => {
-                            // Start the child java process
-                            let options = { cwd: VSCode.workspace.rootPath };
-                            let process = ChildProcess.spawn(javaExecutablePath, args, options);
-
-                            process.stdout.on('data', function(data) {
-                                console.log(data.toString()); 
-                            });
-                            process.stderr.on('data', function(data) {
-                                console.log(data.toString()); 
-                            });
+                        process.stdout.on('data', function(data) {
+                            console.log(data.toString()); 
+                        });
+                        process.stderr.on('data', function(data) {
+                            console.log(data.toString()); 
                         });
                     });
                 });
