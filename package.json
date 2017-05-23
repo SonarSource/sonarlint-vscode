@@ -1,98 +1,112 @@
 {
-    "name": "sonarlint-vscode",
-    "displayName": "SonarLint",
-    "description": "SonarLint for Visual Studio Code",
-    "version": "1.0.0-alpha.2",
-    "icon": "icon.png",
-    "publisher": "SonarSource",
-    "homepage": "https://sonarlint.org",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/SonarSource/sonarlint-vscode.git"
-    },
-    "bugs": {
-		"url": "https://jira.sonarsource.com/browse/SLVSCODE"
-	},
-    "license": "LGPL-3.0",
-    "engines": {
-        "vscode": "^1.12.0"
-    },
-    "categories": [
-        "Languages",
-        "Linters"
-    ],
-    "keywords": [
-        "SonarLint"
-    ],
-    "activationEvents": [
-        "onLanguage:javascript",
-		"onLanguage:typescriptreact"
-    ],
-    "contributes": {
-        "configuration": {
-            "type": "object",
-            "title": "SonarLint",
-            "properties": {
-                "sonarlint.testFilePattern": {
-                    "type": ["string", "null"],
-                    "default": "{**/test/**,**/*test*,**/*Test*}",
-                    "description": "Files whose name match this glob pattern are considered as test files"
-                },
-                "sonarlint.analyzerProperties": {
-                    "type": ["object", "null"],
-                    "patternProperties": {
-                        "^.*$": {
-                            "type": "string",
-                            "description": "One entry value"
-                        }
-                    },
-                    "default": null,
-                    "description": "Extra properties that will be passed to the analyzers. For example 'sonar.javascript.globals=xxx'. See documentation of each analyzers."
-                },
-                "sonarlint.disableTelemetry": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Disable sending anonymous usage statistics"
-                },
-                "sonarlint.ls.javaHome": {
-					"type": ["string", "null"],
-					"default": null,
-					"description": "Specifies the folder path to the JDK 8 used to launch the SonarLint Language Server."
-				},
-				"sonarlint.ls.vmargs": {
-					"type": ["string", "null"],
-					"default": null,
-					"description": "Specifies extra VM arguments used to launch the SonarLint Language Server."
-				}
+  "name": "sonarlint-vscode",
+  "displayName": "SonarLint",
+  "description": "SonarLint for Visual Studio Code",
+  "version": "1.0.0-alpha.2",
+  "icon": "icon.png",
+  "publisher": "SonarSource",
+  "homepage": "https://sonarlint.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SonarSource/sonarlint-vscode.git"
+  },
+  "bugs": {
+    "url": "https://jira.sonarsource.com/browse/SLVSCODE"
+  },
+  "license": "LGPL-3.0",
+  "engines": {
+    "vscode": "^1.12.0"
+  },
+  "categories": [
+    "Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "SonarLint"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescriptreact"
+  ],
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "SonarLint",
+      "properties": {
+        "sonarlint.testFilePattern": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": "{**/test/**,**/*test*,**/*Test*}",
+          "description": "Files whose name match this glob pattern are considered as test files"
+        },
+        "sonarlint.analyzerProperties": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "patternProperties": {
+            "^.*$": {
+              "type": "string",
+              "description": "One entry value"
             }
+          },
+          "default": null,
+          "description": "Extra properties that will be passed to the analyzers. For example 'sonar.javascript.globals=xxx'. See documentation of each analyzers."
+        },
+        "sonarlint.disableTelemetry": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable sending anonymous usage statistics"
+        },
+        "sonarlint.ls.javaHome": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the folder path to the JDK 8 used to launch the SonarLint Language Server."
+        },
+        "sonarlint.ls.vmargs": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies extra VM arguments used to launch the SonarLint Language Server."
         }
-    },
-    "main": "./out/src/extension",
-    "files": [
-        "server/sonarlint-ls.jar"
-    ],
-    "scripts": {        
-        "vscode:prepublish": "tsc -p ./",
-        "compile": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test",
-        "get-server": "./node_modules/.bin/gulp get_server"
-    },
-    "dependencies": {
-        "portfinder": "^1.0.13",
-        "vscode-languageclient": "3.2.2",
-        "open": "0.0.5",
-		"find-java-home": "0.1.4",
-		"path-exists":"^3.0.0",
-		"expand-home-dir":"^0.0.3"
-    },
-    "devDependencies": {
-        "typescript": "^2.2.1",
-        "vscode": "^1.1.0",
-        "mocha": "^2.4.5",
-        "@types/node": "^6.0.40",
-        "@types/mocha": "^2.2.32",
-		"gulp" :"^3.9.1",
-        "gulp-download":"0.0.1"
+      }
     }
+  },
+  "main": "./out/src/extension",
+  "files": [
+    "server/sonarlint-ls.jar"
+  ],
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "dependencies": {
+    "portfinder": "^1.0.13",
+    "vscode-languageclient": "3.2.2",
+    "open": "0.0.5",
+    "find-java-home": "0.1.4",
+    "path-exists": "^3.0.0",
+    "expand-home-dir": "^0.0.3"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.32",
+    "@types/node": "^6.0.40",
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-artifactory-upload": "^1.3.0",
+    "gulp-download": "0.0.1",
+    "gulp-rename": "1.2.2",
+    "mocha": "^2.4.5",
+    "typescript": "^2.2.1",
+    "vscode": "^1.1.0",
+    "vsce": "^1.3.0"
+  }
 }

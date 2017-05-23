@@ -4,17 +4,11 @@ language: node_js
 node_js:
 - "6"
 
-os:
-- osx
-- linux
-
 before_install:
 - npm install -g typescript
+- npm install --global gulp-cli
 
-install:
-- mkdir server
-- wget https://repox.sonarsource.com/sonarsource-public-builds/org/sonarsource/sonarlint/core/sonarlint-language-server/2.14.0.642/sonarlint-language-server-2.14.0.642.jar -O server/sonarlint-ls.jar
+script:
 - npm install
-- npm run vscode:prepublish
-- npm install -g vsce
-- vsce package
+- gulp clean deploy
+
