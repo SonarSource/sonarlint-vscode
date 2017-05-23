@@ -53,30 +53,46 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Disable sending anonymous usage statistics"
-                }
+                },
+                "sonarlint.ls.javaHome": {
+					"type": ["string", "null"],
+					"default": null,
+					"description": "Specifies the folder path to the JDK 8 used to launch the SonarLint Language Server."
+				},
+				"sonarlint.ls.vmargs": {
+					"type": ["string", "null"],
+					"default": null,
+					"description": "Specifies extra VM arguments used to launch the SonarLint Language Server."
+				}
             }
         }
     },
     "main": "./out/src/extension",
     "files": [
-        "lib/sonarlint-server.jar"
+        "server/sonarlint-ls.jar"
     ],
-    "scripts": {
+    "scripts": {        
         "vscode:prepublish": "tsc -p ./",
         "compile": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test"
+        "test": "node ./node_modules/vscode/bin/test",
+        "get-server": "./node_modules/.bin/gulp get_server"
     },
     "dependencies": {
         "portfinder": "^1.0.13",
         "vscode-languageclient": "3.2.2",
-        "open": "0.0.5"
+        "open": "0.0.5",
+		"find-java-home": "0.1.4",
+		"path-exists":"^3.0.0",
+		"expand-home-dir":"^0.0.3"
     },
     "devDependencies": {
         "typescript": "^2.2.1",
         "vscode": "^1.1.0",
         "mocha": "^2.4.5",
         "@types/node": "^6.0.40",
-        "@types/mocha": "^2.2.32"
+        "@types/mocha": "^2.2.32",
+		"gulp" :"^3.9.1",
+        "gulp-download":"0.0.1"
     }
 }
