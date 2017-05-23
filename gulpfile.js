@@ -42,7 +42,7 @@ gulp.task( 'deploy', ['package'], function() {
     version += '.' + process.env.TRAVIS_BUILD_NUMBER;
     return gulp.src( '*.vsix' )
         .pipe( artifactoryUpload( {
-                url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO + '/org/sonarsource/sonarlint/sonarlint-vsts/',
+                url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO + '/org/sonarsource/sonarlint/sonarlint-vsts/' + version,
                 username: process.env.ARTIFACTORY_DEPLOY_USERNAME,
                 password: process.env.ARTIFACTORY_DEPLOY_PASSWORD,
                 rename: function( filename ) { return name + '-' + version + '.vsix'; },
