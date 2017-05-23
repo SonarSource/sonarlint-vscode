@@ -6,6 +6,7 @@ const artifactoryUpload = require('gulp-artifactory-upload');
 const del = require('del');
 const vsce = require('vsce');
 const gutil = require('gulp-util');
+const fs = require('fs');
 //...
 
 gulp.task('clean', ()=>
@@ -17,8 +18,7 @@ gulp.task('clean', ()=>
 
 gulp.task('get-server', ()=>
 {
-    var fs = require('fs'),
-      serverFile = 'server/sonarlint-ls.jar';
+    var serverFile = 'server/sonarlint-ls.jar';
     if (fs.existsSync(serverFile)) {
         return;
     }
