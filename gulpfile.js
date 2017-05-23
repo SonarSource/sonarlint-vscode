@@ -36,6 +36,10 @@ function getPackageJSON() {
 }
  
 gulp.task( 'deploy', ['package'], function() {
+    if (process.env.TRAVIS_BRANCH != 'master') {
+        gutil.log('Not on master, skip deploy');
+        return;
+    }
     var packageJSON = getPackageJSON();
     var name = packageJSON.name;
     var version = packageJSON.version;
@@ -47,7 +51,10 @@ gulp.task( 'deploy', ['package'], function() {
                 password: process.env.ARTIFACTORY_DEPLOY_PASSWORD,
                 rename: function( filename ) { return name + '-' + version + '.vsix'; },
                 properties: {
-                    // artifact properties to be appended to the URL
+                    'vcs.revision': process.env.TRAVIS_COMMIT,
+                    'vcs.branch': process.env.TRAVIS_BRANCH,
+                    'build.name': name,
+                    'build.number': process.env.TRAVIS_BUILD_NUMBER
                 },
                 request: {
                     // options that are passed to request.put()
