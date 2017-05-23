@@ -11,3 +11,10 @@ Supported languages: JavaScript, PHP and Python
 ## Requirements
 
 You need Java runtime (JRE) installed on your computer.
+
+## How to build
+```
+npm install
+npm install --global gulp-cli #if you don't have gulp
+gulp package
+```
