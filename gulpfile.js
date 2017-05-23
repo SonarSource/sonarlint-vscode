@@ -5,6 +5,7 @@ const rename = require("gulp-rename");
 const artifactoryUpload = require('gulp-artifactory-upload');
 const del = require('del');
 const vsce = require('vsce');
+const gutil = require('gulp-util');
 //...
 
 gulp.task('clean', ()=>
@@ -27,7 +28,7 @@ gulp.task('get-server', ()=>
 });
 
 gulp.task('package', ['get-server'], () => {
-    vsce.createVSIX();
+    return vsce.createVSIX();
 });
 
 function getPackageJSON() {
@@ -35,12 +36,16 @@ function getPackageJSON() {
 }
  
 gulp.task( 'deploy', ['package'], function() {
+    var packageJSON = getPackageJSON();
+    var name = packageJSON.name;
+    var version = packageJSON.version;
+    version += '.' + process.env.TRAVIS_BUILD_NUMBER;
     return gulp.src( '*.vsix' )
         .pipe( artifactoryUpload( {
-                url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO,
+                url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO + '/org/sonarsource/sonarlint/sonarlint-vsts/',
                 username: process.env.ARTIFACTORY_DEPLOY_USERNAME,
                 password: process.env.ARTIFACTORY_DEPLOY_PASSWORD,
-                rename: function( filename ) { return filename + process.env.TRAVIS_BUILD_NUMBER; },
+                rename: function( filename ) { return name + '-' + version + '.vsix'; },
                 properties: {
                     // artifact properties to be appended to the URL
                 },
