@@ -12,3 +12,5 @@ script:
 - npm install
 - gulp clean deploy
 
+notifications:
+  email: false
