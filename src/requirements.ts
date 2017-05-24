@@ -21,13 +21,7 @@ interface ErrorData {
     openUrl: Uri;
     replaceClose: boolean;
 }
-/**
- * Resolves the requirements needed to run the extension.
- * Returns a promise that will resolve to a RequirementsData if
- * all requirements are resolved, it will reject with ErrorData if
- * if any of the requirements fails to resolve.
- *
- */
+
 export async function resolveRequirements(): Promise<RequirementsData> {
     let java_home = await checkJavaRuntime();
     let javaVersion = await checkJavaVersion(java_home);

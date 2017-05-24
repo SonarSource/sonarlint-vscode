@@ -70,7 +70,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
-		documentSelector: ['javascript', 'javascriptreact'],
+		documentSelector: ['javascript', 'javascriptreact', 'php', 'python'],
 		synchronize: {
 			configurationSection: 'sonarlint'
 		},
