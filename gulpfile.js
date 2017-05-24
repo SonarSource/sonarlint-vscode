@@ -7,6 +7,8 @@ const del = require('del');
 const vsce = require('vsce');
 const gutil = require('gulp-util');
 const fs = require('fs');
+const crypto = require('crypto');
+const through = require('through2');
 //...
 
 gulp.task('clean', ()=>
@@ -44,7 +46,12 @@ gulp.task( 'deploy', ['package'], function() {
     var name = packageJSON.name;
     var version = packageJSON.version;
     version += '.' + process.env.TRAVIS_BUILD_NUMBER;
+    var hashes = {
+        sha1: '',
+        md5: ''
+    }
     return gulp.src( '*.vsix' )
+        .pipe( hashsum(hashes) )
         .pipe( artifactoryUpload( {
                 url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO + '/org/sonarsource/sonarlint/sonarlint-vsts/' + version,
                 username: process.env.ARTIFACTORY_DEPLOY_USERNAME,
@@ -57,8 +64,37 @@ gulp.task( 'deploy', ['package'], function() {
                     'build.number': process.env.TRAVIS_BUILD_NUMBER
                 },
                 request: {
-                    // options that are passed to request.put()
+                    headers: {
+                        'X-Checksum-MD5': hashes.md5,
+                        'X-Checksum-Sha1': hashes.sha1
+                    }
                 }
             } ) )
         .on('error', gutil.log);
 } );
+
+function hashsum(hashes) {
+
+	function processFile(file, encoding, callback) {
+		if (file.isNull()) {
+			return;
+		}
+		if (file.isStream()) {
+			this.emit('error', new gutil.log('Streams not supported'));
+			return;
+		}
+		for (var algo in hashes) {
+            if (hashes.hasOwnProperty(algo)) {
+                hashes[algo] = crypto
+                    .createHash(algo)
+                    .update(file.contents, 'binary')
+                    .digest('hex');
+            }
+        }
+
+		this.push(file);
+        callback();
+	}
+
+	return through.obj(processFile);
+}
