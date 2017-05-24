@@ -11,8 +11,6 @@ const crypto = require('crypto');
 const through = require('through2');
 const request = require('request');
 const bump = require('gulp-bump');
-
-require('request-debug')(request);
 //...
 
 gulp.task('clean', ()=>
