@@ -10,6 +10,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const through = require('through2');
 const request = require('request');
+const bump = require('gulp-bump');
 
 require('request-debug')(request);
 //...
@@ -32,34 +33,49 @@ gulp.task('get-server', ()=>
 		.pipe(gulp.dest('./server/'))
 });
 
-gulp.task('package', ['get-server'], () => {
+gulp.task('update-version', function() {
+    var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+    var packageJSON = getPackageJSON();
+    var version = packageJSON.version;
+    if (version.endsWith('-SNAPSHOT') && buildNumber) {
+        return gulp.src('./package.json')
+            .pipe(bump({version: version.replace('-SNAPSHOT', '-build.' + buildNumber)}))
+            .pipe(gulp.dest('./'));
+    }  
+});
+
+gulp.task('package', ['get-server', 'update-version'], () => {
     return vsce.createVSIX();
 });
 
 function getPackageJSON() {
     return JSON.parse(fs.readFileSync('package.json'));
 }
- 
-gulp.task( 'deploy', ['package'], function() {
-    if (process.env.TRAVIS_BRANCH != 'master') {
-        gutil.log('Not on master, skip deploy');
-        return;
-    }
-    var packageJSON = getPackageJSON();
-    var name = packageJSON.name;
-    var version = packageJSON.version;
-    version += '.' + process.env.TRAVIS_BUILD_NUMBER;
-    var hashes = {
+
+var hashes = {
         sha1: '',
         md5: ''
     }
+
+gulp.task( 'compute-hashes', ['package'], function() {
     return gulp.src( '*.vsix' )
-        .pipe( hashsum(hashes) )
+        .pipe( hashsum() );
+} );
+ 
+gulp.task( 'deploy-vsix', ['package', 'compute-hashes'], function() {
+    if (process.env.TRAVIS_BRANCH != 'master') {
+        gutil.log('Not on master, skip deploy-vsix');
+        return;
+    }
+    var packageJSON = getPackageJSON();
+    var version = packageJSON.version;
+    var name = packageJSON.name;
+    var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+    return gulp.src( '*.vsix' )
         .pipe( artifactoryUpload( {
-                url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO + '/org/sonarsource/sonarlint/sonarlint-vsts/' + version,
+                url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO + '/org/sonarsource/sonarlint/vsts/' + name + '/' + version,
                 username: process.env.ARTIFACTORY_DEPLOY_USERNAME,
                 password: process.env.ARTIFACTORY_DEPLOY_PASSWORD,
-                rename: function( filename ) { return name + '-' + version + '.vsix'; },
                 properties: {
                     'vcs.revision': process.env.TRAVIS_COMMIT,
                     'vcs.branch': process.env.TRAVIS_BRANCH,
@@ -76,7 +92,48 @@ gulp.task( 'deploy', ['package'], function() {
         .on('error', gutil.log);
 } );
 
-function hashsum(hashes) {
+gulp.task( 'deploy-buildinfo', ['compute-hashes'], function() {
+    if (process.env.TRAVIS_BRANCH != 'master') {
+        gutil.log('Not on master, skip deploy-buildinfo');
+        return;
+    }
+    var packageJSON = getPackageJSON();
+    var version = packageJSON.version;
+    var name = packageJSON.name;
+    var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+    return request.put({
+        url: process.env.ARTIFACTORY_URL + '/api/build',
+        json: buildInfo(name, version, buildNumber, hashes)
+    }, function (error, response, body) {
+        if (error) {
+            gutil.log('error:', error);
+        }
+    })
+    .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
+} );
+
+gulp.task( 'deploy', ['deploy-vsix', 'deploy-buildinfo'], function() {
+} );
+
+function buildInfo(name, version, buildNumber, hashes) {
+    return {
+        "version" : version,
+        "name" : name,
+        "number" : buildNumber,
+        "started" : (new Date()).toJSON(),
+        "modules" : [ {
+            "id" : "org.sonarsource.sonarlint.vsts:" + name + ":" + version,
+            "artifacts" : [ {
+                "type" : "vsix",
+                "sha1" : hashes.sha1,
+                "md5" : hashes.md5,
+                "name" : name + '-' + version + '.vsix'
+            } ]
+        } ]
+    }
+}
+
+function hashsum() {
 
 	function processFile(file, encoding, callback) {
 		if (file.isNull()) {
