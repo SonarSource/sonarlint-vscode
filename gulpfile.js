@@ -125,13 +125,21 @@ function buildInfo(name, version, buildNumber, hashes) {
         "vcsUrl" : "https://github.com/"+ process.env.TRAVIS_REPO_SLUG +".git",
         "modules" : [ {
             "id" : "org.sonarsource.sonarlint.vscode:" + name + ":" + version,
+            "properties": {
+                "artifactsToPublish": "org.sonarsource.sonarlint.vscode:" + name + ":vsix"
+            },
             "artifacts" : [ {
                 "type" : "vsix",
                 "sha1" : hashes.sha1,
                 "md5" : hashes.md5,
                 "name" : name + '-' + version + '.vsix'
             } ]
-        } ]
+        } ],
+        "properties" : {
+            "buildInfo.env.PROJECT_VERSION": version,
+            "buildInfo.env.ARTIFACTORY_DEPLOY_REPO": "sonarsource-public-qa",
+            "buildInfo.env.TRAVIS_COMMIT": process.env.TRAVIS_COMMIT
+        }
     }
 }
 
