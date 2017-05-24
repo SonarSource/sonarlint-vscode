@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const through = require('through2');
 const request = require('request');
 const bump = require('gulp-bump');
+const dateformat = require('dateformat');
 //...
 
 gulp.task('clean', ()=>
@@ -71,7 +72,7 @@ gulp.task( 'deploy-vsix', ['package', 'compute-hashes'], function() {
     var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
     return gulp.src( '*.vsix' )
         .pipe( artifactoryUpload( {
-                url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO + '/org/sonarsource/sonarlint/vsts/' + name + '/' + version,
+                url: process.env.ARTIFACTORY_URL + '/' + process.env.ARTIFACTORY_DEPLOY_REPO + '/org/sonarsource/sonarlint/vscode/' + name + '/' + version,
                 username: process.env.ARTIFACTORY_DEPLOY_USERNAME,
                 password: process.env.ARTIFACTORY_DEPLOY_PASSWORD,
                 properties: {
@@ -110,17 +111,20 @@ gulp.task( 'deploy-buildinfo', ['compute-hashes'], function() {
     .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
 } );
 
-gulp.task( 'deploy', ['deploy-vsix', 'deploy-buildinfo'], function() {
+gulp.task( 'deploy', ['deploy-buildinfo', 'deploy-vsix'], function() {
 } );
 
 function buildInfo(name, version, buildNumber, hashes) {
     return {
-        "version" : version,
+        "version" : "1.0.1",
         "name" : name,
         "number" : buildNumber,
-        "started" : (new Date()).toJSON(),
+        "started" : dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
+        "url": process.env.CI_BUILD_URL,
+        "vcsRevision" : process.env.TRAVIS_COMMIT,
+        "vcsUrl" : "https://github.com/"+ process.env.TRAVIS_REPO_SLUG +".git",
         "modules" : [ {
-            "id" : "org.sonarsource.sonarlint.vsts:" + name + ":" + version,
+            "id" : "org.sonarsource.sonarlint.vscode:" + name + ":" + version,
             "artifacts" : [ {
                 "type" : "vsix",
                 "sha1" : hashes.sha1,
