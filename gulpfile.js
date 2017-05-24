@@ -9,6 +9,9 @@ const gutil = require('gulp-util');
 const fs = require('fs');
 const crypto = require('crypto');
 const through = require('through2');
+const request = require('request');
+
+require('request-debug')(request);
 //...
 
 gulp.task('clean', ()=>
@@ -80,7 +83,7 @@ function hashsum(hashes) {
 			return;
 		}
 		if (file.isStream()) {
-			this.emit('error', new gutil.log('Streams not supported'));
+			gutil.log('Streams not supported');
 			return;
 		}
 		for (var algo in hashes) {
@@ -89,6 +92,7 @@ function hashsum(hashes) {
                     .createHash(algo)
                     .update(file.contents, 'binary')
                     .digest('hex');
+                gutil.log('Computed ' + algo + ': ' + hashes[algo]);
             }
         }
 
