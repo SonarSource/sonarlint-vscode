@@ -55,7 +55,7 @@
             }
           },
           "default": null,
-          "description": "Extra properties that will be passed to the analyzers. For example 'sonar.javascript.globals=xxx'. See documentation of each analyzers."
+          "description": "Extra properties that will be passed to the analyzers. For example {\"sonar.javascript.globals\": \"xxx\"}. See documentation of each analyzers."
         },
         "sonarlint.disableTelemetry": {
           "type": "boolean",
