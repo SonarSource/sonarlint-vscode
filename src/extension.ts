@@ -80,7 +80,7 @@ export function activate(context: VSCode.ExtensionContext) {
 			return {
 				testFilePattern: configuration ? configuration.get('testFilePattern', undefined) : undefined,
 				analyzerProperties: configuration ? configuration.get('analyzerProperties', undefined) : undefined,
-				telemetryStorage: Path.resolve(context.extensionPath, "sonarlint_usage"),
+				telemetryStorage: Path.resolve(context.extensionPath, "..", "sonarlint_usage"),
 				productName: 'SonarLint VSCode',
 				productVersion: VSCode.extensions.getExtension('SonarSource.sonarlint-vscode').packageJSON.version,
 				disableTelemetry: configuration ? configuration.get('disableTelemetry', false) : false
