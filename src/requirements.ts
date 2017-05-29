@@ -8,7 +8,7 @@ const pathExists = require('path-exists');
 const expandHomeDir = require('expand-home-dir');
 const findJavaHome = require('find-java-home');
 const isWindows = process.platform.indexOf('win') === 0;
-const JAVAC_FILENAME = 'javac' + (isWindows?'.exe':'');
+const JAVA_FILENAME = 'java' + (isWindows?'.exe':'');
 
 interface RequirementsData {
     java_home: string;
@@ -43,20 +43,20 @@ function checkJavaRuntime(): Promise<any> {
                 source = 'The JAVA_HOME environment variable';
             }
         }
-        if(javaHome ){
+        if (javaHome) {
             javaHome = expandHomeDir(javaHome);
-            if(!pathExists.sync(javaHome)){
-                openJDKDownload(reject, source+' points to a missing folder');
+            if (!pathExists.sync(javaHome)) {
+                openJREDownload(reject, source + ' points to a missing folder');
             }
-            if(!pathExists.sync(path.resolve(javaHome, 'bin', JAVAC_FILENAME))){
-                openJDKDownload(reject, source+ ' does not point to a JDK.');
+            if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))){
+                openJREDownload(reject, source + ' does not point to a JDK.');
             }
             return resolve(javaHome);
         }
         //No settings, let's try to detect as last resort.
         findJavaHome(function (err, home) {
                 if (err){
-                    openJDKDownload(reject,'Java runtime could not be located');
+                    openJREDownload(reject, 'Java runtime could not be located');
                 }
                 else {
                     resolve(home);
@@ -76,7 +76,7 @@ function checkJavaVersion(java_home: string): Promise<any> {
             if (stderr.indexOf('version "9') > -1){
                 resolve(9);
             } if (stderr.indexOf('1.8') < 0){
-                openJDKDownload(reject, 'Java 8 is required to run. Please download and install a JDK 8.');
+                openJREDownload(reject, 'Java 8 is required to run. Please download and install a JRE 8.');
             }
             else{
                 resolve(8);
@@ -85,15 +85,12 @@ function checkJavaVersion(java_home: string): Promise<any> {
     });
 }
 
-function openJDKDownload(reject, cause) {
-    let jdkUrl = 'http://developers.redhat.com/products/openjdk/overview/';
-    if (process.platform === 'darwin') {
-        jdkUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
-    }
+function openJREDownload(reject, cause) {
+    let jreUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
     reject({
         message: cause,
-        label: 'Get Java Development Kit',
-        openUrl: Uri.parse(jdkUrl),
+        label: 'Get Java Runtime Environment',
+        openUrl: Uri.parse(jreUrl),
         replaceClose: false
     });
 }
