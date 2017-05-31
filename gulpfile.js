@@ -27,7 +27,7 @@ gulp.task('get-server', ()=>
     if (fs.existsSync(serverFile)) {
         return;
     }
-	return download("https://repox.sonarsource.com/sonarsource-public-builds/org/sonarsource/sonarlint/core/sonarlint-language-server/2.14.0.644/sonarlint-language-server-2.14.0.644.jar")
+	return download("http://repo1.maven.org/maven2/org/sonarsource/sonarlint/core/sonarlint-language-server/2.14.0.674/sonarlint-language-server-2.14.0.674.jar")
         .pipe(rename("sonarlint-ls.jar"))
 		.pipe(gulp.dest('./server/'))
 });

@@ -33,7 +33,7 @@ function checkJavaRuntime(): Promise<any> {
         let source : string;
         let javaHome : string = readJavaConfig();
         if (javaHome) {
-            source = 'The sonarlint.ls.javaHome variable defined in VS Code settings';
+            source = 'The \'sonarlint.ls.javaHome\' variable defined in VS Code settings';
         } else {
             javaHome = process.env['JDK_HOME'];
             if (javaHome) {
