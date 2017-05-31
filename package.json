@@ -68,7 +68,7 @@
             "null"
           ],
           "default": null,
-          "description": "Specifies the folder path to the JDK 8 used to launch the SonarLint Language Server."
+          "description": "Specifies the folder path to the JRE 8 used to launch the SonarLint Language Server."
         },
         "sonarlint.ls.vmargs": {
           "type": [

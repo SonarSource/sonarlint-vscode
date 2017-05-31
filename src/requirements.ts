@@ -49,14 +49,14 @@ function checkJavaRuntime(): Promise<any> {
                 openJREDownload(reject, source + ' points to a missing folder');
             }
             if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))){
-                openJREDownload(reject, source + ' does not point to a JDK.');
+                openJREDownload(reject, source + ' does not point to a JRE.');
             }
             return resolve(javaHome);
         }
         //No settings, let's try to detect as last resort.
         findJavaHome(function (err, home) {
-                if (err){
-                    openJREDownload(reject, 'Java runtime could not be located');
+                if (err) {
+                    openJREDownload(reject, 'Java runtime could not be located. Install it and set its location using \'sonarlint.ls.javaHome\' variable in VS Code settings.');
                 }
                 else {
                     resolve(home);

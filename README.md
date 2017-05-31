@@ -10,7 +10,8 @@ Supported languages: JavaScript, PHP and Python
 
 ## Requirements
 
-You need Java runtime (JRE) installed on your computer.
+You need Java Runtime (JRE) 8 installed on your computer. SonarLint will find it using various methods but you can also explicitely 
+set the path where it is installed using the \'sonarlint.ls.javaHome\' variable in VS Code settings.
 
 ## How to build
 ```
