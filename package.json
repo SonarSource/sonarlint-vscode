@@ -11,14 +11,14 @@
     "url": "https://github.com/SonarSource/sonarlint-vscode.git"
   },
   "bugs": {
-    "url": "https://jira.sonarsource.com/browse/SLVSCODE"
+    "url": "https://jira.sonarsource.com/browse/SLVSCODE",
+    "email": "sonarlint@googlegroups.com"
   },
   "license": "LGPL-3.0",
   "engines": {
     "vscode": "^1.12.0"
   },
   "categories": [
-    "Languages",
     "Linters"
   ],
   "keywords": [
