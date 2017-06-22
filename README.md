@@ -8,7 +8,7 @@ Open a file of a supported language, code, and you should start seeing problems 
 
 ![sonarlint on-the-fly](images/sonarlint-vscode.gif)
 
-Supported languages: JavaScript, PHP and Python
+Included analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarPHP](https://redirect.sonarsource.com/plugins/php.html) and [SonarPython](https://redirect.sonarsource.com/plugins/python.html)
 
 ## Requirements
 
