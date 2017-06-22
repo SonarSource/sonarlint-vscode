@@ -68,7 +68,7 @@
             "null"
           ],
           "default": null,
-          "description": "Specifies the folder path to the JRE 8 used to launch the SonarLint Language Server."
+          "description": "Specifies the folder path to the JRE 8 used to launch the SonarLint Language Server. For example \"C:\\\\Program Files\\\\Java\\\\jre1.8.0_131"
         },
         "sonarlint.ls.vmargs": {
           "type": [
@@ -76,7 +76,7 @@
             "null"
           ],
           "default": null,
-          "description": "Specifies extra VM arguments used to launch the SonarLint Language Server."
+          "description": "Specifies extra VM arguments used to launch the SonarLint Language Server. For example \"-Xmx1024m\""
         }
       }
     }
