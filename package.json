@@ -1,7 +1,7 @@
 {
   "name": "sonarlint-vscode",
   "displayName": "SonarLint",
-  "description": "SonarLint for Visual Studio Code",
+  "description": "On-the-fly bug and quality issues detection for JavaScript, Python and PHP",
   "version": "1.1.0-SNAPSHOT",
   "icon": "icon.png",
   "publisher": "SonarSource",
@@ -22,7 +22,7 @@
     "Linters"
   ],
   "keywords": [
-    "SonarLint"
+    "SonarLint", "analysis", "analyzer", "code analysis", "CodeAnalysis", "linters", "php", "python", "javascript", "js"
   ],
   "activationEvents": [
     "onLanguage:javascript",
