@@ -3,7 +3,7 @@
   "displayName": "SonarLint",
   "description": "On-the-fly bug and quality issues detection for JavaScript, Python and PHP",
   "version": "1.1.0-SNAPSHOT",
-  "icon": "images/icon.png",
+  "icon": "images/sonarlint_wave.svg",
   "publisher": "SonarSource",
   "homepage": "http://www.sonarlint.org",
   "repository": {
@@ -22,7 +22,7 @@
     "Linters"
   ],
   "keywords": [
-    "SonarLint", "analysis", "analyzer", "code analysis", "CodeAnalysis", "linters", "php", "python", "javascript", "js"
+    "code analysis", "linters"
   ],
   "activationEvents": [
     "onLanguage:javascript",
