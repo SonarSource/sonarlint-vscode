@@ -20,18 +20,6 @@ gulp.task('clean', ()=>
     del.sync('server');
 });
 
-
-gulp.task('get-server', ()=>
-{
-    var serverFile = 'server/sonarlint-ls.jar';
-    if (fs.existsSync(serverFile)) {
-        return;
-    }
-	return download("http://repo1.maven.org/maven2/org/sonarsource/sonarlint/core/sonarlint-language-server/2.14.0.674/sonarlint-language-server-2.14.0.674.jar")
-        .pipe(rename("sonarlint-ls.jar"))
-		.pipe(gulp.dest('./server/'))
-});
-
 gulp.task('update-version', function() {
     var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
     var packageJSON = getPackageJSON();
@@ -43,7 +31,7 @@ gulp.task('update-version', function() {
     }  
 });
 
-gulp.task('package', ['get-server', 'update-version'], () => {
+gulp.task('package', ['update-version'], () => {
     return vsce.createVSIX();
 });
 
