@@ -3,7 +3,7 @@
   "displayName": "SonarLint",
   "description": "On-the-fly bug and quality issues detection for JavaScript, Python and PHP",
   "version": "1.1.0-SNAPSHOT",
-  "icon": "icon.png",
+  "icon": "images/icon.png",
   "publisher": "SonarSource",
   "homepage": "https://sonarlint.org",
   "repository": {
