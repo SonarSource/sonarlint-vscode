@@ -39,6 +39,9 @@ function runJavaServer(context: VSCode.ExtensionContext) : Thenable<StreamInfo> 
 				let vmargs = getSonarLintConfiguration().get('ls.vmargs','');
 				parseVMargs(params, vmargs);
 				params.push('-jar', serverJar, '' + languageServerPort);
+				params.push(toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarjs.jar")));
+				params.push(toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarphp.jar")));
+				params.push(toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarpython.jar")));
 
 				console.log('Executing '+ javaExecutablePath + ' '+ params.join(' '));
 				
@@ -64,6 +67,17 @@ function runJavaServer(context: VSCode.ExtensionContext) : Thenable<StreamInfo> 
 		});
 	});
 }
+
+function toUrl(filePath) {
+    var pathName = Path.resolve(filePath).replace(/\\/g, '/');
+
+    // Windows drive letter must be prefixed with a slash
+    if (pathName[0] !== '/') {
+        pathName = '/' + pathName;
+    }
+
+    return encodeURI('file://' + pathName);
+};
 
 export function activate(context: VSCode.ExtensionContext) {
 	let serverOptions = () => runJavaServer(context);
