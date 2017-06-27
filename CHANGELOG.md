@@ -1,5 +1,8 @@
 ## 1.1.0
-* Update SonarJS to 3.1
+* Update SonarJS to [version 3.1](https://github.com/SonarSource/sonar-javascript/milestone/4?closed=1)
+  * Support Vue.js single file components
+  * 1 new rule
+* Display rule description directly inside VSCode
 
 ## 1.0.0
 * First release
