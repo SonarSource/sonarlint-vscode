@@ -8,7 +8,9 @@ Simply open a JS, PHP or Python file, start coding, and you will start seeing is
 
 ![sonarlint on-the-fly](images/sonarlint-vscode.gif)
 
-You can access the detailed issue description directly from your editor, using the provided contextual menu.
+You can access the detailed rule description directly from your editor, using the provided contextual menu.
+
+![rule description](images/sonarlint-rule-description.gif)
 
 You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarPHP](https://redirect.sonarsource.com/plugins/php.html) and [SonarPython](https://redirect.sonarsource.com/plugins/python.html). You can find all available rules descriptions on the dedicated [SonarLint website](http://www.sonarlint.org/vscode/rules/index.html).
 
