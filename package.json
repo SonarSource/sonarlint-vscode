@@ -2,7 +2,7 @@
   "name": "sonarlint-vscode",
   "displayName": "SonarLint",
   "description": "On-the-fly bug and quality issues detection for JavaScript, Python and PHP",
-  "version": "1.1.0",
+  "version": "1.2.0-SNAPSHOT",
   "icon": "images/sonarlint_wave_128px.png",
   "publisher": "SonarSource",
   "homepage": "http://www.sonarlint.org/vscode/index.html",
