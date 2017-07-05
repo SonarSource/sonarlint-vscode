@@ -24,7 +24,7 @@
   "keywords": [
     "code analysis", "linters"
   ],
-  "qna": "https://groups.google.com/forum/#!forum/sonarlint",
+  "qna": "https://groups.google.com/d/forum/sonarlint",
   "activationEvents": [
     "onLanguage:javascript",
     "onLanguage:typescriptreact",
