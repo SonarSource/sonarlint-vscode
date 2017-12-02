@@ -1,3 +1,7 @@
+## 1.2.2
+* Support for CodeScan plugin via fork of code
+* Support for Connected Mode
+
 ## 1.1.0
 * Update SonarJS to [version 3.1](https://github.com/SonarSource/sonar-javascript/milestone/4?closed=1)
   * Support Vue.js single file components

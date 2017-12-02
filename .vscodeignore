@@ -6,5 +6,6 @@ src/**
 **/*.map
 .gitignore
 tsconfig.json
+scripts/**
 
 
