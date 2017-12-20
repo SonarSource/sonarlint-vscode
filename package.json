@@ -8,7 +8,7 @@
   "homepage": "http://www.code-scan.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/VillageChief/codescan-vscode.git"
+    "url": "https://github.com/VillageChief/sonarlint-vscode.git"
   },
   "bugs": {
     "url": "https://www.code-scan.com/",
