@@ -4,13 +4,9 @@ language: node_js
 node_js:
 - "6"
 
-before_install:
-- npm install -g typescript
-- npm install --global gulp-cli
-
 script:
 - npm install
-- gulp clean deploy
+- ./node_modules/.bin/gulp clean deploy
 
 notifications:
   email: false
