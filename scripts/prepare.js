@@ -12,7 +12,7 @@ if (!fs.existsSync("analyzers")) {
 }
 
 downloadIfNeeded(
-  "https://repox.sonarsource.com/sonarsource-public-releases/org/sonarsource/sonarlint/core/sonarlint-language-server/2.15.0.797/sonarlint-language-server-2.15.0.797.jar",
+  "https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/3.1.0.1320/sonarlint-language-server-3.1.0.1320.jar",
   "server/sonarlint-ls.jar"
 );
 downloadIfNeeded(
@@ -26,6 +26,10 @@ downloadIfNeeded(
 downloadIfNeeded(
   "http://repo1.maven.org/maven2/org/sonarsource/python/sonar-python-plugin/1.8.0.1496/sonar-python-plugin-1.8.0.1496.jar",
   "analyzers/sonarpython.jar"
+);
+downloadIfNeeded(
+  "https://repox.sonarsource.com/sonarsource/org/sonarsource/typescript/sonar-typescript-plugin/1.5.0.2021/sonar-typescript-plugin-1.5.0.2021.jar",
+  "analyzers/sonarts.jar"
 );
 
 function downloadIfNeeded(url, dest) {

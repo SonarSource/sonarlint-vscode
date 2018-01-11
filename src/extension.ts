@@ -81,6 +81,11 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
               )
             )
           );
+          params.push(
+            toUrl(
+              Path.resolve(context.extensionPath, "analyzers", "sonarts.jar")
+            )
+          );
 
           console.log(
             "Executing " + javaExecutablePath + " " + params.join(" ")
@@ -126,18 +131,61 @@ function toUrl(filePath) {
   return encodeURI("file://" + pathName);
 }
 
+function resolve(tsdkPathSetting) {
+  if (Path.isAbsolute(tsdkPathSetting)) {
+    return tsdkPathSetting;
+  }
+
+  return Path.join(VSCode.workspace.rootPath, tsdkPathSetting);
+}
+
 export function activate(context: VSCode.ExtensionContext) {
   let serverOptions = () => runJavaServer(context);
 
+  const tsExt = VSCode.extensions.getExtension("vscode.typescript");
+  if (!tsExt) {
+    console.warn(
+      "Unable to locate TypeScript extension. No TypeScript support in SonarLint"
+    );
+  }
+  const tsdkPathSetting = VSCode.workspace
+    .getConfiguration("typescript")
+    .get("tsdk", undefined);
+  let tsPath;
+  if (!tsdkPathSetting && tsExt) {
+    tsPath = Path.resolve(
+      tsExt.extensionPath,
+      "..",
+      "node_modules",
+      "typescript",
+      "lib"
+    );
+  } else {
+    tsPath = resolve(tsdkPathSetting);
+  }
+  if (tsPath && !FS.existsSync(tsPath)) {
+    console.warn(
+      `Unable to locate TypeScript module in '${tsPath}'. No TypeScript support in SonarLint`
+    );
+    tsPath = undefined;
+  }
+
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
-    documentSelector: ["javascript", "javascriptreact", "php", "python"],
+    documentSelector: [
+      "javascript",
+      "javascriptreact",
+      "php",
+      "python",
+      "typescript",
+      "typescriptreact"
+    ],
     synchronize: {
       configurationSection: "sonarlint"
     },
     diagnosticCollectionName: "sonarlint",
     initializationOptions: () => {
-      let configuration = VSCode.workspace.getConfiguration("sonarlint");
+      let configuration = getSonarLintConfiguration();
       return {
         testFilePattern: configuration
           ? configuration.get("testFilePattern", undefined)
@@ -156,7 +204,10 @@ export function activate(context: VSCode.ExtensionContext) {
         ).packageJSON.version,
         disableTelemetry: configuration
           ? configuration.get("disableTelemetry", false)
-          : false
+          : false,
+        typeScriptLocation: tsPath
+          ? Path.dirname(Path.dirname(tsPath))
+          : undefined
       };
     },
     outputChannelName: "SonarLint",
