@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------------------------
- * SonarLint for VisualStudio Code
+ * CodeScan for VisualStudio Code
  * Copyright (C) 2017 SonarSource SA
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
@@ -34,7 +34,7 @@ function runJavaServer(context: VSCode.ExtensionContext) : Thenable<StreamInfo> 
 	})
 	.then(requirements => {
 		return new Promise<StreamInfo>(function(resolve, reject) {
-			PortFinder.getPort({port: 55282}, (err, languageServerPort) => {
+			PortFinder.getPort({port: 55283}, (err, languageServerPort) => {
 				let serverJar = Path.resolve(context.extensionPath, "server", "sonarlint-ls.jar");
 				let javaExecutablePath =  Path.resolve (requirements.java_home + '/bin/java');
 
@@ -46,9 +46,7 @@ function runJavaServer(context: VSCode.ExtensionContext) : Thenable<StreamInfo> 
 				let vmargs = getSonarLintConfiguration().get('ls.vmargs','');
 				parseVMargs(params, vmargs);
 				params.push('-jar', serverJar, '' + languageServerPort);
-				params.push(toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarjs.jar")));
-				params.push(toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarphp.jar")));
-				params.push(toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarpython.jar")));
+				params.push(toUrl(Path.resolve(context.extensionPath, "analyzers", "codescan.jar")));
 
 				console.log('Executing '+ javaExecutablePath + ' '+ params.join(' '));
 				
@@ -91,29 +89,30 @@ export function activate(context: VSCode.ExtensionContext) {
 
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
-		documentSelector: ['javascript', 'javascriptreact', 'php', 'python'],
+		documentSelector: ['apex', 'visualforce'],
 		synchronize: {
-			configurationSection: 'sonarlint'
+			configurationSection: 'codescan'
 		},
-		diagnosticCollectionName: 'sonarlint',
+		diagnosticCollectionName: 'codescan',
 		initializationOptions: () => {
-			let configuration = VSCode.workspace.getConfiguration('sonarlint');
+			let configuration = VSCode.workspace.getConfiguration('codescan');
 			return {
 				testFilePattern: configuration ? configuration.get('testFilePattern', undefined) : undefined,
 				analyzerProperties: configuration ? configuration.get('analyzerProperties', undefined) : undefined,
-				telemetryStorage: Path.resolve(context.extensionPath, "..", "sonarlint_usage"),
-				productName: 'SonarLint VSCode',
-				productVersion: VSCode.extensions.getExtension('SonarSource.sonarlint-vscode').packageJSON.version,
-				disableTelemetry: configuration ? configuration.get('disableTelemetry', false) : false
+				telemetryStorage: Path.resolve(context.extensionPath, "..", "codescan_usage"),
+				productName: 'CodeScan VSCode',
+				productVersion: VSCode.extensions.getExtension('codescansf.codescan-vscode').packageJSON.version,
+				disableTelemetry: configuration ? configuration.get('disableTelemetry', false) : false,
+		                servers: configuration ? configuration.get('servers', false) : false
 			};
 		},
-		outputChannelName: 'SonarLint',
+		outputChannelName: 'CodeScan',
 		revealOutputChannelOn: 4 // never
 	};
 
     oldConfig = getSonarLintConfiguration();
 	// Create the language client and start the client.
-	let languageClient = new LanguageClient('sonarlint-vscode','SonarLint Language Server', serverOptions, clientOptions);
+	let languageClient = new LanguageClient('codescan-vscode','SonarLint Language Server', serverOptions, clientOptions);
 	let disposable = languageClient.start();
 
 	// Push the disposable to the context's subscriptions so that the
@@ -142,14 +141,14 @@ export function activate(context: VSCode.ExtensionContext) {
 	}
 
 	let provider = new TextDocumentContentProvider();
-	let registration = VSCode.workspace.registerTextDocumentContentProvider('sonarlint-rule', provider);
+	let registration = VSCode.workspace.registerTextDocumentContentProvider('codescan-rule', provider);
 	context.subscriptions.push(registration);
 
-	let showRuleUri = VSCode.Uri.parse('sonarlint-rule://show');
+	let showRuleUri = VSCode.Uri.parse('codescan-rule://show');
 
 	let openRuleCommand = VSCode.commands.registerCommand('SonarLint.OpenRuleDesc', (ruleKey:string, ruleName:string, htmlDesc:string, ruleType:string, ruleSeverity:string) => {
 		ruleDescPanelContent = computeRuleDescPanelContent(context, ruleKey, ruleName, htmlDesc, ruleType, ruleSeverity);
-		VSCode.commands.executeCommand('vscode.previewHtml', showRuleUri, VSCode.ViewColumn.Two, 'SonarLint Rule Description')
+		VSCode.commands.executeCommand('vscode.previewHtml', showRuleUri, VSCode.ViewColumn.Two, 'CodeScan Rule Description')
 			.then((success) => {
 				provider.update(showRuleUri);
 			}, (reason) => {
@@ -268,7 +267,7 @@ function startedInDebugMode(): boolean {
 }
 
 function getSonarLintConfiguration():VSCode.WorkspaceConfiguration {
-	return VSCode.workspace.getConfiguration('sonarlint');
+	return VSCode.workspace.getConfiguration('codescan');
 }
 
 export function deactivate() {
