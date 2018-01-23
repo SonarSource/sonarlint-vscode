@@ -143,31 +143,32 @@ export function activate(context: VSCode.ExtensionContext) {
   let serverOptions = () => runJavaServer(context);
 
   const tsExt = VSCode.extensions.getExtension("vscode.typescript");
-  if (!tsExt) {
-    console.warn(
-      "Unable to locate TypeScript extension. No TypeScript support in SonarLint"
-    );
-  }
-  const tsdkPathSetting = VSCode.workspace
-    .getConfiguration("typescript")
-    .get("tsdk", undefined);
   let tsPath;
-  if (!tsdkPathSetting && tsExt) {
-    tsPath = Path.resolve(
-      tsExt.extensionPath,
-      "..",
-      "node_modules",
-      "typescript",
-      "lib"
-    );
+  if (tsExt) {
+    const tsdkPathSetting = VSCode.workspace
+      .getConfiguration("typescript")
+      .get("tsdk");
+    if (tsdkPathSetting) {
+      tsPath = resolve(tsdkPathSetting);
+    } else {
+      tsPath = Path.resolve(
+        tsExt.extensionPath,
+        "..",
+        "node_modules",
+        "typescript",
+        "lib"
+      );
+    }
+    if (tsPath && !FS.existsSync(tsPath)) {
+      console.warn(
+        `Unable to locate TypeScript module in '${tsPath}'. TypeScript support in SonarLint might not work.`
+      );
+      tsPath = undefined;
+    }
   } else {
-    tsPath = resolve(tsdkPathSetting);
-  }
-  if (tsPath && !FS.existsSync(tsPath)) {
     console.warn(
-      `Unable to locate TypeScript module in '${tsPath}'. No TypeScript support in SonarLint`
+      "Unable to locate TypeScript extension. TypeScript support in SonarLint might not work."
     );
-    tsPath = undefined;
   }
 
   // Options to control the language client
