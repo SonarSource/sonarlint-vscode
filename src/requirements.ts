@@ -16,7 +16,7 @@ const findJavaHome = require("find-java-home");
 const isWindows = process.platform.indexOf("win") === 0;
 const JAVA_FILENAME = "java" + (isWindows ? ".exe" : "");
 
-interface RequirementsData {
+export interface RequirementsData {
   java_home: string;
   java_version: number;
 }

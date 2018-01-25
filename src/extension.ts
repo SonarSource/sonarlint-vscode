@@ -8,7 +8,6 @@
 import * as VSCode from "vscode";
 import * as Path from "path";
 import * as FS from "fs";
-import * as PortFinder from "portfinder";
 import * as Net from "net";
 import * as ChildProcess from "child_process";
 import {
@@ -19,6 +18,8 @@ import {
 import * as open from "open";
 import * as http from "http";
 import * as requirements from "./requirements";
+import { RequirementsData } from "./requirements";
+import { connect } from "tls";
 
 declare var v8debug;
 const DEBUG = typeof v8debug === "object" || startedInDebugMode();
@@ -42,82 +43,72 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
     })
     .then(requirements => {
       return new Promise<StreamInfo>(function(resolve, reject) {
-        PortFinder.getPort({ port: 55282 }, (err, languageServerPort) => {
-          let serverJar = Path.resolve(
-            context.extensionPath,
-            "server",
-            "sonarlint-ls.jar"
-          );
-          let javaExecutablePath = Path.resolve(
-            requirements.java_home + "/bin/java"
-          );
-
-          let params = [];
-          if (DEBUG) {
-            params.push(
-              "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
-            );
-            params.push("-Dsonarlint.telemetry.disabled=true");
-          }
-          let vmargs = getSonarLintConfiguration().get("ls.vmargs", "");
-          parseVMargs(params, vmargs);
-          params.push("-jar", serverJar, "" + languageServerPort);
-          params.push(
-            toUrl(
-              Path.resolve(context.extensionPath, "analyzers", "sonarjs.jar")
-            )
-          );
-          params.push(
-            toUrl(
-              Path.resolve(context.extensionPath, "analyzers", "sonarphp.jar")
-            )
-          );
-          params.push(
-            toUrl(
-              Path.resolve(
-                context.extensionPath,
-                "analyzers",
-                "sonarpython.jar"
-              )
-            )
-          );
-          params.push(
-            toUrl(
-              Path.resolve(context.extensionPath, "analyzers", "sonarts.jar")
-            )
-          );
-
+        const server = Net.createServer(socket => {
           console.log(
-            "Executing " + javaExecutablePath + " " + params.join(" ")
+            "Child process connected on port " + server.address().port
           );
+          resolve({
+            reader: socket,
+            writer: socket
+          });
+        });
+        server.listen(0, () => {
+          // Start the child java process
+          let { command, args } = languageServerCommand(
+            context,
+            requirements,
+            server.address().port
+          );
+          let options = { cwd: VSCode.workspace.rootPath };
+          console.log("Executing " + command + " " + args.join(" "));
+          let process = ChildProcess.spawn(command, args, options);
 
-          Net.createServer(socket => {
-            console.log(
-              "Child process connected on port " + languageServerPort
-            );
-            resolve({
-              reader: socket,
-              writer: socket
-            });
-          }).listen(languageServerPort, () => {
-            // Start the child java process
-            let options = { cwd: VSCode.workspace.rootPath };
-            let process = ChildProcess.spawn(
-              javaExecutablePath,
-              params,
-              options
-            );
-
-            process.stdout.on("data", function(data) {
-              console.log(data.toString());
-            });
-            process.stderr.on("data", function(data) {
-              console.log(data.toString());
-            });
+          process.stdout.on("data", function(data) {
+            console.log(data.toString());
+          });
+          process.stderr.on("data", function(data) {
+            console.error(data.toString());
           });
         });
       });
     });
+}
+
+function languageServerCommand(
+  context: VSCode.ExtensionContext,
+  requirements: RequirementsData,
+  port: number
+): { command: string; args: string[] } {
+  let serverJar = Path.resolve(
+    context.extensionPath,
+    "server",
+    "sonarlint-ls.jar"
+  );
+  let javaExecutablePath = Path.resolve(requirements.java_home + "/bin/java");
+
+  let params = [];
+  if (DEBUG) {
+    params.push(
+      "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+    );
+    params.push("-Dsonarlint.telemetry.disabled=true");
+  }
+  let vmargs = getSonarLintConfiguration().get("ls.vmargs", "");
+  parseVMargs(params, vmargs);
+  params.push("-jar", serverJar, "" + port);
+  params.push(
+    toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarjs.jar"))
+  );
+  params.push(
+    toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarphp.jar"))
+  );
+  params.push(
+    toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarpython.jar"))
+  );
+  params.push(
+    toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarts.jar"))
+  );
+  return { command: javaExecutablePath, args: params };
 }
 
 function toUrl(filePath) {
