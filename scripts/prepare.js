@@ -16,11 +16,11 @@ downloadIfNeeded(
   "server/sonarlint-ls.jar"
 );
 downloadIfNeeded(
-  "http://repo1.maven.org/maven2/org/sonarsource/javascript/sonar-javascript-plugin/3.1.0.5111/sonar-javascript-plugin-3.1.0.5111.jar",
+  "http://repo1.maven.org/maven2/org/sonarsource/javascript/sonar-javascript-plugin/4.0.0.5862/sonar-javascript-plugin-4.0.0.5862.jar",
   "analyzers/sonarjs.jar"
 );
 downloadIfNeeded(
-  "http://repo1.maven.org/maven2/org/sonarsource/php/sonar-php-plugin/2.10.0.2087/sonar-php-plugin-2.10.0.2087.jar",
+  "http://repo1.maven.org/maven2/org/sonarsource/php/sonar-php-plugin/2.12.0.2871/sonar-php-plugin-2.12.0.2871.jar",
   "analyzers/sonarphp.jar"
 );
 downloadIfNeeded(
