@@ -28,7 +28,8 @@
     "onLanguage:typescript",
     "onLanguage:typescriptreact",
     "onLanguage:python",
-    "onLanguage:php"
+    "onLanguage:php",
+    "onLanguage:vue"
   ],
   "extensionDependency": ["typescript"],
   "contributes": {

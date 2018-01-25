@@ -179,7 +179,8 @@ export function activate(context: VSCode.ExtensionContext) {
       "php",
       "python",
       "typescript",
-      "typescriptreact"
+      "typescriptreact",
+      "vue"
     ],
     synchronize: {
       configurationSection: "sonarlint"
