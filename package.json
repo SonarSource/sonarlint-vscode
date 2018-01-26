@@ -1,8 +1,8 @@
 {
   "name": "sonarlint-vscode",
   "displayName": "SonarLint",
-  "description": "On-the-fly bug and quality issues detection for JavaScript, Python and PHP",
-  "version": "1.2.0-SNAPSHOT",
+  "description": "On-the-fly bug and quality issues detection for JavaScript, TypeScript, Python and PHP",
+  "version": "1.2.0",
   "icon": "images/sonarlint_wave_128px.png",
   "publisher": "SonarSource",
   "homepage": "http://vscode.sonarlint.org",
@@ -121,7 +121,7 @@
     "mocha": "^2.4.5",
     "through2": "^2.0.3",
     "typescript": "^2.6.2",
-    "vsce": "^1.35.0",
+    "vsce": "^1.36.1",
     "vscode": "1.1.0",
     "sonarqube-scanner": "2.0.2"
   }
