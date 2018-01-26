@@ -189,7 +189,7 @@ function buildInfo(name, version, buildNumber, hashes) {
       {
         id: "org.sonarsource.sonarlint.vscode:" + name + ":" + version,
         properties: {
-          artifactsToPublish:
+          artifactsToDownload:
             "org.sonarsource.sonarlint.vscode:" + name + ":vsix"
         },
         artifacts: [
@@ -203,6 +203,7 @@ function buildInfo(name, version, buildNumber, hashes) {
       }
     ],
     properties: {
+      "java.specification.version": "1.8", // Workaround for https://jira.sonarsource.com/browse/RA-115
       "buildInfo.env.PROJECT_VERSION": version,
       "buildInfo.env.ARTIFACTORY_DEPLOY_REPO": "sonarsource-public-qa",
       "buildInfo.env.TRAVIS_COMMIT": process.env.TRAVIS_COMMIT
