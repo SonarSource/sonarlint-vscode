@@ -2,11 +2,17 @@ sudo: false
 
 language: node_js
 node_js:
-- "6"
+  - "lts/*"
+
+cache:
+  directories:
+    - "node_modules"
+
+install:
+  - npm install
 
 script:
-- npm install
-- ./node_modules/.bin/gulp clean deploy
+  - ./node_modules/.bin/gulp clean deploy && ./node_modules/.bin/gulp sonarqube
 
 notifications:
   email: false

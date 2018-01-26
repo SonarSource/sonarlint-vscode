@@ -12,6 +12,7 @@ const through = require("through2");
 const request = require("request");
 const bump = require("gulp-bump");
 const dateformat = require("dateformat");
+const sonarqubeScanner = require("sonarqube-scanner");
 //...
 
 gulp.task("clean", () => {
@@ -119,6 +120,49 @@ gulp.task("deploy-buildinfo", ["compute-hashes"], function() {
 });
 
 gulp.task("deploy", ["deploy-buildinfo", "deploy-vsix"], function() {});
+
+gulp.task("sonarqube", callback => {
+  if (
+    process.env.TRAVIS_BRANCH === "master" &&
+    process.env.TRAVIS_PULL_REQUEST === "false"
+  ) {
+    runSonnarQubeScanner(callback, {
+      "sonar.analysis.sha1": process.env.TRAVIS_COMMIT
+    });
+  } else if (process.env.TRAVIS_PULL_REQUEST !== "false") {
+    runSonnarQubeScanner(callback, {
+      "sonar.analysis.prNumber": process.env.TRAVIS_PULL_REQUEST,
+      "sonar.branch.name": process.env.TRAVIS_PULL_REQUEST_BRANCH,
+      "sonar.branch.target": process.env.TRAVIS_BRANCH,
+      "sonar.analysis.sha1": process.env.TRAVIS_PULL_REQUEST_SHA
+    });
+  }
+});
+
+function runSonnarQubeScanner(callback, options = {}) {
+  const commonOptions = {
+    "sonar.projectKey": "org.sonarsource.sonarlint.vscode:sonarlint-vscode",
+    "sonar.projectName": "SonarLint for VSCode",
+    "sonar.exclusions":
+      "build/**, coverage/**, node_modules/**, **/node_modules/**",
+    "sonar.coverage.exclusions":
+      "gulpfile.js, build/**, config/**, coverage/**, scripts/**",
+    "sonar.analysis.buildNumber": process.env.TRAVIS_BUILD_NUMBER,
+    "sonar.analysis.pipeline": process.env.TRAVIS_BUILD_NUMBER,
+    "sonar.analysis.repository": process.env.TRAVIS_REPO_SLUG
+  };
+  sonarqubeScanner(
+    {
+      serverUrl: process.env.SONAR_HOST_URL,
+      token: process.env.SONAR_TOKEN,
+      options: {
+        ...commonOptions,
+        ...options
+      }
+    },
+    callback
+  );
+}
 
 function buildInfo(name, version, buildNumber, hashes) {
   return {
