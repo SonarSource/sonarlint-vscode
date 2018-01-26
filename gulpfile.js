@@ -27,9 +27,7 @@ gulp.task("update-version", function() {
   if (version.endsWith("-SNAPSHOT") && buildNumber) {
     return gulp
       .src("./package.json")
-      .pipe(
-        bump({ version: version.replace("-SNAPSHOT", "-build." + buildNumber) })
-      )
+      .pipe(bump({ version: version.replace("-SNAPSHOT", "+" + buildNumber) }))
       .pipe(gulp.dest("./"));
   }
 });
@@ -121,6 +119,17 @@ gulp.task("deploy-buildinfo", ["compute-hashes"], function() {
 
 gulp.task("deploy", ["deploy-buildinfo", "deploy-vsix"], function() {});
 
+function snapshotVersion() {
+  var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  var packageJSON = getPackageJSON();
+  var version = packageJSON.version;
+  const buildIdx = version.indexOf("+");
+  if (buildIdx >= 0 && buildNumber) {
+    return version.substr(0, buildIdx) + "-SNAPSHOT";
+  }
+  return version;
+}
+
 gulp.task("sonarqube", callback => {
   if (
     process.env.TRAVIS_BRANCH === "master" &&
@@ -143,6 +152,7 @@ function runSonnarQubeScanner(callback, options = {}) {
   const commonOptions = {
     "sonar.projectKey": "org.sonarsource.sonarlint.vscode:sonarlint-vscode",
     "sonar.projectName": "SonarLint for VSCode",
+    "sonar.projectVersion": snapshotVersion(),
     "sonar.exclusions":
       "build/**, coverage/**, node_modules/**, **/node_modules/**",
     "sonar.coverage.exclusions":

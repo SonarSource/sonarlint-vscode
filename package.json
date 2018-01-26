@@ -1,8 +1,7 @@
 {
   "name": "sonarlint-vscode",
   "displayName": "SonarLint",
-  "description":
-    "On-the-fly bug and quality issues detection for JavaScript, Python and PHP",
+  "description": "On-the-fly bug and quality issues detection for JavaScript, Python and PHP",
   "version": "1.2.0-SNAPSHOT",
   "icon": "images/sonarlint_wave_128px.png",
   "publisher": "SonarSource",
@@ -19,8 +18,13 @@
   "engines": {
     "vscode": "^1.12.0"
   },
-  "categories": ["Linters"],
-  "keywords": ["code analysis", "linters"],
+  "categories": [
+    "Linters"
+  ],
+  "keywords": [
+    "code analysis",
+    "linters"
+  ],
   "qna": "https://groups.google.com/d/forum/sonarlint",
   "activationEvents": [
     "onLanguage:javascript",
@@ -31,20 +35,27 @@
     "onLanguage:php",
     "onLanguage:vue"
   ],
-  "extensionDependency": ["typescript"],
+  "extensionDependency": [
+    "typescript"
+  ],
   "contributes": {
     "configuration": {
       "type": "object",
       "title": "SonarLint",
       "properties": {
         "sonarlint.testFilePattern": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": "{**/test/**,**/*test*,**/*Test*}",
-          "description":
-            "Files whose name match this glob pattern are considered as test files"
+          "description": "Files whose name match this glob pattern are considered as test files"
         },
         "sonarlint.analyzerProperties": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "patternProperties": {
             "^.*$": {
               "type": "string",
@@ -52,8 +63,7 @@
             }
           },
           "default": null,
-          "description":
-            "Extra properties that will be passed to the analyzers. For example {\"sonar.javascript.globals\": \"xxx\"}. See documentation of each analyzers."
+          "description": "Extra properties that will be passed to the analyzers. For example {\"sonar.javascript.globals\": \"xxx\"}. See documentation of each analyzers."
         },
         "sonarlint.disableTelemetry": {
           "type": "boolean",
@@ -61,25 +71,30 @@
           "description": "Disable sending anonymous usage statistics"
         },
         "sonarlint.ls.javaHome": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null,
-          "description":
-            "Specifies the folder path to the JRE 8 used to launch the SonarLint Language Server. For example \"C:\\\\Program Files\\\\Java\\\\jre1.8.0_131"
+          "description": "Specifies the folder path to the JRE 8 used to launch the SonarLint Language Server. For example \"C:\\\\Program Files\\\\Java\\\\jre1.8.0_131"
         },
         "sonarlint.ls.vmargs": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null,
-          "description":
-            "Specifies extra VM arguments used to launch the SonarLint Language Server. For example \"-Xmx1024m\""
+          "description": "Specifies extra VM arguments used to launch the SonarLint Language Server. For example \"-Xmx1024m\""
         }
       }
     }
   },
   "main": "./out/src/extension",
-  "files": ["server/sonarlint-ls.jar"],
+  "files": [
+    "server/sonarlint-ls.jar"
+  ],
   "scripts": {
-    "vscode:prepublish":
-      "./node_modules/.bin/tsc -p ./ && node scripts/prepare.js",
+    "vscode:prepublish": "./node_modules/.bin/tsc -p ./ && node scripts/prepare.js",
     "compile": "./node_modules/.bin/tsc -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
