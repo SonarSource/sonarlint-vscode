@@ -1,10 +1,10 @@
 # SonarLint for Visual Studio Code
 
-SonarLint is a Visual Studio Code extension that provides on-the-fly feedback to developers on new bugs and quality issues injected into JavaScript, PHP and Python code.
+SonarLint is a Visual Studio Code extension that provides on-the-fly feedback to developers on new bugs and quality issues injected into JavaScript, TypeScript, Python and PHP code.
 
 ## How it works
 
-Simply open a JS, PHP or Python file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
+Simply open a JS, TS, Python or PHP file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
 
 ![sonarlint on-the-fly](images/sonarlint-vscode.gif)
 
@@ -12,7 +12,14 @@ You can access the detailed rule description directly from your editor, using th
 
 ![rule description](images/sonarlint-rule-description.gif)
 
-You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarPHP](https://redirect.sonarsource.com/plugins/php.html) and [SonarPython](https://redirect.sonarsource.com/plugins/python.html). You can find all available rules descriptions on the dedicated [SonarLint website](http://www.sonarlint.org/vscode/rules/index.html).
+## Rules
+Check the rules to see what SonarLint can do for you:
+- [JavaScript rules](https://rules.sonarsource.com/javascript)
+- [TypeScript rules](https://rules.sonarsource.com/typescript)
+- [Python rules](https://rules.sonarsource.com/python)
+- [PHP rules](https://rules.sonarsource.com/php)
+
+You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html) and [SonarPHP](https://redirect.sonarsource.com/plugins/php.html)
 
 ## Requirements
 
