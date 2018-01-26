@@ -28,7 +28,7 @@ downloadIfNeeded(
   "analyzers/sonarpython.jar"
 );
 downloadIfNeeded(
-  "https://repox.sonarsource.com/sonarsource/org/sonarsource/typescript/sonar-typescript-plugin/1.5.0.2095/sonar-typescript-plugin-1.5.0.2095.jar",
+  "https://repox.sonarsource.com/sonarsource/org/sonarsource/typescript/sonar-typescript-plugin/1.5.0.2122/sonar-typescript-plugin-1.5.0.2122.jar",
   "analyzers/sonarts.jar"
 );
 
