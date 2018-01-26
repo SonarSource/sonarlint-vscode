@@ -27,7 +27,9 @@ gulp.task("update-version", function() {
   if (version.endsWith("-SNAPSHOT") && buildNumber) {
     return gulp
       .src("./package.json")
-      .pipe(bump({ version: version.replace("-SNAPSHOT", "+" + buildNumber) }))
+      .pipe(
+        bump({ version: version.replace("-SNAPSHOT", "-build." + buildNumber) })
+      )
       .pipe(gulp.dest("./"));
   }
 });
@@ -123,7 +125,7 @@ function snapshotVersion() {
   var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
   var packageJSON = getPackageJSON();
   var version = packageJSON.version;
-  const buildIdx = version.indexOf("+");
+  const buildIdx = version.lastIndexOf("-");
   if (buildIdx >= 0 && buildNumber) {
     return version.substr(0, buildIdx) + "-SNAPSHOT";
   }
