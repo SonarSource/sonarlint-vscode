@@ -130,37 +130,49 @@ function resolve(tsdkPathSetting) {
   return Path.join(VSCode.workspace.rootPath, tsdkPathSetting);
 }
 
-export function activate(context: VSCode.ExtensionContext) {
-  let serverOptions = () => runJavaServer(context);
-
+function findTypeScriptLocation() {
   const tsExt = VSCode.extensions.getExtension("vscode.typescript");
-  let tsPath;
   if (tsExt) {
+    const bundledTypeScriptPath = Path.resolve(
+      tsExt.extensionPath,
+      "..",
+      "node_modules",
+      "typescript",
+      "lib"
+    );
+    if (!FS.existsSync(bundledTypeScriptPath)) {
+      console.warn(
+        `Unable to locate bundled TypeScript module in '${bundledTypeScriptPath}'. Please report this error to SonarLint project.`
+      );
+    }
     const tsdkPathSetting = VSCode.workspace
       .getConfiguration("typescript")
       .get("tsdk");
+
     if (tsdkPathSetting) {
-      tsPath = resolve(tsdkPathSetting);
+      const configuredTsPath = resolve(tsdkPathSetting);
+      if (FS.existsSync(configuredTsPath)) {
+        return configuredTsPath;
+      } else {
+        console.warn(
+          `Unable to locate TypeScript module in '${configuredTsPath}'. Falling back to the VSCode's one at '${bundledTypeScriptPath}'`
+        );
+        return bundledTypeScriptPath;
+      }
     } else {
-      tsPath = Path.resolve(
-        tsExt.extensionPath,
-        "..",
-        "node_modules",
-        "typescript",
-        "lib"
-      );
-    }
-    if (tsPath && !FS.existsSync(tsPath)) {
-      console.warn(
-        `Unable to locate TypeScript module in '${tsPath}'. TypeScript support in SonarLint might not work.`
-      );
-      tsPath = undefined;
+      return bundledTypeScriptPath;
     }
   } else {
     console.warn(
       "Unable to locate TypeScript extension. TypeScript support in SonarLint might not work."
     );
   }
+}
+
+export function activate(context: VSCode.ExtensionContext) {
+  let serverOptions = () => runJavaServer(context);
+
+  let tsPath = findTypeScriptLocation();
 
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
