@@ -1,189 +1,189 @@
 {
-  "name": "codescan-vscode",
-  "displayName": "CodeScan",
-  "description": "On-the-fly bug and quality issues detection for Apex and VisualForce",
-  "version": "1.2.3",
-  "icon": "images/codescan_128px.png",
-  "publisher": "codescansf",
-  "homepage": "http://www.code-scan.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/VillageChief/sonarlint-vscode.git"
-  },
-  "bugs": {
-    "url": "https://www.code-scan.com/",
-    "email": "support@code-scan.com"
-  },
-  "license": "SEE LICENSE IN LICENSE.txt",
-  "engines": {
-    "vscode": "^1.12.0"
-  },
-  "categories": [
-    "Linters"
-  ],
-  "keywords": [
-    "salesforce",
-    "code analysis",
-    "linters"
-  ],
-  "activationEvents": [
-    "onCommand:codescan.createConfig",
-    "onLanguage:apex",
-    "onLanguage:visualforce"
-  ],
-  "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "CodeScan",
-      "properties": {
-        "codescan.servers": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": [
-            {
-              "title": "SonarQube server connection",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "description": "Unique identifier of the server connection. Will be referred in 'codescan.json' of your project",
-                  "type": "string"
-                },
-                "url": {
-                  "description": "URL to the SonarQube server",
-                  "type": "string"
-                },
-                "organization": {
-                  "description": "Organization key (if applicable)",
-                  "type": "string"
-                },
-                "token": {
-                  "description": "Authentication token",
-                  "type": "string"
-                },
-                "login": {
-                  "description": "Authentication login",
-                  "type": "string"
-                },
-                "password": {
-                  "description": "Authentication password",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "required": [
-                "id",
-                "url"
-              ]
-            }
-          ],
-          "default": [
-            {
-              "id": "sonarqube.com",
-              "url": "https://sonarqube.com",
-              "organization": "",
-              "token": ""
-            }
-          ],
-          "description": "Servers connection details. Server id can later be referred from 'codescan.json' file in your project."
-        },
-        "codescan.testFilePattern": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": "{**/test/**,**/*test*,**/*Test*}",
-          "description": "Files whose name match this glob pattern are considered as test files"
-        },
-        "codescan.analyzerProperties": {
-          "type": [
-            "object",
-            "null"
-          ],
-          "patternProperties": {
-            "^.*$": {
-              "type": "string",
-              "description": "One entry value"
-            }
-          },
-          "default": {},
-          "description": "Extra properties that will be passed to the analyzers. For example {\"sf.license.secured\": \"xxx\"}. See documentation of each analyzers."
-        },
-        "codescan.disableTelemetry": {
-          "type": "boolean",
-          "default": false,
-          "description": "Disable sending anonymous usage statistics"
-        },
-        "codescan.ls.javaHome": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies the folder path to the JRE 8 used to launch the SonarLint Language Server. For example \"C:\\\\Program Files\\\\Java\\\\jre1.8.0_131"
-        },
-        "codescan.ls.vmargs": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies extra VM arguments used to launch the SonarLint Language Server. For example \"-Xmx1024m\""
-        }
-      }
+    "name": "codescan-vscode",
+    "displayName": "CodeScan",
+    "description": "On-the-fly bug and quality issues detection for Apex and VisualForce",
+    "version": "1.2.4",
+    "icon": "images/codescan_128px.png",
+    "publisher": "codescansf",
+    "homepage": "http://www.code-scan.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/VillageChief/sonarlint-vscode.git"
     },
-    "commands": [
-      {
-        "title": "Create a 'sonarlint.json' file",
-        "category": "CodeScan",
-        "command": "codescan.createConfig"
-      },
-      {
-        "title": "Update all project bindings",
-        "category": "CodeScan",
-        "command": "codescan.updateBindings"
-      }
-    ]
-  },
-  "main": "./out/extension",
-  "files": [
-    "server/sonarlint-ls.jar"
-  ],
-  "scripts": {
-    "vscode:prepublish": "npm run compile && node scripts/prepare.js",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install"
-  },
-  "dependencies": {
-    "expand-home-dir": "^0.0.3",
-    "find-java-home": "0.1.4",
-    "open": "0.0.5",
-    "path-exists": "^3.0.0",
-    "portfinder": "^1.0.13",
-    "vscode-languageclient": "3.2.2"
-  },
-  "extensionDependencies": [
-	"salesforce.salesforcedx-vscode-apex",
-	"salesforce.salesforcedx-vscode-visualforce"
-  ],
-  "devDependencies": {
-    "typescript": "^2.6.1",
-    "vscode": "^1.1.6",
-    "@types/node": "^7.0.43",
-    "@types/mocha": "^2.2.42",
-    "vsce": "^1.3.0",
-    "crypto": "0.0.3",
-    "dateformat": "^2.0.0",
-    "del": "^2.2.2",
-    "gulp": "^3.9.1",
-    "gulp-artifactory-upload": "^1.3.0",
-    "gulp-bump": "^2.7.0",
-    "gulp-download": "0.0.1",
-    "gulp-rename": "1.2.2",
-    "gulp-util": "3.0.8",
-    "mocha": "^2.4.5",
-    "through2": "^2.0.3"
-  }
+    "bugs": {
+        "url": "https://www.code-scan.com/",
+        "email": "support@code-scan.com"
+    },
+    "license": "SEE LICENSE IN LICENSE.txt",
+    "engines": {
+        "vscode": "^1.12.0"
+    },
+    "categories": [
+        "Linters"
+    ],
+    "keywords": [
+        "salesforce",
+        "code analysis",
+        "linters"
+    ],
+    "activationEvents": [
+        "onCommand:codescan.createConfig",
+        "onLanguage:apex",
+        "onLanguage:visualforce"
+    ],
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "CodeScan",
+            "properties": {
+                "codescan.servers": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": [
+                        {
+                            "title": "SonarQube server connection",
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "description": "Unique identifier of the server connection. Will be referred in 'codescan.json' of your project",
+                                    "type": "string"
+                                },
+                                "url": {
+                                    "description": "URL to the SonarQube server",
+                                    "type": "string"
+                                },
+                                "organization": {
+                                    "description": "Organization key (if applicable)",
+                                    "type": "string"
+                                },
+                                "token": {
+                                    "description": "Authentication token",
+                                    "type": "string"
+                                },
+                                "login": {
+                                    "description": "Authentication login",
+                                    "type": "string"
+                                },
+                                "password": {
+                                    "description": "Authentication password",
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "id",
+                                "url"
+                            ]
+                        }
+                    ],
+                    "default": [
+                        {
+                            "id": "sonarqube.com",
+                            "url": "https://sonarqube.com",
+                            "organization": "",
+                            "token": ""
+                        }
+                    ],
+                    "description": "Servers connection details. Server id can later be referred from 'codescan.json' file in your project."
+                },
+                "codescan.testFilePattern": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": "{**/test/**,**/*test*,**/*Test*}",
+                    "description": "Files whose name match this glob pattern are considered as test files"
+                },
+                "codescan.analyzerProperties": {
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "patternProperties": {
+                        "^.*$": {
+                            "type": "string",
+                            "description": "One entry value"
+                        }
+                    },
+                    "default": {},
+                    "description": "Extra properties that will be passed to the analyzers. For example {\"sf.license.secured\": \"xxx\"}. See documentation of each analyzers."
+                },
+                "codescan.disableTelemetry": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Disable sending anonymous usage statistics"
+                },
+                "codescan.ls.javaHome": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null,
+                    "description": "Specifies the folder path to the JRE 8 used to launch the SonarLint Language Server. For example \"C:\\\\Program Files\\\\Java\\\\jre1.8.0_131"
+                },
+                "codescan.ls.vmargs": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null,
+                    "description": "Specifies extra VM arguments used to launch the SonarLint Language Server. For example \"-Xmx1024m\""
+                }
+            }
+        },
+        "commands": [
+            {
+                "title": "Create a 'sonarlint.json' file",
+                "category": "CodeScan",
+                "command": "codescan.createConfig"
+            },
+            {
+                "title": "Update all project bindings",
+                "category": "CodeScan",
+                "command": "codescan.updateBindings"
+            }
+        ]
+    },
+    "main": "./out/extension",
+    "files": [
+        "server/sonarlint-ls.jar"
+    ],
+    "scripts": {
+        "vscode:prepublish": "npm run compile && node scripts/prepare.js",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install"
+    },
+    "dependencies": {
+        "expand-home-dir": "^0.0.3",
+        "find-java-home": "0.1.4",
+        "open": "0.0.5",
+        "path-exists": "^3.0.0",
+        "portfinder": "^1.0.13",
+        "vscode-languageclient": "3.2.2"
+    },
+    "extensionDependencies": [
+        "salesforce.salesforcedx-vscode-apex",
+        "salesforce.salesforcedx-vscode-visualforce"
+    ],
+    "devDependencies": {
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.6",
+        "@types/node": "^7.0.43",
+        "@types/mocha": "^2.2.42",
+        "vsce": "^1.3.0",
+        "crypto": "0.0.3",
+        "dateformat": "^2.0.0",
+        "del": "^2.2.2",
+        "gulp": "^3.9.1",
+        "gulp-artifactory-upload": "^1.3.0",
+        "gulp-bump": "^2.7.0",
+        "gulp-download": "0.0.1",
+        "gulp-rename": "1.2.2",
+        "gulp-util": "3.0.8",
+        "mocha": "^2.4.5",
+        "through2": "^2.0.3"
+    }
 }
