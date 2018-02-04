@@ -1,3 +1,6 @@
+## 1.2.5
+* Support organizations
+
 ## 1.2.2
 * Support for CodeScan plugin via fork of code
 * Support for Connected Mode

@@ -12,7 +12,7 @@ if (!fs.existsSync('analyzers')){
 }
 
 downloadIfNeeded('/home/ben/dev/apex-scan/git-pmd/sonar-salesforce/sonar-salesforce-plugin/target/sonar-salesforce-plugin-3.8.jar', 'analyzers/codescan.jar');
-downloadIfNeeded('/home/ben/dev/apex-scan/sonarlint-core/language-server/target/sonarlint-language-server-2.18-CODESCAN.jar', 'server/sonarlint-ls.jar');
+downloadIfNeeded('/home/ben/dev/apex-scan/sonarlint-core/language-server/target/sonarlint-language-server-3.0.1-CODESCAN.jar', 'server/sonarlint-ls.jar');
 
 function downloadIfNeeded(url, dest) {
     if (!fs.existsSync(dest)) {

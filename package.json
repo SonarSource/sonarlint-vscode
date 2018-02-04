@@ -2,7 +2,7 @@
     "name": "codescan-vscode",
     "displayName": "CodeScan",
     "description": "On-the-fly bug and quality issues detection for Apex and VisualForce",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "icon": "images/codescan_128px.png",
     "publisher": "codescansf",
     "homepage": "http://www.code-scan.com",
@@ -43,11 +43,11 @@
                     ],
                     "items": [
                         {
-                            "title": "SonarQube server connection",
+                            "title": "CodeScan/SonarQube server connection",
                             "type": "object",
                             "properties": {
                                 "id": {
-                                    "description": "Unique identifier of the server connection. Will be referred in 'codescan.json' of your project",
+                                    "description": "Unique identifier of the server connection. Will be referred in 'sonarlint.json' of your project",
                                     "type": "string"
                                 },
                                 "url": {
@@ -80,13 +80,13 @@
                     ],
                     "default": [
                         {
-                            "id": "sonarqube.com",
-                            "url": "https://sonarqube.com",
+                            "id": "app.codescan.io",
+                            "url": "https://app.codescan.io",
                             "organization": "",
                             "token": ""
                         }
                     ],
-                    "description": "Servers connection details. Server id can later be referred from 'codescan.json' file in your project."
+                    "description": "Servers connection details. Server id can later be referred from 'sonarlint.json' file in your project."
                 },
                 "codescan.testFilePattern": {
                     "type": [
