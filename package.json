@@ -2,7 +2,7 @@
     "name": "codescan-vscode",
     "displayName": "CodeScan",
     "description": "On-the-fly bug and quality issues detection for Apex and VisualForce",
-    "version": "1.2.5",
+    "version": "1.2.6",
     "icon": "images/codescan_128px.png",
     "publisher": "codescansf",
     "homepage": "http://www.code-scan.com",
@@ -28,6 +28,7 @@
     ],
     "activationEvents": [
         "onCommand:codescan.createConfig",
+        "onCommand:codescan.updateBindings",
         "onLanguage:apex",
         "onLanguage:visualforce"
     ],
