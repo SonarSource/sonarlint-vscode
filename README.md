@@ -33,7 +33,7 @@ SonarLint should automatically find it but you can also explicitely set the path
 
 ## Contributions and license
 
-SonarLint for Visual Studio Code is open source under the LGPL v3 license. Feel free to submit Pull Requests.
+SonarLint for Visual Studio Code is open source under the LGPL v3 license. Feel free to submit Pull Requests or submit issues.
 
 ## Feedback
 
