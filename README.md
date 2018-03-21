@@ -38,3 +38,5 @@ SonarLint for Visual Studio Code is open source under the LGPL v3 license. Feel 
 ## Feedback
 
 The preferred way to discuss about SonarLint is by posting on the [SonarLint Google Group](https://groups.google.com/forum/#!forum/sonarlint). Feel free to ask questions, report issues, and give suggestions on the Google Group.
+
+Issue tracker: https://jira.sonarsource.com/browse/SLVSCODE
