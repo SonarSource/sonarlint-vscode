@@ -13,6 +13,7 @@ You can access the detailed rule description directly from your editor, using th
 ![rule description](images/sonarlint-rule-description.gif)
 
 ## Rules
+
 Check the rules to see what SonarLint can do for you:
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
@@ -25,7 +26,7 @@ You will benefit from the following code analyzers: [SonarJS](https://redirect.s
 
 The only thing you need is a Java Runtime (JRE) 8 installed on your computer.
 
-SonarLint should automatically find it but you can also explicitely set the path where the JRE is installed using the 'sonarlint.ls.javaHome' variable in VS Code settings. For example 
+SonarLint should automatically find it but you can also explicitly set the path where the JRE is installed using the 'sonarlint.ls.javaHome' variable in VS Code settings. For example:
 
     {
         "sonarlint.ls.javaHome": "C:\Program Files\Java\jre1.8.0_131"
