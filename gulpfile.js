@@ -142,9 +142,12 @@ gulp.task("sonarqube", callback => {
     });
   } else if (process.env.TRAVIS_PULL_REQUEST !== "false") {
     runSonnarQubeScanner(callback, {
+      "sonar.pullrequest.branch": process.env.TRAVIS_PULL_REQUEST_BRANCH,
+      "sonar.pullrequest.base": process.env.TRAVIS_BRANCH,
+      "sonar.pullrequest.key": process.env.TRAVIS_PULL_REQUEST,
+      "sonar.pullrequest.provider": "github",
+      "sonar.pullrequest.github.repository": process.env.TRAVIS_REPO_SLUG,
       "sonar.analysis.prNumber": process.env.TRAVIS_PULL_REQUEST,
-      "sonar.branch.name": process.env.TRAVIS_PULL_REQUEST_BRANCH,
-      "sonar.branch.target": process.env.TRAVIS_BRANCH,
       "sonar.analysis.sha1": process.env.TRAVIS_PULL_REQUEST_SHA
     });
   }
