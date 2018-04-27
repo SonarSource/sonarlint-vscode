@@ -227,6 +227,9 @@ export function activate(context: VSCode.ExtensionContext) {
     serverOptions,
     clientOptions
   );
+  // TODO for workspace folder support, remove when possible in a later release
+  languageClient.registerProposedFeatures();
+
   let disposable = languageClient.start();
 
   // Push the disposable to the context's subscriptions so that the
