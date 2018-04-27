@@ -59,9 +59,8 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
             requirements,
             server.address().port
           );
-          let options = { cwd: VSCode.workspace.rootPath };
           console.log("Executing " + command + " " + args.join(" "));
-          let process = ChildProcess.spawn(command, args, options);
+          const process = ChildProcess.spawn(command, args);
 
           process.stdout.on("data", function(data) {
             console.log(data.toString());
@@ -122,12 +121,17 @@ function toUrl(filePath) {
   return encodeURI("file://" + pathName);
 }
 
-function resolve(tsdkPathSetting) {
+function resolveInAnyWorkspaceFolder(tsdkPathSetting) {
   if (Path.isAbsolute(tsdkPathSetting)) {
-    return tsdkPathSetting;
+    return FS.existsSync(tsdkPathSetting) ? tsdkPathSetting : undefined;
   }
-
-  return Path.join(VSCode.workspace.rootPath, tsdkPathSetting);
+  for (const folder of (VSCode.workspace.workspaceFolders || [])) {
+    const configuredTsPath = Path.join(folder.uri.fsPath, tsdkPathSetting);
+    if (FS.existsSync(configuredTsPath)) {
+      return configuredTsPath;
+    }
+  }
+  return undefined;
 }
 
 function findTypeScriptLocation() {
@@ -150,18 +154,15 @@ function findTypeScriptLocation() {
       .get("tsdk");
 
     if (tsdkPathSetting) {
-      const configuredTsPath = resolve(tsdkPathSetting);
-      if (FS.existsSync(configuredTsPath)) {
+      const configuredTsPath = resolveInAnyWorkspaceFolder(tsdkPathSetting);
+      if (configuredTsPath !== undefined) {
         return configuredTsPath;
-      } else {
-        console.warn(
-          `Unable to locate TypeScript module in '${configuredTsPath}'. Falling back to the VSCode's one at '${bundledTypeScriptPath}'`
-        );
-        return bundledTypeScriptPath;
       }
-    } else {
-      return bundledTypeScriptPath;
+      console.warn(
+        `Unable to locate TypeScript module in '${configuredTsPath}'. Falling back to the VSCode's one at '${bundledTypeScriptPath}'`
+      );
     }
+    return bundledTypeScriptPath;
   } else {
     console.warn(
       "Unable to locate TypeScript extension. TypeScript support in SonarLint might not work."
