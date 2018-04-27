@@ -169,6 +169,8 @@ function findTypeScriptLocation() {
   }
 }
 
+let languageClient: LanguageClient;
+
 export function activate(context: VSCode.ExtensionContext) {
   const serverOptions = () => runJavaServer(context);
 
@@ -220,8 +222,9 @@ export function activate(context: VSCode.ExtensionContext) {
   };
 
   oldConfig = getSonarLintConfiguration();
+
   // Create the language client and start the client.
-  const languageClient = new LanguageClient(
+  languageClient = new LanguageClient(
     "sonarlint-vscode",
     "SonarLint Language Server",
     serverOptions,
@@ -451,4 +454,9 @@ function getSonarLintConfiguration(): VSCode.WorkspaceConfiguration {
   return VSCode.workspace.getConfiguration("sonarlint");
 }
 
-export function deactivate() {}
+export function deactivate(): Thenable<void> {
+  if (!languageClient) {
+    return undefined;
+  }
+  return languageClient.stop();
+}
