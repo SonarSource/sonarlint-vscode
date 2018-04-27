@@ -54,14 +54,14 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
         });
         server.listen(0, () => {
           // Start the child java process
-          let { command, args } = languageServerCommand(
+          const { command, args } = languageServerCommand(
             context,
             requirements,
             server.address().port
           );
-          let options = { cwd: VSCode.workspace.rootPath };
+          const options = { cwd: VSCode.workspace.rootPath };
           console.log("Executing " + command + " " + args.join(" "));
-          let process = ChildProcess.spawn(command, args, options);
+          const process = ChildProcess.spawn(command, args, options);
 
           process.stdout.on("data", function(data) {
             console.log(data.toString());
@@ -79,21 +79,21 @@ function languageServerCommand(
   requirements: RequirementsData,
   port: number
 ): { command: string; args: string[] } {
-  let serverJar = Path.resolve(
+  const serverJar = Path.resolve(
     context.extensionPath,
     "server",
     "sonarlint-ls.jar"
   );
-  let javaExecutablePath = Path.resolve(requirements.java_home + "/bin/java");
+  const javaExecutablePath = Path.resolve(requirements.java_home + "/bin/java");
 
-  let params = [];
+  const params = [];
   if (DEBUG) {
     params.push(
       "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
     );
     params.push("-Dsonarlint.telemetry.disabled=true");
   }
-  let vmargs = getSonarLintConfiguration().get("ls.vmargs", "");
+  const vmargs = getSonarLintConfiguration().get("ls.vmargs", "");
   parseVMargs(params, vmargs);
   params.push("-jar", serverJar, "" + port);
   params.push(
@@ -170,12 +170,12 @@ function findTypeScriptLocation() {
 }
 
 export function activate(context: VSCode.ExtensionContext) {
-  let serverOptions = () => runJavaServer(context);
+  const serverOptions = () => runJavaServer(context);
 
-  let tsPath = findTypeScriptLocation();
+  const tsPath = findTypeScriptLocation();
 
   // Options to control the language client
-  let clientOptions: LanguageClientOptions = {
+  const clientOptions: LanguageClientOptions = {
     documentSelector: [
       "javascript",
       "javascriptreact",
@@ -190,7 +190,7 @@ export function activate(context: VSCode.ExtensionContext) {
     },
     diagnosticCollectionName: "sonarlint",
     initializationOptions: () => {
-      let configuration = getSonarLintConfiguration();
+      const configuration = getSonarLintConfiguration();
       return {
         testFilePattern: configuration
           ? configuration.get("testFilePattern", undefined)
@@ -221,13 +221,13 @@ export function activate(context: VSCode.ExtensionContext) {
 
   oldConfig = getSonarLintConfiguration();
   // Create the language client and start the client.
-  let languageClient = new LanguageClient(
+  const languageClient = new LanguageClient(
     "sonarlint-vscode",
     "SonarLint Language Server",
     serverOptions,
     clientOptions
   );
-  let disposable = languageClient.start();
+  const disposable = languageClient.start();
 
   // Push the disposable to the context's subscriptions so that the
   // client can be deactivated on extension deactivation
@@ -238,7 +238,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
   class TextDocumentContentProvider
     implements VSCode.TextDocumentContentProvider {
-    private _onDidChange = new VSCode.EventEmitter<VSCode.Uri>();
+    private readonly _onDidChange = new VSCode.EventEmitter<VSCode.Uri>();
 
     get onDidChange(): VSCode.Event<VSCode.Uri> {
       return this._onDidChange.event;
@@ -253,16 +253,16 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   }
 
-  let provider = new TextDocumentContentProvider();
-  let registration = VSCode.workspace.registerTextDocumentContentProvider(
+  const provider = new TextDocumentContentProvider();
+  const registration = VSCode.workspace.registerTextDocumentContentProvider(
     "sonarlint-rule",
     provider
   );
   context.subscriptions.push(registration);
 
-  let showRuleUri = VSCode.Uri.parse("sonarlint-rule://show");
+  const showRuleUri = VSCode.Uri.parse("sonarlint-rule://show");
 
-  let openRuleCommand = VSCode.commands.registerCommand(
+  const openRuleCommand = VSCode.commands.registerCommand(
     "SonarLint.OpenRuleDesc",
     (
       ruleKey: string,
@@ -308,13 +308,13 @@ function computeRuleDescPanelContent(
   ruleType: string,
   ruleSeverity: string
 ) {
-  let severityImg = Path.resolve(
+  const severityImg = Path.resolve(
     context.extensionPath,
     "images",
     "severity",
     ruleSeverity.toLowerCase() + ".png"
   );
-  let typeImg = Path.resolve(
+  const typeImg = Path.resolve(
     context.extensionPath,
     "images",
     "type",
@@ -370,7 +370,7 @@ function capitalizeName(name: string) {
 }
 
 function base64_encode(file) {
-  var bitmap = FS.readFileSync(file);
+  const bitmap = FS.readFileSync(file);
   return new Buffer(bitmap).toString("base64");
 }
 
@@ -382,12 +382,12 @@ function logNotification(message: string, ...items: string[]) {
 
 function onConfigurationChange() {
   return VSCode.workspace.onDidChangeConfiguration(params => {
-    let newConfig = getSonarLintConfiguration();
+    const newConfig = getSonarLintConfiguration();
     if (hasSonarLintLsConfigChanged(oldConfig, newConfig)) {
-      let msg =
+      const msg =
         "SonarLint Language Server configuration changed, please restart VS Code.";
-      let action = "Restart Now";
-      let restartId = "workbench.action.reloadWindow";
+      const action = "Restart Now";
+      const restartId = "workbench.action.reloadWindow";
       oldConfig = newConfig;
       VSCode.window.showWarningMessage(msg, action).then(selection => {
         if (action === selection) {
@@ -413,7 +413,7 @@ export function parseVMargs(params: any[], vmargsLine: string) {
   if (!vmargsLine) {
     return;
   }
-  let vmargs = vmargsLine.match(/(?:[^\s"]+|"[^"]*")+/g);
+  const vmargs = vmargsLine.match(/(?:[^\s"]+|"[^"]*")+/g);
   if (vmargs === null) {
     return;
   }
@@ -431,7 +431,7 @@ export function parseVMargs(params: any[], vmargsLine: string) {
 }
 
 function startedInDebugMode(): boolean {
-  let args = (process as any).execArgv;
+  const args = (process as any).execArgv;
   if (args) {
     return args.some(
       arg => /^--debug=?/.test(arg) || /^--debug-brk=?/.test(arg)
