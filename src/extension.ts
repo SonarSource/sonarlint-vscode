@@ -215,6 +215,12 @@ export function activate(context: VSCode.ExtensionContext) {
           : false,
         typeScriptLocation: tsPath
           ? Path.dirname(Path.dirname(tsPath))
+          : undefined,
+        connectedModeServers: configuration
+          ? configuration.get("connectedMode.servers")
+          : undefined,
+        connectedModeProject: configuration
+          ? configuration.get("connectedMode.project")
           : undefined
       };
     },

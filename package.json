@@ -85,6 +85,22 @@
           ],
           "default": null,
           "description": "Specifies extra VM arguments used to launch the SonarLint Language Server. For example \"-Xmx1024m\""
+        },
+        "sonarlint.connectedMode.servers": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the list of SonarQube servers"
+        },
+        "sonarlint.connectedMode.project": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the SonarQube server to which the current project is bound"
         }
       }
     }
