@@ -104,10 +104,16 @@
         }
       }
     },
-    "commands": [{
-      "command": "SonarLint.UpdateServerStorage",
-      "title": "Update SonarLint server storage"
-    }]
+    "commands": [
+      {
+        "command": "SonarLint.UpdateServerStorage",
+        "title": "Update SonarLint server storage"
+      },
+      {
+        "command": "SonarLint.UpdateProjectBinding",
+        "title": "Update SonarLint project binding"
+      }
+    ]
   },
   "main": "./out/src/extension",
   "files": [
