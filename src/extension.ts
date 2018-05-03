@@ -13,7 +13,9 @@ import * as ChildProcess from "child_process";
 import {
   LanguageClient,
   LanguageClientOptions,
-  StreamInfo
+  StreamInfo,
+  ExecuteCommandRequest,
+  ExecuteCommandParams
 } from "vscode-languageclient";
 import * as open from "open";
 import * as http from "http";
@@ -25,7 +27,10 @@ declare var v8debug;
 const DEBUG = typeof v8debug === "object" || startedInDebugMode();
 var oldConfig;
 
-var lastStatus;
+const updateServerStorageCommandName = "SonarLint.UpdateServerStorage";
+const connectedModeServersSectionName = "connectedMode.servers";
+const connectedModeProjectSectionName = "connectedMode.project";
+
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
   return requirements
     .resolveRequirements()
@@ -87,9 +92,7 @@ function languageServerCommand(
 
   const params = [];
   if (DEBUG) {
-    params.push(
-      "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
-    );
+    params.push("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000");
     params.push("-Dsonarlint.telemetry.disabled=true");
   }
   const vmargs = getSonarLintConfiguration().get("ls.vmargs", "");
@@ -217,10 +220,10 @@ export function activate(context: VSCode.ExtensionContext) {
           ? Path.dirname(Path.dirname(tsPath))
           : undefined,
         connectedModeServers: configuration
-          ? configuration.get("connectedMode.servers")
+          ? configuration.get(connectedModeServersSectionName)
           : undefined,
         connectedModeProject: configuration
-          ? configuration.get("connectedMode.project")
+          ? configuration.get(connectedModeProjectSectionName)
           : undefined
       };
     },
@@ -312,6 +315,23 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(openRuleCommand);
+
+  const updateServerStorageCommandCallback = () => {
+    const params: ExecuteCommandParams = {
+      command: updateServerStorageCommandName,
+      arguments: getSonarLintConfiguration().get(connectedModeServersSectionName)
+    };
+    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+      success => {
+        VSCode.window.showInformationMessage("Successfully updated SonarLint server storage");
+      },
+      reason => {
+        VSCode.window.showWarningMessage("Failed to update SonarLint server storage");
+      }
+    );
+  };
+  const updateServerStorageCommand = VSCode.commands.registerCommand(updateServerStorageCommandName, updateServerStorageCommandCallback);
+  context.subscriptions.push(updateServerStorageCommand);
 }
 
 function computeRuleDescPanelContent(
@@ -406,6 +426,17 @@ function onConfigurationChange() {
       VSCode.window.showWarningMessage(msg, action).then(selection => {
         if (action === selection) {
           VSCode.commands.executeCommand(restartId);
+        }
+      });
+    }
+    if (hasConfigKeyChanged(connectedModeServersSectionName, oldConfig, newConfig)) {
+      const msg =
+        "SonarLint connected mode server configuration changed, please update server storage.";
+      const action = "Update Now";
+      oldConfig = newConfig;
+      VSCode.window.showWarningMessage(msg, action).then(selection => {
+        if (action === selection) {
+          VSCode.commands.executeCommand(updateServerStorageCommandName);
         }
       });
     }

@@ -103,7 +103,11 @@
           "description": "Specifies the SonarQube server to which the current project is bound"
         }
       }
-    }
+    },
+    "commands": [{
+      "command": "SonarLint.UpdateServerStorage",
+      "title": "Update SonarLint server storage"
+    }]
   },
   "main": "./out/src/extension",
   "files": [
