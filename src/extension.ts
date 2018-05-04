@@ -13,7 +13,9 @@ import * as ChildProcess from "child_process";
 import {
   LanguageClient,
   LanguageClientOptions,
-  StreamInfo
+  StreamInfo,
+  ExecuteCommandRequest,
+  ExecuteCommandParams
 } from "vscode-languageclient";
 import * as open from "open";
 import * as http from "http";
@@ -25,7 +27,12 @@ declare var v8debug;
 const DEBUG = typeof v8debug === "object" || startedInDebugMode();
 var oldConfig;
 
-var lastStatus;
+const updateServerStorageCommandName = "SonarLint.UpdateServerStorage";
+const updateProjectBindingCommandName = "SonarLint.UpdateProjectBinding";
+
+const connectedModeServersSectionName = "connectedMode.servers";
+const connectedModeProjectSectionName = "connectedMode.project";
+
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
   return requirements
     .resolveRequirements()
@@ -87,9 +94,7 @@ function languageServerCommand(
 
   const params = [];
   if (DEBUG) {
-    params.push(
-      "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
-    );
+    params.push("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000");
     params.push("-Dsonarlint.telemetry.disabled=true");
   }
   const vmargs = getSonarLintConfiguration().get("ls.vmargs", "");
@@ -215,6 +220,12 @@ export function activate(context: VSCode.ExtensionContext) {
           : false,
         typeScriptLocation: tsPath
           ? Path.dirname(Path.dirname(tsPath))
+          : undefined,
+        connectedModeServers: configuration
+          ? configuration.get(connectedModeServersSectionName)
+          : undefined,
+        connectedModeProject: configuration
+          ? configuration.get(connectedModeProjectSectionName)
           : undefined
       };
     },
@@ -306,6 +317,40 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(openRuleCommand);
+
+  const updateServerStorageCommandCallback = () => {
+    const params: ExecuteCommandParams = {
+      command: updateServerStorageCommandName,
+      arguments: getSonarLintConfiguration().get(connectedModeServersSectionName)
+    };
+    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+      success => {
+        VSCode.window.showInformationMessage("Successfully updated SonarLint server storage");
+      },
+      reason => {
+        VSCode.window.showWarningMessage("Failed to update SonarLint server storage");
+      }
+    );
+  };
+  const updateServerStorageCommand = VSCode.commands.registerCommand(updateServerStorageCommandName, updateServerStorageCommandCallback);
+  context.subscriptions.push(updateServerStorageCommand);
+
+  const updateProjectBindingCommandCallback = () => {
+    const params: ExecuteCommandParams = {
+      command: updateProjectBindingCommandName,
+      arguments: getSonarLintConfiguration().get(connectedModeProjectSectionName)
+    };
+    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+      success => {
+        VSCode.window.showInformationMessage("Successfully updated SonarLint project binding");
+      },
+      reason => {
+        VSCode.window.showWarningMessage("Failed to update SonarLint project binding");
+      }
+    );
+  };
+  const updateProjectBindingCommand = VSCode.commands.registerCommand(updateProjectBindingCommandName, updateProjectBindingCommandCallback);
+  context.subscriptions.push(updateProjectBindingCommand);
 }
 
 function computeRuleDescPanelContent(
@@ -391,7 +436,12 @@ function logNotification(message: string, ...items: string[]) {
 function onConfigurationChange() {
   return VSCode.workspace.onDidChangeConfiguration(params => {
     const newConfig = getSonarLintConfiguration();
-    if (hasSonarLintLsConfigChanged(oldConfig, newConfig)) {
+
+    const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(oldConfig, newConfig);
+    const serversChanged = !configKeyDeepEquals(connectedModeServersSectionName, oldConfig, newConfig);
+    const bindingChanged = !configKeyDeepEquals(connectedModeProjectSectionName, oldConfig, newConfig);
+
+    if (sonarLintLsConfigChanged) {
       const msg =
         "SonarLint Language Server configuration changed, please restart VS Code.";
       const action = "Restart Now";
@@ -403,18 +453,69 @@ function onConfigurationChange() {
         }
       });
     }
+
+    if (serversChanged && bindingChanged) {
+      oldConfig = newConfig;
+      handleServersAndBindingChanged();
+    } else if (serversChanged) {
+      oldConfig = newConfig;
+      handleServersChanged();
+    } else if (bindingChanged) {
+      oldConfig = newConfig;
+      handleBindingChanged();
+    }
+  });
+}
+
+function handleServersAndBindingChanged() {
+  const msg =
+    "SonarLint connected mode server configuration and binding changed, please update.";
+  const action = "Update servers and binding now";
+  VSCode.window.showWarningMessage(msg, action).then(selection => {
+    if (action === selection) {
+      VSCode.commands.executeCommand(updateServerStorageCommandName);
+      VSCode.commands.executeCommand(updateProjectBindingCommandName);
+    }
+  });
+}
+
+function handleServersChanged() {
+  const msg =
+    "SonarLint connected mode server configuration changed, please update server storage.";
+  const action = "Update servers now";
+  VSCode.window.showWarningMessage(msg, action).then(selection => {
+    if (action === selection) {
+      VSCode.commands.executeCommand(updateServerStorageCommandName);
+    }
+  });
+}
+
+function handleBindingChanged() {
+  const msg =
+    "SonarLint connected mode project binding configuration changed, please update project binding.";
+  const action = "Update binding now";
+  VSCode.window.showWarningMessage(msg, action).then(selection => {
+    if (action === selection) {
+      VSCode.commands.executeCommand(updateProjectBindingCommandName);
+    }
   });
 }
 
 function hasSonarLintLsConfigChanged(oldConfig, newConfig) {
   return (
-    hasConfigKeyChanged("ls.javaHome", oldConfig, newConfig) ||
-    hasConfigKeyChanged("ls.vmargs", oldConfig, newConfig)
+    !configKeyEquals("ls.javaHome", oldConfig, newConfig) ||
+    !configKeyEquals("ls.vmargs", oldConfig, newConfig)
   );
 }
 
-function hasConfigKeyChanged(key, oldConfig, newConfig) {
-  return oldConfig.get(key) !== newConfig.get(key);
+function configKeyEquals(key, oldConfig, newConfig) {
+  return oldConfig.get(key) === newConfig.get(key);
+}
+
+function configKeyDeepEquals(key, oldConfig, newConfig) {
+  // note: lazy implementation; see for something better: https://stackoverflow.com/a/10316616/641955
+  // note: may not work well for objects (non-deterministic order of keys)
+  return JSON.stringify(oldConfig.get(key)) === JSON.stringify(newConfig.get(key));
 }
 
 export function parseVMargs(params: any[], vmargsLine: string) {
