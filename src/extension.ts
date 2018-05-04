@@ -454,13 +454,27 @@ function onConfigurationChange() {
       });
     }
 
-    if (serversChanged) {
+    if (serversChanged && bindingChanged) {
+      oldConfig = newConfig;
+      handleServersAndBindingChanged();
+    } else if (serversChanged) {
       oldConfig = newConfig;
       handleServersChanged();
-    }
-    if (bindingChanged) {
+    } else if (bindingChanged) {
       oldConfig = newConfig;
       handleBindingChanged();
+    }
+  });
+}
+
+function handleServersAndBindingChanged() {
+  const msg =
+    "SonarLint connected mode server configuration and binding changed, please update.";
+  const action = "Update servers and binding now";
+  VSCode.window.showWarningMessage(msg, action).then(selection => {
+    if (action === selection) {
+      VSCode.commands.executeCommand(updateServerStorageCommandName);
+      VSCode.commands.executeCommand(updateProjectBindingCommandName);
     }
   });
 }
