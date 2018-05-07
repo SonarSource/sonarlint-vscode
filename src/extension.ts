@@ -200,12 +200,8 @@ export function activate(context: VSCode.ExtensionContext) {
     initializationOptions: () => {
       const configuration = getSonarLintConfiguration();
       return {
-        testFilePattern: configuration
-          ? configuration.get("testFilePattern", undefined)
-          : undefined,
-        analyzerProperties: configuration
-          ? configuration.get("analyzerProperties", undefined)
-          : undefined,
+        testFilePattern: configuration && configuration.get("testFilePattern"),
+        analyzerProperties: configuration && configuration.get("analyzerProperties"),
         telemetryStorage: Path.resolve(
           context.extensionPath,
           "..",
@@ -221,12 +217,9 @@ export function activate(context: VSCode.ExtensionContext) {
         typeScriptLocation: tsPath
           ? Path.dirname(Path.dirname(tsPath))
           : undefined,
-        connectedModeServers: configuration
-          ? configuration.get(connectedModeServersSectionName)
-          : undefined,
-        connectedModeProject: configuration
-          ? configuration.get(connectedModeProjectSectionName)
-          : undefined
+        includeRuleDetailsInCodeAction: true,
+        connectedModeServers: configuration && configuration.get(connectedModeServersSectionName),
+        connectedModeProject: configuration && configuration.get(connectedModeProjectSectionName)
       };
     },
     outputChannelName: "SonarLint",
