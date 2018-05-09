@@ -28,7 +28,6 @@ const DEBUG = typeof v8debug === "object" || startedInDebugMode();
 var oldConfig;
 
 const updateServerStorageCommandName = "SonarLint.UpdateServerStorage";
-const updateProjectBindingCommandName = "SonarLint.UpdateProjectBinding";
 
 const connectedModeServersSectionName = "connectedMode.servers";
 const connectedModeProjectSectionName = "connectedMode.project";
@@ -312,38 +311,40 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(openRuleCommand);
 
   const updateServerStorageCommandCallback = () => {
-    const params: ExecuteCommandParams = {
-      command: updateServerStorageCommandName,
-      arguments: getSonarLintConfiguration().get(connectedModeServersSectionName)
-    };
-    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
-      success => {
-        VSCode.window.showInformationMessage("Successfully updated SonarLint server storage");
-      },
-      reason => {
-        VSCode.window.showWarningMessage("Failed to update SonarLint server storage");
-      }
-    );
+    updateServerStorage()
+    .then(updateProjectBinding)
+    .then(() => {
+      VSCode.window.showInformationMessage("Successfully updated SonarLint server storage");
+    });
   };
   const updateServerStorageCommand = VSCode.commands.registerCommand(updateServerStorageCommandName, updateServerStorageCommandCallback);
   context.subscriptions.push(updateServerStorageCommand);
+}
 
-  const updateProjectBindingCommandCallback = () => {
-    const params: ExecuteCommandParams = {
-      command: updateProjectBindingCommandName,
-      arguments: getSonarLintConfiguration().get(connectedModeProjectSectionName)
-    };
-    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
-      success => {
-        VSCode.window.showInformationMessage("Successfully updated SonarLint project binding");
-      },
-      reason => {
-        VSCode.window.showWarningMessage("Failed to update SonarLint project binding");
-      }
-    );
+function updateServerStorage(): Thenable<void> {
+  const params: ExecuteCommandParams = {
+    command: "SonarLint.UpdateServerStorage",
+    arguments: getSonarLintConfiguration().get(connectedModeServersSectionName)
   };
-  const updateProjectBindingCommand = VSCode.commands.registerCommand(updateProjectBindingCommandName, updateProjectBindingCommandCallback);
-  context.subscriptions.push(updateProjectBindingCommand);
+  return languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+    success => {},
+    reason => {
+      VSCode.window.showWarningMessage("Failed to update SonarLint server storage");
+    }
+  );
+}
+
+function updateProjectBinding(): Thenable<void> {
+  const params: ExecuteCommandParams = {
+    command: "SonarLint.UpdateProjectBinding",
+    arguments: getSonarLintConfiguration().get(connectedModeProjectSectionName)
+  };
+  return languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+    success => {},
+    reason => {
+      VSCode.window.showWarningMessage("Failed to update SonarLint project binding");
+    }
+  );
 }
 
 function computeRuleDescPanelContent(
@@ -449,47 +450,13 @@ function onConfigurationChange() {
 
     if (serversChanged && bindingChanged) {
       oldConfig = newConfig;
-      handleServersAndBindingChanged();
+      updateServerStorage().then(updateProjectBinding);
     } else if (serversChanged) {
       oldConfig = newConfig;
-      handleServersChanged();
+      updateServerStorage();
     } else if (bindingChanged) {
       oldConfig = newConfig;
-      handleBindingChanged();
-    }
-  });
-}
-
-function handleServersAndBindingChanged() {
-  const msg =
-    "SonarLint connected mode server configuration and binding changed, please update.";
-  const action = "Update servers and binding now";
-  VSCode.window.showWarningMessage(msg, action).then(selection => {
-    if (action === selection) {
-      VSCode.commands.executeCommand(updateServerStorageCommandName);
-      VSCode.commands.executeCommand(updateProjectBindingCommandName);
-    }
-  });
-}
-
-function handleServersChanged() {
-  const msg =
-    "SonarLint connected mode server configuration changed, please update server storage.";
-  const action = "Update servers now";
-  VSCode.window.showWarningMessage(msg, action).then(selection => {
-    if (action === selection) {
-      VSCode.commands.executeCommand(updateServerStorageCommandName);
-    }
-  });
-}
-
-function handleBindingChanged() {
-  const msg =
-    "SonarLint connected mode project binding configuration changed, please update project binding.";
-  const action = "Update binding now";
-  VSCode.window.showWarningMessage(msg, action).then(selection => {
-    if (action === selection) {
-      VSCode.commands.executeCommand(updateProjectBindingCommandName);
+      updateProjectBinding();
     }
   });
 }
