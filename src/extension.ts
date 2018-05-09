@@ -311,19 +311,22 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(openRuleCommand);
 
   const updateServerStorageCommandCallback = () => {
-    updateServerStorage();
-    updateProjectBinding();
+    updateServerStorage().then(() => {
+      updateProjectBinding().then(() => {
+        VSCode.window.showInformationMessage("Successfully updated SonarLint server storage");
+      });
+    });
   };
   const updateServerStorageCommand = VSCode.commands.registerCommand(updateServerStorageCommandName, updateServerStorageCommandCallback);
   context.subscriptions.push(updateServerStorageCommand);
 }
 
-function updateServerStorage() {
+function updateServerStorage(): Thenable<void> {
   const params: ExecuteCommandParams = {
     command: "SonarLint.UpdateServerStorage",
     arguments: getSonarLintConfiguration().get(connectedModeServersSectionName)
   };
-  languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+  return languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
     success => {},
     reason => {
       VSCode.window.showWarningMessage("Failed to update SonarLint server storage");
@@ -331,12 +334,12 @@ function updateServerStorage() {
   );
 }
 
-function updateProjectBinding() {
+function updateProjectBinding(): Thenable<void> {
   const params: ExecuteCommandParams = {
     command: "SonarLint.UpdateProjectBinding",
     arguments: getSonarLintConfiguration().get(connectedModeProjectSectionName)
   };
-  languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+  return languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
     success => {},
     reason => {
       VSCode.window.showWarningMessage("Failed to update SonarLint project binding");
@@ -447,8 +450,7 @@ function onConfigurationChange() {
 
     if (serversChanged && bindingChanged) {
       oldConfig = newConfig;
-      updateServerStorage();
-      updateProjectBinding();
+      updateServerStorage().then(() => updateProjectBinding());
     } else if (serversChanged) {
       oldConfig = newConfig;
       updateServerStorage();
