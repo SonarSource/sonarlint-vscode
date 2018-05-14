@@ -159,7 +159,7 @@ function runSonnarQubeScanner(callback, options = {}) {
     "sonar.projectName": "SonarLint for VSCode",
     "sonar.projectVersion": snapshotVersion(),
     "sonar.exclusions":
-      "build/**, coverage/**, node_modules/**, **/node_modules/**",
+      "build/**, out/**, coverage/**, node_modules/**, **/node_modules/**",
     "sonar.coverage.exclusions":
       "gulpfile.js, build/**, config/**, coverage/**, scripts/**",
     "sonar.analysis.buildNumber": process.env.TRAVIS_BUILD_NUMBER,
