@@ -142,10 +142,10 @@
     "gulp-download": "0.0.1",
     "gulp-rename": "1.2.2",
     "gulp-util": "3.0.8",
-    "mocha": "^2.4.5",
+    "mocha": "^5.1.1",
+    "sonarqube-scanner": "2.0.2",
     "through2": "^2.0.3",
     "typescript": "^2.6.2",
-    "vsce": "^1.36.1",
-    "sonarqube-scanner": "2.0.2"
+    "vsce": "^1.36.1"
   }
 }
