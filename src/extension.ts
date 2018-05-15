@@ -27,7 +27,7 @@ declare var v8debug;
 const DEBUG = typeof v8debug === "object" || startedInDebugMode();
 var oldConfig;
 
-const updateServerStorageCommandName = "SonarLint.UpdateServerStorage";
+const updateServersAndBindingStorageCommandName = "SonarLint/UpdateServersAndBinding";
 
 const connectedModeServersSectionName = "connectedMode.servers";
 const connectedModeProjectSectionName = "connectedMode.project";
@@ -310,14 +310,14 @@ export function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(openRuleCommand);
 
-  const updateServerStorageCommandCallback = () => {
+  const updateServersAndBindingStorageCommandCallback = () => {
     updateServerStorage()
     .then(updateProjectBinding)
     .then(() => {
-      VSCode.window.showInformationMessage("Successfully updated SonarLint server storage");
+      VSCode.window.showInformationMessage("SonarLint server storage updated");
     });
   };
-  const updateServerStorageCommand = VSCode.commands.registerCommand(updateServerStorageCommandName, updateServerStorageCommandCallback);
+  const updateServerStorageCommand = VSCode.commands.registerCommand(updateServersAndBindingStorageCommandName, updateServersAndBindingStorageCommandCallback);
   context.subscriptions.push(updateServerStorageCommand);
 }
 
