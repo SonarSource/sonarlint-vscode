@@ -311,10 +311,10 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(openRuleCommand);
 
   const updateServerStorageCommandCallback = () => {
-    updateServerStorage().then(() => {
-      updateProjectBinding().then(() => {
-        VSCode.window.showInformationMessage("Successfully updated SonarLint server storage");
-      });
+    updateServerStorage()
+    .then(updateProjectBinding)
+    .then(() => {
+      VSCode.window.showInformationMessage("Successfully updated SonarLint server storage");
     });
   };
   const updateServerStorageCommand = VSCode.commands.registerCommand(updateServerStorageCommandName, updateServerStorageCommandCallback);
@@ -450,7 +450,7 @@ function onConfigurationChange() {
 
     if (serversChanged && bindingChanged) {
       oldConfig = newConfig;
-      updateServerStorage().then(() => updateProjectBinding());
+      updateServerStorage().then(updateProjectBinding);
     } else if (serversChanged) {
       oldConfig = newConfig;
       updateServerStorage();
