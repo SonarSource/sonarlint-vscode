@@ -27,7 +27,7 @@ declare var v8debug;
 const DEBUG = typeof v8debug === "object" || startedInDebugMode();
 var oldConfig;
 
-const updateServerStorageCommandName = "SonarLint.UpdateServerStorage";
+const updateServerStorageCommandName = "SonarLint/UpdateServerStorage";
 
 const connectedModeServersSectionName = "connectedMode.servers";
 const connectedModeProjectSectionName = "connectedMode.project";

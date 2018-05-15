@@ -106,7 +106,7 @@
     },
     "commands": [
       {
-        "command": "SonarLint.UpdateServerStorage",
+        "command": "SonarLint/UpdateServerStorage",
         "title": "Update SonarLint server storage"
       }
     ]
