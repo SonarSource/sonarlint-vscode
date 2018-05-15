@@ -106,8 +106,8 @@
     },
     "commands": [
       {
-        "command": "SonarLint/UpdateServerStorage",
-        "title": "Update SonarLint server storage"
+        "command": "SonarLint/UpdateServersAndBinding",
+        "title": "Update SonarLint servers and binding storage"
       }
     ]
   },
