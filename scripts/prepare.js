@@ -3,6 +3,12 @@ const fs = require("fs");
 const crypto = require("crypto");
 const request = require("request");
 
+const languageServerVersion = '3.5.0.1624';
+const sonarJsVersion = '4.1.0.6085';
+const sonarPhpVersion = '2.13.0.3107';
+const sonarPythonVersion = '1.10.0.2131';
+const sonarTsVersion = '1.6.0.2388';
+
 if (!fs.existsSync("server")) {
   fs.mkdirSync("server");
 }
@@ -12,23 +18,23 @@ if (!fs.existsSync("analyzers")) {
 }
 
 downloadIfNeeded(
-  "https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/3.1.0.1376/sonarlint-language-server-3.1.0.1376.jar",
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
   "server/sonarlint-ls.jar"
 );
 downloadIfNeeded(
-  "http://repo1.maven.org/maven2/org/sonarsource/javascript/sonar-javascript-plugin/4.0.0.5862/sonar-javascript-plugin-4.0.0.5862.jar",
+  `https://repo1.maven.org/maven2/org/sonarsource/javascript/sonar-javascript-plugin/${sonarJsVersion}/sonar-javascript-plugin-${sonarJsVersion}.jar`,
   "analyzers/sonarjs.jar"
 );
 downloadIfNeeded(
-  "http://repo1.maven.org/maven2/org/sonarsource/php/sonar-php-plugin/2.12.0.2871/sonar-php-plugin-2.12.0.2871.jar",
+  `https://repo1.maven.org/maven2/org/sonarsource/php/sonar-php-plugin/${sonarPhpVersion}/sonar-php-plugin-${sonarPhpVersion}.jar`,
   "analyzers/sonarphp.jar"
 );
 downloadIfNeeded(
-  "http://repo1.maven.org/maven2/org/sonarsource/python/sonar-python-plugin/1.8.0.1496/sonar-python-plugin-1.8.0.1496.jar",
+  `https://repo1.maven.org/maven2/org/sonarsource/python/sonar-python-plugin/${sonarPythonVersion}/sonar-python-plugin-${sonarPythonVersion}.jar`,
   "analyzers/sonarpython.jar"
 );
 downloadIfNeeded(
-  "https://repox.sonarsource.com/sonarsource/org/sonarsource/typescript/sonar-typescript-plugin/1.5.0.2122/sonar-typescript-plugin-1.5.0.2122.jar",
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/typescript/sonar-typescript-plugin/${sonarTsVersion}/sonar-typescript-plugin-${sonarTsVersion}.jar`,
   "analyzers/sonarts.jar"
 );
 

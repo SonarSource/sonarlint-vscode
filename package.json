@@ -16,7 +16,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.12.0"
+    "vscode": "^1.16.0"
   },
   "categories": [
     "Linters"
@@ -85,9 +85,31 @@
           ],
           "default": null,
           "description": "Specifies extra VM arguments used to launch the SonarLint Language Server. For example \"-Xmx1024m\""
+        },
+        "sonarlint.connectedMode.servers": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the list of SonarQube servers"
+        },
+        "sonarlint.connectedMode.project": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the SonarQube server to which the current project is bound"
         }
       }
-    }
+    },
+    "commands": [
+      {
+        "command": "SonarLint.UpdateServerStorage",
+        "title": "Update SonarLint server storage"
+      }
+    ]
   },
   "main": "./out/src/extension",
   "files": [
@@ -104,7 +126,7 @@
     "find-java-home": "0.1.4",
     "open": "0.0.5",
     "path-exists": "^3.0.0",
-    "vscode-languageclient": "3.2.2"
+    "vscode-languageclient": "3.5.1"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.32",
@@ -123,7 +145,7 @@
     "through2": "^2.0.3",
     "typescript": "^2.6.2",
     "vsce": "^1.36.1",
-    "vscode": "1.1.0",
+    "vscode": "1.1.5",
     "sonarqube-scanner": "2.0.2"
   }
 }
