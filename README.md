@@ -14,6 +14,7 @@ You can access the detailed rule description directly from your editor, using th
 
 ## Rules
 Check the rules to see what SonarLint can do for you:
+- [Java rules](https://rules.sonarsource.com/java)
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 - [Python rules](https://rules.sonarsource.com/python)
