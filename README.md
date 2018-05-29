@@ -15,6 +15,7 @@ You can access the detailed rule description directly from your editor, using th
 ## Rules
 
 Check the rules to see what SonarLint can do for you:
+
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 - [Python rules](https://rules.sonarsource.com/python)
@@ -31,6 +32,16 @@ SonarLint should automatically find it but you can also explicitly set the path 
     {
         "sonarlint.ls.javaHome": "C:\Program Files\Java\jre1.8.0_131"
     }
+
+### Connected mode
+
+You can connect SonarLint to SonarQube >= 5.6 or SonarCloud to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
+
+To configure the connection, have a look at SonarLint in default user settings.
+
+If you change something on the server such as the quality profile, you can trigger an update of the local cache using the "Update SonarLint binding to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
+
+For security reasons, the token should not be stored in SCM with workspace settings.
 
 ## Contributions and license
 
