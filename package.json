@@ -91,16 +91,46 @@
             "array",
             "null"
           ],
-          "default": null,
-          "description": "Specifies the list of SonarQube servers"
+          "default": [],
+          "description": "Configure the connection(s) to SonarQube/SonarCloud in your USER settings.\nFor security reasons, the token should not be stored in SCM with workspace settings\n\"sonarlint.connectedMode.servers\": [\n    {\n       \"serverId\": \"my_orga_in_sonarcloud.io\", // Connection identifier\n       \"serverUrl\": \"https://sonarcloud.io\",   // SonarQube/SonarCloud URL - https//sonarcloud.io for SonarCloud\n       \"organizationKey\": \"my_organization\",   // Organization key in SonarCloud only\n       \"token\": \"V2VkIE1heSAyMyAwODowOTozMiBDRVNUIDIwMTgK\"    // User token - generated in SonarQube/SonarCloud in My Account>Security\n    }\n],",
+          "items": {
+            "properties": {
+              "serverId": {
+                "type": "string",
+                "default": ""
+              },
+              "serverUrl": {
+                "type": "string",
+                "default": ""
+              },
+              "token": {
+                "type": "string",
+                "default": ""
+              },
+              "organizationKey": {
+                "type": "string",
+                "default": ""
+              }
+            }
+          }
         },
         "sonarlint.connectedMode.project": {
           "type": [
             "object",
             "null"
           ],
-          "default": null,
-          "description": "Specifies the SonarQube server to which the current project is bound"
+          "default": {},
+          "description": "Specify in WORKSPACE settings the SonarQube/SonarCloud project to which the current project is bound\n\"sonarlint.connectedMode.project\": {\n      \"serverId\": \"my_orga_in_sonarcloud.io\",    // Connection defined in sonarlint.connectedMode.servers\n      \"projectKey\": \"my_project\"                 // Project key in SonarQube/SonarCloud\n  },",
+          "properties": {
+            "serverId": {
+              "type": "string",
+              "default": ""
+            },
+            "projectKey": {
+              "type": "string",
+              "default": ""
+            }
+          }
         }
       }
     },
