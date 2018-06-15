@@ -7,7 +7,7 @@ const languageServerVersion = '3.7.1.1756';
 const sonarJsVersion = '4.1.0.6085';
 const sonarPhpVersion = '2.13.0.3107';
 const sonarPythonVersion = '1.10.0.2131';
-const sonarTsVersion = '1.6.0.2388';
+const sonarTsVersion = '1.7.0.2893';
 
 if (!fs.existsSync("server")) {
   fs.mkdirSync("server");
