@@ -18,7 +18,8 @@ if (!fs.existsSync("analyzers")) {
 }
 
 downloadIfNeeded(
-  `https://repo1.maven.org/maven2/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
+  //`https://repo1.maven.org/maven2/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
   "server/sonarlint-ls.jar"
 );
 downloadIfNeeded(
