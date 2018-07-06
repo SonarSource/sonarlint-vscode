@@ -103,6 +103,9 @@ function languageServerCommand(
     toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarjs.jar"))
   );
   params.push(
+    toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarjava.jar"))
+  );
+  params.push(
     toUrl(Path.resolve(context.extensionPath, "analyzers", "sonarphp.jar"))
   );
   params.push(
@@ -190,7 +193,8 @@ export function activate(context: VSCode.ExtensionContext) {
       "python",
       "typescript",
       "typescriptreact",
-      "vue"
+      "vue",
+      "java"
     ],
     synchronize: {
       configurationSection: "sonarlint"

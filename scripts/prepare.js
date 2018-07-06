@@ -8,6 +8,7 @@ const sonarJsVersion = '4.1.0.6085';
 const sonarPhpVersion = '2.13.0.3107';
 const sonarPythonVersion = '1.10.0.2131';
 const sonarTsVersion = '1.7.0.2893';
+const sonarJavaVersion = '5.5.0.14655';
 
 if (!fs.existsSync("server")) {
   fs.mkdirSync("server");
@@ -20,6 +21,10 @@ if (!fs.existsSync("analyzers")) {
 downloadIfNeeded(
   `https://repo1.maven.org/maven2/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
   "server/sonarlint-ls.jar"
+);
+downloadIfNeeded(
+  `https://repo1.maven.org/maven2/org/sonarsource/java/sonar-java-plugin/${sonarJavaVersion}/sonar-java-plugin-${sonarJavaVersion}.jar`,
+  "analyzers/sonarjava.jar"
 );
 downloadIfNeeded(
   `https://repo1.maven.org/maven2/org/sonarsource/javascript/sonar-javascript-plugin/${sonarJsVersion}/sonar-javascript-plugin-${sonarJsVersion}.jar`,
