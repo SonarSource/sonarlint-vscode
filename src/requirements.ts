@@ -39,6 +39,9 @@ function checkJavaRuntime(): Promise<any> {
     let source: string;
     let javaHome: string = readJavaConfig();
     if (javaHome) {
+      if (!path.isAbsolute(javaHome) && workspace.workspaceFolders && workspace.workspaceFolders[0].uri.scheme === "file") {
+        path.resolve(workspace.workspaceFolders[0].uri.fsPath, javaHome);
+      }
       source =
         "The 'sonarlint.ls.javaHome' variable defined in VS Code settings";
     } else {
