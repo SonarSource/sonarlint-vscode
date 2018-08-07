@@ -4,15 +4,17 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
+
+// Highly inspired from https://github.com/redhat-developer/vscode-java/blob/1f6783957c699e261a33d05702f2da356017458d/src/requirements.ts
 "use strict";
 
 import { workspace, Uri } from "vscode";
 import * as cp from "child_process";
 import * as path from "path";
+import * as pathExists from "path-exists";
+import * as expandHomeDir from "expand-home-dir";
+import * as findJavaHome from "find-java-home";
 
-const pathExists = require("path-exists");
-const expandHomeDir = require("expand-home-dir");
-const findJavaHome = require("find-java-home");
 const isWindows = process.platform.indexOf("win") === 0;
 const JAVA_FILENAME = "java" + (isWindows ? ".exe" : "");
 
@@ -86,20 +88,39 @@ function checkJavaVersion(java_home: string): Promise<any> {
       ["-version"],
       {},
       (error, stdout, stderr) => {
-        if (stderr.indexOf('version "9') > -1) {
-          resolve(9);
-        }
-        if (stderr.indexOf("1.8") < 0) {
+        const javaVersion = parseMajorVersion(stderr);
+        if (javaVersion < 8) {
           openJREDownload(
             reject,
-            "Java 8 is required to run. Please download and install a JRE 8."
+            "Java 8 or more recent is required to run. Please download and install a recent JRE."
           );
         } else {
-          resolve(8);
+          resolve(javaVersion);
         }
       }
     );
   });
+}
+
+export function parseMajorVersion(content: string): number {
+  let regexp = /version "(.*)"/g;
+  let match = regexp.exec(content);
+  if (!match) {
+    return 0;
+  }
+  let version = match[1];
+  //Ignore '1.' prefix for legacy Java versions
+  if (version.startsWith("1.")) {
+    version = version.substring(2);
+  }
+  //look into the interesting bits now
+  regexp = /\d+/g;
+  match = regexp.exec(version);
+  let javaVersion = 0;
+  if (match) {
+    javaVersion = parseInt(match[0]);
+  }
+  return javaVersion;
 }
 
 function openJREDownload(reject, cause) {
@@ -107,7 +128,7 @@ function openJREDownload(reject, cause) {
     "http://www.oracle.com/technetwork/java/javase/downloads/index.html";
   reject({
     message: cause,
-    label: "Get Java Runtime Environment",
+    label: "Get the Java Runtime Environment",
     openUrl: Uri.parse(jreUrl),
     replaceClose: false
   });
