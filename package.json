@@ -178,5 +178,10 @@
     "through2": "^2.0.3",
     "typescript": "^2.6.2",
     "vsce": "^1.36.1"
+  },
+  "prettier": {
+    "jsxBracketSameLine": true,
+    "printWidth": 100,
+    "singleQuote": true
   }
 }
