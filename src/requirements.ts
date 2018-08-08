@@ -6,17 +6,17 @@
  * ------------------------------------------------------------------------------------------ */
 
 // Highly inspired from https://github.com/redhat-developer/vscode-java/blob/1f6783957c699e261a33d05702f2da356017458d/src/requirements.ts
-"use strict";
+'use strict';
 
-import { workspace, Uri } from "vscode";
-import * as cp from "child_process";
-import * as path from "path";
-import * as pathExists from "path-exists";
-import * as expandHomeDir from "expand-home-dir";
-import * as findJavaHome from "find-java-home";
+import { workspace, Uri } from 'vscode';
+import * as cp from 'child_process';
+import * as path from 'path';
+import * as pathExists from 'path-exists';
+import * as expandHomeDir from 'expand-home-dir';
+import * as findJavaHome from 'find-java-home';
 
-const isWindows = process.platform.indexOf("win") === 0;
-const JAVA_FILENAME = "java" + (isWindows ? ".exe" : "");
+const isWindows = process.platform.indexOf('win') === 0;
+const JAVA_FILENAME = 'java' + (isWindows ? '.exe' : '');
 
 export interface RequirementsData {
   java_home: string;
@@ -41,24 +41,23 @@ function checkJavaRuntime(): Promise<any> {
     let source: string;
     let javaHome: string = readJavaConfig();
     if (javaHome) {
-      source =
-        "The 'sonarlint.ls.javaHome' variable defined in VS Code settings";
+      source = "The 'sonarlint.ls.javaHome' variable defined in VS Code settings";
     } else {
-      javaHome = process.env["JDK_HOME"];
+      javaHome = process.env['JDK_HOME'];
       if (javaHome) {
-        source = "The JDK_HOME environment variable";
+        source = 'The JDK_HOME environment variable';
       } else {
-        javaHome = process.env["JAVA_HOME"];
-        source = "The JAVA_HOME environment variable";
+        javaHome = process.env['JAVA_HOME'];
+        source = 'The JAVA_HOME environment variable';
       }
     }
     if (javaHome) {
       javaHome = expandHomeDir(javaHome);
       if (!pathExists.sync(javaHome)) {
-        openJREDownload(reject, source + " points to a missing folder");
+        openJREDownload(reject, source + ' points to a missing folder');
       }
-      if (!pathExists.sync(path.resolve(javaHome, "bin", JAVA_FILENAME))) {
-        openJREDownload(reject, source + " does not point to a JRE.");
+      if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
+        openJREDownload(reject, source + ' does not point to a JRE.');
       }
       return resolve(javaHome);
     }
@@ -78,27 +77,22 @@ function checkJavaRuntime(): Promise<any> {
 
 function readJavaConfig(): string {
   const config = workspace.getConfiguration();
-  return config.get<string>("sonarlint.ls.javaHome", null);
+  return config.get<string>('sonarlint.ls.javaHome', null);
 }
 
 function checkJavaVersion(java_home: string): Promise<any> {
   return new Promise((resolve, reject) => {
-    cp.execFile(
-      java_home + "/bin/java",
-      ["-version"],
-      {},
-      (error, stdout, stderr) => {
-        const javaVersion = parseMajorVersion(stderr);
-        if (javaVersion < 8) {
-          openJREDownload(
-            reject,
-            "Java 8 or more recent is required to run. Please download and install a recent JRE."
-          );
-        } else {
-          resolve(javaVersion);
-        }
+    cp.execFile(java_home + '/bin/java', ['-version'], {}, (error, stdout, stderr) => {
+      const javaVersion = parseMajorVersion(stderr);
+      if (javaVersion < 8) {
+        openJREDownload(
+          reject,
+          'Java 8 or more recent is required to run. Please download and install a recent JRE.'
+        );
+      } else {
+        resolve(javaVersion);
       }
-    );
+    });
   });
 }
 
@@ -110,7 +104,7 @@ export function parseMajorVersion(content: string): number {
   }
   let version = match[1];
   //Ignore '1.' prefix for legacy Java versions
-  if (version.startsWith("1.")) {
+  if (version.startsWith('1.')) {
     version = version.substring(2);
   }
   //look into the interesting bits now
@@ -124,11 +118,10 @@ export function parseMajorVersion(content: string): number {
 }
 
 function openJREDownload(reject, cause) {
-  let jreUrl =
-    "http://www.oracle.com/technetwork/java/javase/downloads/index.html";
+  let jreUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
   reject({
     message: cause,
-    label: "Get the Java Runtime Environment",
+    label: 'Get the Java Runtime Environment',
     openUrl: Uri.parse(jreUrl),
     replaceClose: false
   });
