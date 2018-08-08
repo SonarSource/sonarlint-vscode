@@ -118,7 +118,7 @@ export function parseMajorVersion(content: string): number {
 }
 
 function openJREDownload(reject, cause) {
-  let jreUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
+  const jreUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
   reject({
     message: cause,
     label: 'Get the Java Runtime Environment',
