@@ -61,7 +61,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
       .on('finish', function() {
         let sha1 = this.read();
         if (expectedChecksum != sha1) {
-          console.info('Checksum mismatch for ' + dest + '. Will download it!');
+          console.info(`Checksum mismatch for '${dest}'. Will download it!`);
           request(url).pipe(fs.createWriteStream(dest));
         }
       });

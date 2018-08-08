@@ -48,7 +48,7 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
     .then(requirements => {
       return new Promise<StreamInfo>(function(resolve, reject) {
         const server = Net.createServer(socket => {
-          console.log('Child process connected on port ' + server.address().port);
+          console.log(`Child process connected on port ${server.address().port}`);
           resolve({
             reader: socket,
             writer: socket
@@ -61,7 +61,7 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
             requirements,
             server.address().port
           );
-          console.log('Executing ' + command + ' ' + args.join(' '));
+          console.log(`Executing ${command} ${args.join(' ')}`);
           const process = ChildProcess.spawn(command, args);
 
           process.stdout.on('data', function(data) {
@@ -99,7 +99,7 @@ function languageServerCommand(
 }
 
 function toUrl(filePath) {
-  var pathName = Path.resolve(filePath).replace(/\\/g, '/');
+  let pathName = Path.resolve(filePath).replace(/\\/g, '/');
 
   // Windows drive letter must be prefixed with a slash
   if (pathName[0] !== '/') {
@@ -215,7 +215,7 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(disposable);
   context.subscriptions.push(onConfigurationChange());
 
-  var ruleDescPanelContent = 'No description';
+  let ruleDescPanelContent = 'No description';
 
   class TextDocumentContentProvider implements VSCode.TextDocumentContentProvider {
     private readonly _onDidChange = new VSCode.EventEmitter<VSCode.Uri>();
