@@ -18,7 +18,7 @@ if (!fs.existsSync('analyzers')) {
 }
 
 downloadIfNeeded(
-  `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/3.9.0.1876/sonarlint-language-server-3.9.0.1876.jar`,
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/3.9.0.1885/sonarlint-language-server-3.9.0.1885.jar`,
   'server/sonarlint-ls.jar'
 );
 downloadIfNeeded(
