@@ -18,20 +18,20 @@ if (!fs.existsSync('analyzers')) {
 }
 
 downloadIfNeeded(
-// `https://repo1.maven.org/maven2/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
+  // `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
   `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/3.9.0.1885/sonarlint-language-server-3.9.0.1885.jar`,
   'server/sonarlint-ls.jar'
 );
 downloadIfNeeded(
-  `https://repo1.maven.org/maven2/org/sonarsource/javascript/sonar-javascript-plugin/${sonarJsVersion}/sonar-javascript-plugin-${sonarJsVersion}.jar`,
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/javascript/sonar-javascript-plugin/${sonarJsVersion}/sonar-javascript-plugin-${sonarJsVersion}.jar`,
   'analyzers/sonarjs.jar'
 );
 downloadIfNeeded(
-  `https://repo1.maven.org/maven2/org/sonarsource/php/sonar-php-plugin/${sonarPhpVersion}/sonar-php-plugin-${sonarPhpVersion}.jar`,
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/php/sonar-php-plugin/${sonarPhpVersion}/sonar-php-plugin-${sonarPhpVersion}.jar`,
   'analyzers/sonarphp.jar'
 );
 downloadIfNeeded(
-  `https://repo1.maven.org/maven2/org/sonarsource/python/sonar-python-plugin/${sonarPythonVersion}/sonar-python-plugin-${sonarPythonVersion}.jar`,
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/python/sonar-python-plugin/${sonarPythonVersion}/sonar-python-plugin-${sonarPythonVersion}.jar`,
   'analyzers/sonarpython.jar'
 );
 downloadIfNeeded(
@@ -45,7 +45,9 @@ function downloadIfNeeded(url, dest) {
   } else {
     request(url + '.sha1', function(error, response, body) {
       if (error) {
-        console.error('error:', error);
+        throw error;
+      } else if (response.statusCode != 200) {
+        throw `Unable to get file ${url}: ${response.statusCode} ${body}`;
       } else {
         downloadIfChecksumMismatch(body, url, dest);
       }
@@ -63,7 +65,16 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
         let sha1 = this.read();
         if (expectedChecksum != sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
-          request(url).pipe(fs.createWriteStream(dest));
+          request(url)
+            .on('error', function(err) {
+              throw error;
+            })
+            .on('response', function(response) {
+              if (response.statusCode != 200) {
+                throw `Unable to get file ${url}: ${response.statusCode}`;
+              }
+            })
+            .pipe(fs.createWriteStream(dest));
         }
       });
   }
