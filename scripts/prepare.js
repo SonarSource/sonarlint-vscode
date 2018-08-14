@@ -3,7 +3,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const request = require('request');
 
-const languageServerVersion = '3.7.1.1756';
+const languageServerVersion = '3.9.0.1892';
 const sonarJsVersion = '4.2.0.6476';
 const sonarPhpVersion = '2.14.0.3569';
 const sonarPythonVersion = '1.10.0.2131';
@@ -18,8 +18,7 @@ if (!fs.existsSync('analyzers')) {
 }
 
 downloadIfNeeded(
-  // `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
-  `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/3.9.0.1885/sonarlint-language-server-3.9.0.1885.jar`,
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
   'server/sonarlint-ls.jar'
 );
 downloadIfNeeded(
