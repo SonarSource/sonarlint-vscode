@@ -1,3 +1,11 @@
+## 1.6.0
+
+* Update SonarPHP 2.14 -> [2.15](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=14493) -> [2.16](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=14751)
+* Update SonarPython 1.10 -> [1.12](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=14849)
+* Update SonarTS 1.7 -> [1.8](https://github.com/SonarSource/SonarTS/milestone/14?closed=1) -> [1.9](https://github.com/SonarSource/SonarTS/milestone/15?closed=1)
+* Update SonarJS 4.2 -> [5.0](https://github.com/SonarSource/SonarJS/milestone/11?closed=1) -> [5.1](https://github.com/SonarSource/SonarJS/milestone/13?closed=1)
+* Add support for HTML and JSP (using SonarHTML analyzer)
+
 ## 1.5.0
 
 * Report secondary issue locations as [related diagnostics information](https://code.visualstudio.com/updates/v1_22#_support-related-diagnostics-information)
