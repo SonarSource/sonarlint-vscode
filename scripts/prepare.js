@@ -8,6 +8,7 @@ const sonarJsVersion = '5.1.0.7456';
 const sonarPhpVersion = '2.16.0.4355';
 const sonarPythonVersion = '1.12.0.2726';
 const sonarTsVersion = '1.9.0.3766';
+const sonarHtmlVersion = '3.1.0.1615';
 
 if (!fs.existsSync('server')) {
   fs.mkdirSync('server');
@@ -36,6 +37,10 @@ downloadIfNeeded(
 downloadIfNeeded(
   `https://repox.sonarsource.com/sonarsource/org/sonarsource/typescript/sonar-typescript-plugin/${sonarTsVersion}/sonar-typescript-plugin-${sonarTsVersion}.jar`,
   'analyzers/sonarts.jar'
+);
+downloadIfNeeded(
+  `https://repox.sonarsource.com/sonarsource/org/sonarsource/html/sonar-html-plugin/${sonarHtmlVersion}/sonar-html-plugin-${sonarHtmlVersion}.jar`,
+  'analyzers/sonarhtml.jar'
 );
 
 function downloadIfNeeded(url, dest) {

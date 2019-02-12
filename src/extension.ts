@@ -95,6 +95,7 @@ function languageServerCommand(
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarts.jar')));
+  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar')));
   return { command: javaExecutablePath, args: params };
 }
 
@@ -172,7 +173,9 @@ export function activate(context: VSCode.ExtensionContext) {
       'python',
       'typescript',
       'typescriptreact',
-      'vue'
+      'vue',
+      'html',
+      'jsp'
     ],
     synchronize: {
       configurationSection: 'sonarlint'
@@ -360,7 +363,7 @@ function computeRuleDescPanelContent(
 			.rule-desc ul { padding-left: 40px; list-style: disc;}
 		</style>
 		</head>
-		<body><h1><big>${ruleName}</big> (${ruleKey})</h1>
+		<body><h1><big>${escapeHtml(ruleName)}</big> (${ruleKey})</h1>
 		<div>
 		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${ruleType}" src="data:image/gif;base64,${base64_encode(
     typeImg
@@ -373,6 +376,23 @@ function computeRuleDescPanelContent(
 		</div>
 		<div class=\"rule-desc\">${htmlDesc}</div>
 		</body></html>`;
+}
+
+var entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
+
+function escapeHtml(str: string) {
+  return String(str).replace(/[&<>"'`=\/]/g, function(s) {
+    return entityMap[s];
+  });
 }
 
 function clean(str: string) {
