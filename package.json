@@ -32,7 +32,9 @@
     "onLanguage:typescriptreact",
     "onLanguage:python",
     "onLanguage:php",
-    "onLanguage:vue"
+    "onLanguage:vue",
+    "onLanguage:html",
+    "onLanguage:jsp"
   ],
   "extensionDependency": [
     "typescript"
