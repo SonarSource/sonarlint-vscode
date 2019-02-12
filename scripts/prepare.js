@@ -4,10 +4,10 @@ const crypto = require('crypto');
 const request = require('request');
 
 const languageServerVersion = '4.2.0.2266';
-const sonarJsVersion = '4.2.0.6476';
-const sonarPhpVersion = '2.14.0.3569';
-const sonarPythonVersion = '1.10.0.2131';
-const sonarTsVersion = '1.7.0.2893';
+const sonarJsVersion = '5.1.0.7456';
+const sonarPhpVersion = '2.16.0.4355';
+const sonarPythonVersion = '1.12.0.2726';
+const sonarTsVersion = '1.9.0.3766';
 
 if (!fs.existsSync('server')) {
   fs.mkdirSync('server');
