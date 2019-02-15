@@ -27,7 +27,7 @@ declare var v8debug;
 const DEBUG = typeof v8debug === 'object' || startedInDebugMode();
 var oldConfig;
 
-const updateServersAndBindingStorageCommandName = 'SonarLint/UpdateServersAndBinding';
+const updateServersAndBindingStorageCommandName = 'sonarlint.updateServersAndBinding';
 
 const connectedModeServersSectionName = 'connectedMode.servers';
 const connectedModeProjectSectionName = 'connectedMode.project';
@@ -301,11 +301,13 @@ function updateServerStorage(): Thenable<void> {
     command: 'SonarLint.UpdateServerStorage',
     arguments: getSonarLintConfiguration().get(connectedModeServersSectionName)
   };
-  return languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
-    success => {},
-    reason => {
-      VSCode.window.showWarningMessage('Failed to update SonarLint server storage');
-    }
+  return languageClient.onReady().then(() =>
+    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+      success => {},
+      reason => {
+        VSCode.window.showWarningMessage('Failed to update SonarLint server storage');
+      }
+    )
   );
 }
 
@@ -314,11 +316,13 @@ function updateProjectBinding(): Thenable<void> {
     command: 'SonarLint.UpdateProjectBinding',
     arguments: getSonarLintConfiguration().get(connectedModeProjectSectionName)
   };
-  return languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
-    success => {},
-    reason => {
-      VSCode.window.showWarningMessage('Failed to update SonarLint project binding');
-    }
+  return languageClient.onReady().then(() =>
+    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
+      success => {},
+      reason => {
+        VSCode.window.showWarningMessage('Failed to update SonarLint project binding');
+      }
+    )
   );
 }
 
@@ -420,7 +424,10 @@ function logNotification(message: string, ...items: string[]) {
 }
 
 function onConfigurationChange() {
-  return VSCode.workspace.onDidChangeConfiguration(params => {
+  return VSCode.workspace.onDidChangeConfiguration(event => {
+    if (!event.affectsConfiguration('sonarlint')) {
+      return;
+    }
     const newConfig = getSonarLintConfiguration();
 
     const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(oldConfig, newConfig);
