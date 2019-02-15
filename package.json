@@ -15,7 +15,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.25.0"
+    "vscode": "^1.27.0"
   },
   "categories": [
     "Linters"
@@ -45,92 +45,78 @@
       "title": "SonarLint",
       "properties": {
         "sonarlint.testFilePattern": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": "string",
           "default": "{**/test/**,**/*test*,**/*Test*}",
-          "description": "Files whose name match this glob pattern are considered as test files"
+          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files."
         },
         "sonarlint.analyzerProperties": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": "object",
           "patternProperties": {
             "^.*$": {
               "type": "string",
-              "description": "One entry value"
+              "markdownDescription": "One entry value"
             }
           },
-          "default": null,
-          "description": "Extra properties that will be passed to the analyzers. For example {\"sonar.javascript.globals\": \"xxx\"}. See documentation of each analyzers."
+          "markdownDescription": "Extra properties that could be passed to the code analyzers. e.g. `{\"sonar.javascript.globals\": \"xxx\"}`. See [documentation](https://redirect.sonarsource.com/doc/plugin-library.html) of each analyzers."
         },
         "sonarlint.disableTelemetry": {
           "type": "boolean",
           "default": false,
-          "description": "Disable sending anonymous usage statistics"
+          "markdownDescription": "Disable sending anonymous usage statistics"
         },
         "sonarlint.ls.javaHome": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies the folder path to the JRE (8 or more recent) used to launch the SonarLint Language Server.\nOn Windows, backslashes must be escaped, i.e.\n\"sonarlint.ls.javaHome\":\"C:\\\\Program Files\\\\Java\\\\jdk1.8.0_161\"",
+          "type": "string",
+          "markdownDescription": "Path to a JRE (8 or more recent) used to launch the SonarLint Language Server. \n\n On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk1.8.0_161`",
           "scope": "window"
         },
         "sonarlint.ls.vmargs": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies extra VM arguments used to launch the SonarLint Language Server. For example \"-Xmx1024m\"",
+          "type": "string",
+          "markdownDescription": "Extra JVM arguments used to launch the SonarLint Language Server. e.g. `-Xmx1024m`",
           "scope": "window"
         },
         "sonarlint.connectedMode.servers": {
-          "type": [
-            "array",
-            "null"
-          ],
+          "type": "array",
+          "scope": "application",
           "default": [],
-          "description": "Configure the connection(s) to SonarQube/SonarCloud in your USER settings.\nFor security reasons, the token should not be stored in SCM with workspace settings\n\"sonarlint.connectedMode.servers\": [\n    {\n       \"serverId\": \"my_orga_in_sonarcloud.io\", // Connection identifier\n       \"serverUrl\": \"https://sonarcloud.io\",   // SonarQube/SonarCloud URL - https//sonarcloud.io for SonarCloud\n       \"organizationKey\": \"my_organization\",   // Organization key in SonarCloud only\n       \"token\": \"V2VkIE1heSAyMyAwODowOTozMiBDRVNUIDIwMTgK\"    // User token - generated in SonarQube/SonarCloud in My Account>Security\n    }\n],",
+          "markdownDescription": "Configure the connection(s) to SonarQube/SonarCloud. For security reasons, the token should not be stored in SCM with workspace settings.\n\nExample:\n\n    \"sonarlint.connectedMode.servers\": [\n      {\n        \"serverId\": \"my_orga_in_sonarcloud.io\",\n        \"serverUrl\": \"https://sonarcloud.io\",\n        \"organizationKey\": \"my_organization\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
           "items": {
             "properties": {
               "serverId": {
                 "type": "string",
+                "description": "A unique identifier for this server connection. Will be referenced from `#sonarlint.connectedMode.project#`",
                 "default": ""
               },
               "serverUrl": {
                 "type": "string",
+                "description": "URL of the server. Use https://sonarcloud.io for SonarCloud.",
                 "default": ""
               },
               "token": {
                 "type": "string",
+                "description": "Token generated from My Account>Security in SonarQube/SonarCloud",
                 "default": ""
               },
               "organizationKey": {
                 "type": "string",
+                "description": "Only used for SonarCloud",
                 "default": ""
               }
             }
           }
         },
         "sonarlint.connectedMode.project": {
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": "object",
           "default": {},
-          "description": "Specify in WORKSPACE settings the SonarQube/SonarCloud project to which the current project is bound\n\"sonarlint.connectedMode.project\": {\n      \"serverId\": \"my_orga_in_sonarcloud.io\",    // Connection defined in sonarlint.connectedMode.servers\n      \"projectKey\": \"my_project\"                 // Project key in SonarQube/SonarCloud\n  },",
+          "markdownDescription": "Specify to which SonarQube/SonarCloud project the current project is bound. Connected mode allows to use the same code analyzers, rules and configuration that are defined in the server.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"serverId\": \"my_orga_in_sonarcloud.io\",\n      \"projectKey\": \"my_project\"\n    }",
           "properties": {
             "serverId": {
               "type": "string",
+              "description": "Identifier of the server connection declared in `#sonarlint.connectedMode.servers#`",
               "default": ""
             },
             "projectKey": {
               "type": "string",
+              "description": "Key of the project in SonarQube/SonarCloud",
               "default": ""
             }
           }
