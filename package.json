@@ -34,7 +34,8 @@
     "onLanguage:php",
     "onLanguage:vue",
     "onLanguage:html",
-    "onLanguage:jsp"
+    "onLanguage:jsp",
+    "onCommand:sonarlint.updateServersAndBinding"
   ],
   "extensionDependency": [
     "typescript"
@@ -125,7 +126,7 @@
     },
     "commands": [
       {
-        "command": "SonarLint/UpdateServersAndBinding",
+        "command": "sonarlint.updateServersAndBinding",
         "title": "Update SonarLint binding to SonarQube/SonarCloud"
       }
     ]
