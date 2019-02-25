@@ -167,15 +167,15 @@ export function activate(context: VSCode.ExtensionContext) {
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     documentSelector: [
-      'javascript',
-      'javascriptreact',
-      'php',
-      'python',
-      'typescript',
-      'typescriptreact',
-      'vue',
-      'html',
-      'jsp'
+      { scheme: 'file', language: 'javascript' },
+      { scheme: 'file', language: 'javascriptreact' },
+      { scheme: 'file', language: 'php' },
+      { scheme: 'file', language: 'python' },
+      { scheme: 'file', language: 'typescript' },
+      { scheme: 'file', language: 'typescriptreact' },
+      { scheme: 'file', language: 'vue' },
+      { scheme: 'file', language: 'html' },
+      { scheme: 'file', language: 'jsp' }
     ],
     synchronize: {
       configurationSection: 'sonarlint'
@@ -211,13 +211,6 @@ export function activate(context: VSCode.ExtensionContext) {
     clientOptions
   );
 
-  const disposable = languageClient.start();
-
-  // Push the disposable to the context's subscriptions so that the
-  // client can be deactivated on extension deactivation
-  context.subscriptions.push(disposable);
-  context.subscriptions.push(onConfigurationChange());
-
   let ruleDescPanelContent = 'No description';
 
   class TextDocumentContentProvider implements VSCode.TextDocumentContentProvider {
@@ -245,7 +238,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
   const showRuleUri = VSCode.Uri.parse('sonarlint-rule://show');
 
-  const openRuleCommand = VSCode.commands.registerCommand(
+  VSCode.commands.registerCommand(
     'SonarLint.OpenRuleDesc',
     (
       ruleKey: string,
@@ -280,20 +273,17 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   );
 
-  context.subscriptions.push(openRuleCommand);
-
-  const updateServersAndBindingStorageCommandCallback = () => {
+  VSCode.commands.registerCommand(updateServersAndBindingStorageCommandName, () => {
     updateServerStorage()
       .then(updateProjectBinding)
       .then(() => {
         VSCode.window.showInformationMessage('SonarLint server storage updated');
       });
-  };
-  const updateServerStorageCommand = VSCode.commands.registerCommand(
-    updateServersAndBindingStorageCommandName,
-    updateServersAndBindingStorageCommandCallback
-  );
-  context.subscriptions.push(updateServerStorageCommand);
+  });
+
+  languageClient.start();
+
+  context.subscriptions.push(onConfigurationChange());
 }
 
 function updateServerStorage(): Thenable<void> {
