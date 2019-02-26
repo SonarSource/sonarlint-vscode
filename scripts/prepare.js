@@ -19,27 +19,27 @@ if (!fs.existsSync('analyzers')) {
 }
 
 downloadIfNeeded(
-  `https://repox.sonarsource.com/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
+  `https://repox.jfrog.io/repox/sonarsource/org/sonarsource/sonarlint/core/sonarlint-language-server/${languageServerVersion}/sonarlint-language-server-${languageServerVersion}.jar`,
   'server/sonarlint-ls.jar'
 );
 downloadIfNeeded(
-  `https://repox.sonarsource.com/sonarsource/org/sonarsource/javascript/sonar-javascript-plugin/${sonarJsVersion}/sonar-javascript-plugin-${sonarJsVersion}.jar`,
+  `https://repox.jfrog.io/repox/sonarsource/org/sonarsource/javascript/sonar-javascript-plugin/${sonarJsVersion}/sonar-javascript-plugin-${sonarJsVersion}.jar`,
   'analyzers/sonarjs.jar'
 );
 downloadIfNeeded(
-  `https://repox.sonarsource.com/sonarsource/org/sonarsource/php/sonar-php-plugin/${sonarPhpVersion}/sonar-php-plugin-${sonarPhpVersion}.jar`,
+  `https://repox.jfrog.io/repox/sonarsource/org/sonarsource/php/sonar-php-plugin/${sonarPhpVersion}/sonar-php-plugin-${sonarPhpVersion}.jar`,
   'analyzers/sonarphp.jar'
 );
 downloadIfNeeded(
-  `https://repox.sonarsource.com/sonarsource/org/sonarsource/python/sonar-python-plugin/${sonarPythonVersion}/sonar-python-plugin-${sonarPythonVersion}.jar`,
+  `https://repox.jfrog.io/repox/sonarsource/org/sonarsource/python/sonar-python-plugin/${sonarPythonVersion}/sonar-python-plugin-${sonarPythonVersion}.jar`,
   'analyzers/sonarpython.jar'
 );
 downloadIfNeeded(
-  `https://repox.sonarsource.com/sonarsource/org/sonarsource/typescript/sonar-typescript-plugin/${sonarTsVersion}/sonar-typescript-plugin-${sonarTsVersion}.jar`,
+  `https://repox.jfrog.io/repox/sonarsource/org/sonarsource/typescript/sonar-typescript-plugin/${sonarTsVersion}/sonar-typescript-plugin-${sonarTsVersion}.jar`,
   'analyzers/sonarts.jar'
 );
 downloadIfNeeded(
-  `https://repox.sonarsource.com/sonarsource/org/sonarsource/html/sonar-html-plugin/${sonarHtmlVersion}/sonar-html-plugin-${sonarHtmlVersion}.jar`,
+  `https://repox.jfrog.io/repox/sonarsource/org/sonarsource/html/sonar-html-plugin/${sonarHtmlVersion}/sonar-html-plugin-${sonarHtmlVersion}.jar`,
   'analyzers/sonarhtml.jar'
 );
 
