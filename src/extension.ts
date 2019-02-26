@@ -96,6 +96,7 @@ function languageServerCommand(
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarts.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar')));
+  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar')));
   return { command: javaExecutablePath, args: params };
 }
 
@@ -175,7 +176,8 @@ export function activate(context: VSCode.ExtensionContext) {
       { scheme: 'file', language: 'typescriptreact' },
       { scheme: 'file', language: 'vue' },
       { scheme: 'file', language: 'html' },
-      { scheme: 'file', language: 'jsp' }
+      { scheme: 'file', language: 'jsp' },
+      { scheme: 'file', language: 'java' }
     ],
     synchronize: {
       configurationSection: 'sonarlint'
@@ -339,15 +341,15 @@ function computeRuleDescPanelContent(
   return `<!doctype html><html>
 		<head>
 		<style type="text/css">
-			body { 
-				font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; 
-				font-size: 13px; line-height: 1.23076923; 
+			body {
+				font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif;
+				font-size: 13px; line-height: 1.23076923;
 			}
-			
+
 			h1 { font-size: 14px;font-weight: 500; }
 			h2 { line-height: 24px;}
 			a { border-bottom: 1px solid rgba(230, 230, 230, .1); color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}
-			
+
 			.rule-desc { line-height: 1.5;}
 			.rule-desc { line-height: 1.5;}
 			.rule-desc h2 { font-size: 16px; font-weight: 400;}

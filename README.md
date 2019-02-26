@@ -1,6 +1,6 @@
 # SonarLint for Visual Studio Code
 
-SonarLint is an IDE extension that helps you detect and fix quality issues as you write code. Like a spell checker, SonarLint squiggles flaws so they can be fixed before committing code. You can get it directly from the VS Code Marketplace and it will then detect new bugs and quality issues as you code (JavaScript, TypeScript, PHP and Python)
+SonarLint is an IDE extension that helps you detect and fix quality issues as you write code. Like a spell checker, SonarLint squiggles flaws so they can be fixed before committing code. You can get it directly from the VS Code Marketplace and it will then detect new bugs and quality issues as you code (JavaScript, TypeScript, PHP, Python & Java)
 
 ## How it works
 
@@ -20,6 +20,7 @@ Check the rules to see what SonarLint can do for you:
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 - [Python rules](https://rules.sonarsource.com/python)
 - [PHP rules](https://rules.sonarsource.com/php)
+- [Java rules](https://rules.sonarsource.com/java)
 
 You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html) and [SonarPHP](https://redirect.sonarsource.com/plugins/php.html)
 
