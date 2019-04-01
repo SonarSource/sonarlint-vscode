@@ -144,7 +144,7 @@
   "dependencies": {
     "expand-home-dir": "0.0.3",
     "find-java-home": "0.2.0",
-    "open": "0.0.5",
+    "open": "6.0.0",
     "path-exists": "3.0.0",
     "vscode": "1.1.21",
     "vscode-languageclient": "5.2.1"
