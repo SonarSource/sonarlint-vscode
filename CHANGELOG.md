@@ -1,3 +1,7 @@
+## 1.8.0
+
+* Enable support of Apex in connected mode
+
 ## 1.7.0
 
 * Update SonarPHP 2.16 -> [3.0] (https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=14844) to support PHP 7.3

@@ -35,6 +35,7 @@
     "onLanguage:vue",
     "onLanguage:html",
     "onLanguage:jsp",
+    "onLanguage:apex",
     "onCommand:sonarlint.updateServersAndBinding"
   ],
   "extensionDependency": [
