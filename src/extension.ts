@@ -211,33 +211,6 @@ export function activate(context: VSCode.ExtensionContext) {
     clientOptions
   );
 
-  let ruleDescPanelContent = 'No description';
-
-  class TextDocumentContentProvider implements VSCode.TextDocumentContentProvider {
-    private readonly _onDidChange = new VSCode.EventEmitter<VSCode.Uri>();
-
-    get onDidChange(): VSCode.Event<VSCode.Uri> {
-      return this._onDidChange.event;
-    }
-
-    public update(uri: VSCode.Uri) {
-      this._onDidChange.fire(uri);
-    }
-
-    public provideTextDocumentContent(uri: VSCode.Uri): string {
-      return ruleDescPanelContent;
-    }
-  }
-
-  const provider = new TextDocumentContentProvider();
-  const registration = VSCode.workspace.registerTextDocumentContentProvider(
-    'sonarlint-rule',
-    provider
-  );
-  context.subscriptions.push(registration);
-
-  const showRuleUri = VSCode.Uri.parse('sonarlint-rule://show');
-
   VSCode.commands.registerCommand(
     'SonarLint.OpenRuleDesc',
     (
@@ -247,7 +220,7 @@ export function activate(context: VSCode.ExtensionContext) {
       ruleType: string,
       ruleSeverity: string
     ) => {
-      ruleDescPanelContent = computeRuleDescPanelContent(
+      let ruleDescPanelContent = computeRuleDescPanelContent(
         context,
         ruleKey,
         ruleName,
@@ -255,21 +228,15 @@ export function activate(context: VSCode.ExtensionContext) {
         ruleType,
         ruleSeverity
       );
-      VSCode.commands
-        .executeCommand(
-          'vscode.previewHtml',
-          showRuleUri,
-          VSCode.ViewColumn.Two,
-          'SonarLint Rule Description'
-        )
-        .then(
-          success => {
-            provider.update(showRuleUri);
-          },
-          reason => {
-            VSCode.window.showErrorMessage(reason);
-          }
-        );
+      const panel = VSCode.window.createWebviewPanel(
+        'sonarlintRuleDesc',
+        'SonarLint Rule Description',
+        VSCode.ViewColumn.Two,
+        {
+          enableScripts: false
+        }
+      );
+      panel.webview.html = ruleDescPanelContent;
     }
   );
 
