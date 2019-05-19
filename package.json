@@ -60,6 +60,11 @@
           },
           "markdownDescription": "Extra properties that could be passed to the code analyzers. e.g. `{\"sonar.javascript.globals\": \"xxx\"}`. See [documentation](https://redirect.sonarsource.com/doc/plugin-library.html) of each analyzers."
         },
+        "sonarlint.debug": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable logging in Debug Console"
+        },
         "sonarlint.disableTelemetry": {
           "type": "boolean",
           "default": false,

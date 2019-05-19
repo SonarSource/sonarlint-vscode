@@ -33,6 +33,8 @@ const connectedModeServersSectionName = 'connectedMode.servers';
 const connectedModeProjectSectionName = 'connectedMode.project';
 
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
+  const enableDebug = getSonarLintConfiguration().get('debug')
+
   return requirements
     .resolveRequirements()
     .catch(error => {
@@ -48,7 +50,9 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
     .then(requirements => {
       return new Promise<StreamInfo>(function(resolve, reject) {
         const server = Net.createServer(socket => {
-          console.log(`Child process connected on port ${server.address().port}`);
+          if (enableDebug) {
+            console.log(`Child process connected on port ${server.address().port}`);
+          }
           resolve({
             reader: socket,
             writer: socket
@@ -61,14 +65,20 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
             requirements,
             server.address().port
           );
-          console.log(`Executing ${command} ${args.join(' ')}`);
+          if (enableDebug) {
+            console.log(`Executing ${command} ${args.join(' ')}`);
+          }
           const process = ChildProcess.spawn(command, args);
 
           process.stdout.on('data', function(data) {
-            console.log(data.toString());
+            if (enableDebug) {
+              console.log(data.toString());
+            }
           });
           process.stderr.on('data', function(data) {
-            console.error(data.toString());
+            if (enableDebug) {
+              console.error(data.toString());
+            }
           });
         });
       });
@@ -306,15 +316,15 @@ function computeRuleDescPanelContent(
   return `<!doctype html><html>
 		<head>
 		<style type="text/css">
-			body { 
-				font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; 
-				font-size: 13px; line-height: 1.23076923; 
+			body {
+				font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif;
+				font-size: 13px; line-height: 1.23076923;
 			}
-			
+
 			h1 { font-size: 14px;font-weight: 500; }
 			h2 { line-height: 24px;}
 			a { border-bottom: 1px solid rgba(230, 230, 230, .1); color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}
-			
+
 			.rule-desc { line-height: 1.5;}
 			.rule-desc { line-height: 1.5;}
 			.rule-desc h2 { font-size: 16px; font-weight: 400;}
