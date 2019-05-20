@@ -4,8 +4,8 @@ const crypto = require('crypto');
 const request = require('request');
 
 const languageServerVersion = '4.2.0.2266';
-const sonarJsVersion = '5.1.0.7456';
-const sonarPhpVersion = '2.16.0.4355';
+const sonarJsVersion = '5.1.1.7506';
+const sonarPhpVersion = '3.0.0.4537';
 const sonarPythonVersion = '1.12.0.2726';
 const sonarTsVersion = '1.9.0.3766';
 const sonarHtmlVersion = '3.1.0.1615';
