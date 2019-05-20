@@ -35,7 +35,7 @@ SonarLint should automatically find it but you can also explicitly set the path 
 
 ### Connected mode
 
-You can connect SonarLint to SonarQube >= 5.6 or SonarCloud to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
+You can connect SonarLint to SonarQube >= 6.7 or SonarCloud to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
 
 To configure the connection, have a look at SonarLint in default user settings.
 
