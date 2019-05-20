@@ -79,7 +79,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Configure the connection(s) to SonarQube/SonarCloud. For security reasons, the token should not be stored in SCM with workspace settings.\n\nExample:\n\n    \"sonarlint.connectedMode.servers\": [\n      {\n        \"serverId\": \"my_orga_in_sonarcloud.io\",\n        \"serverUrl\": \"https://sonarcloud.io\",\n        \"organizationKey\": \"my_organization\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
+          "markdownDescription": "Configure one or more connection(s) to SonarQube/SonarCloud. For security reasons, the token should not be stored in SCM with workspace settings. The `serverId` can be any identifier and will be referenced in `#sonarlint.connectedMode.project#`.\n\nExample for SonarCloud:\n\n    \"sonarlint.connectedMode.servers\": [\n      {\n        \"serverId\": \"my_orga_in_sonarcloud.io\",\n        \"serverUrl\": \"https://sonarcloud.io\",\n        \"organizationKey\": \"my_organization\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nExample for SonarQube:\n\n    \"sonarlint.connectedMode.servers\": [\n      {\n        \"serverId\": \"my_sonarqube\",\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
           "items": {
             "properties": {
               "serverId": {
@@ -108,7 +108,7 @@
         "sonarlint.connectedMode.project": {
           "type": "object",
           "default": {},
-          "markdownDescription": "Specify to which SonarQube/SonarCloud project the current project is bound. Connected mode allows to use the same code analyzers, rules and configuration that are defined in the server.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"serverId\": \"my_orga_in_sonarcloud.io\",\n      \"projectKey\": \"my_project\"\n    }",
+          "markdownDescription": "Bind the current project to SonarQube/SonarCloud using the connection referenced by `serverId` and configured in `#sonarlint.connectedMode.servers#`. Connected mode allows to use the same code analyzers, rules and configuration that are defined in the server.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"serverId\": \"the_server_connection_id\",\n      \"projectKey\": \"my_project\"\n    }",
           "properties": {
             "serverId": {
               "type": "string",
