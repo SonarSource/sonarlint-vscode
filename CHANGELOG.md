@@ -1,5 +1,6 @@
 ## 1.7.0
 
+* Update SonarPHP 2.16 -> [3.0] (https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=14844) to support PHP 7.3
 * Fix rule description panel on VSCode 1.33+
 
 ## 1.6.0
