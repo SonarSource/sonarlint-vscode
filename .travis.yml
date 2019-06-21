@@ -4,6 +4,7 @@ git:
   depth: false
 
 language: node_js
+jdk: openjdk11
 node_js:
   - "lts/*"
 
