@@ -163,7 +163,7 @@
     "gulp-rename": "^1.4.0",
     "gulp-util": "^3.0.8",
     "mocha": "^5.1.1",
-    "sonarqube-scanner": "^2.4.0",
+    "sonarqube-scanner": "^2.5.0",
     "through2": "^2.0.5",
     "typescript": "^2.9.2",
     "vsce": "^1.61.0",
