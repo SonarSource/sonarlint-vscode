@@ -3,7 +3,7 @@ sudo: false
 git:
   depth: false
 
-language: node_js
+language: java
 jdk: openjdk11
 node_js:
   - "lts/*"
