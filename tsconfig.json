@@ -9,7 +9,11 @@
         "sourceMap": true,
         "rootDir": "."
     },
+    "include": [
+        "src/**/*"
+    ],
     "exclude": [
+        "**/*.test.ts",
         "node_modules",
         ".vscode-test"
     ]

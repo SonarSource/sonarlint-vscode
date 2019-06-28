@@ -57,7 +57,6 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
   var packageJSON = getPackageJSON();
   var version = packageJSON.version;
   var name = packageJSON.name;
-  var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
   return gulp
     .src('*.vsix')
     .pipe(
@@ -150,6 +149,7 @@ function runSonnarQubeScanner(callback, options = {}) {
     'sonar.projectName': 'SonarLint for VSCode',
     'sonar.projectVersion': snapshotVersion(),
     'sonar.exclusions': 'build/**, out/**, coverage/**, node_modules/**, **/node_modules/**',
+    'sonar.typescript.lcov.reportPaths': 'coverage/lcov.info',
     'sonar.coverage.exclusions': 'gulpfile.js, build/**, config/**, coverage/**, scripts/**',
     'sonar.analysis.buildNumber': process.env.TRAVIS_BUILD_NUMBER,
     'sonar.analysis.pipeline': process.env.TRAVIS_BUILD_NUMBER,

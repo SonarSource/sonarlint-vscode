@@ -18,13 +18,11 @@ import {
   ExecuteCommandParams
 } from 'vscode-languageclient';
 import * as open from 'open';
-import * as http from 'http';
-import * as requirements from './requirements';
-import { RequirementsData } from './requirements';
-import { connect } from 'tls';
+import { startedInDebugMode } from './util';
+import { resolveRequirements, RequirementsData } from './requirements';
 
 declare var v8debug;
-const DEBUG = typeof v8debug === 'object' || startedInDebugMode();
+const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
 var oldConfig;
 
 const updateServersAndBindingStorageCommandName = 'sonarlint.updateServersAndBinding';
@@ -33,8 +31,7 @@ const connectedModeServersSectionName = 'connectedMode.servers';
 const connectedModeProjectSectionName = 'connectedMode.project';
 
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
-  return requirements
-    .resolveRequirements()
+  return resolveRequirements()
     .catch(error => {
       //show error
       VSCode.window.showErrorMessage(error.message, error.label).then(selection => {
@@ -46,7 +43,7 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
       throw error;
     })
     .then(requirements => {
-      return new Promise<StreamInfo>(function(resolve, reject) {
+      return new Promise<StreamInfo>((resolve, reject) => {
         const server = Net.createServer(socket => {
           console.log(`Child process connected on port ${server.address().port}`);
           resolve({
@@ -99,7 +96,7 @@ function languageServerCommand(
   return { command: javaExecutablePath, args: params };
 }
 
-function toUrl(filePath) {
+export function toUrl(filePath) {
   let pathName = Path.resolve(filePath).replace(/\\/g, '/');
 
   // Windows drive letter must be prefixed with a slash
@@ -340,7 +337,7 @@ function computeRuleDescPanelContent(
 		</body></html>`;
 }
 
-var entityMap = {
+const entityMap = {
   '&': '&amp;',
   '<': '&lt;',
   '>': '&gt;',
@@ -461,16 +458,6 @@ export function parseVMargs(params: any[], vmargsLine: string) {
       params.push(arg);
     }
   });
-}
-
-function startedInDebugMode(): boolean {
-  const args = (process as any).execArgv;
-  if (args) {
-    return args.some(
-      arg => /^--debug=?/.test(arg) || /^--debug-brk=?/.test(arg) || /^--inspect-brk=?/.test(arg)
-    );
-  }
-  return false;
 }
 
 function getSonarLintConfiguration(): VSCode.WorkspaceConfiguration {

@@ -17,7 +17,7 @@ install:
   - npm install
 
 script:
-  - ./node_modules/.bin/gulp clean deploy && ./node_modules/.bin/gulp sonarqube
+  - npx gulp clean deploy && npx jest && npx gulp sonarqube
 
 notifications:
   email: false
