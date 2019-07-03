@@ -21,6 +21,8 @@ import * as open from 'open';
 import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
 
+const VERBOSE_LOGS = process.env['SONARLINT_INTERNAL_DEBUG'] === 'true';
+
 declare var v8debug;
 const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
 var oldConfig;
@@ -61,12 +63,14 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
           console.log(`Executing ${command} ${args.join(' ')}`);
           const process = ChildProcess.spawn(command, args);
 
-          process.stdout.on('data', function(data) {
-            console.log(data.toString());
-          });
-          process.stderr.on('data', function(data) {
-            console.error(data.toString());
-          });
+          if (VERBOSE_LOGS) {
+            process.stdout.on('data', function(data) {
+              console.log(data.toString());
+            });
+            process.stderr.on('data', function(data) {
+              console.error(data.toString());
+            });
+          }
         });
       });
     });
@@ -370,12 +374,6 @@ function capitalizeName(name: string) {
 function base64_encode(file) {
   const bitmap = FS.readFileSync(file);
   return new Buffer(bitmap).toString('base64');
-}
-
-function logNotification(message: string, ...items: string[]) {
-  return new Promise((resolve, reject) => {
-    console.log(message);
-  });
 }
 
 function onConfigurationChange() {
