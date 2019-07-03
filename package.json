@@ -169,8 +169,8 @@
     "through2": "^2.0.5",
     "ts-jest": "^24.0.2",
     "typescript": "^3.5.2",
-    "vsce": "^1.61.0",
-    "vscode": "^1.1.21"
+    "vsce": "^1.64.0",
+    "vscode": "^1.1.35"
   },
   "jest": {
     "preset": "ts-jest",
