@@ -3,7 +3,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const request = require('request');
 
-const languageServerVersion = '4.2.0.2266';
+const languageServerVersion = '4.3.0.2460';
 const sonarJsVersion = '5.1.1.7506';
 const sonarPhpVersion = '3.0.0.4537';
 const sonarPythonVersion = '1.12.0.2726';
