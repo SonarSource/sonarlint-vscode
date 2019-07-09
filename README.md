@@ -41,6 +41,8 @@ To configure the connection, have a look at SonarLint in default user settings.
 
 If you change something on the server such as the quality profile, you can trigger an update of the local cache using the "Update SonarLint binding to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
 
+When several sub-folders of the same server project are open in a single workspace, the project binding can be set at the workspace level.
+
 For security reasons, the token should not be stored in SCM with workspace settings.
 
 ## Contributions

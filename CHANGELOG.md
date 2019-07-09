@@ -1,3 +1,8 @@
+## 1.9.0
+
+* Enable support of PL/SQL in connected mode
+* Enable connected mode for sub-folders and multi-folder workspaces (single project)
+
 ## 1.8.0
 
 * Enable support of Apex in connected mode
