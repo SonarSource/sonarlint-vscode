@@ -36,6 +36,7 @@
     "onLanguage:html",
     "onLanguage:jsp",
     "onLanguage:apex",
+    "onLanguage:plsql",
     "onCommand:sonarlint.updateServersAndBinding"
   ],
   "extensionDependency": [

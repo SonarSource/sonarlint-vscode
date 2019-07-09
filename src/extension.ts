@@ -177,7 +177,8 @@ export function activate(context: VSCode.ExtensionContext) {
       { scheme: 'file', language: 'vue' },
       { scheme: 'file', language: 'html' },
       { scheme: 'file', language: 'jsp' },
-      { scheme: 'file', language: 'apex' }
+      { scheme: 'file', language: 'apex' },
+      { scheme: 'file', language: 'plsql' }
     ],
     synchronize: {
       configurationSection: 'sonarlint'
