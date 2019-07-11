@@ -63,14 +63,16 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
           console.log(`Executing ${command} ${args.join(' ')}`);
           const process = ChildProcess.spawn(command, args);
 
-          if (VERBOSE_LOGS) {
-            process.stdout.on('data', function(data) {
+          process.stdout.on('data', function(data) {
+            if (VERBOSE_LOGS) {
               console.log(data.toString());
-            });
-            process.stderr.on('data', function(data) {
+            }
+          });
+          process.stderr.on('data', function(data) {
+            if (VERBOSE_LOGS) {
               console.error(data.toString());
-            });
-          }
+            }
+          });
         });
       });
     });
