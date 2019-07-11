@@ -25,12 +25,12 @@ You will benefit from the following code analyzers: [SonarJS](https://redirect.s
 
 ## Requirements
 
-The only thing you need is a Java Runtime (JRE) 8 installed on your computer.
+The only thing you need is a Java Runtime (JRE) 8 or 11 installed on your computer.
 
 SonarLint should automatically find it but you can also explicitly set the path where the JRE is installed using the 'sonarlint.ls.javaHome' variable in VS Code settings. For example:
 
     {
-        "sonarlint.ls.javaHome": "C:\Program Files\Java\jre1.8.0_131"
+        "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre1.8.0_131"
     }
 
 ### Connected mode
@@ -38,6 +38,8 @@ SonarLint should automatically find it but you can also explicitly set the path 
 You can connect SonarLint to SonarQube >= 6.7 or SonarCloud to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
 
 To configure the connection, have a look at SonarLint in default user settings.
+
+Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
 
 If you change something on the server such as the quality profile, you can trigger an update of the local cache using the "Update SonarLint binding to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
 
