@@ -25,7 +25,7 @@ You will benefit from the following code analyzers: [SonarJS](https://redirect.s
 
 ## Requirements
 
-The only thing you need is a Java Runtime (JRE) 8 to 11 installed on your computer.
+The only thing you need is a Java Runtime (JRE) 8 or 11 installed on your computer.
 
 SonarLint should automatically find it but you can also explicitly set the path where the JRE is installed using the 'sonarlint.ls.javaHome' variable in VS Code settings. For example:
 
