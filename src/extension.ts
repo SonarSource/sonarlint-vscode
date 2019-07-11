@@ -35,7 +35,7 @@ let languageClient: LanguageClient;
 
 function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
-    sonarlintOutput.append(message);
+    sonarlintOutput.appendLine(message);
   }
 }
 
@@ -54,7 +54,7 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
     .then(requirements => {
       return new Promise<StreamInfo>((resolve, reject) => {
         const server = Net.createServer(socket => {
-          console.log(`Child process connected on port ${server.address().port}`);
+          logToSonarLintOutput(`Child process connected on port ${server.address().port}`);
           resolve({
             reader: socket,
             writer: socket
@@ -67,7 +67,7 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
             requirements,
             server.address().port
           );
-          console.log(`Executing ${command} ${args.join(' ')}`);
+          logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
           const process = ChildProcess.spawn(command, args);
 
           process.stdout.on('data', function(data) {
@@ -140,7 +140,7 @@ function findTypeScriptLocation() {
       'lib'
     );
     if (!FS.existsSync(bundledTypeScriptPath)) {
-      console.warn(
+      logToSonarLintOutput(
         `Unable to locate bundled TypeScript module in '${bundledTypeScriptPath}'. Please report this error to SonarLint project.`
       );
     }
@@ -151,21 +151,21 @@ function findTypeScriptLocation() {
       if (configuredTsPath !== undefined) {
         return configuredTsPath;
       }
-      console.warn(
+      logToSonarLintOutput(
         `Unable to locate TypeScript module in '${configuredTsPath}'. Falling back to the VSCode's one at '${bundledTypeScriptPath}'`
       );
     }
     return bundledTypeScriptPath;
   } else {
-    console.warn(
+    logToSonarLintOutput(
       'Unable to locate TypeScript extension. TypeScript support in SonarLint might not work.'
     );
   }
 }
 
 export function activate(context: VSCode.ExtensionContext) {
-
   sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
+  context.subscriptions.push(sonarlintOutput);
 
   const serverOptions = () => runJavaServer(context);
 
@@ -470,16 +470,8 @@ function getSonarLintConfiguration(): VSCode.WorkspaceConfiguration {
 }
 
 export function deactivate(): Thenable<void> {
-  if (languageClient) {
-    return languageClient.stop()
-      .then(disposeOutput);
+  if (!languageClient) {
+    return undefined;
   }
-  return Promise.resolve(disposeOutput());
-}
-
-function disposeOutput() {
-  if (sonarlintOutput) {
-    sonarlintOutput.dispose();
-  }
-  return undefined;
+  return languageClient.stop();
 }
