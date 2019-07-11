@@ -21,8 +21,6 @@ import * as open from 'open';
 import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
 
-const VERBOSE_LOGS = process.env['SONARLINT_INTERNAL_DEBUG'] === 'true';
-
 declare var v8debug;
 const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
 var oldConfig;
@@ -31,6 +29,15 @@ const updateServersAndBindingStorageCommandName = 'sonarlint.updateServersAndBin
 
 const connectedModeServersSectionName = 'connectedMode.servers';
 const connectedModeProjectSectionName = 'connectedMode.project';
+
+let sonarlintOutput: VSCode.OutputChannel;
+let languageClient: LanguageClient;
+
+function logToSonarLintOutput(message) {
+  if (sonarlintOutput) {
+    sonarlintOutput.append(message);
+  }
+}
 
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
   return resolveRequirements()
@@ -64,14 +71,10 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
           const process = ChildProcess.spawn(command, args);
 
           process.stdout.on('data', function(data) {
-            if (VERBOSE_LOGS) {
-              console.log(data.toString());
-            }
+            logToSonarLintOutput(data.toString());
           });
           process.stderr.on('data', function(data) {
-            if (VERBOSE_LOGS) {
-              console.error(data.toString());
-            }
+            logToSonarLintOutput(data.toString());
           });
         });
       });
@@ -160,9 +163,10 @@ function findTypeScriptLocation() {
   }
 }
 
-let languageClient: LanguageClient;
-
 export function activate(context: VSCode.ExtensionContext) {
+
+  sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
+
   const serverOptions = () => runJavaServer(context);
 
   const tsPath = findTypeScriptLocation();
@@ -202,7 +206,7 @@ export function activate(context: VSCode.ExtensionContext) {
         connectedModeProject: configuration && configuration.get(connectedModeProjectSectionName)
       };
     },
-    outputChannelName: 'SonarLint',
+    outputChannel: sonarlintOutput,
     revealOutputChannelOn: 4 // never
   };
 
@@ -466,8 +470,16 @@ function getSonarLintConfiguration(): VSCode.WorkspaceConfiguration {
 }
 
 export function deactivate(): Thenable<void> {
-  if (!languageClient) {
-    return undefined;
+  if (languageClient) {
+    return languageClient.stop()
+      .then(disposeOutput);
   }
-  return languageClient.stop();
+  return Promise.resolve(disposeOutput());
+}
+
+function disposeOutput() {
+  if (sonarlintOutput) {
+    sonarlintOutput.dispose();
+  }
+  return undefined;
 }
