@@ -21,8 +21,6 @@ import * as open from 'open';
 import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
 
-const VERBOSE_LOGS = process.env['SONARLINT_INTERNAL_DEBUG'] === 'true';
-
 declare var v8debug;
 const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
 var oldConfig;
@@ -31,6 +29,21 @@ const updateServersAndBindingStorageCommandName = 'sonarlint.updateServersAndBin
 
 const connectedModeServersSectionName = 'connectedMode.servers';
 const connectedModeProjectSectionName = 'connectedMode.project';
+
+let sonarlintOutput: VSCode.OutputChannel;
+let languageClient: LanguageClient;
+
+function logToSonarLintOutput(message) {
+  if (sonarlintOutput) {
+    sonarlintOutput.appendLine(message);
+  }
+}
+
+function appendToSonarLintOutput(message) {
+  if (sonarlintOutput) {
+    sonarlintOutput.append(message);
+  }
+}
 
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
   return resolveRequirements()
@@ -47,7 +60,7 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
     .then(requirements => {
       return new Promise<StreamInfo>((resolve, reject) => {
         const server = Net.createServer(socket => {
-          console.log(`Child process connected on port ${server.address().port}`);
+          logToSonarLintOutput(`Child process connected on port ${server.address().port}`);
           resolve({
             reader: socket,
             writer: socket
@@ -60,17 +73,15 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
             requirements,
             server.address().port
           );
-          console.log(`Executing ${command} ${args.join(' ')}`);
+          logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
           const process = ChildProcess.spawn(command, args);
 
-          if (VERBOSE_LOGS) {
-            process.stdout.on('data', function(data) {
-              console.log(data.toString());
-            });
-            process.stderr.on('data', function(data) {
-              console.error(data.toString());
-            });
-          }
+          process.stdout.on('data', function(data) {
+            appendToSonarLintOutput(data.toString());
+          });
+          process.stderr.on('data', function(data) {
+            appendToSonarLintOutput(data.toString());
+          });
         });
       });
     });
@@ -135,7 +146,7 @@ function findTypeScriptLocation() {
       'lib'
     );
     if (!FS.existsSync(bundledTypeScriptPath)) {
-      console.warn(
+      logToSonarLintOutput(
         `Unable to locate bundled TypeScript module in '${bundledTypeScriptPath}'. Please report this error to SonarLint project.`
       );
     }
@@ -146,21 +157,22 @@ function findTypeScriptLocation() {
       if (configuredTsPath !== undefined) {
         return configuredTsPath;
       }
-      console.warn(
+      logToSonarLintOutput(
         `Unable to locate TypeScript module in '${configuredTsPath}'. Falling back to the VSCode's one at '${bundledTypeScriptPath}'`
       );
     }
     return bundledTypeScriptPath;
   } else {
-    console.warn(
+    logToSonarLintOutput(
       'Unable to locate TypeScript extension. TypeScript support in SonarLint might not work.'
     );
   }
 }
 
-let languageClient: LanguageClient;
-
 export function activate(context: VSCode.ExtensionContext) {
+  sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
+  context.subscriptions.push(sonarlintOutput);
+
   const serverOptions = () => runJavaServer(context);
 
   const tsPath = findTypeScriptLocation();
@@ -200,7 +212,7 @@ export function activate(context: VSCode.ExtensionContext) {
         connectedModeProject: configuration && configuration.get(connectedModeProjectSectionName)
       };
     },
-    outputChannelName: 'SonarLint',
+    outputChannel: sonarlintOutput,
     revealOutputChannelOn: 4 // never
   };
 
