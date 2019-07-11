@@ -25,12 +25,12 @@ You will benefit from the following code analyzers: [SonarJS](https://redirect.s
 
 ## Requirements
 
-The only thing you need is a Java Runtime (JRE) 8 installed on your computer.
+The only thing you need is a Java Runtime (JRE) 8 to 11 installed on your computer.
 
 SonarLint should automatically find it but you can also explicitly set the path where the JRE is installed using the 'sonarlint.ls.javaHome' variable in VS Code settings. For example:
 
     {
-        "sonarlint.ls.javaHome": "C:\Program Files\Java\jre1.8.0_131"
+        "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre1.8.0_131"
     }
 
 ### Connected mode
@@ -39,9 +39,9 @@ You can connect SonarLint to SonarQube >= 6.7 or SonarCloud to benefit from the 
 
 To configure the connection, have a look at SonarLint in default user settings.
 
-If you change something on the server such as the quality profile, you can trigger an update of the local cache using the "Update SonarLint binding to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
+Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
 
-When several sub-folders of the same server project are open in a single workspace, the project binding can be set at the workspace level.
+If you change something on the server such as the quality profile, you can trigger an update of the local cache using the "Update SonarLint binding to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
 
 For security reasons, the token should not be stored in SCM with workspace settings.
 

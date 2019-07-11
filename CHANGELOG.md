@@ -1,7 +1,7 @@
 ## 1.9.0
 
 * Enable support of PL/SQL in connected mode
-* Enable connected mode for sub-folders and multi-folder workspaces (single project)
+* Support for connected mode on all sub-folders of a same project in a workspace
 
 ## 1.8.0
 
