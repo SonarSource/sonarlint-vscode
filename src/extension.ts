@@ -39,6 +39,12 @@ function logToSonarLintOutput(message) {
   }
 }
 
+function appendToSonarLintOutput(message) {
+  if (sonarlintOutput) {
+    sonarlintOutput.append(message);
+  }
+}
+
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
   return resolveRequirements()
     .catch(error => {
@@ -71,10 +77,10 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
           const process = ChildProcess.spawn(command, args);
 
           process.stdout.on('data', function(data) {
-            logToSonarLintOutput(data.toString());
+            appendToSonarLintOutput(data.toString());
           });
           process.stderr.on('data', function(data) {
-            logToSonarLintOutput(data.toString());
+            appendToSonarLintOutput(data.toString());
           });
         });
       });
