@@ -67,6 +67,25 @@
           "default": false,
           "markdownDescription": "Disable sending anonymous usage statistics"
         },
+        "sonarlint.rules": {
+          "type": "object",
+          "scope": "application",
+          "default": {},
+          "markdownDescription": "Configure rules. In connected mode, this configuration is overridden by the server's quality profile.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:UnusedVariable\": {\n            \"level\": \"off\"\n        }\n    }\n",
+          "patternProperties": {
+            "^[^:]+:[^:]+$": {
+              "type": "object",
+              "description": "One rule configuration",
+              "properties": {
+                "level": {
+                  "type": "string",
+                  "anyOf": [ "off" ],
+                  "markdownDescription": "When set to `off`, disable the rule"
+                }
+              }
+            }
+          }
+        },
         "sonarlint.ls.javaHome": {
           "type": "string",
           "markdownDescription": "Path to a JRE (8 or more recent) used to launch the SonarLint Language Server. \n\n On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk1.8.0_161`",
