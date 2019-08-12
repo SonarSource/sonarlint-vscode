@@ -17,7 +17,6 @@ import {
   ExecuteCommandRequest,
   ExecuteCommandParams
 } from 'vscode-languageclient';
-import * as open from 'open';
 import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
 
@@ -235,7 +234,7 @@ export function activate(context: VSCode.ExtensionContext) {
       ruleType: string,
       ruleSeverity: string
     ) => {
-      let ruleDescPanelContent = computeRuleDescPanelContent(
+      const ruleDescPanelContent = computeRuleDescPanelContent(
         context,
         ruleKey,
         ruleName,
@@ -254,6 +253,15 @@ export function activate(context: VSCode.ExtensionContext) {
       panel.webview.html = ruleDescPanelContent;
     }
   );
+
+  VSCode.commands.registerCommand('SonarLint.DeactivateRule', (ruleKey: string) => {
+    const configuration = getSonarLintConfiguration();
+    const rules = configuration.has('rules') ? configuration.get('rules') : {};
+    rules[ruleKey] = {
+      level: 'off'
+    };
+    return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
+  });
 
   VSCode.commands.registerCommand(updateServersAndBindingStorageCommandName, () => {
     updateServerStorage()
