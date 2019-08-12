@@ -21,26 +21,27 @@ gulp.task('clean', () => {
 });
 
 gulp.task('update-version', function() {
-  var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
-  var packageJSON = getPackageJSON();
-  var version = packageJSON.version;
+  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const packageJSON = getPackageJSON();
+  const version = packageJSON.version;
   if (version.endsWith('-SNAPSHOT') && buildNumber) {
     return gulp
       .src('./package.json')
       .pipe(bump({ version: version.replace('-SNAPSHOT', '-build.' + buildNumber) }))
       .pipe(gulp.dest('./'));
+  } else {
+    gutil.log(`Not modifying version ${version} with build number ${buildNumber}`);
+    return Promise.resolve();
   }
 });
 
-gulp.task('package', ['update-version'], () => {
-  return vsce.createVSIX();
-});
+gulp.task('package', ['update-version'], vsce.createVSIX);
 
 function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json'));
 }
 
-var hashes = {
+const hashes = {
   sha1: '',
   md5: ''
 };
@@ -50,32 +51,35 @@ gulp.task('compute-hashes', ['package'], function() {
 });
 
 gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
-  if (process.env.TRAVIS_BRANCH != 'master') {
+  if (process.env.TRAVIS_BRANCH !== 'master') {
     gutil.log('Not on master, skip deploy-vsix');
-    return;
+    return Promise.resolve();
   }
-  var packageJSON = getPackageJSON();
-  var version = packageJSON.version;
-  var name = packageJSON.name;
+  const {
+    ARTIFACTORY_URL,
+    ARTIFACTORY_DEPLOY_REPO,
+    ARTIFACTORY_DEPLOY_USERNAME,
+    ARTIFACTORY_DEPLOY_PASSWORD,
+    TRAVIS_COMMIT,
+    TRAVIS_BRANCH,
+    TRAVIS_BUILD_NUMBER
+  } = process.env;
+  const packageJSON = getPackageJSON();
+  const { version, name } = packageJSON;
+  const artifactoryTargetUrl =
+    `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/org/sonarsource/sonarlint/vscode/${name}/${version}`;
   return gulp
     .src('*.vsix')
     .pipe(
       artifactoryUpload({
-        url:
-          process.env.ARTIFACTORY_URL +
-          '/' +
-          process.env.ARTIFACTORY_DEPLOY_REPO +
-          '/org/sonarsource/sonarlint/vscode/' +
-          name +
-          '/' +
-          version,
-        username: process.env.ARTIFACTORY_DEPLOY_USERNAME,
-        password: process.env.ARTIFACTORY_DEPLOY_PASSWORD,
+        url: artifactoryTargetUrl,
+        username: ARTIFACTORY_DEPLOY_USERNAME,
+        password: ARTIFACTORY_DEPLOY_PASSWORD,
         properties: {
-          'vcs.revision': process.env.TRAVIS_COMMIT,
-          'vcs.branch': process.env.TRAVIS_BRANCH,
+          'vcs.revision': TRAVIS_COMMIT,
+          'vcs.branch': TRAVIS_BRANCH,
           'build.name': name,
-          'build.number': process.env.TRAVIS_BUILD_NUMBER
+          'build.number': TRAVIS_BUILD_NUMBER
         },
         request: {
           headers: {
@@ -89,14 +93,13 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
 });
 
 gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
-  if (process.env.TRAVIS_BRANCH != 'master') {
+  if (process.env.TRAVIS_BRANCH !== 'master') {
     gutil.log('Not on master, skip deploy-buildinfo');
-    return;
+    return Promise.resolve();
   }
-  var packageJSON = getPackageJSON();
-  var version = packageJSON.version;
-  var name = packageJSON.name;
-  var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const packageJSON = getPackageJSON();
+  const { version, name } = packageJSON;
+  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
   return request
     .put(
       {
@@ -115,9 +118,9 @@ gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
 gulp.task('deploy', ['deploy-buildinfo', 'deploy-vsix'], function() {});
 
 function snapshotVersion() {
-  var buildNumber = process.env.TRAVIS_BUILD_NUMBER;
-  var packageJSON = getPackageJSON();
-  var version = packageJSON.version;
+  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const packageJSON = getPackageJSON();
+  const version = packageJSON.version;
   const buildIdx = version.lastIndexOf('-');
   if (buildIdx >= 0 && buildNumber) {
     return version.substr(0, buildIdx) + '-SNAPSHOT';
@@ -171,24 +174,24 @@ function runSonnarQubeScanner(callback, options = {}) {
 function buildInfo(name, version, buildNumber, hashes) {
   return {
     version: '1.0.1',
-    name: name,
+    name,
     number: buildNumber,
     started: dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
     url: process.env.CI_BUILD_URL,
     vcsRevision: process.env.TRAVIS_COMMIT,
-    vcsUrl: 'https://github.com/' + process.env.TRAVIS_REPO_SLUG + '.git',
+    vcsUrl: `https://github.com/${process.env.TRAVIS_REPO_SLUG}.git`,
     modules: [
       {
-        id: 'org.sonarsource.sonarlint.vscode:' + name + ':' + version,
+        id: `org.sonarsource.sonarlint.vscode:${name}:${version}`,
         properties: {
-          artifactsToDownload: 'org.sonarsource.sonarlint.vscode:' + name + ':vsix'
+          artifactsToDownload: `org.sonarsource.sonarlint.vscode:${name}:vsix`
         },
         artifacts: [
           {
             type: 'vsix',
             sha1: hashes.sha1,
             md5: hashes.md5,
-            name: name + '-' + version + '.vsix'
+            name: `${name}-${version}.vsix`
           }
         ]
       }
@@ -211,13 +214,13 @@ function hashsum() {
       gutil.log('Streams not supported');
       return;
     }
-    for (var algo in hashes) {
+    for (let algo in hashes) {
       if (hashes.hasOwnProperty(algo)) {
         hashes[algo] = crypto
           .createHash(algo)
           .update(file.contents, 'binary')
           .digest('hex');
-        gutil.log('Computed ' + algo + ': ' + hashes[algo]);
+        gutil.log(`Computed ${algo}: ${hashes[algo]}`);
       }
     }
 
