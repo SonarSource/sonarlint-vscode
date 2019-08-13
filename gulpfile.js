@@ -1,7 +1,11 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2019 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
 'use strict';
 const gulp = require('gulp');
-const download = require('gulp-download');
-const rename = require('gulp-rename');
 const artifactoryUpload = require('gulp-artifactory-upload');
 const del = require('del');
 const vsce = require('vsce');

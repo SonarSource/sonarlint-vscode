@@ -79,7 +79,9 @@
               "properties": {
                 "level": {
                   "type": "string",
-                  "anyOf": [ "off" ],
+                  "anyOf": [
+                    "off"
+                  ],
                   "markdownDescription": "When set to `off`, disable the rule"
                 }
               }
@@ -152,14 +154,15 @@
       }
     ]
   },
-  "main": "./out/src/extension",
+  "main": "./dist/extension",
   "files": [
     "server/sonarlint-ls.jar"
   ],
   "scripts": {
-    "vscode:prepublish": "./node_modules/.bin/tsc -p ./ && node scripts/prepare.js",
-    "compile": "./node_modules/.bin/tsc -p ./",
-    "watch": "./node_modules/.bin/tsc -watch -p ./",
+    "vscode:prepublish": "node scripts/prepare.js && webpack --mode production",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch",
+    "test-compile": "tsc -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
@@ -188,9 +191,12 @@
     "sonarqube-scanner": "^2.5.0",
     "through2": "^2.0.5",
     "ts-jest": "^24.0.2",
+    "ts-loader": "6.0.4",
     "typescript": "^3.5.2",
     "vsce": "^1.64.0",
-    "vscode": "^1.1.35"
+    "vscode": "^1.1.35",
+    "webpack": "^4.39.1",
+    "webpack-cli": "3.3.6"
   },
   "jest": {
     "preset": "ts-jest",
