@@ -29,6 +29,20 @@ const updateServersAndBindingStorageCommandName = 'sonarlint.updateServersAndBin
 const connectedModeServersSectionName = 'connectedMode.servers';
 const connectedModeProjectSectionName = 'connectedMode.project';
 
+const DOCUMENT_SELECTOR = [
+  { scheme: "file", language: "javascript" },
+  { scheme: "file", language: "javascriptreact" },
+  { scheme: "file", language: "php" },
+  { scheme: "file", language: "python" },
+  { scheme: "file", language: "typescript" },
+  { scheme: "file", language: "typescriptreact" },
+  { scheme: "file", language: "vue" },
+  { scheme: "file", language: "html" },
+  { scheme: "file", language: "jsp" },
+  { scheme: "file", language: "apex" },
+  { scheme: "file", language: "plsql" }
+];
+
 let sonarlintOutput: VSCode.OutputChannel;
 let languageClient: LanguageClient;
 
@@ -178,19 +192,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
-    documentSelector: [
-      { scheme: 'file', language: 'javascript' },
-      { scheme: 'file', language: 'javascriptreact' },
-      { scheme: 'file', language: 'php' },
-      { scheme: 'file', language: 'python' },
-      { scheme: 'file', language: 'typescript' },
-      { scheme: 'file', language: 'typescriptreact' },
-      { scheme: 'file', language: 'vue' },
-      { scheme: 'file', language: 'html' },
-      { scheme: 'file', language: 'jsp' },
-      { scheme: 'file', language: 'apex' },
-      { scheme: 'file', language: 'plsql' }
-    ],
+    documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
       configurationSection: 'sonarlint'
     },
@@ -269,6 +271,23 @@ export function activate(context: VSCode.ExtensionContext) {
       .then(() => {
         VSCode.window.showInformationMessage('SonarLint server storage updated');
       });
+  });
+
+  VSCode.workspace.onDidChangeConfiguration(async event => {
+    if(event.affectsConfiguration("sonarlint.rules")) {
+      const supportedLangs = DOCUMENT_SELECTOR.map(s => s.language);
+      const refreshArgs = VSCode.workspace.textDocuments
+        // Ask for a refresh of diagnostics only on open documents supported by the language server
+        .filter(doc => !doc.isClosed && supportedLangs.indexOf(doc.languageId) >= 0)
+        .map(doc => ({ uri: doc.uri.toString(), text: doc.getText() }));
+      return languageClient.onReady().then(async () => {
+        const params: ExecuteCommandParams = {
+          command: 'SonarLint.RefreshDiagnostics',
+          arguments: refreshArgs
+        };
+        return languageClient.sendRequest(ExecuteCommandRequest.type, params);
+      });
+    }
   });
 
   languageClient.start();
