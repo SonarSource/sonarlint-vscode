@@ -274,7 +274,7 @@ export function activate(context: VSCode.ExtensionContext) {
   });
 
   VSCode.workspace.onDidChangeConfiguration(async event => {
-    if(event.affectsConfiguration("sonarlint.rules")) {
+    if (event.affectsConfiguration("sonarlint.rules")) {
       const supportedLangs = DOCUMENT_SELECTOR.map(s => s.language);
       const refreshArgs = VSCode.workspace.textDocuments
         // Ask for a refresh of diagnostics only on open documents supported by the language server

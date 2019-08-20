@@ -71,11 +71,11 @@
           "type": "object",
           "scope": "application",
           "default": {},
-          "markdownDescription": "Configure rules. In connected mode, this configuration is overridden by the server's quality profile.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:UnusedVariable\": {\n            \"level\": \"off\"\n        }\n    }\n",
+          "markdownDescription": "Configure rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:UnusedVariable\": {\n            \"level\": \"off\"\n        }\n    }\n",
           "patternProperties": {
             "^[^:]+:[^:]+$": {
               "type": "object",
-              "description": "One rule configuration",
+              "markdownDescription": "Property names are rule keys in the form: `repo:key`",
               "properties": {
                 "level": {
                   "type": "string",
