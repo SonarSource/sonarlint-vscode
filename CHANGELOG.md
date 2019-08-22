@@ -1,7 +1,7 @@
 ## 1.10.0
 
 * Add a code action and related settings to deactivate rules
-* Update SonarHTML 3.1 -> [3.2] (https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10969&version=14855) to support Vue.js and enable accessibility-related rules
+* Update SonarHTML 3.1 -> [3.2](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10969&version=14855) to support Vue.js and enable accessibility-related rules
 
 ## 1.9.0
 
@@ -14,7 +14,7 @@
 
 ## 1.7.0
 
-* Update SonarPHP 2.16 -> [3.0] (https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=14844) to support PHP 7.3
+* Update SonarPHP 2.16 -> [3.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=14844) to support PHP 7.3
 * Fix rule description panel on VSCode 1.33+
 
 ## 1.6.0
