@@ -1,3 +1,8 @@
+## 1.10.0
+
+* Add a code action and related settings to deactivate rules
+* Update SonarHTML 3.1 -> [3.2] (https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10969&version=14855) to support Vue.js and enable accessibility-related rules
+
 ## 1.9.0
 
 * Enable support of PL/SQL in connected mode

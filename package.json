@@ -2,7 +2,7 @@
   "name": "sonarlint-vscode",
   "displayName": "SonarLint",
   "description": "SonarLint is an IDE extension that helps you detect and fix quality issues as you write code in JavaScript, TypeScript, Python and PHP.",
-  "version": "1.10.0-SNAPSHOT",
+  "version": "1.10.0",
   "icon": "images/sonarlint_wave_128px.png",
   "publisher": "SonarSource",
   "homepage": "http://www.sonarlint.org",
@@ -161,7 +161,7 @@
   "scripts": {
     "vscode:prepublish": "node scripts/prepare.js && webpack --mode production",
     "webpack": "webpack --mode development",
-    "webpack-dev": "webpack --mode development --watch",
+    "watch": "webpack --mode development --watch",
     "test-compile": "tsc -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
@@ -193,7 +193,7 @@
     "ts-jest": "^24.0.2",
     "ts-loader": "6.0.4",
     "typescript": "^3.5.2",
-    "vsce": "^1.64.0",
+    "vsce": "^1.66.0",
     "vscode": "^1.1.35",
     "webpack": "^4.39.1",
     "webpack-cli": "3.3.6"
