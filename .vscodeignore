@@ -1,6 +1,7 @@
 .vscode/
 .vscode-test/
 out/
+out-cov/
 test/
 src/
 **/*.map

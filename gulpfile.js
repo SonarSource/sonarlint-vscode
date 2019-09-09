@@ -22,6 +22,8 @@ const sonarqubeScanner = require('sonarqube-scanner');
 gulp.task('clean', () => {
   del.sync('*.vsix');
   del.sync('server');
+  del.sync('out');
+  del.sync('out-cov');
 });
 
 gulp.task('update-version', function() {
@@ -70,8 +72,7 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
   } = process.env;
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
-  const artifactoryTargetUrl =
-    `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/org/sonarsource/sonarlint/vscode/${name}/${version}`;
+  const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/org/sonarsource/sonarlint/vscode/${name}/${version}`;
   return gulp
     .src('*.vsix')
     .pipe(
@@ -155,9 +156,11 @@ function runSonnarQubeScanner(callback, options = {}) {
     'sonar.projectKey': 'org.sonarsource.sonarlint.vscode:sonarlint-vscode',
     'sonar.projectName': 'SonarLint for VSCode',
     'sonar.projectVersion': snapshotVersion(),
-    'sonar.exclusions': 'build/**, out/**, coverage/**, node_modules/**, **/node_modules/**',
+    'sonar.tests': 'test',
+    'sonar.exclusions':
+      'test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**',
     'sonar.typescript.lcov.reportPaths': 'coverage/lcov.info',
-    'sonar.coverage.exclusions': 'gulpfile.js, build/**, config/**, coverage/**, scripts/**',
+    'sonar.coverage.exclusions': 'gulpfile.js, webpack.config.js, scripts/**',
     'sonar.analysis.buildNumber': process.env.TRAVIS_BUILD_NUMBER,
     'sonar.analysis.pipeline': process.env.TRAVIS_BUILD_NUMBER,
     'sonar.analysis.repository': process.env.TRAVIS_REPO_SLUG

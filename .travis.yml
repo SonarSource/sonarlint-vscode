@@ -14,10 +14,15 @@ cache:
     - "~/.sonar"
 
 install:
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ]; then
+      export DISPLAY=':99.0'
+      /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+    fi
   - npm install
 
 script:
-  - npx gulp clean deploy && npx jest && npx gulp sonarqube
+  - npx gulp clean deploy && npm run compile && npm run test-cov && npx gulp sonarqube
 
 notifications:
   email: false
