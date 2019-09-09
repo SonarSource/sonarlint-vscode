@@ -15,7 +15,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "^1.36.0"
   },
   "categories": [
     "Linters"
@@ -156,14 +156,16 @@
   },
   "main": "./dist/extension",
   "files": [
-    "server/sonarlint-ls.jar"
+    "server/sonarlint-ls.jar",
+    "analyzers"
   ],
   "scripts": {
     "vscode:prepublish": "node scripts/prepare.js && webpack --mode production",
-    "webpack": "webpack --mode development",
-    "watch": "webpack --mode development --watch",
-    "test-compile": "tsc -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "compile": "tsc -p ./",
+    "watch": "webpack --mode development --watch --info-verbosity verbose",
+    "pretest": "webpack --mode development && tsc -p ./",
+    "test": "node ./out/test/runTest.js",
+    "test-cov": "node ./out/test/runTest.js --coverage"
   },
   "dependencies": {
     "expand-home-dir": "0.0.3",
@@ -173,8 +175,11 @@
     "vscode-languageclient": "5.2.1"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.15",
+    "@types/glob": "5.0.30",
+    "@types/mocha": "^5.2.5",
+    "@types/chai": "^4.2.0",
     "@types/node": "^6.14.6",
+    "@types/vscode": "^1.36.0",
     "crypto": "^0.0.3",
     "dateformat": "^2.0.0",
     "del": "^2.2.2",
@@ -186,24 +191,22 @@
     "gulp-download": "^0.0.1",
     "gulp-rename": "^1.4.0",
     "gulp-util": "^3.0.8",
-    "jest": "^24.8.0",
-    "jest-cli": "^24.8.0",
+    "glob": "^7.1.4",
+    "istanbul-lib-coverage": "^2.0.5",
+    "istanbul-lib-instrument": "^3.3.0",
+    "istanbul-lib-report": "^2.0.8",
+    "istanbul-lib-source-maps": "^3.0.6",
+    "istanbul-reports": "^2.2.6",
+    "mocha": "^5.2.0",
+    "chai": "^4.2.0",
     "sonarqube-scanner": "^2.5.0",
     "through2": "^2.0.5",
-    "ts-jest": "^24.0.2",
     "ts-loader": "6.0.4",
     "typescript": "^3.5.2",
     "vsce": "^1.66.0",
-    "vscode": "^1.1.35",
+    "vscode-test": "^1.0.0",
     "webpack": "^4.39.1",
     "webpack-cli": "3.3.6"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "collectCoverage": true,
-    "testMatch": [
-      "<rootDir>/src/__tests__/**/*.ts"
-    ]
   },
   "prettier": {
     "jsxBracketSameLine": true,

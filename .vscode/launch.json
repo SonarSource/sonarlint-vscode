@@ -13,6 +13,19 @@
             "sourceMaps": true,
             "outFiles": [ "${workspaceFolder}/out/src/**/*.js" ],
             "preLaunchTask": "npm: webpack"
-        }
+        },
+        {
+            "name": "Extension Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+              "--extensionDevelopmentPath=${workspaceFolder}",
+              "--extensionTestsPath=${workspaceFolder}/out/test/suite/index",
+              "${workspaceFolder}/test/samples"
+            ],
+            "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+            "preLaunchTask": "npm: pretest"
+          }
     ]
 }
