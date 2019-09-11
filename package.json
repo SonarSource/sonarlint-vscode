@@ -71,7 +71,7 @@
           "type": "object",
           "scope": "application",
           "default": {},
-          "markdownDescription": "Configure rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:UnusedVariable\": {\n            \"level\": \"off\"\n        }\n    }\n",
+          "markdownDescription": "Configure rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:UnusedVariable\": {\n            \"level\": \"off\",\n        \"javascript:S3757\": {\n            \"level\": \"on\"\n        }\n    }\n",
           "patternProperties": {
             "^[^:]+:[^:]+$": {
               "type": "object",
@@ -80,9 +80,10 @@
                 "level": {
                   "type": "string",
                   "anyOf": [
-                    "off"
+                    "off",
+                    "on"
                   ],
-                  "markdownDescription": "When set to `off`, disable the rule"
+                  "markdownDescription": "When set to `off`, disable the rule. When set to `on`, enable the rule."
                 }
               }
             }
