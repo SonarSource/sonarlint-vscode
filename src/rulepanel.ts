@@ -21,6 +21,9 @@ export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, ru
 
   return `<!doctype html><html>
 		<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+		<meta http-equiv="Encoding" content="utf-8" />
+		<meta http-equiv="Content-Security-Policy" value="default-src 'none'"/>
 		<style type="text/css">
 			body { 
 				font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; 
