@@ -43,8 +43,26 @@ const DOCUMENT_SELECTOR = [
   { scheme: 'file', language: 'plsql' }
 ];
 
+interface RuleDescription {
+  key: string;
+  name: string;
+  htmlDescription: string;
+  type: string;
+  severity: string;
+}
+
+interface RulesResponse {
+  [language: string]: Array<RuleDescription>;
+}
+
+class SonarLintLanguageClient extends LanguageClient {
+  listAllRules(): Thenable<RulesResponse> {
+    return this.sendRequest('SonarLint/listAllRules');
+  }
+}
+
 let sonarlintOutput: VSCode.OutputChannel;
-let languageClient: LanguageClient;
+let languageClient: SonarLintLanguageClient;
 
 function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
@@ -171,6 +189,18 @@ function findTypeScriptLocation(): string | undefined {
   }
 }
 
+function toggleRule(value: 'on' | 'off') {
+  return (ruleKey: string | RuleNode) => {
+    const actualKey = typeof ruleKey === 'string' ? ruleKey : ruleKey.rule.key;
+    const configuration = getSonarLintConfiguration();
+    const rules = configuration.has('rules') ? configuration.get('rules') : {};
+    rules[actualKey] = {
+      level: value
+    };
+    return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
+  };
+}
+
 export function activate(context: VSCode.ExtensionContext) {
   sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
   context.subscriptions.push(sonarlintOutput);
@@ -210,7 +240,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
   // Create the language client and start the client.
   // id parameter is used to load 'sonarlint.trace.server' configuration
-  languageClient = new LanguageClient('sonarlint', 'SonarLint Language Server', serverOptions, clientOptions);
+  languageClient = new SonarLintLanguageClient('sonarlint', 'SonarLint Language Server', serverOptions, clientOptions);
 
   VSCode.commands.registerCommand(
     'SonarLint.OpenRuleDesc',
@@ -235,14 +265,9 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   );
 
-  VSCode.commands.registerCommand('SonarLint.DeactivateRule', (ruleKey: string) => {
-    const configuration = getSonarLintConfiguration();
-    const rules = configuration.has('rules') ? configuration.get('rules') : {};
-    rules[ruleKey] = {
-      level: 'off'
-    };
-    return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
-  });
+  VSCode.commands.registerCommand('SonarLint.DeactivateRule', toggleRule('off'));
+
+  VSCode.commands.registerCommand('SonarLint.ActivateRule', toggleRule('on'));
 
   VSCode.commands.registerCommand(updateServersAndBindingStorageCommandName, () => {
     updateServerStorage()
@@ -268,6 +293,8 @@ export function activate(context: VSCode.ExtensionContext) {
       });
     }
   });
+
+  VSCode.window.registerTreeDataProvider('SonarLint.AllRules', new AllRulesTreeDataProvider(languageClient));
 
   languageClient.start();
 
@@ -465,4 +492,56 @@ export function deactivate(): Thenable<void> {
     return undefined;
   }
   return languageClient.stop();
+}
+
+class LanguageNode extends VSCode.TreeItem {
+  constructor(label: string) {
+    super(label, VSCode.TreeItemCollapsibleState.Collapsed);
+    this.contextValue = 'language';
+  }
+}
+class RuleNode extends VSCode.TreeItem {
+  constructor(public readonly rule: RuleDescription) {
+    super(rule.name);
+    this.contextValue = 'rule';
+    this.tooltip = `${this.rule.name} - ${this.rule.key}`;
+    this.iconPath = Path.resolve('images', 'type', rule.type.toLowerCase() + '.png');
+    this.command = {
+      command: 'SonarLint.OpenRuleDesc',
+      title: 'Show Description',
+      arguments: [rule.key, rule.name, rule.htmlDescription, rule.type, rule.severity]
+    };
+  }
+}
+type AllRulesNode = LanguageNode | RuleNode;
+
+class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRulesNode> {
+  client: SonarLintLanguageClient;
+
+  constructor(client: SonarLintLanguageClient) {
+    this.client = client;
+  }
+
+  async getChildren(node: AllRulesNode) {
+    return this.client
+      .onReady()
+      .then(() => this.client.listAllRules())
+      .then(resp => {
+        Object.keys(resp).forEach(l => resp[l].sort((r1, r2) => (r1.name < r2.name ? -1 : r1.name > r2.name ? 1 : 0)));
+        return resp;
+      })
+      .then(resp => {
+        if (node) {
+          return resp[node.label].map(r => new RuleNode(r));
+        } else {
+          return Object.keys(resp)
+            .sort()
+            .map(l => new LanguageNode(l));
+        }
+      });
+  }
+
+  getTreeItem(node: AllRulesNode) {
+    return node;
+  }
 }

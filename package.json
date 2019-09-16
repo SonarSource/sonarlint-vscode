@@ -37,7 +37,8 @@
     "onLanguage:jsp",
     "onLanguage:apex",
     "onLanguage:plsql",
-    "onCommand:sonarlint.updateServersAndBinding"
+    "onCommand:sonarlint.updateServersAndBinding",
+    "onView:SonarLint.AllRules"
   ],
   "extensionDependency": [
     "typescript"
@@ -163,8 +164,45 @@
       {
         "command": "sonarlint.updateServersAndBinding",
         "title": "Update SonarLint binding to SonarQube/SonarCloud"
+      },
+      {
+        "command": "SonarLint.DeactivateRule",
+        "title": "Deactivate"
+      },
+      {
+        "command": "SonarLint.ActivateRule",
+        "title": "Activate"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "icon": "images/sonarlint_wave_128px.png",
+          "id": "SonarLint",
+          "title": "SonarLint"
+        }
+      ]
+    },
+    "views": {
+      "SonarLint": [
+        {
+          "id": "SonarLint.AllRules",
+          "name": "All Rules"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "SonarLint.DeactivateRule",
+          "when": "view == SonarLint.AllRules && viewItem == rule"
+        },
+        {
+          "command": "SonarLint.ActivateRule",
+          "when": "view == SonarLint.AllRules && viewItem == rule"
+        }
+      ]
+    }
   },
   "main": "./dist/extension",
   "files": [
