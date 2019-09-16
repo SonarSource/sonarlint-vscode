@@ -49,6 +49,8 @@ interface RuleDescription {
   htmlDescription: string;
   type: string;
   severity: string;
+  activeByDefault: boolean;
+  configLevel?: 'on' | 'off';
 }
 
 interface RulesResponse {
@@ -269,6 +271,13 @@ export function activate(context: VSCode.ExtensionContext) {
 
   VSCode.commands.registerCommand('SonarLint.ActivateRule', toggleRule('on'));
 
+  VSCode.commands.registerCommand('SonarLint.ResetDefaultRule', (rule: RuleNode) => {
+    const configuration = getSonarLintConfiguration();
+    const rules = configuration.has('rules') ? configuration.get('rules') : {};
+    delete(rules[rule.rule.key]);
+    return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
+  });
+
   VSCode.commands.registerCommand(updateServersAndBindingStorageCommandName, () => {
     updateServerStorage()
       .then(updateProjectBinding)
@@ -277,8 +286,12 @@ export function activate(context: VSCode.ExtensionContext) {
       });
   });
 
+  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(languageClient);
+
   VSCode.workspace.onDidChangeConfiguration(async event => {
+
     if (event.affectsConfiguration('sonarlint.rules')) {
+      allRulesTreeDataProvider.refresh();
       const supportedLangs = DOCUMENT_SELECTOR.map(s => s.language);
       const refreshArgs = VSCode.workspace.textDocuments
         // Ask for a refresh of diagnostics only on open documents supported by the language server
@@ -294,7 +307,7 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   });
 
-  VSCode.window.registerTreeDataProvider('SonarLint.AllRules', new AllRulesTreeDataProvider(languageClient));
+  VSCode.window.registerTreeDataProvider('SonarLint.AllRules', allRulesTreeDataProvider);
 
   languageClient.start();
 
@@ -502,10 +515,10 @@ class LanguageNode extends VSCode.TreeItem {
 }
 class RuleNode extends VSCode.TreeItem {
   constructor(public readonly rule: RuleDescription) {
-    super(rule.name);
+    super(`${(rule.activeByDefault && rule.configLevel !== 'off' ||
+      !rule.activeByDefault && rule.configLevel === 'on') ? '☒' : '☐'} ${rule.name}`);
     this.contextValue = 'rule';
     this.tooltip = `${this.rule.name} - ${this.rule.key}`;
-    this.iconPath = Path.resolve('images', 'type', rule.type.toLowerCase() + '.png');
     this.command = {
       command: 'SonarLint.OpenRuleDesc',
       title: 'Show Description',
@@ -516,27 +529,30 @@ class RuleNode extends VSCode.TreeItem {
 type AllRulesNode = LanguageNode | RuleNode;
 
 class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRulesNode> {
-  client: SonarLintLanguageClient;
+  private readonly _onDidChangeTreeData = new VSCode.EventEmitter<AllRulesNode | undefined>();
+  readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
 
-  constructor(client: SonarLintLanguageClient) {
-    this.client = client;
-  }
+  constructor(private readonly client: SonarLintLanguageClient) {}
 
   async getChildren(node: AllRulesNode) {
-    return this.client
-      .onReady()
+    const localRuleConfig = VSCode.workspace.getConfiguration('sonarlint.rules');
+    return this.client.onReady()
       .then(() => this.client.listAllRules())
-      .then(resp => {
-        Object.keys(resp).forEach(l => resp[l].sort((r1, r2) => (r1.name < r2.name ? -1 : r1.name > r2.name ? 1 : 0)));
-        return resp;
+      .then(response => {
+        Object.keys(response)
+          .forEach(language => response[language].sort(byName));
+        return response;
       })
-      .then(resp => {
+      .then(response => {
         if (node) {
-          return resp[node.label].map(r => new RuleNode(r));
+          return response[node.label].map(rule => {
+            rule.configLevel = (localRuleConfig[rule.key] || {}).level;
+            return new RuleNode(rule);
+          });
         } else {
-          return Object.keys(resp)
+          return Object.keys(response)
             .sort()
-            .map(l => new LanguageNode(l));
+            .map(language => new LanguageNode(language));
         }
       });
   }
@@ -544,4 +560,13 @@ class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRulesNode> 
   getTreeItem(node: AllRulesNode) {
     return node;
   }
+
+  refresh() {
+    this._onDidChangeTreeData.fire();
+  }
+}
+
+function byName(r1: RuleDescription, r2: RuleDescription) {
+  return r1.name < r2.name ? -1 :
+    (r1.name > r2.name ? 1 : 0);
 }

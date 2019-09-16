@@ -172,22 +172,17 @@
       {
         "command": "SonarLint.ActivateRule",
         "title": "Activate"
+      },
+      {
+        "command": "SonarLint.ResetDefaultRule",
+        "title": "Reset"
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "icon": "images/sonarlint_wave_128px.png",
-          "id": "SonarLint",
-          "title": "SonarLint"
-        }
-      ]
-    },
     "views": {
-      "SonarLint": [
+      "explorer": [
         {
           "id": "SonarLint.AllRules",
-          "name": "All Rules"
+          "name": "SonarLint Rules"
         }
       ]
     },
@@ -199,6 +194,10 @@
         },
         {
           "command": "SonarLint.ActivateRule",
+          "when": "view == SonarLint.AllRules && viewItem == rule"
+        },
+        {
+          "command": "SonarLint.ResetDefaultRule",
           "when": "view == SonarLint.AllRules && viewItem == rule"
         }
       ]
