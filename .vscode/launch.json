@@ -12,7 +12,7 @@
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [ "${workspaceFolder}/out/src/**/*.js" ],
-            "preLaunchTask": "npm: webpack"
+            "preLaunchTask": "npm: watch"
         },
         {
             "name": "Extension Tests",

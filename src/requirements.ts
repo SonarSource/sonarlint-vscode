@@ -14,6 +14,7 @@ import * as path from 'path';
 import * as pathExists from 'path-exists';
 import * as expandHomeDir from 'expand-home-dir';
 import * as findJavaHome from 'find-java-home';
+import { Commands } from './commands';
 
 const isWindows = process.platform.indexOf('win') === 0;
 const JAVA_FILENAME = 'java' + (isWindows ? '.exe' : '');
@@ -26,8 +27,8 @@ export interface RequirementsData {
 interface ErrorData {
   message: string;
   label: string;
-  openUrl: Uri;
-  replaceClose: boolean;
+  command: string;
+  commandParam: any;
 }
 
 export async function resolveRequirements(): Promise<RequirementsData> {
@@ -36,28 +37,33 @@ export async function resolveRequirements(): Promise<RequirementsData> {
   return Promise.resolve({ java_home: java_home, java_version: javaVersion });
 }
 
-function checkJavaRuntime(): Promise<any> {
+function checkJavaRuntime(): Promise<string> {
   return new Promise((resolve, reject) => {
     let source: string;
     let javaHome: string = readJavaConfig();
     if (javaHome) {
-      source = "The 'sonarlint.ls.javaHome' variable defined in VS Code settings";
+      source = "'sonarlint.ls.javaHome' variable defined in VS Code settings";
     } else {
       javaHome = process.env['JDK_HOME'];
       if (javaHome) {
-        source = 'The JDK_HOME environment variable';
+        source = 'JDK_HOME environment variable';
       } else {
         javaHome = process.env['JAVA_HOME'];
-        source = 'The JAVA_HOME environment variable';
+        source = 'JAVA_HOME environment variable';
       }
     }
     if (javaHome) {
       javaHome = expandHomeDir(javaHome);
       if (!pathExists.sync(javaHome)) {
-        openJREDownload(reject, source + ' points to a missing folder');
-      }
-      if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
-        openJREDownload(reject, source + ' does not point to a JRE.');
+        invalidJavaHome(reject, `The ${source} points to a missing or inaccessible folder (${javaHome})`);
+      } else if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
+        let msg: string;
+        if (pathExists.sync(path.resolve(javaHome, JAVA_FILENAME))) {
+          msg = `'bin' should be removed from the ${source} (${javaHome})`;
+        } else {
+          msg = `The ${source} (${javaHome}) does not point to a JRE.`;
+        }
+        invalidJavaHome(reject, msg);
       }
       return resolve(javaHome);
     }
@@ -115,11 +121,26 @@ export function parseMajorVersion(content: string): number {
 }
 
 function openJREDownload(reject, cause) {
-  const jreUrl = 'http://www.oracle.com/technetwork/java/javase/downloads/index.html';
+  const jreUrl = 'https://www.oracle.com/technetwork/java/javase/downloads/index.html';
   reject({
     message: cause,
     label: 'Get the Java Runtime Environment',
-    openUrl: Uri.parse(jreUrl),
-    replaceClose: false
+    command: Commands.OPEN_BROWSER,
+    commandParam: Uri.parse(jreUrl)
   });
+}
+
+function invalidJavaHome(reject, cause: string) {
+  if (cause.indexOf('sonarlint.ls.javaHome') > -1) {
+    reject({
+      message: cause,
+      label: 'Open settings',
+      command: Commands.OPEN_SETTINGS,
+      commandParam: 'sonarlint.ls.javaHome'
+    });
+  } else {
+    reject({
+      message: cause
+    });
+  }
 }

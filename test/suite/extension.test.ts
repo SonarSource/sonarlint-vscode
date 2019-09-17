@@ -15,10 +15,6 @@ import * as vscode from 'vscode';
 const sampleFolderLocation = '../../../test/samples/';
 
 suite('Extension Test Suite', () => {
-  after(() => {
-    vscode.window.showInformationMessage('All tests done!');
-  });
-
   test('Extension should be present', () => {
     assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));
   });

@@ -63,8 +63,8 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
     .catch(error => {
       //show error
       VSCode.window.showErrorMessage(error.message, error.label).then(selection => {
-        if (error.label && error.label === selection && error.openUrl) {
-          VSCode.commands.executeCommand('vscode.open', error.openUrl);
+        if (error.label && error.label === selection && error.command) {
+          VSCode.commands.executeCommand(error.command, error.commandParam);
         }
       });
       // rethrow to disrupt the chain.
