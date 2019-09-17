@@ -169,7 +169,7 @@
   },
   "dependencies": {
     "expand-home-dir": "0.0.3",
-    "find-java-home": "0.2.0",
+    "find-java-home": "1.0.1",
     "open": "6.0.0",
     "path-exists": "3.0.0",
     "vscode-languageclient": "5.2.1"
