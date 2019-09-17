@@ -191,6 +191,7 @@ export function activate(context: VSCode.ExtensionContext) {
       return {
         testFilePattern: configuration && configuration.get('testFilePattern'),
         analyzerProperties: configuration && configuration.get('analyzerProperties'),
+        productKey: 'vscode',
         telemetryStorage: Path.resolve(context.extensionPath, '..', 'sonarlint_usage'),
         productName: 'SonarLint VSCode',
         productVersion: VSCode.extensions.getExtension('SonarSource.sonarlint-vscode').packageJSON.version,
