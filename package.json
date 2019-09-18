@@ -167,11 +167,19 @@
       },
       {
         "command": "SonarLint.DeactivateRule",
-        "title": "Deactivate"
+        "title": "Deactivate",
+        "icon": {
+          "light": "images/activation/light/cross.svg",
+          "dark": "images/activation/dark/cross.svg"
+        }
       },
       {
         "command": "SonarLint.ActivateRule",
-        "title": "Activate"
+        "title": "Activate",
+        "icon": {
+          "light": "images/activation/light/check.svg",
+          "dark": "images/activation/dark/check.svg"
+        }
       },
       {
         "command": "SonarLint.ResetDefaultRule",
@@ -190,15 +198,17 @@
       "view/item/context": [
         {
           "command": "SonarLint.DeactivateRule",
-          "when": "view == SonarLint.AllRules && viewItem == rule"
+          "when": "view == SonarLint.AllRules && viewItem == rule-on",
+          "group": "inline"
         },
         {
           "command": "SonarLint.ActivateRule",
-          "when": "view == SonarLint.AllRules && viewItem == rule"
+          "when": "view == SonarLint.AllRules && viewItem == rule-off",
+          "group": "inline"
         },
         {
           "command": "SonarLint.ResetDefaultRule",
-          "when": "view == SonarLint.AllRules && viewItem == rule"
+          "when": "view == SonarLint.AllRules && viewItem =~ /rule-/"
         }
       ]
     }

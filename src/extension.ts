@@ -17,6 +17,8 @@ import {
   ExecuteCommandRequest,
   ExecuteCommandParams
 } from 'vscode-languageclient';
+import { SonarLintLanguageClient } from './client';
+import { AllRulesTreeDataProvider, RuleDescription, RuleNode, RulesResponse } from './rules';
 import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
 
@@ -42,26 +44,6 @@ const DOCUMENT_SELECTOR = [
   { scheme: 'file', language: 'apex' },
   { scheme: 'file', language: 'plsql' }
 ];
-
-interface RuleDescription {
-  key: string;
-  name: string;
-  htmlDescription: string;
-  type: string;
-  severity: string;
-  activeByDefault: boolean;
-  configLevel?: 'on' | 'off';
-}
-
-interface RulesResponse {
-  [language: string]: Array<RuleDescription>;
-}
-
-class SonarLintLanguageClient extends LanguageClient {
-  listAllRules(): Thenable<RulesResponse> {
-    return this.sendRequest('SonarLint/listAllRules');
-  }
-}
 
 let sonarlintOutput: VSCode.OutputChannel;
 let languageClient: SonarLintLanguageClient;
@@ -244,9 +226,18 @@ export function activate(context: VSCode.ExtensionContext) {
   // id parameter is used to load 'sonarlint.trace.server' configuration
   languageClient = new SonarLintLanguageClient('sonarlint', 'SonarLint Language Server', serverOptions, clientOptions);
 
+  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(
+    languageClient.onReady().then(() => languageClient.listAllRules())
+  );
+  const allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
+    treeDataProvider: allRulesTreeDataProvider
+  });
+  context.subscriptions.push(allRulesView);
+
   VSCode.commands.registerCommand(
     'SonarLint.OpenRuleDesc',
     (ruleKey: string, ruleName: string, htmlDesc: string, ruleType: string, ruleSeverity: string) => {
+      allRulesView.reveal(new RuleNode({ key: ruleKey } as RuleDescription), { expand: true });
       const ruleDescPanelContent = computeRuleDescPanelContent(
         context,
         ruleKey,
@@ -274,7 +265,7 @@ export function activate(context: VSCode.ExtensionContext) {
   VSCode.commands.registerCommand('SonarLint.ResetDefaultRule', (rule: RuleNode) => {
     const configuration = getSonarLintConfiguration();
     const rules = configuration.has('rules') ? configuration.get('rules') : {};
-    delete(rules[rule.rule.key]);
+    delete rules[rule.rule.key];
     return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
   });
 
@@ -286,10 +277,7 @@ export function activate(context: VSCode.ExtensionContext) {
       });
   });
 
-  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(languageClient);
-
   VSCode.workspace.onDidChangeConfiguration(async event => {
-
     if (event.affectsConfiguration('sonarlint.rules')) {
       allRulesTreeDataProvider.refresh();
       const supportedLangs = DOCUMENT_SELECTOR.map(s => s.language);
@@ -306,8 +294,6 @@ export function activate(context: VSCode.ExtensionContext) {
       });
     }
   });
-
-  VSCode.window.registerTreeDataProvider('SonarLint.AllRules', allRulesTreeDataProvider);
 
   languageClient.start();
 
@@ -505,68 +491,4 @@ export function deactivate(): Thenable<void> {
     return undefined;
   }
   return languageClient.stop();
-}
-
-class LanguageNode extends VSCode.TreeItem {
-  constructor(label: string) {
-    super(label, VSCode.TreeItemCollapsibleState.Collapsed);
-    this.contextValue = 'language';
-  }
-}
-class RuleNode extends VSCode.TreeItem {
-  constructor(public readonly rule: RuleDescription) {
-    super(`${(rule.activeByDefault && rule.configLevel !== 'off' ||
-      !rule.activeByDefault && rule.configLevel === 'on') ? '☒' : '☐'} ${rule.name}`);
-    this.contextValue = 'rule';
-    this.tooltip = `${this.rule.name} - ${this.rule.key}`;
-    this.command = {
-      command: 'SonarLint.OpenRuleDesc',
-      title: 'Show Description',
-      arguments: [rule.key, rule.name, rule.htmlDescription, rule.type, rule.severity]
-    };
-  }
-}
-type AllRulesNode = LanguageNode | RuleNode;
-
-class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRulesNode> {
-  private readonly _onDidChangeTreeData = new VSCode.EventEmitter<AllRulesNode | undefined>();
-  readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
-
-  constructor(private readonly client: SonarLintLanguageClient) {}
-
-  async getChildren(node: AllRulesNode) {
-    const localRuleConfig = VSCode.workspace.getConfiguration('sonarlint.rules');
-    return this.client.onReady()
-      .then(() => this.client.listAllRules())
-      .then(response => {
-        Object.keys(response)
-          .forEach(language => response[language].sort(byName));
-        return response;
-      })
-      .then(response => {
-        if (node) {
-          return response[node.label].map(rule => {
-            rule.configLevel = (localRuleConfig[rule.key] || {}).level;
-            return new RuleNode(rule);
-          });
-        } else {
-          return Object.keys(response)
-            .sort()
-            .map(language => new LanguageNode(language));
-        }
-      });
-  }
-
-  getTreeItem(node: AllRulesNode) {
-    return node;
-  }
-
-  refresh() {
-    this._onDidChangeTreeData.fire();
-  }
-}
-
-function byName(r1: RuleDescription, r2: RuleDescription) {
-  return r1.name < r2.name ? -1 :
-    (r1.name > r2.name ? 1 : 0);
 }
