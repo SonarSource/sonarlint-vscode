@@ -262,6 +262,10 @@ export function activate(context: VSCode.ExtensionContext) {
 
   VSCode.commands.registerCommand('SonarLint.ActivateRule', toggleRule('on'));
 
+  VSCode.commands.registerCommand('SonarLint.ShowAllRules', () => allRulesTreeDataProvider.filter(null));
+  VSCode.commands.registerCommand('SonarLint.ShowActiveRules', () => allRulesTreeDataProvider.filter('on'));
+  VSCode.commands.registerCommand('SonarLint.ShowInactiveRules', () => allRulesTreeDataProvider.filter('off'));
+
   VSCode.commands.registerCommand('SonarLint.ResetDefaultRule', (rule: RuleNode) => {
     const configuration = getSonarLintConfiguration();
     const rules = configuration.has('rules') ? configuration.get('rules') : {};

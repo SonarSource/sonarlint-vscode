@@ -51,6 +51,7 @@ export type AllRulesNode = LanguageNode | RuleNode;
 export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRulesNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<AllRulesNode | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
+  private activationFilter?: null | "on" | "off";
 
   constructor(private readonly allRules: Thenable<RulesResponse>) {}
 
@@ -63,7 +64,17 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
       })
       .then(response => {
         if (node) {
-          return response[node.label].map(rule => {
+          return response[node.label]
+            .filter(r => {
+              if (this.activationFilter === "on") {
+                return r.activeByDefault || (localRuleConfig[r.key] || {}).level === "on";
+              } else if (this.activationFilter === "off") {
+                return !r.activeByDefault || (localRuleConfig[r.key] || {}).level === "off";
+              } else {
+                return true;
+              }
+            })
+            .map(rule => {
             rule.configLevel = (localRuleConfig[rule.key] || {}).level;
             return new RuleNode(rule);
           });
@@ -94,6 +105,11 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
 
   refresh() {
     this._onDidChangeTreeData.fire();
+  }
+
+  filter(activation: null | "on" | "off") {
+    this.activationFilter = activation;
+    this.refresh();
   }
 }
 

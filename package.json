@@ -184,6 +184,18 @@
       {
         "command": "SonarLint.ResetDefaultRule",
         "title": "Reset"
+      },
+      {
+        "command": "SonarLint.ShowAllRules",
+        "title": "All"
+      },
+      {
+        "command": "SonarLint.ShowActiveRules",
+        "title": "Active"
+      },
+      {
+        "command": "SonarLint.ShowInactiveRules",
+        "title": "Inactive"
       }
     ],
     "views": {
@@ -195,6 +207,23 @@
       ]
     },
     "menus": {
+      "view/title": [
+        {
+          "command": "SonarLint.ShowAllRules",
+          "when": "view == SonarLint.AllRules",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ShowActiveRules",
+          "when": "view == SonarLint.AllRules",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ShowInactiveRules",
+          "when": "view == SonarLint.AllRules",
+          "group": "navigation"
+        }
+      ],
       "view/item/context": [
         {
           "command": "SonarLint.DeactivateRule",
