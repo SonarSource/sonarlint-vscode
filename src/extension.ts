@@ -100,7 +100,7 @@ function languageServerCommand(
   port: number
 ): { command: string; args: string[] } {
   const serverJar = Path.resolve(context.extensionPath, 'server', 'sonarlint-ls.jar');
-  const javaExecutablePath = Path.resolve(requirements.java_home + '/bin/java');
+  const javaExecutablePath = Path.resolve(requirements.javaHome + '/bin/java');
 
   const params = [];
   if (DEBUG) {
@@ -231,16 +231,10 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(
       Commands.OPEN_RULE_DESCRIPTION,
-      (ruleKey: string, ruleName: string, htmlDesc: string, ruleType: string, ruleSeverity: string) => {
-        allRulesView.reveal(new RuleNode({ key: ruleKey } as RuleDescription), { expand: true });
-        const ruleDescPanelContent = computeRuleDescPanelContent(
-          context,
-          ruleKey,
-          ruleName,
-          htmlDesc,
-          ruleType,
-          ruleSeverity
-        );
+      (key: string, name: string, htmlDescription: string, type: string, severity: string) => {
+        const rule = { key, name, htmlDescription, type, severity } as RuleDescription;
+        allRulesView.reveal(new RuleNode(rule), { expand: true });
+        const ruleDescPanelContent = computeRuleDescPanelContent(context, rule);
         if (!ruleDescriptionPanel) {
           ruleDescriptionPanel = VSCode.window.createWebviewPanel(
             'sonarlint.RuleDesc',

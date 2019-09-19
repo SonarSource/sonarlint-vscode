@@ -4,32 +4,20 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-"use strict";
+'use strict';
 
-import * as FS from "fs";
-import * as Path from "path";
-import * as VSCode from "vscode";
+import * as FS from 'fs';
+import * as Path from 'path';
+import * as VSCode from 'vscode';
+import { RuleDescription } from './rules';
 
-export function computeRuleDescPanelContent(
-  context: VSCode.ExtensionContext,
-  ruleKey: string,
-  ruleName: string,
-  htmlDesc: string,
-  ruleType: string,
-  ruleSeverity: string
-) {
-  const severityImg = base64_encode(Path.resolve(
-    context.extensionPath,
-    "images",
-    "severity",
-    ruleSeverity.toLowerCase() + ".png"
-  ));
-  const typeImg = base64_encode(Path.resolve(
-    context.extensionPath,
-    "images",
-    "type",
-    ruleType.toLowerCase() + ".png"
-  ));
+export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, rule: RuleDescription) {
+  const severityImg = base64_encode(
+    Path.resolve(context.extensionPath, 'images', 'severity', rule.severity.toLowerCase() + '.png')
+  );
+  const typeImg = base64_encode(
+    Path.resolve(context.extensionPath, 'images', 'type', rule.type.toLowerCase() + '.png')
+  );
 
   return `<!doctype html><html>
 		<head>
@@ -52,26 +40,26 @@ export function computeRuleDescPanelContent(
 			.rule-desc ul { padding-left: 40px; list-style: disc;}
 		</style>
 		</head>
-		<body><h1><big>${escapeHtml(ruleName)}</big> (${ruleKey})</h1>
+		<body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
 		<div>
-		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${ruleType}" src="data:image/gif;base64,${typeImg}">&nbsp;
-		${clean(ruleType)}&nbsp;
-		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${ruleSeverity}" src="data:image/gif;base64,${severityImg}">&nbsp;
-		${clean(ruleSeverity)}
+		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${rule.type}" src="data:image/gif;base64,${typeImg}">&nbsp;
+		${clean(rule.type)}&nbsp;
+		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${rule.severity}" src="data:image/gif;base64,${severityImg}">&nbsp;
+		${clean(rule.severity)}
 		</div>
-		<div class=\"rule-desc\">${htmlDesc}</div>
+		<div class=\"rule-desc\">${rule.htmlDescription}</div>
 		</body></html>`;
 }
 
 const entityMap = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  "\"": "&quot;",
-  "'": "&#39;",
-  "/": "&#x2F;",
-  "`": "&#x60;",
-  "=": "&#x3D;"
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
 };
 
 function escapeHtml(str: string) {
@@ -84,8 +72,8 @@ function clean(str: string) {
   return capitalizeName(
     str
       .toLowerCase()
-      .split("_")
-      .join(" ")
+      .split('_')
+      .join(' ')
   );
 }
 
@@ -95,5 +83,5 @@ function capitalizeName(name: string) {
 
 function base64_encode(file: string) {
   const bitmap = FS.readFileSync(file);
-  return new Buffer(bitmap).toString("base64");
+  return new Buffer(bitmap).toString('base64');
 }

@@ -18,10 +18,11 @@ import { Commands } from './commands';
 
 const isWindows = process.platform.indexOf('win') === 0;
 const JAVA_FILENAME = 'java' + (isWindows ? '.exe' : '');
+const JAVA_HOME_CONFIG = 'sonarlint.ls.javaHome';
 
 export interface RequirementsData {
-  java_home: string;
-  java_version: number;
+  javaHome: string;
+  javaVersion: number;
 }
 
 interface ErrorData {
@@ -32,9 +33,9 @@ interface ErrorData {
 }
 
 export async function resolveRequirements(): Promise<RequirementsData> {
-  let java_home = await checkJavaRuntime();
-  let javaVersion = await checkJavaVersion(java_home);
-  return Promise.resolve({ java_home: java_home, java_version: javaVersion });
+  const javaHome = await checkJavaRuntime();
+  const javaVersion = await checkJavaVersion(javaHome);
+  return Promise.resolve({ javaHome, javaVersion });
 }
 
 function checkJavaRuntime(): Promise<string> {
@@ -42,7 +43,7 @@ function checkJavaRuntime(): Promise<string> {
     let source: string;
     let javaHome: string = readJavaConfig();
     if (javaHome) {
-      source = "'sonarlint.ls.javaHome' variable defined in VS Code settings";
+      source = `'${JAVA_HOME_CONFIG}' variable defined in VS Code settings`;
     } else {
       javaHome = process.env['JDK_HOME'];
       if (javaHome) {
@@ -67,12 +68,12 @@ function checkJavaRuntime(): Promise<string> {
       }
       return resolve(javaHome);
     }
-    //No settings, let's try to detect as last resort.
-    findJavaHome(function(err, home) {
+    //No settings, let"s try to detect as last resort.
+    findJavaHome((err, home) => {
       if (err) {
         openJREDownload(
           reject,
-          "Java runtime could not be located. Install it and set its location using 'sonarlint.ls.javaHome' variable in VS Code settings."
+          `Java runtime could not be located. Install it and set its location using "${JAVA_HOME_CONFIG}" variable in VS Code settings.`
         );
       } else {
         resolve(home);
@@ -83,12 +84,12 @@ function checkJavaRuntime(): Promise<string> {
 
 function readJavaConfig(): string {
   const config = workspace.getConfiguration();
-  return config.get<string>('sonarlint.ls.javaHome', null);
+  return config.get<string>(JAVA_HOME_CONFIG, null);
 }
 
-function checkJavaVersion(java_home: string): Promise<any> {
+function checkJavaVersion(javaHome: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    cp.execFile(java_home + '/bin/java', ['-version'], {}, (error, stdout, stderr) => {
+    cp.execFile(javaHome + '/bin/java', ['-version'], {}, (error, stdout, stderr) => {
       const javaVersion = parseMajorVersion(stderr);
       if (javaVersion < 8) {
         openJREDownload(reject, 'Java 8 or more recent is required to run. Please download and install a recent JRE.');
@@ -106,7 +107,7 @@ export function parseMajorVersion(content: string): number {
     return 0;
   }
   let version = match[1];
-  //Ignore '1.' prefix for legacy Java versions
+  //Ignore "1." prefix for legacy Java versions
   if (version.startsWith('1.')) {
     version = version.substring(2);
   }
@@ -131,12 +132,12 @@ function openJREDownload(reject, cause) {
 }
 
 function invalidJavaHome(reject, cause: string) {
-  if (cause.indexOf('sonarlint.ls.javaHome') > -1) {
+  if (cause.indexOf(JAVA_HOME_CONFIG) > -1) {
     reject({
       message: cause,
       label: 'Open settings',
       command: Commands.OPEN_SETTINGS,
-      commandParam: 'sonarlint.ls.javaHome'
+      commandParam: JAVA_HOME_CONFIG
     });
   } else {
     reject({
