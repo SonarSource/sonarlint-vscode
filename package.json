@@ -37,7 +37,7 @@
     "onLanguage:jsp",
     "onLanguage:apex",
     "onLanguage:plsql",
-    "onCommand:sonarlint.updateServersAndBinding",
+    "onCommand:SonarLint.updateServersAndBinding",
     "onView:SonarLint.AllRules"
   ],
   "extensionDependency": [
@@ -183,19 +183,27 @@
       },
       {
         "command": "SonarLint.ResetDefaultRule",
-        "title": "Reset"
+        "title": "Reset",
+        "enablement": "view == SonarLint.AllRules"
       },
       {
         "command": "SonarLint.ShowAllRules",
-        "title": "All"
+        "title": "All",
+        "enablement": "view == SonarLint.AllRules"
       },
       {
         "command": "SonarLint.ShowActiveRules",
-        "title": "Active"
+        "title": "Active",
+        "enablement": "view == SonarLint.AllRules"
       },
       {
         "command": "SonarLint.ShowInactiveRules",
-        "title": "Inactive"
+        "title": "Inactive",
+        "enablement": "view == SonarLint.AllRules"
+      },
+      {
+        "command": "SonarLint.FindRuleByKey",
+        "title": "SonarLint: Find Rule By Key"
       }
     ],
     "views": {
@@ -222,6 +230,10 @@
           "command": "SonarLint.ShowInactiveRules",
           "when": "view == SonarLint.AllRules",
           "group": "navigation"
+        },
+        {
+          "command": "SonarLint.FindRuleByKey",
+          "when": "view == SonarLint.AllRules"
         }
       ],
       "view/item/context": [

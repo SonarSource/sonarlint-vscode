@@ -8,14 +8,24 @@
 
 import * as VSCode from 'vscode';
 
+export type ConfigLevel = 'on' | 'off';
+
 export interface RuleDescription {
-  key: string;
-  name: string;
-  htmlDescription: string;
-  type: string;
-  severity: string;
-  activeByDefault: boolean;
-  configLevel?: 'on' | 'off';
+  readonly key: string;
+  readonly name: string;
+  readonly htmlDescription: string;
+  readonly type: string;
+  readonly severity: string;
+  readonly activeByDefault: boolean;
+  levelFromConfig?: ConfigLevel;
+}
+
+function isActive(rule: RuleDescription) {
+  return (rule.activeByDefault && rule.levelFromConfig !== 'off') || rule.levelFromConfig === 'on';
+}
+
+function actualLevel(rule: RuleDescription) {
+  return isActive(rule) ? 'on' : 'off';
 }
 
 export interface RulesResponse {
@@ -31,13 +41,10 @@ export class LanguageNode extends VSCode.TreeItem {
 
 export class RuleNode extends VSCode.TreeItem {
   constructor(public readonly rule: RuleDescription) {
-    super(`${rule.name}`);
-    this.contextValue = `rule-${
-      (rule.activeByDefault && rule.configLevel !== 'off') ||
-      (!rule.activeByDefault && rule.configLevel === 'on')  ? 'on' : 'off'
-    }`;
+    super(`${rule.name} (${rule.key})`);
+    this.contextValue = `rule-${actualLevel(rule)}`;
     this.id = rule.key;
-    this.description = rule.key;
+    this.description = actualLevel(rule);
     this.command = {
       command: 'SonarLint.OpenRuleDesc',
       title: 'Show Description',
@@ -51,7 +58,7 @@ export type AllRulesNode = LanguageNode | RuleNode;
 export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRulesNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<AllRulesNode | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
-  private activationFilter?: null | "on" | "off";
+  private levelFilter?: ConfigLevel;
 
   constructor(private readonly allRules: Thenable<RulesResponse>) {}
 
@@ -63,22 +70,25 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
         return response;
       })
       .then(response => {
+        // Render rules under language nodes
         if (node) {
           return response[node.label]
+            .map(rule => {
+              rule.levelFromConfig = localRuleConfig.get(rule.key, {})['level'];
+              return rule;
+            })
             .filter(r => {
-              if (this.activationFilter === "on") {
-                return r.activeByDefault || (localRuleConfig[r.key] || {}).level === "on";
-              } else if (this.activationFilter === "off") {
-                return !r.activeByDefault || (localRuleConfig[r.key] || {}).level === "off";
+              if (this.levelFilter === 'on') {
+                return isActive(r);
+              } else if (this.levelFilter === 'off') {
+                return !isActive(r);
               } else {
                 return true;
               }
             })
-            .map(rule => {
-            rule.configLevel = (localRuleConfig[rule.key] || {}).level;
-            return new RuleNode(rule);
-          });
+            .map(rule => new RuleNode(rule));
         } else {
+          // Roots are language nodes
           return Object.keys(response)
             .sort()
             .map(language => new LanguageNode(language));
@@ -107,12 +117,12 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
     this._onDidChangeTreeData.fire();
   }
 
-  filter(activation: null | "on" | "off") {
-    this.activationFilter = activation;
+  filter(level?: ConfigLevel) {
+    this.levelFilter = level;
     this.refresh();
   }
 }
 
 function byName(r1: RuleDescription, r2: RuleDescription) {
-  return r1.name < r2.name ? -1 : r1.name > r2.name ? 1 : 0;
+  return r1.name.toLowerCase() < r2.name.toLowerCase() ? -1 : r1.name.toLowerCase() > r2.name.toLowerCase() ? 1 : 0;
 }

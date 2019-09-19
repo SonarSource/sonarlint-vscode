@@ -10,23 +10,18 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import {
-  LanguageClient,
-  LanguageClientOptions,
-  StreamInfo,
-  ExecuteCommandRequest,
-  ExecuteCommandParams
-} from 'vscode-languageclient';
+import { LanguageClientOptions, StreamInfo, ExecuteCommandRequest, ExecuteCommandParams } from 'vscode-languageclient';
+
+import { AllRulesTreeDataProvider, RuleDescription, RuleNode, ConfigLevel } from './rules';
+import { Commands } from './commands';
 import { SonarLintLanguageClient } from './client';
-import { AllRulesTreeDataProvider, RuleDescription, RuleNode, RulesResponse } from './rules';
 import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
+import { computeRuleDescPanelContent } from './rulepanel';
 
 declare var v8debug: object;
 const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
 let oldConfig: VSCode.WorkspaceConfiguration;
-
-const updateServersAndBindingStorageCommandName = 'sonarlint.updateServersAndBinding';
 
 const connectedModeServersSectionName = 'connectedMode.servers';
 const connectedModeProjectSectionName = 'connectedMode.project';
@@ -46,6 +41,7 @@ const DOCUMENT_SELECTOR = [
 ];
 
 let sonarlintOutput: VSCode.OutputChannel;
+let ruleDescriptionPanel: VSCode.WebviewPanel;
 let languageClient: SonarLintLanguageClient;
 
 function logToSonarLintOutput(message) {
@@ -173,14 +169,12 @@ function findTypeScriptLocation(): string | undefined {
   }
 }
 
-function toggleRule(value: 'on' | 'off') {
+function toggleRule(level: ConfigLevel) {
   return (ruleKey: string | RuleNode) => {
     const actualKey = typeof ruleKey === 'string' ? ruleKey : ruleKey.rule.key;
     const configuration = getSonarLintConfiguration();
-    const rules = configuration.has('rules') ? configuration.get('rules') : {};
-    rules[actualKey] = {
-      level: value
-    };
+    const rules = configuration.get('rules') || {};
+    rules[actualKey] = { level };
     return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
   };
 }
@@ -234,52 +228,81 @@ export function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allRulesView);
 
-  VSCode.commands.registerCommand(
-    'SonarLint.OpenRuleDesc',
-    (ruleKey: string, ruleName: string, htmlDesc: string, ruleType: string, ruleSeverity: string) => {
-      allRulesView.reveal(new RuleNode({ key: ruleKey } as RuleDescription), { expand: true });
-      const ruleDescPanelContent = computeRuleDescPanelContent(
-        context,
-        ruleKey,
-        ruleName,
-        htmlDesc,
-        ruleType,
-        ruleSeverity
-      );
-      const panel = VSCode.window.createWebviewPanel(
-        'sonarlintRuleDesc',
-        'SonarLint Rule Description',
-        VSCode.ViewColumn.Two,
-        {
-          enableScripts: false
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(
+      Commands.OPEN_RULE_DESCRIPTION,
+      (ruleKey: string, ruleName: string, htmlDesc: string, ruleType: string, ruleSeverity: string) => {
+        allRulesView.reveal(new RuleNode({ key: ruleKey } as RuleDescription), { expand: true });
+        const ruleDescPanelContent = computeRuleDescPanelContent(
+          context,
+          ruleKey,
+          ruleName,
+          htmlDesc,
+          ruleType,
+          ruleSeverity
+        );
+        if (!ruleDescriptionPanel) {
+          ruleDescriptionPanel = VSCode.window.createWebviewPanel(
+            'sonarlint.RuleDesc',
+            'SonarLint Rule Description',
+            VSCode.ViewColumn.Two,
+            {
+              enableScripts: false
+            }
+          );
+          ruleDescriptionPanel.onDidDispose(
+            () => {
+              ruleDescriptionPanel = undefined;
+            },
+            null,
+            context.subscriptions
+          );
         }
-      );
-      panel.webview.html = ruleDescPanelContent;
-    }
+        ruleDescriptionPanel.webview.html = ruleDescPanelContent;
+        ruleDescriptionPanel.reveal();
+      }
+    )
   );
 
-  VSCode.commands.registerCommand('SonarLint.DeactivateRule', toggleRule('off'));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')));
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.RESET_DEFAULT_RULE, (ruleNode: RuleNode) => {
+      const configuration = getSonarLintConfiguration();
+      const rules = configuration.get('rules') || {};
+      delete rules[ruleNode.rule.key];
+      return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
+    })
+  );
 
-  VSCode.commands.registerCommand('SonarLint.ActivateRule', toggleRule('on'));
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_ALL_RULES, () => allRulesTreeDataProvider.filter(null))
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_ACTIVE_RULES, () => allRulesTreeDataProvider.filter('on'))
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_INACTIVE_RULES, () => allRulesTreeDataProvider.filter('off'))
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.FIND_RULE_BY_KEY, () => {
+      VSCode.window
+        .showInputBox({
+          prompt: 'Rule Key'
+        })
+        .then(key => allRulesView.reveal(new RuleNode({ key } as RuleDescription), { expand: true }));
+    })
+  );
 
-  VSCode.commands.registerCommand('SonarLint.ShowAllRules', () => allRulesTreeDataProvider.filter(null));
-  VSCode.commands.registerCommand('SonarLint.ShowActiveRules', () => allRulesTreeDataProvider.filter('on'));
-  VSCode.commands.registerCommand('SonarLint.ShowInactiveRules', () => allRulesTreeDataProvider.filter('off'));
-
-  VSCode.commands.registerCommand('SonarLint.ResetDefaultRule', (rule: RuleNode) => {
-    const configuration = getSonarLintConfiguration();
-    const rules = configuration.has('rules') ? configuration.get('rules') : {};
-    delete rules[rule.rule.key];
-    return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
-  });
-
-  VSCode.commands.registerCommand(updateServersAndBindingStorageCommandName, () => {
-    updateServerStorage()
-      .then(updateProjectBinding)
-      .then(() => {
-        VSCode.window.showInformationMessage('SonarLint server storage updated');
-      });
-  });
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.UPDATE_SERVERS_AND_BINDING_STORAGE, () => {
+      updateServerStorage()
+        .then(updateProjectBinding)
+        .then(() => {
+          VSCode.window.showInformationMessage('SonarLint server storage updated');
+        });
+    })
+  );
 
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
@@ -332,87 +355,6 @@ function updateProjectBinding(): Thenable<void> {
       }
     )
   );
-}
-
-function computeRuleDescPanelContent(
-  context: VSCode.ExtensionContext,
-  ruleKey: string,
-  ruleName: string,
-  htmlDesc: string,
-  ruleType: string,
-  ruleSeverity: string
-) {
-  const severityImg = Path.resolve(context.extensionPath, 'images', 'severity', ruleSeverity.toLowerCase() + '.png');
-  const typeImg = Path.resolve(context.extensionPath, 'images', 'type', ruleType.toLowerCase() + '.png');
-  return `<!doctype html><html>
-		<head>
-		<style type="text/css">
-			body { 
-				font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; 
-				font-size: 13px; line-height: 1.23076923; 
-			}
-			
-			h1 { font-size: 14px;font-weight: 500; }
-			h2 { line-height: 24px;}
-			a { border-bottom: 1px solid rgba(230, 230, 230, .1); color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}
-			
-			.rule-desc { line-height: 1.5;}
-			.rule-desc { line-height: 1.5;}
-			.rule-desc h2 { font-size: 16px; font-weight: 400;}
-			.rule-desc code { padding: .2em .45em; margin: 0; border-radius: 3px; white-space: nowrap;}
-			.rule-desc pre { padding: 10px; border-top: 1px solid rgba(230, 230, 230, .1); border-bottom: 1px solid rgba(230, 230, 230, .1); line-height: 18px; overflow: auto;}
-			.rule-desc code, .rule-desc pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 12px;}
-			.rule-desc ul { padding-left: 40px; list-style: disc;}
-		</style>
-		</head>
-		<body><h1><big>${escapeHtml(ruleName)}</big> (${ruleKey})</h1>
-		<div>
-		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${ruleType}" src="data:image/gif;base64,${base64_encode(
-    typeImg
-  )}">&nbsp;
-		${clean(ruleType)}&nbsp;
-		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${ruleSeverity}" src="data:image/gif;base64,${base64_encode(
-    severityImg
-  )}">&nbsp;
-		${clean(ruleSeverity)}
-		</div>
-		<div class=\"rule-desc\">${htmlDesc}</div>
-		</body></html>`;
-}
-
-const entityMap = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-  '/': '&#x2F;',
-  '`': '&#x60;',
-  '=': '&#x3D;'
-};
-
-function escapeHtml(str: string) {
-  return String(str).replace(/[&<>""`=\/]/g, function(s) {
-    return entityMap[s];
-  });
-}
-
-function clean(str: string) {
-  return capitalizeName(
-    str
-      .toLowerCase()
-      .split('_')
-      .join(' ')
-  );
-}
-
-function capitalizeName(name: string) {
-  return name.replace(/\b(\w)/g, s => s.toUpperCase());
-}
-
-function base64_encode(file) {
-  const bitmap = FS.readFileSync(file);
-  return new Buffer(bitmap).toString('base64');
 }
 
 function onConfigurationChange() {

@@ -24,4 +24,14 @@ export namespace Commands {
    * Open settings
    */
   export const OPEN_SETTINGS = 'workbench.action.openSettings';
+
+  export const UPDATE_SERVERS_AND_BINDING_STORAGE = 'SonarLint.updateServersAndBinding';
+  export const OPEN_RULE_DESCRIPTION = 'SonarLint.OpenRuleDesc';
+  export const DEACTIVATE_RULE = 'SonarLint.DeactivateRule';
+  export const ACTIVATE_RULE = 'SonarLint.ActivateRule';
+  export const SHOW_ALL_RULES = 'SonarLint.ShowAllRules';
+  export const SHOW_ACTIVE_RULES = 'SonarLint.ShowActiveRules';
+  export const SHOW_INACTIVE_RULES = 'SonarLint.ShowInactiveRules';
+  export const FIND_RULE_BY_KEY = 'SonarLint.FindRuleByKey';
+  export const RESET_DEFAULT_RULE = 'SonarLint.ResetDefaultRule';
 }
