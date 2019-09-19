@@ -11,7 +11,7 @@
             "args": ["--extensionDevelopmentPath=${workspaceFolder}" ],
             "stopOnEntry": false,
             "sourceMaps": true,
-            "outFiles": [ "${workspaceFolder}/out/src/**/*.js" ],
+            "outFiles": [ "${workspaceFolder}/dist/**/*.js" ],
             "preLaunchTask": "npm: watch"
         },
         {
