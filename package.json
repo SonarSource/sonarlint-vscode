@@ -210,7 +210,7 @@
   },
   "prettier": {
     "jsxBracketSameLine": true,
-    "printWidth": 180,
-    "singleQuote": false
+    "printWidth": 120,
+    "singleQuote": true
   }
 }

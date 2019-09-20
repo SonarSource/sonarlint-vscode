@@ -157,8 +157,7 @@ function runSonnarQubeScanner(callback, options = {}) {
     'sonar.projectName': 'SonarLint for VSCode',
     'sonar.projectVersion': snapshotVersion(),
     'sonar.tests': 'test',
-    'sonar.exclusions':
-      'test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**',
+    'sonar.exclusions': 'test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**',
     'sonar.typescript.lcov.reportPaths': 'coverage/lcov.info',
     'sonar.coverage.exclusions': 'gulpfile.js, webpack.config.js, scripts/**',
     'sonar.analysis.buildNumber': process.env.TRAVIS_BUILD_NUMBER,

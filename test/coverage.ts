@@ -39,11 +39,7 @@ export function instrument() {
     }
 
     //console.log(`instrumenting ${inputPath}...`);
-    const instrumentedCode = instrumenter.instrumentSync(
-      fs.readFileSync(inputPath).toString(),
-      inputPath,
-      map
-    );
+    const instrumentedCode = instrumenter.instrumentSync(fs.readFileSync(inputPath).toString(), inputPath, map);
     safeWriteFile(outputPath, instrumentedCode);
   }
 }
