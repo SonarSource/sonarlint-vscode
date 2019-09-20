@@ -14,7 +14,7 @@ import { LanguageClientOptions, StreamInfo, ExecuteCommandRequest, ExecuteComman
 
 import { AllRulesTreeDataProvider, RuleDescription, RuleNode, ConfigLevel } from './rules';
 import { Commands } from './commands';
-import { SonarLintLanguageClient } from './client';
+import { SonarLintExtendedLanguageClient } from './client';
 import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
@@ -42,7 +42,7 @@ const DOCUMENT_SELECTOR = [
 
 let sonarlintOutput: VSCode.OutputChannel;
 let ruleDescriptionPanel: VSCode.WebviewPanel;
-let languageClient: SonarLintLanguageClient;
+let languageClient: SonarLintExtendedLanguageClient;
 
 function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
@@ -232,7 +232,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
   // Create the language client and start the client.
   // id parameter is used to load 'sonarlint.trace.server' configuration
-  languageClient = new SonarLintLanguageClient('sonarlint', 'SonarLint Language Server', serverOptions, clientOptions);
+  languageClient = new SonarLintExtendedLanguageClient('sonarlint', 'SonarLint Language Server', serverOptions, clientOptions);
 
   const allRulesTreeDataProvider = new AllRulesTreeDataProvider(
     languageClient.onReady().then(() => languageClient.listAllRules())

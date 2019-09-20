@@ -12,8 +12,8 @@ import {
   RulesResponse
 } from './rules';
 
-export class SonarLintLanguageClient extends LanguageClient {
+export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<RulesResponse> {
-    return this.sendRequest('SonarLint/listAllRules');
+    return this.sendRequest('sonarlint/listAllRules');
   }
 }

@@ -37,7 +37,7 @@ suite('Extension Test Suite', () => {
     var diags = await waitForSonarLintDiagnostics(fileUri);
 
     assert.deepEqual(diags.length, 1);
-    assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable. (javascript:UnusedVariable)");
+    assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable.");
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(60 * 1000);
