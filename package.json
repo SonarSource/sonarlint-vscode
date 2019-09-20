@@ -47,6 +47,17 @@
       "type": "object",
       "title": "SonarLint",
       "properties": {
+        "sonarlint.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the SonarLint language server.",
+          "scope": "window"
+        },
         "sonarlint.testFilePattern": {
           "type": "string",
           "default": "{**/test/**,**/*test*,**/*Test*}",
