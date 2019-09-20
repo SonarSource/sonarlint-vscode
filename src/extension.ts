@@ -209,7 +209,8 @@ export function activate(context: VSCode.ExtensionContext) {
   oldConfig = getSonarLintConfiguration();
 
   // Create the language client and start the client.
-  languageClient = new LanguageClient('sonarlint-vscode', 'SonarLint Language Server', serverOptions, clientOptions);
+  // id parameter is used to load 'sonarlint.trace.server' configuration
+  languageClient = new LanguageClient('sonarlint', 'SonarLint Language Server', serverOptions, clientOptions);
 
   VSCode.commands.registerCommand(
     'SonarLint.OpenRuleDesc',
