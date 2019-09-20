@@ -162,8 +162,9 @@
     },
     "commands": [
       {
-        "command": "sonarlint.updateServersAndBinding",
-        "title": "Update SonarLint binding to SonarQube/SonarCloud"
+        "command": "SonarLint.updateServersAndBinding",
+        "title": "Update binding to SonarQube/SonarCloud",
+        "category": "SonarLint"
       },
       {
         "command": "SonarLint.DeactivateRule",
