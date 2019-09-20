@@ -41,10 +41,10 @@ export class LanguageNode extends VSCode.TreeItem {
 
 export class RuleNode extends VSCode.TreeItem {
   constructor(public readonly rule: RuleDescription) {
-    super(`${rule.name} (${rule.key})`);
+    super(`${rule.name}`);
     this.contextValue = `rule-${actualLevel(rule)}`;
     this.id = rule.key;
-    this.description = actualLevel(rule);
+    this.description = `${actualLevel(rule)}`;
     this.command = {
       command: 'SonarLint.OpenRuleDesc',
       title: 'Show Description',
