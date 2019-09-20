@@ -171,10 +171,24 @@ function findTypeScriptLocation(): string | undefined {
 
 function toggleRule(level: ConfigLevel) {
   return (ruleKey: string | RuleNode) => {
-    const actualKey = typeof ruleKey === 'string' ? ruleKey : ruleKey.rule.key;
     const configuration = getSonarLintConfiguration();
     const rules = configuration.get('rules') || {};
-    rules[actualKey] = { level };
+
+    if (typeof ruleKey === 'string') {
+      // This is when a rule is deactivated from a code action, and we only have the key, not the default activation.
+      // So level should be "off" regardless of the default activation.
+      rules[ruleKey] = { level };
+    } else {
+      // When a rule is toggled from the list of rules, we can be smarter!
+      const { key, activeByDefault } = ruleKey.rule;
+      if ((level === 'on' && !activeByDefault) || (level === 'off' && activeByDefault)) {
+        // Override default
+        rules[key] = { level };
+      } else {
+        // Back to default
+        delete rules[key];
+      }
+    }
     return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
   };
 }
@@ -260,14 +274,6 @@ export function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')));
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.RESET_DEFAULT_RULE, (ruleNode: RuleNode) => {
-      const configuration = getSonarLintConfiguration();
-      const rules = configuration.get('rules') || {};
-      delete rules[ruleNode.rule.key];
-      return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
-    })
-  );
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_ALL_RULES, () => allRulesTreeDataProvider.filter(null))

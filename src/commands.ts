@@ -33,5 +33,4 @@ export namespace Commands {
   export const SHOW_ACTIVE_RULES = 'SonarLint.ShowActiveRules';
   export const SHOW_INACTIVE_RULES = 'SonarLint.ShowInactiveRules';
   export const FIND_RULE_BY_KEY = 'SonarLint.FindRuleByKey';
-  export const RESET_DEFAULT_RULE = 'SonarLint.ResetDefaultRule';
 }

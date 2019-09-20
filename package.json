@@ -203,7 +203,8 @@
       },
       {
         "command": "SonarLint.FindRuleByKey",
-        "title": "SonarLint: Find Rule By Key"
+        "title": "Find Rule By Key",
+        "enablement": "view == SonarLint.AllRules"
       }
     ],
     "views": {
@@ -246,10 +247,6 @@
           "command": "SonarLint.ActivateRule",
           "when": "view == SonarLint.AllRules && viewItem == rule-off",
           "group": "inline"
-        },
-        {
-          "command": "SonarLint.ResetDefaultRule",
-          "when": "view == SonarLint.AllRules && viewItem =~ /rule-/"
         }
       ]
     }
