@@ -9,9 +9,7 @@
 export function startedInDebugMode(process: NodeJS.Process): boolean {
   const args = process.execArgv;
   if (args) {
-    return args.some(
-      arg => /^--debug=?/.test(arg) || /^--debug-brk=?/.test(arg) || /^--inspect-brk=?/.test(arg)
-    );
+    return args.some(arg => /^--debug=?/.test(arg) || /^--debug-brk=?/.test(arg) || /^--inspect-brk=?/.test(arg));
   }
   return false;
 }

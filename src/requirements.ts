@@ -85,10 +85,7 @@ function checkJavaVersion(java_home: string): Promise<any> {
     cp.execFile(java_home + '/bin/java', ['-version'], {}, (error, stdout, stderr) => {
       const javaVersion = parseMajorVersion(stderr);
       if (javaVersion < 8) {
-        openJREDownload(
-          reject,
-          'Java 8 or more recent is required to run. Please download and install a recent JRE.'
-        );
+        openJREDownload(reject, 'Java 8 or more recent is required to run. Please download and install a recent JRE.');
       } else {
         resolve(javaVersion);
       }
