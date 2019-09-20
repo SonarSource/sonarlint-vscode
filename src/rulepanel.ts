@@ -85,6 +85,5 @@ function capitalizeName(name: string) {
 }
 
 function base64_encode(file: string) {
-  const bitmap = FS.readFileSync(file);
-  return new Buffer(bitmap).toString('base64');
+  return FS.readFileSync(file).toString('base64');
 }
