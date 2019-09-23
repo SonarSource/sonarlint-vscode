@@ -296,9 +296,15 @@ export function activate(context: VSCode.ExtensionContext) {
           prompt: 'Rule Key',
           validateInput: value => allRulesTreeDataProvider.checkRuleExists(value)
         })
-        .then(key =>
-          allRulesView.reveal(new RuleNode({ key: key.toUpperCase() } as RuleDescription), { focus:true, expand: true })
-        );
+        .then(key => {
+          // Reset rules view filter
+          VSCode.commands.executeCommand(Commands.SHOW_ALL_RULES).then(() =>
+            allRulesView.reveal(new RuleNode({ key: key.toUpperCase() } as RuleDescription), {
+              focus: true,
+              expand: true
+            })
+          );
+        });
     })
   );
 
