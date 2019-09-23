@@ -248,7 +248,6 @@ export function activate(context: VSCode.ExtensionContext) {
       Commands.OPEN_RULE_DESCRIPTION,
       (key: string, name: string, htmlDescription: string, type: string, severity: string) => {
         const rule = { key, name, htmlDescription, type, severity } as RuleDescription;
-        allRulesView.reveal(new RuleNode(rule), { expand: true });
         const ruleDescPanelContent = computeRuleDescPanelContent(context, rule);
         if (!ruleDescriptionPanel) {
           ruleDescriptionPanel = VSCode.window.createWebviewPanel(
