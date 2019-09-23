@@ -233,7 +233,12 @@ export function activate(context: VSCode.ExtensionContext) {
 
   // Create the language client and start the client.
   // id parameter is used to load 'sonarlint.trace.server' configuration
-  languageClient = new SonarLintExtendedLanguageClient('sonarlint', 'SonarLint Language Server', serverOptions, clientOptions);
+  languageClient = new SonarLintExtendedLanguageClient(
+    'sonarlint',
+    'SonarLint Language Server',
+    serverOptions,
+    clientOptions
+  );
 
   const allRulesTreeDataProvider = new AllRulesTreeDataProvider(
     languageClient.onReady().then(() => languageClient.listAllRules())
@@ -288,9 +293,12 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.FIND_RULE_BY_KEY, () => {
       VSCode.window
         .showInputBox({
-          prompt: 'Rule Key'
+          prompt: 'Rule Key',
+          validateInput: value => allRulesTreeDataProvider.checkRuleExists(value)
         })
-        .then(key => allRulesView.reveal(new RuleNode({ key } as RuleDescription), { expand: true }));
+        .then(key =>
+          allRulesView.reveal(new RuleNode({ key: key.toUpperCase() } as RuleDescription), { focus:true, expand: true })
+        );
     })
   );
 

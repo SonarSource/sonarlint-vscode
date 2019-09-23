@@ -43,7 +43,7 @@ export class RuleNode extends VSCode.TreeItem {
   constructor(public readonly rule: RuleDescription) {
     super(`${rule.name}`);
     this.contextValue = `rule-${actualLevel(rule)}`;
-    this.id = rule.key;
+    this.id = rule.key.toUpperCase();
     this.description = `${actualLevel(rule)}`;
     this.command = {
       command: 'SonarLint.OpenRuleDesc',
@@ -102,7 +102,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
     } else {
       return this.allRules.then(response =>
         Object.keys(response)
-          .filter(k => response[k].findIndex(r => r.key === node.rule.key) >= 0)
+          .filter(k => response[k].findIndex(r => r.key.toUpperCase() === node.rule.key.toUpperCase()) >= 0)
           .map(l => new LanguageNode(l))
           .pop()
       );
@@ -120,6 +120,14 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   filter(level?: ConfigLevel) {
     this.levelFilter = level;
     this.refresh();
+  }
+
+  async checkRuleExists(key: string) {
+    return this.allRules.then(response =>
+      Object.keys(response)
+        .filter(k => response[k].findIndex(r => r.key.toUpperCase() === key.toUpperCase()) >= 0)
+        .length === 0 ? `Key not found ${key}` : ''
+    );
   }
 }
 
