@@ -26,13 +26,13 @@ const jarDependencies = [
   {
     groupId: 'org/sonarsource/php',
     artifactId: 'sonar-php-plugin',
-    version: '3.0.0.4537',
+    version: '3.2.0.4868',
     output: 'analyzers/sonarphp.jar'
   },
   {
     groupId: 'org/sonarsource/python',
     artifactId: 'sonar-python-plugin',
-    version: '1.12.0.2726',
+    version: '1.15.1.4116',
     output: 'analyzers/sonarpython.jar'
   },
   {
