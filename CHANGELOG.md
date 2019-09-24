@@ -1,3 +1,13 @@
+## 1.11.0
+
+* Add the ability to activate rules that are not enabled by default
+* Show list of available rules in a dedicated view, with ability to activate/deactivate rules from this view
+* Drop support of SonarQube < 6.7 in connected mode
+* Support "Ignore Issues on Files" and "Ignore Issues in Blocks" settings in connected mode
+* Avoid downloading analyzers that are not supported
+* Update SonarPython 1.12 -> [1.15](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15008), 3 new vulnerability detection rules
+* Update SonarPHP 3.0 -> [3.1.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=14954) -> [3.2](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=14979)
+
 ## 1.10.0
 
 * Add a code action and related settings to deactivate rules
