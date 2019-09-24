@@ -83,7 +83,7 @@
           "type": "object",
           "scope": "application",
           "default": {},
-          "markdownDescription": "Configure rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:UnusedVariable\": {\n            \"level\": \"off\",\n        \"javascript:S3757\": {\n            \"level\": \"on\"\n        }\n    }\n",
+          "markdownDescription": "Customize applied rule set. This property contains a list of rules whose activation level differ from the one provided by default. See _SonarLint Rules_ view for the full list of available rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:UnusedVariable\": {\n            \"level\": \"off\",\n        \"javascript:S3757\": {\n            \"level\": \"on\"\n        }\n    }\n",
           "patternProperties": {
             "^[^:]+:[^:]+$": {
               "type": "object",
