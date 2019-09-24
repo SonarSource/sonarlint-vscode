@@ -20,8 +20,11 @@ Check the rules to see what SonarLint can do for you:
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 - [Python rules](https://rules.sonarsource.com/python)
 - [PHP rules](https://rules.sonarsource.com/php)
+- [HTML rules](https://rules.sonarsource.com/html)
 
-You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html) and [SonarPHP](https://redirect.sonarsource.com/plugins/php.html)
+You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html), [SonarPHP](https://redirect.sonarsource.com/plugins/php.html) and [SonarHTML](https://redirect.sonarsource.com/plugins/html.html).
+
+The full list of available rules is visible in the "SonarLint Rules" view in the explorer, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
 
 ## Requirements
 
@@ -33,7 +36,7 @@ SonarLint should automatically find it but you can also explicitly set the path 
         "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre1.8.0_131"
     }
 
-### Connected mode
+## Connected mode
 
 You can connect SonarLint to SonarQube >= 6.7 or SonarCloud to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
 
@@ -41,7 +44,7 @@ To configure the connection, have a look at SonarLint in default user settings.
 
 Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
 
-If you change something on the server such as the quality profile, you can trigger an update of the local cache using the "Update SonarLint binding to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
+If you change something on the server such as the quality profile, you can trigger an update of the local cache using the "SonarLint: Update binding to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
 
 For security reasons, the token should not be stored in SCM with workspace settings.
 
