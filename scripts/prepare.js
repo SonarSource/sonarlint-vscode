@@ -12,9 +12,9 @@ const request = require('request');
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = [
   {
-    groupId: 'org/sonarsource/sonarlint/core',
+    groupId: 'org/sonarsource/sonarlint/ls',
     artifactId: 'sonarlint-language-server',
-    version: '4.6.0.2652',
+    version: '1.0.0.11322',
     output: 'server/sonarlint-ls.jar'
   },
   {
