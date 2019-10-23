@@ -87,6 +87,7 @@ stages:
       - task: SonarQubePrepare@4
         displayName: Prepare SonarQube analysis on Next
         inputs:
+          SonarQube: Next
           scannerMode: CLI
           configMode: manual
           cliProjectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
