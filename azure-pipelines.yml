@@ -34,7 +34,8 @@ stages:
       - task: NodeTool@0
         displayName: 'Install NPM LTS'
         inputs:
-          versionSpec: 'lts/*'
+          versionSpec: '10.16.x'
+          checkLatest: true
       - task: Npm@1
         displayName: 'Install NPM dependencies'
         inputs:
