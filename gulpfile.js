@@ -57,10 +57,12 @@ gulp.task('compute-hashes', ['package'], function() {
 });
 
 gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
+  /*
   if (process.env.BUILD_SOURCEBRANCH !== 'master') {
     gutil.log('Not on master, skip deploy-vsix');
     return Promise.resolve();
   }
+  */
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -98,10 +100,12 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
 });
 
 gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
+  /*
   if (process.env.BUILD_SOURCEBRANCH !== 'master') {
     gutil.log('Not on master, skip deploy-buildinfo');
     return Promise.resolve();
   }
+  */
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_BUILDID;
@@ -178,14 +182,20 @@ function runSonnarQubeScanner(callback, options = {}) {
 }
 
 function buildInfo(name, version, buildNumber, hashes) {
+  const {
+    SYSTEM_TEAMPROJECTID,
+    BUILD_BUILDID,
+    BUILD_REPOSITORY_NAME,
+    BUILD_SOURCEVERSION
+  } = process.env;
   return {
     version: '1.0.1',
     name,
     number: buildNumber,
     started: dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
-    url: process.env.CI_BUILD_URL,
-    vcsRevision: process.env.TRAVIS_COMMIT,
-    vcsUrl: `https://github.com/${process.env.TRAVIS_REPO_SLUG}.git`,
+    url: `https://dev.azure.com/sonarsource/${SYSTEM_TEAMPROJECTID}/_build/results?buildId=${BUILD_BUILDID}&view=logs`,
+    vcsRevision: BUILD_SOURCEVERSION,
+    vcsUrl: `https://github.com/${BUILD_REPOSITORY_NAME}.git`,
     modules: [
       {
         id: `org.sonarsource.sonarlint.vscode:${name}:${version}`,
@@ -206,7 +216,7 @@ function buildInfo(name, version, buildNumber, hashes) {
       'java.specification.version': '1.8', // Workaround for https://jira.sonarsource.com/browse/RA-115
       'buildInfo.env.PROJECT_VERSION': version,
       'buildInfo.env.ARTIFACTORY_DEPLOY_REPO': 'sonarsource-public-qa',
-      'buildInfo.env.TRAVIS_COMMIT': process.env.TRAVIS_COMMIT
+      'buildInfo.env.BUILD_BUILDID': BUILD_BUILDID
     }
   };
 }
