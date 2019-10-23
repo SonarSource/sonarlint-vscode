@@ -51,3 +51,68 @@ stages:
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'validate'
+    burgrType: 'validate'
+    stageName: 'validate'
+    stageDisplayName: Run tests and SonarQube analysis
+    jobs:
+    - job: extractPackageVersion
+      - task: PythonScript@0
+        name: extractPackageVersion
+        displayName: Extract version from package.json
+        inputs:
+          scriptSource: 'inline'
+          script: |
+            import json
+            with open('$(Pipeline.Worskpace)/package.json') as packageJsonFile:
+              packageJson = json.load(packageJsonFile)
+              packageVersion = packageJson.version
+              print("##vso[task.setvariable variable=packageVersion;isOutput=true]" + packageVersion)
+    - job: test
+      dependsOn: extractPackageVersion
+      displayName: Run tests and SonarQube analysis
+      variables:
+        npm_config_cache: $(Pipeline.Workspace)/.npm
+        packageVersion: $[ dependencies.extractPackageVersion.outputs['extractPackageVersion.packageVersion'] ]
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: CacheBeta@0
+        displayName: Cache NPM dependencies
+        inputs:
+          key: npm | $(Agent.OS) | package-lock.json
+          path: $(npm_config_cache)
+      - task: SonarQubePrepare@4
+        displayName: Prepare SonarQube analysis on Next
+        inputs:
+          scannerMode: CLI
+          configMode: manual
+          cliProjectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
+          cliProjectName: 'SonarLint for VSCode'
+          cliProjectVersion: $(packageVersion)
+          extraProperties: |
+            sonar.tests=test
+            sonar.exclusions='test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**'
+            sonar.typescript.lcov.reportPaths='$(Pipeline.Workspace)/coverage/lcov.info'
+            sonar.coverage.exclusions='gulpfile.js, webpack.config.js, scripts/**'
+      - task: NodeTool@0
+        displayName: 'Install NPM LTS'
+        inputs:
+          versionSpec: '10.16.x'
+          checkLatest: true
+      - task: Npm@1
+        displayName: 'Install NPM dependencies'
+        inputs:
+          command: install
+      - task: Npm@1
+        displayName: 'Compile TypeScript'
+        inputs:
+          command: run compile
+      - task: Npm@1
+        displayName: 'Run tests with coverage'
+        inputs:
+          command: run test-cov
+      - task: SonarQubeAnalyze@4
+        displayName: 'Run SonarQube analysis on Next'
