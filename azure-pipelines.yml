@@ -108,24 +108,5 @@ stages:
         displayName: 'Install NPM dependencies'
         inputs:
           command: install
-      - task: Npm@1
-        displayName: 'Compile TypeScript'
-        inputs:
-          command: custom
-          customCommand: run compile
-      - bash: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
-          sudo chmod +x /etc/init.d/xvfb
-          sudo update-rc.d xvfb defaults
-          sudo service xvfb start
-          export DISPLAY=':10'
-      - task: Npm@1
-        displayName: 'Run tests with coverage'
-        inputs:
-          command: custom
-          customCommand: run test-cov
       - task: SonarQubeAnalyze@4
         displayName: 'Run SonarQube analysis on Next'
