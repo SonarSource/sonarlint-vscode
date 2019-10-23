@@ -108,8 +108,5 @@ stages:
         displayName: 'Install NPM dependencies'
         inputs:
           command: install
-      - task: JavaToolInstaller@0
-        inputs:
-          versionSpec: '11'
       - task: SonarQubeAnalyze@4
         displayName: 'Run SonarQube analysis on Next'
