@@ -69,8 +69,7 @@ stages:
             import json
             with open('package.json') as packageJsonFile:
               packageJson = json.load(packageJsonFile)
-              packageVersion = packageJson.version
-              print("##vso[task.setvariable variable=packageVersion;isOutput=true]" + packageVersion)
+              print("##vso[task.setvariable variable=packageVersion;isOutput=true]" + packageJson['version'])
     - job: test
       dependsOn: extractPackageVersion
       displayName: Run tests and SonarQube analysis
