@@ -59,6 +59,7 @@ stages:
     stageDisplayName: Run tests and SonarQube analysis
     jobs:
     - job: extractPackageVersion
+      displayName: 'Extract version from package.json'
       steps:
       - task: PythonScript@0
         name: extractPackageVersion
@@ -110,10 +111,12 @@ stages:
       - task: Npm@1
         displayName: 'Compile TypeScript'
         inputs:
-          command: run compile
+          command: custom
+          customCommand: run compile
       - task: Npm@1
         displayName: 'Run tests with coverage'
         inputs:
-          command: run test-cov
+          command: custom
+          customCommand: run test-cov
       - task: SonarQubeAnalyze@4
         displayName: 'Run SonarQube analysis on Next'
