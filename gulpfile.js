@@ -27,7 +27,7 @@ gulp.task('clean', () => {
 });
 
 gulp.task('update-version', function() {
-  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const buildNumber = process.env.BUILD_BUILDID;
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   if (version.endsWith('-SNAPSHOT') && buildNumber) {
@@ -57,7 +57,7 @@ gulp.task('compute-hashes', ['package'], function() {
 });
 
 gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
-  if (process.env.TRAVIS_BRANCH !== 'master') {
+  if (process.env.BUILD_SOURCEBRANCH !== 'master') {
     gutil.log('Not on master, skip deploy-vsix');
     return Promise.resolve();
   }
@@ -66,9 +66,9 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
     ARTIFACTORY_DEPLOY_REPO,
     ARTIFACTORY_DEPLOY_USERNAME,
     ARTIFACTORY_DEPLOY_PASSWORD,
-    TRAVIS_COMMIT,
-    TRAVIS_BRANCH,
-    TRAVIS_BUILD_NUMBER
+    BUILD_SOURCEVERSION,
+    BUILD_SOURCEBRANCH,
+    BUILD_BUILDID
   } = process.env;
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
@@ -81,10 +81,10 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
         username: ARTIFACTORY_DEPLOY_USERNAME,
         password: ARTIFACTORY_DEPLOY_PASSWORD,
         properties: {
-          'vcs.revision': TRAVIS_COMMIT,
-          'vcs.branch': TRAVIS_BRANCH,
+          'vcs.revision': BUILD_SOURCEVERSION,
+          'vcs.branch': BUILD_SOURCEBRANCH,
           'build.name': name,
-          'build.number': TRAVIS_BUILD_NUMBER
+          'build.number': BUILD_BUILDID
         },
         request: {
           headers: {
@@ -98,13 +98,13 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
 });
 
 gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
-  if (process.env.TRAVIS_BRANCH !== 'master') {
+  if (process.env.BUILD_SOURCEBRANCH !== 'master') {
     gutil.log('Not on master, skip deploy-buildinfo');
     return Promise.resolve();
   }
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
-  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const buildNumber = process.env.BUILD_BUILDID;
   return request
     .put(
       {
@@ -123,7 +123,7 @@ gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
 gulp.task('deploy', ['deploy-buildinfo', 'deploy-vsix'], function() {});
 
 function snapshotVersion() {
-  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const buildNumber = process.env.BUILD_BUILDID;
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   const buildIdx = version.lastIndexOf('-');
