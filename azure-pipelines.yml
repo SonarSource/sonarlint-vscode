@@ -113,6 +113,15 @@ stages:
         inputs:
           command: custom
           customCommand: run compile
+      - bash: |
+        set -e
+        sudo apt-get update
+        sudo apt-get install -y xvfb
+        sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+        sudo chmod +x /etc/init.d/xvfb
+        sudo update-rc.d xvfb defaults
+        sudo service xvfb start
+        export DISPLAY=':10'
       - task: Npm@1
         displayName: 'Run tests with coverage'
         inputs:
