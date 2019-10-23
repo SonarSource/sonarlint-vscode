@@ -1,0 +1,49 @@
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: sonarsource-build-variables
+
+resources:
+  repositories:
+    - repository: commonTemplates
+      type: git
+      name: pipelines-yaml-templates
+      ref:  refs/tags/v1.0.1
+
+stages:
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'build'
+    burgrType: 'build'
+    stageName: 'build'
+    stageDisplayName: Build and stage to repox
+    jobs:
+    - job: build
+      displayName: Build and stage to repox
+      variables:
+        NPM_CACHE_FOLDER: $(Pipeline.Workspace)/node_modules
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: CacheBeta@0
+        displayName: Cache NPM dependencies
+        inputs:
+          key: node_modules
+          path: $(NPM_CACHE_FOLDER)
+      - task: NodeTool@0
+        displayName: 'Install NPM dependencies'
+        inputs:
+          versionSpec: 'lts/*'
+        script: npm install
+      - task: gulp@1
+        displayName: 'Build and deploy VSIX'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        env:
+          ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
+          ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
+        inputs:
+          targets: clean deploy
+      - bash: git checkout .
+        name: revertPackageJsonChanges
+        displayName: Revert changes made to package.json to not break cache feature
