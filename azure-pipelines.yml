@@ -59,6 +59,7 @@ stages:
     stageDisplayName: Run tests and SonarQube analysis
     jobs:
     - job: extractPackageVersion
+      steps:
       - task: PythonScript@0
         name: extractPackageVersion
         displayName: Extract version from package.json
