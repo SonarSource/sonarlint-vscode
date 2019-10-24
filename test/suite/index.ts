@@ -11,9 +11,17 @@ import { createReport } from '../coverage';
 
 export function run(): Promise<void> {
   // Create the mocha test
-  const mocha = new Mocha({
-    ui: 'tdd'
-  });
+  const mochaOptions: MochaSetupOptions = {
+    ui: 'tdd',
+    reporter: 'mocha-multi-reporters',
+    reporterOptions: {
+      reporterEnabled: 'spec, xunit',
+      xunitReporterOptions: {
+        output: path.resolve(__dirname, '..', '..', 'alltests.xml')
+      }
+    }
+  };
+  const mocha = new Mocha(mochaOptions);
   mocha.useColors(true);
 
   const testsRoot = path.resolve(__dirname, '..');
