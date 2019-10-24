@@ -133,7 +133,17 @@ stages:
         inputs:
           command: custom
           customCommand: run test-cov
-      - bash: cat $(Pipeline.Workspace)/.npm/_logs/*.log
+      - bash: |
+          echo 'Troubleshooting info for test-cov'
+          echo ''
+          echo 'Compile step output'
+          find $(Pipeline.Workspace)/out
+          echo ''
+          echo 'Manual test launch'
+          node $(Pipeline.Workspace)/out/test/runTest.js --coverage
+          echo ''
+          echo 'NPM execution log'
+          cat $(Pipeline.Workspace)/.npm/_logs/*.log
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
