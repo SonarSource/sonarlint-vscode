@@ -263,7 +263,8 @@
     "watch": "webpack --mode development --watch --info-verbosity verbose",
     "pretest": "webpack --mode development && tsc -p ./",
     "test": "node ./out/test/runTest.js",
-    "test-cov": "node ./out/test/runTest.js --coverage"
+    "test-cov": "node ./out/test/runTest.js --coverage",
+    "prepare": "node scripts/prepare.js"
   },
   "dependencies": {
     "expand-home-dir": "0.0.3",
