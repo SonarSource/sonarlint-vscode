@@ -143,3 +143,8 @@ stages:
         displayName: Revert changes made to package.json to not break cache feature
       - task: SonarQubeAnalyze@4
         displayName: 'Run SonarQube analysis on Next'
+- template: promote-stage.yml@commonTemplates
+  parameters:
+    stageDependencies:
+    - build
+    - validate
