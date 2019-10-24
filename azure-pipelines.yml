@@ -130,13 +130,12 @@ stages:
           customCommand: run prepare
       - task: Npm@1
         displayName: 'Run tests with coverage'
-        continueOnError: true
         inputs:
           command: custom
           customCommand: run test-cov
       - task: PublishTestResults@2
+        condition: succeededOrFailed()
         inputs:
-          testResultsFormat: xUnit
           testResultsFiles: '**/alltests.xml'
           failTaskOnFailedTests: true
       - bash: git checkout .
