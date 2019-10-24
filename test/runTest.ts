@@ -49,12 +49,12 @@ async function main() {
     const extensionTestsPath = path.resolve(outPath, 'test/suite/index');
 
     // Download VS Code, unzip it and run the integration test
-    await runTests({ extensionDevelopmentPath, extensionTestsPath, launchArgs });
+    await runTests({ extensionDevelopmentPath, extensionTestsPath, launchArgs })
+    process.exit(0);
   } catch (err) {
     console.error('Failed to run tests', err);
     process.exit(1);
   }
 }
 
-main()
-  .then(() => process.exit(0));
+main();
