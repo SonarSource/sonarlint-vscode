@@ -7,8 +7,8 @@
 
 import { expect } from 'chai';
 
-describe('Break CI', () => {
-  it('Should fail CI on failed test assertion', () => {
+suite('Break CI', () => {
+  test('Should fail CI on failed test assertion', () => {
     expect(false).to.be.true;
   });
 });
