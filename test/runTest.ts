@@ -10,6 +10,13 @@ import { instrument } from './coverage';
 import { runTests } from 'vscode-test';
 
 function main() {
+  const xDisplay = process.env['DISPLAY'];
+  if (xDisplay) {
+    console.log('Using xvfb at DISPLAY=', );
+  } else {
+    console.warn('No DISPLAY env variable found');
+  }
+
   // The folder containing the Extension Manifest package.json
   // Passed to `--extensionDevelopmentPath`
   const extensionRootPath = path.resolve(__dirname, '../../');
