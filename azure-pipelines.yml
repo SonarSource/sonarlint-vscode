@@ -133,6 +133,10 @@ stages:
         inputs:
           command: custom
           customCommand: run test-cov
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: xUnit
+          testResultsFiles: out-cov/alltests.xml
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
