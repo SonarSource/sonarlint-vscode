@@ -84,6 +84,15 @@ stages:
         inputs:
           key: npm | $(Agent.OS) | package-lock.json
           path: $(npm_config_cache)
+      - bash: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          export DISPLAY=':10'
       - task: SonarQubePrepare@4
         displayName: Prepare SonarQube analysis on Next
         inputs:
@@ -112,15 +121,6 @@ stages:
         inputs:
           command: custom
           customCommand: run compile
-      - bash: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
-          sudo chmod +x /etc/init.d/xvfb
-          sudo update-rc.d xvfb defaults
-          sudo service xvfb start
-          export DISPLAY=':10'
       - task: Npm@1
         displayName: 'Fetch language server and its dependencies'
         continueOnError: true

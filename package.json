@@ -252,7 +252,7 @@
       ]
     }
   },
-  "main": "./dist/extension",
+  "main": "out-cov/src/extension",
   "files": [
     "server/sonarlint-ls.jar",
     "analyzers"
@@ -262,8 +262,8 @@
     "compile": "tsc -p ./",
     "watch": "webpack --mode development --watch --info-verbosity verbose",
     "pretest": "webpack --mode development && tsc -p ./",
-    "test": "node ./out/test/runTest.js",
-    "test-cov": "node ./out/test/runTest.js --coverage",
+    "test": "node out/test/runTest.js",
+    "test-cov": "node out/test/runTest.js --coverage",
     "prepare": "node scripts/prepare.js"
   },
   "dependencies": {
