@@ -137,7 +137,7 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: xUnit
-          testResultsFiles: out-cov/alltests.xml
+          testResultsFiles: '**/alltests.xml'
           failTaskOnFailedTests: true
       - bash: git checkout .
         name: revertPackageJsonChanges
