@@ -123,9 +123,11 @@ stages:
           export DISPLAY=':10'
       - task: Npm@1
         displayName: 'Run tests with coverage'
+        continueOnError: true
         inputs:
           command: custom
           customCommand: run prepare test-cov
+      - bash: cat $(Pipeline.Workspace)/.npm/_logs/*.log
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
