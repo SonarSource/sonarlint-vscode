@@ -14,7 +14,7 @@ const XVFB_DISPLAY=':10';
 function main() {
   const xDisplay = process.env['DISPLAY'];
   if (xDisplay) {
-    console.log('Using xvfb at DISPLAY=', );
+    console.log(`Using DISPLAY=${xDisplay}`);
   } else {
     console.warn(`No DISPLAY env variable found, exporting DISPLAY=${XVFB_DISPLAY}`);
     process.env['DISPLAY'] = XVFB_DISPLAY;
@@ -25,7 +25,7 @@ function main() {
   const extensionRootPath = path.resolve(__dirname, '../../');
   console.log('Extension root path: ' + extensionRootPath);
 
-  const launchArgs = ['--verbose', '--log', 'trace', path.resolve(extensionRootPath, 'test/samples')];
+  const launchArgs = [path.resolve(extensionRootPath, 'test/samples')];
 
   const packageJsonPath = path.resolve(extensionRootPath, 'package.json');
   const package_json = fs.readFileSync(packageJsonPath, 'utf8');

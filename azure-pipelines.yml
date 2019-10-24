@@ -87,12 +87,13 @@ stages:
       - bash: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y xvfb libgtk-3-0 libxss1 dbus
+          sudo apt-get install -y xvfb
           sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
           sudo chmod +x /etc/init.d/xvfb
           sudo update-rc.d xvfb defaults
           sudo service xvfb start
           export DISPLAY=':10'
+        displayName: 'Install and start xvfb'
       - task: SonarQubePrepare@4
         displayName: Prepare SonarQube analysis on Next
         inputs:
@@ -133,15 +134,6 @@ stages:
         inputs:
           command: custom
           customCommand: run test-cov
-          verbose: true
-      - bash: |
-          echo 'Troubleshooting info for test-cov'
-          echo ''
-          echo 'Compile step output'
-          find $(Pipeline.Workspace) -name 'runTest.js'
-          echo ''
-          echo 'NPM execution log'
-          cat $(Pipeline.Workspace)/.npm/_logs/*.log
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
