@@ -16,7 +16,7 @@ async function main() {
     const extensionRootPath = path.resolve(__dirname, '../../');
     console.log('Extension root path: ' + extensionRootPath);
 
-    const launchArgs = [path.resolve(extensionRootPath, 'test/samples')];
+    const launchArgs = ['--verbose', '--log', 'trace', path.resolve(extensionRootPath, 'test/samples')];
 
     const packageJsonPath = path.resolve(extensionRootPath, 'package.json');
     const package_json = fs.readFileSync(packageJsonPath, 'utf8');
