@@ -122,11 +122,17 @@ stages:
           sudo service xvfb start
           export DISPLAY=':10'
       - task: Npm@1
+        displayName: 'Fetch language server and its dependencies'
+        continueOnError: true
+        inputs:
+          command: custom
+          customCommand: run prepare
+      - task: Npm@1
         displayName: 'Run tests with coverage'
         continueOnError: true
         inputs:
           command: custom
-          customCommand: run prepare test-cov
+          customCommand: run test-cov
       - bash: cat $(Pipeline.Workspace)/.npm/_logs/*.log
       - bash: git checkout .
         name: revertPackageJsonChanges
