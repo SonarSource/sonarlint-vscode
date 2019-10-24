@@ -87,7 +87,7 @@ stages:
       - bash: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y xvfb
+          sudo apt-get install -y xvfb libgtk-3-0 libxss1 dbus
           sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
           sudo chmod +x /etc/init.d/xvfb
           sudo update-rc.d xvfb defaults
