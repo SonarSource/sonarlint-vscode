@@ -79,7 +79,6 @@ stages:
         packageVersion: $[ dependencies.extractPackageVersion.outputs['extractPackageVersion.packageVersion'] ]
       steps:
       - checkout: self
-        fetchDepth: 1
       - task: CacheBeta@0
         displayName: Cache NPM dependencies
         inputs:
