@@ -129,6 +129,7 @@ stages:
           customCommand: run prepare
       - task: Npm@1
         displayName: 'Run tests with coverage'
+        verbose: true
         continueOnError: true
         inputs:
           command: custom

@@ -9,12 +9,15 @@ import * as fs from 'fs';
 import { instrument } from './coverage';
 import { runTests } from 'vscode-test';
 
+const XVFB_DISPLAY=':10';
+
 function main() {
   const xDisplay = process.env['DISPLAY'];
   if (xDisplay) {
     console.log('Using xvfb at DISPLAY=', );
   } else {
-    console.warn('No DISPLAY env variable found');
+    console.warn(`No DISPLAY env variable found, exporting DISPLAY=${XVFB_DISPLAY}`);
+    process.env['DISPLAY'] = XVFB_DISPLAY;
   }
 
   // The folder containing the Extension Manifest package.json
