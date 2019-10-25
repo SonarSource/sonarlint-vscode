@@ -34,7 +34,7 @@ stages:
       - task: Npm@1
         displayName: 'Install NPM dependencies'
         inputs:
-          command: install
+          command: ci
       - task: gulp@1
         displayName: 'Build and deploy VSIX'
         condition: eq(variables['Build.Reason'], 'PullRequest')
@@ -106,7 +106,7 @@ stages:
       - task: Npm@1
         displayName: 'Install NPM dependencies'
         inputs:
-          command: install
+          command: ci
       - task: Npm@1
         displayName: 'Compile TypeScript'
         inputs:
