@@ -56,12 +56,6 @@ gulp.task('compute-hashes', ['package'], function() {
 });
 
 gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
-  /*
-  if (process.env.BUILD_SOURCEBRANCH !== 'master') {
-    gutil.log('Not on master, skip deploy-vsix');
-    return Promise.resolve();
-  }
-  */
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -99,12 +93,6 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
 });
 
 gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
-  /*
-  if (process.env.BUILD_SOURCEBRANCH !== 'master') {
-    gutil.log('Not on master, skip deploy-buildinfo');
-    return Promise.resolve();
-  }
-  */
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_BUILDID;
