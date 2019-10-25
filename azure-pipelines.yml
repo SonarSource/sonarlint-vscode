@@ -43,6 +43,11 @@ stages:
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
         inputs:
           targets: clean deploy
+      - task: gulp@1
+        displayName: 'Build VSIX'
+        condition: not(or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')))
+        inputs:
+          targets: clean package
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
