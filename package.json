@@ -252,7 +252,7 @@
       ]
     }
   },
-  "main": "out-cov/src/extension",
+  "main": "./dist/extension",
   "files": [
     "server/sonarlint-ls.jar",
     "analyzers"
