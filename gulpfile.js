@@ -16,7 +16,6 @@ const through = require('through2');
 const request = require('request');
 const bump = require('gulp-bump');
 const dateformat = require('dateformat');
-const sonarqubeScanner = require('sonarqube-scanner');
 //...
 
 gulp.task('clean', () => {
@@ -135,50 +134,6 @@ function snapshotVersion() {
     return version.substr(0, buildIdx) + '-SNAPSHOT';
   }
   return version;
-}
-
-gulp.task('sonarqube', callback => {
-  if (process.env.TRAVIS_BRANCH === 'master' && process.env.TRAVIS_PULL_REQUEST === 'false') {
-    runSonnarQubeScanner(callback, {
-      'sonar.analysis.sha1': process.env.TRAVIS_COMMIT
-    });
-  } else if (process.env.TRAVIS_PULL_REQUEST !== 'false') {
-    runSonnarQubeScanner(callback, {
-      'sonar.pullrequest.branch': process.env.TRAVIS_PULL_REQUEST_BRANCH,
-      'sonar.pullrequest.base': process.env.TRAVIS_BRANCH,
-      'sonar.pullrequest.key': process.env.TRAVIS_PULL_REQUEST,
-      'sonar.pullrequest.provider': 'github',
-      'sonar.pullrequest.github.repository': process.env.TRAVIS_REPO_SLUG,
-      'sonar.analysis.prNumber': process.env.TRAVIS_PULL_REQUEST,
-      'sonar.analysis.sha1': process.env.TRAVIS_PULL_REQUEST_SHA
-    });
-  }
-});
-
-function runSonnarQubeScanner(callback, options = {}) {
-  const commonOptions = {
-    'sonar.projectKey': 'org.sonarsource.sonarlint.vscode:sonarlint-vscode',
-    'sonar.projectName': 'SonarLint for VSCode',
-    'sonar.projectVersion': snapshotVersion(),
-    'sonar.tests': 'test',
-    'sonar.exclusions': 'test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**',
-    'sonar.typescript.lcov.reportPaths': 'coverage/lcov.info',
-    'sonar.coverage.exclusions': 'gulpfile.js, webpack.config.js, scripts/**',
-    'sonar.analysis.buildNumber': process.env.TRAVIS_BUILD_NUMBER,
-    'sonar.analysis.pipeline': process.env.TRAVIS_BUILD_NUMBER,
-    'sonar.analysis.repository': process.env.TRAVIS_REPO_SLUG
-  };
-  sonarqubeScanner(
-    {
-      serverUrl: process.env.SONAR_HOST_URL,
-      token: process.env.SONAR_TOKEN,
-      options: {
-        ...commonOptions,
-        ...options
-      }
-    },
-    callback
-  );
 }
 
 function buildInfo(name, version, buildNumber, hashes) {
