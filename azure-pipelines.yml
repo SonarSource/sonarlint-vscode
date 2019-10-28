@@ -78,7 +78,6 @@ stages:
         npm_config_cache: $(Pipeline.Workspace)/.npm
         packageVersion: $[ dependencies.extractPackageVersion.outputs['extractPackageVersion.packageVersion'] ]
       steps:
-      - checkout: self
       - task: CacheBeta@0
         displayName: Cache NPM dependencies
         inputs:
