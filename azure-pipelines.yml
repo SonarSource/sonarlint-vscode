@@ -9,7 +9,7 @@ resources:
     - repository: commonTemplates
       type: git
       name: pipelines-yaml-templates
-      ref:  refs/tags/v1.0.1
+      ref:  refs/tags/v1.0.3
 
 stages:
 - template: stage-with-burgr-notifications.yml@commonTemplates
@@ -93,10 +93,8 @@ stages:
           sudo service xvfb start
           export DISPLAY=':10'
         displayName: 'Install and start xvfb'
-      - task: SonarQubePrepare@4
-        displayName: Prepare SonarQube analysis on Next
-        inputs:
-          SonarQube: Next
+      - template: prepare-sq-analysis-steps.yml
+        parameters:
           scannerMode: CLI
           configMode: manual
           cliProjectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
