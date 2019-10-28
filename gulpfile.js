@@ -16,7 +16,6 @@ const through = require('through2');
 const request = require('request');
 const bump = require('gulp-bump');
 const dateformat = require('dateformat');
-const sonarqubeScanner = require('sonarqube-scanner');
 //...
 
 gulp.task('clean', () => {
@@ -27,7 +26,7 @@ gulp.task('clean', () => {
 });
 
 gulp.task('update-version', function() {
-  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const buildNumber = process.env.BUILD_BUILDID;
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   if (version.endsWith('-SNAPSHOT') && buildNumber) {
@@ -57,18 +56,14 @@ gulp.task('compute-hashes', ['package'], function() {
 });
 
 gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
-  if (process.env.TRAVIS_BRANCH !== 'master') {
-    gutil.log('Not on master, skip deploy-vsix');
-    return Promise.resolve();
-  }
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
     ARTIFACTORY_DEPLOY_USERNAME,
     ARTIFACTORY_DEPLOY_PASSWORD,
-    TRAVIS_COMMIT,
-    TRAVIS_BRANCH,
-    TRAVIS_BUILD_NUMBER
+    BUILD_SOURCEVERSION,
+    BUILD_SOURCEBRANCH,
+    BUILD_BUILDID
   } = process.env;
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
@@ -81,10 +76,10 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
         username: ARTIFACTORY_DEPLOY_USERNAME,
         password: ARTIFACTORY_DEPLOY_PASSWORD,
         properties: {
-          'vcs.revision': TRAVIS_COMMIT,
-          'vcs.branch': TRAVIS_BRANCH,
+          'vcs.revision': BUILD_SOURCEVERSION,
+          'vcs.branch': BUILD_SOURCEBRANCH,
           'build.name': name,
-          'build.number': TRAVIS_BUILD_NUMBER
+          'build.number': BUILD_BUILDID
         },
         request: {
           headers: {
@@ -98,13 +93,9 @@ gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
 });
 
 gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
-  if (process.env.TRAVIS_BRANCH !== 'master') {
-    gutil.log('Not on master, skip deploy-buildinfo');
-    return Promise.resolve();
-  }
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
-  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const buildNumber = process.env.BUILD_BUILDID;
   return request
     .put(
       {
@@ -123,7 +114,7 @@ gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
 gulp.task('deploy', ['deploy-buildinfo', 'deploy-vsix'], function() {});
 
 function snapshotVersion() {
-  const buildNumber = process.env.TRAVIS_BUILD_NUMBER;
+  const buildNumber = process.env.BUILD_BUILDID;
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   const buildIdx = version.lastIndexOf('-');
@@ -133,59 +124,21 @@ function snapshotVersion() {
   return version;
 }
 
-gulp.task('sonarqube', callback => {
-  if (process.env.TRAVIS_BRANCH === 'master' && process.env.TRAVIS_PULL_REQUEST === 'false') {
-    runSonnarQubeScanner(callback, {
-      'sonar.analysis.sha1': process.env.TRAVIS_COMMIT
-    });
-  } else if (process.env.TRAVIS_PULL_REQUEST !== 'false') {
-    runSonnarQubeScanner(callback, {
-      'sonar.pullrequest.branch': process.env.TRAVIS_PULL_REQUEST_BRANCH,
-      'sonar.pullrequest.base': process.env.TRAVIS_BRANCH,
-      'sonar.pullrequest.key': process.env.TRAVIS_PULL_REQUEST,
-      'sonar.pullrequest.provider': 'github',
-      'sonar.pullrequest.github.repository': process.env.TRAVIS_REPO_SLUG,
-      'sonar.analysis.prNumber': process.env.TRAVIS_PULL_REQUEST,
-      'sonar.analysis.sha1': process.env.TRAVIS_PULL_REQUEST_SHA
-    });
-  }
-});
-
-function runSonnarQubeScanner(callback, options = {}) {
-  const commonOptions = {
-    'sonar.projectKey': 'org.sonarsource.sonarlint.vscode:sonarlint-vscode',
-    'sonar.projectName': 'SonarLint for VSCode',
-    'sonar.projectVersion': snapshotVersion(),
-    'sonar.tests': 'test',
-    'sonar.exclusions': 'test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**',
-    'sonar.typescript.lcov.reportPaths': 'coverage/lcov.info',
-    'sonar.coverage.exclusions': 'gulpfile.js, webpack.config.js, scripts/**',
-    'sonar.analysis.buildNumber': process.env.TRAVIS_BUILD_NUMBER,
-    'sonar.analysis.pipeline': process.env.TRAVIS_BUILD_NUMBER,
-    'sonar.analysis.repository': process.env.TRAVIS_REPO_SLUG
-  };
-  sonarqubeScanner(
-    {
-      serverUrl: process.env.SONAR_HOST_URL,
-      token: process.env.SONAR_TOKEN,
-      options: {
-        ...commonOptions,
-        ...options
-      }
-    },
-    callback
-  );
-}
-
 function buildInfo(name, version, buildNumber, hashes) {
+  const {
+    SYSTEM_TEAMPROJECTID,
+    BUILD_BUILDID,
+    BUILD_REPOSITORY_NAME,
+    BUILD_SOURCEVERSION
+  } = process.env;
   return {
     version: '1.0.1',
     name,
     number: buildNumber,
     started: dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
-    url: process.env.CI_BUILD_URL,
-    vcsRevision: process.env.TRAVIS_COMMIT,
-    vcsUrl: `https://github.com/${process.env.TRAVIS_REPO_SLUG}.git`,
+    url: `https://dev.azure.com/sonarsource/${SYSTEM_TEAMPROJECTID}/_build/results?buildId=${BUILD_BUILDID}&view=logs`,
+    vcsRevision: BUILD_SOURCEVERSION,
+    vcsUrl: `https://github.com/${BUILD_REPOSITORY_NAME}.git`,
     modules: [
       {
         id: `org.sonarsource.sonarlint.vscode:${name}:${version}`,
@@ -206,7 +159,7 @@ function buildInfo(name, version, buildNumber, hashes) {
       'java.specification.version': '1.8', // Workaround for https://jira.sonarsource.com/browse/RA-115
       'buildInfo.env.PROJECT_VERSION': version,
       'buildInfo.env.ARTIFACTORY_DEPLOY_REPO': 'sonarsource-public-qa',
-      'buildInfo.env.TRAVIS_COMMIT': process.env.TRAVIS_COMMIT
+      'buildInfo.env.BUILD_BUILDID': BUILD_BUILDID
     }
   };
 }
