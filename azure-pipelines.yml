@@ -42,11 +42,13 @@ stages:
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
         inputs:
+          gulpjs: node_modules/.bin/gulp
           targets: clean deploy
       - task: gulp@1
         displayName: 'Build VSIX'
         condition: not(or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')))
         inputs:
+          gulpjs: node_modules/.bin/gulp
           targets: clean package
       - bash: git checkout .
         name: revertPackageJsonChanges
