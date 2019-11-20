@@ -18,12 +18,7 @@ const bump = require('gulp-bump');
 const dateformat = require('dateformat');
 //...
 
-gulp.task('clean', () => {
-  del.sync('*.vsix');
-  del.sync('server');
-  del.sync('out');
-  del.sync('out-cov');
-});
+gulp.task('clean', () => del(['*.vsix', 'server', 'out', 'out-cov']));
 
 gulp.task('update-version', function() {
   const buildNumber = process.env.BUILD_BUILDID;
@@ -40,7 +35,7 @@ gulp.task('update-version', function() {
   }
 });
 
-gulp.task('package', ['update-version'], vsce.createVSIX);
+gulp.task('package', gulp.series('update-version', vsce.createVSIX));
 
 function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json'));
@@ -51,67 +46,76 @@ const hashes = {
   md5: ''
 };
 
-gulp.task('compute-hashes', ['package'], function() {
-  return gulp.src('*.vsix').pipe(hashsum());
-});
+gulp.task(
+  'compute-hashes',
+  gulp.series('package', function() {
+    return gulp.src('*.vsix').pipe(hashsum());
+  })
+);
 
-gulp.task('deploy-vsix', ['package', 'compute-hashes'], function() {
-  const {
-    ARTIFACTORY_URL,
-    ARTIFACTORY_DEPLOY_REPO,
-    ARTIFACTORY_DEPLOY_USERNAME,
-    ARTIFACTORY_DEPLOY_PASSWORD,
-    BUILD_SOURCEVERSION,
-    BUILD_SOURCEBRANCH,
-    BUILD_BUILDID
-  } = process.env;
-  const packageJSON = getPackageJSON();
-  const { version, name } = packageJSON;
-  const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/org/sonarsource/sonarlint/vscode/${name}/${version}`;
-  return gulp
-    .src('*.vsix')
-    .pipe(
-      artifactoryUpload({
-        url: artifactoryTargetUrl,
-        username: ARTIFACTORY_DEPLOY_USERNAME,
-        password: ARTIFACTORY_DEPLOY_PASSWORD,
-        properties: {
-          'vcs.revision': BUILD_SOURCEVERSION,
-          'vcs.branch': BUILD_SOURCEBRANCH,
-          'build.name': name,
-          'build.number': BUILD_BUILDID
+gulp.task(
+  'deploy-vsix',
+  gulp.series('package', 'compute-hashes', function() {
+    const {
+      ARTIFACTORY_URL,
+      ARTIFACTORY_DEPLOY_REPO,
+      ARTIFACTORY_DEPLOY_USERNAME,
+      ARTIFACTORY_DEPLOY_PASSWORD,
+      BUILD_SOURCEVERSION,
+      BUILD_SOURCEBRANCH,
+      BUILD_BUILDID
+    } = process.env;
+    const packageJSON = getPackageJSON();
+    const { version, name } = packageJSON;
+    const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/org/sonarsource/sonarlint/vscode/${name}/${version}`;
+    return gulp
+      .src('*.vsix')
+      .pipe(
+        artifactoryUpload({
+          url: artifactoryTargetUrl,
+          username: ARTIFACTORY_DEPLOY_USERNAME,
+          password: ARTIFACTORY_DEPLOY_PASSWORD,
+          properties: {
+            'vcs.revision': BUILD_SOURCEVERSION,
+            'vcs.branch': BUILD_SOURCEBRANCH,
+            'build.name': name,
+            'build.number': BUILD_BUILDID
+          },
+          request: {
+            headers: {
+              'X-Checksum-MD5': hashes.md5,
+              'X-Checksum-Sha1': hashes.sha1
+            }
+          }
+        })
+      )
+      .on('error', gutil.log);
+  })
+);
+
+gulp.task(
+  'deploy-buildinfo',
+  gulp.series('compute-hashes', function() {
+    const packageJSON = getPackageJSON();
+    const { version, name } = packageJSON;
+    const buildNumber = process.env.BUILD_BUILDID;
+    return request
+      .put(
+        {
+          url: process.env.ARTIFACTORY_URL + '/api/build',
+          json: buildInfo(name, version, buildNumber, hashes)
         },
-        request: {
-          headers: {
-            'X-Checksum-MD5': hashes.md5,
-            'X-Checksum-Sha1': hashes.sha1
+        function(error, response, body) {
+          if (error) {
+            gutil.log('error:', error);
           }
         }
-      })
-    )
-    .on('error', gutil.log);
-});
+      )
+      .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
+  })
+);
 
-gulp.task('deploy-buildinfo', ['compute-hashes'], function() {
-  const packageJSON = getPackageJSON();
-  const { version, name } = packageJSON;
-  const buildNumber = process.env.BUILD_BUILDID;
-  return request
-    .put(
-      {
-        url: process.env.ARTIFACTORY_URL + '/api/build',
-        json: buildInfo(name, version, buildNumber, hashes)
-      },
-      function(error, response, body) {
-        if (error) {
-          gutil.log('error:', error);
-        }
-      }
-    )
-    .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
-});
-
-gulp.task('deploy', ['deploy-buildinfo', 'deploy-vsix'], function() {});
+gulp.task('deploy', gulp.series('deploy-buildinfo', 'deploy-vsix'));
 
 function snapshotVersion() {
   const buildNumber = process.env.BUILD_BUILDID;
@@ -125,12 +129,7 @@ function snapshotVersion() {
 }
 
 function buildInfo(name, version, buildNumber, hashes) {
-  const {
-    SYSTEM_TEAMPROJECTID,
-    BUILD_BUILDID,
-    BUILD_REPOSITORY_NAME,
-    BUILD_SOURCEVERSION
-  } = process.env;
+  const { SYSTEM_TEAMPROJECTID, BUILD_BUILDID, BUILD_REPOSITORY_NAME, BUILD_SOURCEVERSION } = process.env;
   return {
     version: '1.0.1',
     name,
