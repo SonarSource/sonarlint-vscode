@@ -37,7 +37,7 @@
     "onLanguage:jsp",
     "onLanguage:apex",
     "onLanguage:plsql",
-    "onCommand:SonarLint.updateServersAndBinding",
+    "onCommand:SonarLint.UpdateAllBindings",
     "onView:SonarLint.AllRules"
   ],
   "extensionDependency": [
@@ -62,7 +62,8 @@
         "sonarlint.testFilePattern": {
           "type": "string",
           "default": "{**/test/**,**/*test*,**/*Test*}",
-          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files."
+          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files.",
+          "scope": "resource"
         },
         "sonarlint.analyzerProperties": {
           "type": "object",
@@ -72,12 +73,14 @@
               "markdownDescription": "One entry value"
             }
           },
-          "markdownDescription": "Extra properties that could be passed to the code analyzers. e.g. `{\"sonar.javascript.globals\": \"xxx\"}`. See [documentation](https://redirect.sonarsource.com/doc/plugin-library.html) of each analyzers."
+          "markdownDescription": "Extra properties that could be passed to the code analyzers. e.g. `{\"sonar.javascript.globals\": \"xxx\"}`. See [documentation](https://redirect.sonarsource.com/doc/plugin-library.html) of each analyzers.",
+          "scope": "resource"
         },
         "sonarlint.disableTelemetry": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Disable sending anonymous usage statistics"
+          "markdownDescription": "Disable sending anonymous usage statistics",
+          "scope": "window"
         },
         "sonarlint.rules": {
           "type": "object",
@@ -156,14 +159,15 @@
               "description": "Key of the project in SonarQube/SonarCloud",
               "default": ""
             }
-          }
+          },
+          "scope": "resource"
         }
       }
     },
     "commands": [
       {
-        "command": "SonarLint.updateServersAndBinding",
-        "title": "Update binding to SonarQube/SonarCloud",
+        "command": "SonarLint.UpdateAllBindings",
+        "title": "Update all bindings to SonarQube/SonarCloud",
         "category": "SonarLint"
       },
       {
@@ -260,7 +264,7 @@
   "scripts": {
     "vscode:prepublish": "node scripts/prepare.js && webpack --mode production",
     "compile": "tsc -p ./",
-    "watch": "webpack --mode development --watch --info-verbosity verbose",
+    "watch": "webpack --mode development --watch --info-verbosity verbose &",
     "pretest": "webpack --mode development && tsc -p ./",
     "test": "node out/test/runTest.js",
     "test-cov": "node out/test/runTest.js --coverage",

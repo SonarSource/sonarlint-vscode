@@ -19,12 +19,9 @@ import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
 
-declare var v8debug: object;
+declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
 let oldConfig: VSCode.WorkspaceConfiguration;
-
-const connectedModeServersSectionName = 'connectedMode.servers';
-const connectedModeProjectSectionName = 'connectedMode.project';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', language: 'javascript' },
@@ -83,10 +80,10 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
           logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
           const process = ChildProcess.spawn(command, args);
 
-          process.stdout.on('data', function(data) {
+          process.stdout.on('data', function (data) {
             appendToSonarLintOutput(data.toString());
           });
-          process.stderr.on('data', function(data) {
+          process.stderr.on('data', function (data) {
             appendToSonarLintOutput(data.toString());
           });
         });
@@ -209,20 +206,13 @@ export function activate(context: VSCode.ExtensionContext) {
     },
     diagnosticCollectionName: 'sonarlint',
     initializationOptions: () => {
-      const configuration = getSonarLintConfiguration();
       return {
-        testFilePattern: configuration && configuration.get('testFilePattern'),
-        analyzerProperties: configuration && configuration.get('analyzerProperties'),
         productKey: 'vscode',
         telemetryStorage: Path.resolve(context.extensionPath, '..', 'sonarlint_usage'),
         productName: 'SonarLint VSCode',
         productVersion: VSCode.extensions.getExtension('SonarSource.sonarlint-vscode').packageJSON.version,
         ideVersion: VSCode.version,
-        disableTelemetry: configuration ? configuration.get('disableTelemetry', false) : false,
         typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined,
-        includeRuleDetailsInCodeAction: true,
-        connectedModeServers: configuration && configuration.get(connectedModeServersSectionName),
-        connectedModeProject: configuration && configuration.get(connectedModeProjectSectionName)
       };
     },
     outputChannel: sonarlintOutput,
@@ -308,16 +298,6 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
 
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.UPDATE_SERVERS_AND_BINDING_STORAGE, () => {
-      updateServerStorage()
-        .then(updateProjectBinding)
-        .then(() => {
-          VSCode.window.showInformationMessage('SonarLint server storage updated');
-        });
-    })
-  );
-
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
       allRulesTreeDataProvider.refresh();
@@ -341,36 +321,6 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(onConfigurationChange());
 }
 
-function updateServerStorage(): Thenable<void> {
-  const params: ExecuteCommandParams = {
-    command: 'SonarLint.UpdateServerStorage',
-    arguments: getSonarLintConfiguration().get(connectedModeServersSectionName)
-  };
-  return languageClient.onReady().then(() =>
-    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
-      success => {},
-      reason => {
-        VSCode.window.showWarningMessage('Failed to update SonarLint server storage');
-      }
-    )
-  );
-}
-
-function updateProjectBinding(): Thenable<void> {
-  const params: ExecuteCommandParams = {
-    command: 'SonarLint.UpdateProjectBinding',
-    arguments: getSonarLintConfiguration().get(connectedModeProjectSectionName)
-  };
-  return languageClient.onReady().then(() =>
-    languageClient.sendRequest(ExecuteCommandRequest.type, params).then(
-      success => {},
-      reason => {
-        VSCode.window.showWarningMessage('Failed to update SonarLint project binding');
-      }
-    )
-  );
-}
-
 function onConfigurationChange() {
   return VSCode.workspace.onDidChangeConfiguration(event => {
     if (!event.affectsConfiguration('sonarlint')) {
@@ -379,8 +329,6 @@ function onConfigurationChange() {
     const newConfig = getSonarLintConfiguration();
 
     const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(oldConfig, newConfig);
-    const serversChanged = !configKeyDeepEquals(connectedModeServersSectionName, oldConfig, newConfig);
-    const bindingChanged = !configKeyDeepEquals(connectedModeProjectSectionName, oldConfig, newConfig);
 
     if (sonarLintLsConfigChanged) {
       const msg = 'SonarLint Language Server configuration changed, please restart VS Code.';
@@ -394,16 +342,6 @@ function onConfigurationChange() {
       });
     }
 
-    if (serversChanged && bindingChanged) {
-      oldConfig = newConfig;
-      updateServerStorage().then(updateProjectBinding);
-    } else if (serversChanged) {
-      oldConfig = newConfig;
-      updateServerStorage();
-    } else if (bindingChanged) {
-      oldConfig = newConfig;
-      updateProjectBinding();
-    }
   });
 }
 
@@ -431,7 +369,7 @@ export function parseVMargs(params: string[], vmargsLine: string) {
   }
   vmargs.forEach(arg => {
     //remove all standalone double quotes
-    arg = arg.replace(/(\\)?"/g, function($0, $1) {
+    arg = arg.replace(/(\\)?"/g, function ($0, $1) {
       return $1 ? $0 : '';
     });
     //unescape all escaped double quotes
