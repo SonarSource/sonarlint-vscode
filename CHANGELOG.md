@@ -1,3 +1,7 @@
+## 1.12.0
+
+* Allow to configure a different binding per workspace folder
+
 ## 1.11.0
 
 * Add the ability to activate rules that are not enabled by default
