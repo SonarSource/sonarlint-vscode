@@ -63,7 +63,8 @@ gulp.task(
       ARTIFACTORY_DEPLOY_PASSWORD,
       BUILD_SOURCEVERSION,
       BUILD_SOURCEBRANCH,
-      BUILD_BUILDID
+      BUILD_BUILDID,
+      SYSTEM_PULLREQUEST_TARGETBRANCH
     } = process.env;
     const packageJSON = getPackageJSON();
     const { version, name } = packageJSON;
@@ -77,7 +78,7 @@ gulp.task(
           password: ARTIFACTORY_DEPLOY_PASSWORD,
           properties: {
             'vcs.revision': BUILD_SOURCEVERSION,
-            'vcs.branch': BUILD_SOURCEBRANCH,
+            'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
             'build.name': name,
             'build.number': BUILD_BUILDID
           },
