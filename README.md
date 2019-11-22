@@ -40,13 +40,30 @@ SonarLint should automatically find it but you can also explicitly set the path 
 
 You can connect SonarLint to SonarQube >= 6.7 or SonarCloud to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
 
-To configure the connection, have a look at SonarLint in default user settings.
+The first step is to configure connection details (server URL, user token and possibly SonarCloud organization). For security reasons, the token should not be stored in SCM with workspace settings. That's why we suggest to configure them in VSCode user settings. Example:
+
+    {
+        "sonarlint.connectedMode.servers": [
+            { "serverId": "mySonarQube", "serverUrl": "https://sonarqube.mycompany.com", "token": "<generated from SonarQube account/security page>" },
+            { "serverId": "sonarcloud", "serverUrl": "https://sonarcloud.io", "organizationKey": "myOrgOnSonarCloud", "token": "<generated from https://sonarcloud.io/account/security/>" }
+        ]
+    }
+
+
+The second step is to configure the project binding, either at workspace level, or in every workspace folders. Example:
+
+    {
+        "sonarlint.connectedMode.project": {
+            "serverId": "mySonarQube",
+            "projectKey": "the-project-key-on-sonarqube"
+        }
+    }
 
 Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
 
-If you change something on the server such as the quality profile, you can trigger an update of the local cache using the "SonarLint: Update binding to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
+SonarLint keep server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
 
-For security reasons, the token should not be stored in SCM with workspace settings.
+
 
 ## Contributions
 
