@@ -32,7 +32,7 @@ const jarDependencies = [
   {
     groupId: 'org/sonarsource/python',
     artifactId: 'sonar-python-plugin',
-    version: '1.15.1.4116',
+    version: '2.3.0.5351',
     output: 'analyzers/sonarpython.jar'
   },
   {
