@@ -26,7 +26,7 @@ const jarDependencies = [
   {
     groupId: 'org/sonarsource/php',
     artifactId: 'sonar-php-plugin',
-    version: '3.2.0.4868',
+    version: '3.3.0.5166',
     output: 'analyzers/sonarphp.jar'
   },
   {
