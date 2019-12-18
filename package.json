@@ -264,7 +264,7 @@
   "scripts": {
     "vscode:prepublish": "node scripts/prepare.js && webpack --mode production",
     "compile": "tsc -p ./",
-    "watch": "webpack --mode development --watch --info-verbosity verbose &",
+    "webpack": "webpack --mode development",
     "pretest": "webpack --mode development && tsc -p ./",
     "test": "node out/test/runTest.js",
     "test-cov": "node out/test/runTest.js --coverage",
