@@ -1,3 +1,7 @@
+## 1.13.0
+
+* Update SonarPython 1.15.1 -> [1.16](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15180) -> [1.17](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15235) -> [2.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15236) -> [2.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15266) -> [2.2](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15288) -> [2.3](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15289), 19 new rules, improvements on existing rules thanks to a new engine
+
 ## 1.12.0
 
 * Allow to configure a different binding per workspace folder
