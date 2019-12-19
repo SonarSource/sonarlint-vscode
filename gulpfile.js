@@ -159,7 +159,8 @@ function buildInfo(name, version, buildNumber, hashes) {
       'java.specification.version': '1.8', // Workaround for https://jira.sonarsource.com/browse/RA-115
       'buildInfo.env.PROJECT_VERSION': version,
       'buildInfo.env.ARTIFACTORY_DEPLOY_REPO': 'sonarsource-public-qa',
-      'buildInfo.env.BUILD_BUILDID': BUILD_BUILDID
+      'buildInfo.env.BUILD_BUILDID': BUILD_BUILDID,
+      'buildInfo.env.BUILD_SOURCEVERSION': BUILD_SOURCEVERSION
     }
   };
 }
