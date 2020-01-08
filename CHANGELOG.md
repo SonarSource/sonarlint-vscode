@@ -1,3 +1,7 @@
+## 1.15.0
+
+* Add support for Java analysis
+
 ## 1.14.0
 
 * Group 'on change' analysis triggers to lower CPU usage

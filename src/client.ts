@@ -16,4 +16,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<RulesResponse> {
     return this.sendRequest('sonarlint/listAllRules');
   }
+
+  didClasspathUpdate(projectUri: string): void {
+    this.sendNotification('sonarlint/didClasspathUpdate', projectUri);
+  }
+
+
 }

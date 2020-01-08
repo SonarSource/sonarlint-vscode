@@ -1,10 +1,10 @@
 # SonarLint for Visual Studio Code
 
-SonarLint is an IDE extension that helps you detect and fix quality issues as you write code. Like a spell checker, SonarLint squiggles flaws so they can be fixed before committing code. You can get it directly from the VS Code Marketplace and it will then detect new bugs and quality issues as you code (JavaScript, TypeScript, PHP and Python)
+SonarLint is an IDE extension that helps you detect and fix quality issues as you write code. Like a spell checker, SonarLint squiggles flaws so they can be fixed before committing code. You can get it directly from the VS Code Marketplace and it will then detect new bugs and quality issues as you code (Java, JavaScript, TypeScript, PHP and Python)
 
 ## How it works
 
-Simply open a JS, TS, Python or PHP file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
+Simply open a Java, JS, TS, Python or PHP file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
 
 ![sonarlint on-the-fly](images/sonarlint-vscode.gif)
 
@@ -16,13 +16,14 @@ You can access the detailed rule description directly from your editor, using th
 
 Check the rules to see what SonarLint can do for you:
 
+- [Java rules](https://rules.sonarsource.com/java)
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 - [Python rules](https://rules.sonarsource.com/python)
 - [PHP rules](https://rules.sonarsource.com/php)
 - [HTML rules](https://rules.sonarsource.com/html)
 
-You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html), [SonarPHP](https://redirect.sonarsource.com/plugins/php.html) and [SonarHTML](https://redirect.sonarsource.com/plugins/html.html).
+You will benefit from the following code analyzers: [SonarJava](https://redirect.sonarsource.com/plugins/java.html), [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html), [SonarPHP](https://redirect.sonarsource.com/plugins/php.html) and [SonarHTML](https://redirect.sonarsource.com/plugins/html.html).
 
 The full list of available rules is visible in the "SonarLint Rules" view in the explorer, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
 

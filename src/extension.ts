@@ -10,7 +10,8 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
+import { LanguageClientOptions, StreamInfo, Disposable } from 'vscode-languageclient';
+import * as CompareVersions from 'compare-versions';
 
 import * as util from './util';
 import { AllRulesTreeDataProvider, Rule, RuleNode, ConfigLevel } from './rules';
@@ -18,13 +19,15 @@ import { Commands } from './commands';
 import { SonarLintExtendedLanguageClient } from './client';
 import { resolveRequirements, RequirementsData, installManagedJre } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
-import { ShowRuleDescriptionRequest } from './protocol';
+import { ShowRuleDescriptionRequest, GetJavaConfigRequest, GetJavaConfigResponse } from './protocol';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
+let classpathChangeListener: Disposable;
 
 const DOCUMENT_SELECTOR = [
+  { scheme: 'file', language: 'java' },
   { scheme: 'file', language: 'javascript' },
   { scheme: 'file', language: 'javascriptreact' },
   { scheme: 'file', language: 'php' },
@@ -122,6 +125,7 @@ function languageServerCommand(
   const vmargs = getSonarLintConfiguration().get('ls.vmargs', '');
   parseVMargs(params, vmargs);
   params.push('-jar', serverJar, '' + port);
+  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
@@ -130,7 +134,7 @@ function languageServerCommand(
   return { command: javaExecutablePath, args: params };
 }
 
-export function toUrl(filePath) {
+export function toUrl(filePath: string) {
   let pathName = Path.resolve(filePath).replace(/\\/g, '/');
 
   // Windows drive letter must be prefixed with a slash
@@ -246,7 +250,7 @@ export function activate(context: VSCode.ExtensionContext) {
     clientOptions
   );
 
-  languageClient.onReady().then(() =>
+  languageClient.onReady().then(() => {
     languageClient.onRequest(ShowRuleDescriptionRequest.type, params => {
       const ruleDescPanelContent = computeRuleDescPanelContent(context, params);
       if (!ruleDescriptionPanel) {
@@ -268,11 +272,12 @@ export function activate(context: VSCode.ExtensionContext) {
       }
       ruleDescriptionPanel.webview.html = ruleDescPanelContent;
       ruleDescriptionPanel.reveal();
-    })
-  );
+    });
+    languageClient.onRequest(GetJavaConfigRequest.type, getJavaConfig);
+  });
 
-  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(
-    () => languageClient.onReady().then(() => languageClient.listAllRules())
+  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() =>
+    languageClient.onReady().then(() => languageClient.listAllRules())
   );
   const allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
     treeDataProvider: allRulesTreeDataProvider
@@ -321,6 +326,33 @@ export function activate(context: VSCode.ExtensionContext) {
   languageClient.start();
 
   context.subscriptions.push(onConfigurationChange());
+
+  context.subscriptions.push(
+    VSCode.extensions.onDidChange(() => {
+      installClasspathListener();
+    })
+  );
+  installClasspathListener();
+}
+
+function installClasspathListener() {
+  const extension: VSCode.Extension<any> | undefined = VSCode.extensions.getExtension('redhat.java');
+  if (extension?.isActive) {
+    if (!classpathChangeListener) {
+      const extensionApi: any = extension.exports;
+      if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
+        var onDidClasspathUpdate: VSCode.Event<VSCode.Uri> = extensionApi.onDidClasspathUpdate;
+        classpathChangeListener = onDidClasspathUpdate(function(uri) {
+          languageClient.onReady().then(() => languageClient.didClasspathUpdate(uri.toString()));
+        });
+      }
+    }
+  } else {
+    if (classpathChangeListener) {
+      classpathChangeListener.dispose();
+      classpathChangeListener = null;
+    }
+  }
 }
 
 function onConfigurationChange() {
@@ -390,4 +422,32 @@ export function deactivate(): Thenable<void> {
     return undefined;
   }
   return languageClient.stop();
+}
+
+async function getJavaConfig(fileUri: string): Promise<GetJavaConfigResponse> {
+  const extension: VSCode.Extension<any> | undefined = VSCode.extensions.getExtension('redhat.java');
+  try {
+    const extensionApi: any = await extension?.activate();
+    if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
+      installClasspathListener();
+      const isTest: boolean = await extensionApi.isTestFile(fileUri);
+      const sourceLevel: string = (
+        await extensionApi.getProjectSettings(fileUri, ['org.eclipse.jdt.core.compiler.compliance'])
+      )['org.eclipse.jdt.core.compiler.compliance'];
+      const classpathResult = await extensionApi.getClasspaths(fileUri, { scope: isTest ? 'test' : 'runtime' });
+      return {
+        projectRoot: classpathResult.projectRoot,
+        sourceLevel,
+        classpath: classpathResult.classpaths,
+        isTest
+      };
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  return null;
+}
+
+function isJavaApiRecentEnough(apiVersion: string): boolean {
+  return CompareVersions.compare(apiVersion, '0.4', '>=');
 }
