@@ -314,18 +314,6 @@ export function activate(context: VSCode.ExtensionContext) {
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
       allRulesTreeDataProvider.refresh();
-      const supportedLangs = DOCUMENT_SELECTOR.map(s => s.language);
-      const refreshArgs = VSCode.workspace.textDocuments
-        // Ask for a refresh of diagnostics only on open documents supported by the language server
-        .filter(doc => !doc.isClosed && supportedLangs.indexOf(doc.languageId) >= 0)
-        .map(doc => ({ uri: doc.uri.toString(), text: doc.getText() }));
-      return languageClient.onReady().then(async () => {
-        const params: ExecuteCommandParams = {
-          command: 'SonarLint.RefreshDiagnostics',
-          arguments: refreshArgs
-        };
-        return languageClient.sendRequest(ExecuteCommandRequest.type, params);
-      });
     }
   });
 
