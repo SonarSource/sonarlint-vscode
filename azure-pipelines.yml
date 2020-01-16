@@ -221,7 +221,7 @@ stages:
         inputs:
           testResultsFiles: '**/alltests.xml'
           failTaskOnFailedTests: true
-          testRunTitle: ITs
+          testRunTitle: 'ITs $(VSCODE_VERSION)'
 - template: promote-stage.yml@commonTemplates
   parameters:
     stageDependencies:
