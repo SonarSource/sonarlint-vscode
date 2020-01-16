@@ -12,16 +12,16 @@ import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import { LanguageClientOptions, StreamInfo, ExecuteCommandRequest, ExecuteCommandParams } from 'vscode-languageclient';
 
+import * as util from './util';
 import { AllRulesTreeDataProvider, Rule, RuleNode, ConfigLevel } from './rules';
 import { Commands } from './commands';
 import { SonarLintExtendedLanguageClient } from './client';
-import { startedInDebugMode } from './util';
-import { resolveRequirements, RequirementsData } from './requirements';
+import { resolveRequirements, RequirementsData, installManagedJre } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
 import { ShowRuleDescriptionRequest } from './protocol';
 
 declare let v8debug: object;
-const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
+const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 
 const DOCUMENT_SELECTOR = [
@@ -49,7 +49,7 @@ function logToSonarLintOutput(message) {
 }
 
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
-  return resolveRequirements()
+  return resolveRequirements(context)
     .catch(error => {
       //show error
       VSCode.window.showErrorMessage(error.message, error.label).then(selection => {
@@ -205,6 +205,7 @@ function toggleRule(level: ConfigLevel) {
 }
 
 export function activate(context: VSCode.ExtensionContext) {
+  util.setExtensionContext(context);
   sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
   context.subscriptions.push(sonarlintOutput);
 
@@ -224,7 +225,7 @@ export function activate(context: VSCode.ExtensionContext) {
         productKey: 'vscode',
         telemetryStorage: Path.resolve(context.extensionPath, '..', 'sonarlint_usage'),
         productName: 'SonarLint VSCode',
-        productVersion: VSCode.extensions.getExtension('SonarSource.sonarlint-vscode').packageJSON.version,
+        productVersion: util.packageJson.version,
         ideVersion: VSCode.version,
         typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined
       };
@@ -306,6 +307,10 @@ export function activate(context: VSCode.ExtensionContext) {
           );
         });
     })
+  );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre)
   );
 
   VSCode.workspace.onDidChangeConfiguration(async event => {

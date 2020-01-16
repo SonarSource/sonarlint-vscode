@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 import * as assert from 'assert';
 import * as path from 'path';
-import { after } from 'mocha';
+import * as util from '../../src/util';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -16,14 +16,12 @@ const sampleFolderLocation = '../../../test/samples/';
 
 suite('Extension Test Suite', () => {
   test('Extension should be present', () => {
-    assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));
+    assert.ok(util.extension);
   });
 
   test('should activate', function() {
     this.timeout(1 * 60 * 1000);
-    return vscode.extensions
-      .getExtension('sonarsource.sonarlint-vscode')
-      .activate()
+    return util.extension.activate()
       .then(api => {
         assert.ok(true);
       });

@@ -8,17 +8,22 @@
 // Highly inspired from https://github.com/redhat-developer/vscode-java/blob/1f6783957c699e261a33d05702f2da356017458d/src/requirements.ts
 'use strict';
 
-import { workspace, Uri } from 'vscode';
+import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import * as path from 'path';
 import * as pathExists from 'path-exists';
 import * as expandHomeDir from 'expand-home-dir';
 import * as findJavaHome from 'find-java-home';
+
 import { Commands } from './commands';
+import * as jre from './jre';
+import { PlatformInformation } from './platform';
+import * as util from './util';
 
 const isWindows = process.platform.indexOf('win') === 0;
-const JAVA_FILENAME = 'java' + (isWindows ? '.exe' : '');
+const JAVA_FILENAME = `java${isWindows ? '.exe' : ''}`;
 const JAVA_HOME_CONFIG = 'sonarlint.ls.javaHome';
+const JAVA_MANAGED_HOME_KEY = 'managedHome';
 
 export interface RequirementsData {
   javaHome: string;
@@ -29,30 +34,18 @@ interface ErrorData {
   message: string;
   label: string;
   command: string;
-  commandParam: any;
+  commandParam: string | vscode.Uri;
 }
 
-export async function resolveRequirements(): Promise<RequirementsData> {
-  const javaHome = await checkJavaRuntime();
+export async function resolveRequirements(context: vscode.ExtensionContext): Promise<RequirementsData> {
+  const javaHome = await checkJavaRuntime(context);
   const javaVersion = await checkJavaVersion(javaHome);
   return Promise.resolve({ javaHome, javaVersion });
 }
 
-function checkJavaRuntime(): Promise<string> {
+function checkJavaRuntime(context: vscode.ExtensionContext): Promise<string> {
   return new Promise((resolve, reject) => {
-    let source: string;
-    let javaHome: string = readJavaConfig();
-    if (javaHome) {
-      source = `'${JAVA_HOME_CONFIG}' variable defined in VS Code settings`;
-    } else {
-      javaHome = process.env['JDK_HOME'];
-      if (javaHome) {
-        source = 'JDK_HOME environment variable';
-      } else {
-        javaHome = process.env['JAVA_HOME'];
-        source = 'JAVA_HOME environment variable';
-      }
-    }
+    let { source, javaHome } = tryExplicitConfiguration();
     if (javaHome) {
       javaHome = expandHomeDir(javaHome);
       if (!pathExists.sync(javaHome)) {
@@ -66,33 +59,57 @@ function checkJavaRuntime(): Promise<string> {
         }
         invalidJavaHome(reject, msg);
       }
-      return resolve(javaHome);
+      resolve(javaHome);
     }
-    //No settings, let"s try to detect as last resort.
+    // No settings, check if we have a managed one
+    javaHome = context.globalState.get(JAVA_MANAGED_HOME_KEY, null);
+    if (javaHome) {
+      console.log('Managed Java home: ', javaHome);
+      resolve(javaHome);
+    }
+
+    // No settings and no existing managed one, let's try to detect
     findJavaHome((err, home) => {
-      if (err) {
-        openJREDownload(
-          reject,
-          `Java runtime could not be located. Install it and set its location using "${JAVA_HOME_CONFIG}" variable in VS Code settings.`
-        );
+      if (err || !home) {
+        // No Java detected, last resort is to ask for permission to download and manage our own
+        suggestManagedJre(reject);
       } else {
+        console.log('Auto-detected Java home: ', javaHome);
         resolve(home);
       }
     });
   });
 }
 
+function tryExplicitConfiguration() {
+  let source: string;
+  let javaHome: string = readJavaConfig();
+  if (javaHome) {
+    source = `'${JAVA_HOME_CONFIG}' variable defined in VS Code settings`;
+  } else {
+    javaHome = process.env['JDK_HOME'];
+    if (javaHome) {
+      source = 'JDK_HOME environment variable';
+    } else {
+      javaHome = process.env['JAVA_HOME'];
+      source = 'JAVA_HOME environment variable';
+    }
+  }
+  console.log('Explicit configuration found: ', { source, javaHome });
+  return { source, javaHome: javaHome ? javaHome.trim() : null };
+}
+
 function readJavaConfig(): string {
-  const config = workspace.getConfiguration();
-  return config.get<string>(JAVA_HOME_CONFIG, null);
+  return vscode.workspace.getConfiguration().get<string>(JAVA_HOME_CONFIG, null);
 }
 
 function checkJavaVersion(javaHome: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    cp.execFile(javaHome + '/bin/java', ['-version'], {}, (error, stdout, stderr) => {
+    cp.execFile(`${javaHome}/bin/java`, ['-version'], {}, (error, stdout, stderr) => {
       const javaVersion = parseMajorVersion(stderr);
       if (javaVersion < 8) {
-        openJREDownload(reject, 'Java 8 or more recent is required to run. Please download and install a recent JRE.');
+        util.extensionContext.globalState.update(JAVA_MANAGED_HOME_KEY, undefined).then(() =>
+        openJREDownload(reject, 'Java 8 or more recent is required to run. Please download and install a recent JRE.'));
       } else {
         resolve(javaVersion);
       }
@@ -121,13 +138,21 @@ export function parseMajorVersion(content: string): number {
   return javaVersion;
 }
 
+function suggestManagedJre(reject) {
+  reject({
+    message: `Java runtime could not be located. Do you want SonarLint to download and manage its own runtime?`,
+    label: 'Use managed JRE',
+    command: Commands.INSTALL_MANAGED_JRE
+  });
+}
+
 function openJREDownload(reject, cause) {
   const jreUrl = 'https://www.oracle.com/technetwork/java/javase/downloads/index.html';
   reject({
     message: cause,
     label: 'Get the Java Runtime Environment',
     command: Commands.OPEN_BROWSER,
-    commandParam: Uri.parse(jreUrl)
+    commandParam: vscode.Uri.parse(jreUrl)
   });
 }
 
@@ -144,4 +169,40 @@ function invalidJavaHome(reject, cause: string) {
       message: cause
     });
   }
+}
+
+export async function installManagedJre() {
+  return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Downloading JRE' },
+    async (progress, cancelToken) => {
+      const options = await PlatformInformation.GetPlatformInformation();
+      console.log(`Detected options ${JSON.stringify(options)}`);
+      return jre.download({
+        os: options.os as jre.Os,
+        architecture: options.arch as jre.Architecture,
+        version: 11
+      }, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'))
+        .then((downloadResponse: any) => {
+          console.log(`JRE downloaded to ${downloadResponse.jreZipPath}`);
+          progress.report({ message: 'Unzipping JRE' });
+          return jre.unzip(downloadResponse.jreZipPath, downloadResponse.destinationDir);
+        })
+        .then(jreInstallDir => {
+          console.log(`Managed JRE installed at ${jreInstallDir}`);
+          progress.report({ message: 'JRE Installed' });
+          util.extensionContext.globalState.update(JAVA_MANAGED_HOME_KEY, jreInstallDir).then(() => {
+            const reload = 'Reload';
+            vscode.window.showInformationMessage('Managed JRE is now installed, please reload to activate SonarLint', reload)
+              .then((value: string) => {
+                if (value === reload) {
+                  vscode.commands.executeCommand('workbench.action.reloadWindow');
+                }
+            });
+          });
+        })
+        .catch(err => {
+          console.error('Error at JRE install', err);
+          throw err;
+        });
+    }
+  );
 }

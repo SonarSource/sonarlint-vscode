@@ -1,0 +1,111 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2020 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+
+import * as followRedirects from 'follow-redirects';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as inly from 'inly';
+
+const https = followRedirects.https;
+
+const ADOPT_OPEN_JDK_API_ROOT = 'https://api.adoptopenjdk.net/v2';
+
+type RequestType = 'info' | 'binary' | 'latestAssets';
+type ReleaseType = 'releases' | 'nightly';
+type Version = 8 | 9 | 10 | 11 | 12 | 13;
+type Implementation = 'hotspot' | 'openj9';
+export type Os = 'windows' | 'linux' | 'mac' | 'solaris' | 'aix';
+export type Architecture = 'x64' | 'x32' | 'ppc64' | 's390x' | 'ppc64le' | 'aarch64' | 'arm';
+type BinaryType = 'jdk' | 'jre';
+type HeapSize = 'normal' | 'large';
+
+interface Options {
+  request?: RequestType;
+  release?: ReleaseType;
+  version?: Version;
+  implementation?: Implementation;
+  os: Os;
+  architecture: Architecture;
+  binary?: BinaryType;
+  heapSize?: HeapSize;
+}
+
+const DEFAULT_OPTIONS = {
+  request: 'binary',
+  release: 'releases',
+  version: 11,
+  implementation: 'hotspot',
+  binary: 'jre',
+  heapSize: 'normal'
+};
+
+export function buildUrl(options: Options) {
+  const actualOptions = Object.assign({}, DEFAULT_OPTIONS, options);
+  const requestUrl = [
+    ADOPT_OPEN_JDK_API_ROOT,
+    actualOptions.request,
+    actualOptions.release,
+    `openjdk${actualOptions.version}`
+  ].join('/');
+  const requestParams = [
+    `openjdk_impl=${actualOptions.implementation}`,
+    `os=${actualOptions.os}`,
+    `arch=${actualOptions.architecture}`,
+    `type=${actualOptions.binary}`,
+    `heap_size=${actualOptions.heapSize}`,
+    `release=latest`
+  ].join('&');
+  return `${requestUrl}?${requestParams}`;
+}
+
+export function download(options: Options, destinationDir: string) {
+  return new Promise((resolve, reject) => {
+    try {
+      if (!fs.existsSync(destinationDir)) {
+        fs.mkdirSync(destinationDir);
+      }
+    } catch(err) {
+      reject(err);
+    }
+
+    const fileToDownload = buildUrl(options);
+    const extension = options.os === 'windows' ? 'zip' : 'tgz';
+    const jreZipPath = path.join(destinationDir, `jre.${extension}`);
+
+    https.get(fileToDownload, res => {
+      const fileToSave = fs.createWriteStream(jreZipPath);
+      res.pipe(fileToSave);
+      fileToSave.on('finish', () => {
+        fileToSave.close();
+        resolve({ destinationDir, jreZipPath });
+      });
+    }).on('error', err => {
+      fs.unlinkSync(jreZipPath);
+      reject(err);
+    });
+  });
+}
+
+export function unzip(jreZipPath: string, destinationDir: string) {
+  const jreDir = path.join(destinationDir, 'jre');
+  if (!fs.existsSync(jreDir)) {
+    fs.mkdirSync(jreDir);
+  }
+  console.log(`Extracting '${jreZipPath}' into '${jreDir}'`);
+  return new Promise((resolve, reject) => {
+    const extract = inly(jreZipPath, jreDir);
+    extract.on('error', err => {
+      reject(err);
+    });
+    extract.on('end', () => {
+      fs.unlinkSync(jreZipPath);
+      const actualJavaHome = fs.readdirSync(jreDir)[0];
+      resolve(path.join(jreDir, actualJavaHome));
+    });
+  });
+}
