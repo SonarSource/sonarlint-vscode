@@ -140,7 +140,7 @@ function resolveInAnyWorkspaceFolder(tsdkPathSetting) {
 }
 
 function findTypeScriptLocation(): string | undefined {
-  const tsExt = VSCode.extensions.getExtension('vscode.typescript');
+  const tsExt = VSCode.extensions.getExtension('vscode.typescript-language-features');
   if (tsExt) {
     const bundledTypeScriptPath = Path.resolve(tsExt.extensionPath, '..', 'node_modules', 'typescript', 'lib');
     if (!FS.existsSync(bundledTypeScriptPath)) {
