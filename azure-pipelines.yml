@@ -104,7 +104,7 @@ stages:
       - task: Npm@1
         displayName: 'Install NPM dependencies'
         inputs:
-          command: install
+          command: ci
       - task: Npm@1
         displayName: 'Compile TypeScript'
         inputs:
@@ -209,7 +209,7 @@ stages:
         displayName: 'Install NPM dependencies'
         inputs:
           workingDir: its
-          command: install
+          command: ci
       - task: Npm@1
         displayName: 'Run ITs'
         inputs:
