@@ -26,30 +26,26 @@ stages:
       steps:
       - checkout: self
         fetchDepth: 1
-      - task: CacheBeta@0
-        displayName: Cache NPM dependencies
+      - task: Cache@2
         inputs:
-          key: npm | $(Agent.OS) | package-lock.json
+          key: 'npm | "$(Agent.OS)" | package-lock.json'
+          restoreKeys: |
+            npm | "$(Agent.OS)"
+            npm
           path: $(npm_config_cache)
+        displayName: Cache npm
       - task: Npm@1
         displayName: 'Install NPM dependencies'
         inputs:
-          command: ci
+          command: install
       - task: gulp@1
         displayName: 'Build and deploy VSIX'
-        condition: or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
         env:
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
         inputs:
           gulpjs: node_modules/.bin/gulp
           targets: deploy
-      - task: gulp@1
-        displayName: 'Build VSIX'
-        condition: not(or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master')))
-        inputs:
-          gulpjs: node_modules/.bin/gulp
-          targets: package
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
@@ -60,8 +56,10 @@ stages:
     stageName: 'validate'
     stageDisplayName: Run tests and SonarQube analysis
     jobs:
-    - job: extractPackageVersion
-      displayName: 'Extract version from package.json'
+    - job: test
+      displayName: Run tests and SonarQube analysis
+      variables:
+        npm_config_cache: $(Pipeline.Workspace)/.npm
       steps:
       - task: PythonScript@0
         name: extractPackageVersion
@@ -72,19 +70,15 @@ stages:
             import json
             with open('package.json') as packageJsonFile:
               packageJson = json.load(packageJsonFile)
-              print("##vso[task.setvariable variable=packageVersion;isOutput=true]" + packageJson['version'])
-    - job: test
-      dependsOn: extractPackageVersion
-      displayName: Run tests and SonarQube analysis
-      variables:
-        npm_config_cache: $(Pipeline.Workspace)/.npm
-        packageVersion: $[ dependencies.extractPackageVersion.outputs['extractPackageVersion.packageVersion'] ]
-      steps:
-      - task: CacheBeta@0
-        displayName: Cache NPM dependencies
+              print("##vso[task.setvariable variable=packageVersion]" + packageJson['version'])
+      - task: Cache@2
         inputs:
-          key: npm | $(Agent.OS) | package-lock.json
+          key: 'npm | "$(Agent.OS)" | its/package-lock.json'
+          restoreKeys: |
+            npm | "$(Agent.OS)"
+            npm
           path: $(npm_config_cache)
+        displayName: Cache npm
       - bash: |
           set -euo pipefail
           sudo apt-get update
@@ -132,13 +126,104 @@ stages:
         inputs:
           testResultsFiles: '**/alltests.xml'
           failTaskOnFailedTests: true
+          testRunTitle: UTs
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
       - task: SonarQubeAnalyze@4
         displayName: 'Run SonarQube analysis on Next'
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'qa'
+    burgrType: 'qa'
+    stageName: 'qa'
+    stageDisplayName: Run ITs
+    stageDependencies: build
+    jobs:
+    - job: its
+      displayName: Run ITs
+      strategy:
+        matrix:
+          oldest_supported:
+            VSCODE_VERSION: '1.36.0'
+          stable:
+            VSCODE_VERSION: 'stable'
+          insiders:
+            VSCODE_VERSION: 'insiders'
+      variables:
+        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+        npm_config_cache: $(Pipeline.Workspace)/.npm
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: PythonScript@0
+        name: computeVersion
+        displayName: Extract version from package.json and compute build version
+        inputs:
+          scriptSource: 'inline'
+          script: |
+            import json
+            with open('package.json') as packageJsonFile:
+              packageJson = json.load(packageJsonFile)
+              print("##vso[task.setvariable variable=PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', '-build.$(Build.BuildId)'))
+      - task: Cache@2
+        displayName: Cache Maven local repo
+        inputs:
+          key: 'maven | "$(Agent.OS)" | azure-pipelines.yml'
+          restoreKeys: |
+            maven | "$(Agent.OS)"
+            maven
+          path: $(MAVEN_CACHE_FOLDER)
+      - task: DownloadSecureFile@1
+        displayName: 'Download Maven settings'
+        name: mavenSettings
+        inputs:
+          secureFile: 'maven-settings.xml'
+      - bash: >-
+          mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa 
+          -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$(PROJECT_VERSION):vsix -DoutputDirectory=$(Build.SourcesDirectory)
+        displayName: ' Download staged vsix'
+        env:
+          ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
+          ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
+      - task: Cache@2
+        inputs:
+          key: 'npm | "$(Agent.OS)" | its/package-lock.json'
+          restoreKeys: |
+            npm | "$(Agent.OS)"
+            npm
+          path: $(npm_config_cache)
+        displayName: Cache npm
+      - bash: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          export DISPLAY=':10'
+        displayName: 'Install and start xvfb'
+      - task: Npm@1
+        displayName: 'Install NPM dependencies'
+        inputs:
+          workingDir: its
+          command: ci
+      - task: Npm@1
+        displayName: 'Run ITs'
+        inputs:
+          workingDir: its
+          command: custom
+          customCommand: test
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFiles: '**/alltests.xml'
+          failTaskOnFailedTests: true
+          testRunTitle: 'ITs $(VSCODE_VERSION)'
 - template: promote-stage.yml@commonTemplates
   parameters:
     stageDependencies:
-    - build
     - validate
+    - qa
