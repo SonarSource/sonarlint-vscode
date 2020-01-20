@@ -14,7 +14,7 @@ const jarDependencies = [
   {
     groupId: 'org/sonarsource/sonarlint/ls',
     artifactId: 'sonarlint-language-server',
-    version: '1.0.1.13655',
+    version: '1.1.0.14501',
     output: 'server/sonarlint-ls.jar'
   },
   {
