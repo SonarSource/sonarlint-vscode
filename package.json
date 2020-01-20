@@ -48,6 +48,18 @@
       "type": "object",
       "title": "SonarLint",
       "properties": {
+        "sonarlint.output.showAnalyzerLogs": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show analyzer's logs in the SonarLint output.",
+          "scope": "window"
+        },
+        "sonarlint.output.showVerboseLogs": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose log level (for both SonarLint and analyzer) in the SonarLint output.",
+          "scope": "window"
+        },
         "sonarlint.trace.server": {
           "type": "string",
           "enum": [

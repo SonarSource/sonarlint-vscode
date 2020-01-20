@@ -21,7 +21,7 @@ import { computeRuleDescPanelContent } from './rulepanel';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
-let oldConfig: VSCode.WorkspaceConfiguration;
+let currentConfig: VSCode.WorkspaceConfiguration;
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', language: 'javascript' },
@@ -47,12 +47,6 @@ function logToSonarLintOutput(message) {
   }
 }
 
-function appendToSonarLintOutput(message) {
-  if (sonarlintOutput) {
-    sonarlintOutput.append(message);
-  }
-}
-
 function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
   return resolveRequirements()
     .catch(error => {
@@ -68,7 +62,9 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
     .then(requirements => {
       return new Promise<StreamInfo>((resolve, reject) => {
         const server = Net.createServer(socket => {
-          logToSonarLintOutput(`Child process connected on port ${server.address().port}`);
+          if (isVerboseEnabled()) {
+            logToSonarLintOutput(`Child process connected on port ${server.address().port}`);
+          }
           resolve({
             reader: socket,
             writer: socket
@@ -77,18 +73,35 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
         server.listen(0, () => {
           // Start the child java process
           const { command, args } = languageServerCommand(context, requirements, server.address().port);
-          logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
+          if (isVerboseEnabled()) {
+            logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
+          }
           const process = ChildProcess.spawn(command, args);
 
           process.stdout.on('data', function (data) {
-            appendToSonarLintOutput(data.toString());
+            logWithPrefix(data, '[stdout]');
           });
           process.stderr.on('data', function (data) {
-            appendToSonarLintOutput(data.toString());
+            logWithPrefix(data, '[stderr]');
           });
         });
       });
     });
+}
+
+function logWithPrefix(data, prefix) {
+  if (isVerboseEnabled()) {
+    var lines = data.toString().split(/\r\n|\r|\n/);
+    lines.forEach(l => {
+      if (l.length > 0) {
+        logToSonarLintOutput(`${prefix} ${l}`);
+      }
+    });
+  }
+}
+
+function isVerboseEnabled() {
+  return currentConfig.get('sonarlint.output.showVerboseLogs');
 }
 
 function languageServerCommand(
@@ -219,7 +232,7 @@ export function activate(context: VSCode.ExtensionContext) {
     revealOutputChannelOn: 4 // never
   };
 
-  oldConfig = getSonarLintConfiguration();
+  currentConfig = getSonarLintConfiguration();
 
   // Create the language client and start the client.
   // id parameter is used to load 'sonarlint.trace.server' configuration
@@ -328,13 +341,13 @@ function onConfigurationChange() {
     }
     const newConfig = getSonarLintConfiguration();
 
-    const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(oldConfig, newConfig);
+    const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(currentConfig, newConfig);
 
     if (sonarLintLsConfigChanged) {
       const msg = 'SonarLint Language Server configuration changed, please restart VS Code.';
       const action = 'Restart Now';
       const restartId = 'workbench.action.reloadWindow';
-      oldConfig = newConfig;
+      currentConfig = newConfig;
       VSCode.window.showWarningMessage(msg, action).then(selection => {
         if (action === selection) {
           VSCode.commands.executeCommand(restartId);
