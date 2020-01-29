@@ -64,7 +64,7 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
       return new Promise<StreamInfo>((resolve, reject) => {
         const server = Net.createServer(socket => {
           if (isVerboseEnabled()) {
-            logToSonarLintOutput(`Child process connected on port ${server.address().port}`);
+            logToSonarLintOutput(`Child process connected on port ${(server.address() as Net.AddressInfo).port}`);
           }
           resolve({
             reader: socket,
@@ -73,7 +73,8 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
         });
         server.listen(0, () => {
           // Start the child java process
-          const { command, args } = languageServerCommand(context, requirements, server.address().port);
+          const port = (server.address() as Net.AddressInfo).port;
+          const { command, args } = languageServerCommand(context, requirements, port);
           if (isVerboseEnabled()) {
             logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
           }

@@ -137,8 +137,9 @@ export function parseMajorVersion(content: string): number {
 
 function suggestManagedJre(reject) {
   reject({
-    message: `Java runtime could not be located. Do you want SonarLint to download and manage its own runtime?`,
-    label: 'Use managed JRE',
+    message: 'The Java Runtime Environment can not be located. Please install a JRE, or configure its path with the `sonarlint.ls.javaHome` property.'
+    + '\n\nYou can also allow SonarLint to download the JRE from AdoptOpenJDK. The JRE will be used only by SonarLint.',
+    label: 'Allow SonarLint to download the JRE',
     command: Commands.INSTALL_MANAGED_JRE
   });
 }
@@ -186,8 +187,9 @@ export async function installManagedJre() {
           progress.report({ message: 'JRE Installed' });
           util.extensionContext.globalState.update(JAVA_MANAGED_HOME_KEY, jreInstallDir).then(() => {
             const reload = 'Reload';
-            vscode.window.showInformationMessage('Managed JRE is now installed, please reload to activate SonarLint', reload)
-              .then((value: string) => {
+            vscode.window.showInformationMessage(
+              'The Java Runtime Environement is now installed. Please reload Code to activate SonarLint.', reload
+            ).then((value: string) => {
                 if (value === reload) {
                   vscode.commands.executeCommand('workbench.action.reloadWindow');
                 }

@@ -103,7 +103,9 @@ export function unzip(jreZipPath: string, destinationDir: string, options: Optio
     });
     extract.on('end', () => {
       fs.unlinkSync(jreZipPath);
-      const extractedDir = fs.readdirSync(jreDir)[0];
+      // Archive for MacOS contains a file named '._xxx' which interferes with detection of extracted directory
+      const extractedDir = fs.readdirSync(jreDir, { withFileTypes: true })
+        .filter(d => d.isDirectory())[0].name;
       // Binary for MacOS has actual Java home inside '<archiveRootDir>/Contents/Home'
       const actualJavaHome = options.os === 'mac' ? path.join(extractedDir, 'Contents', 'Home') : extractedDir;
       resolve(path.join(jreDir, actualJavaHome));
