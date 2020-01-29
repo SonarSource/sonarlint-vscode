@@ -64,7 +64,6 @@ function checkJavaRuntime(context: vscode.ExtensionContext): Promise<string> {
     // No settings, check if we have a managed one
     javaHome = context.globalState.get(JAVA_MANAGED_HOME_KEY, null);
     if (javaHome) {
-      console.log('Managed Java home: ', javaHome);
       resolve(javaHome);
     }
 
@@ -74,7 +73,6 @@ function checkJavaRuntime(context: vscode.ExtensionContext): Promise<string> {
         // No Java detected, last resort is to ask for permission to download and manage our own
         suggestManagedJre(reject);
       } else {
-        console.log('Auto-detected Java home: ', javaHome);
         resolve(home);
       }
     });
@@ -95,7 +93,6 @@ function tryExplicitConfiguration() {
       source = 'JAVA_HOME environment variable';
     }
   }
-  console.log('Explicit configuration found: ', { source, javaHome });
   return { source, javaHome: javaHome ? javaHome.trim() : null };
 }
 
@@ -174,20 +171,18 @@ function invalidJavaHome(reject, cause: string) {
 export async function installManagedJre() {
   return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Downloading JRE' },
     async (progress, cancelToken) => {
-      const options = await PlatformInformation.GetPlatformInformation();
-      console.log(`Detected options ${JSON.stringify(options)}`);
-      return jre.download({
-        os: options.os as jre.Os,
-        architecture: options.arch as jre.Architecture,
-        version: 11
-      }, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'))
+      const platformInfo = await PlatformInformation.GetPlatformInformation();
+      const options = {
+        os: platformInfo.os as jre.Os,
+        architecture: platformInfo.arch as jre.Architecture,
+        version: 11 as jre.Version
+      };
+      return jre.download(options, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'))
         .then((downloadResponse: any) => {
-          console.log(`JRE downloaded to ${downloadResponse.jreZipPath}`);
           progress.report({ message: 'Unzipping JRE' });
-          return jre.unzip(downloadResponse.jreZipPath, downloadResponse.destinationDir);
+          return jre.unzip(downloadResponse.jreZipPath, downloadResponse.destinationDir, options);
         })
         .then(jreInstallDir => {
-          console.log(`Managed JRE installed at ${jreInstallDir}`);
           progress.report({ message: 'JRE Installed' });
           util.extensionContext.globalState.update(JAVA_MANAGED_HOME_KEY, jreInstallDir).then(() => {
             const reload = 'Reload';
@@ -200,7 +195,6 @@ export async function installManagedJre() {
           });
         })
         .catch(err => {
-          console.error('Error at JRE install', err);
           throw err;
         });
     }

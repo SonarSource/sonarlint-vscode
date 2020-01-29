@@ -5,7 +5,6 @@
 
 import * as os from 'os';
 import * as util from './util';
-import { LinuxDistribution } from './linuxDistribution';
 
 function platformToJreOs(platform: string) {
     return {

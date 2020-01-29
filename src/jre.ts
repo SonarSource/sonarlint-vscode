@@ -17,7 +17,7 @@ const ADOPT_OPEN_JDK_API_ROOT = 'https://api.adoptopenjdk.net/v2';
 
 type RequestType = 'info' | 'binary' | 'latestAssets';
 type ReleaseType = 'releases' | 'nightly';
-type Version = 8 | 9 | 10 | 11 | 12 | 13;
+export type Version = 8 | 9 | 10 | 11 | 12 | 13;
 type Implementation = 'hotspot' | 'openj9';
 export type Os = 'windows' | 'linux' | 'mac' | 'solaris' | 'aix';
 export type Architecture = 'x64' | 'x32' | 'ppc64' | 's390x' | 'ppc64le' | 'aarch64' | 'arm';
@@ -91,12 +91,11 @@ export function download(options: Options, destinationDir: string) {
   });
 }
 
-export function unzip(jreZipPath: string, destinationDir: string) {
+export function unzip(jreZipPath: string, destinationDir: string, options: Options) {
   const jreDir = path.join(destinationDir, 'jre');
   if (!fs.existsSync(jreDir)) {
     fs.mkdirSync(jreDir);
   }
-  console.log(`Extracting '${jreZipPath}' into '${jreDir}'`);
   return new Promise((resolve, reject) => {
     const extract = inly(jreZipPath, jreDir);
     extract.on('error', err => {
@@ -104,7 +103,9 @@ export function unzip(jreZipPath: string, destinationDir: string) {
     });
     extract.on('end', () => {
       fs.unlinkSync(jreZipPath);
-      const actualJavaHome = fs.readdirSync(jreDir)[0];
+      const extractedDir = fs.readdirSync(jreDir)[0];
+      // Binary for MacOS has actual Java home inside '<archiveRootDir>/Contents/Home'
+      const actualJavaHome = options.os === 'mac' ? path.join(extractedDir, 'Contents', 'Home') : extractedDir;
       resolve(path.join(jreDir, actualJavaHome));
     });
   });
