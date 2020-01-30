@@ -10,26 +10,23 @@ import * as VSCode from 'vscode';
 
 export type ConfigLevel = 'on' | 'off';
 
-export interface RuleDescription {
+export interface Rule {
   readonly key: string;
   readonly name: string;
-  readonly htmlDescription: string;
-  readonly type: string;
-  readonly severity: string;
   readonly activeByDefault: boolean;
   levelFromConfig?: ConfigLevel;
 }
 
-function isActive(rule: RuleDescription) {
+function isActive(rule: Rule) {
   return (rule.activeByDefault && rule.levelFromConfig !== 'off') || rule.levelFromConfig === 'on';
 }
 
-function actualLevel(rule: RuleDescription) {
+function actualLevel(rule: Rule) {
   return isActive(rule) ? 'on' : 'off';
 }
 
 export interface RulesResponse {
-  [language: string]: Array<RuleDescription>;
+  [language: string]: Array<Rule>;
 }
 
 export class LanguageNode extends VSCode.TreeItem {
@@ -40,15 +37,15 @@ export class LanguageNode extends VSCode.TreeItem {
 }
 
 export class RuleNode extends VSCode.TreeItem {
-  constructor(public readonly rule: RuleDescription) {
+  constructor(public readonly rule: Rule) {
     super(`${rule.name}`);
     this.contextValue = `rule-${actualLevel(rule)}`;
     this.id = rule.key.toUpperCase();
     this.description = `${actualLevel(rule)}`;
     this.command = {
-      command: 'SonarLint.OpenRuleDesc',
+      command: 'SonarLint.OpenStandaloneRuleDesc',
       title: 'Show Description',
-      arguments: [rule.key, rule.name, rule.htmlDescription, rule.type, rule.severity]
+      arguments: [rule.key]
     };
   }
 }
@@ -60,7 +57,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
   private levelFilter?: ConfigLevel;
 
-  constructor(private readonly allRules: Thenable<RulesResponse>) {}
+  constructor(private readonly allRules: Thenable<RulesResponse>) { }
 
   async getChildren(node: AllRulesNode) {
     const localRuleConfig = VSCode.workspace.getConfiguration('sonarlint.rules');
@@ -131,6 +128,6 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   }
 }
 
-function byName(r1: RuleDescription, r2: RuleDescription) {
+function byName(r1: Rule, r2: Rule) {
   return r1.name.toLowerCase() < r2.name.toLowerCase() ? -1 : r1.name.toLowerCase() > r2.name.toLowerCase() ? 1 : 0;
 }

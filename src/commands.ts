@@ -25,8 +25,6 @@ export namespace Commands {
    */
   export const OPEN_SETTINGS = 'workbench.action.openSettings';
 
-  export const UPDATE_ALL_BINDINGS_STORAGE = 'SonarLint.UpdateAllBindings';
-  export const OPEN_RULE_DESCRIPTION = 'SonarLint.OpenRuleDesc';
   export const DEACTIVATE_RULE = 'SonarLint.DeactivateRule';
   export const ACTIVATE_RULE = 'SonarLint.ActivateRule';
   export const SHOW_ALL_RULES = 'SonarLint.ShowAllRules';

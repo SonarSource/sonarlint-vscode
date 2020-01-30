@@ -12,12 +12,13 @@ import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import { LanguageClientOptions, StreamInfo, ExecuteCommandRequest, ExecuteCommandParams } from 'vscode-languageclient';
 
-import { AllRulesTreeDataProvider, RuleDescription, RuleNode, ConfigLevel } from './rules';
+import { AllRulesTreeDataProvider, Rule, RuleNode, ConfigLevel } from './rules';
 import { Commands } from './commands';
 import { SonarLintExtendedLanguageClient } from './client';
 import { startedInDebugMode } from './util';
 import { resolveRequirements, RequirementsData } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
+import { ShowRuleDescriptionRequest } from './protocol';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || startedInDebugMode(process);
@@ -78,10 +79,10 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
           }
           const process = ChildProcess.spawn(command, args);
 
-          process.stdout.on('data', function (data) {
+          process.stdout.on('data', function(data) {
             logWithPrefix(data, '[stdout]');
           });
-          process.stderr.on('data', function (data) {
+          process.stderr.on('data', function(data) {
             logWithPrefix(data, '[stderr]');
           });
         });
@@ -225,7 +226,7 @@ export function activate(context: VSCode.ExtensionContext) {
         productName: 'SonarLint VSCode',
         productVersion: VSCode.extensions.getExtension('SonarSource.sonarlint-vscode').packageJSON.version,
         ideVersion: VSCode.version,
-        typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined,
+        typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined
       };
     },
     outputChannel: sonarlintOutput,
@@ -243,6 +244,31 @@ export function activate(context: VSCode.ExtensionContext) {
     clientOptions
   );
 
+  languageClient.onReady().then(() =>
+    languageClient.onRequest(ShowRuleDescriptionRequest.type, params => {
+      const ruleDescPanelContent = computeRuleDescPanelContent(context, params);
+      if (!ruleDescriptionPanel) {
+        ruleDescriptionPanel = VSCode.window.createWebviewPanel(
+          'sonarlint.RuleDesc',
+          'SonarLint Rule Description',
+          VSCode.ViewColumn.Two,
+          {
+            enableScripts: false
+          }
+        );
+        ruleDescriptionPanel.onDidDispose(
+          () => {
+            ruleDescriptionPanel = undefined;
+          },
+          null,
+          context.subscriptions
+        );
+      }
+      ruleDescriptionPanel.webview.html = ruleDescPanelContent;
+      ruleDescriptionPanel.reveal();
+    })
+  );
+
   const allRulesTreeDataProvider = new AllRulesTreeDataProvider(
     languageClient.onReady().then(() => languageClient.listAllRules())
   );
@@ -250,35 +276,6 @@ export function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: allRulesTreeDataProvider
   });
   context.subscriptions.push(allRulesView);
-
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(
-      Commands.OPEN_RULE_DESCRIPTION,
-      (key: string, name: string, htmlDescription: string, type: string, severity: string) => {
-        const rule = { key, name, htmlDescription, type, severity } as RuleDescription;
-        const ruleDescPanelContent = computeRuleDescPanelContent(context, rule);
-        if (!ruleDescriptionPanel) {
-          ruleDescriptionPanel = VSCode.window.createWebviewPanel(
-            'sonarlint.RuleDesc',
-            'SonarLint Rule Description',
-            VSCode.ViewColumn.Two,
-            {
-              enableScripts: false
-            }
-          );
-          ruleDescriptionPanel.onDidDispose(
-            () => {
-              ruleDescriptionPanel = undefined;
-            },
-            null,
-            context.subscriptions
-          );
-        }
-        ruleDescriptionPanel.webview.html = ruleDescPanelContent;
-        ruleDescriptionPanel.reveal();
-      }
-    )
-  );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')));
@@ -302,7 +299,7 @@ export function activate(context: VSCode.ExtensionContext) {
         .then(key => {
           // Reset rules view filter
           VSCode.commands.executeCommand(Commands.SHOW_ALL_RULES).then(() =>
-            allRulesView.reveal(new RuleNode({ key: key.toUpperCase() } as RuleDescription), {
+            allRulesView.reveal(new RuleNode({ key: key.toUpperCase() } as Rule), {
               focus: true,
               expand: true
             })
@@ -342,7 +339,6 @@ function onConfigurationChange() {
         }
       });
     }
-
   });
 }
 
@@ -370,7 +366,7 @@ export function parseVMargs(params: string[], vmargsLine: string) {
   }
   vmargs.forEach(arg => {
     //remove all standalone double quotes
-    arg = arg.replace(/(\\)?"/g, function ($0, $1) {
+    arg = arg.replace(/(\\)?"/g, function($0, $1) {
       return $1 ? $0 : '';
     });
     //unescape all escaped double quotes
