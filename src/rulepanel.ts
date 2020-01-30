@@ -9,9 +9,9 @@
 import * as FS from 'fs';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { RuleDescription } from './rules';
+import { ShowRuleDescriptionParams } from './protocol';
 
-export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, rule: RuleDescription) {
+export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, rule: ShowRuleDescriptionParams) {
   const severityImg = base64_encode(
     Path.resolve(context.extensionPath, 'images', 'severity', rule.severity.toLowerCase() + '.png')
   );
@@ -45,9 +45,13 @@ export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, ru
 		</head>
 		<body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
 		<div>
-		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${rule.type}" src="data:image/gif;base64,${typeImg}">&nbsp;
+		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${
+      rule.type
+    }" src="data:image/gif;base64,${typeImg}">&nbsp;
 		${clean(rule.type)}&nbsp;
-		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${rule.severity}" src="data:image/gif;base64,${severityImg}">&nbsp;
+		<img style="padding-bottom: 1px;vertical-align: middle" width="16" height="16" alt="${
+      rule.severity
+    }" src="data:image/gif;base64,${severityImg}">&nbsp;
 		${clean(rule.severity)}
 		</div>
 		<div class=\"rule-desc\">${rule.htmlDescription}</div>
