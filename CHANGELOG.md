@@ -1,5 +1,6 @@
 ## 1.14.0
 
+* Debounce 'on change' analysis.
 * Remove default value for `testFilePattern` setting. By default all files are now analyzed as production code.
 * Update SonarPython 2.3 -> [2.4](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15304), minor fixes
 
