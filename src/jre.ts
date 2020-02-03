@@ -63,7 +63,13 @@ export function buildUrl(options: Options) {
   return `${requestUrl}?${requestParams}`;
 }
 
-export function download(options: Options, destinationDir: string) {
+export interface DownloadResponse {
+  jreZipPath: string;
+  destinationDir: string;
+  options: Options;
+}
+
+export function download(options: Options, destinationDir: string): Promise<DownloadResponse> {
   return new Promise((resolve, reject) => {
     try {
       if (!fs.existsSync(destinationDir)) {
@@ -82,7 +88,7 @@ export function download(options: Options, destinationDir: string) {
       res.pipe(fileToSave);
       fileToSave.on('finish', () => {
         fileToSave.close();
-        resolve({ destinationDir, jreZipPath });
+        resolve({ destinationDir, jreZipPath, options });
       });
     }).on('error', err => {
       fs.unlinkSync(jreZipPath);
@@ -91,23 +97,25 @@ export function download(options: Options, destinationDir: string) {
   });
 }
 
-export function unzip(jreZipPath: string, destinationDir: string, options: Options) {
-  const jreDir = path.join(destinationDir, 'jre');
+export function unzip(downloadResponse: DownloadResponse) {
+  const jreDir = path.join(downloadResponse.destinationDir, 'jre');
   if (!fs.existsSync(jreDir)) {
     fs.mkdirSync(jreDir);
   }
   return new Promise((resolve, reject) => {
-    const extract = inly(jreZipPath, jreDir);
+    const extract = inly(downloadResponse.jreZipPath, jreDir);
     extract.on('error', err => {
       reject(err);
     });
     extract.on('end', () => {
-      fs.unlinkSync(jreZipPath);
+      fs.unlinkSync(downloadResponse.jreZipPath);
       // Archive for MacOS contains a file named '._xxx' which interferes with detection of extracted directory
       const extractedDir = fs.readdirSync(jreDir, { withFileTypes: true })
         .filter(d => d.isDirectory())[0].name;
       // Binary for MacOS has actual Java home inside '<archiveRootDir>/Contents/Home'
-      const actualJavaHome = options.os === 'mac' ? path.join(extractedDir, 'Contents', 'Home') : extractedDir;
+      const actualJavaHome = downloadResponse.options.os === 'mac' ?
+        path.join(extractedDir, 'Contents', 'Home') :
+        extractedDir;
       resolve(path.join(jreDir, actualJavaHome));
     });
   });

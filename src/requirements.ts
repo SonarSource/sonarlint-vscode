@@ -23,7 +23,6 @@ import * as util from './util';
 const isWindows = process.platform.indexOf('win') === 0;
 const JAVA_FILENAME = `java${isWindows ? '.exe' : ''}`;
 const JAVA_HOME_CONFIG = 'sonarlint.ls.javaHome';
-const JAVA_MANAGED_HOME_KEY = 'managedHome';
 
 export interface RequirementsData {
   javaHome: string;
@@ -40,7 +39,7 @@ interface ErrorData {
 export async function resolveRequirements(context: vscode.ExtensionContext): Promise<RequirementsData> {
   const javaHome = await checkJavaRuntime(context);
   const javaVersion = await checkJavaVersion(javaHome);
-  return Promise.resolve({ javaHome, javaVersion });
+  return { javaHome, javaVersion };
 }
 
 function checkJavaRuntime(context: vscode.ExtensionContext): Promise<string> {
@@ -61,13 +60,8 @@ function checkJavaRuntime(context: vscode.ExtensionContext): Promise<string> {
       }
       resolve(javaHome);
     }
-    // No settings, check if we have a managed one
-    javaHome = context.globalState.get(JAVA_MANAGED_HOME_KEY, null);
-    if (javaHome) {
-      resolve(javaHome);
-    }
 
-    // No settings and no existing managed one, let's try to detect
+    // No settings let's try to detect
     findJavaHome((err, home) => {
       if (err || !home) {
         // No Java detected, last resort is to ask for permission to download and manage our own
@@ -102,11 +96,11 @@ function readJavaConfig(): string {
 
 function checkJavaVersion(javaHome: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    cp.execFile(`${javaHome}/bin/java`, ['-version'], {}, (error, stdout, stderr) => {
+    const javaExec = path.join(javaHome, 'bin', 'java');
+    cp.execFile(javaExec, ['-version'], {}, (error, stdout, stderr) => {
       const javaVersion = parseMajorVersion(stderr);
       if (javaVersion < 8) {
-        util.extensionContext.globalState.update(JAVA_MANAGED_HOME_KEY, undefined).then(() =>
-        openJREDownload(reject, 'Java 8 or more recent is required to run. Please download and install a recent JRE.'));
+        openJREDownload(reject, 'Java 8 or more recent is required to run. Please download and install a recent JRE.');
       } else {
         resolve(javaVersion);
       }
@@ -137,7 +131,7 @@ export function parseMajorVersion(content: string): number {
 
 function suggestManagedJre(reject) {
   reject({
-    message: 'The Java Runtime Environment can not be located. Please install a JRE, or configure its path with the `sonarlint.ls.javaHome` property.'
+    message: 'The Java Runtime Environment can not be located. Please install a JRE, or configure its path with the **sonarlint.ls.javaHome** property.'
     + '\n\nYou can also allow SonarLint to download the JRE from AdoptOpenJDK. The JRE will be used only by SonarLint.',
     label: 'Allow SonarLint to download the JRE',
     command: Commands.INSTALL_MANAGED_JRE
@@ -169,23 +163,28 @@ function invalidJavaHome(reject, cause: string) {
   }
 }
 
-export async function installManagedJre() {
-  return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Downloading JRE' },
-    async (progress, cancelToken) => {
-      const platformInfo = await PlatformInformation.GetPlatformInformation();
-      const options = {
-        os: platformInfo.os as jre.Os,
-        architecture: platformInfo.arch as jre.Architecture,
-        version: 11 as jre.Version
-      };
-      return jre.download(options, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'))
-        .then((downloadResponse: any) => {
+export function installManagedJre() {
+  return vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: 'Downloading JRE' },
+    (progress, cancelToken) => {
+      return PlatformInformation.GetPlatformInformation().then(platformInfo => {
+        const options = {
+          os: platformInfo.os as jre.Os,
+          architecture: platformInfo.arch as jre.Architecture,
+          version: 11 as jre.Version
+        };
+        return jre.download(options, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'));
+      })
+        .then(downloadResponse => {
           progress.report({ message: 'Unzipping JRE' });
-          return jre.unzip(downloadResponse.jreZipPath, downloadResponse.destinationDir, options);
+          return jre.unzip(downloadResponse);
         })
         .then(jreInstallDir => {
           progress.report({ message: 'JRE Installed' });
-          util.extensionContext.globalState.update(JAVA_MANAGED_HOME_KEY, jreInstallDir).then(() => {
+          const lsConfig = vscode.workspace.getConfiguration('sonarlint.ls');
+          lsConfig.update('isManagedJavaHome', true, vscode.ConfigurationTarget.Global)
+            .then(() => lsConfig.update('javaHome', jreInstallDir, vscode.ConfigurationTarget.Global))
+            .then(() => {
             const reload = 'Reload';
             vscode.window.showInformationMessage(
               'The Java Runtime Environement is now installed. Please reload Code to activate SonarLint.', reload

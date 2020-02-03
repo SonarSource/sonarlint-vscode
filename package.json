@@ -121,6 +121,11 @@
           "markdownDescription": "Path to a JRE (8 or more recent) used to launch the SonarLint Language Server. \n\n On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk1.8.0_161`",
           "scope": "window"
         },
+        "sonarlint.ls.isManagedJavaHome": {
+          "type": "boolean",
+          "markdownDescription": "Let SonarLint manage its own JRE. If this is set, SonarLint will automatically update the JRE at `sonarlint.ls.javaHome`.",
+          "scope": "window"
+        },
         "sonarlint.ls.vmargs": {
           "type": "string",
           "markdownDescription": "Extra JVM arguments used to launch the SonarLint Language Server. e.g. `-Xmx1024m`",
