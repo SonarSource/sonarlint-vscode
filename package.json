@@ -73,8 +73,8 @@
         },
         "sonarlint.testFilePattern": {
           "type": "string",
-          "default": "{**/test/**,**/*test*,**/*Test*}",
-          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files.",
+          "default": "",
+          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files. Example: `{**/test/**,**/*test*,**/*Test*}`",
           "scope": "resource"
         },
         "sonarlint.analyzerProperties": {
