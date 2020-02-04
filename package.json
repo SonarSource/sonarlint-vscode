@@ -289,7 +289,7 @@
   },
   "dependencies": {
     "expand-home-dir": "0.0.3",
-    "find-java-home": "1.0.1",
+    "find-java-home": "1.1.0",
     "follow-redirects": "1.10.0",
     "inly": "4.0.4",
     "open": "6.0.0",
