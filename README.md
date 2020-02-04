@@ -28,9 +28,11 @@ The full list of available rules is visible in the "SonarLint Rules" view in the
 
 ## Requirements
 
-The only thing you need is a Java Runtime (JRE) 8 or 11 installed on your computer.
+The only thing you need is a Java Runtime (JRE) 8 or 11. If one is already installed on your computer, SonarLint should automatically find and use it.
 
-SonarLint should automatically find it but you can also explicitly set the path where the JRE is installed using the 'sonarlint.ls.javaHome' variable in VS Code settings. For example:
+If a suitable JRE cannot be found at the usual places, SonarLint will ask for your permission to download and manage its own version.
+
+Finally, you can explicitly set the path where the JRE is installed using the `sonarlint.ls.javaHome` variable in VS Code settings. For instance:
 
     {
         "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre1.8.0_131"
