@@ -131,8 +131,10 @@ export function parseMajorVersion(content: string): number {
 
 function suggestManagedJre(reject) {
   reject({
-    message: 'The Java Runtime Environment can not be located. Please install a JRE, or configure its path with the **sonarlint.ls.javaHome** property.'
-    + '\n\nYou can also allow SonarLint to download the JRE from AdoptOpenJDK. The JRE will be used only by SonarLint.',
+    message: `The Java Runtime Environment can not be located. Please install a JRE, or configure its path with the
+      ${JAVA_HOME_CONFIG} property.
+
+      You can also allow SonarLint to download the JRE from AdoptOpenJDK. This JRE will be used only by SonarLint.`,
     label: 'Allow SonarLint to download the JRE',
     command: Commands.INSTALL_MANAGED_JRE
   });
@@ -165,7 +167,7 @@ function invalidJavaHome(reject, cause: string) {
 
 export function installManagedJre() {
   return vscode.window.withProgress(
-    { location: vscode.ProgressLocation.Notification, title: 'Downloading JRE' },
+    { location: vscode.ProgressLocation.Notification, title: 'SonarLint JRE Install' },
     (progress, cancelToken) => {
       return PlatformInformation.GetPlatformInformation().then(platformInfo => {
         const options = {
@@ -173,27 +175,18 @@ export function installManagedJre() {
           architecture: platformInfo.arch as jre.Architecture,
           version: 11 as jre.Version
         };
+        progress.report({ message: 'Downloading' });
         return jre.download(options, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'));
       })
         .then(downloadResponse => {
-          progress.report({ message: 'Unzipping JRE' });
+          progress.report({ message: 'Uncompressing' });
           return jre.unzip(downloadResponse);
         })
         .then(jreInstallDir => {
-          progress.report({ message: 'JRE Installed' });
+          progress.report({ message: 'Done' });
           const lsConfig = vscode.workspace.getConfiguration('sonarlint.ls');
-          lsConfig.update('isManagedJavaHome', true, vscode.ConfigurationTarget.Global)
-            .then(() => lsConfig.update('javaHome', jreInstallDir, vscode.ConfigurationTarget.Global))
-            .then(() => {
-            const reload = 'Reload';
-            vscode.window.showInformationMessage(
-              'The Java Runtime Environement is now installed. Please reload Code to activate SonarLint.', reload
-            ).then((value: string) => {
-                if (value === reload) {
-                  vscode.commands.executeCommand('workbench.action.reloadWindow');
-                }
-            });
-          });
+          lsConfig.update('manageJavaHome', true, vscode.ConfigurationTarget.Global)
+            .then(() => lsConfig.update('javaHome', jreInstallDir, vscode.ConfigurationTarget.Global));
         })
         .catch(err => {
           throw err;

@@ -118,12 +118,12 @@
         },
         "sonarlint.ls.javaHome": {
           "type": "string",
-          "markdownDescription": "Path to a JRE (8 or more recent) used to launch the SonarLint Language Server. \n\n On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk1.8.0_161`",
+          "markdownDescription": "Path to a Java Runtime Environment (8 or more recent) used to launch the SonarLint Language Server. \n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk1.8.0_161` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/jdk1.8.0_161.jdk/Contents/Home`",
           "scope": "window"
         },
-        "sonarlint.ls.isManagedJavaHome": {
+        "sonarlint.ls.manageJavaHome": {
           "type": "boolean",
-          "markdownDescription": "Let SonarLint manage its own JRE. If this is set, SonarLint will automatically update the JRE at `sonarlint.ls.javaHome`.",
+          "markdownDescription": "Let SonarLint manage its own JRE. If this is set, SonarLint will automatically update the JRE at `#sonarlint.ls.javaHome#`.",
           "scope": "window"
         },
         "sonarlint.ls.vmargs": {
