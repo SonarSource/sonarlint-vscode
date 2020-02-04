@@ -61,15 +61,43 @@
           "scope": "window"
         },
         "sonarlint.trace.server": {
-          "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
           "default": "off",
           "description": "Traces the communication between VS Code and the SonarLint language server.",
-          "scope": "window"
+          "scope": "window",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "off",
+                "messages",
+                "verbose"
+              ],
+              "default": "off"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "verbosity": {
+                  "type": "string",
+                  "enum": [
+                    "off",
+                    "messages",
+                    "verbose"
+                  ],
+                  "default": "off"
+                },
+                "format": {
+                  "type": "string",
+                  "enum": [
+                    "text",
+                    "json"
+                  ],
+                  "default": "text"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
         },
         "sonarlint.testFilePattern": {
           "type": "string",
@@ -83,7 +111,8 @@
             "^.*$": {
               "type": "string",
               "markdownDescription": "One entry value"
-            }
+            },
+            "additionalProperties": false
           },
           "markdownDescription": "Extra properties that could be passed to the code analyzers. e.g. `{\"sonar.javascript.globals\": \"xxx\"}`. See [documentation](https://redirect.sonarsource.com/doc/plugin-library.html) of each analyzers.",
           "scope": "resource"
@@ -111,10 +140,12 @@
                     "on"
                   ],
                   "markdownDescription": "When set to `off`, disable the rule. When set to `on`, enable the rule."
-                }
+                },
+                "additionalProperties": false
               }
             }
-          }
+          },
+          "additionalProperties": false
         },
         "sonarlint.ls.javaHome": {
           "type": "string",
@@ -127,6 +158,7 @@
           "scope": "window"
         },
         "sonarlint.connectedMode.servers": {
+          "deprecationMessage": "The setting is deprecated. Use `sonarlint.connectedMode.connections.sonarqube` or `sonarlint.connectedMode.connections.sonarcloud` instead.",
           "type": "array",
           "scope": "application",
           "default": [],
@@ -153,25 +185,141 @@
                 "description": "Only used for SonarCloud",
                 "default": ""
               }
+            },
+            "additionalProperties": false
+          }
+        },
+        "sonarlint.connectedMode.connections.sonarqube": {
+          "type": "array",
+          "scope": "application",
+          "default": [],
+          "markdownDescription": "Configure connection(s) to [SonarQube](https://sonarqube.org). Don't forget to also configure the project binding in `#sonarlint.connectedMode.project#`.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarqube\": [\n      {\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nSpecify a `connectionId` if you want to define multiple connections.",
+          "examples": [
+            {
+              "serverUrl": "https://<myServerUrl>",
+              "token": "<mySQToken>"
+            },
+            {
+              "connectionId": "<myConnectionId>",
+              "serverUrl": "https://<myServerUrl>",
+              "token": "<mySQToken>"
             }
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "connectionId": {
+                "type": "string",
+                "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud.",
+                "default": "default"
+              },
+              "serverUrl": {
+                "type": "string",
+                "description": "URL of the server."
+              },
+              "token": {
+                "type": "string",
+                "description": "Token generated from My Account>Security in SonarQube"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "serverUrl",
+              "token"
+            ]
+          }
+        },
+        "sonarlint.connectedMode.connections.sonarcloud": {
+          "type": "array",
+          "scope": "application",
+          "default": [],
+          "markdownDescription": "Configure connection(s) to [SonarCloud](https://sonarcloud.io). Don't forget to also configure the project binding in `#sonarlint.connectedMode.project#`.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarcloud\": [\n      {\n        \"organizationKey\": \"myOrg\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nSpecify a `connectionId` if you want to define multiple connections.",
+          "examples": [
+            {
+              "organizationKey": "<myOrgKey>",
+              "token": "<mySCToken>"
+            },
+            {
+              "connectionId": "<myConnectionId>",
+              "organizationKey": "<myOrgKey>",
+              "token": "<mySCToken>"
+            }
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "connectionId": {
+                "type": "string",
+                "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud.",
+                "default": "default"
+              },
+              "organizationKey": {
+                "type": "string",
+                "description": "Only used for SonarCloud"
+              },
+              "token": {
+                "type": "string",
+                "description": "Token generated from [My Account>Security](https://sonarcloud.io/account/security/) in SonarCloud"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "organizationKey",
+              "token"
+            ]
           }
         },
         "sonarlint.connectedMode.project": {
-          "type": "object",
-          "default": {},
-          "markdownDescription": "Bind the current project to SonarQube/SonarCloud using the connection referenced by `serverId` and configured in `#sonarlint.connectedMode.servers#`. Connected mode allows to use the same code analyzers, rules and configuration that are defined in the server.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"serverId\": \"the_server_connection_id\",\n      \"projectKey\": \"my_project\"\n    }",
-          "properties": {
-            "serverId": {
-              "type": "string",
-              "description": "Identifier of the server connection declared in `#sonarlint.connectedMode.servers#`",
-              "default": ""
+          "markdownDescription": "Bind the current workspace folder to a [SonarQube](https://sonarqube.org) or [SonarCloud](https://sonarcloud.io) project. Requires connection details to be defined in the setting `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`.\n\nBinding a workspace folder to a project allows to use the same code analyzers, rules and configuration that are defined in the server, as well as issue suppressions.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"projectKey\": \"my_project\"\n    }\n\nSpecify the `connectionId` if you have defined multiple connections.",
+          "examples": [
+            {
+              "projectKey": "<myProjectKey>"
             },
-            "projectKey": {
-              "type": "string",
-              "description": "Key of the project in SonarQube/SonarCloud",
-              "default": ""
+            {
+              "connectionId": "<myConnectionId>",
+              "projectKey": "<myProjectKey>"
             }
-          },
+          ],
+          "default": {},
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "serverId": {
+                  "type": "string",
+                  "description": "Identifier of the server connection declared in `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`"
+                },
+                "projectKey": {
+                  "type": "string",
+                  "description": "Key of the project in SonarQube/SonarCloud"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "serverId",
+                "projectKey"
+              ],
+              "deprecationMessage": "Replace `serverId` attribute by `connectionId`."
+            },
+            {
+              "type": "object",
+              "properties": {
+                "connectionId": {
+                  "type": "string",
+                  "description": "Identifier of the server connection declared in `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`",
+                  "default": "default"
+                },
+                "projectKey": {
+                  "type": "string",
+                  "description": "Key of the project in SonarQube/SonarCloud (can be found on project homepage)"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "projectKey"
+              ]
+            }
+          ],
           "scope": "resource"
         }
       }
@@ -179,7 +327,7 @@
     "commands": [
       {
         "command": "SonarLint.UpdateAllBindings",
-        "title": "Update all bindings to SonarQube/SonarCloud",
+        "title": "Update all project bindings to SonarQube/SonarCloud",
         "category": "SonarLint"
       },
       {

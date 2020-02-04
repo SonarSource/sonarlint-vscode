@@ -40,30 +40,67 @@ Finally, you can explicitly set the path where the JRE is installed using the `s
 
 ## Connected mode
 
-You can connect SonarLint to SonarQube >= 6.7 or SonarCloud to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
+You can connect SonarLint to SonarQube >= 6.7 or SonarCloud and bind your workspace folders to a SonarQube/SonarCloud project to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
 
-The first step is to configure connection details (server URL, user token and possibly SonarCloud organization). For security reasons, the token should not be stored in SCM with workspace settings. That's why we suggest to configure them in VSCode user settings. Example:
+The first step is to configure connection details (user token, SonarQube server URL or SonarCloud organization). For security reasons, the token should not be stored in SCM with workspace settings. That's why we suggest to configure them in VSCode user settings.
+
+Example for SonarQube:
 
     {
-        "sonarlint.connectedMode.servers": [
-            { "serverId": "mySonarQube", "serverUrl": "https://sonarqube.mycompany.com", "token": "<generated from SonarQube account/security page>" },
-            { "serverId": "sonarcloud", "serverUrl": "https://sonarcloud.io", "organizationKey": "myOrgOnSonarCloud", "token": "<generated from https://sonarcloud.io/account/security/>" }
+        "sonarlint.connectedMode.connections.sonarqube": [
+            { "serverUrl": "https://sonarqube.mycompany.com", "token": "<generated from SonarQube account/security page>" }
         ]
     }
 
+Example for SonarCloud:
+
+    {
+        "sonarlint.connectedMode.connections.sonarcloud": [
+            { "organizationKey": "myOrgOnSonarCloud", "token": "<generated from https://sonarcloud.io/account/security/>" }
+        ]
+    }
 
 The second step is to configure the project binding, either at workspace level, or in every workspace folders. Example:
 
     {
         "sonarlint.connectedMode.project": {
-            "serverId": "mySonarQube",
-            "projectKey": "the-project-key-on-sonarqube"
+            "projectKey": "the-project-key"
+        }
+    }
+
+If you plan to use multiple connections, to different SonarQube servers and/or SonarCloud organizations, simply give a unique `connectionId` to each entry, and use them as reference in the binding.
+
+Example:
+
+    // In user settings
+    {
+        "sonarlint.connectedMode.connections.sonarqube": [
+            { "connectionId": "mySonar", "serverUrl": "https://sonarqube.mycompany.com", "token": "xxx" }
+        ]
+        "sonarlint.connectedMode.connections.sonarcloud": [
+            { "connectionId": "SonarCloud", "organizationKey": "myOrgOnSonarCloud", "token": "yyy" }
+        ]
+    }
+
+    // In project1/.vscode/settings.json
+    {
+        "sonarlint.connectedMode.project": {
+            "connectionId": "mySonar",
+            "projectKey": "the-project-key-on-sq"
+        }
+    }
+
+    // In project2/.vscode/settings.json
+    {
+        "sonarlint.connectedMode.project": {
+            "connectionId": "SonarCloud",
+            "projectKey": "the-project-key-on-sc"
         }
     }
 
 Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
 
-SonarLint keep server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
+SonarLint keep server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
 
 
 
@@ -83,7 +120,7 @@ For SonarLint support questions ("How do I?", "I got this error, why?", ...), pl
 
 Be aware that this forum is a community, so the standard pleasantries ("Hi", "Thanks", ...) are expected. And if you don't get an answer to your thread, you should sit on your hands for at least three days before bumping it. Operators are not standing by. :-)
 
-Issue tracker: https://jira.sonarsource.com/browse/SLVSCODE
+Issue tracker (readonly): https://jira.sonarsource.com/browse/SLVSCODE
 
 ## License
 
