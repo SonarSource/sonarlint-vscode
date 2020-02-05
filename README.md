@@ -78,7 +78,7 @@ Example:
             { "connectionId": "mySonar", "serverUrl": "https://sonarqube.mycompany.com", "token": "xxx" }
         ]
         "sonarlint.connectedMode.connections.sonarcloud": [
-            { "connectionId": "SonarCloud", "organizationKey": "myOrgOnSonarCloud", "token": "yyy" }
+            { "connectionId": "myOrgOnSonarCloud", "organizationKey": "myOrg", "token": "yyy" }
         ]
     }
 
