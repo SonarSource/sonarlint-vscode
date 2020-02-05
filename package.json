@@ -167,23 +167,19 @@
             "properties": {
               "serverId": {
                 "type": "string",
-                "description": "A unique identifier for this server connection. Will be referenced from `#sonarlint.connectedMode.project#`",
-                "default": ""
+                "description": "A unique identifier for this server connection. Will be referenced from `#sonarlint.connectedMode.project#`"
               },
               "serverUrl": {
                 "type": "string",
-                "description": "URL of the server. Use https://sonarcloud.io for SonarCloud.",
-                "default": ""
+                "description": "URL of the server. Use https://sonarcloud.io for SonarCloud."
               },
               "token": {
                 "type": "string",
-                "description": "Token generated from My Account>Security in SonarQube/SonarCloud",
-                "default": ""
+                "description": "Token generated from My Account>Security in SonarQube/SonarCloud"
               },
               "organizationKey": {
                 "type": "string",
-                "description": "Only used for SonarCloud",
-                "default": ""
+                "description": "Only used for SonarCloud"
               }
             },
             "additionalProperties": false
@@ -210,8 +206,7 @@
             "properties": {
               "connectionId": {
                 "type": "string",
-                "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud.",
-                "default": "default"
+                "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud."
               },
               "serverUrl": {
                 "type": "string",
@@ -250,8 +245,7 @@
             "properties": {
               "connectionId": {
                 "type": "string",
-                "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud.",
-                "default": "default"
+                "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud."
               },
               "organizationKey": {
                 "type": "string",
@@ -306,8 +300,7 @@
               "properties": {
                 "connectionId": {
                   "type": "string",
-                  "description": "Identifier of the server connection declared in `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`",
-                  "default": "default"
+                  "description": "Identifier of the server connection declared in `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`"
                 },
                 "projectKey": {
                   "type": "string",
