@@ -183,9 +183,8 @@ export function installManagedJre() {
         })
         .then(jreInstallDir => {
           progress.report({ message: 'Done' });
-          const lsConfig = vscode.workspace.getConfiguration('sonarlint.ls');
-          lsConfig.update('manageJavaHome', true, vscode.ConfigurationTarget.Global)
-            .then(() => lsConfig.update('javaHome', jreInstallDir, vscode.ConfigurationTarget.Global));
+          vscode.workspace.getConfiguration('sonarlint.ls')
+            .update('javaHome', jreInstallDir, vscode.ConfigurationTarget.Global);
         })
         .catch(err => {
           throw err;
