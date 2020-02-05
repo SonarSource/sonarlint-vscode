@@ -132,10 +132,9 @@ export function parseMajorVersion(content: string): number {
 function suggestManagedJre(reject) {
   reject({
     message: `The Java Runtime Environment can not be located. Please install a JRE, or configure its path with the
-      ${JAVA_HOME_CONFIG} property.
-
-      You can also allow SonarLint to download the JRE from AdoptOpenJDK. This JRE will be used only by SonarLint.`,
-    label: 'Allow SonarLint to download the JRE',
+      ${JAVA_HOME_CONFIG} property. You can also let SonarLint download the JRE from AdoptOpenJDK. This JRE will be
+      used only by SonarLint.`,
+    label: 'Let SonarLint download the JRE',
     command: Commands.INSTALL_MANAGED_JRE
   });
 }
