@@ -228,7 +228,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Configure connection(s) to [SonarCloud](https://sonarcloud.io). Don't forget to also configure the project binding in `#sonarlint.connectedMode.project#`.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarcloud\": [\n      {\n        \"organizationKey\": \"myOrg\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nSpecify a `connectionId` if you want to define multiple connections.",
+          "markdownDescription": "Configure connection(s) to [SonarCloud](https://sonarcloud.io). Don't forget to also configure the project binding in `#sonarlint.connectedMode.project#`.\nIf you have projects in multiple SonarCloud organizations, simply declare multiple connections.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarcloud\": [\n      {\n        \"organizationKey\": \"myOrg\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nSpecify a `connectionId` if you want to define multiple connections.",
           "examples": [
             {
               "organizationKey": "<myOrgKey>",
@@ -249,7 +249,7 @@
               },
               "organizationKey": {
                 "type": "string",
-                "description": "Only used for SonarCloud"
+                "description": "A SonarCloud organization key. If you want to bind different projects that are in different organizations, simply declare multiple connections."
               },
               "token": {
                 "type": "string",
