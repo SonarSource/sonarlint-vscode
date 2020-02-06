@@ -198,7 +198,7 @@ function toggleRule(level: ConfigLevel) {
         rules[key] = { level };
       } else {
         // Back to default
-        delete rules[key];
+        rules[key] = undefined;
       }
     }
     return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
