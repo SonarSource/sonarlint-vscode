@@ -56,12 +56,13 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<AllRulesNode | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
   private levelFilter?: ConfigLevel;
+  private allRules: Thenable<RulesResponse>;
 
-  constructor(private readonly allRules: Thenable<RulesResponse>) { }
+  constructor(private readonly allRulesProvider: () => Thenable<RulesResponse>) { }
 
   async getChildren(node: AllRulesNode) {
     const localRuleConfig = VSCode.workspace.getConfiguration('sonarlint.rules');
-    return this.allRules
+    return this.getAllRules()
       .then(response => {
         Object.keys(response).forEach(language => response[language].sort(byName));
         return response;
@@ -93,11 +94,18 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
       });
   }
 
+  private getAllRules(): Thenable<RulesResponse> {
+    if (!this.allRules) {
+      this.allRules = this.allRulesProvider();
+    }
+    return this.allRules;
+  }
+
   getParent(node: AllRulesNode) {
     if (node instanceof LanguageNode) {
       return Promise.resolve(null);
     } else {
-      return this.allRules.then(response =>
+      return this.getAllRules().then(response =>
         Object.keys(response)
           .filter(k => response[k].findIndex(r => r.key.toUpperCase() === node.rule.key.toUpperCase()) >= 0)
           .map(l => new LanguageNode(l))
@@ -120,7 +128,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   }
 
   async checkRuleExists(key: string) {
-    return this.allRules.then(response =>
+    return this.getAllRules().then(response =>
       Object.keys(response)
         .filter(k => response[k].findIndex(r => r.key.toUpperCase() === key.toUpperCase()) >= 0)
         .length === 0 ? `Key not found ${key}` : ''

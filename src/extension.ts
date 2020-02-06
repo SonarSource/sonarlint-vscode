@@ -272,7 +272,7 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   const allRulesTreeDataProvider = new AllRulesTreeDataProvider(
-    languageClient.onReady().then(() => languageClient.listAllRules())
+    () => languageClient.onReady().then(() => languageClient.listAllRules())
   );
   const allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
     treeDataProvider: allRulesTreeDataProvider
