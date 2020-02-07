@@ -10,7 +10,7 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import { LanguageClientOptions, StreamInfo, ExecuteCommandRequest, ExecuteCommandParams } from 'vscode-languageclient';
+import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
 
 import * as util from './util';
 import { AllRulesTreeDataProvider, Rule, RuleNode, ConfigLevel } from './rules';
@@ -102,8 +102,8 @@ function logWithPrefix(data, prefix) {
   }
 }
 
-function isVerboseEnabled() {
-  return currentConfig.get('sonarlint.output.showVerboseLogs');
+function isVerboseEnabled(): boolean {
+  return currentConfig.get('output.showVerboseLogs', false);
 }
 
 function languageServerCommand(
@@ -206,6 +206,8 @@ function toggleRule(level: ConfigLevel) {
 }
 
 export function activate(context: VSCode.ExtensionContext) {
+  currentConfig = getSonarLintConfiguration();
+
   util.setExtensionContext(context);
   sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
   context.subscriptions.push(sonarlintOutput);
@@ -234,8 +236,6 @@ export function activate(context: VSCode.ExtensionContext) {
     outputChannel: sonarlintOutput,
     revealOutputChannelOn: 4 // never
   };
-
-  currentConfig = getSonarLintConfiguration();
 
   // Create the language client and start the client.
   // id parameter is used to load 'sonarlint.trace.server' configuration
@@ -310,9 +310,7 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
 
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre)
-  );
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
