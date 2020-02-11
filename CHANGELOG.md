@@ -1,10 +1,10 @@
 ## 1.14.0
 
-* Debounce 'on change' analysis trigger
-* Remove default value for `testFilePattern` setting. By default all files are now analyzed as production code
-* Update SonarPython 2.3 -> [2.4](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15304), minor fixes
+* Group 'on change' analysis triggers to lower CPU usage
+* Remove default value for `testFilePattern` setting. By default all files are now analyzed as application code
+* Update SonarPython 2.3 -> [2.4](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15304), engine improvements and bug fixes
 * Automatically offer to download a JRE if none was detected/configured
-* Change settings to configure connected mode (separate SonarQube and SonarCloud)
+* Change connected mode settings to differentiate SonarCloud from SonarQube
 * Add 2 new settings to control SonarLint output verbosity (quiet by default)
 
 ## 1.13.0
