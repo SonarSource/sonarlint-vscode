@@ -26,7 +26,7 @@ const jarDependencies = [
   {
     groupId: 'org/sonarsource/java',
     artifactId: 'sonar-java-plugin',
-    version: '6.0.0.20538',
+    version: '6.1.0.20866',
     output: 'analyzers/sonarjava.jar'
   },
   {
