@@ -6,6 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 import * as assert from 'assert';
 import * as path from 'path';
+import * as CompareVersions from 'compare-versions';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -26,16 +27,21 @@ suite('Java Test Suite', () => {
 	});
 
 	test('should report issue on java file', async function () {
-		const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-java-maven-multi-module', 'module-java/src/main/java/edu/marcelo/App.java'));
-		const document = await vscode.workspace.openTextDocument(fileUri);
-		const editor = await vscode.window.showTextDocument(document);
+		const vscodeJavaVersion = vscode.extensions.getExtension('redhat.java')?.packageJSON.version;
+		if (CompareVersions.compare(vscodeJavaVersion, '0.56', '>=')) {
+			const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-java-maven-multi-module', 'module-java/src/main/java/edu/marcelo/App.java'));
+			const document = await vscode.workspace.openTextDocument(fileUri);
+			const editor = await vscode.window.showTextDocument(document);
 
-		var diags = await waitForSonarLintDiagnostics(fileUri);
+			var diags = await waitForSonarLintDiagnostics(fileUri);
 
-		assert.deepEqual(diags.length, 1);
-		assert.equal(diags[0].message, 'Replace this use of System.out or System.err by a logger.');
+			assert.deepEqual(diags.length, 1);
+			assert.equal(diags[0].message, 'Replace this use of System.out or System.err by a logger.');
 
-		vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+			vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		} else {
+			this.skip();
+		}
 	}).timeout(60 * 1000);
 
 	async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
