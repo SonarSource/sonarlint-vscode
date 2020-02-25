@@ -1,0 +1,50 @@
+# The following should be moved in related sub-directories
+server/sonar-web/src/main/webapp/stylesheets/sonar-colorizer.css
+server/sonar-web/src/main/webapp/deploy/plugins
+server/sonar-web/src/main/webapp/deploy/bootstrap
+server/sonar-web/src/main/webapp/deploy/maven/org
+server/sonar-web/src/main/webapp/WEB-INF/log/
+server/sonar-web/src/main/webapp/deploy/*.jar
+server/sonar-web/src/main/webapp/deploy/jdbc-driver.txt
+
+
+# ---- Javadoc
+docs.tar
+
+# ---- Maven
+target/
+dependency-reduced-pom.xml
+
+# ---- IntelliJ IDEA
+*.iws
+*.iml
+*.ipr
+.idea/
+
+# ---- Eclipse
+.classpath
+.project
+.settings
+.externalToolBuilders
+
+# ---- Mac OS X
+.DS_Store
+Icon?
+# Thumbnails
+._*
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# ---- Windows
+# Windows image file caches
+Thumbs.db 
+# Folder config file
+Desktop.ini
+
+# ---- Sonar
+.sonar/
+
+# scripts patches, they are local to each developer
+scripts/patches/*.sh
+scripts/patches/*license*.txt

@@ -1,3 +1,0 @@
-{
-    "sonarlint.testFilePattern": "**/test/samples/**/test/**"
-}
