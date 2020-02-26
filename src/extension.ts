@@ -10,8 +10,7 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import { LanguageClientOptions, StreamInfo, Disposable } from 'vscode-languageclient';
-import * as CompareVersions from 'compare-versions';
+import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
 
 import * as util from './util';
 import { AllRulesTreeDataProvider, Rule, RuleNode, ConfigLevel } from './rules';
@@ -19,13 +18,12 @@ import { Commands } from './commands';
 import { SonarLintExtendedLanguageClient } from './client';
 import { resolveRequirements, RequirementsData, installManagedJre } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
-import { ShowRuleDescriptionRequest, GetJavaConfigRequest, GetJavaConfigResponse } from './protocol';
+import { ShowRuleDescriptionRequest, GetJavaConfigRequest } from './protocol';
+import { installClasspathListener, getJavaConfig } from './java';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
-let classpathChangeListener: Disposable;
-let javaApiTooLowAlreadyLogged: boolean = false;
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', language: 'java' },
@@ -46,7 +44,7 @@ let sonarlintOutput: VSCode.OutputChannel;
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 let languageClient: SonarLintExtendedLanguageClient;
 
-function logToSonarLintOutput(message) {
+export function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
     sonarlintOutput.appendLine(message);
   }
@@ -251,31 +249,7 @@ export function activate(context: VSCode.ExtensionContext) {
     clientOptions
   );
 
-  languageClient.onReady().then(() => {
-    languageClient.onRequest(ShowRuleDescriptionRequest.type, params => {
-      const ruleDescPanelContent = computeRuleDescPanelContent(context, params);
-      if (!ruleDescriptionPanel) {
-        ruleDescriptionPanel = VSCode.window.createWebviewPanel(
-          'sonarlint.RuleDesc',
-          'SonarLint Rule Description',
-          VSCode.ViewColumn.Two,
-          {
-            enableScripts: false
-          }
-        );
-        ruleDescriptionPanel.onDidDispose(
-          () => {
-            ruleDescriptionPanel = undefined;
-          },
-          null,
-          context.subscriptions
-        );
-      }
-      ruleDescriptionPanel.webview.html = ruleDescPanelContent;
-      ruleDescriptionPanel.reveal();
-    });
-    languageClient.onRequest(GetJavaConfigRequest.type, getJavaConfig);
-  });
+  languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
   const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() =>
     languageClient.onReady().then(() => languageClient.listAllRules())
@@ -330,30 +304,36 @@ export function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.extensions.onDidChange(() => {
-      installClasspathListener();
+      installClasspathListener(languageClient);
     })
   );
-  installClasspathListener();
+  installClasspathListener(languageClient);
 }
 
-function installClasspathListener() {
-  const extension: VSCode.Extension<any> | undefined = VSCode.extensions.getExtension('redhat.java');
-  if (extension?.isActive) {
-    if (!classpathChangeListener) {
-      const extensionApi: any = extension.exports;
-      if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
-        var onDidClasspathUpdate: VSCode.Event<VSCode.Uri> = extensionApi.onDidClasspathUpdate;
-        classpathChangeListener = onDidClasspathUpdate(function(uri) {
-          languageClient.onReady().then(() => languageClient.didClasspathUpdate(uri.toString()));
-        });
-      }
+function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
+  languageClient.onRequest(ShowRuleDescriptionRequest.type, params => {
+    const ruleDescPanelContent = computeRuleDescPanelContent(context, params);
+    if (!ruleDescriptionPanel) {
+      ruleDescriptionPanel = VSCode.window.createWebviewPanel(
+        'sonarlint.RuleDesc',
+        'SonarLint Rule Description',
+        VSCode.ViewColumn.Two,
+        {
+          enableScripts: false
+        }
+      );
+      ruleDescriptionPanel.onDidDispose(
+        () => {
+          ruleDescriptionPanel = undefined;
+        },
+        null,
+        context.subscriptions
+      );
     }
-  } else {
-    if (classpathChangeListener) {
-      classpathChangeListener.dispose();
-      classpathChangeListener = null;
-    }
-  }
+    ruleDescriptionPanel.webview.html = ruleDescPanelContent;
+    ruleDescriptionPanel.reveal();
+  });
+  languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
 }
 
 function onConfigurationChange() {
@@ -423,39 +403,4 @@ export function deactivate(): Thenable<void> {
     return undefined;
   }
   return languageClient.stop();
-}
-
-async function getJavaConfig(fileUri: string): Promise<GetJavaConfigResponse> {
-  const extension: VSCode.Extension<any> | undefined = VSCode.extensions.getExtension('redhat.java');
-  try {
-    const extensionApi: any = await extension?.activate();
-    if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
-      installClasspathListener();
-      const isTest: boolean = await extensionApi.isTestFile(fileUri);
-      const sourceLevel: string = (
-        await extensionApi.getProjectSettings(fileUri, ['org.eclipse.jdt.core.compiler.compliance'])
-      )['org.eclipse.jdt.core.compiler.compliance'];
-      const classpathResult = await extensionApi.getClasspaths(fileUri, { scope: isTest ? 'test' : 'runtime' });
-      return {
-        projectRoot: classpathResult.projectRoot,
-        sourceLevel,
-        classpath: classpathResult.classpaths,
-        isTest
-      };
-    }
-  } catch (error) {
-    console.error(error);
-  }
-  return null;
-}
-
-function isJavaApiRecentEnough(apiVersion: string): boolean {
-  if (CompareVersions.compare(apiVersion, '0.4', '>=')) {
-    return true;
-  }
-  if (!javaApiTooLowAlreadyLogged) {
-    logToSonarLintOutput(`SonarLint requires VSCode Java extension 0.56 or greater to enable analysis of Java files`);
-    javaApiTooLowAlreadyLogged = true;
-  }
-  return false;
 }

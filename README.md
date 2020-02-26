@@ -29,7 +29,7 @@ The full list of available rules is visible in the "SonarLint Rules" view in the
 
 ## Requirements
 
-The only thing you need is a Java Runtime (JRE) 8 or 11. If one is already installed on your computer, SonarLint should automatically find and use it.
+The SonarLint language server need a Java Runtime (JRE) 8 or 11. If one is already installed on your computer, SonarLint should automatically find and use it.
 
 If a suitable JRE cannot be found at the usual places, SonarLint will ask for your permission to download and manage its own version.
 
@@ -38,6 +38,13 @@ Finally, you can explicitly set the path where the JRE is installed using the `s
     {
         "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre1.8.0_131"
     }
+
+To analyze JavaScript and TypeScript, SonarLint will also need Node.js (but this is very likely already installed on your box).
+
+You may also need some extra VSCode extensions to enable the support of some languages:
+
+  - [Java](https://marketplace.visualstudio.com/items?itemName=redhat.java)
+  - [Apex](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode)
 
 ## Connected mode
 
