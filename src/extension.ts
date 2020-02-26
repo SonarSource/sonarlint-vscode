@@ -25,6 +25,7 @@ declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 let classpathChangeListener: Disposable;
+let javaApiTooLowAlreadyLogged: boolean = false;
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', language: 'java' },
@@ -449,5 +450,12 @@ async function getJavaConfig(fileUri: string): Promise<GetJavaConfigResponse> {
 }
 
 function isJavaApiRecentEnough(apiVersion: string): boolean {
-  return CompareVersions.compare(apiVersion, '0.4', '>=');
+  if (CompareVersions.compare(apiVersion, '0.4', '>=')) {
+    return true;
+  }
+  if (!javaApiTooLowAlreadyLogged) {
+    logToSonarLintOutput(`SonarLint requires VSCode Java extension 0.56 or greater to enable analysis of Java files`);
+    javaApiTooLowAlreadyLogged = true;
+  }
+  return false;
 }
