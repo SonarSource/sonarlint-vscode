@@ -15,7 +15,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.36.0"
+    "vscode": "^1.37.0"
   },
   "categories": [
     "Linters"
@@ -26,6 +26,7 @@
   ],
   "qna": "https://community.sonarsource.com/c/help/sl",
   "activationEvents": [
+    "onLanguage:java",
     "onLanguage:javascript",
     "onLanguage:javascriptreact",
     "onLanguage:typescript",
@@ -430,6 +431,7 @@
     "inly": "4.0.4",
     "open": "6.0.0",
     "path-exists": "3.0.0",
+    "compare-versions": "3.6.0",
     "vscode-languageclient": "5.2.1"
   },
   "devDependencies": {
@@ -462,7 +464,7 @@
     "sonarqube-scanner": "^2.5.0",
     "through2": "^2.0.5",
     "ts-loader": "6.0.4",
-    "typescript": "^3.5.2",
+    "typescript": "^3.7.4",
     "vsce": "^1.69.0",
     "vscode-test": "^1.0.0",
     "webpack": "^4.39.1",

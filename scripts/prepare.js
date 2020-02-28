@@ -14,7 +14,7 @@ const jarDependencies = [
   {
     groupId: 'org/sonarsource/sonarlint/ls',
     artifactId: 'sonarlint-language-server',
-    version: '1.1.0.14815',
+    version: '1.2.0.15408',
     output: 'server/sonarlint-ls.jar'
   },
   {
@@ -22,6 +22,12 @@ const jarDependencies = [
     artifactId: 'sonar-javascript-plugin',
     version: '5.1.1.7506',
     output: 'analyzers/sonarjs.jar'
+  },
+  {
+    groupId: 'org/sonarsource/java',
+    artifactId: 'sonar-java-plugin',
+    version: '6.1.0.20866',
+    output: 'analyzers/sonarjava.jar'
   },
   {
     groupId: 'org/sonarsource/php',
@@ -69,11 +75,11 @@ function downloadIfNeeded(url, dest) {
   if (url.startsWith('file:')) {
     fs.createReadStream(url.substring('file:'.length)).pipe(fs.createWriteStream(dest));
   } else {
-    request(url + '.sha1', (error, response, body) => {
+    request(`${url}.sha1`, (error, response, body) => {
       if (error) {
         throw error;
       } else if (response.statusCode !== 200) {
-        throw `Unable to get file ${url}: ${response.statusCode} ${body}`;
+        throw new Error(`Unable to get file ${url}: ${response.statusCode} ${body}`);
       } else {
         downloadIfChecksumMismatch(body, url, dest);
       }
@@ -88,7 +94,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
     fs.createReadStream(dest)
       .pipe(crypto.createHash('sha1').setEncoding('hex'))
       .on('finish', function() {
-        let sha1 = this.read();
+        const sha1 = this.read();
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
           request(url)
@@ -97,7 +103,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
             })
             .on('response', function(response) {
               if (response.statusCode !== 200) {
-                throw `Unable to get file ${url}: ${response.statusCode}`;
+                throw new Error(`Unable to get file ${url}: ${response.statusCode}`);
               }
             })
             .pipe(fs.createWriteStream(dest));

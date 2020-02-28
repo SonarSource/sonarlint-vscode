@@ -18,13 +18,15 @@ import { Commands } from './commands';
 import { SonarLintExtendedLanguageClient } from './client';
 import { resolveRequirements, RequirementsData, installManagedJre } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
-import { ShowRuleDescriptionRequest } from './protocol';
+import { ShowRuleDescriptionRequest, GetJavaConfigRequest } from './protocol';
+import { installClasspathListener, getJavaConfig } from './java';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 
 const DOCUMENT_SELECTOR = [
+  { scheme: 'file', language: 'java' },
   { scheme: 'file', language: 'javascript' },
   { scheme: 'file', language: 'javascriptreact' },
   { scheme: 'file', language: 'php' },
@@ -42,7 +44,7 @@ let sonarlintOutput: VSCode.OutputChannel;
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 let languageClient: SonarLintExtendedLanguageClient;
 
-function logToSonarLintOutput(message) {
+export function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
     sonarlintOutput.appendLine(message);
   }
@@ -122,6 +124,7 @@ function languageServerCommand(
   const vmargs = getSonarLintConfiguration().get('ls.vmargs', '');
   parseVMargs(params, vmargs);
   params.push('-jar', serverJar, '' + port);
+  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
@@ -130,7 +133,7 @@ function languageServerCommand(
   return { command: javaExecutablePath, args: params };
 }
 
-export function toUrl(filePath) {
+export function toUrl(filePath: string) {
   let pathName = Path.resolve(filePath).replace(/\\/g, '/');
 
   // Windows drive letter must be prefixed with a slash
@@ -246,33 +249,10 @@ export function activate(context: VSCode.ExtensionContext) {
     clientOptions
   );
 
-  languageClient.onReady().then(() =>
-    languageClient.onRequest(ShowRuleDescriptionRequest.type, params => {
-      const ruleDescPanelContent = computeRuleDescPanelContent(context, params);
-      if (!ruleDescriptionPanel) {
-        ruleDescriptionPanel = VSCode.window.createWebviewPanel(
-          'sonarlint.RuleDesc',
-          'SonarLint Rule Description',
-          VSCode.ViewColumn.Two,
-          {
-            enableScripts: false
-          }
-        );
-        ruleDescriptionPanel.onDidDispose(
-          () => {
-            ruleDescriptionPanel = undefined;
-          },
-          null,
-          context.subscriptions
-        );
-      }
-      ruleDescriptionPanel.webview.html = ruleDescPanelContent;
-      ruleDescriptionPanel.reveal();
-    })
-  );
+  languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
-  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(
-    () => languageClient.onReady().then(() => languageClient.listAllRules())
+  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() =>
+    languageClient.onReady().then(() => languageClient.listAllRules())
   );
   const allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
     treeDataProvider: allRulesTreeDataProvider
@@ -321,6 +301,39 @@ export function activate(context: VSCode.ExtensionContext) {
   languageClient.start();
 
   context.subscriptions.push(onConfigurationChange());
+
+  context.subscriptions.push(
+    VSCode.extensions.onDidChange(() => {
+      installClasspathListener(languageClient);
+    })
+  );
+  installClasspathListener(languageClient);
+}
+
+function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
+  languageClient.onRequest(ShowRuleDescriptionRequest.type, params => {
+    const ruleDescPanelContent = computeRuleDescPanelContent(context, params);
+    if (!ruleDescriptionPanel) {
+      ruleDescriptionPanel = VSCode.window.createWebviewPanel(
+        'sonarlint.RuleDesc',
+        'SonarLint Rule Description',
+        VSCode.ViewColumn.Two,
+        {
+          enableScripts: false
+        }
+      );
+      ruleDescriptionPanel.onDidDispose(
+        () => {
+          ruleDescriptionPanel = undefined;
+        },
+        null,
+        context.subscriptions
+      );
+    }
+    ruleDescriptionPanel.webview.html = ruleDescPanelContent;
+    ruleDescriptionPanel.reveal();
+  });
+  languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
 }
 
 function onConfigurationChange() {

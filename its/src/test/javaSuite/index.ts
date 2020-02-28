@@ -16,7 +16,7 @@ export function run(testsRoot: string, cb: (error: any, failures?: number) => vo
     reporterOptions: {
       reporterEnabled: 'spec, xunit',
       xunitReporterOptions: {
-        output: path.resolve(__dirname, '..', '..', 'extensions-tests.xml')
+        output: path.resolve(__dirname, '..', '..', 'java-tests.xml')
       }
     }
   });

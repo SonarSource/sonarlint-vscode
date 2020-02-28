@@ -38,6 +38,7 @@
     "mocha-multi-reporters": "^1.1.7",
     "typescript": "^3.6.4",
     "tslint": "^5.20.0",
-    "vscode-test": "^1.2.2"
+    "vscode-test": "^1.2.2",
+    "compare-versions": "3.6.0"
   }
 }

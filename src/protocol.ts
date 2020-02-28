@@ -6,10 +6,10 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { RequestType } from 'vscode-languageclient';
+import * as lsp from 'vscode-languageserver-protocol';
 
 export namespace ShowRuleDescriptionRequest {
-  export const type = new RequestType<ShowRuleDescriptionParams, any, void, void>('sonarlint/showRuleDescription');
+  export const type = new lsp.RequestType<ShowRuleDescriptionParams, any, void, void>('sonarlint/showRuleDescription');
 }
 
 export interface ShowRuleDescriptionParams {
@@ -18,4 +18,15 @@ export interface ShowRuleDescriptionParams {
   htmlDescription: string;
   type: string;
   severity: string;
+}
+
+export namespace GetJavaConfigRequest {
+  export const type = new lsp.RequestType<string, GetJavaConfigResponse, void, void>('sonarlint/getJavaConfig');
+}
+
+export interface GetJavaConfigResponse {
+  projectRoot: string;
+  sourceLevel: string;
+  classpath: string[];
+  isTest: boolean;
 }
