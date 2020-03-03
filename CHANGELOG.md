@@ -1,6 +1,7 @@
 ## 1.15.0
 
 * Add support for Java analysis (requires [Java](https://marketplace.visualstudio.com/items?itemName=redhat.java) extension 0.56.0+)
+* Update SonarPython 2.4 -> [2.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15531), 3 new vulnerability detection rules, fewer false positives thanks to engine improvements
 
 ## 1.14.0
 
