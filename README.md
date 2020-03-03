@@ -1,10 +1,10 @@
 # SonarLint for Visual Studio Code
 
-SonarLint is an IDE extension that helps you detect and fix quality issues as you write code. Like a spell checker, SonarLint squiggles flaws so they can be fixed before committing code. You can get it directly from the VS Code Marketplace and it will then detect new bugs and quality issues as you code (Java, JavaScript, TypeScript, PHP and Python)
+SonarLint is an IDE extension that helps you detect and fix quality issues as you write code. Like a spell checker, SonarLint squiggles flaws so they can be fixed before committing code. You can get it directly from the VS Code Marketplace and it will then detect new bugs and quality issues as you code (JavaScript, TypeScript, Python, Java, HTML, PHP).
 
 ## How it works
 
-Simply open a Java, JS, TS, Python or PHP file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
+Simply open a JS, TS, Python, Java, HTML or PHP file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
 
 ![sonarlint on-the-fly](images/sonarlint-vscode.gif)
 
@@ -16,20 +16,20 @@ You can access the detailed rule description directly from your editor, using th
 
 Check the rules to see what SonarLint can do for you:
 
-- [Java rules](https://rules.sonarsource.com/java)
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 - [Python rules](https://rules.sonarsource.com/python)
-- [PHP rules](https://rules.sonarsource.com/php)
+- [Java rules](https://rules.sonarsource.com/java)
 - [HTML rules](https://rules.sonarsource.com/html)
+- [PHP rules](https://rules.sonarsource.com/php)
 
-You will benefit from the following code analyzers: [SonarJava](https://redirect.sonarsource.com/plugins/java.html), [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html), [SonarPHP](https://redirect.sonarsource.com/plugins/php.html) and [SonarHTML](https://redirect.sonarsource.com/plugins/html.html).
+You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html), [SonarJava](https://redirect.sonarsource.com/plugins/java.html), [SonarHTML](https://redirect.sonarsource.com/plugins/html.html) and [SonarPHP](https://redirect.sonarsource.com/plugins/php.html).
 
 The full list of available rules is visible in the "SonarLint Rules" view in the explorer, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
 
 ## Requirements
 
-The SonarLint language server need a Java Runtime (JRE) 8 or 11. If one is already installed on your computer, SonarLint should automatically find and use it.
+The SonarLint language server needs a Java Runtime (JRE) 8 or 11. If one is already installed on your computer, SonarLint should automatically find and use it.
 
 If a suitable JRE cannot be found at the usual places, SonarLint will ask for your permission to download and manage its own version.
 
@@ -39,12 +39,11 @@ Finally, you can explicitly set the path where the JRE is installed using the `s
         "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre1.8.0_131"
     }
 
-To analyze JavaScript and TypeScript, SonarLint will also need Node.js (but this is very likely already installed on your box).
+To analyze JavaScript and TypeScript, SonarLint will also need Node.js.
 
-You may also need some extra VSCode extensions to enable the support of some languages:
+To enable the support for Java, you need the [Language support for Java](https://marketplace.visualstudio.com/items?itemName=redhat.java) VSCode extension (version 0.56.0 or higher).
 
-  - [Java](https://marketplace.visualstudio.com/items?itemName=redhat.java)
-  - [Apex](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode)
+The support for Apex and PL/SQL is only available together with SonarQube/SonarCloud. For Apex, you'll also need the [Salesforce Extension Pack](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode) VSCode extension.
 
 ## Connected mode
 
