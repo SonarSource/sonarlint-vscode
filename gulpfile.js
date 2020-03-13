@@ -32,7 +32,7 @@ gulp.task('update-version', function() {
   if (version.endsWith('-SNAPSHOT') && buildNumber) {
     return gulp
       .src('./package.json')
-      .pipe(bump({ version: version.replace('-SNAPSHOT', '-build.' + buildNumber) }))
+      .pipe(bump({ version: version.replace('-SNAPSHOT', `-build.${buildNumber}`) }))
       .pipe(gulp.dest('./'));
   } else {
     gutil.log(`Not modifying version ${version} with build number ${buildNumber}`);
@@ -68,7 +68,8 @@ gulp.task('deploy-vsix', function() {
   } = process.env;
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
-  const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/org/sonarsource/sonarlint/vscode/${name}/${version}`;
+  const packagePath = 'org/sonarsource/sonarlint/vscode';
+  const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
   return gulp
     .src('*.vsix')
     .pipe(
@@ -100,7 +101,7 @@ gulp.task('deploy-buildinfo', function(done) {
   return request
     .put(
       {
-        url: process.env.ARTIFACTORY_URL + '/api/build',
+        url: `${process.env.ARTIFACTORY_URL}/api/build`,
         json: buildInfo(name, version, buildNumber, hashes)
       },
       function(error, response, body) {
@@ -118,19 +119,15 @@ gulp.task(
   gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-hashes', 'deploy-buildinfo', 'deploy-vsix')
 );
 
-function snapshotVersion() {
-  const buildNumber = process.env.BUILD_BUILDID;
-  const packageJSON = getPackageJSON();
-  const version = packageJSON.version;
-  const buildIdx = version.lastIndexOf('-');
-  if (buildIdx >= 0 && buildNumber) {
-    return version.substr(0, buildIdx) + '-SNAPSHOT';
-  }
-  return version;
-}
-
 function buildInfo(name, version, buildNumber, hashes) {
-  const { SYSTEM_TEAMPROJECTID, BUILD_BUILDID, BUILD_REPOSITORY_NAME, BUILD_SOURCEVERSION } = process.env;
+  const {
+    SYSTEM_TEAMPROJECTID,
+    BUILD_BUILDID,
+    BUILD_REPOSITORY_NAME,
+    BUILD_SOURCEVERSION,
+    SYSTEM_PULLREQUEST_TARGETBRANCH,
+    BUILD_SOURCEBRANCH
+  } = process.env;
   return {
     version: '1.0.1',
     name,
@@ -160,7 +157,9 @@ function buildInfo(name, version, buildNumber, hashes) {
       'buildInfo.env.PROJECT_VERSION': version,
       'buildInfo.env.ARTIFACTORY_DEPLOY_REPO': 'sonarsource-public-qa',
       'buildInfo.env.BUILD_BUILDID': BUILD_BUILDID,
-      'buildInfo.env.BUILD_SOURCEVERSION': BUILD_SOURCEVERSION
+      'buildInfo.env.BUILD_SOURCEVERSION': BUILD_SOURCEVERSION,
+      'buildInfo.env.GITHUB_BRANCH': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+      'buildInfo.env.GIT_SHA1': BUILD_SOURCEVERSION
     }
   };
 }
