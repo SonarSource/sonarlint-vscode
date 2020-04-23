@@ -475,6 +475,9 @@
     "printWidth": 120,
     "singleQuote": true,
     "tabWidth": 2,
-    "useTabs": false
+    "useTabs": false,
+    "arrowParens": "avoid",
+    "trailingComma": "none",
+    "bracketSpacing": false
   }
 }
