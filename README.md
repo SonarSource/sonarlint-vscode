@@ -135,3 +135,8 @@ Issue tracker (readonly): https://jira.sonarsource.com/browse/SLVSCODE
 Copyright 2017-2020 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
+
+## Data and telemetry
+
+This extension collects usage data and sends it to SonarSource to help improve our products and services. Collection of telemetry is controlled via the setting: "sonarlint.disableTelemetry". Click [here](telemetry-sample.md) to see a sample of the data that are collected.
+
