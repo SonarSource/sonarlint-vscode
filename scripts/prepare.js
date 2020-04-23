@@ -51,15 +51,15 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   } else {
     fs.createReadStream(dest)
       .pipe(crypto.createHash('sha1').setEncoding('hex'))
-      .on('finish', function() {
-        let sha1 = this.read();
+      .on('finish', function () {
+        const sha1 = this.read();
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
           request(url)
-            .on('error', function(err) {
+            .on('error', function (err) {
               throw error;
             })
-            .on('response', function(response) {
+            .on('response', function (response) {
               if (response.statusCode !== 200) {
                 throw `Unable to get file ${url}: ${response.statusCode}`;
               }

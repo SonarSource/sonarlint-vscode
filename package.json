@@ -121,7 +121,7 @@
         "sonarlint.disableTelemetry": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Disable sending anonymous usage statistics",
+          "markdownDescription": "Disable sending anonymous usage statistics to SonarSource. Click [here](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md) to see a sample of the data that are collected.",
           "scope": "window"
         },
         "sonarlint.rules": {
@@ -478,6 +478,6 @@
     "useTabs": false,
     "arrowParens": "avoid",
     "trailingComma": "none",
-    "bracketSpacing": false
+    "bracketSpacing": true
   }
 }
