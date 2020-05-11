@@ -1,6 +1,6 @@
 # SonarLint for Visual Studio Code
 
-SonarLint is an IDE extension that helps you detect and fix quality issues as you write code. Like a spell checker, SonarLint squiggles flaws so they can be fixed before committing code. You can get it directly from the VS Code Marketplace and it will then detect new bugs and quality issues as you code (JavaScript, TypeScript, Python, Java, HTML, PHP).
+SonarLint is a free IDE extension that lets you fix coding issues before they exist! Like a spell checker, SonarLint highlights Bugs and Security Vulnerabilities as you write code, with clear remediation guidance so you can fix them before the code is even committed. SonarLint in VS Code supports analysis of JavaScript, TypeScript, Python, Java, HTML & PHP code, and you can install it directly from the VS Code Marketplace!
 
 ## How it works
 
@@ -12,9 +12,9 @@ You can access the detailed rule description directly from your editor, using th
 
 ![rule description](images/sonarlint-rule-description.gif)
 
-## Rules
+## Static Analysis Rules
 
-Check the rules to see what SonarLint can do for you:
+SonarLint automatically checks your code against the following rules:
 
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
@@ -22,8 +22,6 @@ Check the rules to see what SonarLint can do for you:
 - [Java rules](https://rules.sonarsource.com/java)
 - [HTML rules](https://rules.sonarsource.com/html)
 - [PHP rules](https://rules.sonarsource.com/php)
-
-You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html), [SonarJava](https://redirect.sonarsource.com/plugins/java.html), [SonarHTML](https://redirect.sonarsource.com/plugins/html.html) and [SonarPHP](https://redirect.sonarsource.com/plugins/php.html).
 
 The full list of available rules is visible in the "SonarLint Rules" view in the explorer, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
 
