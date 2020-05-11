@@ -14,7 +14,7 @@ You can access the detailed rule description directly from your editor, using th
 
 ## Static Analysis Rules
 
-SonarLint automatically checks your code against the following rules:
+Out of the box, SonarLint automatically checks your code against the following rules:
 
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
@@ -46,6 +46,11 @@ The support for Apex and PL/SQL is only available together with SonarQube/SonarC
 ## Connected mode
 
 You can connect SonarLint to SonarQube >= 6.7 or SonarCloud and bind your workspace folders to a SonarQube/SonarCloud project to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
+
+Connected mode will also allow to unlock analysis of those languages:
+
+- [Apex rules](https://rules.sonarsource.com/apex)
+- [PL/SQL rules](https://rules.sonarsource.com/plsql).
 
 The first step is to configure connection details (user token, SonarQube server URL or SonarCloud organization). For security reasons, the token should not be stored in SCM with workspace settings. That's why we suggest to configure them in VSCode user settings.
 
@@ -106,8 +111,6 @@ Example:
 Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
 
 SonarLint keep server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
-
-
 
 ## Contributions
 
