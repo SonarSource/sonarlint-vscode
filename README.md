@@ -1,6 +1,6 @@
 # SonarLint for Visual Studio Code
 
-SonarLint is an IDE extension that helps you detect and fix quality issues as you write code. Like a spell checker, SonarLint squiggles flaws so they can be fixed before committing code. You can get it directly from the VS Code Marketplace and it will then detect new bugs and quality issues as you code (JavaScript, TypeScript, Python, Java, HTML, PHP).
+SonarLint is a free IDE extension that lets you fix coding issues before they exist! Like a spell checker, SonarLint highlights Bugs and Security Vulnerabilities as you write code, with clear remediation guidance so you can fix them before the code is even committed. SonarLint in VS Code supports analysis of JavaScript, TypeScript, Python, Java, HTML & PHP code, and you can install it directly from the VS Code Marketplace!
 
 ## How it works
 
@@ -12,11 +12,9 @@ You can access the detailed rule description directly from your editor, using th
 
 ![rule description](images/sonarlint-rule-description.gif)
 
-## Rules
+## Static Analysis Rules
 
-Out of the box, you will be able to analyze [JavaScript](https://redirect.sonarsource.com/plugins/javascript.html), [TypeScript](https://redirect.sonarsource.com/plugins/typescript.html), [Python](https://redirect.sonarsource.com/plugins/python.html), [Java](https://redirect.sonarsource.com/plugins/java.html), [HTML](https://redirect.sonarsource.com/plugins/html.html) and [PHP](https://redirect.sonarsource.com/plugins/php.html).
-
-Check the rules to see what SonarLint can do for you:
+Out of the box, SonarLint automatically checks your code against the following rules:
 
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
@@ -49,7 +47,10 @@ The support for Apex and PL/SQL is only available together with SonarQube/SonarC
 
 You can connect SonarLint to SonarQube >= 6.7 or SonarCloud and bind your workspace folders to a SonarQube/SonarCloud project to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
 
-Connected mode will also allow to unlock analysis of [Apex](https://redirect.sonarsource.com/plugins/apex.html) and [PL/SQL](https://redirect.sonarsource.com/plugins/plsql.html).
+Connected mode will also allow to unlock analysis of the following languages:
+
+- [Apex rules](https://rules.sonarsource.com/apex)
+- [PL/SQL rules](https://rules.sonarsource.com/plsql)
 
 The first step is to configure connection details (user token, SonarQube server URL or SonarCloud organization). For security reasons, the token should not be stored in SCM with workspace settings. That's why we suggest to configure them in VSCode user settings.
 
