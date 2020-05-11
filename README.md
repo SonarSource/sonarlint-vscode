@@ -14,6 +14,8 @@ You can access the detailed rule description directly from your editor, using th
 
 ## Rules
 
+Out of the box, you will be able to analyze [JavaScript](https://redirect.sonarsource.com/plugins/javascript.html), [TypeScript](https://redirect.sonarsource.com/plugins/typescript.html), [Python](https://redirect.sonarsource.com/plugins/python.html), [Java](https://redirect.sonarsource.com/plugins/java.html), [HTML](https://redirect.sonarsource.com/plugins/html.html) and [PHP](https://redirect.sonarsource.com/plugins/php.html).
+
 Check the rules to see what SonarLint can do for you:
 
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
@@ -22,8 +24,6 @@ Check the rules to see what SonarLint can do for you:
 - [Java rules](https://rules.sonarsource.com/java)
 - [HTML rules](https://rules.sonarsource.com/html)
 - [PHP rules](https://rules.sonarsource.com/php)
-
-You will benefit from the following code analyzers: [SonarJS](https://redirect.sonarsource.com/plugins/javascript.html), [SonarTS](https://redirect.sonarsource.com/plugins/typescript.html), [SonarPython](https://redirect.sonarsource.com/plugins/python.html), [SonarJava](https://redirect.sonarsource.com/plugins/java.html), [SonarHTML](https://redirect.sonarsource.com/plugins/html.html) and [SonarPHP](https://redirect.sonarsource.com/plugins/php.html).
 
 The full list of available rules is visible in the "SonarLint Rules" view in the explorer, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
 
@@ -48,6 +48,8 @@ The support for Apex and PL/SQL is only available together with SonarQube/SonarC
 ## Connected mode
 
 You can connect SonarLint to SonarQube >= 6.7 or SonarCloud and bind your workspace folders to a SonarQube/SonarCloud project to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
+
+Connected mode will also allow to unlock analysis of [Apex](https://redirect.sonarsource.com/plugins/apex.html) and [PL/SQL](https://redirect.sonarsource.com/plugins/plsql.html).
 
 The first step is to configure connection details (user token, SonarQube server URL or SonarCloud organization). For security reasons, the token should not be stored in SCM with workspace settings. That's why we suggest to configure them in VSCode user settings.
 
@@ -108,8 +110,6 @@ Example:
 Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
 
 SonarLint keep server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
-
-
 
 ## Contributions
 
