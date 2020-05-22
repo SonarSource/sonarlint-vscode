@@ -128,7 +128,6 @@ function languageServerCommand(
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
-  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarts.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar')));
   return { command: javaExecutablePath, args: params };
 }

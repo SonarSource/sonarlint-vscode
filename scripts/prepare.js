@@ -20,7 +20,7 @@ const jarDependencies = [
   {
     groupId: 'org/sonarsource/javascript',
     artifactId: 'sonar-javascript-plugin',
-    version: '5.1.1.7506',
+    version: '6.2.1.12157',
     output: 'analyzers/sonarjs.jar'
   },
   {
@@ -40,12 +40,6 @@ const jarDependencies = [
     artifactId: 'sonar-python-plugin',
     version: '2.5.0.5733',
     output: 'analyzers/sonarpython.jar'
-  },
-  {
-    groupId: 'org/sonarsource/typescript',
-    artifactId: 'sonar-typescript-plugin',
-    version: '1.9.0.3766',
-    output: 'analyzers/sonarts.jar'
   },
   {
     groupId: 'org/sonarsource/html',
