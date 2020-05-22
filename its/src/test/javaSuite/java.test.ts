@@ -14,6 +14,7 @@ import * as vscode from 'vscode';
 // import * as myExtension from '../extension';
 
 const sampleFolderLocation = '../../../samples/';
+const sampleJavaFolderLocation = '../../../samples/sample-java-maven-multi-module/';
 
 suite('Java Test Suite', () => {
 	vscode.window.showInformationMessage('Start java tests.');
@@ -43,6 +44,26 @@ suite('Java Test Suite', () => {
 			this.skip();
 		}
 	}).timeout(60 * 1000);
+
+
+	test('should report issue on single java test file', async function () {
+		const vscodeJavaVersion = vscode.extensions.getExtension('redhat.java')?.packageJSON.version;
+		if (CompareVersions.compare(vscodeJavaVersion, '0.56', '>=')) {
+			const fileUri = vscode.Uri.file(path.join(__dirname, sampleJavaFolderLocation,
+				'module-java/src/test/java/edu/marcelo', 'AppTest.java'));
+			const document = await vscode.workspace.openTextDocument(fileUri);
+			const editor = await vscode.window.showTextDocument(document);
+
+			var diags = await waitForSonarLintDiagnostics(fileUri);
+
+			assert.deepEqual(diags.length, 1);
+			assert.equal(diags[0].message, 'Add at least one assertion to this test case.');
+
+			vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		} else {
+			this.skip();
+		}
+	}).timeout(120 * 1000);
 
 	async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
 		var diags = getSonarLintDiagnostics(fileUri);
