@@ -1,6 +1,6 @@
 /* --------------------------------------------------------------------------------------------
  * SonarLint for VisualStudio Code
- * Copyright (C) 2017-2020 SonarSource SA
+ * Copyright (C) 2017-2019 SonarSource SA
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
@@ -20,7 +20,7 @@ const jarDependencies = [
   {
     groupId: 'org/sonarsource/javascript',
     artifactId: 'sonar-javascript-plugin',
-    version: '5.1.1.7506',
+    version: '6.2.1.12157',
     output: 'analyzers/sonarjs.jar'
   },
   {
@@ -40,12 +40,6 @@ const jarDependencies = [
     artifactId: 'sonar-python-plugin',
     version: '2.5.0.5733',
     output: 'analyzers/sonarpython.jar'
-  },
-  {
-    groupId: 'org/sonarsource/typescript',
-    artifactId: 'sonar-typescript-plugin',
-    version: '1.9.0.3766',
-    output: 'analyzers/sonarts.jar'
   },
   {
     groupId: 'org/sonarsource/html',
@@ -75,11 +69,11 @@ function downloadIfNeeded(url, dest) {
   if (url.startsWith('file:')) {
     fs.createReadStream(url.substring('file:'.length)).pipe(fs.createWriteStream(dest));
   } else {
-    request(`${url}.sha1`, (error, response, body) => {
+    request(url + '.sha1', (error, response, body) => {
       if (error) {
         throw error;
       } else if (response.statusCode !== 200) {
-        throw new Error(`Unable to get file ${url}: ${response.statusCode} ${body}`);
+        throw `Unable to get file ${url}: ${response.statusCode} ${body}`;
       } else {
         downloadIfChecksumMismatch(body, url, dest);
       }
@@ -94,7 +88,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
     fs.createReadStream(dest)
       .pipe(crypto.createHash('sha1').setEncoding('hex'))
       .on('finish', function() {
-        const sha1 = this.read();
+        let sha1 = this.read();
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
           request(url)
@@ -103,7 +97,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
             })
             .on('response', function(response) {
               if (response.statusCode !== 200) {
-                throw new Error(`Unable to get file ${url}: ${response.statusCode}`);
+                throw `Unable to get file ${url}: ${response.statusCode}`;
               }
             })
             .pipe(fs.createWriteStream(dest));
