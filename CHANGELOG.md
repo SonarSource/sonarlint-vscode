@@ -1,3 +1,10 @@
+## 1.16.0
+
+* Update Python analyzer 2.5 -> [2.10](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15721), 33 new rules, support for Python 3.8, improved accuracy through use of built-in types
+* Update Java analyzer 6.1 -> [6.4](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=15741), 14 new rules for Java, 9 of them for tests, fewer false positives
+* Update PHP analyzer 3.3 -> [3.4](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=15297), fewer false positives
+* Update JS/TS analyzer 5.1 -> [6.2](https://github.com/SonarSource/SonarJS/releases/tag/6.2.0.12043), 8 new rules, 31 JS rules now also available for TS, performance improvements
+
 ## 1.15.0
 
 * Add support for Java analysis (requires [Java](https://marketplace.visualstudio.com/items?itemName=redhat.java) extension 0.56.0+)
