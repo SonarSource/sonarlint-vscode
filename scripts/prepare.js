@@ -10,44 +10,7 @@ const crypto = require('crypto');
 const request = require('request');
 
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
-const jarDependencies = [
-  {
-    groupId: 'org/sonarsource/sonarlint/ls',
-    artifactId: 'sonarlint-language-server',
-    version: '1.2.0.16983',
-    output: 'server/sonarlint-ls.jar'
-  },
-  {
-    groupId: 'org/sonarsource/javascript',
-    artifactId: 'sonar-javascript-plugin',
-    version: '6.2.1.12157',
-    output: 'analyzers/sonarjs.jar'
-  },
-  {
-    groupId: 'org/sonarsource/java',
-    artifactId: 'sonar-java-plugin',
-    version: '6.1.0.20866',
-    output: 'analyzers/sonarjava.jar'
-  },
-  {
-    groupId: 'org/sonarsource/php',
-    artifactId: 'sonar-php-plugin',
-    version: '3.4.0.5461',
-    output: 'analyzers/sonarphp.jar'
-  },
-  {
-    groupId: 'org/sonarsource/python',
-    artifactId: 'sonar-python-plugin',
-    version: '2.10.0.6571',
-    output: 'analyzers/sonarpython.jar'
-  },
-  {
-    groupId: 'org/sonarsource/html',
-    artifactId: 'sonar-html-plugin',
-    version: '3.2.0.2082',
-    output: 'analyzers/sonarhtml.jar'
-  }
-];
+const jarDependencies = require('./dependencies.json');
 
 if (!fs.existsSync('server')) {
   fs.mkdirSync('server');
@@ -62,7 +25,8 @@ jarDependencies.map(dep => {
 });
 
 function artifactUrl(dep) {
-  return `${repoxRoot}/${dep.groupId}/${dep.artifactId}/${dep.version}/${dep.artifactId}-${dep.version}.jar`;
+  const groupIdForArtifactory = dep.groupId.replace(/\./g, '/');
+  return `${repoxRoot}/${groupIdForArtifactory}/${dep.artifactId}/${dep.version}/${dep.artifactId}-${dep.version}.jar`;
 }
 
 function downloadIfNeeded(url, dest) {

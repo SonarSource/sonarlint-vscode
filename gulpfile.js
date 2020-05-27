@@ -16,6 +16,7 @@ const through = require('through2');
 const request = require('request');
 const bump = require('gulp-bump');
 const dateformat = require('dateformat');
+const jarDependencies = require('./scripts/dependencies.json');
 //...
 
 gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
@@ -51,7 +52,7 @@ const hashes = {
   md5: ''
 };
 
-gulp.task('compute-hashes', function() {
+gulp.task('compute-vsix-hashes', function() {
   return gulp.src('*.vsix').pipe(hashsum());
 });
 
@@ -98,11 +99,12 @@ gulp.task('deploy-buildinfo', function(done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_BUILDID;
+  const json = buildInfo(name, version, buildNumber, hashes);
   return request
     .put(
       {
         url: `${process.env.ARTIFACTORY_URL}/api/build`,
-        json: buildInfo(name, version, buildNumber, hashes)
+        json
       },
       function(error, response, body) {
         if (error) {
@@ -116,7 +118,7 @@ gulp.task('deploy-buildinfo', function(done) {
 
 gulp.task(
   'deploy',
-  gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-hashes', 'deploy-buildinfo', 'deploy-vsix')
+  gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
 );
 
 function buildInfo(name, version, buildNumber, hashes) {
@@ -128,6 +130,18 @@ function buildInfo(name, version, buildNumber, hashes) {
     SYSTEM_PULLREQUEST_TARGETBRANCH,
     BUILD_SOURCEBRANCH
   } = process.env;
+
+  const dependencies = jarDependencies.map(dep => {
+    const id = `${dep.groupId}:${dep.artifactId}:${dep.version}`;
+    const { md5, sha1 } = computeDependencyHashes(dep.output);
+    return {
+      type: 'jar',
+      id,
+      md5,
+      sha1
+    };
+  });
+
   return {
     version: '1.0.1',
     name,
@@ -149,7 +163,8 @@ function buildInfo(name, version, buildNumber, hashes) {
             md5: hashes.md5,
             name: `${name}-${version}.vsix`
           }
-        ]
+        ],
+        dependencies
       }
     ],
     properties: {
@@ -166,26 +181,40 @@ function buildInfo(name, version, buildNumber, hashes) {
 
 function hashsum() {
   function processFile(file, encoding, callback) {
-    if (file.isNull()) {
-      return;
-    }
-    if (file.isStream()) {
-      gutil.log('Streams not supported');
-      return;
-    }
-    for (let algo in hashes) {
-      if (hashes.hasOwnProperty(algo)) {
-        hashes[algo] = crypto
-          .createHash(algo)
-          .update(file.contents, 'binary')
-          .digest('hex');
-        gutil.log(`Computed ${algo}: ${hashes[algo]}`);
-      }
-    }
-
+    updateHashes(file);
     this.push(file);
     callback();
   }
 
   return through.obj(processFile);
+}
+
+function updateHashes(file) {
+  if (file.isNull()) {
+    return;
+  }
+  if (file.isStream()) {
+    gutil.log('Streams not supported');
+    return;
+  }
+  updateBinaryHashes(file.contents, hashes);
+}
+
+function computeDependencyHashes(dependencyLocation) {
+  const dependencyContents = fs.readFileSync(dependencyLocation);
+  const dependencyHashes = Object.assign({}, hashes);
+  updateBinaryHashes(dependencyContents, dependencyHashes);
+  return dependencyHashes;
+}
+
+function updateBinaryHashes(binaryContent, hashesObject) {
+  for (const algo in hashesObject) {
+    if (hashesObject.hasOwnProperty(algo)) {
+      hashesObject[algo] = crypto
+        .createHash(algo)
+        .update(binaryContent, 'binary')
+        .digest('hex');
+      gutil.log(`Computed ${algo}: ${hashesObject[algo]}`);
+    }
+  }
 }
