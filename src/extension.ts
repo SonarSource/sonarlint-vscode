@@ -20,6 +20,7 @@ import { resolveRequirements, RequirementsData, installManagedJre } from './requ
 import { computeRuleDescPanelContent } from './rulepanel';
 import { ShowRuleDescriptionRequest, GetJavaConfigRequest } from './protocol';
 import { installClasspathListener, getJavaConfig } from './java';
+import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -223,6 +224,10 @@ export function activate(context: VSCode.ExtensionContext) {
     documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
       configurationSection: 'sonarlint'
+    },
+    uriConverters: {
+      code2Protocol: code2ProtocolConverter,
+      protocol2Code: protocol2CodeConverter
     },
     diagnosticCollectionName: 'sonarlint',
     initializationOptions: () => {
