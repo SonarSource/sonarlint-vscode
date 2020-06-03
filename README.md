@@ -124,7 +124,7 @@ Make sure that you follow our [code style](https://github.com/SonarSource/sonar-
 
 ## Have Question or Feedback?
 
-For SonarLint support questions ("How do I?", "I got this error, why?", ...), please first read the [FAQ](https://community.sonarsource.com/t/frequently-asked-questions/7204) and then head to the [SonarSource forum](https://community.sonarsource.com/c/help/sl). There are chances that a question similar to yours has already been answered. 
+For SonarLint support questions ("How do I?", "I got this error, why?", ...), please first read the [FAQ](https://community.sonarsource.com/t/frequently-asked-questions/7204) and then head to the [SonarSource forum](https://community.sonarsource.com/c/help/sl). There are chances that a question similar to yours has already been answered.
 
 Be aware that this forum is a community, so the standard pleasantries ("Hi", "Thanks", ...) are expected. And if you don't get an answer to your thread, you should sit on your hands for at least three days before bumping it. Operators are not standing by. :-)
 
@@ -138,5 +138,4 @@ Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.g
 
 ## Data and telemetry
 
-This extension collects usage data and sends it to SonarSource to help improve our products and services. Collection of telemetry is controlled via the setting: "sonarlint.disableTelemetry". Click [here](telemetry-sample.md) to see a sample of the data that are collected.
-
+This extension collects anonymous usage data and sends it to SonarSource to help improve SonarLint functionality.  No source code nor IP address is collected, and SonarSource does not share the data with anyone else. Collection of telemetry is controlled via the setting: `sonarlint.disableTelemetry`. Click [here](telemetry-sample.md) to see a sample of the data that are collected.
