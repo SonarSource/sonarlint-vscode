@@ -41,8 +41,8 @@
     "onCommand:SonarLint.UpdateAllBindings",
     "onView:SonarLint.AllRules"
   ],
-  "extensionDependency": [
-    "typescript"
+  "extensionDependencies": [
+    "vscode.typescript-language-features"
   ],
   "contributes": {
     "configuration": {
