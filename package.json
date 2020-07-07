@@ -128,7 +128,7 @@
           "type": "object",
           "scope": "application",
           "default": {},
-          "markdownDescription": "Customize applied rule set. This property contains a list of rules whose activation level differ from the one provided by default. See _SonarLint Rules_ view for the full list of available rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:UnusedVariable\": {\n            \"level\": \"off\",\n        \"javascript:S3757\": {\n            \"level\": \"on\"\n        }\n    }\n",
+          "markdownDescription": "Customize applied rule set. This property contains a list of rules whose activation level differ from the one provided by default. See _SonarLint Rules_ view for the full list of available rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:1481\": {\n            \"level\": \"off\",\n        \"javascript:S103\": {\n            \"level\": \"on\",\n            \"parameters\": {\n                \"maximumLineLength\": \"120\"\n            }\n        }\n    }\n",
           "patternProperties": {
             "^[^:]+:[^:]+$": {
               "type": "object",
@@ -141,6 +141,10 @@
                     "on"
                   ],
                   "markdownDescription": "When set to `off`, disable the rule. When set to `on`, enable the rule."
+                },
+                "parameters": {
+                  "type": "object",
+                  "markdownDescription": "Rule parameters. See rule description for accepted parameters. E.g `{ \"intParam\": \"123\" }`."
                 },
                 "additionalProperties": false
               }
