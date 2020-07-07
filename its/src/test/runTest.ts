@@ -49,22 +49,6 @@ async function main() {
 			extensionTestsPath
 		});
 
-		const javaExtensionTestsPath = path.resolve(__dirname, './javaSuite');
-		const javaTestWorkspace = path.resolve(__dirname, '../../samples/workspace-java.code-workspace');
-
-		cp.spawnSync(cliPath, ['--install-extension', 'redhat.java'], {
-			encoding: 'utf-8',
-			stdio: 'inherit'
-		});
-
-		await runTests({
-			// Use the specified `code` executable
-			vscodeExecutablePath,
-			extensionDevelopmentPath,
-			extensionTestsPath: javaExtensionTestsPath,
-			launchArgs: [javaTestWorkspace]
-		});
-
 	} catch (err) {
 		console.error('Failed to run tests');
 		process.exit(1);
