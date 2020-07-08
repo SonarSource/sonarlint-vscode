@@ -13,11 +13,12 @@ import { ShowRuleDescriptionParams } from './protocol';
 
 export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, rule: ShowRuleDescriptionParams) {
   const severityImg = base64_encode(
-    Path.resolve(context.extensionPath, 'images', 'severity', rule.severity.toLowerCase() + '.png')
+    Path.resolve(context.extensionPath, 'images', 'severity', `${rule.severity.toLowerCase()}.png`)
   );
   const typeImg = base64_encode(
-    Path.resolve(context.extensionPath, 'images', 'type', rule.type.toLowerCase() + '.png')
+    Path.resolve(context.extensionPath, 'images', 'type', `${rule.type.toLowerCase()}.png`)
   );
+  const ruleParamsHtml = renderRuleParams(rule);
 
   return `<!doctype html><html>
 		<head>
@@ -35,13 +36,19 @@ export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, ru
 			a { border-bottom: 1px solid rgba(230, 230, 230, .1); color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}
 			
 			.rule-desc { line-height: 1.5;}
-			.rule-desc { line-height: 1.5;}
 			.rule-desc h2 { font-size: 16px; font-weight: 400;}
 			.rule-desc code { padding: .2em .45em; margin: 0; border-radius: 3px; white-space: nowrap;}
 			.rule-desc pre { padding: 10px; border-top: 1px solid rgba(230, 230, 230, .1); border-bottom: 1px solid rgba(230, 230, 230, .1); line-height: 18px; overflow: auto;}
 			.rule-desc code, .rule-desc pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 12px;}
 			.rule-desc ul { padding-left: 40px; list-style: disc;}
-		</style>
+      .rule-params { border: none; border-collapse: collapse; padding: 1em; }
+      .rule-params caption { font-size: 16px; font-weight: 400; text-align: left; margin-bottom: 16px}
+      .rule-params th { vertical-align: top; text-align: right; font-weight: inherit; font-family: monospace }
+      .rule-params td { vertical-align: top; padding-left: 1em; padding-bottom: 1em; }
+      .rule-params p { margin: 0 }
+      .rule-params small { display: block; margin-top: 2px }
+      .rule-params i { font-style: italic }
+			</style>
 		</head>
 		<body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
 		<div>
@@ -54,7 +61,8 @@ export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, ru
     }" src="data:image/gif;base64,${severityImg}">&nbsp;
 		${clean(rule.severity)}
 		</div>
-		<div class=\"rule-desc\">${rule.htmlDescription}</div>
+    <div class="rule-desc">${rule.htmlDescription}</div>
+    ${ruleParamsHtml}
 		</body></html>`;
 }
 
@@ -90,4 +98,36 @@ function capitalizeName(name: string) {
 
 function base64_encode(file: string) {
   return FS.readFileSync(file).toString('base64');
+}
+
+function renderRuleParams(rule: ShowRuleDescriptionParams) {
+  if (rule.parameters && rule.parameters.length > 0) {
+    const ruleParamsConfig = VSCode.workspace.getConfiguration(`sonarlint.rules.${rule.key}.parameters`);
+    return `<table class="rule-params">
+  <caption>Parameters</caption>
+  <tbody>
+    ${rule.parameters.map(p => renderRuleParam(p, ruleParamsConfig)).join('\n')}
+  </tbody>
+</table>
+<i>
+  Parameter values are set in the <code>sonarlint.rules['${rule.key}'].parameters</code> property in user settings.
+  In connected mode, values from the server will override local user settings.
+</i>`;
+  } else {
+    return '';
+  }
+}
+
+function renderRuleParam(param, config) {
+  const { name, description, defaultValue } = param;
+  const descriptionP = description ? `<p>${description}</p>` : '';
+  const currentValue = config.has(name) ? `<small>Current value: <code>${config.get(name)}</code></small>` : '';
+  return `<tr>
+  <th>${name}</th>
+  <td>
+    ${descriptionP}
+    ${currentValue}
+    <small>(Default value: <code>${defaultValue}</code>)</small>
+  </td>
+</tr>`;
 }

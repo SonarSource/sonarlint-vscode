@@ -18,6 +18,11 @@ export interface ShowRuleDescriptionParams {
   htmlDescription: string;
   type: string;
   severity: string;
+  parameters?: Array<{
+    name: string;
+    description: string;
+    defaultValue: string;
+  }>
 }
 
 export namespace GetJavaConfigRequest {
