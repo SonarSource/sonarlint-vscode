@@ -1,0 +1,14 @@
+{
+  // Start with no editor open
+  "workbench.startupEditor": "none",
+  // Disable telemetry pings to Microsoft
+  "telemetry.enableTelemetry": false,
+  // Force Java LS in Standard mode
+  "java.server.launchMode": "Standard",
+  // Enable auto import of Java projects
+  "java.project.importOnFirstTimeStartup": "automatic",
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "sonarlint.output.showAnalyzerLogs": true,
+  "sonarlint.output.showVerboseLogs": true
+}

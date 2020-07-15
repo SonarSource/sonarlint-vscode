@@ -181,7 +181,7 @@ stages:
         inputs:
           secureFile: 'maven-settings.xml'
       - bash: >-
-          mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa 
+          mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa
           -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$(PROJECT_VERSION):vsix -DoutputDirectory=$(Build.SourcesDirectory)
         displayName: ' Download staged vsix'
         env:
@@ -205,6 +205,13 @@ stages:
           sudo service xvfb start
           export DISPLAY=':10'
         displayName: 'Install and start xvfb'
+      - task: JavaToolInstaller@0
+        displayName: 'Switch to Java 11'
+        inputs:
+          versionSpec: '11'
+          jdkSourceOption: PreInstalled
+          jdkArchitectureOption: x64
+          cleanDestinationDirectory: false
       - task: Npm@1
         displayName: 'Install NPM dependencies'
         inputs:
@@ -216,6 +223,17 @@ stages:
           workingDir: its
           command: custom
           customCommand: test
+      - bash: |
+          echo " "
+          echo " >>>>> SonarLint console"
+          echo " "
+          find its/userdir -name '*SonarLint.log' -exec cat {} \;
+          echo " "
+          echo " >>>>> Extension host log"
+          echo " "
+          find its/userdir -name 'exthost.log' -exec cat {} \;
+        condition: succeededOrFailed()
+        displayName: 'Dump Code logs'
       - task: PublishTestResults@2
         condition: succeededOrFailed()
         inputs:

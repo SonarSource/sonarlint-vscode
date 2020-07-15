@@ -3,5 +3,6 @@
 		{
 			"path": "./sample-java-maven-multi-module"
 		}
-	]
+	],
+	"settings": {}
 }

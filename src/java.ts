@@ -14,15 +14,27 @@ import { GetJavaConfigResponse } from './protocol';
 import { SonarLintExtendedLanguageClient } from './client';
 
 let classpathChangeListener: Disposable;
+let serverModeListener: Disposable;
 let javaApiTooLowAlreadyLogged = false;
+let javaServerInLightWeightModeAlreadyLogged = false;
+
+/*
+ Possible startup modes for the Java extension's language server
+ See https://github.com/redhat-developer/vscode-java/blob/5642bf24b89202acf3911fe7a162b6dbcbeea405/src/settings.ts#L198
+ */
+export enum ServerMode {
+  STANDARD = 'Standard',
+  LIGHTWEIGHT = 'LightWeight',
+  HYBRID = 'Hybrid'
+}
 
 export function installClasspathListener(languageClient: SonarLintExtendedLanguageClient) {
-  const extension: VSCode.Extension<any> | undefined = VSCode.extensions.getExtension('redhat.java');
+  const extension = getJavaExtension();
   if (extension?.isActive) {
     if (!classpathChangeListener) {
-      const extensionApi: any = extension.exports;
+      const extensionApi = extension.exports;
       if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
-        var onDidClasspathUpdate: VSCode.Event<VSCode.Uri> = extensionApi.onDidClasspathUpdate;
+        const onDidClasspathUpdate: VSCode.Event<VSCode.Uri> = extensionApi.onDidClasspathUpdate;
         classpathChangeListener = onDidClasspathUpdate(function (uri) {
           languageClient.onReady().then(() => languageClient.didClasspathUpdate(uri.toString()));
         });
@@ -32,6 +44,34 @@ export function installClasspathListener(languageClient: SonarLintExtendedLangua
     if (classpathChangeListener) {
       classpathChangeListener.dispose();
       classpathChangeListener = null;
+    }
+  }
+}
+
+function newServerModeChangeListener(languageClient: SonarLintExtendedLanguageClient) {
+  return (serverMode: ServerMode) => {
+    if (serverMode !== ServerMode.LIGHTWEIGHT) {
+      // Reset state of LightWeight mode warning
+      javaServerInLightWeightModeAlreadyLogged = false;
+    }
+    languageClient.onReady().then(() => languageClient.didJavaServerModeChange(serverMode));
+  };
+}
+
+export function installServerModeChangeListener(languageClient: SonarLintExtendedLanguageClient) {
+  const extension = getJavaExtension();
+  if (extension?.isActive) {
+    if (!serverModeListener) {
+      const extensionApi = extension.exports;
+      if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion) && extensionApi.onDidServerModeChange) {
+        const onDidServerModeChange: VSCode.Event<ServerMode> = extensionApi.onDidServerModeChange;
+        serverModeListener = onDidServerModeChange(newServerModeChangeListener(languageClient));
+      }
+    }
+  } else {
+    if (serverModeListener) {
+      serverModeListener.dispose();
+      serverModeListener = null;
     }
   }
 }
@@ -51,11 +91,15 @@ export async function getJavaConfig(
   languageClient: SonarLintExtendedLanguageClient,
   fileUri: string
 ): Promise<GetJavaConfigResponse> {
-  const extension: VSCode.Extension<any> | undefined = VSCode.extensions.getExtension('redhat.java');
+  const extension = getJavaExtension();
   try {
-    const extensionApi: any = await extension?.activate();
+    const extensionApi = await extension?.activate();
     if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
       installClasspathListener(languageClient);
+      installServerModeChangeListener(languageClient);
+      if (extensionApi.serverMode === ServerMode.LIGHTWEIGHT) {
+        return javaConfigDisabledInLightWeightMode();
+      }
       const isTest: boolean = await extensionApi.isTestFile(fileUri);
       const sourceLevel: string = (
         await extensionApi.getProjectSettings(fileUri, ['org.eclipse.jdt.core.compiler.compliance'])
@@ -72,4 +116,18 @@ export async function getJavaConfig(
     console.error(error);
   }
   return null;
+}
+
+function javaConfigDisabledInLightWeightMode() {
+  if (!javaServerInLightWeightModeAlreadyLogged) {
+    logToSonarLintOutput(
+      `Java analysis is disabled in LightWeight mode. Please check java.server.launchMode in user settings`
+    );
+    javaServerInLightWeightModeAlreadyLogged = true;
+  }
+  return null;
+}
+
+function getJavaExtension() {
+  return VSCode.extensions.getExtension('redhat.java');
 }

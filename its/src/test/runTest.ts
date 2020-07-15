@@ -22,6 +22,7 @@ async function main() {
       process.env['DISPLAY'] = XVFB_DISPLAY;
     }
 
+    const userDataDir = path.resolve(__dirname, '../../userdir');
     // The folder containing the Extension Manifest package.json
     // Passed to `--extensionDevelopmentPath`
     const extensionDevelopmentPath = path.resolve(__dirname, '../../');
@@ -41,15 +42,48 @@ async function main() {
       stdio: 'inherit'
     });
 
+    const testErrors = [];
+
     // run the integration test
-    await runTests({
-      // Use the specified `code` executable
-      vscodeExecutablePath,
-      extensionDevelopmentPath,
-      extensionTestsPath
+    try {
+      await runTests({
+        // Use the specified `code` executable
+        vscodeExecutablePath,
+        extensionDevelopmentPath,
+        extensionTestsPath,
+        launchArgs: [`--user-data-dir=${userDataDir}`]
+      });
+    } catch (testError) {
+      testErrors.push(testError);
+    }
+
+    const javaExtensionTestsPath = path.resolve(__dirname, './javaSuite');
+    const javaTestWorkspace = path.resolve(__dirname, '../../samples/workspace-java.code-workspace');
+
+    ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
+      cp.spawnSync(cliPath, ['--install-extension', requiredExtensionId], {
+        encoding: 'utf-8',
+        stdio: 'inherit'
+      });
     });
+
+    try {
+      await runTests({
+        // Use the specified `code` executable
+        vscodeExecutablePath,
+        extensionDevelopmentPath,
+        extensionTestsPath: javaExtensionTestsPath,
+        launchArgs: [javaTestWorkspace, `--user-data-dir=${userDataDir}`]
+      });
+    } catch (testError) {
+      testErrors.push(testError);
+    }
+
+    if (testErrors.length > 0) {
+      throw new Error('At least one test suite failed, please check logs above for actual failure.');
+    }
   } catch (err) {
-    console.error('Failed to run tests');
+    console.error('Failed to run tests', err);
     process.exit(1);
   }
 }

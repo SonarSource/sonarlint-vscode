@@ -10,7 +10,8 @@ import * as path from 'path';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-// import * as myExtension from '../extension';
+
+import { waitForSonarLintDiagnostics } from '../common/util';
 
 const sampleFolderLocation = '../../../samples/';
 
@@ -33,23 +34,4 @@ suite('Extension Test Suite', () => {
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(60 * 1000);
-
-  async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
-    var diags = getSonarLintDiagnostics(fileUri);
-    while (diags.length == 0) {
-      await sleep(200);
-      diags = getSonarLintDiagnostics(fileUri);
-    }
-    return diags;
-  }
-
-  function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => {
-      setTimeout(resolve, ms);
-    });
-  }
 });
-
-function getSonarLintDiagnostics(fileUri: vscode.Uri) {
-  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source == 'sonarlint');
-}
