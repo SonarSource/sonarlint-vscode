@@ -96,8 +96,8 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
 
 function logWithPrefix(data, prefix) {
   if (isVerboseEnabled()) {
-    var lines = data.toString().split(/\r\n|\r|\n/);
-    lines.forEach(l => {
+    const lines: string[] = data.toString().split(/\r\n|\r|\n/);
+    lines.forEach((l: string) => {
       if (l.length > 0) {
         logToSonarLintOutput(`${prefix} ${l}`);
       }

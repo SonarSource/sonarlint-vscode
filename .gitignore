@@ -7,3 +7,6 @@ server
 analyzers
 .vscode-test
 coverage
+its/userdir
+!its/userdir/User
+!its/userdir/User/settings.json
