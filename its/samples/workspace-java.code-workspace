@@ -3,5 +3,8 @@
 		{
 			"path": "./sample-java-maven-multi-module"
 		}
-	]
+	],
+	"settings": {
+		"java.server.launchMode": "Standard"
+	}
 }
