@@ -18,11 +18,11 @@ let serverModeListener: Disposable;
 let javaApiTooLowAlreadyLogged = false;
 let javaServerInLightWeightModeAlreadyLogged = false;
 
-/**
- * Possible startup modes for the Java extension's language server
- * See https://github.com/redhat-developer/vscode-java/blob/5642bf24b89202acf3911fe7a162b6dbcbeea405/src/settings.ts#L198
- */ 
-enum ServerMode {
+/*
+ Possible startup modes for the Java extension's language server
+ See https://github.com/redhat-developer/vscode-java/blob/5642bf24b89202acf3911fe7a162b6dbcbeea405/src/settings.ts#L198
+ */
+export enum ServerMode {
   STANDARD = 'Standard',
   LIGHTWEIGHT = 'LightWeight',
   HYBRID = 'Hybrid'
@@ -48,7 +48,7 @@ export function installClasspathListener(languageClient: SonarLintExtendedLangua
   }
 }
 
-export function installServerModeListener() {
+export function installServerModeChangeListener(languageClient: SonarLintExtendedLanguageClient) {
   const extension: VSCode.Extension<any> | undefined = getJavaExtension();
   if (extension?.isActive) {
     if (!serverModeListener) {
@@ -60,6 +60,7 @@ export function installServerModeListener() {
             // Reset state of LightWeight mode warning
             javaServerInLightWeightModeAlreadyLogged = false;
           }
+          languageClient.onReady().then(() => languageClient.didJavaServerModeChange(serverMode));
         });
       }
     }
@@ -89,8 +90,10 @@ export async function getJavaConfig(
   const extension: VSCode.Extension<any> | undefined = getJavaExtension();
   try {
     const extensionApi: any = await extension?.activate();
+    console.log(Object.keys(extensionApi));
     if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
       installClasspathListener(languageClient);
+      installServerModeChangeListener(languageClient);
       if (extensionApi.serverMode === ServerMode.LIGHTWEIGHT) {
         return javaConfigDisabledInLightWeightMode();
       }

@@ -7,6 +7,7 @@
 'use strict';
 import { LanguageClient } from 'vscode-languageclient';
 import { RulesResponse } from './rules';
+import { ServerMode } from './java';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<RulesResponse> {
@@ -15,5 +16,9 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   didClasspathUpdate(projectRoot: string): void {
     this.sendNotification('sonarlint/didClasspathUpdate', projectRoot);
+  }
+
+  didJavaServerModeChange(serverMode: ServerMode) {
+    this.sendNotification('sonarlint/didJavaServerModeChange', serverMode);
   }
 }
