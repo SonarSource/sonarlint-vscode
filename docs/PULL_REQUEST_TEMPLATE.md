@@ -1,6 +1,6 @@
-Please review our [contribution guidelines](https://github.com/SonarSource/sonarlint-vscode/blob/master/contributing.md).
+Please review our [contribution guidelines](https://github.com/SonarSource/sonarlint-vscode/blob/master/docs/contributing.md).
 
-And please ensure your pull request adheres to the following guidelines: 
+And please ensure your pull request adheres to the following guidelines:
 
 - [ ] Please explain your motives to contribute this change: what problem you are trying to fix, what improvement you are trying to make
 - [ ] Use the following formatting style: [SonarSource/sonar-developer-toolset](https://github.com/SonarSource/sonar-developer-toolset#code-style)
