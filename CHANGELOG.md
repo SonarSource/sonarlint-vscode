@@ -1,3 +1,7 @@
+## 1.17.0
+
+* Allow configuration of rule parameters in user settings
+
 ## 1.16.0
 
 * Update Python analyzer 2.5 -> [2.11](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=15735), 44 new rules, support for Python 3.8, improved accuracy through use of built-in types, count module-level docstrings as comments
