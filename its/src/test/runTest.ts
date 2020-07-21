@@ -41,15 +41,21 @@ async function main() {
 			stdio: 'inherit'
 		});
 
-		// run the integration test
-		await runTests({
-			// Use the specified `code` executable
-			vscodeExecutablePath,
-			extensionDevelopmentPath,
-			extensionTestsPath
-		});
+		const testErrors = [];
 
-        const javaExtensionTestsPath = path.resolve(__dirname, './javaSuite');
+		// run the integration test
+		try {
+			await runTests({
+				// Use the specified `code` executable
+				vscodeExecutablePath,
+				extensionDevelopmentPath,
+				extensionTestsPath
+			});
+		} catch(testError) {
+			testErrors.push(testError);
+		}
+
+		const javaExtensionTestsPath = path.resolve(__dirname, './javaSuite');
 		const javaTestWorkspace = path.resolve(__dirname, '../../samples/workspace-java.code-workspace');
 
 		cp.spawnSync(cliPath, ['--install-extension', 'redhat.java'], {
@@ -57,16 +63,24 @@ async function main() {
 			stdio: 'inherit'
 		});
 
-		await runTests({
-			// Use the specified `code` executable
-			vscodeExecutablePath,
-			extensionDevelopmentPath,
-			extensionTestsPath: javaExtensionTestsPath,
-			launchArgs: [javaTestWorkspace]
-		});
+		try {
+			await runTests({
+				// Use the specified `code` executable
+				vscodeExecutablePath,
+				extensionDevelopmentPath,
+				extensionTestsPath: javaExtensionTestsPath,
+				launchArgs: [javaTestWorkspace]
+			});
+		} catch(testError) {
+			testErrors.push(testError);
+		}
 
-} catch (err) {
-		console.error('Failed to run tests');
+		if (testErrors.length > 0) {
+			throw new Error('At least one test suite failed, please check logs above for actual failure.');
+		}
+
+	} catch (err) {
+		console.error('Failed to run tests', err);
 		process.exit(1);
 	}
 }
