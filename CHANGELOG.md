@@ -1,6 +1,7 @@
 ## 1.17.0
 
 * Allow configuration of rule parameters in user settings
+* Display rule severity defined in the quality profile
 * Update Python analyzer 2.11 -> [2.12](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16024) -> [2.13](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16132) -> [3.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16334), 12 new rules, 2 FP fixes, bug fixes and improvements
 * Update Java analyzer 6.4 -> [6.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16028) -> [6.6](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=15723), 22 new rules, 21 FP fixes, bug fixes and improvements
 * Update JS analyzer 6.2 -> [6.3](https://github.com/SonarSource/SonarJS/releases/tag/6.3.0.12464), bug fixes and improvements
