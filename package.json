@@ -38,6 +38,7 @@
     "onLanguage:jsp",
     "onLanguage:apex",
     "onLanguage:plsql",
+    "onLanguage:oraclesql",
     "onCommand:SonarLint.UpdateAllBindings",
     "onView:SonarLint.AllRules"
   ],
