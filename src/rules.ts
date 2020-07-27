@@ -58,7 +58,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   private levelFilter?: ConfigLevel;
   private allRules: Thenable<RulesResponse>;
 
-  constructor(private readonly allRulesProvider: () => Thenable<RulesResponse>) { }
+  constructor(private readonly allRulesProvider: () => Thenable<RulesResponse>) {}
 
   async getChildren(node: AllRulesNode) {
     const localRuleConfig = VSCode.workspace.getConfiguration('sonarlint.rules');
@@ -129,9 +129,10 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
 
   async checkRuleExists(key: string) {
     return this.getAllRules().then(response =>
-      Object.keys(response)
-        .filter(k => response[k].findIndex(r => r.key.toUpperCase() === key.toUpperCase()) >= 0)
-        .length === 0 ? `Key not found ${key}` : ''
+      Object.keys(response).filter(k => response[k].findIndex(r => r.key.toUpperCase() === key.toUpperCase()) >= 0)
+        .length === 0
+        ? `Key not found ${key}`
+        : ''
     );
   }
 }

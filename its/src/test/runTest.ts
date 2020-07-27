@@ -13,46 +13,45 @@ import { readdirSync } from 'fs';
 const XVFB_DISPLAY = ':10';
 
 async function main() {
-	try {
-		const xDisplay = process.env['DISPLAY'];
-		if (xDisplay) {
-			console.log(`Using DISPLAY=${xDisplay}`);
-		} else {
-			console.warn(`No DISPLAY env variable found, exporting DISPLAY=${XVFB_DISPLAY}`);
-			process.env['DISPLAY'] = XVFB_DISPLAY;
-		}
+  try {
+    const xDisplay = process.env['DISPLAY'];
+    if (xDisplay) {
+      console.log(`Using DISPLAY=${xDisplay}`);
+    } else {
+      console.warn(`No DISPLAY env variable found, exporting DISPLAY=${XVFB_DISPLAY}`);
+      process.env['DISPLAY'] = XVFB_DISPLAY;
+    }
 
-		// The folder containing the Extension Manifest package.json
-		// Passed to `--extensionDevelopmentPath`
-		const extensionDevelopmentPath = path.resolve(__dirname, '../../');
+    // The folder containing the Extension Manifest package.json
+    // Passed to `--extensionDevelopmentPath`
+    const extensionDevelopmentPath = path.resolve(__dirname, '../../');
 
-		// The path to test runner
-		// Passed to --extensionTestsPath
-		const extensionTestsPath = path.resolve(__dirname, './suite');
+    // The path to test runner
+    // Passed to --extensionTestsPath
+    const extensionTestsPath = path.resolve(__dirname, './suite');
 
-		const vscodeVersion = process.env['VSCODE_VERSION'];
-		const vscodeExecutablePath = await downloadAndUnzipVSCode(vscodeVersion);
-		const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
+    const vscodeVersion = process.env['VSCODE_VERSION'];
+    const vscodeExecutablePath = await downloadAndUnzipVSCode(vscodeVersion);
+    const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
 
-		var vsixes = readdirSync('..').filter(fn => fn.endsWith('.vsix'));
-		// Use cp.spawn / cp.exec for custom setup
-		cp.spawnSync(cliPath, ['--install-extension', '../' + vsixes[0]], {
-			encoding: 'utf-8',
-			stdio: 'inherit'
-		});
+    var vsixes = readdirSync('..').filter(fn => fn.endsWith('.vsix'));
+    // Use cp.spawn / cp.exec for custom setup
+    cp.spawnSync(cliPath, ['--install-extension', '../' + vsixes[0]], {
+      encoding: 'utf-8',
+      stdio: 'inherit'
+    });
 
-		// run the integration test
-		await runTests({
-			// Use the specified `code` executable
-			vscodeExecutablePath,
-			extensionDevelopmentPath,
-			extensionTestsPath
-		});
-
-	} catch (err) {
-		console.error('Failed to run tests');
-		process.exit(1);
-	}
+    // run the integration test
+    await runTests({
+      // Use the specified `code` executable
+      vscodeExecutablePath,
+      extensionDevelopmentPath,
+      extensionTestsPath
+    });
+  } catch (err) {
+    console.error('Failed to run tests');
+    process.exit(1);
+  }
 }
 
 main();

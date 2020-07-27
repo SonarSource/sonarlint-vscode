@@ -83,10 +83,10 @@ function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
           }
           const process = ChildProcess.spawn(command, args);
 
-          process.stdout.on('data', function(data) {
+          process.stdout.on('data', function (data) {
             logWithPrefix(data, '[stdout]');
           });
-          process.stderr.on('data', function(data) {
+          process.stderr.on('data', function (data) {
             logWithPrefix(data, '[stderr]');
           });
         });
@@ -387,7 +387,7 @@ export function parseVMargs(params: string[], vmargsLine: string) {
   }
   vmargs.forEach(arg => {
     //remove all standalone double quotes
-    arg = arg.replace(/(\\)?"/g, function($0, $1) {
+    arg = arg.replace(/(\\)?"/g, function ($0, $1) {
       return $1 ? $0 : '';
     });
     //unescape all escaped double quotes

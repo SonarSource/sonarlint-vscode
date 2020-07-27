@@ -168,22 +168,24 @@ export function installManagedJre() {
   return vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: 'SonarLint JRE Install' },
     (progress, cancelToken) => {
-      return PlatformInformation.GetPlatformInformation().then(platformInfo => {
-        const options = {
-          os: platformInfo.os as jre.Os,
-          architecture: platformInfo.arch as jre.Architecture,
-          version: 11 as jre.Version
-        };
-        progress.report({ message: 'Downloading' });
-        return jre.download(options, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'));
-      })
+      return PlatformInformation.GetPlatformInformation()
+        .then(platformInfo => {
+          const options = {
+            os: platformInfo.os as jre.Os,
+            architecture: platformInfo.arch as jre.Architecture,
+            version: 11 as jre.Version
+          };
+          progress.report({ message: 'Downloading' });
+          return jre.download(options, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'));
+        })
         .then(downloadResponse => {
           progress.report({ message: 'Uncompressing' });
           return jre.unzip(downloadResponse);
         })
         .then(jreInstallDir => {
           progress.report({ message: 'Done' });
-          vscode.workspace.getConfiguration('sonarlint.ls')
+          vscode.workspace
+            .getConfiguration('sonarlint.ls')
             .update('javaHome', jreInstallDir, vscode.ConfigurationTarget.Global);
         })
         .catch(err => {

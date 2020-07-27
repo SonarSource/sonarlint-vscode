@@ -15,42 +15,41 @@ import * as vscode from 'vscode';
 const sampleFolderLocation = '../../../samples/';
 
 suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
+  vscode.window.showInformationMessage('Start all tests.');
 
-	test('Extension should be present', () => {
-		assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));
-	});
+  test('Extension should be present', () => {
+    assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));
+  });
 
-	test('should report issue on single js file', async function () {
-		const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
-		const document = await vscode.workspace.openTextDocument(fileUri);
-		const editor = await vscode.window.showTextDocument(document);
+  test('should report issue on single js file', async function () {
+    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
+    const document = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(document);
 
-		var diags = await waitForSonarLintDiagnostics(fileUri);
+    var diags = await waitForSonarLintDiagnostics(fileUri);
 
-		assert.deepEqual(diags.length, 1);
-		assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable.");
+    assert.deepEqual(diags.length, 1);
+    assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable.");
 
-		vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-	}).timeout(60 * 1000);
+    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  }).timeout(60 * 1000);
 
-	async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
-		var diags = getSonarLintDiagnostics(fileUri);
-		while (diags.length == 0) {
-			await sleep(200);
-			diags = getSonarLintDiagnostics(fileUri);
-		}
-		return diags;
-	}
+  async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
+    var diags = getSonarLintDiagnostics(fileUri);
+    while (diags.length == 0) {
+      await sleep(200);
+      diags = getSonarLintDiagnostics(fileUri);
+    }
+    return diags;
+  }
 
-	function sleep(ms: number): Promise<void> {
-		return new Promise(resolve => {
-			setTimeout(resolve, ms);
-		});
-	}
+  function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => {
+      setTimeout(resolve, ms);
+    });
+  }
 });
 
 function getSonarLintDiagnostics(fileUri: vscode.Uri) {
-	return vscode.languages.getDiagnostics(fileUri).filter(d => d.source == 'sonarlint');
+  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source == 'sonarlint');
 }
-

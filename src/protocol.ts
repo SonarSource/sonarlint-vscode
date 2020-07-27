@@ -22,7 +22,7 @@ export interface ShowRuleDescriptionParams {
     name: string;
     description: string;
     defaultValue: string;
-  }>
+  }>;
 }
 
 export namespace GetJavaConfigRequest {

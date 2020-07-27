@@ -33,12 +33,23 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.11.7",
     "@types/vscode": "^1.41.0",
+    "compare-versions": "3.6.0",
     "glob": "^7.1.5",
     "mocha": "^6.2.2",
     "mocha-multi-reporters": "^1.1.7",
-    "typescript": "^3.6.4",
+    "prettier": "2.0.5",
     "tslint": "^5.20.0",
-    "vscode-test": "^1.2.2",
-    "compare-versions": "3.6.0"
+    "typescript": "^3.6.4",
+    "vscode-test": "^1.2.2"
+  },
+  "prettier": {
+    "jsxBracketSameLine": true,
+    "printWidth": 120,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "useTabs": false,
+    "arrowParens": "avoid",
+    "trailingComma": "none",
+    "bracketSpacing": true
   }
 }

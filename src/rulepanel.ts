@@ -15,9 +15,7 @@ export function computeRuleDescPanelContent(context: VSCode.ExtensionContext, ru
   const severityImg = base64encode(
     Path.resolve(context.extensionPath, 'images', 'severity', `${rule.severity.toLowerCase()}.png`)
   );
-  const typeImg = base64encode(
-    Path.resolve(context.extensionPath, 'images', 'type', `${rule.type.toLowerCase()}.png`)
-  );
+  const typeImg = base64encode(Path.resolve(context.extensionPath, 'images', 'type', `${rule.type.toLowerCase()}.png`));
   const ruleParamsHtml = renderRuleParams(rule);
 
   return `<!doctype html><html>
@@ -78,18 +76,13 @@ const entityMap = {
 };
 
 function escapeHtml(str: string) {
-  return String(str).replace(/[&<>""`=\/]/g, function(s) {
+  return String(str).replace(/[&<>""`=\/]/g, function (s) {
     return entityMap[s];
   });
 }
 
 function clean(str: string) {
-  return capitalizeName(
-    str
-      .toLowerCase()
-      .split('_')
-      .join(' ')
-  );
+  return capitalizeName(str.toLowerCase().split('_').join(' '));
 }
 
 function capitalizeName(name: string) {

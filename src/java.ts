@@ -23,7 +23,7 @@ export function installClasspathListener(languageClient: SonarLintExtendedLangua
       const extensionApi: any = extension.exports;
       if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
         var onDidClasspathUpdate: VSCode.Event<VSCode.Uri> = extensionApi.onDidClasspathUpdate;
-        classpathChangeListener = onDidClasspathUpdate(function(uri) {
+        classpathChangeListener = onDidClasspathUpdate(function (uri) {
           languageClient.onReady().then(() => languageClient.didClasspathUpdate(uri.toString()));
         });
       }

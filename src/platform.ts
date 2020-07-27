@@ -13,21 +13,21 @@ import * as util from './util';
 
 function platformToJreOs(platform: string) {
   return {
-    'win32': 'windows',
-    'linux': 'linux',
-    'darwin': 'mac'
+    win32: 'windows',
+    linux: 'linux',
+    darwin: 'mac'
   }[platform];
 }
 
 function archToJreArch(arch: string) {
   return {
-    'x86_64': 'x64',
-    'x86': 'x32'
+    x86_64: 'x64',
+    x86: 'x32'
   }[arch];
 }
 
 export class PlatformInformation {
-  constructor(public os: string, public arch: string) { }
+  constructor(public os: string, public arch: string) {}
 
   public static GetPlatformInformation(): Promise<PlatformInformation> {
     const platform: string = os.platform();
@@ -49,11 +49,14 @@ export class PlatformInformation {
     });
   }
 
-  public static GetUnknownArchitecture(): string { return 'Unknown'; }
+  public static GetUnknownArchitecture(): string {
+    return 'Unknown';
+  }
 
   private static async GetWindowsArchitecture(): Promise<string> {
-    return util.execChildProcess('wmic os get osarchitecture', util.extensionPath)
-      .then((architecture) => {
+    return util
+      .execChildProcess('wmic os get osarchitecture', util.extensionPath)
+      .then(architecture => {
         if (architecture) {
           const archArray: string[] = architecture.split(os.EOL);
           if (archArray.length >= 2) {
@@ -68,18 +71,18 @@ export class PlatformInformation {
           }
         }
         return PlatformInformation.GetUnknownArchitecture();
-      }).catch((error) => {
+      })
+      .catch(error => {
         return PlatformInformation.GetUnknownArchitecture();
       });
   }
 
   private static async GetUnixArchitecture(): Promise<string> {
-    return util.execChildProcess('uname -m', util.packageJson.extensionFolderPath)
-      .then((architecture) => {
-        if (architecture) {
-          return architecture.trim();
-        }
-        return null;
-      });
+    return util.execChildProcess('uname -m', util.packageJson.extensionFolderPath).then(architecture => {
+      if (architecture) {
+        return architecture.trim();
+      }
+      return null;
+    });
   }
 }
