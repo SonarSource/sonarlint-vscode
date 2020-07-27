@@ -6,6 +6,7 @@
 * Update Java analyzer 6.4 -> [6.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16028) -> [6.6](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=15723), 22 new rules, 21 FP fixes, bug fixes and improvements
 * Update JS analyzer 6.2 -> [6.3](https://github.com/SonarSource/SonarJS/releases/tag/6.3.0.12464), bug fixes and improvements
 * Update PHP analyzer 3.4 -> [3.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16027) -> [3.6](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16335), 14 new rules (3 security related), bug fixes and improvements
+* Gracefully wait for the Java Language Server to be started in [standard mode](https://code.visualstudio.com/docs/java/java-project#_lightweight-mode) before analyzing Java files
 
 ## 1.16.0
 
