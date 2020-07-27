@@ -38,7 +38,8 @@ const DOCUMENT_SELECTOR = [
   { scheme: 'file', language: 'html' },
   { scheme: 'file', language: 'jsp' },
   { scheme: 'file', language: 'apex' },
-  { scheme: 'file', language: 'plsql' }
+  { scheme: 'file', language: 'plsql' },
+  { scheme: 'file', language: 'oraclesql' }
 ];
 
 let sonarlintOutput: VSCode.OutputChannel;
