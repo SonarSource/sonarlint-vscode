@@ -26,7 +26,7 @@ gulp.task(
   gulp.parallel('clean:vsix', () => del(['server', 'out', 'out-cov']))
 );
 
-gulp.task('update-version', function() {
+gulp.task('update-version', function () {
   const buildNumber = process.env.BUILD_BUILDID;
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
@@ -52,11 +52,11 @@ const hashes = {
   md5: ''
 };
 
-gulp.task('compute-vsix-hashes', function() {
+gulp.task('compute-vsix-hashes', function () {
   return gulp.src('*.vsix').pipe(hashsum());
 });
 
-gulp.task('deploy-vsix', function() {
+gulp.task('deploy-vsix', function () {
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -95,7 +95,7 @@ gulp.task('deploy-vsix', function() {
     .on('error', gutil.log);
 });
 
-gulp.task('deploy-buildinfo', function(done) {
+gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_BUILDID;
@@ -106,7 +106,7 @@ gulp.task('deploy-buildinfo', function(done) {
         url: `${process.env.ARTIFACTORY_URL}/api/build`,
         json
       },
-      function(error, response, body) {
+      function (error, response, body) {
         if (error) {
           gutil.log('error:', error);
         }
@@ -142,6 +142,8 @@ function buildInfo(name, version, buildNumber, hashes) {
     };
   });
 
+  const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
+
   return {
     version: '1.0.1',
     name,
@@ -173,7 +175,7 @@ function buildInfo(name, version, buildNumber, hashes) {
       'buildInfo.env.ARTIFACTORY_DEPLOY_REPO': 'sonarsource-public-qa',
       'buildInfo.env.BUILD_BUILDID': BUILD_BUILDID,
       'buildInfo.env.BUILD_SOURCEVERSION': BUILD_SOURCEVERSION,
-      'buildInfo.env.GITHUB_BRANCH': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+      'buildInfo.env.GITHUB_BRANCH': fixedBranch,
       'buildInfo.env.GIT_SHA1': BUILD_SOURCEVERSION
     }
   };
@@ -210,10 +212,7 @@ function computeDependencyHashes(dependencyLocation) {
 function updateBinaryHashes(binaryContent, hashesObject) {
   for (const algo in hashesObject) {
     if (hashesObject.hasOwnProperty(algo)) {
-      hashesObject[algo] = crypto
-        .createHash(algo)
-        .update(binaryContent, 'binary')
-        .digest('hex');
+      hashesObject[algo] = crypto.createHash(algo).update(binaryContent, 'binary').digest('hex');
       gutil.log(`Computed ${algo}: ${hashesObject[algo]}`);
     }
   }
