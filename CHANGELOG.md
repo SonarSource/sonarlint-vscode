@@ -1,3 +1,7 @@
+## 1.18.0
+
+* Update Java analyzer 6.6 -> [6.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16363) bug fixes, fewer false positives and false negatives
+
 ## 1.17.0
 
 * Allow configuration of rule parameters in user settings
