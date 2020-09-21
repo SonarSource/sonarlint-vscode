@@ -237,7 +237,7 @@ export function activate(context: VSCode.ExtensionContext) {
         telemetryStorage: Path.resolve(context.extensionPath, '..', 'sonarlint_usage'),
         productName: 'SonarLint VSCode',
         productVersion: util.packageJson.version,
-        ideVersion: VSCode.version,
+        ideVersion: `${VSCode.env.appName} ${VSCode.version}`,
         typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined
       };
     },
