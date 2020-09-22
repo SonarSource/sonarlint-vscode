@@ -2,7 +2,7 @@
 {
       "days_since_installation": 27,
       "days_of_use": 5,
-      "sonarlint_version": "1.15.0",
+      "sonarlint_version": "Visual Studio Code 1.15.0",
       "sonarlint_product": "SonarLint VSCode",
       "ide_version": "1.38.1",
       "connected_mode_used": true,
