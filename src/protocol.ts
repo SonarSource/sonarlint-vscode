@@ -39,3 +39,7 @@ export interface GetJavaConfigResponse {
 export namespace ShowSonarLintOutput {
   export const type = new lsp.RequestType('sonarlint/showSonarLintOutput');
 }
+
+export namespace OpenJavaHomeSettings {
+  export const type = new lsp.RequestType('sonarlint/openJavaHomeSettings');
+}

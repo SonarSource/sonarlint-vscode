@@ -16,9 +16,9 @@ import * as util from './util';
 import {AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode} from './rules';
 import {Commands} from './commands';
 import {SonarLintExtendedLanguageClient} from './client';
-import {installManagedJre, RequirementsData, resolveRequirements} from './requirements';
+import {installManagedJre, RequirementsData, resolveRequirements, JAVA_HOME_CONFIG} from './requirements';
 import {computeRuleDescPanelContent} from './rulepanel';
-import {GetJavaConfigRequest, ShowRuleDescriptionRequest, ShowSonarLintOutput} from './protocol';
+import {GetJavaConfigRequest, ShowRuleDescriptionRequest, ShowSonarLintOutput, OpenJavaHomeSettings} from './protocol';
 import {getJavaConfig, installClasspathListener} from './java';
 import {code2ProtocolConverter, protocol2CodeConverter} from './uri';
 
@@ -125,7 +125,7 @@ function languageServerCommand(
   }
   const vmargs = getSonarLintConfiguration().get('ls.vmargs', '');
   parseVMargs(params, vmargs);
-  params.push('-jar', serverJar, '' + port);
+  params.push('-jar', serverJar, `${port}`);
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
@@ -175,7 +175,7 @@ function findTypeScriptLocation(): string | undefined {
         return configuredTsPath;
       }
       logToSonarLintOutput(
-        `Unable to locate TypeScript module in "${configuredTsPath}". Falling back to the VSCode"s one at "${bundledTypeScriptPath}"`
+        `Unable to locate TypeScript module in "${configuredTsPath}". Falling back to the VSCode's one at "${bundledTypeScriptPath}"`
       );
     }
     return bundledTypeScriptPath;
@@ -343,9 +343,13 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     ruleDescriptionPanel.webview.html = ruleDescPanelContent;
     ruleDescriptionPanel.reveal();
   });
+
   languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(ShowSonarLintOutput.type,
     () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
+  );
+  languageClient.onRequest(OpenJavaHomeSettings.type,
+    () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
   );
 }
 
