@@ -35,3 +35,7 @@ export interface GetJavaConfigResponse {
   classpath: string[];
   isTest: boolean;
 }
+
+export namespace OpenJavaHomeSettings {
+  export const type = new lsp.RequestType<any, any, any, any>('sonarlint/openJavaHomeSettings')
+}

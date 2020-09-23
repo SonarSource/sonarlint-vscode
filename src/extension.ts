@@ -18,9 +18,10 @@ import { Commands } from './commands';
 import { SonarLintExtendedLanguageClient } from './client';
 import { resolveRequirements, RequirementsData, installManagedJre } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
-import { ShowRuleDescriptionRequest, GetJavaConfigRequest } from './protocol';
+import {ShowRuleDescriptionRequest, GetJavaConfigRequest, OpenJavaHomeSettings} from './protocol';
 import { installClasspathListener, getJavaConfig } from './java';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
+import OPEN_SETTINGS = Commands.OPEN_SETTINGS;
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -339,6 +340,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     ruleDescriptionPanel.reveal();
   });
   languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
+  languageClient.onRequest(OpenJavaHomeSettings.type, () => {
+    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS)
+  })
 }
 
 function onConfigurationChange() {
