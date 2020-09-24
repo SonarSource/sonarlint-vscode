@@ -16,7 +16,7 @@ import * as util from './util';
 import { AllRulesTreeDataProvider, Rule, RuleNode, ConfigLevel } from './rules';
 import { Commands } from './commands';
 import { SonarLintExtendedLanguageClient } from './client';
-import { resolveRequirements, RequirementsData, installManagedJre } from './requirements';
+import {resolveRequirements, RequirementsData, installManagedJre, JAVA_HOME_CONFIG} from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
 import {ShowRuleDescriptionRequest, GetJavaConfigRequest, OpenJavaHomeSettings} from './protocol';
 import { installClasspathListener, getJavaConfig } from './java';
@@ -339,10 +339,11 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     ruleDescriptionPanel.webview.html = ruleDescPanelContent;
     ruleDescriptionPanel.reveal();
   });
+
   languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(OpenJavaHomeSettings.type, () => {
-    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS)
-  })
+    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
+  });
 }
 
 function onConfigurationChange() {
