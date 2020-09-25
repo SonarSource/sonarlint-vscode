@@ -37,5 +37,5 @@ export interface GetJavaConfigResponse {
 }
 
 export namespace ShowSonarLintOutput {
-  export const type = new lsp.RequestType<any, any, any, any>('sonarlint/showSonarLintOutput');
+  export const type = new lsp.RequestType('sonarlint/showSonarLintOutput');
 }
