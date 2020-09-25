@@ -37,5 +37,5 @@ export interface GetJavaConfigResponse {
 }
 
 export namespace OpenJavaHomeSettings {
-  export const type = new lsp.RequestType<any, any, any, any>('sonarlint/openJavaHomeSettings')
+  export const type = new lsp.RequestType('sonarlint/openJavaHomeSettings');
 }
