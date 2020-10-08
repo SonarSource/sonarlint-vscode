@@ -163,6 +163,11 @@
           "markdownDescription": "Extra JVM arguments used to launch the SonarLint Language Server. e.g. `-Xmx1024m`",
           "scope": "machine"
         },
+        "sonarlint.pathToNodeExecutable": {
+          "type": "string",
+          "markdownDescription": "Path to a Node.js executable (8 or more recent) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\12-lts\\\\bin\\\\node.exe`",
+          "scope": "machine"
+        },
         "sonarlint.connectedMode.servers": {
           "deprecationMessage": "The setting is deprecated. Use `sonarlint.connectedMode.connections.sonarqube` or `sonarlint.connectedMode.connections.sonarcloud` instead.",
           "type": "array",
