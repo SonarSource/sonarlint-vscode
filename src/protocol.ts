@@ -43,3 +43,7 @@ export namespace ShowSonarLintOutput {
 export namespace OpenJavaHomeSettings {
   export const type = new lsp.RequestType('sonarlint/openJavaHomeSettings');
 }
+
+export namespace OpenPathToNodeSettings {
+  export const type = new lsp.RequestType('sonarlint/openPathToNodeSettings');
+}

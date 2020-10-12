@@ -18,7 +18,7 @@ import {Commands} from './commands';
 import {SonarLintExtendedLanguageClient} from './client';
 import {installManagedJre, RequirementsData, resolveRequirements, JAVA_HOME_CONFIG} from './requirements';
 import {computeRuleDescPanelContent} from './rulepanel';
-import {GetJavaConfigRequest, ShowRuleDescriptionRequest, ShowSonarLintOutput, OpenJavaHomeSettings} from './protocol';
+import {GetJavaConfigRequest, ShowRuleDescriptionRequest, ShowSonarLintOutput, OpenJavaHomeSettings, OpenPathToNodeSettings} from './protocol';
 import {getJavaConfig, installClasspathListener} from './java';
 import {code2ProtocolConverter, protocol2CodeConverter} from './uri';
 
@@ -350,6 +350,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   );
   languageClient.onRequest(OpenJavaHomeSettings.type,
     () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
+  );
+  languageClient.onRequest(OpenPathToNodeSettings.type,
+    () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
   );
 }
 
