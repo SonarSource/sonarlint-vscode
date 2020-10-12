@@ -10,17 +10,17 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
+import {LanguageClientOptions, StreamInfo} from 'vscode-languageclient';
 
 import * as util from './util';
-import { AllRulesTreeDataProvider, Rule, RuleNode, ConfigLevel } from './rules';
-import { Commands } from './commands';
-import { SonarLintExtendedLanguageClient } from './client';
-import { resolveRequirements, RequirementsData, installManagedJre } from './requirements';
-import { computeRuleDescPanelContent } from './rulepanel';
-import { ShowRuleDescriptionRequest, GetJavaConfigRequest } from './protocol';
-import { installClasspathListener, getJavaConfig } from './java';
-import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
+import {AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode} from './rules';
+import {Commands} from './commands';
+import {SonarLintExtendedLanguageClient} from './client';
+import {installManagedJre, RequirementsData, resolveRequirements} from './requirements';
+import {computeRuleDescPanelContent} from './rulepanel';
+import {GetJavaConfigRequest, ShowRuleDescriptionRequest, ShowSonarLintOutput} from './protocol';
+import {getJavaConfig, installClasspathListener} from './java';
+import {code2ProtocolConverter, protocol2CodeConverter} from './uri';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -294,6 +294,11 @@ export function activate(context: VSCode.ExtensionContext) {
         });
     })
   );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => {
+      sonarlintOutput.show();
+    })
+  );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
@@ -339,6 +344,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     ruleDescriptionPanel.reveal();
   });
   languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
+  languageClient.onRequest(ShowSonarLintOutput.type,
+    () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
+  );
 }
 
 function onConfigurationChange() {
