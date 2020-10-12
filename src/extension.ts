@@ -294,6 +294,11 @@ export function activate(context: VSCode.ExtensionContext) {
         });
     })
   );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => {
+      sonarlintOutput.show();
+    })
+  );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
@@ -313,9 +318,6 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
-  VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => {
-    sonarlintOutput.show();
-  });
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
@@ -342,7 +344,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     ruleDescriptionPanel.reveal();
   });
   languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
-  languageClient.onRequest(ShowSonarLintOutput.type, () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT));
+  languageClient.onRequest(ShowSonarLintOutput.type,
+    () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
+  );
 }
 
 function onConfigurationChange() {

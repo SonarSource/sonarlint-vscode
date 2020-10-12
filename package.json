@@ -330,6 +330,11 @@
         "category": "SonarLint"
       },
       {
+        "command": "SonarLint.ShowSonarLintOutput",
+        "title": "Show SonarLint Output",
+        "category": "SonarLint"
+      },
+      {
         "command": "SonarLint.DeactivateRule",
         "title": "Deactivate",
         "icon": {
