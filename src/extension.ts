@@ -360,7 +360,8 @@ function onConfigurationChange() {
     }
     const newConfig = getSonarLintConfiguration();
 
-    const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(currentConfig, newConfig);
+    const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(currentConfig, newConfig)
+      || hasNodeJsConfigChanged(currentConfig, newConfig);
 
     if (sonarLintLsConfigChanged) {
       const msg = 'SonarLint Language Server configuration changed, please restart VS Code.';
@@ -378,6 +379,10 @@ function onConfigurationChange() {
 
 function hasSonarLintLsConfigChanged(oldConfig, newConfig) {
   return !configKeyEquals('ls.javaHome', oldConfig, newConfig) || !configKeyEquals('ls.vmargs', oldConfig, newConfig);
+}
+
+function hasNodeJsConfigChanged(oldConfig, newConfig) {
+  return !configKeyEquals('pathToNodeExecutable', oldConfig, newConfig);
 }
 
 function configKeyEquals(key, oldConfig, newConfig) {
