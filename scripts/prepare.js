@@ -12,6 +12,8 @@ const request = require('request');
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
 
+const HTTP_OK = 200;
+
 if (!fs.existsSync('server')) {
   fs.mkdirSync('server');
 }
@@ -36,8 +38,8 @@ function downloadIfNeeded(url, dest) {
     request(url + '.sha1', (error, response, body) => {
       if (error) {
         throw error;
-      } else if (response.statusCode !== 200) {
-        throw `Unable to get file ${url}: ${response.statusCode} ${body}`;
+      } else if (response.statusCode !== HTTP_OK) {
+        throw new Error(`Unable to get file ${url}: ${response.statusCode} ${body}`);
       } else {
         downloadIfChecksumMismatch(body, url, dest);
       }
@@ -60,8 +62,8 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
               throw error;
             })
             .on('response', function (response) {
-              if (response.statusCode !== 200) {
-                throw `Unable to get file ${url}: ${response.statusCode}`;
+              if (response.statusCode !== HTTP_OK) {
+                throw new Error(`Unable to get file ${url}: ${response.statusCode}`);
               }
             })
             .pipe(fs.createWriteStream(dest));
