@@ -1,7 +1,7 @@
 ## 1.18.0
 
 * Update Java analyzer 6.6 -> [6.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16363) -> [6.8](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16411) -> [6.9](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16434), lots of new rules, bug fixes, fewer false positives and false negatives
-* Update PHP analyzer 3.6 -> [3.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16364) -> [3.8](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16373) -> [3.9](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16394), 20 new rules, including 13 related to unit tests
+* Update PHP analyzer 3.6 -> [3.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16364) -> [3.8](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16373) -> [3.9](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16394) -> [3.10](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16401), 20 new rules, including 13 related to unit tests
 * Update Python analyzer 3.0 -> [3.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16353), 3 new rules
 
 ## 1.17.0
