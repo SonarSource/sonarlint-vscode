@@ -9,6 +9,8 @@
   "java.project.importOnFirstTimeStartup": "automatic",
   "editor.suggestSelection": "first",
   "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  // Disable SonarLint product telemetry in ITs
+  "sonarlint.ls.vmargs": " -Dsonarlint.telemetry.disabled=true ",
   "sonarlint.output.showAnalyzerLogs": true,
   "sonarlint.output.showVerboseLogs": true
 }
