@@ -4,6 +4,7 @@
 * Update PHP analyzer 3.6 -> [3.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16364) -> [3.8](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16373) -> [3.9](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16394) -> [3.10](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16401), 20 new rules, including 13 related to unit tests
 * Update Python analyzer 3.0 -> [3.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16353), 3 new rules
 * Update JavaScript and TypeScript analyzer 6.3 -> [6.4](https://github.com/SonarSource/SonarJS/releases/tag/6.4.0.12803) -> [6.5](https://github.com/SonarSource/SonarJS/releases/tag/6.5.0.13383), many improvements and bug fixes
+* Provide direct feedback about unmet dependency on JRE and/or Node.js
 
 ## 1.17.0
 
