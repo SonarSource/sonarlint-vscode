@@ -1,6 +1,7 @@
 ## 1.19.0
 
 * Update JavaScript and TypeScript analyzer 6.5 -> [6.6](https://github.com/SonarSource/SonarJS/issues?q=is%3Aclosed+milestone%3A6.6) -> [6.7](https://github.com/SonarSource/SonarJS/issues?q=is%3Aclosed+milestone%3A6.7), many new rules related to cryptography and more rules migrated to ESLint parser
+* Update PHP analyzer 3.10 -> [3.11](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16450) -> [3.12](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16468), support of PHP 8
 
 ## 1.18.0
 
