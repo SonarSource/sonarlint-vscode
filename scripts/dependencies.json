@@ -32,7 +32,7 @@
   {
     "groupId": "org.sonarsource.html",
     "artifactId": "sonar-html-plugin",
-    "version": "3.2.0.2082",
+    "version": "3.3.0.2534",
     "output": "analyzers/sonarhtml.jar"
   }
 ]
