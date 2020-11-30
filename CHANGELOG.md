@@ -1,3 +1,7 @@
+## 1.19.0
+
+* Update JavaScript and TypeScript analyzer 6.5 -> [6.6](https://github.com/SonarSource/SonarJS/issues?q=is%3Aclosed+milestone%3A6.6) -> [6.7](https://github.com/SonarSource/SonarJS/issues?q=is%3Aclosed+milestone%3A6.7), many new rules related to cryptography and more rules migrated to ESLint parser
+
 ## 1.18.0
 
 * Update Java analyzer 6.6 -> [6.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16363) -> [6.8](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16411) -> [6.9](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16434), lots of new rules, bug fixes, fewer false positives and false negatives
