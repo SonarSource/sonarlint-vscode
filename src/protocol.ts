@@ -34,6 +34,7 @@ export interface GetJavaConfigResponse {
   sourceLevel: string;
   classpath: string[];
   isTest: boolean;
+  vmLocation: string;
 }
 
 export namespace ShowSonarLintOutput {

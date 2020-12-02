@@ -101,15 +101,20 @@ export async function getJavaConfig(
         return javaConfigDisabledInLightWeightMode();
       }
       const isTest: boolean = await extensionApi.isTestFile(fileUri);
-      const sourceLevel: string = (
-        await extensionApi.getProjectSettings(fileUri, ['org.eclipse.jdt.core.compiler.compliance'])
-      )['org.eclipse.jdt.core.compiler.compliance'];
+      const projectSettings: { [name: string]: string } = await extensionApi.getProjectSettings(fileUri, [
+        'org.eclipse.jdt.core.compiler.compliance',
+        'org.eclipse.jdt.ls.core.vm.location'
+      ]);
+      const sourceLevel = projectSettings['org.eclipse.jdt.core.compiler.compliance'];
+      const vmLocation = projectSettings['org.eclipse.jdt.ls.core.vm.location'];
       const classpathResult = await extensionApi.getClasspaths(fileUri, { scope: isTest ? 'test' : 'runtime' });
+
       return {
         projectRoot: classpathResult.projectRoot,
         sourceLevel,
         classpath: classpathResult.classpaths,
-        isTest
+        isTest,
+        vmLocation
       };
     }
   } catch (error) {
