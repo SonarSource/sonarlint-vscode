@@ -48,3 +48,7 @@ export namespace OpenJavaHomeSettings {
 export namespace OpenPathToNodeSettings {
   export const type = new lsp.RequestType('sonarlint/openPathToNodeSettings');
 }
+
+export namespace BrowseTo {
+  export const type = new lsp.RequestType<string, void, void, void>('sonarlint/browseTo');
+}

@@ -226,6 +226,10 @@
               "token": {
                 "type": "string",
                 "description": "Token generated from My Account>Security in SonarQube"
+              },
+              "disableNotifications": {
+                "type": "boolean",
+                "description": "SonarLint will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
               }
             },
             "additionalProperties": false,
@@ -265,6 +269,10 @@
               "token": {
                 "type": "string",
                 "description": "Token generated from [My Account>Security](https://sonarcloud.io/account/security/) in SonarCloud"
+              },
+              "disableNotifications": {
+                "type": "boolean",
+                "description": "SonarLint will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
               }
             },
             "additionalProperties": false,

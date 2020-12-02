@@ -5,28 +5,22 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import * as VSCode from 'vscode';
-import * as Path from 'path';
+import * as ChildProcess from 'child_process';
 import * as FS from 'fs';
 import * as Net from 'net';
-import * as ChildProcess from 'child_process';
+import * as Path from 'path';
+import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
-
-import * as util from './util';
-import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
-import { Commands } from './commands';
 import { SonarLintExtendedLanguageClient } from './client';
-import { installManagedJre, RequirementsData, resolveRequirements, JAVA_HOME_CONFIG } from './requirements';
-import { computeRuleDescPanelContent } from './rulepanel';
-import {
-  GetJavaConfigRequest,
-  ShowRuleDescriptionRequest,
-  ShowSonarLintOutput,
-  OpenJavaHomeSettings,
-  OpenPathToNodeSettings
-} from './protocol';
+import { Commands } from './commands';
 import { getJavaConfig, installClasspathListener } from './java';
+import * as protocol from './protocol';
+import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
+import { computeRuleDescPanelContent } from './rulepanel';
+import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
+import * as util from './util';
+
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -327,7 +321,7 @@ export function activate(context: VSCode.ExtensionContext) {
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
-  languageClient.onRequest(ShowRuleDescriptionRequest.type, params => {
+  languageClient.onRequest(protocol.ShowRuleDescriptionRequest.type, params => {
     const ruleDescPanelContent = computeRuleDescPanelContent(context, params);
     if (!ruleDescriptionPanel) {
       ruleDescriptionPanel = VSCode.window.createWebviewPanel(
@@ -350,15 +344,18 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     ruleDescriptionPanel.reveal();
   });
 
-  languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
-  languageClient.onRequest(ShowSonarLintOutput.type, () =>
-    VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
+  languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
+  languageClient.onRequest(protocol.ShowSonarLintOutput.type,
+    () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
   );
-  languageClient.onRequest(OpenJavaHomeSettings.type, () =>
-    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
+  languageClient.onRequest(protocol.OpenJavaHomeSettings.type,
+    () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
   );
-  languageClient.onRequest(OpenPathToNodeSettings.type, () =>
-    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
+  languageClient.onRequest(protocol.OpenPathToNodeSettings.type,
+    () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
+  );
+  languageClient.onRequest(protocol.BrowseTo.type,
+    browseTo => VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(browseTo))
   );
 }
 
