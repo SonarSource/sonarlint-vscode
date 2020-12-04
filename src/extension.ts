@@ -52,7 +52,7 @@ export function logToSonarLintOutput(message) {
   }
 }
 
-function runJavaServer(context: VSCode.ExtensionContext): Thenable<StreamInfo> {
+function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   return resolveRequirements(context)
     .catch(error => {
       //show error
@@ -237,7 +237,7 @@ export function activate(context: VSCode.ExtensionContext) {
         telemetryStorage: Path.resolve(context.extensionPath, '..', 'sonarlint_usage'),
         productName: 'SonarLint VSCode',
         productVersion: util.packageJson.version,
-        ideVersion: `${VSCode.env.appName} ${VSCode.version}`,
+        appName: VSCode.env.appName,
         typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined
       };
     },
