@@ -10,17 +10,23 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import {LanguageClientOptions, StreamInfo} from 'vscode-languageclient';
+import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
 
 import * as util from './util';
-import {AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode} from './rules';
-import {Commands} from './commands';
-import {SonarLintExtendedLanguageClient} from './client';
-import {installManagedJre, RequirementsData, resolveRequirements, JAVA_HOME_CONFIG} from './requirements';
-import {computeRuleDescPanelContent} from './rulepanel';
-import {GetJavaConfigRequest, ShowRuleDescriptionRequest, ShowSonarLintOutput, OpenJavaHomeSettings, OpenPathToNodeSettings} from './protocol';
-import {getJavaConfig, installClasspathListener} from './java';
-import {code2ProtocolConverter, protocol2CodeConverter} from './uri';
+import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
+import { Commands } from './commands';
+import { SonarLintExtendedLanguageClient } from './client';
+import { installManagedJre, RequirementsData, resolveRequirements, JAVA_HOME_CONFIG } from './requirements';
+import { computeRuleDescPanelContent } from './rulepanel';
+import {
+  GetJavaConfigRequest,
+  ShowRuleDescriptionRequest,
+  ShowSonarLintOutput,
+  OpenJavaHomeSettings,
+  OpenPathToNodeSettings
+} from './protocol';
+import { getJavaConfig, installClasspathListener } from './java';
+import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -345,14 +351,14 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
 
   languageClient.onRequest(GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
-  languageClient.onRequest(ShowSonarLintOutput.type,
-    () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
+  languageClient.onRequest(ShowSonarLintOutput.type, () =>
+    VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
   );
-  languageClient.onRequest(OpenJavaHomeSettings.type,
-    () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
+  languageClient.onRequest(OpenJavaHomeSettings.type, () =>
+    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
   );
-  languageClient.onRequest(OpenPathToNodeSettings.type,
-    () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
+  languageClient.onRequest(OpenPathToNodeSettings.type, () =>
+    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
   );
 }
 
@@ -363,8 +369,8 @@ function onConfigurationChange() {
     }
     const newConfig = getSonarLintConfiguration();
 
-    const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(currentConfig, newConfig)
-      || hasNodeJsConfigChanged(currentConfig, newConfig);
+    const sonarLintLsConfigChanged =
+      hasSonarLintLsConfigChanged(currentConfig, newConfig) || hasNodeJsConfigChanged(currentConfig, newConfig);
 
     if (sonarLintLsConfigChanged) {
       const msg = 'SonarLint Language Server configuration changed, please restart VS Code.';
