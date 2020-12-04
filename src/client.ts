@@ -8,14 +8,16 @@
 import { LanguageClient } from 'vscode-languageclient';
 import { RulesResponse } from './rules';
 import { ServerMode } from './java';
+import * as VSCode from 'vscode';
+import { code2ProtocolConverter } from './uri';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<RulesResponse> {
     return this.sendRequest('sonarlint/listAllRules');
   }
 
-  didClasspathUpdate(projectRoot: string): void {
-    this.sendNotification('sonarlint/didClasspathUpdate', projectRoot);
+  didClasspathUpdate(projectRoot: VSCode.Uri): void {
+    this.sendNotification('sonarlint/didClasspathUpdate', code2ProtocolConverter(projectRoot));
   }
 
   didJavaServerModeChange(serverMode: ServerMode) {
