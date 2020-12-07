@@ -101,12 +101,14 @@ export async function getJavaConfig(
         return javaConfigDisabledInLightWeightMode();
       }
       const isTest: boolean = await extensionApi.isTestFile(fileUri);
+      const COMPILER_COMPLIANCE_SETTING_KEY = 'org.eclipse.jdt.core.compiler.compliance';
+      const VM_LOCATION_SETTING_KEY = 'org.eclipse.jdt.ls.core.vm.location';
       const projectSettings: { [name: string]: string } = await extensionApi.getProjectSettings(fileUri, [
-        'org.eclipse.jdt.core.compiler.compliance',
-        'org.eclipse.jdt.ls.core.vm.location'
+        COMPILER_COMPLIANCE_SETTING_KEY,
+        VM_LOCATION_SETTING_KEY
       ]);
-      const sourceLevel = projectSettings['org.eclipse.jdt.core.compiler.compliance'];
-      const vmLocation = projectSettings['org.eclipse.jdt.ls.core.vm.location'];
+      const sourceLevel = projectSettings[COMPILER_COMPLIANCE_SETTING_KEY];
+      const vmLocation = projectSettings[VM_LOCATION_SETTING_KEY];
       const classpathResult = await extensionApi.getClasspaths(fileUri, { scope: isTest ? 'test' : 'runtime' });
 
       return {
