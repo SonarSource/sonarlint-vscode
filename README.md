@@ -110,6 +110,8 @@ Example:
 
 Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
 
+In connected mode with SonarCloud or any commercial edition of SonarQube, SonarLint receives notifications about Quality Gate changes and new issues. This feature can be toggled using the `disableNotifications` field in a server connection definition.
+
 SonarLint keep server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
 
 ## Contributions

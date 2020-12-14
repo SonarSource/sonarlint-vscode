@@ -200,7 +200,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Configure connection(s) to [SonarQube](https://sonarqube.org). Don't forget to also configure the project binding in `#sonarlint.connectedMode.project#`.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarqube\": [\n      {\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nSpecify a `connectionId` if you want to define multiple connections.",
+          "markdownDescription": "Configure connection(s) to [SonarQube](https://sonarqube.org). Don't forget to also configure the project binding in `#sonarlint.connectedMode.project#`.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarqube\": [\n      {\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nSpecify a `connectionId` if you want to define multiple connections. Add `\"disableNotifications\": true` to disable notifications.",
           "examples": [
             {
               "serverUrl": "https://<myServerUrl>",
@@ -243,7 +243,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Configure connection(s) to [SonarCloud](https://sonarcloud.io). Don't forget to also configure the project binding in `#sonarlint.connectedMode.project#`.\nIf you have projects in multiple SonarCloud organizations, simply declare multiple connections.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarcloud\": [\n      {\n        \"organizationKey\": \"myOrg\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nSpecify a `connectionId` if you want to define multiple connections.",
+          "markdownDescription": "Configure connection(s) to [SonarCloud](https://sonarcloud.io). Don't forget to also configure the project binding in `#sonarlint.connectedMode.project#`.\nIf you have projects in multiple SonarCloud organizations, simply declare multiple connections.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarcloud\": [\n      {\n        \"organizationKey\": \"myOrg\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nSpecify a `connectionId` if you want to define multiple connections. Add `\"disableNotifications\": true` to disable notifications.",
           "examples": [
             {
               "organizationKey": "<myOrgKey>",

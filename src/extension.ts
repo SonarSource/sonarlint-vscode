@@ -21,7 +21,6 @@ import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
 
-
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
@@ -356,6 +355,12 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   );
   languageClient.onRequest(protocol.BrowseTo.type,
     browseTo => VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(browseTo))
+  );
+  languageClient.onRequest(protocol.OpenConnectionSettings.type,
+    isSonarCloud => {
+      const targetSection = `sonarlint.connectedMode.connections.${isSonarCloud ? 'sonarcloud' : 'sonarqube'}`;
+      return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
+    }
   );
 }
 

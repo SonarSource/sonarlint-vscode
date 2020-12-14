@@ -52,3 +52,9 @@ export namespace OpenPathToNodeSettings {
 export namespace BrowseTo {
   export const type = new lsp.RequestType<string, void, void, void>('sonarlint/browseTo');
 }
+
+export namespace OpenConnectionSettings {
+  export const type = new lsp.RequestType<boolean, void, void, void>(
+    'sonarlint/openConnectionSettings'
+  );
+}
