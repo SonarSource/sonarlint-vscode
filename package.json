@@ -389,8 +389,17 @@
         "enablement": "view == SonarLint.AllRules"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sonarlint",
+          "title": "SonarLint",
+          "icon": "images/sonarlint_icon.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "sonarlint": [
         {
           "id": "SonarLint.AllRules",
           "name": "SonarLint Rules"
