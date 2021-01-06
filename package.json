@@ -403,6 +403,10 @@
         {
           "id": "SonarLint.AllRules",
           "name": "SonarLint Rules"
+        },
+        {
+          "id": "SonarLint.ConnectedModeBindings",
+          "name": "Connected Mode Bindings"
         }
       ]
     },

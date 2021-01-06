@@ -11,6 +11,7 @@ import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
+import ConnectedModeBindingsProvider from './bindings';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
 import { getJavaConfig, installClasspathListener } from './java';
@@ -262,6 +263,11 @@ export function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: allRulesTreeDataProvider
   });
   context.subscriptions.push(allRulesView);
+
+  const connectedModeBindingsProvider = new ConnectedModeBindingsProvider();
+  const connectedModeBindingsView = VSCode.window.createTreeView('SonarLint.ConnectedModeBindings', {
+    treeDataProvider: connectedModeBindingsProvider
+  });
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')));
