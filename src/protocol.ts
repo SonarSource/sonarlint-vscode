@@ -58,3 +58,30 @@ export namespace OpenConnectionSettings {
     'sonarlint/openConnectionSettings'
   );
 }
+
+export interface RemoteHotspot {
+  message: string;
+  filePath: string;
+  textRange: {
+    startLine: number;
+    startLineOffset?: number;
+    endLine?: number;
+    endLineOffset?: number;
+  };
+  author: string;
+  status: string;
+  resolution?: 'fixed' | 'safe';
+  rule: {
+    key: string;
+    name: string;
+    securityCategory: string;
+    vulnerabilityProbability: 'HIGH' | 'MEDIUM' | 'LOW';
+    riskDescription: string;
+    vulnerabilityDescription: string;
+    fixRecommendations: string;
+  }
+}
+
+export namespace ShowHotspotRequest {
+  export const type = new lsp.RequestType<RemoteHotspot, void, void, void>('sonarlint/showHotspot');
+}

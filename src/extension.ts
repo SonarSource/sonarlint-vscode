@@ -13,6 +13,7 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
+import { showSecurityHotspot } from './hotspots';
 import { getJavaConfig, installClasspathListener } from './java';
 import * as protocol from './protocol';
 import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
@@ -363,6 +364,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
     }
   );
+  languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
 }
 
 function onConfigurationChange() {
