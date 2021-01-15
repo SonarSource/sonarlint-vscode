@@ -34,4 +34,6 @@ export namespace Commands {
   export const FIND_RULE_BY_KEY = 'SonarLint.FindRuleByKey';
 
   export const INSTALL_MANAGED_JRE = 'SonarLint.InstallManagedJre';
+
+  export const HIDE_HOTSPOT = 'SonarLint.HideHotspot';
 }
