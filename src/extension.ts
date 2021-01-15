@@ -237,6 +237,7 @@ export function activate(context: VSCode.ExtensionContext) {
         productName: 'SonarLint VSCode',
         productVersion: util.packageJson.version,
         appName: VSCode.env.appName,
+        workspaceName: VSCode.workspace.name,
         typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined
       };
     },
