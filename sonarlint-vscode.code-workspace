@@ -7,5 +7,7 @@
 		"path": "its"
 	}
 ],
-  "settings": {}
+  "settings": {
+		"sonarlint.testFilePattern": "**/*.test.ts"
+	}
 }
