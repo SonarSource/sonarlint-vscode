@@ -9,7 +9,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { HOTSPOT_SOURCE, showSecurityHotspot } from '../../src/hotspots';
-import { RemoteHotspot } from '../../src/protocol';
+import { HotspotProbability, HotspotStatus, RemoteHotspot } from '../../src/protocol';
 
 suite('Hotspots Test Suite', async () => {
 
@@ -22,12 +22,12 @@ suite('Hotspots Test Suite', async () => {
         startLine: 1
       },
       author: 'some.one@company.corp',
-      status: 'OPEN',
+      status: HotspotStatus.ToReview,
       rule: {
         key: 'java:S4242',
         name: 'Life, The Universe and Everything',
         securityCategory: 'dos',
-        vulnerabilityProbability: 'HIGH',
+        vulnerabilityProbability: HotspotProbability.High,
         riskDescription: 'Answering to this question might require building a huge planet-sized computer',
         vulnerabilityDescription: 'If it is built on the path of a galactic highway, you might never get the answer',
         fixRecommendations: 'Build it somewhere else'
@@ -49,12 +49,12 @@ suite('Hotspots Test Suite', async () => {
         startLine: 1
       },
       author: 'some.one@company.corp',
-      status: 'OPEN',
+      status: HotspotStatus.ToReview,
       rule: {
         key: 'java:S4242',
         name: 'Life, The Universe and Everything',
         securityCategory: 'dos',
-        vulnerabilityProbability: 'HIGH',
+        vulnerabilityProbability: HotspotProbability.High,
         riskDescription: 'Answering to this question might require building a huge planet-sized computer',
         vulnerabilityDescription: 'If it is built on the path of a galactic highway, you might never get the answer',
         fixRecommendations: 'Build it somewhere else'
@@ -79,12 +79,12 @@ suite('Hotspots Test Suite', async () => {
         endLineOffset: 12
       },
       author: 'some.one@company.corp',
-      status: 'OPEN',
+      status: HotspotStatus.ToReview,
       rule: {
         key: 'java:S4242',
         name: 'Life, The Universe and Everything',
         securityCategory: 'dos',
-        vulnerabilityProbability: 'HIGH',
+        vulnerabilityProbability: HotspotProbability.High,
         riskDescription: 'Answering to this question might require building a huge planet-sized computer',
         vulnerabilityDescription: 'If it is built on the path of a galactic highway, you might never get the answer',
         fixRecommendations: 'Build it somewhere else'

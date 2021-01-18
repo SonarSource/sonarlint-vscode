@@ -59,6 +59,22 @@ export namespace OpenConnectionSettings {
   );
 }
 
+export enum HotspotResolution {
+  Fixed,
+  Safe
+}
+
+export enum HotspotProbability {
+  High,
+  Medium,
+  Low
+}
+
+export enum HotspotStatus {
+  ToReview,
+  Reviewed
+}
+
 export interface RemoteHotspot {
   message: string;
   filePath: string;
@@ -69,13 +85,13 @@ export interface RemoteHotspot {
     endLineOffset?: number;
   };
   author: string;
-  status: string;
-  resolution?: 'fixed' | 'safe';
+  status: HotspotStatus;
+  resolution?: HotspotResolution;
   rule: {
     key: string;
     name: string;
     securityCategory: string;
-    vulnerabilityProbability: 'HIGH' | 'MEDIUM' | 'LOW';
+    vulnerabilityProbability: HotspotProbability;
     riskDescription: string;
     vulnerabilityDescription: string;
     fixRecommendations: string;
