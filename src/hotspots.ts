@@ -7,13 +7,12 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { RemoteHotspot } from './protocol';
 import { Commands } from './commands';
-import HIDE_HOTSPOT = Commands.HIDE_HOTSPOT;
+import { HotspotProbability, RemoteHotspot } from './protocol';
 
 export const HOTSPOT_SOURCE = 'SonarQube Security Hotspot';
 
-const hotspotsCollection = vscode.languages.createDiagnosticCollection('sonarlint-hotspots');
+export const hotspotsCollection = vscode.languages.createDiagnosticCollection('sonarlint-hotspots');
 
 class OpenHotspotsCache {
   internalHotspotsCache = new Map<vscode.TextDocument, Set<vscode.Diagnostic>>();
@@ -23,29 +22,34 @@ class OpenHotspotsCache {
       this.internalHotspotsCache.set(document, new Set());
     }
     this.internalHotspotsCache.get(document).add(hotspot);
+    this.updateDiagnostics(document);
   }
 
-  remove(document: vscode.TextDocument, hotspot: vscode.Diagnostic) {
+  remove = (document: vscode.TextDocument, hotspot: vscode.Diagnostic) => {
     if (this.internalHotspotsCache.has(document)) {
       this.internalHotspotsCache.get(document).delete(hotspot);
+      this.updateDiagnostics(document);
     }
-  }
+  };
 
   getHotspots(document: vscode.TextDocument, range: vscode.Range): Array<vscode.Diagnostic> {
+    return this.getAllHotspots(document)
+      .filter(it => it.range.intersection(range));
+  }
+
+  getAllHotspots(document: vscode.TextDocument) {
     if (this.internalHotspotsCache.has(document)) {
-      const hotspotsInRange = [];
-      this.internalHotspotsCache.get(document).forEach(it => {
-        if (it.range.intersection(range)) {
-          hotspotsInRange.push(it);
-        }
-      });
-      return hotspotsInRange;
+      return [...this.internalHotspotsCache.get(document)];
     }
     return [];
   }
+
+  private updateDiagnostics(document: vscode.TextDocument) {
+    hotspotsCollection.set(document.uri, this.getAllHotspots(document));
+  }
 }
 
-export const openHotspotsCache = new OpenHotspotsCache();
+const openHotspotsCache = new OpenHotspotsCache();
 
 export const showSecurityHotspot = async (hotspot: RemoteHotspot) => {
   const foundUris = await vscode.workspace.findFiles(`**/${hotspot.filePath}`);
@@ -61,14 +65,12 @@ export const showSecurityHotspot = async (hotspot: RemoteHotspot) => {
     const hotspotDiag = createHotspotDiagnostic(hotspot);
     openHotspotsCache.add(editor.document, hotspotDiag);
 
-    hotspotsCollection.clear();
-    hotspotsCollection.set(documentUri, [hotspotDiag]);
-    vscode.languages.registerCodeActionsProvider({ scheme: 'file' }, new HotspotsCodeActionProvider(), { providedCodeActionKinds: [vscode.CodeActionKind.Empty] });
     editor.revealRange(hotspotDiag.range, vscode.TextEditorRevealType.InCenter);
     editor.selection = new vscode.Selection(hotspotDiag.range.start, hotspotDiag.range.end);
   }
 };
 
+export const hideSecurityHotspot = openHotspotsCache.remove;
 
 function createHotspotDiagnostic(hotspot: RemoteHotspot) {
   const { startLine, startLineOffset, endLine, endLineOffset } = hotspot.textRange;
@@ -77,32 +79,48 @@ function createHotspotDiagnostic(hotspot: RemoteHotspot) {
   const endPosition = new vscode.Position(endLine - 1, endLineOffset);
   const range = new vscode.Range(startPosition, endPosition);
 
-  // TODO Map hotspot severity to diag severity?
-  const hotspotDiag = new vscode.Diagnostic(range, hotspot.message, vscode.DiagnosticSeverity.Warning);
+  const hotspotDiag = new vscode.Diagnostic(range, hotspot.message, diagnosticSeverity(hotspot));
   hotspotDiag.code = hotspot.rule.key;
   hotspotDiag.source = HOTSPOT_SOURCE;
   return hotspotDiag;
 }
 
+function diagnosticSeverity(hotspot: RemoteHotspot) {
+  switch(hotspot.rule.vulnerabilityProbability) {
+    case HotspotProbability.High:
+      return vscode.DiagnosticSeverity.Error;
+    case HotspotProbability.Low:
+      return vscode.DiagnosticSeverity.Information;
+    default:
+      return vscode.DiagnosticSeverity.Warning;
+  }
+}
+
 class HotspotsCommand implements vscode.Command {
 
   arguments: any[];
-  command = HIDE_HOTSPOT;
+  command = Commands.HIDE_HOTSPOT;
   title: string;
-  tooltip: string;
 
-  constructor(title: string, tooltip: string, document: vscode.TextDocument, hotspotDiag: vscode.Diagnostic) {
-    this.title = title;
-    this.tooltip = tooltip;
+  constructor(hotspotDiag: vscode.Diagnostic, document: vscode.TextDocument) {
+    this.title = `Hide Security Hotspot ${hotspotDiag.code}`;
     this.arguments = [document, hotspotDiag];
   }
 }
 
-class HotspotsCodeActionProvider implements vscode.CodeActionProvider {
+export class HotspotsCodeActionProvider implements vscode.CodeActionProvider {
 
-  provideCodeActions(document, range, context, token): vscode.ProviderResult<(vscode.Command | vscode.CodeAction)[]> {
-    let hotspots = openHotspotsCache.getHotspots(document, range);
-    return hotspots.map(it => new HotspotsCommand(`Hide hotspots: ${it.code}`, 'Tooltip', document, it));
+  provideCodeActions(document, range, context, token) {
+    if (token.isCancellationRequested) {
+      return [];
+    }
+    return openHotspotsCache.getHotspots(document, range)
+      .map(it => {
+        const command = new HotspotsCommand(it, document);
+        const hideHotspot = new vscode.CodeAction(command.title, vscode.CodeActionKind.QuickFix);
+        hideHotspot.diagnostics = [it];
+        hideHotspot.command = command;
+        return hideHotspot;
+      });
   }
-
 }
