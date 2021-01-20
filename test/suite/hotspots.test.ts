@@ -67,7 +67,7 @@ suite('Hotspots Test Suite', async () => {
     assert.strictEqual(vscode.window.activeTextEditor, undefined);
   });
 
-  test('should show error when several files are found', async () => {
+  test('should show hotspot in found file', async () => {
 
     const hotspot: RemoteHotspot = {
       message: 'Hotspot here!',
@@ -105,6 +105,6 @@ suite('Hotspots Test Suite', async () => {
     assert.strictEqual(hotspotDiag.range.start.character, hotspot.textRange.startLineOffset);
     assert.strictEqual(hotspotDiag.range.end.line, hotspot.textRange.endLine - 1);
     assert.strictEqual(hotspotDiag.range.end.character, hotspot.textRange.endLineOffset);
-    assert.strictEqual(hotspotDiag.severity, vscode.DiagnosticSeverity.Warning);
+    assert.strictEqual(hotspotDiag.severity, vscode.DiagnosticSeverity.Error);
   });
 });
