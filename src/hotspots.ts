@@ -85,7 +85,7 @@ function createHotspotDiagnostic(hotspot: RemoteHotspot) {
   return hotspotDiag;
 }
 
-function diagnosticSeverity(hotspot: RemoteHotspot) {
+export function diagnosticSeverity(hotspot: RemoteHotspot) {
   switch(hotspot.rule.vulnerabilityProbability) {
     case HotspotProbability.High:
       return vscode.DiagnosticSeverity.Error;
