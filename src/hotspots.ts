@@ -8,6 +8,7 @@
 
 import * as vscode from 'vscode';
 import { Commands } from './commands';
+import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import { HotspotProbability, RemoteHotspot } from './protocol';
 
 export const HOTSPOT_SOURCE = 'SonarQube Security Hotspot';
@@ -34,6 +35,7 @@ export const showSecurityHotspot = async (hotspot: RemoteHotspot) => {
 
     editor.revealRange(hotspotDiag.range, vscode.TextEditorRevealType.InCenter);
     editor.selection = new vscode.Selection(hotspotDiag.range.start, hotspotDiag.range.end);
+    vscode.commands.executeCommand(Commands.SHOW_HOTSPOT_CONTEXT);
   }
 };
 
@@ -66,32 +68,61 @@ export function diagnosticSeverity(hotspot: RemoteHotspot) {
   }
 }
 
-class HotspotsCommand implements vscode.Command {
-
-  arguments: any[];
-  command = Commands.HIDE_HOTSPOT;
-  title: string;
-
-  constructor(hotspotDiag: vscode.Diagnostic, document: vscode.TextDocument) {
-    this.title = `Hide Security Hotspot ${hotspotDiag.code}`;
-    this.arguments = [document, hotspotDiag];
-  }
-}
-
 export class HotspotsCodeActionProvider implements vscode.CodeActionProvider {
 
-  provideCodeActions(document, range, context, token) {
+  provideCodeActions(
+    document: vscode.TextDocument,
+    range: vscode.Range,
+    context: vscode.CodeActionContext,
+    token: vscode.CancellationToken
+  ) {
     if (token.isCancellationRequested || !activeHotspot) {
       return [];
     }
+
     return hotspotsCollection.get(document.uri)
       .filter(d => d.range.intersection(range))
-      .map(it => {
-        const command = new HotspotsCommand(it, document);
-        const hideHotspot = new vscode.CodeAction(command.title, vscode.CodeActionKind.QuickFix);
-        hideHotspot.diagnostics = [it];
-        hideHotspot.command = command;
-        return hideHotspot;
-      });
+      .map(it => ([
+        createCodeAction(it, Commands.HIDE_HOTSPOT, `Hide Security Hotspot `),
+        createCodeAction(it, Commands.SHOW_HOTSPOT_CONTEXT, `Show Context For Security Hotspot `)
+      ]))
+      .reduce((actions, acc) => [...acc, ...actions]);
   }
 }
+
+function createCodeAction(diag: vscode.Diagnostic, command: string, titlePrefix: string): vscode.CodeAction {
+  const title = `${titlePrefix} ${diag.code}`;
+  const actualCommand = {
+    command,
+    title
+  };
+  const codeAction = new vscode.CodeAction(actualCommand.title, vscode.CodeActionKind.QuickFix);
+  codeAction.diagnostics = [ diag ];
+  codeAction.command = actualCommand;
+  return codeAction;
+}
+
+let diagContextPanel: vscode.WebviewPanel;
+
+export const showHotspotContext = () => {
+
+  const diagContextPanelContent = computeHotspotContextPanelContent(activeHotspot);
+
+  if (!diagContextPanel) {
+    diagContextPanel = vscode.window.createWebviewPanel(
+      'sonarlint.DiagContext',
+      'SonarQube Security Hotspot',
+      vscode.ViewColumn.Two,
+      {
+        enableScripts: false
+      }
+    );
+    diagContextPanel.onDidDispose(
+      () => {
+        diagContextPanel = undefined;
+      },
+      null);
+  }
+  diagContextPanel.webview.html = diagContextPanelContent;
+  diagContextPanel.reveal();
+};

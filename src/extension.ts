@@ -13,7 +13,13 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
-import { hideSecurityHotspot, HotspotsCodeActionProvider, hotspotsCollection, showSecurityHotspot } from './hotspots';
+import {
+  hideSecurityHotspot,
+  HotspotsCodeActionProvider,
+  hotspotsCollection,
+  showHotspotContext,
+  showSecurityHotspot
+} from './hotspots';
 import { getJavaConfig, installClasspathListener } from './java';
 import * as protocol from './protocol';
 import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
@@ -312,6 +318,7 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, hideSecurityHotspot));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_CONTEXT, showHotspotContext));
 
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
