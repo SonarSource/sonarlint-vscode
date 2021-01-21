@@ -14,42 +14,7 @@ export const HOTSPOT_SOURCE = 'SonarQube Security Hotspot';
 
 export const hotspotsCollection = vscode.languages.createDiagnosticCollection('sonarlint-hotspots');
 
-class OpenHotspotsCache {
-  internalHotspotsCache = new Map<vscode.TextDocument, Set<vscode.Diagnostic>>();
-
-  add(document: vscode.TextDocument, hotspot: vscode.Diagnostic) {
-    if (!this.internalHotspotsCache.has(document)) {
-      this.internalHotspotsCache.set(document, new Set());
-    }
-    this.internalHotspotsCache.get(document).add(hotspot);
-    this.updateDiagnostics(document);
-  }
-
-  remove = (document: vscode.TextDocument, hotspot: vscode.Diagnostic) => {
-    if (this.internalHotspotsCache.has(document)) {
-      this.internalHotspotsCache.get(document).delete(hotspot);
-      this.updateDiagnostics(document);
-    }
-  };
-
-  getHotspots(document: vscode.TextDocument, range: vscode.Range): Array<vscode.Diagnostic> {
-    return this.getAllHotspots(document)
-      .filter(it => it.range.intersection(range));
-  }
-
-  getAllHotspots(document: vscode.TextDocument) {
-    if (this.internalHotspotsCache.has(document)) {
-      return [...this.internalHotspotsCache.get(document)];
-    }
-    return [];
-  }
-
-  private updateDiagnostics(document: vscode.TextDocument) {
-    hotspotsCollection.set(document.uri, this.getAllHotspots(document));
-  }
-}
-
-const openHotspotsCache = new OpenHotspotsCache();
+let activeHotspot: RemoteHotspot;
 
 export const showSecurityHotspot = async (hotspot: RemoteHotspot) => {
   const foundUris = await vscode.workspace.findFiles(`**/${hotspot.filePath}`);
@@ -60,17 +25,22 @@ export const showSecurityHotspot = async (hotspot: RemoteHotspot) => {
     // TODO Show quick pick to allow user to select the "right" file
     vscode.window.showErrorMessage(`Multiple candidate files found for '${hotspot.filePath}' in workspace`);
   } else {
+    activeHotspot = hotspot;
     const documentUri = foundUris[0];
     const editor = await vscode.window.showTextDocument(documentUri);
     const hotspotDiag = createHotspotDiagnostic(hotspot);
-    openHotspotsCache.add(editor.document, hotspotDiag);
+    hotspotsCollection.clear();
+    hotspotsCollection.set(documentUri, [hotspotDiag]);
 
     editor.revealRange(hotspotDiag.range, vscode.TextEditorRevealType.InCenter);
     editor.selection = new vscode.Selection(hotspotDiag.range.start, hotspotDiag.range.end);
   }
 };
 
-export const hideSecurityHotspot = openHotspotsCache.remove;
+export const hideSecurityHotspot = () => {
+  hotspotsCollection.clear();
+  activeHotspot = null;
+};
 
 function createHotspotDiagnostic(hotspot: RemoteHotspot) {
   const { startLine, startLineOffset, endLine, endLineOffset } = hotspot.textRange;
@@ -111,10 +81,11 @@ class HotspotsCommand implements vscode.Command {
 export class HotspotsCodeActionProvider implements vscode.CodeActionProvider {
 
   provideCodeActions(document, range, context, token) {
-    if (token.isCancellationRequested) {
+    if (token.isCancellationRequested || !activeHotspot) {
       return [];
     }
-    return openHotspotsCache.getHotspots(document, range)
+    return hotspotsCollection.get(document.uri)
+      .filter(d => d.range.intersection(range))
       .map(it => {
         const command = new HotspotsCommand(it, document);
         const hideHotspot = new vscode.CodeAction(command.title, vscode.CodeActionKind.QuickFix);
