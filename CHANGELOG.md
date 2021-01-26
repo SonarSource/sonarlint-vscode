@@ -1,3 +1,7 @@
+## 1.20.0
+
+* Update JavaScript and TypeScript analyzer [7.0.1](https://github.com/SonarSource/SonarJS/issues?q=is%3Aclosed+milestone%3A7.0.1) -> [7.1.0](https://github.com/SonarSource/SonarJS/issues?q=is%3Aclosed+milestone%3A7.1), 6 new rules, fewer false positives, formatting improvements
+
 ## 1.19.0
 
 * Enable server notifications in connected mode with SonarQube or SonarCloud
