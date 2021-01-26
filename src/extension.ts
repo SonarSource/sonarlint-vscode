@@ -17,7 +17,7 @@ import {
   hideSecurityHotspot,
   HotspotsCodeActionProvider,
   hotspotsCollection,
-  showHotspotContext,
+  showHotspotDescription,
   showSecurityHotspot
 } from './hotspots';
 import { getJavaConfig, installClasspathListener } from './java';
@@ -318,7 +318,7 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, hideSecurityHotspot));
-  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_CONTEXT, showHotspotContext));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DESCRIPTION, showHotspotDescription));
 
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
@@ -340,7 +340,6 @@ export function activate(context: VSCode.ExtensionContext) {
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.ShowRuleDescriptionRequest.type, params => {
-    const ruleDescPanelContent = computeRuleDescPanelContent(context, params);
     if (!ruleDescriptionPanel) {
       ruleDescriptionPanel = VSCode.window.createWebviewPanel(
         'sonarlint.RuleDesc',
@@ -358,7 +357,12 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
         context.subscriptions
       );
     }
+    const ruleDescPanelContent = computeRuleDescPanelContent(context, ruleDescriptionPanel.webview, params);
     ruleDescriptionPanel.webview.html = ruleDescPanelContent;
+    ruleDescriptionPanel.iconPath = {
+      light: util.resolveExtensionFile('images/sonarlint.svg'),
+      dark: util.resolveExtensionFile('images/sonarlint.svg')
+    };
     ruleDescriptionPanel.reveal();
   });
 

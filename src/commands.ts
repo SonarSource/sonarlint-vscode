@@ -36,6 +36,5 @@ export namespace Commands {
   export const INSTALL_MANAGED_JRE = 'SonarLint.InstallManagedJre';
 
   export const HIDE_HOTSPOT = 'SonarLint.HideHotspot';
-
-  export const SHOW_HOTSPOT_CONTEXT = 'SonarLint.ShowHotspotContext';
+  export const SHOW_HOTSPOT_DESCRIPTION = 'SonarLint.ShowHotspotDescription';
 }

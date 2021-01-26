@@ -1,0 +1,23 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2021 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+'use strict';
+
+import * as vscode from 'vscode';
+import { resolveExtensionFile } from './util';
+
+/*
+ * Utility class to load "external" resources from extension folder.
+ * See Content-Security-Policy header in HTML.
+ */
+export class ResourceResolver {
+  constructor(private readonly context: vscode.ExtensionContext, private readonly webview: vscode.Webview) {}
+
+  resolve(...segments: Array<string>) {
+    return this.webview.asWebviewUri(resolveExtensionFile(...segments))
+      .toString();
+  }
+}

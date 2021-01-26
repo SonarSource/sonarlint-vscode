@@ -65,15 +65,6 @@ suite('Hotspots Test Suite', async () => {
     assert.strictEqual(vscode.window.activeTextEditor, undefined);
   });
 
-  test('should show error when several files are found', async () => {
-
-    const hotspot = buildHotspot('sample.js');
-    await showSecurityHotspot(hotspot);
-
-    // TODO Find a way to assert error messages?
-    assert.strictEqual(vscode.window.activeTextEditor, undefined);
-  });
-
   test('should show and hide hotspot in found file', async () => {
 
     const hotspot = buildHotspot('main.js');
@@ -91,6 +82,20 @@ suite('Hotspots Test Suite', async () => {
     assert.strictEqual(hotspotDiag.range.end.line, hotspot.textRange.endLine - 1, 'end line should match');
     assert.strictEqual(hotspotDiag.range.end.character, hotspot.textRange.endLineOffset, 'end character should match');
     assert.strictEqual(hotspotDiag.severity, vscode.DiagnosticSeverity.Warning, 'severity should be mapped');
+
+    await vscode.commands.executeCommand(Commands.HIDE_HOTSPOT, vscode.window.activeTextEditor.document, hotspotDiag);
+    assert.strictEqual(getHotspotsInCurrentEditor().length, 0, 'should not have hotspot diagnostics anymore');
+  });
+
+  test('should show and hide hotspot when several files are found', async () => {
+
+    const hotspot = buildHotspot('sample.js');
+    await showSecurityHotspot(hotspot);
+
+    assert.notStrictEqual(vscode.window.activeTextEditor, undefined, 'should open first sample.js in text editor');
+    const hotspotDiags = getHotspotsInCurrentEditor();
+    assert.strictEqual(hotspotDiags.length, 1, 'should have one hotspot diagnostic');
+    const hotspotDiag = hotspotDiags[0];
 
     await vscode.commands.executeCommand(Commands.HIDE_HOTSPOT, vscode.window.activeTextEditor.document, hotspotDiag);
     assert.strictEqual(getHotspotsInCurrentEditor().length, 0, 'should not have hotspot diagnostics anymore');

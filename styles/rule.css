@@ -1,0 +1,93 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2021 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+body {
+  font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.23076923;
+}
+
+h1 {
+  font-size: 14px;
+  font-weight: 500;
+}
+h2 {
+  line-height: 24px;
+}
+a {
+  border-bottom: 1px solid rgba(230, 230, 230, 0.1);
+  color: #236a97;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.rule-desc {
+  line-height: 1.5;
+}
+.rule-desc h2 {
+  font-size: 16px;
+  font-weight: 400;
+}
+.rule-desc code {
+  padding: 0.2em 0.45em;
+  margin: 0;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.rule-desc pre {
+  padding: 10px;
+  border-top: 1px solid rgba(230, 230, 230, 0.1);
+  border-bottom: 1px solid rgba(230, 230, 230, 0.1);
+  line-height: 18px;
+  overflow: auto;
+}
+.rule-desc code,
+.rule-desc pre {
+  font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
+  font-size: 12px;
+}
+.rule-desc ul {
+  padding-left: 40px;
+  list-style: disc;
+}
+.rule-params {
+  border: none;
+  border-collapse: collapse;
+  padding: 1em;
+}
+.rule-params caption {
+  font-size: 16px;
+  font-weight: 400;
+  text-align: left;
+  margin-bottom: 16px;
+}
+.rule-params thead td {
+  vertical-align: top;
+  padding-left: 0;
+  padding-bottom: 1em;
+  font-style: italic;
+}
+.rule-params tbody th {
+  vertical-align: top;
+  text-align: right;
+  font-weight: inherit;
+  font-family: monospace;
+}
+.rule-params tbody td {
+  vertical-align: top;
+  padding-left: 1em;
+  padding-bottom: 1em;
+}
+.rule-params p {
+  margin: 0;
+}
+.rule-params small {
+  display: block;
+  margin-top: 2px;
+}

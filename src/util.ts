@@ -7,6 +7,7 @@
 'use strict';
 
 import * as child_process from 'child_process';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 export function startedInDebugMode(process: NodeJS.Process): boolean {
@@ -71,4 +72,8 @@ export function execChildProcess(process: string, workingDirectory: string, chan
       }
     );
   });
+}
+
+export function resolveExtensionFile(...segments: string[]) {
+  return vscode.Uri.file(path.join(extensionPath, ...segments));
 }

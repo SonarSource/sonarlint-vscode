@@ -1,0 +1,122 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2021 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+body {
+  font-family: var(--vscode-font-family);
+  font-size: 13px;
+  line-height: 1.23076923;
+}
+
+h1 {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+h2 {
+  line-height: 24px;
+}
+
+a {
+  border-bottom: 1px solid rgba(230, 230, 230, 0.1);
+  color: #236a97;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+pre {
+  font-family: var(--vscode-editor-font-family);
+}
+
+.hotspot-header {
+  list-style: none;
+  max-width: 50%;
+  display: grid;
+  grid: auto-flow / 1fr 1fr;
+  grid-row-gap: var(--vscode-font-size);
+}
+
+.hotspot-header dd {
+  text-align: left;
+  margin: 0;
+}
+
+.hotspot-header dt {
+  text-align: left;
+  font-weight: 600;
+}
+
+/* Stolen from SonarQube :) */
+
+.hotspot-probability {
+  color: #fff;
+  text-transform: uppercase;
+  display: inline-block;
+  text-align: center;
+  min-width: 48px;
+  padding: 0 8px;
+  font-weight: 700;
+  border-radius: 2px;
+}
+.hotspot-probability-High {
+  background-color: #d4333f;
+}
+.hotspot-probability-Medium {
+  background-color: #ed7d20;
+}
+.hotspot-probability-Low {
+  background-color: #eabe06;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tabs label {
+  order: 1;
+  display: block;
+  padding: 1rem 2rem;
+  margin-right: 0.2rem;
+  cursor: pointer;
+  background-color: var(--vscode-textBlockQuote-background);
+  transition: background-color ease 0.2s;
+  z-index: 100;
+  padding-bottom: -1px;
+}
+
+.tabs .tab {
+  z-index: 50;
+  order: 99;
+  flex-grow: 1;
+  width: 100%;
+  display: none;
+  padding: 1rem;
+  background-color: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-textBlockQuote-background);
+}
+
+.tabs input[type="radio"] {
+  display: none;
+}
+
+.tabs input[type="radio"]:checked + label {
+  background-color: var(--vscode-editor-background);
+  margin-bottom: -1px;
+  border: 1px solid var(--vscode-textBlockQuote-background);
+  border-bottom-color: var(--vscode-editor-background);
+}
+
+.tabs input[type="radio"]:checked + label + .tab {
+  display: block;
+}
+
+.tab h2 {
+  font-size: 16px;
+  font-weight: 400;
+}
