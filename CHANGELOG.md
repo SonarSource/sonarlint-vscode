@@ -1,5 +1,6 @@
 ## 1.20.0
 
+* Review a Security Hotspot within its context in connected mode with SonarQube
 * Update JavaScript and TypeScript analyzer 7.0.1 -> [7.1.0](https://github.com/SonarSource/SonarJS/issues?q=is%3Aclosed+milestone%3A7.1), 6 new rules, fewer false positives, formatting improvements
 * Update Java analyzer 6.10 -> [6.11](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16532), 3 new rules, introduce sonar.java.jdkHome global variable to control JDK for the analyzer, improvements for Mockito, MongoDB and JDBC, add secondary locations for 13 rules, 9 FP fixes, 3 FN fixes, size optimization, bug fixes 
 * Update PHP analyzer 3.13 -> [3.14](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16533), 2 FP fixes, bug fixes
