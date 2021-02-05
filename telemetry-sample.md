@@ -2,9 +2,9 @@
 {
       "days_since_installation": 27,
       "days_of_use": 5,
-      "sonarlint_version": "Visual Studio Code 1.15.0",
+      "sonarlint_version": "Visual Studio Code 1.20.1",
       "sonarlint_product": "SonarLint VSCode",
-      "ide_version": "1.38.1",
+      "ide_version": "1.53.0",
       "connected_mode_used": true,
       "connected_mode_sonarcloud": true,
       "system_time":"2018-02-27T16:31:49.173+01:00",
@@ -19,6 +19,9 @@
                   "NEW_ISSUES": {"received":1,"clicked":1},
                   "QUALITY_GATE": {"received":1,"clicked":0}
             }
+      },
+      "show_hotspot": {
+            "requests_count": 3
       }
 }
 ```
