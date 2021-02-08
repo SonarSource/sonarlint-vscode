@@ -21,6 +21,7 @@ import {
   showSecurityHotspot
 } from './hotspots';
 import { getJavaConfig, installClasspathListener } from './java';
+import showExperimentalLocations from './locations';
 import * as protocol from './protocol';
 import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
@@ -319,6 +320,8 @@ export function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, hideSecurityHotspot));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DESCRIPTION, showHotspotDescription));
+
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.EXPERIMENTAL_SHOW_LOCATIONS, showExperimentalLocations));
 
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {

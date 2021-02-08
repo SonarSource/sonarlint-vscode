@@ -338,6 +338,11 @@
     },
     "commands": [
       {
+        "command": "SonarLint.ExperimentalShowLocations",
+        "title": "Show Secondary Locations",
+        "category": "SonarLint Experimental"
+      },
+      {
         "command": "SonarLint.UpdateAllBindings",
         "title": "Update all project bindings to SonarQube/SonarCloud",
         "category": "SonarLint"
