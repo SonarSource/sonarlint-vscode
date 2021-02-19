@@ -5,10 +5,10 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import { LanguageClient } from 'vscode-languageclient';
-import { RulesResponse } from './rules';
-import { ServerMode } from './java';
 import * as VSCode from 'vscode';
+import { LanguageClient } from 'vscode-languageclient';
+import { ServerMode } from './java';
+import { RulesResponse } from './rules';
 import { code2ProtocolConverter } from './uri';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {

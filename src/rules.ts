@@ -70,7 +70,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
       .then(response => {
         // Render rules under language nodes
         if (node) {
-          return response[node.label]
+          return response[node.label as string]
             .map(rule => {
               rule.levelFromConfig = localRuleConfig.get(rule.key, {})['level'];
               return rule;
@@ -119,7 +119,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   }
 
   refresh() {
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(null);
   }
 
   filter(level?: ConfigLevel) {

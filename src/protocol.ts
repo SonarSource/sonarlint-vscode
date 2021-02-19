@@ -9,7 +9,7 @@
 import * as lsp from 'vscode-languageserver-protocol';
 
 export namespace ShowRuleDescriptionRequest {
-  export const type = new lsp.RequestType<ShowRuleDescriptionParams, any, void, void>('sonarlint/showRuleDescription');
+  export const type = new lsp.RequestType<ShowRuleDescriptionParams, any, void>('sonarlint/showRuleDescription');
 }
 
 export interface ShowRuleDescriptionParams {
@@ -26,7 +26,7 @@ export interface ShowRuleDescriptionParams {
 }
 
 export namespace GetJavaConfigRequest {
-  export const type = new lsp.RequestType<string, GetJavaConfigResponse, void, void>('sonarlint/getJavaConfig');
+  export const type = new lsp.RequestType<string, GetJavaConfigResponse, void>('sonarlint/getJavaConfig');
 }
 
 export interface GetJavaConfigResponse {
@@ -50,11 +50,11 @@ export namespace OpenPathToNodeSettings {
 }
 
 export namespace BrowseTo {
-  export const type = new lsp.RequestType<string, void, void, void>('sonarlint/browseTo');
+  export const type = new lsp.RequestType<string, void, void>('sonarlint/browseTo');
 }
 
 export namespace OpenConnectionSettings {
-  export const type = new lsp.RequestType<boolean, void, void, void>(
+  export const type = new lsp.RequestType<boolean, void, void>(
     'sonarlint/openConnectionSettings'
   );
 }
@@ -78,12 +78,7 @@ export enum HotspotStatus {
 export interface RemoteHotspot {
   message: string;
   filePath: string;
-  textRange: {
-    startLine: number;
-    startLineOffset?: number;
-    endLine?: number;
-    endLineOffset?: number;
-  };
+  textRange: TextRange;
   author: string;
   status: HotspotStatus;
   resolution?: HotspotResolution;
@@ -99,5 +94,30 @@ export interface RemoteHotspot {
 }
 
 export namespace ShowHotspotRequest {
-  export const type = new lsp.RequestType<RemoteHotspot, void, void, void>('sonarlint/showHotspot');
+  export const type = new lsp.RequestType<RemoteHotspot, void, void>('sonarlint/showHotspot');
+}
+
+export interface TextRange {
+  startLine: number;
+  endLine?: number;
+  startLineOffset?: number;
+  endLineOffset?: number;
+}
+
+export interface Location {
+  uri: string;
+  textRange: TextRange;
+  message?: string;
+}
+
+export interface Flow {
+  locations: Location[]
+}
+
+export interface Issue {
+  fileUri: string;
+  message: string;
+  severity: string;
+  ruleKey: string;
+  flows: Flow[];
 }

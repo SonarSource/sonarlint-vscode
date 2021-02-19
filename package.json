@@ -40,7 +40,8 @@
     "onLanguage:plsql",
     "onLanguage:oraclesql",
     "onCommand:SonarLint.UpdateAllBindings",
-    "onView:SonarLint.AllRules"
+    "onView:SonarLint.AllRules",
+    "onView:SonarLint.IssueLocations"
   ],
   "extensionDependencies": [
     "vscode.typescript-language-features"
@@ -387,6 +388,11 @@
         "command": "SonarLint.FindRuleByKey",
         "title": "Find Rule By Key",
         "enablement": "view == SonarLint.AllRules"
+      },
+      {
+        "command": "SonarLint.HideLocations",
+        "title": "Hide Locations",
+        "enablement": "view == SonarLint.IssueLocations"
       }
     ],
     "views": {
@@ -394,6 +400,10 @@
         {
           "id": "SonarLint.AllRules",
           "name": "SonarLint Rules"
+        },
+        {
+          "id": "SonarLint.IssueLocations",
+          "name": "SonarLint Issue Locations"
         }
       ]
     },
@@ -417,6 +427,11 @@
         {
           "command": "SonarLint.FindRuleByKey",
           "when": "view == SonarLint.AllRules"
+        },
+        {
+          "command": "SonarLint.HideLocations",
+          "when": "view == SonarLint.IssueLocations",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -455,7 +470,7 @@
     "open": "7.3.0",
     "path-exists": "4.0.0",
     "compare-versions": "3.6.0",
-    "vscode-languageclient": "6.1.3"
+    "vscode-languageclient": "6.1.4"
   },
   "devDependencies": {
     "@types/chai": "^4.2.10",
@@ -463,7 +478,7 @@
     "@types/glob": "5.0.30",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.17.17",
-    "@types/vscode": "^1.37.0",
+    "@types/vscode": "^1.41.0",
     "chai": "^4.2.0",
     "crypto": "^0.0.3",
     "dateformat": "^2.0.0",

@@ -21,6 +21,7 @@ import {
   showSecurityHotspot
 } from './hotspots';
 import { getJavaConfig, installClasspathListener } from './java';
+import { navigateToLocation, SecondaryLocationsTree } from './locations';
 import * as protocol from './protocol';
 import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
@@ -270,6 +271,27 @@ export function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: allRulesTreeDataProvider
   });
   context.subscriptions.push(allRulesView);
+
+  const secondaryLocationsTree = new SecondaryLocationsTree();
+  const issueLocationsView = VSCode.window.createTreeView('SonarLint.IssueLocations', {
+    treeDataProvider: secondaryLocationsTree
+  });
+  context.subscriptions.push(issueLocationsView);
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(
+      Commands.SHOW_ALL_LOCATIONS,
+      secondaryLocationsTree.showAllLocations,
+      secondaryLocationsTree
+    )
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(
+      Commands.HIDE_LOCATIONS,
+      secondaryLocationsTree.hideLocations,
+      secondaryLocationsTree
+    )
+  );
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.NAVIGATE_TO_LOCATION, navigateToLocation));
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')));
