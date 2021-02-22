@@ -33,7 +33,7 @@ export namespace Commands {
   export const SHOW_SONARLINT_OUTPUT = 'SonarLint.ShowSonarLintOutput';
   export const FIND_RULE_BY_KEY = 'SonarLint.FindRuleByKey';
   export const SHOW_ALL_LOCATIONS = 'SonarLint.ShowAllLocations';
-  export const HIDE_LOCATIONS = 'SonarLint.HideLocations';
+  export const CLEAR_LOCATIONS = 'SonarLint.ClearLocations';
   export const NAVIGATE_TO_LOCATION = 'SonarLint.NavigateToLocation';
 
   export const INSTALL_MANAGED_JRE = 'SonarLint.InstallManagedJre';

@@ -390,8 +390,8 @@
         "enablement": "view == SonarLint.AllRules"
       },
       {
-        "command": "SonarLint.HideLocations",
-        "title": "Hide Locations",
+        "command": "SonarLint.ClearLocations",
+        "title": "Clear",
         "enablement": "view == SonarLint.IssueLocations"
       }
     ],
@@ -407,6 +407,12 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "SonarLint.IssueLocations",
+        "contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarLint issue."
+      }
+    ],
     "menus": {
       "view/title": [
         {
@@ -429,7 +435,7 @@
           "when": "view == SonarLint.AllRules"
         },
         {
-          "command": "SonarLint.HideLocations",
+          "command": "SonarLint.ClearLocations",
           "when": "view == SonarLint.IssueLocations",
           "group": "navigation"
         }

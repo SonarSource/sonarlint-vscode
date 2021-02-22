@@ -70,7 +70,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
       .then(response => {
         // Render rules under language nodes
         if (node) {
-          return response[node.label as string]
+          return response[node.label]
             .map(rule => {
               rule.levelFromConfig = localRuleConfig.get(rule.key, {})['level'];
               return rule;
@@ -138,5 +138,5 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
 }
 
 function byName(r1: Rule, r2: Rule) {
-  return r1.name.toLowerCase() < r2.name.toLowerCase() ? -1 : r1.name.toLowerCase() > r2.name.toLowerCase() ? 1 : 0;
+  return r1.name.toLowerCase().localeCompare(r2.name.toLowerCase());
 }

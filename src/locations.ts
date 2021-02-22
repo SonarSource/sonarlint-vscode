@@ -11,14 +11,8 @@ import { Commands } from './commands';
 import { Flow, Issue, Location } from './protocol';
 import { resolveExtensionFile } from './util';
 
-class PlaceHolderItem extends vscode.TreeItem {
-  constructor() {
-    super('No issue selected', vscode.TreeItemCollapsibleState.None);
-  }
-}
-
 class IssueItem extends vscode.TreeItem {
-  readonly children: FlowItem[];
+  readonly children: FlowItem[] | LocationItem[];
 
   constructor(issue: Issue) {
     super(issue.message, vscode.TreeItemCollapsibleState.Expanded);
@@ -28,7 +22,21 @@ class IssueItem extends vscode.TreeItem {
       light: severityIcon,
       dark: severityIcon
     };
-    this.children = issue.flows.map((f, i) => new FlowItem(f, i));
+    if (issue.flows.length === 1) {
+      // Single flow: skip the flow node
+      const locations = issue.flows[0].locations;
+      this.children = locations.map((l, i) => new LocationItem(l, locations.length - i));
+      this.children.reverse();
+    } else if (issue.flows.every(f => f.locations.length === 1)) {
+      // All flows have one location (duplication): flatten to location nodes
+      this.children = issue.flows.map((f, i) => new LocationItem(f.locations[0], i + 1));
+    } else if (issue.flows.every(f => f.locations.every(l => !l.message || l.message === ''))) {
+      // "Highlight only" locations
+      this.children = [];
+    } else {
+      // General case
+      this.children = issue.flows.map((f, i) => new FlowItem(f, i));
+    }
   }
 }
 
@@ -36,14 +44,20 @@ class FlowItem extends vscode.TreeItem {
   readonly children: LocationItem[];
 
   constructor(flow: Flow, index: number) {
-    super(`Flow ${index}`, vscode.TreeItemCollapsibleState.Expanded);
-    this.children = flow.locations.map(l => new LocationItem(l));
+    const collapsibleState = index === 0 ?
+      // Only first flow is expanded by default
+      vscode.TreeItemCollapsibleState.Expanded :
+      vscode.TreeItemCollapsibleState.Collapsed;
+    super(`Flow ${index + 1}`, collapsibleState);
+    this.children = flow.locations.map((l, i) => new LocationItem(l, flow.locations.length - i));
+    this.children.reverse();
   }
 }
 
 class LocationItem extends vscode.TreeItem {
-  constructor(location: Location) {
-    super(location.message, vscode.TreeItemCollapsibleState.None);
+  constructor(location: Location, index: number) {
+    super(`${index}: ${location.message}`, vscode.TreeItemCollapsibleState.None);
+    this.description = `[${location.textRange.startLine}, ${location.textRange.startLineOffset}]`;
     this.command = {
       title: 'Navigate',
       command: Commands.NAVIGATE_TO_LOCATION,
@@ -52,17 +66,15 @@ class LocationItem extends vscode.TreeItem {
   }
 }
 
-type RootItem = PlaceHolderItem | IssueItem;
-
-type LocationTreeItem = RootItem | FlowItem | LocationItem;
+type LocationTreeItem = IssueItem | FlowItem | LocationItem;
 
 export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationTreeItem> {
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<LocationTreeItem | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-  private rootItem?: RootItem;
+  private rootItem?: IssueItem;
 
   constructor() {
-    this.rootItem = new PlaceHolderItem();
+    this.rootItem = null;
   }
 
   showAllLocations(issue: Issue) {
@@ -71,7 +83,7 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
   }
 
   hideLocations() {
-    this.rootItem = new PlaceHolderItem();
+    this.rootItem = null;
     this.notifyRootChanged();
   }
 
@@ -92,6 +104,14 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
       return element.children;
     } else {
       return [];
+    }
+  }
+
+  getParent(element?: LocationTreeItem) {
+    if (element === this.rootItem) {
+      return null;
+    } else {
+      throw Error('Only implemented for root node!');
     }
   }
 }

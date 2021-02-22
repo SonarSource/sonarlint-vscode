@@ -280,13 +280,15 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(
       Commands.SHOW_ALL_LOCATIONS,
-      secondaryLocationsTree.showAllLocations,
-      secondaryLocationsTree
+      issue => {
+        secondaryLocationsTree.showAllLocations(issue);
+        issueLocationsView.reveal(secondaryLocationsTree.getChildren(null)[0]);
+      }
     )
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(
-      Commands.HIDE_LOCATIONS,
+      Commands.CLEAR_LOCATIONS,
       secondaryLocationsTree.hideLocations,
       secondaryLocationsTree
     )
