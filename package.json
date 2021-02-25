@@ -452,7 +452,54 @@
           "group": "inline"
         }
       ]
-    }
+    },
+    "colors": [
+      {
+        "id": "sonarlint.locations.background",
+        "description": "Background color for highlighted secondary locations of SonarLint issues",
+        "defaults": {
+          "light": "#f2dede",
+          "dark": "#523e3e",
+          "highContrast": "#523e3e"
+        }
+      },
+      {
+        "id": "sonarlint.locations.indexText",
+        "description": "Text color for secondary location index of SonarLint issues",
+        "defaults": {
+          "light": "#fff",
+          "dark": "#ccc",
+          "highContrast": "#ccc"
+        }
+      },
+      {
+        "id": "sonarlint.locations.indexBackground",
+        "description": "Background color for secondary location index of SonarLint issues",
+        "defaults": {
+          "light": "#d18582",
+          "dark": "#74232f",
+          "highContrast": "#74232f"
+        }
+      },
+      {
+        "id": "sonarlint.locations.indexSelectedText",
+        "description": "Text color for active secondary location index of SonarLint issues",
+        "defaults": {
+          "light": "#fff",
+          "dark": "#fff",
+          "highContrast": "#fff"
+        }
+      },
+      {
+        "id": "sonarlint.locations.indexSelectedBackground",
+        "description": "Background color for active secondary location index of SonarLint issues",
+        "defaults": {
+          "light": "#a4030f",
+          "dark": "#b4131f",
+          "highContrast": "#b4131f"
+        }
+      }
+    ]
   },
   "main": "./dist/extension",
   "files": [

@@ -11,16 +11,27 @@ import { Commands } from './commands';
 import { Flow, Issue, Location } from './protocol';
 import { resolveExtensionFile } from './util';
 
-const secondaryLocationDecorations = vscode.window.createTextEditorDecorationType({
-  backgroundColor: '#fcc',
+const SECONDARY_LOCATION_DECORATIONS = vscode.window.createTextEditorDecorationType({
+  backgroundColor: new vscode.ThemeColor('sonarlint.locations.background'),
   before: {
-    backgroundColor: '#c66',
-    color: 'white',
-    fontWeight: 'bold',
-    margin: '0.1em'
+    backgroundColor: new vscode.ThemeColor('sonarlint.locations.indexBackground'),
+    color: new vscode.ThemeColor('sonarlint.locations.indexText'),
+    margin: '0.2em'
   },
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
+
+const SELECTED_SECONDARY_LOCATION_DECORATION = vscode.window.createTextEditorDecorationType({
+  backgroundColor: new vscode.ThemeColor('sonarlint.locations.background'),
+  before: {
+    backgroundColor: new vscode.ThemeColor('sonarlint.locations.indexSelectedBackground'),
+    color: new vscode.ThemeColor('sonarlint.locations.indexSelectedText'),
+    fontWeight: 'bold',
+    margin: '0.2em'
+  },
+  rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
+});
+
 
 class IssueItem extends vscode.TreeItem {
   readonly children: FlowItem[] | LocationItem[];
@@ -111,7 +122,12 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
   hideLocations() {
     this.rootItem = null;
     this.notifyRootChanged();
-    vscode.window.visibleTextEditors.forEach(e => e.setDecorations(secondaryLocationDecorations, []));
+    vscode.window.visibleTextEditors.forEach(
+      e => {
+        e.setDecorations(SECONDARY_LOCATION_DECORATIONS, []);
+        e.setDecorations(SELECTED_SECONDARY_LOCATION_DECORATION, []);
+      }
+    );
   }
 
   private notifyRootChanged() {
@@ -151,24 +167,29 @@ export async function navigateToLocation(item: LocationItem) {
   editor.selection = new vscode.Selection(startPosition,endPosition);
   editor.revealRange(new vscode.Range(startPosition, endPosition), vscode.TextEditorRevealType.InCenter);
 
-  editor.setDecorations(secondaryLocationDecorations, buildDecorations(item));
+  editor.setDecorations(SELECTED_SECONDARY_LOCATION_DECORATION, [ buildDecoration(item) ]);
+  editor.setDecorations(SECONDARY_LOCATION_DECORATIONS, buildSiblingDecorations(item));
 }
 
-function buildDecorations(item: LocationItem) {
+function buildDecoration(item: LocationItem) {
+  const location = item.location;
+  return ({
+    range: new vscode.Range(
+      new vscode.Position(location.textRange.startLine - 1, location.textRange.startLineOffset),
+      new vscode.Position(location.textRange.endLine - 1, location.textRange.endLineOffset)
+    ),
+    hoverMessage: location.message,
+    renderOptions: {
+      before: {
+        // \u2000 is Unicode's "EN QUAD", which is usually rendered narrower than a normal \u0020 space
+        contentText: `\u2000${item.index}\u2000`
+      }
+    }
+  });
+}
+
+function buildSiblingDecorations(item: LocationItem) {
   return item.parent['children']
-    .map((l: LocationItem) => {
-      const location = l.location;
-      return ({
-        range: new vscode.Range(
-          new vscode.Position(location.textRange.startLine - 1, location.textRange.startLineOffset),
-          new vscode.Position(location.textRange.endLine - 1, location.textRange.endLineOffset)
-        ),
-        hoverMessage: location.message,
-        renderOptions: {
-          before: {
-            contentText: ` ${l.index} `
-          }
-        }
-      });
-    });
+    .filter(i => i !== item)
+    .map(buildDecoration);
 }
