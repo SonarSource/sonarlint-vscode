@@ -11,6 +11,10 @@ import { Commands } from './commands';
 import { Flow, Issue, Location } from './protocol';
 import { resolveExtensionFile } from './util';
 
+/**
+ * Base decoration type for secondary locations.
+ * See contributes.colors in package.json for theme color values.
+ */
 const SECONDARY_LOCATION_DECORATIONS = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor('sonarlint.locations.background'),
   before: {
@@ -21,6 +25,10 @@ const SECONDARY_LOCATION_DECORATIONS = vscode.window.createTextEditorDecorationT
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
 
+/**
+ * Decoration type for selected secondary location.
+ * See contributes.colors in package.json for theme color values.
+ */
 const SELECTED_SECONDARY_LOCATION_DECORATION = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor('sonarlint.locations.background'),
   before: {
@@ -37,24 +45,23 @@ class IssueItem extends vscode.TreeItem {
   readonly children: FlowItem[] | LocationItem[];
 
   constructor(issue: Issue) {
-    super(issue.message, vscode.TreeItemCollapsibleState.Expanded);
+    const highlightOnly = issue.flows.every(f => f.locations.every(l => !l.message || l.message === ''));
+    const collapsibleState = highlightOnly ?
+      vscode.TreeItemCollapsibleState.None :
+      vscode.TreeItemCollapsibleState.Expanded;
+    super(issue.message, collapsibleState);
     this.description = `(${issue.ruleKey})`;
     const severityIcon = resolveExtensionFile('images', 'severity', `${issue.severity.toLowerCase()}.png`);
     this.iconPath = {
       light: severityIcon,
       dark: severityIcon
     };
-    if (issue.flows.length === 1) {
-      // Single flow: skip the flow node
-      const locations = issue.flows[0].locations;
-      this.children = locations.map((l, i) => new LocationItem(l, locations.length - i, this));
-      this.children.reverse();
-    } else if (issue.flows.every(f => f.locations.length === 1)) {
-      // All flows have one location (duplication): flatten to location nodes
-      this.children = issue.flows.map((f, i) => new LocationItem(f.locations[0], i + 1, this));
-    } else if (issue.flows.every(f => f.locations.every(l => !l.message || l.message === ''))) {
-      // "Highlight only" locations
+    if (highlightOnly) {
+      // "Highlight only" locations, no node appended
       this.children = [];
+    } else if (issue.flows.every(f => f.locations.length === 1)) {
+      // All flows have one location (e.g duplication): flatten to location nodes
+      this.children = issue.flows.map((f, i) => new LocationItem(f.locations[0], i + 1, this));
     } else {
       // General case
       this.children = issue.flows.map((f, i) => new FlowItem(f, i, this));
@@ -64,7 +71,7 @@ class IssueItem extends vscode.TreeItem {
 
 class FlowItem extends vscode.TreeItem {
   readonly parent: LocationTreeItem;
-  readonly children: LocationItem[];
+  readonly children: (LocationItem | FileItem)[];
 
   constructor(flow: Flow, index: number, parent: LocationTreeItem) {
     const collapsibleState = index === 0 ?
@@ -72,17 +79,52 @@ class FlowItem extends vscode.TreeItem {
       vscode.TreeItemCollapsibleState.Expanded :
       vscode.TreeItemCollapsibleState.Collapsed;
     super(`Flow ${index + 1}`, collapsibleState);
-    this.children = flow.locations.map((l, i) => new LocationItem(l, flow.locations.length - i, this));
-    this.children.reverse();
+
+    const flowLocations = Array.from(flow.locations);
+    flowLocations.reverse();
+
+    if (new Set(flowLocations.map(l => l.uri)).size > 1) {
+      // Locations are spread over several files: group locations by file URI
+      let locationIndex = 0;
+      let currentUri = null;
+      let fileLocations = [];
+      this.children = [];
+      while(locationIndex < flowLocations.length) {
+        currentUri = flowLocations[locationIndex].uri;
+        fileLocations.push(flowLocations[locationIndex]);
+        if (locationIndex === flowLocations.length - 1 || flowLocations[locationIndex + 1].uri !== currentUri) {
+          this.children.push(new FileItem(currentUri, locationIndex + 1, fileLocations, this));
+          fileLocations = [];
+        }
+        locationIndex += 1;
+      }
+    } else {
+      // Locations are all in the current file
+      this.children = flowLocations.map((l, i) => new LocationItem(l, i + 1, this));
+    }
+
     this.parent = parent;
   }
 }
 
+class FileItem extends vscode.TreeItem {
+  readonly children: LocationItem[];
+  readonly parent: FlowItem;
+
+  constructor(uri: string, lastIndex: number, locations: Location[], parent: FlowItem) {
+    super(uri.substring(uri.lastIndexOf('/') + 1), vscode.TreeItemCollapsibleState.Expanded);
+    this.children = locations.map((l, i) => new LocationItem(l, lastIndex + 1 - locations.length + i, this));
+    this.parent = parent;
+    this.resourceUri = vscode.Uri.parse(uri);
+    this.iconPath = vscode.ThemeIcon.File;
+  }
+}
+
 class LocationItem extends vscode.TreeItem {
-  readonly parent: LocationTreeItem;
+  readonly parent: LocationParentItem;
   readonly location: Location;
   readonly index: number;
-  constructor(location: Location, index: number, parent: LocationTreeItem) {
+  constructor(location: Location, index: number, parent: LocationParentItem) {
     super(`${index}: ${location.message}`, vscode.TreeItemCollapsibleState.None);
     this.index = index;
     this.description = `[${location.textRange.startLine}, ${location.textRange.startLineOffset}]`;
@@ -96,7 +138,9 @@ class LocationItem extends vscode.TreeItem {
   }
 }
 
-type ChildItem = FlowItem | LocationItem;
+type ChildItem = FlowItem | FileItem | LocationItem;
+
+type LocationParentItem = IssueItem | FlowItem | FileItem;
 
 type LocationTreeItem = IssueItem | ChildItem;
 
@@ -109,13 +153,29 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
     this.rootItem = null;
   }
 
-  showAllLocations(issue: Issue) {
+  async showAllLocations(issue: Issue) {
     this.rootItem = new IssueItem(issue);
     this.notifyRootChanged();
-    if (this.rootItem.children[0] instanceof LocationItem) {
+    if (this.rootItem.children.length === 0) {
+      // Highlight-only locations
+      const uri = issue.fileUri;
+      const editor = await vscode.window.showTextDocument(vscode.Uri.parse(uri));
+
+      const locations = issue.flows
+        .map(f => f.locations)
+        .reduce((acc, cur) => acc.concat(cur), []);
+      editor.setDecorations(SECONDARY_LOCATION_DECORATIONS,
+        locations.map((l, i) => buildDecoration(new LocationItem(l, i + 1, this.rootItem)))
+      );
+    } else if (this.rootItem.children[0] instanceof LocationItem) {
+      // Flattened locations: take the first one
       navigateToLocation(this.rootItem.children[0]);
-    } else {
+    } else if (this.rootItem.children[0].children[0] instanceof LocationItem) {
+      // Locations in a single file: take the first location of the first flow
       navigateToLocation(this.rootItem.children[0].children[0]);
+    } else {
+      // Multiple file locations: take the first location of the first file of the first flow
+      navigateToLocation(this.rootItem.children[0].children[0].children[0]);
     }
   }
 
@@ -144,6 +204,8 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
     } else if(element instanceof IssueItem) {
       return element.children;
     } else if (element instanceof FlowItem) {
+      return element.children;
+    } else if (element instanceof FileItem) {
       return element.children;
     } else {
       return [];
@@ -189,7 +251,8 @@ function buildDecoration(item: LocationItem) {
 }
 
 function buildSiblingDecorations(item: LocationItem) {
-  return item.parent['children']
+  return (item.parent.children as LocationItem[])
     .filter(i => i !== item)
+    .filter(i => i.location.uri === item.location.uri)
     .map(buildDecoration);
 }
