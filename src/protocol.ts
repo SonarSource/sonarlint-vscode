@@ -105,7 +105,7 @@ export interface TextRange {
 }
 
 export interface Location {
-  uri: string;
+  uri?: string;
   textRange: TextRange;
   message?: string;
 }

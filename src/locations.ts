@@ -111,8 +111,9 @@ class FileItem extends vscode.TreeItem {
   readonly children: LocationItem[];
   readonly parent: FlowItem;
 
-  constructor(uri: string, lastIndex: number, locations: Location[], parent: FlowItem) {
-    super(uri.substring(uri.lastIndexOf('/') + 1), vscode.TreeItemCollapsibleState.Expanded);
+  constructor(uri: string|null, lastIndex: number, locations: Location[], parent: FlowItem) {
+    const label = uri ? uri.substring(uri.lastIndexOf('/') + 1) : `<Unreachable>`;
+    super(label, vscode.TreeItemCollapsibleState.Expanded);
     this.children = locations.map((l, i) => new LocationItem(l, lastIndex + 1 - locations.length + i, this));
     this.parent = parent;
     this.resourceUri = vscode.Uri.parse(uri);
@@ -127,12 +128,16 @@ class LocationItem extends vscode.TreeItem {
   constructor(location: Location, index: number, parent: LocationParentItem) {
     super(`${index}: ${location.message}`, vscode.TreeItemCollapsibleState.None);
     this.index = index;
-    this.description = `[${location.textRange.startLine}, ${location.textRange.startLineOffset}]`;
-    this.command = {
-      title: 'Navigate',
-      command: Commands.NAVIGATE_TO_LOCATION,
-      arguments: [ this ]
-    };
+    if (location.uri) {
+      this.description = `[${location.textRange.startLine}, ${location.textRange.startLineOffset}]`;
+      this.command = {
+        title: 'Navigate',
+        command: Commands.NAVIGATE_TO_LOCATION,
+        arguments: [ this ]
+      };
+    } else {
+      this.description = `(unreachable in local code)`;
+    }
     this.parent = parent;
     this.location = location;
   }
