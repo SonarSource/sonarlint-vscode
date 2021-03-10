@@ -8,7 +8,7 @@
 
 import * as vscode from 'vscode';
 import { Commands } from './commands';
-import { Flow, Issue, Location } from './protocol';
+import { Flow, Issue, Location, TextRange } from './protocol';
 import { resolveExtensionFile } from './util';
 
 /**
@@ -116,7 +116,7 @@ class FileItem extends vscode.TreeItem {
     super(label, vscode.TreeItemCollapsibleState.Expanded);
     this.children = locations.map((l, i) => new LocationItem(l, lastIndex + 1 - locations.length + i, this));
     this.parent = parent;
-    this.resourceUri = vscode.Uri.parse(uri);
+    this.resourceUri = uri ? vscode.Uri.parse(uri) : null;
     this.iconPath = vscode.ThemeIcon.File;
   }
 }
@@ -170,7 +170,7 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
         .map(f => f.locations)
         .reduce((acc, cur) => acc.concat(cur), []);
       editor.setDecorations(SECONDARY_LOCATION_DECORATIONS,
-        locations.map((l, i) => buildDecoration(new LocationItem(l, i + 1, this.rootItem)))
+        locations.map((l, i) => buildDecoration(new LocationItem(l, i + 1, this.rootItem), editor.document))
       );
     } else if (this.rootItem.children[0] instanceof LocationItem) {
       // Flattened locations: take the first one
@@ -229,22 +229,40 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
 export async function navigateToLocation(item: LocationItem) {
   const { uri, textRange } = item.location;
   const editor = await vscode.window.showTextDocument(vscode.Uri.parse(uri));
-  const startPosition = new vscode.Position(textRange.startLine - 1, textRange.startLineOffset);
-  const endPosition = new vscode.Position(textRange.endLine - 1, textRange.endLineOffset);
-  editor.selection = new vscode.Selection(startPosition,endPosition);
-  editor.revealRange(new vscode.Range(startPosition, endPosition), vscode.TextEditorRevealType.InCenter);
-
-  editor.setDecorations(SELECTED_SECONDARY_LOCATION_DECORATION, [ buildDecoration(item) ]);
-  editor.setDecorations(SECONDARY_LOCATION_DECORATIONS, buildSiblingDecorations(item));
+  const range = vscodeRange(textRange);
+  if(isValidRange(range, editor.document)) {
+    editor.selection = new vscode.Selection(range.start, range.end);
+    editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+  }
+  editor.setDecorations(SELECTED_SECONDARY_LOCATION_DECORATION, buildMainDecorations(item, editor.document));
+  editor.setDecorations(SECONDARY_LOCATION_DECORATIONS, buildSiblingDecorations(item, editor.document));
 }
 
-function buildDecoration(item: LocationItem) {
+function buildMainDecorations(item: LocationItem, document: vscode.TextDocument) {
+  return [ buildDecoration(item, document) ].filter(d => d);
+}
+
+function buildSiblingDecorations(item: LocationItem, document: vscode.TextDocument) {
+  return (item.parent.children as LocationItem[])
+    .filter(i => i !== item)
+    .filter(i => i.location.uri === item.location.uri)
+    .filter(i => i.location.textRange)
+    .map(i => buildDecoration(i, document))
+    .filter(d => d);
+}
+
+function buildDecoration(item: LocationItem, document: vscode.TextDocument) {
   const location = item.location;
+  const range = new vscode.Range(
+    new vscode.Position(location.textRange.startLine - 1, location.textRange.startLineOffset),
+    new vscode.Position(location.textRange.endLine - 1, location.textRange.endLineOffset)
+  );
+  if(!isValidRange(range, document)) {
+    // Range is not exactly matched in local code
+    return null;
+  }
   return ({
-    range: new vscode.Range(
-      new vscode.Position(location.textRange.startLine - 1, location.textRange.startLineOffset),
-      new vscode.Position(location.textRange.endLine - 1, location.textRange.endLineOffset)
-    ),
+    range,
     hoverMessage: location.message,
     renderOptions: {
       before: {
@@ -255,9 +273,14 @@ function buildDecoration(item: LocationItem) {
   });
 }
 
-function buildSiblingDecorations(item: LocationItem) {
-  return (item.parent.children as LocationItem[])
-    .filter(i => i !== item)
-    .filter(i => i.location.uri === item.location.uri)
-    .map(buildDecoration);
+function vscodeRange(textRange: TextRange) {
+  const startPosition = new vscode.Position(textRange.startLine - 1, textRange.startLineOffset);
+  const endPosition = new vscode.Position(textRange.endLine - 1, textRange.endLineOffset);
+  return new vscode.Range(startPosition, endPosition);
 }
+
+function isValidRange(textRange: vscode.Range, document: vscode.TextDocument) {
+  const validatedRange = document.validateRange(textRange);
+  return textRange.isEqual(validatedRange);
+}
+
