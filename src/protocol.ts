@@ -106,8 +106,11 @@ export interface TextRange {
 
 export interface Location {
   uri?: string;
+  filePath: string;
   textRange: TextRange;
   message?: string;
+  exists: boolean;
+  codeMatches: boolean;
 }
 
 export interface Flow {
