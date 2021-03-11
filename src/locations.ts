@@ -87,13 +87,15 @@ class FlowItem extends vscode.TreeItem {
       // Locations are spread over several files: group locations by file URI
       let locationIndex = 0;
       let currentUri = null;
+      let currentPath = null;
       let fileLocations = [];
       this.children = [];
       while(locationIndex < flowLocations.length) {
         currentUri = flowLocations[locationIndex].uri;
+        currentPath = flowLocations[locationIndex].filePath;
         fileLocations.push(flowLocations[locationIndex]);
         if (locationIndex === flowLocations.length - 1 || flowLocations[locationIndex + 1].uri !== currentUri) {
-          this.children.push(new FileItem(currentUri, locationIndex + 1, fileLocations, this));
+          this.children.push(new FileItem(currentUri, currentPath, locationIndex + 1, fileLocations, this));
           fileLocations = [];
         }
         locationIndex += 1;
@@ -111,12 +113,16 @@ class FileItem extends vscode.TreeItem {
   readonly children: LocationItem[];
   readonly parent: FlowItem;
 
-  constructor(uri: string|null, lastIndex: number, locations: Location[], parent: FlowItem) {
-    const label = uri ? uri.substring(uri.lastIndexOf('/') + 1) : `<Unreachable>`;
+  constructor(uri: string|null, filePath: string, lastIndex: number, locations: Location[], parent: FlowItem) {
+    const label = uri ? uri.substring(uri.lastIndexOf('/') + 1) : filePath.substring(filePath.lastIndexOf('/') + 1);
     super(label, vscode.TreeItemCollapsibleState.Expanded);
     this.children = locations.map((l, i) => new LocationItem(l, lastIndex + 1 - locations.length + i, this));
     this.parent = parent;
     this.resourceUri = uri ? vscode.Uri.parse(uri) : null;
+    if (!uri) {
+      // Override default tooltip (generated from resourceUri) when uri is invalid
+      this.tooltip = filePath;
+    }
     this.iconPath = vscode.ThemeIcon.File;
   }
 }
@@ -129,14 +135,22 @@ class LocationItem extends vscode.TreeItem {
     super(`${index}: ${location.message}`, vscode.TreeItemCollapsibleState.None);
     this.index = index;
     if (location.uri) {
-      this.description = `[${location.textRange.startLine}, ${location.textRange.startLineOffset}]`;
-      this.command = {
-        title: 'Navigate',
-        command: Commands.NAVIGATE_TO_LOCATION,
-        arguments: [ this ]
-      };
+      if (location.exists) {
+        if (location.codeMatches) {
+          this.description = `[${location.textRange.startLine}, ${location.textRange.startLineOffset}]`;
+        } else {
+          this.description = '(local code does not match)';
+        }
+        this.command = {
+          title: 'Navigate',
+          command: Commands.NAVIGATE_TO_LOCATION,
+          arguments: [ this ]
+        };
+      } else {
+        this.description = '(unreachable in local code)';
+      }
     } else {
-      this.description = `(unreachable in local code)`;
+      this.description = '(unreachable in local code)';
     }
     this.parent = parent;
     this.location = location;
