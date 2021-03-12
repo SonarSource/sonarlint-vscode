@@ -41,7 +41,7 @@ const SELECTED_SECONDARY_LOCATION_DECORATION = vscode.window.createTextEditorDec
 });
 
 
-class IssueItem extends vscode.TreeItem {
+export class IssueItem extends vscode.TreeItem {
   readonly children: FlowItem[] | LocationItem[];
 
   constructor(issue: Issue) {
@@ -69,7 +69,7 @@ class IssueItem extends vscode.TreeItem {
   }
 }
 
-class FlowItem extends vscode.TreeItem {
+export class FlowItem extends vscode.TreeItem {
   readonly parent: LocationTreeItem;
   readonly children: (LocationItem | FileItem)[];
 
@@ -109,7 +109,7 @@ class FlowItem extends vscode.TreeItem {
   }
 }
 
-class FileItem extends vscode.TreeItem {
+export class FileItem extends vscode.TreeItem {
   readonly children: LocationItem[];
   readonly parent: FlowItem;
 
@@ -127,7 +127,7 @@ class FileItem extends vscode.TreeItem {
   }
 }
 
-class LocationItem extends vscode.TreeItem {
+export class LocationItem extends vscode.TreeItem {
   readonly parent: LocationParentItem;
   readonly location: Location;
   readonly index: number;
@@ -297,4 +297,3 @@ function isValidRange(textRange: vscode.Range, document: vscode.TextDocument) {
   const validatedRange = document.validateRange(textRange);
   return textRange.isEqual(validatedRange);
 }
-
