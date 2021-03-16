@@ -124,3 +124,7 @@ export interface Issue {
   ruleKey: string;
   flows: Flow[];
 }
+
+export namespace ShowTaintVulnerabilityRequest {
+  export const type = new lsp.RequestType<Issue, void, void>('sonarlint/showTaintVulnerability');
+}

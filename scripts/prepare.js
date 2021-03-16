@@ -23,7 +23,7 @@ if (!fs.existsSync('analyzers')) {
 }
 
 jarDependencies.map(dep => {
-  downloadIfNeeded(artifactUrl(dep), dep.output);
+   downloadIfNeeded(artifactUrl(dep), dep.output);
 });
 
 function artifactUrl(dep) {

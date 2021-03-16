@@ -161,7 +161,7 @@ type ChildItem = FlowItem | FileItem | LocationItem;
 
 type LocationParentItem = IssueItem | FlowItem | FileItem;
 
-type LocationTreeItem = IssueItem | ChildItem;
+export type LocationTreeItem = IssueItem | ChildItem;
 
 export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationTreeItem> {
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<LocationTreeItem | undefined>();

@@ -21,13 +21,14 @@ import {
   showSecurityHotspot
 } from './hotspots';
 import { getJavaConfig, installClasspathListener } from './java';
-import { navigateToLocation, SecondaryLocationsTree } from './locations';
+import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './locations';
 import * as protocol from './protocol';
 import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
 import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
+import { Issue } from './protocol';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -51,6 +52,8 @@ const DOCUMENT_SELECTOR = [
 
 let sonarlintOutput: VSCode.OutputChannel;
 let ruleDescriptionPanel: VSCode.WebviewPanel;
+let secondaryLocationsTree: SecondaryLocationsTree;
+let issueLocationsView: VSCode.TreeView<LocationTreeItem>;
 let languageClient: SonarLintExtendedLanguageClient;
 
 export function logToSonarLintOutput(message) {
@@ -272,20 +275,12 @@ export function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allRulesView);
 
-  const secondaryLocationsTree = new SecondaryLocationsTree();
-  const issueLocationsView = VSCode.window.createTreeView('SonarLint.IssueLocations', {
+  secondaryLocationsTree = new SecondaryLocationsTree();
+  issueLocationsView = VSCode.window.createTreeView('SonarLint.IssueLocations', {
     treeDataProvider: secondaryLocationsTree
   });
   context.subscriptions.push(issueLocationsView);
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(
-      Commands.SHOW_ALL_LOCATIONS,
-      issue => {
-        secondaryLocationsTree.showAllLocations(issue);
-        issueLocationsView.reveal(secondaryLocationsTree.getChildren(null)[0]);
-      }
-    )
-  );
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
   context.subscriptions.push(
     VSCode.commands.registerCommand(
       Commands.CLEAR_LOCATIONS,
@@ -410,6 +405,12 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     }
   );
   languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
+  languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
+}
+
+async function showAllLocations(issue: Issue) {
+  await secondaryLocationsTree.showAllLocations(issue);
+  issueLocationsView.reveal(secondaryLocationsTree.getChildren(null)[0]);
 }
 
 function onConfigurationChange() {
