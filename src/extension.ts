@@ -7,6 +7,7 @@
 'use strict';
 import * as ChildProcess from 'child_process';
 import * as FS from 'fs';
+import { DateTime } from 'luxon';
 import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
@@ -28,7 +29,6 @@ import { computeRuleDescPanelContent } from './rulepanel';
 import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
-import { Issue } from './protocol';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -281,13 +281,7 @@ export function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(issueLocationsView);
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(
-      Commands.CLEAR_LOCATIONS,
-      secondaryLocationsTree.hideLocations,
-      secondaryLocationsTree
-    )
-  );
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_LOCATIONS, clearLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.NAVIGATE_TO_LOCATION, navigateToLocation));
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
@@ -408,9 +402,20 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
 }
 
-async function showAllLocations(issue: Issue) {
+async function showAllLocations(issue: protocol.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);
+  if (issue.creationDate) {
+    const createdAgo = DateTime.fromISO(issue.creationDate).toRelative({ locale: 'en' });
+    issueLocationsView.message = `Analyzed ${createdAgo} on '${issue.connectionId}'`;
+  } else {
+    issueLocationsView.message = null;
+  }
   issueLocationsView.reveal(secondaryLocationsTree.getChildren(null)[0]);
+}
+
+function clearLocations() {
+  secondaryLocationsTree.hideLocations();
+  issueLocationsView.message = null;
 }
 
 function onConfigurationChange() {

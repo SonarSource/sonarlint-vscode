@@ -122,6 +122,8 @@ export interface Issue {
   message: string;
   severity: string;
   ruleKey: string;
+  connectionId?: string;
+  creationDate?: string;
   flows: Flow[];
 }
 
