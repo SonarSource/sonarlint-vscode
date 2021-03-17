@@ -405,7 +405,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 async function showAllLocations(issue: protocol.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);
   if (issue.creationDate) {
-    const createdAgo = DateTime.fromISO(issue.creationDate).toRelative({ locale: 'en' });
+    const createdAgo = DateTime.fromISO(issue.creationDate).toLocaleString(DateTime.DATETIME_MED);
     issueLocationsView.message = `Analyzed ${createdAgo} on '${issue.connectionId}'`;
   } else {
     issueLocationsView.message = null;
