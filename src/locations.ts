@@ -257,12 +257,22 @@ function buildMainDecorations(item: LocationItem, document: vscode.TextDocument)
 }
 
 function buildSiblingDecorations(item: LocationItem, document: vscode.TextDocument) {
-  return (item.parent.children as LocationItem[])
+  const locationsInSameFile = item.parent instanceof FileItem ?
+    (item.parent.parent.children as FileItem[])
+      .filter(f => hasSameNullSafeResourceUri(f, item.parent as FileItem))
+      .map(f => f.children)
+      .reduce((acc, cur) => acc.concat(cur), []) :
+    (item.parent.children as LocationItem[]);
+  return locationsInSameFile
     .filter(i => i !== item)
-    .filter(i => i.location.uri === item.location.uri)
     .filter(i => i.location.textRange)
     .map(i => buildDecoration(i, document))
     .filter(d => d);
+}
+
+function hasSameNullSafeResourceUri(f1: FileItem, f2: FileItem) {
+  return f1.resourceUri === null && f2.resourceUri === null
+    || f1.resourceUri !== null && f2.resourceUri !== null && f1.resourceUri.toString() === f2.resourceUri.toString();
 }
 
 function buildDecoration(item: LocationItem, document: vscode.TextDocument) {
