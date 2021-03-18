@@ -4,6 +4,7 @@
 * Highlight taint vulnerabilities in connected mode
 * Update Python analyzer 3.2 -> [3.3](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16644), 2 new vulnerability detection rules
 * Update PHP analyzer 3.14 -> [3.15](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16629), 3 new vulnerability detection rules
+* Update Java analyzer 6.11 -> [6.12](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16623) -> [6.13](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16653), support for Java 15, 8 new rules
 
 ## 1.20.0
 
