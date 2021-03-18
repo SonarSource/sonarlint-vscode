@@ -2,6 +2,7 @@
 
 * Show secondary locations of issues in a dedicated view
 * Highlight taint vulnerabilities in connected mode
+* Update Python analyzer 3.2 -> [3.3](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16644), 2 new vulnerability detection rules
 
 ## 1.20.0
 
