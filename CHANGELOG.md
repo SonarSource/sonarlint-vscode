@@ -1,3 +1,8 @@
+## 1.21.0
+
+* Show secondary locations of issues in a dedicated view
+* Highlight taint vulnerabilities in connected mode
+
 ## 1.20.0
 
 * Review a Security Hotspot within its context in connected mode with SonarQube
