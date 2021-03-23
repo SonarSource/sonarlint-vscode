@@ -22,6 +22,10 @@
       },
       "show_hotspot": {
             "requests_count": 3
+      },
+      "taint_vulnerabilities": {
+            "investigated_remotely_count": 1,
+            "investigated_locally_count": 4
       }
 }
 ```
