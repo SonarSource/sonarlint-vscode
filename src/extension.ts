@@ -230,11 +230,15 @@ export function activate(context: VSCode.ExtensionContext) {
 
   const tsPath = findTypeScriptLocation();
 
+  const pythonWatcher = VSCode.workspace.createFileSystemWatcher('**/*.py');
+  context.subscriptions.push(pythonWatcher);
+
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
-      configurationSection: 'sonarlint'
+      configurationSection: 'sonarlint',
+      fileEvents: pythonWatcher
     },
     uriConverters: {
       code2Protocol: code2ProtocolConverter,
