@@ -5,13 +5,12 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
+import * as CompareVersions from 'compare-versions';
 import * as VSCode from 'vscode';
 import { Disposable } from 'vscode-languageclient';
-import * as CompareVersions from 'compare-versions';
-
+import { SonarLintExtendedLanguageClient } from './client';
 import { logToSonarLintOutput } from './extension';
 import { GetJavaConfigResponse } from './protocol';
-import { SonarLintExtendedLanguageClient } from './client';
 
 let classpathChangeListener: Disposable;
 let serverModeListener: Disposable;

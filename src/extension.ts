@@ -11,7 +11,7 @@ import { DateTime } from 'luxon';
 import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient';
+import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
 import {
