@@ -210,7 +210,7 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
   }
 
   private notifyRootChanged() {
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
   }
 
   getTreeItem(element: LocationTreeItem): vscode.TreeItem {
