@@ -145,7 +145,7 @@ stages:
       strategy:
         matrix:
           oldest_supported:
-            VSCODE_VERSION: '1.41.0'
+            VSCODE_VERSION: '1.52.0'
           stable:
             VSCODE_VERSION: 'stable'
           insiders:
