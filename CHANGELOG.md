@@ -1,3 +1,7 @@
+## 1.22.0
+
+* Update Java analyzer 6.13 -> [6.14](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16672) -> [6.15](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16700), 6 new rules, fewer FPs and FNs, rule improvements
+
 ## 1.21.0
 
 * Show secondary locations of issues in a dedicated view
