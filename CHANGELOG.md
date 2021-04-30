@@ -1,6 +1,8 @@
 ## 1.22.0
 
 * Update Java analyzer 6.13 -> [6.14](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16672) -> [6.15](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16700), 6 new rules, fewer FPs and FNs, rule improvements
+* Update Python analyzer 3.3 -> [3.4](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16719) -> [3.4.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16762), dependency upgrades
+
 
 ## 1.21.0
 
