@@ -59,7 +59,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
           request(url)
             .on('error', function (err) {
-              throw error;
+              throw err;
             })
             .on('response', function (response) {
               if (response.statusCode !== HTTP_OK) {

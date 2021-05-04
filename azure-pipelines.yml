@@ -166,7 +166,7 @@ stages:
             import json
             with open('package.json') as packageJsonFile:
               packageJson = json.load(packageJsonFile)
-              print("##vso[task.setvariable variable=PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', '-build.$(Build.BuildId)'))
+              print("##vso[task.setvariable variable=PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', '+$(Build.BuildId)'))
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:

@@ -33,7 +33,7 @@ gulp.task('update-version', function () {
   if (version.endsWith('-SNAPSHOT') && buildNumber) {
     return gulp
       .src('./package.json')
-      .pipe(bump({ version: version.replace('-SNAPSHOT', `-build.${buildNumber}`) }))
+      .pipe(bump({ version: version.replace('-SNAPSHOT', `+${buildNumber}`) }))
       .pipe(gulp.dest('./'));
   } else {
     gutil.log(`Not modifying version ${version} with build number ${buildNumber}`);
@@ -44,7 +44,7 @@ gulp.task('update-version', function () {
 gulp.task('package', gulp.series('clean', 'update-version', vsce.createVSIX));
 
 function getPackageJSON() {
-  return JSON.parse(fs.readFileSync('package.json'));
+  return JSON.parse(fs.readFileSync('package.json').toString());
 }
 
 const hashes = {
@@ -99,7 +99,7 @@ gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_BUILDID;
-  const json = buildInfo(name, version, buildNumber, hashes);
+  const json = buildInfo(name, version, buildNumber);
   return request
     .put(
       {
@@ -121,7 +121,7 @@ gulp.task(
   gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
 );
 
-function buildInfo(name, version, buildNumber, hashes) {
+function buildInfo(name, version, buildNumber) {
   const {
     SYSTEM_TEAMPROJECTID,
     BUILD_BUILDID,
