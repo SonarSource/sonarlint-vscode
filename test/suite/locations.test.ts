@@ -21,6 +21,10 @@ function uriStringFor(...fragments: string[]) {
 
 suite('locations', () => {
 
+  teardown(async () => {
+    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+  });
+
   test('should initialize with empty tree', () => {
     const underTest = new SecondaryLocationsTree();
 
