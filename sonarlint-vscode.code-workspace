@@ -5,6 +5,9 @@
 	},
 	{
 		"path": "its"
+	},
+	{
+		"path": "dogfood"
 	}
 ],
   "settings": {
