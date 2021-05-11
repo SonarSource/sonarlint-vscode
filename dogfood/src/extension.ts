@@ -8,6 +8,7 @@
 import * as fs from 'fs';
 import fetch from 'node-fetch';
 import * as path from 'path';
+import * as semver from 'semver';
 import * as vscode from 'vscode';
 
 const CONFIG_SECTION = 'sonarlint-dogfood';
@@ -30,25 +31,11 @@ export function activate(context: vscode.ExtensionContext) {
   statusBarItem.command = COMMAND_CHECK_NOW;
   context.subscriptions.push(statusBarItem);
 
-  context.subscriptions.push(vscode.commands.registerCommand(COMMAND_CHECK_NOW, async () => {
-    if (checkSetTimeout) {
-      clearTimeout(checkSetTimeout);
-    }
-    statusBar.setStatus(Status.CHECKING);
-    try {
-      await checkUpdate();
-    } catch (e) {
-      console.error(e);
-      statusBar.setStatus(Status.ERROR);
-    } finally {
-      const periodInSeconds = vscode.workspace.getConfiguration(CONFIG_SECTION).get('check.periodInSeconds') as number;
-      checkSetTimeout = setTimeout(() => vscode.commands.executeCommand(COMMAND_CHECK_NOW), periodInSeconds * 1000);
-    }
-  }));
+  context.subscriptions.push(vscode.commands.registerCommand(COMMAND_CHECK_NOW, checkUpdateNow));
 
   vscode.workspace.onDidChangeConfiguration(e => {
     if(e.affectsConfiguration(CONFIG_SECTION)) {
-      const configuration = vscode.workspace.getConfiguration(CONFIG_SECTION);
+      const configuration = getDogfoodConfiguration();
       if (configuration.get('check.disable')) {
         statusBar.setStatus(Status.DISABLED);
         if (checkSetTimeout) {
@@ -61,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  if (!vscode.workspace.getConfiguration(CONFIG_SECTION).get('check.disable')) {
+  if (!getDogfoodConfiguration().get('check.disable')) {
     vscode.commands.executeCommand(COMMAND_CHECK_NOW);
   } else {
     statusBar.setStatus(Status.DISABLED);
@@ -95,6 +82,26 @@ class StatusBar {
   }
 }
 
+function getDogfoodConfiguration() {
+  return vscode.workspace.getConfiguration(CONFIG_SECTION);
+}
+
+async function checkUpdateNow() {
+  if (checkSetTimeout) {
+    clearTimeout(checkSetTimeout);
+  }
+  statusBar.setStatus(Status.CHECKING);
+  try {
+    await checkUpdate();
+  } catch (e) {
+    console.error(e);
+    statusBar.setStatus(Status.ERROR);
+  } finally {
+    const periodInSeconds = vscode.workspace.getConfiguration(CONFIG_SECTION).get('check.periodInSeconds') as number;
+    checkSetTimeout = setTimeout(() => vscode.commands.executeCommand(COMMAND_CHECK_NOW), periodInSeconds * 1000);
+  }
+}
+
 async function checkUpdate() {
   const dogfoodFile = await fetch(ARTIFACTORY_DOGFOOD_URL);
   if (dogfoodFile.status === 200) {
@@ -102,7 +109,7 @@ async function checkUpdate() {
     const installedSonarLint = vscode.extensions.getExtension('SonarSource.sonarlint-vscode');
     if (
       installedSonarLint === undefined ||
-      semverPlusBuildCompare(installedSonarLint.packageJSON.version, version) < 0
+      semver.compareBuild(installedSonarLint.packageJSON.version, version) < 0
     ) {
       await updateAvailable(version, url, installedSonarLint);
     }
@@ -148,38 +155,6 @@ async function downloadVsix(version: string, url: string) {
     console.debug('Created VSIX at ', vsixPath);
     return vscode.Uri.file(vsixPath);
   });
-}
-
-const SONARLINT_SEMVER_REGEXP = /(?<Major>\d+)\.(?<Minor>\d+)\.(?<Patch>\d+)(?:\+(?<Build>\d+))?/;
-
-export function semverPlusBuildCompare(version1: string, version2: string) {
-  const match1 = version1.match(SONARLINT_SEMVER_REGEXP);
-  const match2 = version2.match(SONARLINT_SEMVER_REGEXP);
-  if (! match1 || ! match2) {
-    throw new Error('Both versions should match X.Y.Z(+BUILD)');
-  }
-  const majorCompare = integerCompare(match1.groups!.Major, match2.groups!.Major);
-  if (majorCompare !== 0) {
-    return majorCompare;
-  }
-  const minorCompare = integerCompare(match1.groups!.Minor, match2.groups!.Minor);
-  if (minorCompare !== 0) {
-    return minorCompare;
-  }
-  const patchCompare = integerCompare(match1.groups!.Patch, match2.groups!.Patch);
-  if (patchCompare !== 0) {
-    return patchCompare;
-  }
-  return integerCompare(match1.groups!.Build, match2.groups!.Build);
-}
-
-function integerCompare(arg1: string, arg2: string) {
-  const num1 = Number.parseInt(arg1);
-  const num2 = Number.parseInt(arg2);
-  if(num1 === num2) {
-    return 0;
-  }
-  return (num1 < num2) ? -1 : 1;
 }
 
 export function deactivate() {
