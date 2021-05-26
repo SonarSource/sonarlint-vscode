@@ -1,5 +1,6 @@
 ## 2.0.0
 
+* Update Python analyzer 3.4 -> [3.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16725), improve precision thanks to cross-module resolution of symbols
 * Drop support of SonarQube < 7.9 for connected mode
 
 ## 1.22.0
