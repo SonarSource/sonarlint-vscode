@@ -1,3 +1,7 @@
+## 2.0.0
+
+* Drop support of SonarQube < 7.9 for connected mode
+
 ## 1.22.0
 
 * Report "Blocker" and "Critical" issues at the "Warning" level
