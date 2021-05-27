@@ -57,6 +57,20 @@ async function main() {
       testErrors.push(testError);
     }
 
+    const pythonExtensionTestsPath = path.resolve(__dirname, './pythonSuite');
+    const pythonTestWorkspace = path.resolve(__dirname, '../../samples/workspace-python.code-workspace');
+    try {
+      await runTests({
+        // Use the specified `code` executable
+        vscodeExecutablePath,
+        extensionDevelopmentPath,
+        extensionTestsPath: pythonExtensionTestsPath,
+        launchArgs: [pythonTestWorkspace, `--user-data-dir=${userDataDir}`]
+      });
+    } catch (testError) {
+      testErrors.push(testError);
+    }
+
     const javaExtensionTestsPath = path.resolve(__dirname, './javaSuite');
     const javaTestWorkspace = path.resolve(__dirname, '../../samples/workspace-java.code-workspace');
 
