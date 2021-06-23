@@ -3,6 +3,8 @@
   "workbench.startupEditor": "none",
   // Disable telemetry pings to Microsoft
   "telemetry.enableTelemetry": false,
+  // Disable workspace trust check (1.57+)
+  "security.workspace.trust.enabled": false,
   // Force Java LS in Standard mode
   "java.server.launchMode": "Standard",
   // Enable auto import of Java projects
