@@ -8,8 +8,13 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const request = require('request');
+const dotenv = require('dotenv');
 
-const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
+dotenv.config();
+const user= process.env.ARTIFACTORY_API_USER;
+const apiKey= process.env.ARTIFACTORY_API_KEY;
+
+const repoxRoot = 'https://' + user + ':' + apiKey + '@repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
 
 const HTTP_OK = 200;
@@ -50,6 +55,7 @@ function downloadIfNeeded(url, dest) {
 function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!fs.existsSync(dest)) {
     request(url).pipe(fs.createWriteStream(dest));
+
   } else {
     fs.createReadStream(dest)
       .pipe(crypto.createHash('sha1').setEncoding('hex'))

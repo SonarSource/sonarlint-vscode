@@ -516,6 +516,8 @@
     "prepare": "node scripts/prepare.js"
   },
   "dependencies": {
+    "compare-versions": "3.6.0",
+    "dotenv": "^10.0.0",
     "expand-home-dir": "0.0.3",
     "find-java-home": "1.1.0",
     "follow-redirects": "1.13.0",
@@ -523,7 +525,6 @@
     "luxon": "1.26.0",
     "open": "7.3.0",
     "path-exists": "4.0.0",
-    "compare-versions": "3.6.0",
     "vscode-languageclient": "7.0.0"
   },
   "devDependencies": {

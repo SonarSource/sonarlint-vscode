@@ -10,3 +10,4 @@ coverage
 its/userdir
 !its/userdir/User
 !its/userdir/User/settings.json
+.env
