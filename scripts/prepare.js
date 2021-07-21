@@ -9,8 +9,11 @@ const fs = require('fs');
 const crypto = require('crypto');
 const request = require('request');
 
-const username = process.env.ARTIFACTORY_PRIVATE_READER_USERNAME;
-const password = process.env.ARTIFACTORY_PRIVATE_READER_PASSWORD;
+const {
+  ARTIFACTORY_PRIVATE_READER_USERNAME,
+  ARTIFACTORY_PRIVATE_READER_PASSWORD
+} = process.env;
+const auth = `${ARTIFACTORY_PRIVATE_READER_USERNAME}:${ARTIFACTORY_PRIVATE_READER_PASSWORD}`;
 
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
@@ -38,7 +41,7 @@ function downloadIfNeeded(url, dest) {
   if (url.startsWith('file:')) {
     fs.createReadStream(url.substring('file:'.length)).pipe(fs.createWriteStream(dest));
   } else {
-    request(url + '.sha1', (error, response, body) => {
+    request(url + '.sha1', { auth }, (error, response, body) => {
       if (error) {
         throw error;
       } else if (response.statusCode !== HTTP_OK) {
@@ -46,14 +49,13 @@ function downloadIfNeeded(url, dest) {
       } else {
         downloadIfChecksumMismatch(body, url, dest);
       }
-    })
-      .auth(username, password, true);
+    });
   }
 }
 
 function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!fs.existsSync(dest)) {
-    request(url).pipe(fs.createWriteStream(dest));
+    request(url, { auth }).pipe(fs.createWriteStream(dest));
 
   } else {
     fs.createReadStream(dest)
@@ -62,7 +64,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
         const sha1 = this.read();
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
-          request(url)
+          request(url, { auth })
             .on('error', function (err) {
               throw err;
             })
