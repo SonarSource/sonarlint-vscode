@@ -12,7 +12,7 @@ const request = require('request');
 const username = process.env.ARTIFACTORY_PRIVATE_READER_USERNAME;
 const password = process.env.ARTIFACTORY_PRIVATE_READER_PASSWORD;
 
-const repoxRoot = 'https://' + username + ':' + password + '@repox.jfrog.io/repox/sonarsource';
+const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
 
 const HTTP_OK = 200;
@@ -46,7 +46,8 @@ function downloadIfNeeded(url, dest) {
       } else {
         downloadIfChecksumMismatch(body, url, dest);
       }
-    });
+    })
+      .auth(username, password, true);
   }
 }
 
