@@ -49,6 +49,8 @@ stages:
         env:
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
+          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
         inputs:
           gulpjs: node_modules/.bin/gulp
           targets: deploy
@@ -109,6 +111,9 @@ stages:
             sonar.coverage.exclusions=gulpfile.js, webpack.config.js, scripts/**
       - task: Npm@1
         displayName: 'Install NPM dependencies'
+        env:
+          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
         inputs:
           command: ci
       - task: Npm@1
