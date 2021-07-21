@@ -8,13 +8,11 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const request = require('request');
-const dotenv = require('dotenv');
 
-dotenv.config();
-const user= process.env.ARTIFACTORY_API_USER;
-const apiKey= process.env.ARTIFACTORY_API_KEY;
+const username = process.env.ARTIFACTORY_PRIVATE_READER_USERNAME;
+const password = process.env.ARTIFACTORY_PRIVATE_READER_PASSWORD;
 
-const repoxRoot = 'https://' + user + ':' + apiKey + '@repox.jfrog.io/repox/sonarsource';
+const repoxRoot = 'https://' + username + ':' + password + '@repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
 
 const HTTP_OK = 200;

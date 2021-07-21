@@ -516,7 +516,6 @@
     "prepare": "node scripts/prepare.js"
   },
   "dependencies": {
-    "dotenv": "^10.0.0",
     "expand-home-dir": "0.0.3",
     "find-java-home": "1.1.0",
     "follow-redirects": "1.13.0",
