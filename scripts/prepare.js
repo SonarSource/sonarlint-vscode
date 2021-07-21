@@ -13,7 +13,11 @@ const {
   ARTIFACTORY_PRIVATE_READER_USERNAME,
   ARTIFACTORY_PRIVATE_READER_PASSWORD
 } = process.env;
-const auth = `${ARTIFACTORY_PRIVATE_READER_USERNAME}:${ARTIFACTORY_PRIVATE_READER_PASSWORD}`;
+const auth = {
+  user: ARTIFACTORY_PRIVATE_READER_USERNAME,
+  pass: ARTIFACTORY_PRIVATE_READER_PASSWORD,
+  sendImmediate: true
+};
 
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
