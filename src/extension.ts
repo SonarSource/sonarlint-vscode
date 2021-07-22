@@ -385,6 +385,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
+  languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
   languageClient.onRequest(protocol.ShowSonarLintOutput.type,
     () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
   );
@@ -405,6 +406,40 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   );
   languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
   languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
+}
+
+async function isFileIgnoredForFolder(workspaceFolderPath: string, gitCommand: string): Promise<boolean> {
+  const {sout, serr} = await new Promise<{ sout: string, serr: string }>((resolve, reject) => {
+    ChildProcess.exec(
+        gitCommand,
+        {cwd: workspaceFolderPath},
+        (error: Error & { code?: 0 | 1 | 128 }, stdout, stderr) => {
+          if (error && (error.code !== 0 && error.code !== 1)) {
+            logToSonarLintOutput('Error on git gitCommand: ' + error);
+            reject(error);
+            return;
+          }
+          resolve({sout: stdout, serr: stderr});
+        }
+    );
+    if (serr) {
+      throw new Error(serr);
+    }
+  });
+  return Promise.resolve(sout.length > 0);
+}
+
+async function isIgnoredByScm(fileUri: string): Promise<boolean> {
+  const uriRelative = VSCode.workspace.asRelativePath(fileUri, false);
+  const command = `git check-ignore ${uriRelative}`;
+  let ignoredForAtLeastOneWorkspaceFolder = false;
+  for(const workspaceFolder of VSCode.workspace.workspaceFolders) {
+    const fileIgnoredForFolder = await isFileIgnoredForFolder(workspaceFolder.uri.fsPath, command);
+    if(fileIgnoredForFolder) {
+      ignoredForAtLeastOneWorkspaceFolder = true;
+    }
+  }
+  return Promise.resolve(ignoredForAtLeastOneWorkspaceFolder);
 }
 
 async function showAllLocations(issue: protocol.Issue) {
