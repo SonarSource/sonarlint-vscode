@@ -2,7 +2,7 @@
   {
     "groupId": "org.sonarsource.sonarlint.ls",
     "artifactId": "sonarlint-language-server",
-    "version": "1.10.0.32540",
+    "version": "1.11.0.34755",
     "output": "server/sonarlint-ls.jar"
   },
   {
@@ -34,5 +34,11 @@
     "artifactId": "sonar-html-plugin",
     "version": "3.4.0.2754",
     "output": "analyzers/sonarhtml.jar"
+  },
+  {
+    "groupId": "com.sonarsource.secrets",
+    "artifactId": "sonar-secrets-plugin",
+    "version": "1.0.0.34655",
+    "output": "analyzers/sonarsecrets.jar"
   }
 ]
