@@ -422,10 +422,12 @@ async function isFileIgnoredForFolder(workspaceFolderPath: string, gitCommand: s
           resolve({sout: stdout, serr: stderr});
         }
     );
-    if (serr) {
-      throw new Error(serr);
-    }
   });
+
+  if (serr) {
+    throw new Error(serr);
+  }
+
   return Promise.resolve(sout.length > 0);
 }
 
