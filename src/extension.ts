@@ -435,13 +435,24 @@ async function isIgnoredByScm(fileUri: string): Promise<boolean> {
   const uriRelative = VSCode.workspace.asRelativePath(fileUri, false);
   const command = `git check-ignore ${uriRelative}`;
   let ignoredForAtLeastOneWorkspaceFolder = false;
-  for(const workspaceFolder of VSCode.workspace.workspaceFolders) {
+  const workspaceFolders = VSCode.workspace.workspaceFolders;
+  if (!isIterable(workspaceFolders)) {
+    return false;
+  }
+  for (const workspaceFolder of workspaceFolders) {
     const fileIgnoredForFolder = await isFileIgnoredForFolder(workspaceFolder.uri.fsPath, command);
-    if(fileIgnoredForFolder) {
+    if (fileIgnoredForFolder) {
       ignoredForAtLeastOneWorkspaceFolder = true;
     }
   }
   return Promise.resolve(ignoredForAtLeastOneWorkspaceFolder);
+}
+
+function isIterable(obj): boolean {
+  if (obj == null) {
+    return false;
+  }
+  return typeof obj[Symbol.iterator] === 'function';
 }
 
 async function showAllLocations(issue: protocol.Issue) {
