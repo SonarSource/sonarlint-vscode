@@ -442,7 +442,7 @@ export async function performIsIgnoredCheck(fileUri: string,
                                                 Promise<boolean>): Promise<boolean> {
   const parsedFileUri = VSCode.Uri.parse(fileUri);
   const workspaceFolder = VSCode.workspace.getWorkspaceFolder(parsedFileUri);
-  if(workspaceFolder == null) {
+  if (workspaceFolder == null) {
     return Promise.resolve(false);
   }
   const relativeFileUri = VSCode.workspace.asRelativePath(parsedFileUri, false);
