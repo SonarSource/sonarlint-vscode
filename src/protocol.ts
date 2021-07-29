@@ -29,6 +29,10 @@ export namespace GetJavaConfigRequest {
   export const type = new lsp.RequestType<string, GetJavaConfigResponse, void>('sonarlint/getJavaConfig');
 }
 
+export namespace ScmCheckRequest {
+  export const type = new lsp.RequestType<string, boolean, void>('sonarlint/isIgnoredByScm');
+}
+
 export interface GetJavaConfigResponse {
   projectRoot: string;
   sourceLevel: string;

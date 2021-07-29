@@ -7,13 +7,13 @@
 'use strict';
 import * as ChildProcess from 'child_process';
 import * as FS from 'fs';
-import { DateTime } from 'luxon';
+import {DateTime} from 'luxon';
 import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
-import { SonarLintExtendedLanguageClient } from './client';
-import { Commands } from './commands';
+import {LanguageClientOptions, StreamInfo} from 'vscode-languageclient/node';
+import {SonarLintExtendedLanguageClient} from './client';
+import {Commands} from './commands';
 import {
   hideSecurityHotspot,
   HotspotsCodeActionProvider,
@@ -21,14 +21,15 @@ import {
   showHotspotDescription,
   showSecurityHotspot
 } from './hotspots';
-import { getJavaConfig, installClasspathListener } from './java';
-import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './locations';
+import {getJavaConfig, installClasspathListener} from './java';
+import {LocationTreeItem, navigateToLocation, SecondaryLocationsTree} from './locations';
 import * as protocol from './protocol';
-import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
-import { computeRuleDescPanelContent } from './rulepanel';
-import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
-import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
+import {installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements} from './requirements';
+import {computeRuleDescPanelContent} from './rulepanel';
+import {AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode} from './rules';
+import {code2ProtocolConverter, protocol2CodeConverter} from './uri';
 import * as util from './util';
+import {GitExtension} from "./git";
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -385,6 +386,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
+  languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
   languageClient.onRequest(protocol.ShowSonarLintOutput.type,
     () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
   );
@@ -405,6 +407,53 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   );
   languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
   languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
+}
+
+async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promise<boolean> {
+  const {sout, serr} = await new Promise<{ sout: string, serr: string }>((resolve, reject) => {
+    ChildProcess.exec(
+        gitCommand,
+        {cwd: workspaceFolderPath},
+        (error: Error & { code?: 0 | 1 | 128 }, stdout, stderr) => {
+          if (error && (error.code !== 0 && error.code !== 1)) {
+            logToSonarLintOutput('Error on git gitCommand: ' + error);
+            reject(error);
+            return;
+          }
+          resolve({sout: stdout, serr: stderr});
+        }
+    );
+  });
+
+  if (serr) {
+    throw new Error(serr);
+  }
+
+  return Promise.resolve(sout.length > 0);
+}
+
+
+async function isIgnoredByScm(fileUri: string): Promise<boolean> {
+  return performIsIgnoredCheck(fileUri, isIgnored);
+}
+
+export async function performIsIgnoredCheck(fileUri: string,
+                                            scmCheck: (workspaceFolderPath: string, gitCommand: string) =>
+                                                Promise<boolean>): Promise<boolean> {
+  const parsedFileUri = VSCode.Uri.parse(fileUri);
+  const workspaceFolder = VSCode.workspace.getWorkspaceFolder(parsedFileUri);
+  if (workspaceFolder == null) {
+    return Promise.resolve(false);
+  }
+  const relativeFileUri = VSCode.workspace.asRelativePath(parsedFileUri, false);
+  const gitExtension = VSCode.extensions.getExtension<GitExtension>('vscode.git').exports;
+  if (gitExtension == null) {
+    return Promise.resolve(false);
+  }
+  const gitPath = gitExtension.getAPI(1).git.path;
+  const command = `"${gitPath}" check-ignore ${relativeFileUri}`;
+  const fileIgnoredForFolder = await scmCheck(workspaceFolder.uri.fsPath, command);
+  return Promise.resolve(fileIgnoredForFolder);
 }
 
 async function showAllLocations(issue: protocol.Issue) {

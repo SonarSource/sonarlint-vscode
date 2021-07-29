@@ -7,10 +7,12 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import * as util from '../../src/util';
+import * as FS from 'fs';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
+import {performIsIgnoredCheck} from "../../src/extension";
 
 const sampleFolderLocation = '../../../test/samples/';
 
@@ -38,6 +40,28 @@ suite('Extension Test Suite', () => {
     assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable.");
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  }).timeout(60 * 1000);
+
+  test('consider file not ignored if it is not in workspace', async function () {
+    FS.promises.mkdtemp(path.join('../../../', 'tmpdir')).then((folder) => {
+      const filePath = folder + 'main.js';
+      FS.promises.writeFile(filePath, 'var i = 0;').then(() => {
+        const isIgnored = performIsIgnoredCheck(folder + '/main.js', () => Promise.resolve(true));
+        assert.equal(isIgnored, false);
+      })
+    });
+
+  }).timeout(60 * 1000);
+
+  test('should return git command results for files from workspace', async function () {
+    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
+
+    const ignored = await performIsIgnoredCheck(fileUri.toString(), () => Promise.resolve(true));
+    const notIgnored = await performIsIgnoredCheck(fileUri.toString(), () => Promise.resolve(false));
+
+    assert.equal(ignored, true);
+    assert.equal(notIgnored, false);
+
   }).timeout(60 * 1000);
 
   async function waitForSonarLintDiagnostics(fileUri) {
