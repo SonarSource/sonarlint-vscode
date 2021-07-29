@@ -137,11 +137,13 @@ function languageServerCommand(
   const vmargs = getSonarLintConfiguration().get('ls.vmargs', '');
   parseVMargs(params, vmargs);
   params.push('-jar', serverJar, `${port}`);
+  params.push('-analyzers');
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar')));
+  params.push('-extraAnalyzers');
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar')));
   return { command: javaExecutablePath, args: params };
 }
