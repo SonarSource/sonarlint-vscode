@@ -34,6 +34,7 @@ import {GitExtension} from "./git";
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
+const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', language: 'java' },
@@ -257,7 +258,8 @@ export function activate(context: VSCode.ExtensionContext) {
         productVersion: util.packageJson.version,
         appName: VSCode.env.appName,
         workspaceName: VSCode.workspace.name,
-        typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined
+        typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined,
+        firstSecretDetected: context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY) === 'true' ? 'true' : 'false'
       };
     },
     outputChannel: sonarlintOutput,
@@ -359,6 +361,13 @@ export function activate(context: VSCode.ExtensionContext) {
   installClasspathListener(languageClient);
 }
 
+async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionContext) {
+  VSCode.window.showWarningMessage("SonarLint detected some secrets in one of the open files.\n" +
+      "We strongly advise you to review those secrets and ensure they are not committed into repositories. " +
+      "Please refer to the SonarLint tool window for more information.");
+  context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, 'true');
+}
+
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.ShowRuleDescriptionRequest.type, params => {
     if (!ruleDescriptionPanel) {
@@ -389,6 +398,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
+  languageClient.onRequest(protocol.ShowNotificationForFirstSecretsIssueRequest.type, () => showNotificationForFirstSecretsIssue(context));
   languageClient.onRequest(protocol.ShowSonarLintOutput.type,
     () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
   );
