@@ -224,6 +224,10 @@ function toggleRule(level: ConfigLevel) {
   };
 }
 
+function openProblemsView() {
+  VSCode.commands.executeCommand('workbench.panel.markers.view.focus');
+}
+
 export function activate(context: VSCode.ExtensionContext) {
   currentConfig = getSonarLintConfiguration();
 
@@ -293,6 +297,7 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_LOCATIONS, clearLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.NAVIGATE_TO_LOCATION, navigateToLocation));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.OPEN_PROBLEMS_VIEW, openProblemsView));
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')));
@@ -364,7 +369,12 @@ export function activate(context: VSCode.ExtensionContext) {
 async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionContext) {
   VSCode.window.showWarningMessage("SonarLint detected some secrets in one of the open files.\n" +
       "We strongly advise you to review those secrets and ensure they are not committed into repositories. " +
-      "Please refer to the SonarLint tool window for more information.");
+      "Please refer to the Problems for more information.", 'Show Problems View')
+      .then(action => {
+        if (action === 'Show Problems View') {
+          VSCode.commands.executeCommand(Commands.OPEN_PROBLEMS_VIEW);
+        }
+      });
   context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, 'true');
 }
 
