@@ -33,6 +33,10 @@ export namespace ScmCheckRequest {
   export const type = new lsp.RequestType<string, boolean, void>('sonarlint/isIgnoredByScm');
 }
 
+export namespace ShowNotificationForFirstSecretsIssueRequest {
+  export const type = new lsp.RequestType<void, void, void>('sonarlint/showNotificationForFirstSecretsIssue');
+}
+
 export interface GetJavaConfigResponse {
   projectRoot: string;
   sourceLevel: string;
