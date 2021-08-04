@@ -3,6 +3,7 @@
 * Update JS/TS analyzer 7.4.2 -> [7.4.3](https://github.com/SonarSource/SonarJS/releases/tag/7.4.3.15529) -> [7.4.4](https://github.com/SonarSource/SonarJS/releases/tag/7.4.4.15624) -> [8.0.0](https://github.com/SonarSource/SonarJS/releases/tag/8.0.0.15689) -> [8.0.1](https://github.com/SonarSource/SonarJS/releases/tag/8.1.0.15788), bug fixes and improvements
 * Update Java analyzer 6.15.1 -> [7.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16741) -> [7.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16821) -> [7.2](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16846), 10 new rules, better Java 16 support, many bug fixes and improvements
 * Update PHP analyzer 3.17.0 -> [3.18.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16800), bug fixes and improvements
+* Update Python analyzer 3.5.0 -> [3.6.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16809), better analysis for medium-sized projects and other improvements
 
 ## 2.0.0
 
