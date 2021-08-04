@@ -71,11 +71,7 @@ function downloadIfNeeded(url, dest) {
 
 function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!fs.existsSync(dest)) {
-    if (credentialsDefined) {
-      request(url, { auth }).pipe(fs.createWriteStream(dest));
-    } else {
-      request(url).pipe(fs.createWriteStream(dest));
-    }
+    sendRequest(url).pipe(fs.createWriteStream(dest));
   } else {
     fs.createReadStream(dest)
       .pipe(crypto.createHash('sha1').setEncoding('hex'))
