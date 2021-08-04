@@ -19,6 +19,8 @@ const auth = {
   pass: ARTIFACTORY_PRIVATE_READER_PASSWORD,
   sendImmediate: true
 };
+const credentialsDefined = ARTIFACTORY_PRIVATE_READER_USERNAME !== undefined
+    && ARTIFACTORY_PRIVATE_READER_PASSWORD !== undefined;
 
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
@@ -34,7 +36,11 @@ if (!fs.existsSync('analyzers')) {
 }
 
 jarDependencies.map(dep => {
-   downloadIfNeeded(artifactUrl(dep), dep.output);
+  if (dep.requiresCredentials && !credentialsDefined) {
+    console.info(`Skipping download of ${dep.artifactId}, no credentials`);
+    return;
+  }
+  downloadIfNeeded(artifactUrl(dep), dep.output);
 });
 
 function artifactUrl(dep) {
@@ -46,7 +52,7 @@ function downloadIfNeeded(url, dest) {
   if (url.startsWith('file:')) {
     fs.createReadStream(url.substring('file:'.length)).pipe(fs.createWriteStream(dest));
   } else {
-    request(url + '.sha1', { auth }, (error, response, body) => {
+    const callback = (error, response, body) => {
       if (error) {
         throw error;
       } else if (response.statusCode !== HTTP_OK) {
@@ -54,14 +60,18 @@ function downloadIfNeeded(url, dest) {
       } else {
         downloadIfChecksumMismatch(body, url, dest);
       }
-    });
+    };
+    if (credentialsDefined) {
+      request(url + '.sha1', {auth}, callback);
+    } else {
+      request(url + '.sha1', callback);
+    }
   }
 }
 
 function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!fs.existsSync(dest)) {
-    request(url, { auth }).pipe(fs.createWriteStream(dest));
-
+    sendRequest(url).pipe(fs.createWriteStream(dest));
   } else {
     fs.createReadStream(dest)
       .pipe(crypto.createHash('sha1').setEncoding('hex'))
@@ -69,7 +79,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
         const sha1 = this.read();
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
-          request(url, { auth })
+          sendRequest(url)
             .on('error', function (err) {
               throw err;
             })
@@ -81,5 +91,13 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
             .pipe(fs.createWriteStream(dest));
         }
       });
+  }
+}
+
+function sendRequest(url) {
+  if (credentialsDefined) {
+    return request(url, { auth });
+  } else {
+    return request(url);
   }
 }
