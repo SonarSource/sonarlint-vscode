@@ -8,25 +8,25 @@
   {
     "groupId": "org.sonarsource.javascript",
     "artifactId": "sonar-javascript-plugin",
-    "version": "7.4.2.15501",
+    "version": "8.1.0.15788",
     "output": "analyzers/sonarjs.jar"
   },
   {
     "groupId": "org.sonarsource.java",
     "artifactId": "sonar-java-plugin",
-    "version": "6.15.1.26025",
+    "version": "7.2.0.26923",
     "output": "analyzers/sonarjava.jar"
   },
   {
     "groupId": "org.sonarsource.php",
     "artifactId": "sonar-php-plugin",
-    "version": "3.17.0.7439",
+    "version": "3.18.0.7718",
     "output": "analyzers/sonarphp.jar"
   },
   {
     "groupId": "org.sonarsource.python",
     "artifactId": "sonar-python-plugin",
-    "version": "3.5.0.8244",
+    "version": "3.6.0.8488",
     "output": "analyzers/sonarpython.jar"
   },
   {
