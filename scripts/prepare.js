@@ -37,6 +37,7 @@ if (!fs.existsSync('analyzers')) {
 
 jarDependencies.map(dep => {
   if (dep.requiresCredentials && !credentialsDefined) {
+    console.info(`Skipping download of ${dep.artifactId}, no credentials`);
     return;
   }
   downloadIfNeeded(artifactUrl(dep), dep.output);
@@ -82,7 +83,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
         const sha1 = this.read();
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
-          request(url, { auth })
+          sendRequest(url)
             .on('error', function (err) {
               throw err;
             })
@@ -94,5 +95,13 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
             .pipe(fs.createWriteStream(dest));
         }
       });
+  }
+}
+
+function sendRequest(url) {
+  if (credentialsDefined) {
+    return request(url, { auth });
+  } else {
+    return request(url);
   }
 }
