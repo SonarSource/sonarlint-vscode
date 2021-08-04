@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Update JS/TS analyzer 7.4.2 -> [7.4.3](https://github.com/SonarSource/SonarJS/releases/tag/7.4.3.15529) -> [7.4.4](https://github.com/SonarSource/SonarJS/releases/tag/7.4.4.15624) -> [8.0.0](https://github.com/SonarSource/SonarJS/releases/tag/8.0.0.15689) -> [8.0.1](https://github.com/SonarSource/SonarJS/releases/tag/8.1.0.15788), bug fixes and improvements
+
 ## 2.0.0
 
 * Update Python analyzer 3.4 -> [3.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16725), improve precision thanks to cross-module resolution of symbols
