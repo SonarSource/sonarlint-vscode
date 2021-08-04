@@ -43,25 +43,23 @@ suite('Extension Test Suite', () => {
   }).timeout(60 * 1000);
 
   test('consider file not ignored if it is not in workspace', async function () {
-    FS.promises.mkdtemp(path.join('../../../', 'tmpdir')).then((folder) => {
-      const filePath = folder + 'main.js';
-      FS.promises.writeFile(filePath, 'var i = 0;').then(() => {
-        const isIgnored = performIsIgnoredCheck(folder + '/main.js', () => Promise.resolve(true));
-        assert.equal(isIgnored, false);
-      })
-    });
+    const folder = await FS.promises.mkdtemp(path.join('../../../', 'tmpdir'));
+    const filePath = folder + 'main.js';
+    await FS.promises.writeFile(filePath, 'var i = 0;');
 
+    const isIgnored = await performIsIgnoredCheck(folder + '/main.js', async () => true);
+
+    assert.strictEqual(isIgnored, false);
   }).timeout(60 * 1000);
 
   test('should return git command results for files from workspace', async function () {
     const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
 
-    const ignored = await performIsIgnoredCheck(fileUri.toString(), () => Promise.resolve(true));
-    const notIgnored = await performIsIgnoredCheck(fileUri.toString(), () => Promise.resolve(false));
+    const ignored = await performIsIgnoredCheck(fileUri.toString(), async () => true);
+    const notIgnored = await performIsIgnoredCheck(fileUri.toString(), async () => false);
 
-    assert.equal(ignored, true);
-    assert.equal(notIgnored, false);
-
+    assert.strictEqual(ignored, true);
+    assert.strictEqual(notIgnored, false);
   }).timeout(60 * 1000);
 
   async function waitForSonarLintDiagnostics(fileUri) {
