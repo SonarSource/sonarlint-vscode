@@ -26,6 +26,11 @@
       "taint_vulnerabilities": {
             "investigated_remotely_count": 1,
             "investigated_locally_count": 4
+      },
+      "rules": {
+        "default_disabled" : ["java:S2204", "java:S3751",  "java:S322", "java:S228" ],
+        "non_default_enabled" : ["java:S282", "java:S1415",  "java:S1234", "java:S222" ],
+        "raised_issues" : ["java:S318", "java:S500",  "java:S282"]
       }
 }
 ```
