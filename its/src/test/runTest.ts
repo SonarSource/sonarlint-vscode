@@ -57,6 +57,18 @@ async function main() {
       testErrors.push(testError);
     }
 
+    try {
+      await runTests({
+        // Use the specified `code` executable
+        vscodeExecutablePath,
+        extensionDevelopmentPath,
+        extensionTestsPath: path.resolve(__dirname, './secretsSuite'),
+        launchArgs: [path.resolve(__dirname, '../../samples/workspace-secrets.code-workspace'), `--user-data-dir=${userDataDir}`]
+      });
+    } catch (testError) {
+      testErrors.push(testError);
+    }
+
     const pythonExtensionTestsPath = path.resolve(__dirname, './pythonSuite');
     const pythonTestWorkspace = path.resolve(__dirname, '../../samples/workspace-python.code-workspace');
     try {
