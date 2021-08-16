@@ -26,22 +26,7 @@
   ],
   "qna": "https://community.sonarsource.com/c/help/sl",
   "activationEvents": [
-    "onLanguage:java",
-    "onLanguage:javascript",
-    "onLanguage:javascriptreact",
-    "onLanguage:typescript",
-    "onLanguage:typescriptreact",
-    "onLanguage:python",
-    "onLanguage:php",
-    "onLanguage:vue",
-    "onLanguage:html",
-    "onLanguage:jsp",
-    "onLanguage:apex",
-    "onLanguage:plsql",
-    "onLanguage:oraclesql",
-    "onCommand:SonarLint.UpdateAllBindings",
-    "onView:SonarLint.AllRules",
-    "onView:SonarLint.IssueLocations"
+    "onStartupFinished"
   ],
   "extensionDependencies": [
     "vscode.typescript-language-features"
