@@ -9,10 +9,10 @@ import * as vscode from 'vscode';
 
 const MAX_WAIT_DIAGNOSTICS_MS = 20000;
 
-export async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
+export async function waitForSonarLintDiagnostics(fileUri: vscode.Uri, timeout_ms: number = MAX_WAIT_DIAGNOSTICS_MS) {
   const startTime = new Date();
   let diags = getSonarLintDiagnostics(fileUri);
-  while (diags.length === 0 && new Date().getTime() - startTime.getTime() < MAX_WAIT_DIAGNOSTICS_MS) {
+  while (diags.length === 0 && new Date().getTime() - startTime.getTime() < timeout_ms) {
     await sleep(200);
     diags = getSonarLintDiagnostics(fileUri);
   }
