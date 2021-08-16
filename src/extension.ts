@@ -37,19 +37,7 @@ let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 
 const DOCUMENT_SELECTOR = [
-  { scheme: 'file', language: 'java' },
-  { scheme: 'file', language: 'javascript' },
-  { scheme: 'file', language: 'javascriptreact' },
-  { scheme: 'file', language: 'php' },
-  { scheme: 'file', language: 'python' },
-  { scheme: 'file', language: 'typescript' },
-  { scheme: 'file', language: 'typescriptreact' },
-  { scheme: 'file', language: 'vue' },
-  { scheme: 'file', language: 'html' },
-  { scheme: 'file', language: 'jsp' },
-  { scheme: 'file', language: 'apex' },
-  { scheme: 'file', language: 'plsql' },
-  { scheme: 'file', language: 'oraclesql' }
+  { scheme: 'file', pattern: '**/*' }
 ];
 
 let sonarlintOutput: VSCode.OutputChannel;
