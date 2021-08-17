@@ -353,7 +353,7 @@ async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionCon
   const showProblemsViewActionTitle = 'Show Problems View';
   VSCode.window.showWarningMessage('SonarLint detected some secrets in one of the open files.\n' +
       'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
-      'Please refer to the Problems for more information.', showProblemsViewActionTitle)
+      'Please refer to the Problems view for more information.', showProblemsViewActionTitle)
       .then(action => {
         if (action === showProblemsViewActionTitle) {
           VSCode.commands.executeCommand('workbench.panel.markers.view.focus');
