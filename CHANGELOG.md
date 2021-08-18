@@ -1,6 +1,6 @@
-## 2.1.0
+## 2.1.1
 
-* Support of AWS secrets detection, 2 rules for AWS secrets
+* Detect AWS secrets in any file (2 rules)
 * Update JS/TS analyzer 7.4.2 -> [7.4.3](https://github.com/SonarSource/SonarJS/releases/tag/7.4.3.15529) -> [7.4.4](https://github.com/SonarSource/SonarJS/releases/tag/7.4.4.15624) -> [8.0.0](https://github.com/SonarSource/SonarJS/releases/tag/8.0.0.15689) -> [8.0.1](https://github.com/SonarSource/SonarJS/releases/tag/8.1.0.15788), support TypeScript 4.3, bug fixes and improvements
 * Update Java analyzer 6.15.1 -> [7.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16741) -> [7.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16821) -> [7.2](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16846), 10 new rules, better Java 16 support, many bug fixes and improvements
 * Update PHP analyzer 3.17.0 -> [3.18.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16800), bug fixes and improvements
