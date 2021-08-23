@@ -423,7 +423,7 @@ async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promi
         {cwd: workspaceFolderPath},
         (error: Error & { code?: 0 | 1 | 128 }, stdout, stderr) => {
           if (error && (error.code !== 0 && error.code !== 1)) {
-            logToSonarLintOutput('Error on git gitCommand: ' + error);
+            logToSonarLintOutput(`Error on git command "${gitCommand}": ${error}`);
             reject(error);
             return;
           }
@@ -433,7 +433,7 @@ async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promi
   });
 
   if (serr) {
-    throw new Error(serr);
+    return Promise.resolve(false);
   }
 
   return Promise.resolve(sout.length > 0);
