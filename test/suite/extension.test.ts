@@ -62,6 +62,16 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(notIgnored, false);
   }).timeout(60 * 1000);
 
+  test('should consider file not ignored if git extension is not enabled', async function () {
+    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
+
+    const notIgnored = await performIsIgnoredCheck(fileUri.toString(), async () => {
+      throw new Error('Git model not found')
+    });
+
+    assert.strictEqual(notIgnored, false);
+  }).timeout(60 * 1000);
+
   async function waitForSonarLintDiagnostics(fileUri) {
     var diags = getSonarLintDiagnostics(fileUri);
     while (diags.length == 0) {

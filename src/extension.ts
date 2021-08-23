@@ -457,11 +457,16 @@ export async function performIsIgnoredCheck(fileUri: string,
   if (gitExtension == null) {
     return Promise.resolve(false);
   }
-  const gitPath = gitExtension.getAPI(1).git.path;
-  const command = `"${gitPath}" check-ignore ${relativeFileUri}`;
-  const fileIgnoredForFolder = await scmCheck(workspaceFolder.uri.fsPath, command);
-  return Promise.resolve(fileIgnoredForFolder);
+  try {
+    const gitPath = gitExtension.getAPI(1).git.path;
+    const command = `"${gitPath}" check-ignore ${relativeFileUri}`;
+    const fileIgnoredForFolder = await scmCheck(workspaceFolder.uri.fsPath, command);
+    return Promise.resolve(fileIgnoredForFolder);
+  } catch (e) {
+    return Promise.resolve(false);
+  }
 }
+
 
 async function showAllLocations(issue: protocol.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);
