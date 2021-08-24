@@ -15,6 +15,7 @@ import * as vscode from 'vscode';
 import { waitForSonarLintDiagnostics } from '../common/util';
 
 const secretsFolderLocation = '../../../samples/sample-secrets';
+const secretIssueMessage = 'AWS Secret Access Key detected here. Remove this credential from your code.';
 
 suite('Secrets Test Suite', () => {
   vscode.window.showInformationMessage('Starting Secrets tests.');
@@ -26,8 +27,8 @@ suite('Secrets Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.deepEqual(diags.length, 1);
-    assert.equal(diags[0].message, "AWS Secret Access Key detected here. Remove this credential from your code.");
+    assert.deepStrictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, secretIssueMessage);
   }).timeout(60 * 1000);
 
   test('should find secrets in plain text files with custom extensions', async function () {
@@ -37,8 +38,8 @@ suite('Secrets Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.deepEqual(diags.length, 1);
-    assert.equal(diags[0].message, "AWS Secret Access Key detected here. Remove this credential from your code.");
+    assert.deepStrictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, secretIssueMessage);
   }).timeout(60 * 1000);
 
   test('should find secrets in file without extensions', async function () {
@@ -48,8 +49,8 @@ suite('Secrets Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.deepEqual(diags.length, 1);
-    assert.equal(diags[0].message, "AWS Secret Access Key detected here. Remove this credential from your code.");
+    assert.deepStrictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, secretIssueMessage);
   }).timeout(60 * 1000);
 
   test('should find secrets in source files', async function () {
@@ -59,17 +60,17 @@ suite('Secrets Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.deepEqual(diags.length, 1);
-    assert.equal(diags[0].message, "AWS Secret Access Key detected here. Remove this credential from your code.");
+    assert.deepStrictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, secretIssueMessage);
   }).timeout(60 * 1000);
 
   test('should not find secrets in SCM ignored files', async function () {
     const fileUri = vscode.Uri.file(path.join(__dirname, secretsFolderLocation, 'ignored_file.yml'));
-    await vscode.workspace.fs.writeFile(fileUri, new TextEncoder().encode("AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw"));
+    await vscode.workspace.fs.writeFile(fileUri, new TextEncoder().encode('AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw'));
     await vscode.window.showTextDocument(fileUri);
 
     const diags = await waitForSonarLintDiagnostics(fileUri, 5000);
 
-    assert.deepEqual(diags.length, 0);
+    assert.deepStrictEqual(diags.length, 0);
   }).timeout(60 * 1000);
 });
