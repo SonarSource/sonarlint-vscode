@@ -1,3 +1,9 @@
+## 2.1.2
+
+* Hotfix release
+  * Consider file not ignored if git command fails
+  * Consider file not ignored if ignore check fails
+
 ## 2.1.1
 
 * Detect AWS secrets in any file (2 rules)
