@@ -107,7 +107,7 @@ stages:
           extraProperties: |
             sonar.tests=test,its/src
             sonar.exclusions=test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**, **/its/**, **/dogfood/**
-            sonar.typescript.lcov.reportPaths=coverage/lcov.info
+            sonar.javascript.lcov.reportPaths=coverage/lcov.info
             sonar.coverage.exclusions=gulpfile.js, webpack.config.js, scripts/**
       - task: Npm@1
         displayName: 'Install NPM dependencies'
