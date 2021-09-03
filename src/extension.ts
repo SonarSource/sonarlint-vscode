@@ -242,10 +242,15 @@ export function activate(context: VSCode.ExtensionContext) {
         telemetryStorage: Path.resolve(context.extensionPath, '..', 'sonarlint_usage'),
         productName: 'SonarLint VSCode',
         productVersion: util.packageJson.version,
-        appName: VSCode.env.appName,
         workspaceName: VSCode.workspace.name,
         typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined,
-        firstSecretDetected: context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY) === 'true' ? 'true' : 'false'
+        firstSecretDetected: context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY) === 'true' ? 'true' : 'false',
+        additionalAttributes: {
+          vscode: {
+            remoteName: VSCode.env.remoteName,
+            uiKind: VSCode.UIKind[VSCode.env.uiKind]
+          }
+        }
       };
     },
     outputChannel: sonarlintOutput,
