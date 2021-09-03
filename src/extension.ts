@@ -7,13 +7,13 @@
 'use strict';
 import * as ChildProcess from 'child_process';
 import * as FS from 'fs';
-import {DateTime} from 'luxon';
+import { DateTime } from 'luxon';
 import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import {LanguageClientOptions, StreamInfo} from 'vscode-languageclient/node';
-import {SonarLintExtendedLanguageClient} from './client';
-import {Commands} from './commands';
+import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
+import { SonarLintExtendedLanguageClient } from './client';
+import { Commands } from './commands';
 import {
   hideSecurityHotspot,
   HotspotsCodeActionProvider,
@@ -21,24 +21,22 @@ import {
   showHotspotDescription,
   showSecurityHotspot
 } from './hotspots';
-import {getJavaConfig, installClasspathListener} from './java';
-import {LocationTreeItem, navigateToLocation, SecondaryLocationsTree} from './locations';
+import { getJavaConfig, installClasspathListener } from './java';
+import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './locations';
 import * as protocol from './protocol';
-import {installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements} from './requirements';
-import {computeRuleDescPanelContent} from './rulepanel';
-import {AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode} from './rules';
-import {code2ProtocolConverter, protocol2CodeConverter} from './uri';
+import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
+import { computeRuleDescPanelContent } from './rulepanel';
+import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
+import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
-import {GitExtension} from './git';
+import { GitExtension } from './git';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 
-const DOCUMENT_SELECTOR = [
-  { scheme: 'file', pattern: '**/*' }
-];
+const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
 let sonarlintOutput: VSCode.OutputChannel;
 let ruleDescriptionPanel: VSCode.WebviewPanel;
@@ -231,7 +229,7 @@ export function activate(context: VSCode.ExtensionContext) {
     documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
       configurationSection: 'sonarlint',
-      fileEvents: pythonWatcher,
+      fileEvents: pythonWatcher
     },
     uriConverters: {
       code2Protocol: code2ProtocolConverter,
@@ -321,15 +319,16 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
   context.subscriptions.push(hotspotsCollection);
-  context.subscriptions.push(VSCode.languages.registerCodeActionsProvider(
-      { scheme: 'file' },
-      new HotspotsCodeActionProvider(),
-      { providedCodeActionKinds: [VSCode.CodeActionKind.Empty] }
-    )
+  context.subscriptions.push(
+    VSCode.languages.registerCodeActionsProvider({ scheme: 'file' }, new HotspotsCodeActionProvider(), {
+      providedCodeActionKinds: [VSCode.CodeActionKind.Empty]
+    })
   );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, hideSecurityHotspot));
-  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DESCRIPTION, showHotspotDescription));
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DESCRIPTION, showHotspotDescription)
+  );
 
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
@@ -351,14 +350,18 @@ export function activate(context: VSCode.ExtensionContext) {
 
 async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionContext) {
   const showProblemsViewActionTitle = 'Show Problems View';
-  VSCode.window.showWarningMessage('SonarLint detected some secrets in one of the open files.\n' +
-      'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
-      'Please refer to the Problems view for more information.', showProblemsViewActionTitle)
-      .then(action => {
-        if (action === showProblemsViewActionTitle) {
-          VSCode.commands.executeCommand('workbench.panel.markers.view.focus');
-        }
-      });
+  VSCode.window
+    .showWarningMessage(
+      'SonarLint detected some secrets in one of the open files.\n' +
+        'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
+        'Please refer to the Problems view for more information.',
+      showProblemsViewActionTitle
+    )
+    .then(action => {
+      if (action === showProblemsViewActionTitle) {
+        VSCode.commands.executeCommand('workbench.panel.markers.view.focus');
+      }
+    });
   context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, 'true');
 }
 
@@ -392,43 +395,42 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
-  languageClient.onRequest(protocol.ShowNotificationForFirstSecretsIssueRequest.type,
-      () => showNotificationForFirstSecretsIssue(context));
-  languageClient.onRequest(protocol.ShowSonarLintOutput.type,
-    () => VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
+  languageClient.onRequest(protocol.ShowNotificationForFirstSecretsIssueRequest.type, () =>
+    showNotificationForFirstSecretsIssue(context)
   );
-  languageClient.onRequest(protocol.OpenJavaHomeSettings.type,
-    () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
+  languageClient.onRequest(protocol.ShowSonarLintOutput.type, () =>
+    VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
   );
-  languageClient.onRequest(protocol.OpenPathToNodeSettings.type,
-    () => VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
+  languageClient.onRequest(protocol.OpenJavaHomeSettings.type, () =>
+    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
   );
-  languageClient.onRequest(protocol.BrowseTo.type,
-    browseTo => VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(browseTo))
+  languageClient.onRequest(protocol.OpenPathToNodeSettings.type, () =>
+    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
   );
-  languageClient.onRequest(protocol.OpenConnectionSettings.type,
-    isSonarCloud => {
-      const targetSection = `sonarlint.connectedMode.connections.${isSonarCloud ? 'sonarcloud' : 'sonarqube'}`;
-      return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
-    }
+  languageClient.onRequest(protocol.BrowseTo.type, browseTo =>
+    VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(browseTo))
   );
+  languageClient.onRequest(protocol.OpenConnectionSettings.type, isSonarCloud => {
+    const targetSection = `sonarlint.connectedMode.connections.${isSonarCloud ? 'sonarcloud' : 'sonarqube'}`;
+    return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
+  });
   languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
   languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
 }
 
 async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promise<boolean> {
-  const {sout, serr} = await new Promise<{ sout: string, serr: string }>((resolve, reject) => {
+  const { sout, serr } = await new Promise<{ sout: string; serr: string }>((resolve, reject) => {
     ChildProcess.exec(
-        gitCommand,
-        {cwd: workspaceFolderPath},
-        (error: Error & { code?: 0 | 1 | 128 }, stdout, stderr) => {
-          if (error && (error.code !== 0 && error.code !== 1)) {
-            logToSonarLintOutput(`Error on git command "${gitCommand}": ${error}`);
-            reject(error);
-            return;
-          }
-          resolve({sout: stdout, serr: stderr});
+      gitCommand,
+      { cwd: workspaceFolderPath },
+      (error: Error & { code?: 0 | 1 | 128 }, stdout, stderr) => {
+        if (error && error.code !== 0 && error.code !== 1) {
+          logToSonarLintOutput(`Error on git command "${gitCommand}": ${error}`);
+          reject(error);
+          return;
         }
+        resolve({ sout: stdout, serr: stderr });
+      }
     );
   });
 
@@ -439,14 +441,14 @@ async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promi
   return Promise.resolve(sout.length > 0);
 }
 
-
 async function isIgnoredByScm(fileUri: string): Promise<boolean> {
   return performIsIgnoredCheck(fileUri, isIgnored);
 }
 
-export async function performIsIgnoredCheck(fileUri: string,
-                                            scmCheck: (workspaceFolderPath: string, gitCommand: string) =>
-                                                Promise<boolean>): Promise<boolean> {
+export async function performIsIgnoredCheck(
+  fileUri: string,
+  scmCheck: (workspaceFolderPath: string, gitCommand: string) => Promise<boolean>
+): Promise<boolean> {
   const parsedFileUri = VSCode.Uri.parse(fileUri);
   const workspaceFolder = VSCode.workspace.getWorkspaceFolder(parsedFileUri);
   if (workspaceFolder == null) {
@@ -466,7 +468,6 @@ export async function performIsIgnoredCheck(fileUri: string,
     return Promise.resolve(false);
   }
 }
-
 
 async function showAllLocations(issue: protocol.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);
