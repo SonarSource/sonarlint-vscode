@@ -22,6 +22,7 @@ Out of the box, SonarLint automatically checks your code against the following r
 - [Java rules](https://rules.sonarsource.com/java)
 - [HTML rules](https://rules.sonarsource.com/html)
 - [PHP rules](https://rules.sonarsource.com/php)
+- [Secrets rules](https://rules.sonarsource.com/secrets)
 
 The full list of available rules is visible in the "SonarLint Rules" view in the explorer, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
 
@@ -37,15 +38,29 @@ Finally, you can explicitly set the path where the JRE is installed using the `s
         "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre1.8.0_131"
     }
 
-To analyze JavaScript and TypeScript, SonarLint will also need Node.js.
+### JS/TS analysis specific requirements
 
-To enable the support for Java, you need the [Language support for Java](https://marketplace.visualstudio.com/items?itemName=redhat.java) VSCode extension (version 0.56.0 or higher).
+To analyze JavaScript and TypeScript code, SonarLint requires Node.js executable. It will be autodetected, or you can force the location using:
 
-The support for Apex and PL/SQL is only available together with SonarQube/SonarCloud. For Apex, you'll also need the [Salesforce Extension Pack](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode) VSCode extension. And for PL/SQL, you will need the [Oracle Developer Tools for VSCode](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
+    {
+        "sonarlint.pathToNodeExecutable": "/home/julien/.nvm/versions/node/v11.12.0/bin/node"
+    }
+
+### Java analysis specific requirements
+
+To enable the support for Java analysis, you need the [Language support for Java](https://marketplace.visualstudio.com/items?itemName=redhat.java) VSCode extension (version 0.56.0 or higher). You also need to be in [standard mode](https://code.visualstudio.com/docs/java/java-project#_lightweight-mode).
+
+### Apex analysis specific requirements
+
+The support for Apex analysis is only available together with SonarQube Enterprise Edition or SonarCloud (see connected mode below). You also need the [Salesforce Extension Pack](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode) VSCode extension.
+
+### PL/SQL analysis specific requirements
+
+The support for PL/SQL analysis is only available together with SonarQube Developer Edition or SonarCloud (see connected mode below). You also need the [Oracle Developer Tools for VSCode](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
 
 ## Connected mode
 
-You can connect SonarLint to SonarQube >= 6.7 or SonarCloud and bind your workspace folders to a SonarQube/SonarCloud project to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
+You can connect SonarLint to SonarQube >= 7.9 or SonarCloud and bind your workspace folders to a SonarQube/SonarCloud project to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
 
 Connected mode will also allow to unlock analysis of those languages:
 
@@ -66,7 +81,7 @@ Example for SonarCloud:
 
     {
         "sonarlint.connectedMode.connections.sonarcloud": [
-            { "organizationKey": "myOrgOnSonarCloud", "token": "<generated from https://sonarcloud.io/account/security/>" }
+            { "organizationKey": "myOrg", "token": "<generated from https://sonarcloud.io/account/security/>" }
         ]
     }
 
@@ -103,7 +118,7 @@ Example:
     // In project2/.vscode/settings.json
     {
         "sonarlint.connectedMode.project": {
-            "connectionId": "SonarCloud",
+            "connectionId": "myOrgOnSonarCloud",
             "projectKey": "the-project-key-on-sc"
         }
     }
@@ -112,7 +127,9 @@ Configuring a project binding at the workspace level mutes **Won’t Fix** and *
 
 In connected mode with SonarCloud or any commercial edition of SonarQube, SonarLint receives notifications about Quality Gate changes and new issues. This feature can be toggled using the `disableNotifications` field in a server connection definition.
 
-SonarLint keep server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
+When using SonarQube >= 8.6 and browsing a [security hotspot](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) there will be a button offering to open the hotspot in SonarLint if you have already SonarLint running in VSCode. Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in CodeSpaces.
+
+SonarLint keeps server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
 
 ## Contributions
 
