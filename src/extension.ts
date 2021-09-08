@@ -242,7 +242,7 @@ export function activate(context: VSCode.ExtensionContext) {
     initializationOptions: () => {
       return {
         productKey: 'vscode',
-        telemetryStorage: Path.resolve(context.globalStorageUri.fsPath, 'telemetry', 'usage'),
+        telemetryStorage: Path.resolve(context.extensionPath, '..', 'sonarlint_usage'),
         productName: 'SonarLint VSCode',
         productVersion: util.packageJson.version,
         workspaceName: VSCode.workspace.name,
