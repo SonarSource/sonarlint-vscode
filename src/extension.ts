@@ -231,6 +231,17 @@ export function activate(context: VSCode.ExtensionContext) {
     FS.mkdirSync(context.globalStorageUri.fsPath);
   }
 
+  const installTimeKey = context.extension.id + '.installTime';
+  context.globalState.setKeysForSync([installTimeKey]);
+
+  const lastInstallTime = context.globalState.get(installTimeKey);
+  if (!lastInstallTime) {
+    context.globalState.update(installTimeKey, Date.now());
+    VSCode.window.showInformationMessage('New installation: ' + context.globalState.get(installTimeKey));
+  } else {
+    VSCode.window.showInformationMessage('Existing installation: ' + lastInstallTime);
+  }
+
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     documentSelector: DOCUMENT_SELECTOR,
