@@ -227,6 +227,10 @@ export function activate(context: VSCode.ExtensionContext) {
   const pythonWatcher = VSCode.workspace.createFileSystemWatcher('**/*.py');
   context.subscriptions.push(pythonWatcher);
 
+  if (!FS.existsSync(context.globalStorageUri.fsPath)) {
+    FS.mkdirSync(context.globalStorageUri.fsPath);
+  }
+
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     documentSelector: DOCUMENT_SELECTOR,
