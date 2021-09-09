@@ -1,3 +1,7 @@
+## 2.2.0
+
+* Minor changes for CodeSpaces compatibility
+
 ## 2.1.2
 
 * Hotfix release
