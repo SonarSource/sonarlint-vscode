@@ -1,3 +1,8 @@
+## 2.3.0
+
+* Update Secrets analyzer 1.0 -> [1.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=12535&version=16880), 4 new rules for top cloud providers, multiline secrets detection
+
+
 ## 2.2.0
 
 * Minor changes for CodeSpaces compatibility
