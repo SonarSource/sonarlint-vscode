@@ -2,6 +2,7 @@
 
 * Update Secrets analyzer 1.0 -> [1.1](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=12535&version=16880), 4 new rules for top cloud providers, multiline secrets detection
 * Update JS/TS analyzer 8.1.0 -> [8.2](https://github.com/SonarSource/SonarJS/releases/tag/8.2.0.16042) -> [8.3](https://github.com/SonarSource/SonarJS/releases/tag/8.3.0.16208) -> [8.4](https://github.com/SonarSource/SonarJS/releases/tag/8.4.0.16431), 19 new rules for regular expressions, fixes for false positives
+* Update Java analyzer 7.2.0 -> [7.3.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16885), quick fixes for 40 rules,  FP and bug fixes
 
 ## 2.2.0
 
