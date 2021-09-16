@@ -18,7 +18,7 @@ import * as vscode from 'vscode';
 import { waitForSonarLintDiagnostics } from '../common/util';
 
 const secretsFolderLocation = '../../../samples/sample-secrets';
-const secretIssueMessage = 'AWS Secret Access Key detected here. Remove this credential from your code.';
+const secretIssueMessage = 'Make sure this AWS Secret Access Key is not disclosed.';
 
 suite('Secrets Test Suite', () => {
   vscode.window.showInformationMessage('Starting Secrets tests.');
