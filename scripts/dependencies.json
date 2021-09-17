@@ -8,19 +8,19 @@
   {
     "groupId": "org.sonarsource.javascript",
     "artifactId": "sonar-javascript-plugin",
-    "version": "8.1.0.15788",
+    "version": "8.4.0.16431",
     "output": "analyzers/sonarjs.jar"
   },
   {
     "groupId": "org.sonarsource.java",
     "artifactId": "sonar-java-plugin",
-    "version": "7.2.0.26923",
+    "version": "7.3.0.27589",
     "output": "analyzers/sonarjava.jar"
   },
   {
     "groupId": "org.sonarsource.php",
     "artifactId": "sonar-php-plugin",
-    "version": "3.18.0.7718",
+    "version": "3.20.0.8080",
     "output": "analyzers/sonarphp.jar"
   },
   {
@@ -38,7 +38,7 @@
   {
     "groupId": "com.sonarsource.secrets",
     "artifactId": "sonar-secrets-plugin",
-    "version": "1.0.0.34655",
+    "version": "1.1.0.36766",
     "output": "analyzers/sonarsecrets.jar",
     "requiresCredentials": true
   }
