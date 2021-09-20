@@ -42,10 +42,42 @@ suite('Java Test Suite', () => {
       const document = await vscode.workspace.openTextDocument(fileUri);
       const editor = await vscode.window.showTextDocument(document);
 
-      var diags = await waitForSonarLintDiagnostics(fileUri);
+      // Check that we have 2 diagnostics in the right order
+      const diags = await waitForSonarLintDiagnostics(fileUri);
+      assert.deepEqual(diags.map(d => [ d.code, d.message ]), [
+        [ 'java:S1130', 'Remove the declaration of thrown exception \'edu.marcelo.App$MyException\', as it cannot be thrown from method\'s body.' ],
+        [ 'java:S106', 'Replace this use of System.out or System.err by a logger.' ]
+      ]);
 
-      assert.deepEqual(diags.length, 1);
-      assert.equal(diags[0].message, 'Replace this use of System.out or System.err by a logger.');
+      // Check that the exception-related diagnostic has 3 code actions
+      const rangeInMiddleOfThrowsMyException = new vscode.Range(8, 54, 8, 54);
+      const codeActionsResult = await vscode.commands.executeCommand<(vscode.Command | vscode.CodeAction)[]>('vscode.executeCodeActionProvider', document.uri, rangeInMiddleOfThrowsMyException, vscode.CodeActionKind.QuickFix.value);
+      assert.deepEqual(codeActionsResult!.map(c => c.title), [
+        'Remove "MyException"',
+        "Open description of SonarLint rule 'java:S1130'",
+        "Deactivate rule 'java:S1130'"
+      ]);
+
+      // Check that first fix has an edit that can be applied
+      const quickFix = codeActionsResult![0] as vscode.CodeAction;
+      const fixApplied = await vscode.workspace.applyEdit(quickFix.edit!);
+      assert.equal(fixApplied, true);
+
+      // Wait for refresh of diagnostics
+      await new Promise((resolve, reject) => {
+        try {
+          vscode.languages.onDidChangeDiagnostics(e => resolve());
+        } catch(e) {
+          reject(e);
+        }
+      });
+
+      // Check that application of fix actually fixed the issue
+      const newDiags = await waitForSonarLintDiagnostics(fileUri);
+      assert.deepEqual(newDiags.map(d => [ d.code, d.message ]), [
+        [ 'java:S106', 'Replace this use of System.out or System.err by a logger.' ],
+        [ 'java:S3985', 'Remove this unused private "MyException" class.' ]
+      ]);
 
       vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     } else {
@@ -62,7 +94,7 @@ suite('Java Test Suite', () => {
       const document = await vscode.workspace.openTextDocument(fileUri);
       const editor = await vscode.window.showTextDocument(document);
 
-      var diags = await waitForSonarLintDiagnostics(fileUri);
+      const diags = await waitForSonarLintDiagnostics(fileUri);
 
       assert.deepEqual(diags.length, 1);
       assert.equal(diags[0].message, 'Add at least one assertion to this test case.');
