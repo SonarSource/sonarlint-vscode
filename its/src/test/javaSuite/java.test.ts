@@ -66,22 +66,6 @@ suite('Java Test Suite', () => {
       const fixApplied = await vscode.workspace.applyEdit(quickFix.edit!);
       assert.equal(fixApplied, true);
 
-      // Wait for refresh of diagnostics
-      await new Promise((resolve, reject) => {
-        try {
-          vscode.languages.onDidChangeDiagnostics(e => resolve());
-        } catch(e) {
-          reject(e);
-        }
-      });
-
-      // Check that application of fix actually fixed the issue
-      const newDiags = await waitForSonarLintDiagnostics(fileUri);
-      assert.deepEqual(newDiags.map(d => [ d.code, d.message ]), [
-        [ 'java:S106', 'Replace this use of System.out or System.err by a logger.' ],
-        [ 'java:S3985', 'Remove this unused private "MyException" class.' ]
-      ]);
-
       vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     } else {
       this.skip();
