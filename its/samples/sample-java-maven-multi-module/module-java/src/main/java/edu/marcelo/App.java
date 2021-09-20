@@ -6,8 +6,10 @@ package edu.marcelo;
  */
 public class App 
 {
-    public static void main( String[] args )
+    public static void main( String[] args ) throws MyException
     {
         System.out.println( "Hello World!" );
     }
+
+    private static final class MyException extends Exception {}
 }
