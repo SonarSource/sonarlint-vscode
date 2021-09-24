@@ -54,15 +54,15 @@ suite('Java Test Suite', () => {
       const codeActionsResult = (await vscode.commands.executeCommand<(vscode.Command | vscode.CodeAction)[]>('vscode.executeCodeActionProvider', document.uri, rangeInMiddleOfThrowsMyException, vscode.CodeActionKind.QuickFix.value))!;
       // With old versions of VSCode, code actions are not necessarily filtered on kind
       const expectedActionTitles = [
-        'Remove "MyException"',
-        "Open description of SonarLint rule 'java:S1130'",
-        "Deactivate rule 'java:S1130'"
+        'SonarLint: Remove "MyException"',
+        "SonarLint: Open description of rule 'java:S1130'",
+        "SonarLint: Deactivate rule 'java:S1130'"
       ];
       const actualCodeActionTitles = codeActionsResult.filter(c => expectedActionTitles.indexOf(c.title) >= 0).map(c => c.title);
       assert.deepEqual(actualCodeActionTitles, expectedActionTitles);
 
       // Check that first fix has an edit that can be applied
-      const quickFix = codeActionsResult.filter(c => c.title === 'Remove "MyException"')[0] as vscode.CodeAction;
+      const quickFix = codeActionsResult.filter(c => c.title === 'SonarLint: Remove "MyException"')[0] as vscode.CodeAction;
       const fixApplied = await vscode.workspace.applyEdit(quickFix.edit!);
       assert.equal(fixApplied, true);
 
