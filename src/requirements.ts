@@ -8,17 +8,19 @@
 // Highly inspired from https://github.com/redhat-developer/vscode-java/blob/1f6783957c699e261a33d05702f2da356017458d/src/requirements.ts
 'use strict';
 
-import * as vscode from 'vscode';
 import * as cp from 'child_process';
-import * as path from 'path';
-import * as pathExists from 'path-exists';
 import * as expandHomeDir from 'expand-home-dir';
 import * as findJavaHome from 'find-java-home';
-
+import * as path from 'path';
+import * as pathExists from 'path-exists';
+import * as vscode from 'vscode';
 import { Commands } from './commands';
 import * as jre from './jre';
 import { PlatformInformation } from './platform';
 import * as util from './util';
+
+
+const REQUIRED_JAVA_VERSION = 11;
 
 const isWindows = process.platform.indexOf('win') === 0;
 const JAVA_FILENAME = `java${isWindows ? '.exe' : ''}`;
@@ -99,8 +101,9 @@ function checkJavaVersion(javaHome: string): Promise<number> {
     const javaExec = path.join(javaHome, 'bin', 'java');
     cp.execFile(javaExec, ['-version'], {}, (error, stdout, stderr) => {
       const javaVersion = parseMajorVersion(stderr);
-      if (javaVersion < 8) {
-        openJREDownload(reject, 'Java 8 or more recent is required to run. Please download and install a recent JRE.');
+      if (javaVersion < REQUIRED_JAVA_VERSION) {
+        openJREDownload(reject, `Java ${REQUIRED_JAVA_VERSION} or more recent is required to run.
+Please download and install a recent JRE.`);
       } else {
         resolve(javaVersion);
       }
@@ -116,8 +119,9 @@ export function parseMajorVersion(content: string): number {
   }
   let version = match[1];
   //Ignore "1." prefix for legacy Java versions
-  if (version.startsWith('1.')) {
-    version = version.substring(2);
+  const legacyPrefix = '1.';
+  if (version.startsWith(legacyPrefix)) {
+    version = version.substring(legacyPrefix.length);
   }
   //look into the interesting bits now
   regexp = /\d+/g;
@@ -173,7 +177,7 @@ export function installManagedJre() {
           const options = {
             os: platformInfo.os as jre.Os,
             architecture: platformInfo.arch as jre.Architecture,
-            version: 11 as jre.Version
+            version: REQUIRED_JAVA_VERSION as jre.Version
           };
           progress.report({ message: 'Downloading' });
           return jre.download(options, path.join(util.extensionPath, '..', 'sonarsource.sonarlint_managed-jre'));
