@@ -1,3 +1,7 @@
+## 3.0.0
+
+* Require JRE 11+ to run the language server
+
 ## 2.3.0
 
 * Allow analyzers to contribute quick fixes
