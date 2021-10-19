@@ -130,7 +130,7 @@ function languageServerCommand(
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar')));
-  let secrets = Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar');
+  const secrets = Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar');
   if (FS.existsSync(secrets)) {
     params.push('-extraAnalyzers');
     params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar')));
@@ -426,14 +426,26 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
 }
 
+enum GitReturnCode {
+  E_OK = 0,
+  E_FAIL = 1,
+  E_INVALID = 128
+}
+
+function isNeitherOkNorFail(code?: GitReturnCode) {
+  return [GitReturnCode.E_OK, GitReturnCode.E_FAIL].indexOf(code) < 0;
+}
+
 async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promise<boolean> {
   const { sout, serr } = await new Promise<{ sout: string; serr: string }>((resolve, reject) => {
     ChildProcess.exec(
       gitCommand,
       { cwd: workspaceFolderPath },
-      (error: Error & { code?: 0 | 1 | 128 }, stdout, stderr) => {
-        if (error && error.code !== 0 && error.code !== 1) {
-          logToSonarLintOutput(`Error on git command "${gitCommand}": ${error}`);
+      (error: Error & { code?: GitReturnCode }, stdout, stderr) => {
+        if (error && isNeitherOkNorFail(error.code)) {
+          if (isVerboseEnabled()) {
+            logToSonarLintOutput(`Error on git command "${gitCommand}": ${error}`);
+          }
           reject(error);
           return;
         }
