@@ -8,6 +8,7 @@ import * as assert from 'assert';
 import * as path from 'path';
 import * as util from '../../src/util';
 import * as FS from 'fs';
+import * as os from 'os';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -43,8 +44,8 @@ suite('Extension Test Suite', () => {
   }).timeout(60 * 1000);
 
   test('consider file not ignored if it is not in workspace', async function () {
-    const folder = await FS.promises.mkdtemp(path.join('../../../', 'tmpdir'));
-    const filePath = folder + 'main.js';
+    const folder = await FS.promises.mkdtemp(path.join(os.tmpdir(), 'tmpdir'));
+    const filePath = path.join(folder, 'main.js');
     await FS.promises.writeFile(filePath, 'var i = 0;');
 
     const isIgnored = await performIsIgnoredCheck(folder + '/main.js', async () => true);
