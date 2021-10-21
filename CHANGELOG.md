@@ -1,3 +1,7 @@
+## 3.1.0
+
+* Update PHP analyzer 3.20 -> [3.21](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16984), 9 new rules about regular expressions
+
 ## 3.0.0
 
 * Require JRE 11+ to run the language server
