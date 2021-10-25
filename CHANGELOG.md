@@ -2,6 +2,7 @@
 
 * Update Java analyzer 7.3.0 -> [7.4.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16940), 1 new vulnerability detection rule, improvements in precision
 * Update PHP analyzer 3.20 -> [3.21](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=16984), 9 new rules about regular expressions
+* Fix protocol issues in connected mode with some HTTP proxies
 
 ## 3.0.0
 
