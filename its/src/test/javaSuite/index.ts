@@ -4,9 +4,9 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as path from 'path';
-import * as Mocha from 'mocha';
 import * as glob from 'glob';
+import * as Mocha from 'mocha';
+import * as path from 'path';
 
 export function run(testsRoot: string, cb: (error: any, failures?: number) => void): void {
   // Create the mocha test
@@ -18,9 +18,9 @@ export function run(testsRoot: string, cb: (error: any, failures?: number) => vo
       xunitReporterOptions: {
         output: path.resolve(__dirname, '..', '..', 'java-tests.xml')
       }
-    }
+    },
+    color: true
   });
-  mocha.useColors(true);
 
   glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
     if (err) {
