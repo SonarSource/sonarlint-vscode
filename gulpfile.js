@@ -9,7 +9,7 @@ const gulp = require('gulp');
 const artifactoryUpload = require('gulp-artifactory-upload');
 const del = require('del');
 const vsce = require('vsce');
-const gutil = require('gulp-util');
+const log = require('fancy-log');
 const fs = require('fs');
 const crypto = require('crypto');
 const through = require('through2');
@@ -36,7 +36,7 @@ gulp.task('update-version', function () {
       .pipe(bump({ version: version.replace('-SNAPSHOT', `+${buildNumber}`) }))
       .pipe(gulp.dest('./'));
   } else {
-    gutil.log(`Not modifying version ${version} with build number ${buildNumber}`);
+    log.info(`Not modifying version ${version} with build number ${buildNumber}`);
     return Promise.resolve();
   }
 });
@@ -92,7 +92,7 @@ gulp.task('deploy-vsix', function () {
         }
       })
     )
-    .on('error', gutil.log);
+    .on('error', log.error);
 });
 
 gulp.task('deploy-buildinfo', function (done) {
@@ -108,7 +108,7 @@ gulp.task('deploy-buildinfo', function (done) {
       },
       function (error, response, body) {
         if (error) {
-          gutil.log('error:', error);
+          log.error('error:', error);
         }
         done();
       }
@@ -196,7 +196,7 @@ function updateHashes(file) {
     return;
   }
   if (file.isStream()) {
-    gutil.log('Streams not supported');
+    log.warn('Streams not supported');
     return;
   }
   updateBinaryHashes(file.contents, hashes);
@@ -213,7 +213,7 @@ function updateBinaryHashes(binaryContent, hashesObject) {
   for (const algo in hashesObject) {
     if (hashesObject.hasOwnProperty(algo)) {
       hashesObject[algo] = crypto.createHash(algo).update(binaryContent, 'binary').digest('hex');
-      gutil.log(`Computed ${algo}: ${hashesObject[algo]}`);
+      log.info(`Computed ${algo}: ${hashesObject[algo]}`);
     }
   }
 }
