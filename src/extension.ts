@@ -14,6 +14,7 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
+import { GitExtension, Repository } from './git';
 import {
   hideSecurityHotspot,
   HotspotsCodeActionProvider,
@@ -29,7 +30,6 @@ import { computeRuleDescPanelContent } from './rulepanel';
 import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
-import { GitExtension } from './git';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -47,6 +47,8 @@ let languageClient: SonarLintExtendedLanguageClient;
 export function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
     sonarlintOutput.appendLine(message);
+  } else {
+    console.log(message);
   }
 }
 
@@ -354,6 +356,31 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
+
+  const gitExtension = VSCode.extensions.getExtension<GitExtension>('vscode.git').exports;
+  if (gitExtension !== null) {
+    logToSonarLintOutput('activate: vscode.git extension found');
+    const gitApi = gitExtension.getAPI(1);
+    if (gitApi.state === 'initialized') {
+      logToSonarLintOutput('activate: Git API is initialized');
+      gitApi.repositories.forEach(subscribeToRepoChanges);
+    }
+    gitApi.onDidChangeState(state => {
+      logToSonarLintOutput(`Git API state changed: ${state}`);
+      if (state === 'initialized') {
+        gitApi.repositories.forEach(subscribeToRepoChanges);
+      }
+    });
+  } else {
+    logToSonarLintOutput('activate: could not load Git API');
+  }
+}
+
+function subscribeToRepoChanges(r: Repository) {
+  logToSonarLintOutput(`Found repo ${r.rootUri} on branch ${r.state.HEAD.name}`);
+  r.state.onDidChange(e => {
+    logToSonarLintOutput(`Repo ${r.rootUri} is now on branch ${r.state.HEAD.name}`);
+  });
 }
 
 async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionContext) {
