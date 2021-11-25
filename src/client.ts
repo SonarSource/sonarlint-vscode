@@ -23,4 +23,9 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   didJavaServerModeChange(serverMode: ServerMode) {
     this.sendNotification('sonarlint/didJavaServerModeChange', serverMode);
   }
+
+  didLocalBranchNameChange(folderRoot: VSCode.Uri, branchName?: string) {
+    const folderUri = code2ProtocolConverter(folderRoot);
+    this.sendNotification('sonarlint/didLocalBranchNameChange', { folderUri, branchName });
+  }
 }
