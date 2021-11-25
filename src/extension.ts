@@ -30,6 +30,7 @@ import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
 import { GitExtension } from './git';
+import { initScm } from './scm';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -354,6 +355,8 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
+
+  context.subscriptions.push(initScm(languageClient));
 }
 
 async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionContext) {
