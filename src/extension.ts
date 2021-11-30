@@ -14,6 +14,7 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
+import { GitExtension } from './git';
 import {
   hideSecurityHotspot,
   HotspotsCodeActionProvider,
@@ -27,10 +28,9 @@ import * as protocol from './protocol';
 import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
 import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
+import { initScm } from './scm';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
-import { GitExtension } from './git';
-import { initScm } from './scm';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -272,6 +272,14 @@ export function activate(context: VSCode.ExtensionContext) {
 
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
+  languageClient.onReady().then(() => {
+    const scm = initScm(languageClient);
+    context.subscriptions.push(scm);
+    context.subscriptions.push(languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type, folderUri => {
+      return scm.getBranchForFolder(VSCode.Uri.parse(folderUri));
+    }));
+  });
+
   const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() =>
     languageClient.onReady().then(() => languageClient.listAllRules())
   );
@@ -355,8 +363,6 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
-
-  context.subscriptions.push(initScm(languageClient));
 }
 
 async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionContext) {
