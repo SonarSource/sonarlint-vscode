@@ -14,11 +14,16 @@ import { logToSonarLintOutput } from './extension';
 const GIT_EXTENSION_ID = 'vscode.git';
 const GIT_API_VERSION = 1;
 
-export interface Scm {
-  dispose(): void;
+interface Scm extends vscode.Disposable {
+  getBranchForFolder(folderUri: vscode.Uri): string|null;
 }
 
 class NoopScm implements Scm {
+
+  getBranchForFolder(folderUri: vscode.Uri) {
+    return null;
+  }
+
   dispose() {
     // NOP
   }
@@ -26,44 +31,58 @@ class NoopScm implements Scm {
 
 class GitScm implements Scm {
 
+  private readonly listeners: Array<vscode.Disposable>;
+
   constructor(private readonly gitApi: API, private readonly client: SonarLintExtendedLanguageClient) {
-    gitApi.onDidOpenRepository(r => {
-      logToSonarLintOutput('Registering from open repo handler');
-      this.subscribeToRepositoryChanges(r);
-    });
+    this.listeners = [
+      gitApi.onDidOpenRepository(r => {
+        this.subscribeToRepositoryChanges(r);
+      })
+    ];
     if (gitApi.state === 'initialized') {
-      logToSonarLintOutput('Registering from state === initialized at startup');
       this.subscribeToAllRepositoryChanges();
     } else {
       gitApi.onDidChangeState(state => {
         if(state === 'initialized') {
-          logToSonarLintOutput('Registering from state ==> initialized');
           this.subscribeToAllRepositoryChanges();
         }
       });
     }
   }
 
-  private subscribeToAllRepositoryChanges() {
-    this.gitApi.repositories.forEach(this.subscribeToRepositoryChanges, this);
+  getBranchForFolder(folderUri: vscode.Uri) {
+    return this.gitApi.getRepository(folderUri).state.HEAD?.name;
   }
 
-  private subscribeToRepositoryChanges(repository: Repository) {
-    logToSonarLintOutput(`Starting to watch SCM events for ${repository.rootUri}`);
-    logToSonarLintOutput(`this: ${this} / this.client: ${this.client}`);
-    repository.state.onDidChange(e => {
-      vscode.workspace.workspaceFolders.forEach(folder => {
-        if (folder.uri.toString().startsWith(repository.rootUri.toString())) {
-          logToSonarLintOutput(`Repository ${repository.rootUri} is now on branch ${repository.state.HEAD.name}`);
-          logToSonarLintOutput(`this: ${this} / this.client: ${this.client}`);
-          this.client.didLocalBranchNameChange(folder.uri, repository.state.HEAD.name);
-        }
-      });
+  private subscribeToAllRepositoryChanges() {
+    this.gitApi.repositories.forEach(this.subscribeToRepositoryChanges, this);
+    vscode.workspace.workspaceFolders.forEach(folder => {
+      const branchName = this.gitApi.getRepository(folder.uri)?.state.HEAD?.name;
+      logToSonarLintOutput(`Initializing ${folder.uri} on branch ${branchName}`);
+      this.client.didLocalBranchNameChange(folder.uri, branchName);
     });
   }
 
+  private subscribeToRepositoryChanges(repository: Repository) {
+    this.listeners.push(repository.state.onDidChange(() => {
+      vscode.workspace.workspaceFolders.forEach(folder => {
+        if (folder.uri.toString().startsWith(repository.rootUri.toString())) {
+          const branchName = repository.state.HEAD?.name;
+          logToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
+          this.client.didLocalBranchNameChange(folder.uri, branchName);
+        }
+      });
+    }));
+  }
+
   dispose() {
-    // ???
+    this.listeners.forEach(d => {
+      try {
+        d.dispose();
+      } catch (e) {
+        // Ignored during dispose
+      }
+    });
   }
 }
 

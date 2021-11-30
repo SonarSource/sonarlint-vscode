@@ -138,3 +138,8 @@ export interface Issue {
 export namespace ShowTaintVulnerabilityRequest {
   export const type = new lsp.RequestType<Issue, void, void>('sonarlint/showTaintVulnerability');
 }
+
+export namespace GetBranchNameForFolderRequest {
+  export const type = new lsp.RequestType<string, string, void>('sonarlint/getBranchNameForFolder');
+}
+
