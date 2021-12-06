@@ -101,9 +101,9 @@ stages:
         parameters:
           scannerMode: CLI
           configMode: manual
-          cliProjectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
-          cliProjectName: 'SonarLint for VSCode'
-          cliProjectVersion: $(packageVersion)
+          projectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
+          projectName: 'SonarLint for VSCode'
+          projectVersion: $(packageVersion)
           extraProperties: |
             sonar.tests=test,its/src
             sonar.exclusions=test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**, **/its/**, **/dogfood/**
