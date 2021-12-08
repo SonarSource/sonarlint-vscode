@@ -16,12 +16,27 @@ const GIT_API_VERSION = 1;
 
 interface Scm extends vscode.Disposable {
   getBranchForFolder(folderUri: vscode.Uri): string|null;
+  setReferenceBranchName(folderUri: vscode.Uri, branchName?: string): void;
+  getReferenceBranchNameForFile(fileUri: vscode.Uri): string|null;
+  updateReferenceBranchStatusItem(event?: vscode.TextEditor): void;
 }
 
 class NoopScm implements Scm {
 
   getBranchForFolder(folderUri: vscode.Uri) {
     return null;
+  }
+
+  setReferenceBranchName(folderUri: vscode.Uri, branchName?: string) {
+    // NOP
+  }
+
+  getReferenceBranchNameForFile(fileUri: vscode.Uri) {
+    return null;
+  }
+
+  updateReferenceBranchStatusItem(event?: vscode.TextEditor) {
+    // NOP
   }
 
   dispose() {
@@ -33,12 +48,18 @@ class GitScm implements Scm {
 
   private readonly listeners: Array<vscode.Disposable>;
 
-  constructor(private readonly gitApi: API, private readonly client: SonarLintExtendedLanguageClient) {
+  private readonly referenceBranchByFolderUri: Map<string, string>;
+
+  constructor(
+      private readonly gitApi: API,
+      private readonly client: SonarLintExtendedLanguageClient,
+      private readonly referenceBranchStatusItem: vscode.StatusBarItem) {
     this.listeners = [
       gitApi.onDidOpenRepository(r => {
         this.subscribeToRepositoryChanges(r);
       })
     ];
+    this.referenceBranchByFolderUri = new Map<string, string>();
     if (gitApi.state === 'initialized') {
       this.subscribeToAllRepositoryChanges();
     } else {
@@ -75,6 +96,31 @@ class GitScm implements Scm {
     }));
   }
 
+  setReferenceBranchName(folderUri: vscode.Uri, branchName?: string) {
+    this.referenceBranchByFolderUri.set(folderUri.toString(true), branchName);
+    this.updateReferenceBranchStatusItem(vscode.window.activeTextEditor);
+  }
+
+  getReferenceBranchNameForFile(fileUri?: vscode.Uri) {
+    console.log(fileUri);
+    if (fileUri) {
+      const workspaceFolderForFile = vscode.workspace.getWorkspaceFolder(fileUri);
+      return this.referenceBranchByFolderUri.get(workspaceFolderForFile?.uri?.toString(true));
+    } else {
+      return null;
+    }
+  }
+
+  updateReferenceBranchStatusItem(event?: vscode.TextEditor) {
+    const referenceBranchName = this.getReferenceBranchNameForFile(event?.document?.uri);
+    if (referenceBranchName) {
+      this.referenceBranchStatusItem.text = `SonarLint branch: ${referenceBranchName}`;
+      this.referenceBranchStatusItem.show();
+    } else {
+      this.referenceBranchStatusItem.hide();
+    }
+  }
+
   dispose() {
     this.listeners.forEach(d => {
       try {
@@ -86,10 +132,10 @@ class GitScm implements Scm {
   }
 }
 
-export function initScm(client: SonarLintExtendedLanguageClient) {
+export function initScm(client: SonarLintExtendedLanguageClient, referenceBranchStatusItem: vscode.StatusBarItem) {
   try {
     const gitApi = vscode.extensions.getExtension<GitExtension>(GIT_EXTENSION_ID).exports?.getAPI(GIT_API_VERSION);
-    return new GitScm(gitApi, client);
+    return new GitScm(gitApi, client, referenceBranchStatusItem);
   } catch(e) {
     logToSonarLintOutput(`Exception occurred while initializing the Git API: ${e}`);
     return new NoopScm();
