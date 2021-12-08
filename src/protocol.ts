@@ -143,3 +143,12 @@ export namespace GetBranchNameForFolderRequest {
   export const type = new lsp.RequestType<string, string, void>('sonarlint/getBranchNameForFolder');
 }
 
+export interface BranchNameForFolder {
+  folderUri: string;
+  branchName?: string;
+}
+
+export namespace SetReferenceBranchNameForFolderRequest {
+  export const type = new lsp.RequestType<BranchNameForFolder, void, void>('sonarlint/setReferenceBranchNameForFolder');
+}
+

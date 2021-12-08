@@ -273,11 +273,22 @@ export function activate(context: VSCode.ExtensionContext) {
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
   languageClient.onReady().then(() => {
-    const scm = initScm(languageClient);
+    const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
+    const scm = initScm(languageClient, referenceBranchStatusItem);
     context.subscriptions.push(scm);
-    context.subscriptions.push(languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type, folderUri => {
-      return scm.getBranchForFolder(VSCode.Uri.parse(folderUri));
-    }));
+    context.subscriptions.push(
+      languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type,
+      folderUri => {
+        return scm.getBranchForFolder(VSCode.Uri.parse(folderUri));
+      })
+    );
+    context.subscriptions.push(languageClient.onRequest(protocol.SetReferenceBranchNameForFolderRequest.type,
+      params => {
+        scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
+      })
+    );
+    context.subscriptions.push(referenceBranchStatusItem);
+    VSCode.window.onDidChangeActiveTextEditor(e => scm.updateReferenceBranchStatusItem(e));
   });
 
   const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() =>
