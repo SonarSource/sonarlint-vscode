@@ -18,6 +18,15 @@ import {performIsIgnoredCheck} from "../../src/extension";
 const sampleFolderLocation = '../../../test/samples/';
 
 suite('Extension Test Suite', () => {
+
+  suiteSetup(() => {
+    let gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
+    while(!gitExt) {
+      sleep(100);
+      gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
+    }
+  });
+
   test('Extension should be present', () => {
     assert.ok(util.extension);
   });
