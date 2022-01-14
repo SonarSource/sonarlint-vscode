@@ -26,12 +26,15 @@ suite('Extension Test Suite', () => {
   }
 
   suiteSetup(async () => {
-    let gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
+    let gitExt = vscode.extensions.getExtension('vscode.git');
     let nbTries = 10;
     while(!gitExt && nbTries) {
-      await sleep(100);
-      gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
+      await sleep(1000);
+      gitExt = vscode.extensions.getExtension('vscode.git');
       nbTries --;
+    }
+    if (!gitExt) {
+      assert.fail(`Git extension still not initialized after ${nbTries} seconds`);
     }
   });
 
