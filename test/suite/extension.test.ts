@@ -13,17 +13,25 @@ import * as os from 'os';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-import {performIsIgnoredCheck} from "../../src/extension";
+import {performIsIgnoredCheck} from '../../src/extension';
 
 const sampleFolderLocation = '../../../test/samples/';
 
 suite('Extension Test Suite', () => {
 
-  suiteSetup(() => {
+  function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  suiteSetup(async () => {
     let gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
-    while(!gitExt) {
-      sleep(100);
+    let nbTries = 10;
+    while(!gitExt && nbTries) {
+      await sleep(100);
       gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
+      nbTries --;
     }
   });
 
@@ -89,12 +97,6 @@ suite('Extension Test Suite', () => {
       diags = getSonarLintDiagnostics(fileUri);
     }
     return diags;
-  }
-
-  function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => {
-      setTimeout(resolve, ms);
-    });
   }
 });
 function getSonarLintDiagnostics(fileUri: any) {
