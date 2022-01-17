@@ -1,3 +1,7 @@
+## 3.2.0
+
+* Load taint vulnerabilities and issue suppressions from the appropriate branch in connected mode
+
 ## 3.1.0
 
 * Update Java analyzer 7.3.0 -> [7.4.0](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=16940), 1 new vulnerability detection rule, improvements in precision
