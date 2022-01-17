@@ -4,10 +4,10 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as path from 'path';
 import * as fs from 'fs';
-import { instrument } from './coverage';
+import * as path from 'path';
 import { runTests } from 'vscode-test';
+import { instrument } from './coverage';
 
 const XVFB_DISPLAY = ':10';
 
@@ -25,7 +25,10 @@ function main() {
   const extensionRootPath = path.resolve(__dirname, '../../');
   console.log('Extension root path: ' + extensionRootPath);
 
-  const launchArgs = [path.resolve(extensionRootPath, 'test/samples')];
+  const launchArgs = [
+    path.resolve(extensionRootPath, 'test/samples'),
+    '--disable-workspace-trust'
+  ];
 
   const packageJsonPath = path.resolve(extensionRootPath, 'package.json');
   const package_json = fs.readFileSync(packageJsonPath, 'utf8');
