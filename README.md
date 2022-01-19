@@ -123,7 +123,7 @@ Example:
         }
     }
 
-Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace.
+Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace. SonarLint will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness).
 
 In connected mode with SonarCloud or any commercial edition of SonarQube, SonarLint receives notifications about Quality Gate changes and new issues. This feature can be toggled using the `disableNotifications` field in a server connection definition.
 
