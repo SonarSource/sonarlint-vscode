@@ -29,7 +29,8 @@
     "onStartupFinished"
   ],
   "extensionDependencies": [
-    "vscode.typescript-language-features"
+    "vscode.typescript-language-features",
+    "vscode.git"
   ],
   "contributes": {
     "configuration": {
