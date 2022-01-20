@@ -503,7 +503,7 @@
   "dependencies": {
     "expand-home-dir": "0.0.3",
     "find-java-home": "1.1.0",
-    "follow-redirects": "1.13.0",
+    "follow-redirects": "1.14.7",
     "inly": "4.0.8",
     "luxon": "1.26.0",
     "open": "7.3.0",
@@ -513,7 +513,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.2.10",
-    "@types/follow-redirects": "1.8.0",
+    "@types/follow-redirects": "1.13.1",
     "@types/glob": "5.0.30",
     "@types/luxon": "1.26.2",
     "@types/mocha": "9.0.0",
