@@ -1,3 +1,7 @@
+## 3.3.0
+
+* Update JS/TS analyzer 8.4 -> [8.5](https://github.com/SonarSource/SonarJS/releases/tag/8.5.0.16762) -> [8.6](https://github.com/SonarSource/SonarJS/releases/tag/8.6.0.16913) -> [8.7](https://github.com/SonarSource/SonarJS/releases/tag/8.7.0.17093), 8 new rules about tests, support for TypeScript 4.4, improved resolution of TypeScript compiler settings
+
 ## 3.2.0
 
 * Load taint vulnerabilities and issue suppressions from the appropriate branch in connected mode
