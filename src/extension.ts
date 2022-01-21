@@ -131,6 +131,7 @@ function languageServerCommand(
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
   params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar')));
+  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarxml.jar')));
   const secrets = Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar');
   if (FS.existsSync(secrets)) {
     params.push('-extraAnalyzers');
