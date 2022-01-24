@@ -31,6 +31,14 @@ jobs:
         # Put your action repo here
         uses: SonarSource/gh-action_release/main@v3-slvscode
 
+      - name: Publish to OpenVSX
+        if: success()
+        id: ovsx_release
+        env:
+          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+          OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
+        uses: ./.github/actions/ovsx-publish
+
       - name: Check outputs
         if: always()
         run: |

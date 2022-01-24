@@ -1,0 +1,13 @@
+{
+  "name": "ovsx-publish",
+  "version": "0.1",
+  "author": {
+    "name": "SonarSource",
+    "url": "https://www.sonarsource.com"
+  },
+  "license": "SEE LICENSE IN ../../../LICENSE.txt",
+  "dependencies": {
+    "node-fetch": "3.2.0",
+    "ovsx": "0.3.0"
+  }
+}
