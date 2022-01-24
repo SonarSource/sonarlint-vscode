@@ -1,0 +1,6 @@
+name: ovsx-publish
+author: SonarSource
+description: Publish sonarlint-vscode to OpenVSX
+runs:
+  using: node16
+  main: main.js
