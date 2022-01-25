@@ -4,6 +4,7 @@
 * Update Java analyzer 7.4 -> [7.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=17008) -> [7.6](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=17063) -> [7.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10973&version=17102), support for new nullability annotations, bug fixes and improvements
 * Update PHP analyzer 3.21 -> [3.22](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10956&version=17071), support PHP 8.1
 * Update Python analyzer 3.6 -> [3.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16899) -> [3.8](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17054) -> [3.9](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17115), 12 new rules about regular expressions, support Python 3.10, improve performance of symbol resolution
+* Update HTML analyzer 3.4 -> [3.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10969&version=16781) -> [3.6](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10969&version=17150), support SalesForce Aura Lightning Components and Twig templates, fix false positives
 * Enable analysis of XML files
 
 ## 3.2.0
