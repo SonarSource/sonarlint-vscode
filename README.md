@@ -28,15 +28,24 @@ The full list of available rules is visible in the "SonarLint Rules" view in the
 
 ## Requirements
 
-The SonarLint language server needs a Java Runtime (JRE) 11+. If one is already installed on your computer, SonarLint should automatically find and use it.
+The SonarLint language server needs a Java Runtime (JRE) 11+. If one is already installed on your computer, SonarLint should automatically find and use it. Here is how SonarLint will search for an installed JRE (in priority order):
 
-If a suitable JRE cannot be found at the usual places, SonarLint will ask for your permission to download and manage its own version.
-
-Finally, you can explicitly set the path where the JRE is installed using the `sonarlint.ls.javaHome` variable in VS Code settings. For instance:
+1. the `sonarlint.ls.javaHome` variable in VS Code settings if set. For instance:
 
     {
         "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre-11.0.11"
     }
+2. the value of the `JDK_HOME` environment variable if set
+3. the value of the `JAVA_HOME` environment variable if set
+4. on Windows the registry is queried
+5. if a JRE is still not found then:
+   1. the `PATH` is scanned for `javac`
+   2. on macOS, the parent directory of `javac` is checked for a `java_home` binary. If that binary exists then it is executed and the result is used
+   3. the grandparent directory of `javac` is used. This is similar to `$(dirname $(dirname $(readlink $(which javac))))`
+
+SonarLint then uses the first JRE found in these steps to check its version.
+
+If a suitable JRE cannot be found at those places, SonarLint will ask for your permission to download and manage its own version.
 
 ### JS/TS analysis specific requirements
 
