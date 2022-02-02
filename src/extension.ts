@@ -126,16 +126,16 @@ function languageServerCommand(
   parseVMargs(params, vmargs);
   params.push('-jar', serverJar, `${port}`);
   params.push('-analyzers');
-  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar')));
-  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar')));
-  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar')));
-  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar')));
-  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar')));
-  params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarxml.jar')));
-  const secrets = Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar');
-  if (FS.existsSync(secrets)) {
+  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar'));
+  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar'));
+  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar'));
+  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar'));
+  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar'));
+  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarxml.jar'));
+  const secretsJar = Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar');
+  if (FS.existsSync(secretsJar)) {
     params.push('-extraAnalyzers');
-    params.push(toUrl(Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar')));
+    params.push(secretsJar);
   }
   return { command: javaExecutablePath, args: params };
 }

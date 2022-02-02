@@ -138,7 +138,7 @@ In connected mode with SonarCloud or any commercial edition of SonarQube, SonarL
 
 When using SonarQube >= 8.6 and browsing a [security hotspot](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) there will be a button offering to open the hotspot in SonarLint if you have already SonarLint running in VSCode. Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in CodeSpaces.
 
-SonarLint keeps server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint").
+SonarLint keeps server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). SonarLint will also automatically attempt to synchronize with configured servers at startup and every hour.
 
 ## Contributions
 
