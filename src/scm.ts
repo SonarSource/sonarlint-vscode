@@ -77,7 +77,7 @@ class GitScm implements Scm {
 
   private subscribeToAllRepositoryChanges() {
     this.gitApi.repositories.forEach(this.subscribeToRepositoryChanges, this);
-    vscode.workspace.workspaceFolders.forEach(folder => {
+    vscode.workspace.workspaceFolders?.forEach(folder => {
       const branchName = this.gitApi.getRepository(folder.uri)?.state.HEAD?.name;
       logToSonarLintOutput(`Initializing ${folder.uri} on branch ${branchName}`);
       this.client.didLocalBranchNameChange(folder.uri, branchName);
@@ -86,7 +86,7 @@ class GitScm implements Scm {
 
   private subscribeToRepositoryChanges(repository: Repository) {
     this.listeners.push(repository.state.onDidChange(() => {
-      vscode.workspace.workspaceFolders.forEach(folder => {
+      vscode.workspace.workspaceFolders?.forEach(folder => {
         if (folder.uri.toString().startsWith(repository.rootUri.toString())) {
           const branchName = repository.state.HEAD?.name;
           logToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
