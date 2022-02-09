@@ -6,6 +6,7 @@
 * Update Python analyzer 3.6 -> [3.7](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=16899) -> [3.8](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17054) -> [3.9](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17115), 12 new rules about regular expressions, support Python 3.10, improve performance of symbol resolution
 * Update HTML analyzer 3.4 -> [3.5](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10969&version=16781) -> [3.6](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10969&version=17150), support SalesForce Aura Lightning Components and Twig templates, fix false positives
 * Enable analysis of XML files
+* In connected mode, silently synchronize quality profiles at regular intervals
 
 ## 3.2.0
 
