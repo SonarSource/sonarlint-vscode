@@ -14,8 +14,8 @@
 
 'use strict';
 
-import fetch from 'node-fetch';
 import * as fs from 'fs';
+import fetch from 'node-fetch';
 import * as ovsx from 'ovsx';
 
 const {
@@ -40,9 +40,9 @@ const slvscodeBaseDir = artifactoryPublicRepo + '/org/sonarsource/sonarlint/vsco
     throw Error(`Could not fetch artifact from Repox: ${fetchResult.statusText}`);
   }
 
-  const fileName = fetchResult.headers.get('X-Artifactory-Filename');
+  const extensionFile = fetchResult.headers.get('X-Artifactory-Filename');
   await new Promise((resolve, reject) => {
-    const destination = fs.createWriteStream(fileName);
+    const destination = fs.createWriteStream(extensionFile);
     destination.on('error', err => reject(err));
     fetchResult.body.pipe(destination);
     fetchResult.body.on('end', () => resolve());
@@ -60,7 +60,7 @@ const slvscodeBaseDir = artifactoryPublicRepo + '/org/sonarsource/sonarlint/vsco
    * @type ovsx.PublishOptions
    */
   const options = {
-    fileName,
+    extensionFile,
     pat: OPENVSX_TOKEN
   };
   await ovsx.publish(options);
@@ -70,5 +70,6 @@ const slvscodeBaseDir = artifactoryPublicRepo + '/org/sonarsource/sonarlint/vsco
     return 0;
   })
   .catch(e => {
+    console.error(e);
     return 1;
   });

@@ -6,6 +6,7 @@
     "url": "https://www.sonarsource.com"
   },
   "license": "SEE LICENSE IN ../../../LICENSE.txt",
+  "type": "module",
   "dependencies": {
     "node-fetch": "3.2.0",
     "ovsx": "0.3.0"
