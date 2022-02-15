@@ -32,6 +32,11 @@ jobs:
         uses: SonarSource/gh-action_release/main@v3-slvscode
 
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: npm install
+        working-directory: ./.github/actions/ovsx-publish
       - name: Publish to OpenVSX
         if: success()
         id: ovsx_release
