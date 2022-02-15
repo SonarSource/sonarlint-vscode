@@ -31,6 +31,7 @@ jobs:
         # Put your action repo here
         uses: SonarSource/gh-action_release/main@v3-slvscode
 
+      - uses: actions/checkout@v2
       - name: Publish to OpenVSX
         if: success()
         id: ovsx_release
