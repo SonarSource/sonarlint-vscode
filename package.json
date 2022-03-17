@@ -496,7 +496,7 @@
       }
     ]
   },
-  "main": "./dist/extension",
+  "main": "out/src/extension",
   "files": [
     "server/sonarlint-ls.jar",
     "analyzers"
