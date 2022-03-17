@@ -535,6 +535,8 @@ interface IndexQP extends VSCode.QuickPickItem {
   index: number;
 }
 
+const PATH_TO_COMPILE_COMMANDS = 'sonarlint.pathToCompileCommands';
+
 async function showCompilationDatabaseOptions(paths: VSCode.Uri[]) {
   if (paths.length === 1) {
     VSCode.window.showInformationMessage(getMessageOnCompilationDatabaseSetUp(paths[0].fsPath));
