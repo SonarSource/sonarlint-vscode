@@ -93,6 +93,11 @@
           "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files. Example: `{**/test/**,**/*test*,**/*Test*}`",
           "scope": "resource"
         },
+        "sonarlint.pathToCompileCommands": {
+          "type": "string",
+          "markdownDescription": "Path to the active compilation database, e.g. `C:\\\\Repos\\\\MyProject\\\\compile_commands.json`",
+          "scope": "resource"
+        },
         "sonarlint.analyzerProperties": {
           "type": "object",
           "patternProperties": {
