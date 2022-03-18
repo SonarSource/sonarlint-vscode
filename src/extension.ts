@@ -535,10 +535,9 @@ interface IndexQP extends VSCode.QuickPickItem {
   index: number;
 }
 
-async function ShowCDOptions(paths: VSCode.Uri[]) {
-  const setMessage = `Analysis configured. Compilation database path is set to: `;
+async function showCompilationDatabaseOptions(paths: VSCode.Uri[]) {
   if (paths.length === 1) {
-    VSCode.window.showInformationMessage(setMessage + paths[0].fsPath);
+    VSCode.window.showInformationMessage(getMessageOnCompilationDatabaseSetUp(paths[0].fsPath));
     return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, paths[0].fsPath,
       VSCode.ConfigurationTarget.Workspace);
   }
@@ -546,24 +545,27 @@ async function ShowCDOptions(paths: VSCode.Uri[]) {
   for (let i = 0; i < paths.length; i++) {
     items.push({ label: paths[i].fsPath, description: ``, index: i });
   }
-  const options: VSCode.QuickPickOptions = {};
-  options.placeHolder = `Pick a compilation database`;
+  const options = { placeHolder: 'Pick a compilation database' };
   const selection: IndexQP | undefined = await VSCode.window.showQuickPick(items, options);
   if (selection) {
-    VSCode.window.showInformationMessage(setMessage + paths[selection.index].fsPath);
+    VSCode.window.showInformationMessage(getMessageOnCompilationDatabaseSetUp(paths[selection.index].fsPath));
     return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, paths[selection.index].fsPath,
       VSCode.ConfigurationTarget.Workspace);
   }
   return Promise.resolve();
 }
 
+function getMessageOnCompilationDatabaseSetUp(path: string): string {
+  return `Analysis configured. Compilation database path is set to: ${path}`;
+}
+
 async function configureCompilationDatabase() {
   const paths = (await VSCode.workspace.findFiles(`**/compile_commands.json`))
       .filter((path) => FS.existsSync(path.fsPath));
   if (paths.length === 0) {
-    VSCode.window.showWarningMessage(`No compilation database was found in the workspace`);
+    VSCode.window.showWarningMessage(`No compilation databases were found in the workspace`);
   } else {
-    await ShowCDOptions(paths);
+    await showCompilationDatabaseOptions(paths);
   }
 }
 
