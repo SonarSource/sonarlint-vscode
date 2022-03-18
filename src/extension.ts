@@ -554,6 +554,7 @@ async function ShowCDOptions(paths: VSCode.Uri[]) {
     return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, paths[selection.index].fsPath,
       VSCode.ConfigurationTarget.Workspace);
   }
+  return Promise.resolve();
 }
 
 async function configureCompilationDatabase() {
