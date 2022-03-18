@@ -36,6 +36,7 @@ declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
+const PATH_TO_COMPILE_COMMANDS = 'sonarlint.pathToCompileCommands';
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -366,6 +367,9 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   });
 
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE,
+    configureCompilationDatabase));
+
   languageClient.start();
 
   context.subscriptions.push(onConfigurationChange());
@@ -525,6 +529,41 @@ async function showAllLocations(issue: protocol.Issue) {
 function clearLocations() {
   secondaryLocationsTree.hideLocations();
   issueLocationsView.message = null;
+}
+
+interface IndexQP extends VSCode.QuickPickItem {
+  index: number;
+}
+
+async function ShowCDOptions(paths: VSCode.Uri[]) {
+  const setMessage = `Analysis configured. Compilation database path is set to: `;
+  if (paths.length === 1) {
+    VSCode.window.showInformationMessage(setMessage + paths[0].fsPath);
+    return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, paths[0].fsPath,
+      VSCode.ConfigurationTarget.Workspace);
+  }
+  const items: IndexQP[] = [];
+  for (let i = 0; i < paths.length; i++) {
+    items.push({ label: paths[i].fsPath, description: ``, index: i });
+  }
+  const options: VSCode.QuickPickOptions = {};
+  options.placeHolder = `Pick a compilation database`;
+  const selection: IndexQP | undefined = await VSCode.window.showQuickPick(items, options);
+  if (selection) {
+    VSCode.window.showInformationMessage(setMessage + paths[selection.index].fsPath);
+    return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, paths[selection.index].fsPath,
+      VSCode.ConfigurationTarget.Workspace);
+  }
+}
+
+async function configureCompilationDatabase() {
+  const paths = (await VSCode.workspace.findFiles(`**/compile_commands.json`))
+      .filter((path) => FS.existsSync(path.fsPath));
+  if (paths.length === 0) {
+    VSCode.window.showWarningMessage(`No compilation database was found in the workspace`);
+  } else {
+    await ShowCDOptions(paths);
+  }
 }
 
 function onConfigurationChange() {
