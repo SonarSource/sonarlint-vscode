@@ -11,6 +11,7 @@ import * as CompareVersions from 'compare-versions';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
+const fs = require("fs");
 
 import { waitForSonarLintDiagnostics } from '../common/util';
 
@@ -25,20 +26,38 @@ suite('CFamily Test Suite', () => {
   });
 
   test('should report issue on cpp file',  async () => {
+    vscode.workspace.getConfiguration().update('sonarlint.pathToCompileCommands', "");
+
+
+    const ext = vscode.extensions.getExtension('sonarsource.sonarlint-vscode')!;
+    await ext.activate();
     const fileUri = vscode.Uri.file(path.join(__dirname, sampleCfamilyFolderLocation, 'main.cpp'));
+
+
     const projectPath = vscode.Uri.file(path.join(__dirname, sampleCfamilyFolderLocation));
 
-    //vscode.workspace.getConfiguration().update('sonarlint.pathToCompileCommands', projectPath.fsPath, vscode.ConfigurationTarget.Workspace);
     const document = await vscode.workspace.openTextDocument(fileUri);
-
     await vscode.window.showTextDocument(document);
-    vscode.commands.executeCommand('SonarLint.ConfigureCompilationDatabase');
-    const diags = await waitForSonarLintDiagnostics(fileUri);
+    await vscode.commands.executeCommand('SonarLint.ConfigureCompilationDatabase');
+    const emptyPathToCompileCommands = vscode.workspace.getConfiguration().get('sonarlint.pathToCompileCommands');
+    console.debug("emptyPathToCompileCommands: " + JSON.stringify(emptyPathToCompileCommands));
 
-    assert.deepEqual(diags.length, 0);
-    //assert.equal(diags[0].message, "...");
+    createCompilationDatabase(sampleCfamilyFolderLocation);
+
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-  }).timeout(60*1000);
+  }).timeout(10*1000);
 
 });
+
+function createCompilationDatabase(path:string) {
+  let compilationDbContent = "[\n" +
+    "{\n" +
+    "  \"directory\": \"/home/knize/CLionProjects/TT/cmake-build-debug\",\n" +
+    "  \"command\": \"/usr/bin/c++ -g -std=gnu++14 -o CMakeFiles/TT.dir/main.cpp.o -c /home/knize/CLionProjects/TT/main.cpp\",\n" +
+    "  \"file\": \"/home/knize/CLionProjects/TT/main.cpp\"\n" +
+    "}\n" +
+    "]";
+
+  fs.writeFileSync(`${path}compile_commands.json`, compilationDbContent);
+}
