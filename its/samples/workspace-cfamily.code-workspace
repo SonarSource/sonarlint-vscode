@@ -3,8 +3,5 @@
 		{
 			"path": "./sample-cfamily"
 		}
-	],
-	"settings": {
-		"sonarlint.pathToCompileCommands": "/Users/kirill.knize/IdeaProjects/sonarlint-vscode/its/samples/sample-cfamily/"
-	}
+	]
 }
