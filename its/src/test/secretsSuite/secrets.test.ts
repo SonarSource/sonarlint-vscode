@@ -72,7 +72,7 @@ suite('Secrets Test Suite', () => {
     await vscode.workspace.fs.writeFile(fileUri, new TextEncoder().encode('AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw'));
     await vscode.window.showTextDocument(fileUri);
 
-    const diags = await waitForSonarLintDiagnostics(fileUri, 5000);
+    const diags = await waitForSonarLintDiagnostics(fileUri, { timeoutMillis: 5000 });
 
     assert.deepStrictEqual(diags.length, 0);
   }).timeout(60 * 1000);
@@ -86,7 +86,7 @@ suite('Secrets Test Suite', () => {
         .encode('AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw'));
     await vscode.window.showTextDocument(tmpFileUri);
 
-    const diags = await waitForSonarLintDiagnostics(tmpFileUri, 5000);
+    const diags = await waitForSonarLintDiagnostics(tmpFileUri, { timeoutMillis: 5000 });
 
     assert.deepStrictEqual(diags.length, 1);
     assert.strictEqual(diags[0].message, secretIssueMessage);

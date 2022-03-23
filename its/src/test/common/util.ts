@@ -9,14 +9,17 @@ import * as vscode from 'vscode';
 
 const MAX_WAIT_DIAGNOSTICS_MS = 20000;
 
-export async function waitForSonarLintDiagnostics(
-  fileUri: vscode.Uri,
-  minimumExpectedIssueCount = 1,
-  timeoutMillis = MAX_WAIT_DIAGNOSTICS_MS
-) {
+interface WaitForDiagnosticsOptions {
+  atLeastIssues?: number,
+  timeoutMillis?: number
+}
+
+export async function waitForSonarLintDiagnostics(fileUri: vscode.Uri, options?: WaitForDiagnosticsOptions) {
   const startTime = new Date();
+  const atLeastIssues = options?.atLeastIssues || 1;
+  const timeoutMillis = options?.timeoutMillis || MAX_WAIT_DIAGNOSTICS_MS;
   let diags = getSonarLintDiagnostics(fileUri);
-  while (diags.length < minimumExpectedIssueCount && new Date().getTime() - startTime.getTime() < timeoutMillis) {
+  while (diags.length < atLeastIssues && new Date().getTime() - startTime.getTime() < timeoutMillis) {
     await sleep(200);
     diags = getSonarLintDiagnostics(fileUri);
   }

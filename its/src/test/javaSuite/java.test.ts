@@ -44,7 +44,7 @@ suite('Java Test Suite', () => {
       const editor = await vscode.window.showTextDocument(document);
 
       // Check that we have 2 diagnostics in the right order
-      const diags = await waitForSonarLintDiagnostics(fileUri, 2);
+      const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2 });
       assert.deepEqual(diags.map(d => [ d.code, d.message ]), [
         [ 'java:S1130', 'Remove the declaration of thrown exception \'edu.marcelo.App$MyException\', as it cannot be thrown from method\'s body.' ],
         [ 'java:S106', 'Replace this use of System.out or System.err by a logger.' ]
