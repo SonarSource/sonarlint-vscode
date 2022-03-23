@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 import * as assert from 'assert';
 import * as path from 'path';
-import * as mocha from 'mocha'
+import {describe, after, before, it} from 'mocha';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -16,7 +16,7 @@ const fs = require("fs");
 
 const sampleCFamilyFolderLocation = '../../../samples/sample-cfamily/';
 
-mocha.describe('CFamily Test Suite', () => {
+describe('CFamily Test Suite', () => {
   vscode.window.showInformationMessage('Start cfamily tests.');
 
   let firstCompileDbToCreatePath:string;
@@ -24,7 +24,7 @@ mocha.describe('CFamily Test Suite', () => {
   let innerDir:string;
   let projectUri:vscode.Uri;
 
-  mocha.before(async function () {
+  before(async function () {
     projectUri = vscode.Uri.file(path.join(__dirname, sampleCFamilyFolderLocation));
     await vscode.workspace.getConfiguration('sonarlint', projectUri).update('pathToCompileCommands', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
     firstCompileDbToCreatePath = path.join(__dirname, sampleCFamilyFolderLocation, 'compile_commands.json');
@@ -32,7 +32,7 @@ mocha.describe('CFamily Test Suite', () => {
     innerDir = path.join(__dirname, sampleCFamilyFolderLocation, "inner");
   });
 
-  mocha.it('should detect compilation database correctly', async () => {
+  it('should detect compilation database correctly', async () => {
 
     const ext = vscode.extensions.getExtension('sonarsource.sonarlint-vscode')!;
     await ext.activate();
@@ -54,6 +54,8 @@ mocha.describe('CFamily Test Suite', () => {
     createCompilationDatabase(secondCompileDbToCreate.path);
     vscode.commands.executeCommand('SonarLint.ConfigureCompilationDatabase');
     await sleep(1000);
+    await vscode.commands.executeCommand('workbench.action.quickOpenNavigateNext');
+    await sleep(1000);
     await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
     await sleep(1000);
     pathToCompileCommands = vscode.workspace.getConfiguration('sonarlint', projectUri).get('pathToCompileCommands');
@@ -62,25 +64,35 @@ mocha.describe('CFamily Test Suite', () => {
   }).timeout(30 * 1000);
 
   // test cleanup
-  mocha.after(async function () {
-    fs.rmdir(innerDir, {recursive: true}, (err: any) => {
-      if (err) {
-        throw err;
-      }
-      console.log(`${innerDir} is deleted!`);
-    });
-    fs.unlink(firstCompileDbToCreatePath, (err: any) => {
-      if (err) {
-        throw err;
-      }
-      console.log(`${firstCompileDbToCreatePath} is deleted!`);
-    });
+  after(async function () {
+    const vscodeProjectSettingsPath = path.join(__dirname, sampleCFamilyFolderLocation, ".vscode");
+    removeDir(vscodeProjectSettingsPath);
+    removeDir(innerDir);
+    if (fs.existsSync(firstCompileDbToCreatePath)) {
+      fs.unlink(firstCompileDbToCreatePath, (err: any) => {
+        if (err) {
+          throw err;
+        }
+        console.log(`${firstCompileDbToCreatePath} is deleted!`);
+      });
+    }
     await vscode.workspace.getConfiguration('sonarlint', projectUri).update('pathToCompileCommands', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
   });
 });
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function removeDir(dir: string) {
+  if (fs.existsSync(dir)) {
+    fs.rmdir(dir, {recursive: true}, (err: any) => {
+      if (err) {
+        throw err;
+      }
+      console.log(`${dir} is deleted!`);
+    });
+  }
 }
 
 function createDir(dir: string) {
