@@ -19,6 +19,7 @@ const sampleJavaFolderLocation = '../../../samples/sample-java-maven-multi-modul
 
 suite('Java Test Suite', () => {
   vscode.window.showInformationMessage('Start java tests.');
+  vscode.commands.executeCommand('workbench.panel.markers.view.focus');
 
   test('Extension should be present', () => {
     assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));
@@ -43,7 +44,7 @@ suite('Java Test Suite', () => {
       const editor = await vscode.window.showTextDocument(document);
 
       // Check that we have 2 diagnostics in the right order
-      const diags = await waitForSonarLintDiagnostics(fileUri);
+      const diags = await waitForSonarLintDiagnostics(fileUri, 2);
       assert.deepEqual(diags.map(d => [ d.code, d.message ]), [
         [ 'java:S1130', 'Remove the declaration of thrown exception \'edu.marcelo.App$MyException\', as it cannot be thrown from method\'s body.' ],
         [ 'java:S106', 'Replace this use of System.out or System.err by a logger.' ]
