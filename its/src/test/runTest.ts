@@ -23,19 +23,16 @@ async function main() {
     }
 
     const userDataDir = path.resolve(__dirname, '../../userdir');
+
     // The folder containing the Extension Manifest package.json
     // Passed to `--extensionDevelopmentPath`
     const extensionDevelopmentPath = path.resolve(__dirname, '../../');
-
-    // The path to test runner
-    // Passed to --extensionTestsPath
-    const extensionTestsPath = path.resolve(__dirname, './suite');
 
     const vscodeVersion = process.env['VSCODE_VERSION'];
     const vscodeExecutablePath = await downloadAndUnzipVSCode(vscodeVersion);
     const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
 
-    var vsixes = readdirSync('..').filter(fn => fn.endsWith('.vsix'));
+    const vsixes = readdirSync('..').filter(fn => fn.endsWith('.vsix'));
     // Use cp.spawn / cp.exec for custom setup
     cp.spawnSync(cliPath, ['--install-extension', '../' + vsixes[0]], {
       encoding: 'utf-8',
@@ -44,47 +41,28 @@ async function main() {
 
     const testErrors = [];
 
-    // run the integration test
-    try {
-      await runTests({
-        // Use the specified `code` executable
-        vscodeExecutablePath,
-        extensionDevelopmentPath,
-        extensionTestsPath,
-        launchArgs: [`--user-data-dir=${userDataDir}`]
-      });
-    } catch (testError) {
-      testErrors.push(testError);
-    }
+    const runTestSuite = async (suiteDir: string, workspaceDir?: string) => {
+      const launchArgs = [`--user-data-dir=${userDataDir}`];
+      if (workspaceDir) {
+        launchArgs.unshift(path.resolve(__dirname, `../../samples/${workspaceDir}`));
+      }
+      try {
+        await runTests({
+          // Use the specified `code` executable
+          vscodeExecutablePath,
+          extensionDevelopmentPath,
+          extensionTestsPath: path.resolve(__dirname, suiteDir),
+          launchArgs
+        });
+      } catch (testError) {
+        testErrors.push(testError);
+      }
+    };
 
-    try {
-      await runTests({
-        // Use the specified `code` executable
-        vscodeExecutablePath,
-        extensionDevelopmentPath,
-        extensionTestsPath: path.resolve(__dirname, './secretsSuite'),
-        launchArgs: [path.resolve(__dirname, '../../samples/workspace-secrets.code-workspace'), `--user-data-dir=${userDataDir}`]
-      });
-    } catch (testError) {
-      testErrors.push(testError);
-    }
-
-    const pythonExtensionTestsPath = path.resolve(__dirname, './pythonSuite');
-    const pythonTestWorkspace = path.resolve(__dirname, '../../samples/workspace-python.code-workspace');
-    try {
-      await runTests({
-        // Use the specified `code` executable
-        vscodeExecutablePath,
-        extensionDevelopmentPath,
-        extensionTestsPath: pythonExtensionTestsPath,
-        launchArgs: [pythonTestWorkspace, `--user-data-dir=${userDataDir}`]
-      });
-    } catch (testError) {
-      testErrors.push(testError);
-    }
-
-    const javaExtensionTestsPath = path.resolve(__dirname, './javaSuite');
-    const javaTestWorkspace = path.resolve(__dirname, '../../samples/workspace-java.code-workspace');
+    // run the integration tests
+    await runTestSuite('./suite');
+    await runTestSuite('./secretsSuite', 'workspace-secrets.code-workspace');
+    await runTestSuite('./pythonSuite', 'workspace-python.code-workspace');
 
     ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
       cp.spawnSync(cliPath, ['--install-extension', requiredExtensionId], {
@@ -92,18 +70,7 @@ async function main() {
         stdio: 'inherit'
       });
     });
-
-    try {
-      await runTests({
-        // Use the specified `code` executable
-        vscodeExecutablePath,
-        extensionDevelopmentPath,
-        extensionTestsPath: javaExtensionTestsPath,
-        launchArgs: [javaTestWorkspace, `--user-data-dir=${userDataDir}`]
-      });
-    } catch (testError) {
-      testErrors.push(testError);
-    }
+    await runTestSuite('./javaSuite', 'workspace-java.code-workspace');
 
     if (testErrors.length > 0) {
       throw new Error('At least one test suite failed, please check logs above for actual failure.');
