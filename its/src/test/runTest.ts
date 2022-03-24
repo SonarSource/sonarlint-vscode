@@ -63,6 +63,7 @@ async function main() {
     await runTestSuite('./suite');
     await runTestSuite('./secretsSuite', 'workspace-secrets.code-workspace');
     await runTestSuite('./pythonSuite', 'workspace-python.code-workspace');
+    await runTestSuite('./cfamilySuite', 'workspace-cfamily.code-workspace');
 
     ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
       cp.spawnSync(cliPath, ['--install-extension', requiredExtensionId], {

@@ -537,31 +537,29 @@ interface IndexQP extends VSCode.QuickPickItem {
 
 async function showCompilationDatabaseOptions(paths: VSCode.Uri[]) {
   if (paths.length === 1) {
-    VSCode.window.showInformationMessage(getMessageOnCompilationDatabaseSetUp(paths[0].fsPath));
-    return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, paths[0].fsPath,
-      VSCode.ConfigurationTarget.Workspace);
+    return showMessageAndUpdateConfig(paths[0].fsPath);
   }
-  const items: IndexQP[] = [];
-  for (let i = 0; i < paths.length; i++) {
-    items.push({ label: paths[i].fsPath, description: ``, index: i });
-  }
+  const items = paths.map((path, i) => ({ label: path.fsPath, description: ``, index: i }));
+  items.sort((i1, i2) => i1.label.localeCompare(i2.label));
   const options = { placeHolder: 'Pick a compilation database' };
   const selection: IndexQP | undefined = await VSCode.window.showQuickPick(items, options);
   if (selection) {
-    VSCode.window.showInformationMessage(getMessageOnCompilationDatabaseSetUp(paths[selection.index].fsPath));
-    return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, paths[selection.index].fsPath,
-      VSCode.ConfigurationTarget.Workspace);
+    return showMessageAndUpdateConfig(paths[selection.index].fsPath);
   }
-  return Promise.resolve();
+  return undefined;
 }
 
-function getMessageOnCompilationDatabaseSetUp(path: string): string {
-  return `Analysis configured. Compilation database path is set to: ${path}`;
+function showMessageAndUpdateConfig(compilationDbPath: string) {
+  VSCode.window.showInformationMessage(
+    `Analysis configured. Compilation database path is set to: ${compilationDbPath}`
+  );
+  return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, compilationDbPath,
+    VSCode.ConfigurationTarget.Workspace);
 }
 
 async function configureCompilationDatabase() {
   const paths = (await VSCode.workspace.findFiles(`**/compile_commands.json`))
-      .filter((path) => FS.existsSync(path.fsPath));
+    .filter(path => FS.existsSync(path.fsPath));
   if (paths.length === 0) {
     VSCode.window.showWarningMessage(`No compilation databases were found in the workspace`);
   } else {
