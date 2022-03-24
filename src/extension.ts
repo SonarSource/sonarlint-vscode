@@ -251,7 +251,7 @@ export function activate(context: VSCode.ExtensionContext) {
         productVersion: util.packageJson.version,
         workspaceName: VSCode.workspace.name,
         typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined,
-        firstSecretDetected: context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY) === 'true' ? 'true' : 'false',
+        firstSecretDetected: isFirstSecretDetected(context),
         additionalAttributes: {
           vscode: {
             remoteName: VSCode.env.remoteName,
@@ -280,13 +280,12 @@ export function activate(context: VSCode.ExtensionContext) {
     const scm = initScm(languageClient, referenceBranchStatusItem);
     context.subscriptions.push(scm);
     context.subscriptions.push(
-      languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type,
-      folderUri => {
+      languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type, folderUri => {
         return scm.getBranchForFolder(VSCode.Uri.parse(folderUri));
       })
     );
-    context.subscriptions.push(languageClient.onRequest(protocol.SetReferenceBranchNameForFolderRequest.type,
-      params => {
+    context.subscriptions.push(
+      languageClient.onRequest(protocol.SetReferenceBranchNameForFolderRequest.type, params => {
         scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
       })
     );
@@ -367,8 +366,9 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   });
 
-  context.subscriptions.push(VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE,
-    configureCompilationDatabase));
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE, configureCompilationDatabase)
+  );
 
   languageClient.start();
 
@@ -396,7 +396,16 @@ async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionCon
         VSCode.commands.executeCommand('workbench.panel.markers.view.focus');
       }
     });
-  context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, 'true');
+  context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, true);
+}
+
+function isFirstSecretDetected(context: VSCode.ExtensionContext) {
+  const result = context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY);
+  if (typeof result == 'string') {
+    // migrate
+    context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, result === 'true');
+  }
+  return context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY, false);
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
