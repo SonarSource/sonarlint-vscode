@@ -461,7 +461,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
   languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
-  languageClient.onRequest('sonarlint/didMissingCompileCommands', notifyMissingCompileCommands)
+  languageClient.onRequest('sonarlint/didMissingCompileCommands', notifyMissingCompileCommands);
 
   async function notifyMissingCompileCommands() {
     if (await doNotAskAboutCompileCommandsFlag(context)) {
@@ -470,14 +470,15 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     const doNotAskAgainAction = 'Do not ask again';
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarLint was unable to analyze the C/C++ file because there is no configured compilation databases.`;
-    VSCode.window.showWarningMessage(message, doNotAskAgainAction, configureCompileCommandsAction).then(selection => {
-      if (doNotAskAgainAction === selection) {
-        context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
-      }
-      if (configureCompileCommandsAction === selection) {
-        configureCompilationDatabase();
-      }
-    });
+    VSCode.window.showWarningMessage(message, doNotAskAgainAction, configureCompileCommandsAction)
+      .then(selection => {
+        if (doNotAskAgainAction === selection) {
+          context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
+        }
+        if (configureCompileCommandsAction === selection) {
+          configureCompilationDatabase();
+        }
+      });
   }
 }
 

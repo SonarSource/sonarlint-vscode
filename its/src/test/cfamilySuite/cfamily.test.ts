@@ -83,6 +83,44 @@ describe('CFamily Test Suite', () => {
     await vscode.workspace.getConfiguration('sonarlint', projectUri).update('pathToCompileCommands', undefined,
       vscode.ConfigurationTarget.WorkspaceFolder);
   });
+
+  before(async function () {
+    projectUri = vscode.Uri.file(path.join(__dirname, sampleCFamilyFolderLocation));
+    await vscode.workspace.getConfiguration('sonarlint', projectUri)
+      .update('pathToCompileCommands', '/no/such/path/compile_commands.json', vscode.ConfigurationTarget.WorkspaceFolder);
+    firstCompileDbToCreatePath = path.join(__dirname, sampleCFamilyFolderLocation, 'compile_commands.json');
+    firstCompileDbToCreate = vscode.Uri.file(firstCompileDbToCreatePath);
+    innerDir = path.join(__dirname, sampleCFamilyFolderLocation, "inner");
+  });
+
+  test('Compile database autosuggestion', async ()=> {
+    // TODO test plan:
+    // open project with wrongly configured compile commands setting
+    // pick 'Configure compile commands' action
+    // assert setting is correct
+    const ext = vscode.extensions.getExtension('sonarsource.sonarlint-vscode')!;
+    await ext.activate();
+    const fileUri = vscode.Uri.file(path.join(__dirname, sampleCFamilyFolderLocation, 'main.cpp'));
+    const document = await vscode.workspace.openTextDocument(fileUri);
+    await vscode.window.showTextDocument(document);
+
+
+    await sleep(1000);
+    await vscode.commands.executeCommand('workbench.action.quickOpenNavigateNext');
+    await sleep(1000);
+    await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+
+    assert.equal(firstCompileDbToCreatePath, firstCompileDbToCreate.path, 'should have selected default one');
+  }).timeout(30 * 1000);
+
+  test('Do not ask property', async ()=> {
+    // TODO test plan:
+    // open project with wrongly configured compile commands setting
+    // pick 'Do not ask' action
+    // assert flag is set
+    // repeat and assert there is no notification (?)
+  }).timeout(30 * 1000);
+
 });
 
 function sleep(ms: number) {
