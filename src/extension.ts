@@ -252,6 +252,7 @@ export function activate(context: VSCode.ExtensionContext) {
         workspaceName: VSCode.workspace.name,
         typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined,
         firstSecretDetected: isFirstSecretDetected(context),
+        showVerboseLogs: VSCode.workspace.getConfiguration().get('sonarlint.output.showVerboseLogs', false),
         additionalAttributes: {
           vscode: {
             remoteName: VSCode.env.remoteName,
