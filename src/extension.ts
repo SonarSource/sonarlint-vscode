@@ -554,12 +554,12 @@ function showMessageAndUpdateConfig(compilationDbPath: string) {
     `Analysis configured. Compilation database path is set to: ${compilationDbPath}`
   );
   return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, compilationDbPath,
-      VSCode.ConfigurationTarget.Workspace);
+    VSCode.ConfigurationTarget.Workspace);
 }
 
 async function configureCompilationDatabase() {
   const paths = (await VSCode.workspace.findFiles(`**/compile_commands.json`))
-      .filter(path => FS.existsSync(path.fsPath));
+    .filter(path => FS.existsSync(path.fsPath));
   if (paths.length === 0) {
     VSCode.window.showWarningMessage(`No compilation databases were found in the workspace`);
   } else {

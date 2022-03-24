@@ -19,14 +19,15 @@ const sampleCFamilyFolderLocation = '../../../samples/sample-cfamily/';
 describe('CFamily Test Suite', () => {
   vscode.window.showInformationMessage('Start cfamily tests.');
 
-  let firstCompileDbToCreatePath:string;
-  let firstCompileDbToCreate:vscode.Uri;
-  let innerDir:string;
-  let projectUri:vscode.Uri;
+  let firstCompileDbToCreatePath: string;
+  let firstCompileDbToCreate: vscode.Uri;
+  let innerDir: string;
+  let projectUri: vscode.Uri;
 
   before(async function () {
     projectUri = vscode.Uri.file(path.join(__dirname, sampleCFamilyFolderLocation));
-    await vscode.workspace.getConfiguration('sonarlint', projectUri).update('pathToCompileCommands', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    await vscode.workspace.getConfiguration('sonarlint', projectUri).update('pathToCompileCommands', undefined,
+      vscode.ConfigurationTarget.WorkspaceFolder);
     firstCompileDbToCreatePath = path.join(__dirname, sampleCFamilyFolderLocation, 'compile_commands.json');
     firstCompileDbToCreate = vscode.Uri.file(firstCompileDbToCreatePath);
     innerDir = path.join(__dirname, sampleCFamilyFolderLocation, "inner");
@@ -79,7 +80,8 @@ describe('CFamily Test Suite', () => {
         console.log(`${firstCompileDbToCreatePath} is deleted!`);
       });
     }
-    await vscode.workspace.getConfiguration('sonarlint', projectUri).update('pathToCompileCommands', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    await vscode.workspace.getConfiguration('sonarlint', projectUri).update('pathToCompileCommands', undefined,
+      vscode.ConfigurationTarget.WorkspaceFolder);
   });
 });
 
