@@ -8,6 +8,8 @@
 
 import * as lsp from 'vscode-languageserver-protocol';
 
+//#region Client side extensions to LSP
+
 export namespace ShowRuleDescriptionNotification {
   export const type = new lsp.NotificationType<ShowRuleDescriptionParams>('sonarlint/showRuleDescription');
 }
@@ -153,3 +155,51 @@ export namespace SetReferenceBranchNameForFolderNotification {
 export namespace NeedCompilationDatabaseRequest {
   export const type = new lsp.NotificationType('sonarlint/needCompilationDatabase');
 }
+
+//#endregion
+
+//#region Server side extensions to LSP
+
+export interface DidClasspathUpdateParams {
+  projectUri: string;
+}
+
+export namespace DidClasspathUpdateNotification {
+  export const type = new lsp.NotificationType<DidClasspathUpdateParams>('sonarlint/didClasspathUpdate');
+}
+
+export interface DidJavaServerModeChangeParams {
+  serverMode: string;
+}
+
+export namespace DidJavaServerModeChangeNotification {
+  export const type = new lsp.NotificationType<DidJavaServerModeChangeParams>('sonarlint/didJavaServerModeChange');
+}
+
+export interface DidLocalBranchNameChangeParams {
+  folderUri: string;
+  branchName?: string;
+}
+
+export namespace DidLocalBranchNameChangeNotification {
+  export const type = new lsp.NotificationType<DidLocalBranchNameChangeParams>('sonarlint/didLocalBranchNameChange');
+}
+
+export type ConfigLevel = 'on' | 'off';
+
+export interface Rule {
+  readonly key: string;
+  readonly name: string;
+  readonly activeByDefault: boolean;
+  levelFromConfig?: ConfigLevel;
+}
+
+export interface RulesResponse {
+  [language: string]: Array<Rule>;
+}
+
+export namespace ListAllRulesRequest {
+  export const type = new lsp.RequestType0<RulesResponse, void>('sonarlint/listAllRules');
+}
+
+//#endregion
