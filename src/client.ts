@@ -8,24 +8,26 @@
 import * as VSCode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from './java';
-import { RulesResponse } from './rules';
 import { code2ProtocolConverter } from './uri';
+import * as protocol from './protocol';
+import { RulesResponse } from './protocol';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<RulesResponse> {
-    return this.sendRequest('sonarlint/listAllRules');
+    return this.sendRequest(protocol.ListAllRulesRequest.type);
   }
 
   didClasspathUpdate(projectRoot: VSCode.Uri): void {
-    this.sendNotification('sonarlint/didClasspathUpdate', code2ProtocolConverter(projectRoot));
+    const projectUri = code2ProtocolConverter(projectRoot);
+    this.sendNotification(protocol.DidClasspathUpdateNotification.type, { projectUri });
   }
 
   didJavaServerModeChange(serverMode: ServerMode) {
-    this.sendNotification('sonarlint/didJavaServerModeChange', serverMode);
+    this.sendNotification(protocol.DidJavaServerModeChangeNotification.type, { serverMode });
   }
 
   didLocalBranchNameChange(folderRoot: VSCode.Uri, branchName?: string) {
     const folderUri = code2ProtocolConverter(folderRoot);
-    this.sendNotification('sonarlint/didLocalBranchNameChange', { folderUri, branchName });
+    this.sendNotification(protocol.DidLocalBranchNameChangeNotification.type, { folderUri, branchName });
   }
 }

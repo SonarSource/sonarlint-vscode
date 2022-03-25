@@ -27,7 +27,7 @@ import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './
 import * as protocol from './protocol';
 import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
 import { computeRuleDescPanelContent } from './rulepanel';
-import { AllRulesTreeDataProvider, ConfigLevel, Rule, RuleNode } from './rules';
+import { AllRulesTreeDataProvider, RuleNode } from './rules';
 import { initScm } from './scm';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
@@ -194,7 +194,7 @@ function findTypeScriptLocation(): string | undefined {
   }
 }
 
-function toggleRule(level: ConfigLevel) {
+function toggleRule(level: protocol.ConfigLevel) {
   return (ruleKey: string | RuleNode) => {
     const configuration = getSonarLintConfiguration();
     const rules = configuration.get('rules') || {};
@@ -334,7 +334,7 @@ export function activate(context: VSCode.ExtensionContext) {
         .then(key => {
           // Reset rules view filter
           VSCode.commands.executeCommand(Commands.SHOW_ALL_RULES).then(() =>
-            allRulesView.reveal(new RuleNode({ key: key.toUpperCase() } as Rule), {
+            allRulesView.reveal(new RuleNode({ key: key.toUpperCase() } as protocol.Rule), {
               focus: true,
               expand: true
             })

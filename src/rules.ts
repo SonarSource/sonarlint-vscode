@@ -7,15 +7,7 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-
-export type ConfigLevel = 'on' | 'off';
-
-export interface Rule {
-  readonly key: string;
-  readonly name: string;
-  readonly activeByDefault: boolean;
-  levelFromConfig?: ConfigLevel;
-}
+import { ConfigLevel, Rule, RulesResponse } from './protocol';
 
 function isActive(rule: Rule) {
   return (rule.activeByDefault && rule.levelFromConfig !== 'off') || rule.levelFromConfig === 'on';
@@ -23,10 +15,6 @@ function isActive(rule: Rule) {
 
 function actualLevel(rule: Rule) {
   return isActive(rule) ? 'on' : 'off';
-}
-
-export interface RulesResponse {
-  [language: string]: Array<Rule>;
 }
 
 export class LanguageNode extends VSCode.TreeItem {
