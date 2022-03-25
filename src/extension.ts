@@ -256,7 +256,7 @@ export function activate(context: VSCode.ExtensionContext) {
         showVerboseLogs: VSCode.workspace.getConfiguration().get('sonarlint.output.showVerboseLogs', false),
         additionalAttributes: {
           vscode: {
-            remoteName: VSCode.env.remoteName,
+            remoteName: cleanRemoteName(VSCode.env.remoteName),
             uiKind: VSCode.UIKind[VSCode.env.uiKind]
           }
         }
@@ -382,6 +382,28 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
+}
+
+/**
+ * Inspired from https://github.com/microsoft/vscode-extension-telemetry/blob/4408adad49f6da5816c28467d90aec15773773a9/src/common/baseTelemetryReporter.ts#L63
+ * Given a remoteName ensures it is in the list of valid ones
+ * @param remoteName The remotename
+ * @returns The "cleaned" one
+ */
+function cleanRemoteName(remoteName?: string): string {
+  if (!remoteName) {
+    return 'none';
+  }
+
+  let ret = 'other';
+  // Allowed remote authorities
+  ['ssh-remote', 'dev-container', 'attached-container', 'wsl', 'codespaces'].forEach((res: string) => {
+    if (remoteName.indexOf(`${res}`) === 0) {
+      ret = res;
+    }
+  });
+
+  return ret;
 }
 
 async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionContext) {
