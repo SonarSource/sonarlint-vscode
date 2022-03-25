@@ -26,6 +26,9 @@
   ],
   "qna": "https://community.sonarsource.com/c/help/sl",
   "activationEvents": [
+    "onCommand:SonarLint.UpdateAllBindings",
+    "onCommand:SonarLint.ShowSonarLintOutput",
+    "onCommand:SonarLint.ConfigureCompilationDatabase",
     "onStartupFinished"
   ],
   "extensionDependencies": [
@@ -349,7 +352,8 @@
         "icon": {
           "light": "images/activation/light/cross.svg",
           "dark": "images/activation/dark/cross.svg"
-        }
+        },
+        "enablement": "view == SonarLint.AllRules"
       },
       {
         "command": "SonarLint.ActivateRule",
@@ -357,7 +361,8 @@
         "icon": {
           "light": "images/activation/light/check.svg",
           "dark": "images/activation/dark/check.svg"
-        }
+        },
+        "enablement": "view == SonarLint.AllRules"
       },
       {
         "command": "SonarLint.ResetDefaultRule",
