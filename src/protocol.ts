@@ -8,8 +8,8 @@
 
 import * as lsp from 'vscode-languageserver-protocol';
 
-export namespace ShowRuleDescriptionRequest {
-  export const type = new lsp.RequestType<ShowRuleDescriptionParams, any, void>('sonarlint/showRuleDescription');
+export namespace ShowRuleDescriptionNotification {
+  export const type = new lsp.NotificationType<ShowRuleDescriptionParams>('sonarlint/showRuleDescription');
 }
 
 export interface ShowRuleDescriptionParams {
@@ -33,8 +33,8 @@ export namespace ScmCheckRequest {
   export const type = new lsp.RequestType<string, boolean, void>('sonarlint/isIgnoredByScm');
 }
 
-export namespace ShowNotificationForFirstSecretsIssueRequest {
-  export const type = new lsp.RequestType<void, void, void>('sonarlint/showNotificationForFirstSecretsIssue');
+export namespace ShowNotificationForFirstSecretsIssueNotification {
+  export const type = new lsp.NotificationType('sonarlint/showNotificationForFirstSecretsIssue');
 }
 
 export interface GetJavaConfigResponse {
@@ -45,26 +45,24 @@ export interface GetJavaConfigResponse {
   vmLocation: string;
 }
 
-export namespace ShowSonarLintOutput {
-  export const type = new lsp.RequestType('sonarlint/showSonarLintOutput');
+export namespace ShowSonarLintOutputNotification {
+  export const type = new lsp.NotificationType('sonarlint/showSonarLintOutput');
 }
 
-export namespace OpenJavaHomeSettings {
-  export const type = new lsp.RequestType('sonarlint/openJavaHomeSettings');
+export namespace OpenJavaHomeSettingsNotification {
+  export const type = new lsp.NotificationType('sonarlint/openJavaHomeSettings');
 }
 
-export namespace OpenPathToNodeSettings {
-  export const type = new lsp.RequestType('sonarlint/openPathToNodeSettings');
+export namespace OpenPathToNodeSettingsNotification {
+  export const type = new lsp.NotificationType('sonarlint/openPathToNodeSettings');
 }
 
-export namespace BrowseTo {
-  export const type = new lsp.RequestType<string, void, void>('sonarlint/browseTo');
+export namespace BrowseToNotification {
+  export const type = new lsp.NotificationType<string>('sonarlint/browseTo');
 }
 
-export namespace OpenConnectionSettings {
-  export const type = new lsp.RequestType<boolean, void, void>(
-    'sonarlint/openConnectionSettings'
-  );
+export namespace OpenConnectionSettingsNotification {
+  export const type = new lsp.NotificationType<boolean>('sonarlint/openConnectionSettings');
 }
 
 export enum HotspotResolution {
@@ -98,11 +96,11 @@ export interface RemoteHotspot {
     riskDescription: string;
     vulnerabilityDescription: string;
     fixRecommendations: string;
-  }
+  };
 }
 
-export namespace ShowHotspotRequest {
-  export const type = new lsp.RequestType<RemoteHotspot, void, void>('sonarlint/showHotspot');
+export namespace ShowHotspotNotification {
+  export const type = new lsp.NotificationType<RemoteHotspot>('sonarlint/showHotspot');
 }
 
 export interface TextRange {
@@ -122,7 +120,7 @@ export interface Location {
 }
 
 export interface Flow {
-  locations: Location[]
+  locations: Location[];
 }
 
 export interface Issue {
@@ -135,8 +133,8 @@ export interface Issue {
   flows: Flow[];
 }
 
-export namespace ShowTaintVulnerabilityRequest {
-  export const type = new lsp.RequestType<Issue, void, void>('sonarlint/showTaintVulnerability');
+export namespace ShowTaintVulnerabilityNotification {
+  export const type = new lsp.NotificationType<Issue>('sonarlint/showTaintVulnerability');
 }
 
 export namespace GetBranchNameForFolderRequest {
@@ -148,8 +146,8 @@ export interface BranchNameForFolder {
   branchName?: string;
 }
 
-export namespace SetReferenceBranchNameForFolderRequest {
-  export const type = new lsp.RequestType<BranchNameForFolder, void, void>('sonarlint/setReferenceBranchNameForFolder');
+export namespace SetReferenceBranchNameForFolderNotification {
+  export const type = new lsp.NotificationType<BranchNameForFolder>('sonarlint/setReferenceBranchNameForFolder');
 }
 
 export namespace NeedCompilationDatabaseRequest {

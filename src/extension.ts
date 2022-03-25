@@ -287,7 +287,7 @@ export function activate(context: VSCode.ExtensionContext) {
       })
     );
     context.subscriptions.push(
-      languageClient.onRequest(protocol.SetReferenceBranchNameForFolderRequest.type, params => {
+      languageClient.onNotification(protocol.SetReferenceBranchNameForFolderNotification.type, params => {
         scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
       })
     );
@@ -411,7 +411,7 @@ function isFirstSecretDetected(context: VSCode.ExtensionContext) {
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
-  languageClient.onRequest(protocol.ShowRuleDescriptionRequest.type, params => {
+  languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, params => {
     if (!ruleDescriptionPanel) {
       ruleDescriptionPanel = VSCode.window.createWebviewPanel(
         'sonarlint.RuleDesc',
@@ -440,27 +440,27 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
-  languageClient.onRequest(protocol.ShowNotificationForFirstSecretsIssueRequest.type, () =>
+  languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
   );
-  languageClient.onRequest(protocol.ShowSonarLintOutput.type, () =>
+  languageClient.onNotification(protocol.ShowSonarLintOutputNotification.type, () =>
     VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
   );
-  languageClient.onRequest(protocol.OpenJavaHomeSettings.type, () =>
+  languageClient.onNotification(protocol.OpenJavaHomeSettingsNotification.type, () =>
     VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
   );
-  languageClient.onRequest(protocol.OpenPathToNodeSettings.type, () =>
+  languageClient.onNotification(protocol.OpenPathToNodeSettingsNotification.type, () =>
     VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
   );
-  languageClient.onRequest(protocol.BrowseTo.type, browseTo =>
+  languageClient.onNotification(protocol.BrowseToNotification.type, browseTo =>
     VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(browseTo))
   );
-  languageClient.onRequest(protocol.OpenConnectionSettings.type, isSonarCloud => {
+  languageClient.onNotification(protocol.OpenConnectionSettingsNotification.type, isSonarCloud => {
     const targetSection = `sonarlint.connectedMode.connections.${isSonarCloud ? 'sonarcloud' : 'sonarqube'}`;
     return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
-  languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
-  languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
+  languageClient.onNotification(protocol.ShowHotspotNotification.type, showSecurityHotspot);
+  languageClient.onNotification(protocol.ShowTaintVulnerabilityNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
 
   async function notifyMissingCompileCommands() {
@@ -471,15 +471,14 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarLint was unable to analyze the C/C++ file because there is no configured compilation 
     database.`;
-    VSCode.window.showWarningMessage(message, doNotAskAgainAction, configureCompileCommandsAction)
-      .then(selection => {
-        if (doNotAskAgainAction === selection) {
-          context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
-        }
-        if (configureCompileCommandsAction === selection) {
-          configureCompilationDatabase();
-        }
-      });
+    VSCode.window.showWarningMessage(message, doNotAskAgainAction, configureCompileCommandsAction).then(selection => {
+      if (doNotAskAgainAction === selection) {
+        context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
+      }
+      if (configureCompileCommandsAction === selection) {
+        configureCompilationDatabase();
+      }
+    });
   }
 }
 
@@ -588,18 +587,21 @@ function showMessageAndUpdateConfig(compilationDbPath: string) {
   VSCode.window.showInformationMessage(
     `Analysis configured. Compilation database path is set to: ${compilationDbPath}`
   );
-  return VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, compilationDbPath,
-    VSCode.ConfigurationTarget.Workspace);
+  return VSCode.workspace
+    .getConfiguration()
+    .update(PATH_TO_COMPILE_COMMANDS, compilationDbPath, VSCode.ConfigurationTarget.Workspace);
 }
 
 async function configureCompilationDatabase() {
-  const paths = (await VSCode.workspace.findFiles(`**/compile_commands.json`))
-    .filter(path => FS.existsSync(path.fsPath));
+  const paths = (await VSCode.workspace.findFiles(`**/compile_commands.json`)).filter(path =>
+    FS.existsSync(path.fsPath)
+  );
   if (paths.length === 0) {
     VSCode.window.showWarningMessage(`No compilation databases were found in the workspace\n 
 [How to generate compile commands](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis)`);
-    VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, undefined,
-      VSCode.ConfigurationTarget.Workspace);
+    VSCode.workspace
+      .getConfiguration()
+      .update(PATH_TO_COMPILE_COMMANDS, undefined, VSCode.ConfigurationTarget.Workspace);
   } else {
     await showCompilationDatabaseOptions(paths);
   }
