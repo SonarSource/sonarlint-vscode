@@ -461,7 +461,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
   languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
-  languageClient.onRequest('sonarlint/needCompilationDatabase', notifyMissingCompileCommands);
+  languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
 
   async function notifyMissingCompileCommands() {
     if (await doNotAskAboutCompileCommandsFlag(context)) {
