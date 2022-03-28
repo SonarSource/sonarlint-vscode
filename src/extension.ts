@@ -470,7 +470,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     const doNotAskAgainAction = 'Do not ask again';
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarLint was unable to analyze the C/C++ file because there is no configured compilation 
-    databases.`;
+    database.`;
     VSCode.window.showWarningMessage(message, doNotAskAgainAction, configureCompileCommandsAction)
       .then(selection => {
         if (doNotAskAgainAction === selection) {
