@@ -423,7 +423,7 @@ async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionCon
   context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, true);
 }
 
-function isFirstSecretDetected(context: VSCode.ExtensionContext) {
+function isFirstSecretDetected(context: VSCode.ExtensionContext): boolean {
   const result = context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY);
   if (typeof result == 'string') {
     // migrate
