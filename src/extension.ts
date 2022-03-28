@@ -597,7 +597,7 @@ async function configureCompilationDatabase() {
     .filter(path => FS.existsSync(path.fsPath));
   if (paths.length === 0) {
     VSCode.window.showWarningMessage(`No compilation databases were found in the workspace\n 
-[How to generate compile commands](https://clang.llvm.org/docs/JSONCompilationDatabase.html)`);
+[How to generate compile commands](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis)`);
     VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, undefined,
       VSCode.ConfigurationTarget.Workspace);
   } else {
