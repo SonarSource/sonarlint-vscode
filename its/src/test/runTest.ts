@@ -60,9 +60,9 @@ async function main() {
     };
 
     // run the integration tests
-    // await runTestSuite('./suite');
-    // await runTestSuite('./secretsSuite', 'workspace-secrets.code-workspace');
-    // await runTestSuite('./pythonSuite', 'workspace-python.code-workspace');
+    await runTestSuite('./suite');
+    await runTestSuite('./secretsSuite', 'workspace-secrets.code-workspace');
+    await runTestSuite('./pythonSuite', 'workspace-python.code-workspace');
     await runTestSuite('./cfamilySuite', 'workspace-cfamily.code-workspace');
 
     ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
@@ -71,7 +71,7 @@ async function main() {
         stdio: 'inherit'
       });
     });
-    //await runTestSuite('./javaSuite', 'workspace-java.code-workspace');
+    await runTestSuite('./javaSuite', 'workspace-java.code-workspace');
 
     if (testErrors.length > 0) {
       throw new Error('At least one test suite failed, please check logs above for actual failure.');
