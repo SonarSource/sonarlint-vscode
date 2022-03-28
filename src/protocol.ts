@@ -152,3 +152,6 @@ export namespace SetReferenceBranchNameForFolderRequest {
   export const type = new lsp.RequestType<BranchNameForFolder, void, void>('sonarlint/setReferenceBranchNameForFolder');
 }
 
+export namespace NeedCompilationDatabaseRequest {
+  export const type = new lsp.NotificationType('sonarlint/needCompilationDatabase');
+}

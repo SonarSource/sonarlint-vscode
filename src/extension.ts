@@ -37,6 +37,7 @@ const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 const PATH_TO_COMPILE_COMMANDS = 'sonarlint.pathToCompileCommands';
+const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -460,6 +461,30 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onRequest(protocol.ShowHotspotRequest.type, showSecurityHotspot);
   languageClient.onRequest(protocol.ShowTaintVulnerabilityRequest.type, showAllLocations);
+  languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
+
+  async function notifyMissingCompileCommands() {
+    if (await doNotAskAboutCompileCommandsFlag(context)) {
+      return;
+    }
+    const doNotAskAgainAction = 'Do not ask again';
+    const configureCompileCommandsAction = 'Configure compile commands';
+    const message = `SonarLint was unable to analyze the C/C++ file because there is no configured compilation 
+    database.`;
+    VSCode.window.showWarningMessage(message, doNotAskAgainAction, configureCompileCommandsAction)
+      .then(selection => {
+        if (doNotAskAgainAction === selection) {
+          context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
+        }
+        if (configureCompileCommandsAction === selection) {
+          configureCompilationDatabase();
+        }
+      });
+  }
+}
+
+async function doNotAskAboutCompileCommandsFlag(context: VSCode.ExtensionContext): Promise<boolean> {
+  return context.workspaceState.get(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, false);
 }
 
 enum GitReturnCode {
@@ -571,7 +596,10 @@ async function configureCompilationDatabase() {
   const paths = (await VSCode.workspace.findFiles(`**/compile_commands.json`))
     .filter(path => FS.existsSync(path.fsPath));
   if (paths.length === 0) {
-    VSCode.window.showWarningMessage(`No compilation databases were found in the workspace`);
+    VSCode.window.showWarningMessage(`No compilation databases were found in the workspace\n 
+[How to generate compile commands](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis)`);
+    VSCode.workspace.getConfiguration().update(PATH_TO_COMPILE_COMMANDS, undefined,
+      VSCode.ConfigurationTarget.Workspace);
   } else {
     await showCompilationDatabaseOptions(paths);
   }
