@@ -47,6 +47,7 @@ a {
   line-height: 18px;
   overflow: auto;
 }
+.rule-desc pre > code {padding: 0; background-color: transparent; white-space: pre; overflow-x: scroll;}
 .rule-desc code,
 .rule-desc pre {
   font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
