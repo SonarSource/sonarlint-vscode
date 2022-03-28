@@ -37,7 +37,7 @@ const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 const PATH_TO_COMPILE_COMMANDS = 'sonarlint.pathToCompileCommands';
-const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'askToSetCompileCommands';
+const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
