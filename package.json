@@ -39,87 +39,8 @@
       "type": "object",
       "title": "SonarLint",
       "properties": {
-        "sonarlint.output.showAnalyzerLogs": {
-          "type": "boolean",
-          "default": false,
-          "description": "Show analyzer's logs in the SonarLint output.",
-          "scope": "window"
-        },
-        "sonarlint.output.showVerboseLogs": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable verbose log level (for both SonarLint and analyzer) in the SonarLint output.",
-          "scope": "window"
-        },
-        "sonarlint.trace.server": {
-          "default": "off",
-          "description": "Traces the communication between VS Code and the SonarLint language server.",
-          "scope": "window",
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "off",
-                "messages",
-                "verbose"
-              ],
-              "default": "off"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "verbosity": {
-                  "type": "string",
-                  "enum": [
-                    "off",
-                    "messages",
-                    "verbose"
-                  ],
-                  "default": "off"
-                },
-                "format": {
-                  "type": "string",
-                  "enum": [
-                    "text",
-                    "json"
-                  ],
-                  "default": "text"
-                }
-              },
-              "additionalProperties": false
-            }
-          ]
-        },
-        "sonarlint.testFilePattern": {
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files. Example: `{**/test/**,**/*test*,**/*Test*}`",
-          "scope": "resource"
-        },
-        "sonarlint.pathToCompileCommands": {
-          "type": "string",
-          "markdownDescription": "Path to the active compilation database, e.g. `C:\\\\Repos\\\\MyProject\\\\compile_commands.json`",
-          "scope": "resource"
-        },
-        "sonarlint.analyzerProperties": {
-          "type": "object",
-          "patternProperties": {
-            "^.*$": {
-              "type": "string",
-              "markdownDescription": "One entry value"
-            },
-            "additionalProperties": false
-          },
-          "markdownDescription": "Extra properties that could be passed to the code analyzers. e.g. `{\"sonar.javascript.globals\": \"xxx\"}`. See [documentation](https://redirect.sonarsource.com/doc/plugin-library.html) of each analyzers.",
-          "scope": "resource"
-        },
-        "sonarlint.disableTelemetry": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Disable sending anonymous usage statistics to SonarSource. Click [here](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md) to see a sample of the data that are collected.",
-          "scope": "window"
-        },
         "sonarlint.rules": {
+          "order": 1,
           "type": "object",
           "scope": "application",
           "default": {},
@@ -146,21 +67,6 @@
             }
           },
           "additionalProperties": false
-        },
-        "sonarlint.ls.javaHome": {
-          "type": "string",
-          "markdownDescription": "Path to a Java Runtime Environment (11 or more recent) used to launch the SonarLint Language Server. \n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-11.0.12+7` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/jdk-11.0.12+7.jdk/Contents/Home`",
-          "scope": "machine"
-        },
-        "sonarlint.ls.vmargs": {
-          "type": "string",
-          "markdownDescription": "Extra JVM arguments used to launch the SonarLint Language Server. e.g. `-Xmx1024m`",
-          "scope": "machine"
-        },
-        "sonarlint.pathToNodeExecutable": {
-          "type": "string",
-          "markdownDescription": "Path to a Node.js executable (8 or more recent) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\12-lts\\\\bin\\\\node.exe`",
-          "scope": "machine"
         },
         "sonarlint.connectedMode.servers": {
           "deprecationMessage": "The setting is deprecated. Use `sonarlint.connectedMode.connections.sonarqube` or `sonarlint.connectedMode.connections.sonarcloud` instead.",
@@ -191,6 +97,7 @@
           }
         },
         "sonarlint.connectedMode.connections.sonarqube": {
+          "order": 2,
           "type": "array",
           "scope": "application",
           "default": [],
@@ -234,6 +141,7 @@
           }
         },
         "sonarlint.connectedMode.connections.sonarcloud": {
+          "order": 3,
           "type": "array",
           "scope": "application",
           "default": [],
@@ -277,6 +185,7 @@
           }
         },
         "sonarlint.connectedMode.project": {
+          "order": 4,
           "markdownDescription": "Bind the current workspace folder to a [SonarQube](https://sonarqube.org) or [SonarCloud](https://sonarcloud.io) project. Requires connection details to be defined in the setting `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`.\n\nBinding a workspace folder to a project allows to use the same code analyzers, rules and configuration that are defined in the server, as well as issue suppressions.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"projectKey\": \"my_project\"\n    }\n\nSpecify the `connectionId` if you have defined multiple connections.",
           "examples": [
             {
@@ -327,6 +236,111 @@
             }
           ],
           "scope": "resource"
+        },
+        "sonarlint.pathToNodeExecutable": {
+          "order": 10,
+          "type": "string",
+          "markdownDescription": "Path to a Node.js executable (11 or more recent) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\12-lts\\\\bin\\\\node.exe`",
+          "scope": "machine"
+        },
+        "sonarlint.pathToCompileCommands": {
+          "order": 11,
+          "type": "string",
+          "markdownDescription": "Path to the active compilation database, e.g. `C:\\\\Repos\\\\MyProject\\\\compile_commands.json`",
+          "scope": "resource"
+        },
+        "sonarlint.testFilePattern": {
+          "order": 12,
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files. Example: `{**/test/**,**/*test*,**/*Test*}`",
+          "scope": "resource"
+        },
+        "sonarlint.ls.javaHome": {
+          "order": 20,
+          "type": "string",
+          "markdownDescription": "Path to a Java Runtime Environment (11 or more recent) used to launch the SonarLint Language Server. \n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-11.0.12+7` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/jdk-11.0.12+7.jdk/Contents/Home`",
+          "scope": "machine"
+        },
+        "sonarlint.ls.vmargs": {
+          "order": 21,
+          "type": "string",
+          "markdownDescription": "Extra JVM arguments used to launch the SonarLint Language Server. e.g. `-Xmx1024m`",
+          "scope": "machine"
+        },
+        "sonarlint.output.showVerboseLogs": {
+          "order": 90,
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose log level in the SonarLint output.",
+          "scope": "window"
+        },
+        "sonarlint.output.showAnalyzerLogs": {
+          "order": 91,
+          "type": "boolean",
+          "default": false,
+          "description": "Show analyzer's logs in the SonarLint output.",
+          "scope": "window"
+        },
+        "sonarlint.analyzerProperties": {
+          "order": 92,
+          "type": "object",
+          "patternProperties": {
+            "^.*$": {
+              "type": "string",
+              "markdownDescription": "One entry value"
+            },
+            "additionalProperties": false
+          },
+          "markdownDescription": "Extra properties that could be passed to the code analyzers. Only for advanced use cases.",
+          "scope": "resource"
+        },
+        "sonarlint.trace.server": {
+          "order": 98,
+          "default": "off",
+          "description": "Traces the communication between VS Code and the SonarLint language server.",
+          "scope": "window",
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "off",
+                "messages",
+                "verbose"
+              ],
+              "default": "off"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "verbosity": {
+                  "type": "string",
+                  "enum": [
+                    "off",
+                    "messages",
+                    "verbose"
+                  ],
+                  "default": "off"
+                },
+                "format": {
+                  "type": "string",
+                  "enum": [
+                    "text",
+                    "json"
+                  ],
+                  "default": "text"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "sonarlint.disableTelemetry": {
+          "order": 99,
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Disable sending anonymous usage statistics to SonarSource. Click [here](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md) to see a sample of the data that are collected.",
+          "scope": "window"
         }
       }
     },
