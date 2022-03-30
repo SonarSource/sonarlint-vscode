@@ -274,7 +274,7 @@
         "sonarlint.pathToNodeExecutable": {
           "order": 10,
           "type": "string",
-          "markdownDescription": "Path to a Node.js executable (11 or more recent) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\12-lts\\\\bin\\\\node.exe`",
+          "markdownDescription": "Path to a Node.js executable (12.22.0 or more recent) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\12-lts\\\\bin\\\\node.exe`",
           "scope": "machine"
         },
         "sonarlint.pathToCompileCommands": {
