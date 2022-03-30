@@ -38,6 +38,7 @@ let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 const PATH_TO_COMPILE_COMMANDS = 'sonarlint.pathToCompileCommands';
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
+let REMIND_ME_LATER_ABOUT_COMPILE_COMMANDS_FLAG = false;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -486,10 +487,11 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
 
   async function notifyMissingCompileCommands() {
-    if (await doNotAskAboutCompileCommandsFlag(context)) {
+    if (await doNotAskAboutCompileCommandsFlag(context) || REMIND_ME_LATER_ABOUT_COMPILE_COMMANDS_FLAG) {
       return;
     }
     const doNotAskAgainAction = 'Do not ask again';
+    const remindMeLaterAction = 'Remind me later';
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarLint is unable to analyze C and C++ file(s) because there is no configured compilation 
     database.`;
@@ -499,6 +501,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       }
       if (configureCompileCommandsAction === selection) {
         configureCompilationDatabase();
+      }
+      if (remindMeLaterAction === selection) {
+        REMIND_ME_LATER_ABOUT_COMPILE_COMMANDS_FLAG = true;
       }
     });
   }
