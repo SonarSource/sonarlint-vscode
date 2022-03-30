@@ -490,12 +490,12 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     if (await doNotAskAboutCompileCommandsFlag(context) || REMIND_ME_LATER_ABOUT_COMPILE_COMMANDS_FLAG) {
       return;
     }
-    const doNotAskAgainAction = 'Do not ask again';
-    const remindMeLaterAction = 'Remind me later';
+    const doNotAskAgainAction = `Don't ask again`;
+    const remindMeLaterAction = 'Ask me later';
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarLint is unable to analyze C and C++ file(s) because there is no configured compilation 
     database.`;
-    VSCode.window.showWarningMessage(message, doNotAskAgainAction, configureCompileCommandsAction).then(selection => {
+    VSCode.window.showWarningMessage(message, configureCompileCommandsAction, remindMeLaterAction, doNotAskAgainAction).then(selection => {
       if (doNotAskAgainAction === selection) {
         context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
       }
