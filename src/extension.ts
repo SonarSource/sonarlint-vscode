@@ -38,6 +38,7 @@ let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 const PATH_TO_COMPILE_COMMANDS = 'sonarlint.pathToCompileCommands';
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
+let remindMeLaterAboutCompileCommandsFlag = false;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -486,21 +487,28 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
 
   async function notifyMissingCompileCommands() {
-    if (await doNotAskAboutCompileCommandsFlag(context)) {
+    if (await doNotAskAboutCompileCommandsFlag(context) || remindMeLaterAboutCompileCommandsFlag) {
       return;
     }
-    const doNotAskAgainAction = 'Do not ask again';
+    const doNotAskAgainAction = `Don't ask again`;
+    const remindMeLaterAction = 'Ask me later';
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarLint is unable to analyze C and C++ file(s) because there is no configured compilation 
     database.`;
-    VSCode.window.showWarningMessage(message, doNotAskAgainAction, configureCompileCommandsAction).then(selection => {
-      if (doNotAskAgainAction === selection) {
-        context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
-      }
-      if (configureCompileCommandsAction === selection) {
-        configureCompilationDatabase();
-      }
-    });
+    VSCode.window.showWarningMessage(message, configureCompileCommandsAction, remindMeLaterAction, doNotAskAgainAction)
+      .then(selection => {
+        switch (selection) {
+          case doNotAskAgainAction:
+            context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
+            break;
+          case configureCompileCommandsAction:
+            configureCompilationDatabase();
+            break;
+          case remindMeLaterAction:
+            remindMeLaterAboutCompileCommandsFlag = true;
+            break;
+        }
+      });
   }
 }
 
