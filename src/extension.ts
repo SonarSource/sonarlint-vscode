@@ -38,7 +38,7 @@ let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 const PATH_TO_COMPILE_COMMANDS = 'sonarlint.pathToCompileCommands';
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
-let REMIND_ME_LATER_ABOUT_COMPILE_COMMANDS_FLAG = false;
+let remindMeLaterAboutCompileCommandsFlag = false;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -487,7 +487,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
 
   async function notifyMissingCompileCommands() {
-    if (await doNotAskAboutCompileCommandsFlag(context) || REMIND_ME_LATER_ABOUT_COMPILE_COMMANDS_FLAG) {
+    if (await doNotAskAboutCompileCommandsFlag(context) || remindMeLaterAboutCompileCommandsFlag) {
       return;
     }
     const doNotAskAgainAction = `Don't ask again`;
@@ -497,14 +497,16 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     database.`;
     VSCode.window.showWarningMessage(message, configureCompileCommandsAction, remindMeLaterAction, doNotAskAgainAction)
       .then(selection => {
-        if (doNotAskAgainAction === selection) {
-          context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
-        }
-        if (configureCompileCommandsAction === selection) {
-          configureCompilationDatabase();
-        }
-        if (remindMeLaterAction === selection) {
-          REMIND_ME_LATER_ABOUT_COMPILE_COMMANDS_FLAG = true;
+        switch (selection) {
+          case doNotAskAgainAction:
+            context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
+            break;
+          case configureCompileCommandsAction:
+            configureCompilationDatabase();
+            break;
+          case remindMeLaterAction:
+            remindMeLaterAboutCompileCommandsFlag = true;
+            break;
         }
       });
   }
