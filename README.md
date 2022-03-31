@@ -147,6 +147,17 @@ When using SonarQube >= 8.6 and browsing a [security hotspot](https://docs.sonar
 
 SonarLint keeps server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). SonarLint will also automatically attempt to synchronize with configured servers at startup and every hour.
 
+## Other settings
+
+It is possible to specify extra analyzer properties that will be used for analysis. Example:
+
+    // In project/.vscode/settings.json
+    {
+        "sonarlint.analyzerProperties": {
+            "sonar.javascript.node.maxspace": "4096"
+        }
+    }
+
 ## Contributions
 
 If you would like to see a new feature, please create a new thread in the forum ["Suggest new features"](https://community.sonarsource.com/c/suggestions/features).
