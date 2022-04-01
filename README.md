@@ -52,16 +52,17 @@ If a suitable JRE cannot be found at those places, SonarLint will ask for your p
 To analyze JavaScript and TypeScript code, SonarLint requires Node.js executable. It will be autodetected, or you can force the location using:
 
     {
-        "sonarlint.pathToNodeExecutable": "/home/julien/.nvm/versions/node/v11.12.0/bin/node"
+        "sonarlint.pathToNodeExecutable": "/home/yourname/.nvm/versions/node/v11.12.0/bin/node"
     }
 
 ### C and C++ analysis specific requirements
 
-To analyze C and C++ code, SonarLint requires compile commands json file:
+To analyze C and C++ code, SonarLint requires [compile commands json file](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis):
     {
-        "sonarlint.pathToCompileCommands": "/home/julien/repos/proj/compile_commands.json"
+        "sonarlint.pathToCompileCommands": "/home/yourname/repos/proj/compile_commands.json"
     }
-Note: if you are using Microsoft compiler, the enviroment should be ready to build the code. For example, by launching VS Code from your Visual Studio Command Prompt
+Note: if you are using Microsoft compiler, the environment should be ready to build the code. For example, by launching VS Code from your Visual Studio Command Prompt
+
 ### Java analysis specific requirements
 
 To enable the support for Java analysis, you need the [Language support for Java](https://marketplace.visualstudio.com/items?itemName=redhat.java) VSCode extension (version 0.56.0 or higher). You also need to be in [standard mode](https://code.visualstudio.com/docs/java/java-project#_lightweight-mode).

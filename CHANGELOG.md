@@ -1,5 +1,6 @@
 ## 3.4.0
 
+* Support analysis of C and C++ code.
 * Update Python analyzer 3.9 -> [3.10](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17154) -> [3.11](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17263) -> [3.12](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17355),  support third-party Typeshed libraries, 9 new "simple" rules (8 code smells + 1 bug),  8 new regex related rules, fixes and improvements
 * Update PHP analyzer 3.22 -> [3.23](https://github.com/SonarSource/sonar-php/releases/tag/3.23.0.8726]), 9 new regex rules, bug fix for S3699
 * Update JS/TS analyzer 8.8 -> [8.9](https://github.com/SonarSource/SonarJS/releases/tag/8.9.0.17411) -> [9.0](https://github.com/SonarSource/SonarJS/releases/tag/9.0.0.17505) -> [9.1](https://github.com/SonarSource/SonarJS/releases/tag/8.9.0.17411), support for Quick Fixes, enable 23 rules with quick fixes, support TypeScript 4.6, drop support for Node.js 10, 30 new quick fixes, improvements and FP fixes
