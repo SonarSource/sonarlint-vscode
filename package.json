@@ -52,7 +52,7 @@
               "properties": {
                 "level": {
                   "type": "string",
-                  "anyOf": [
+                  "enum": [
                     "off",
                     "on"
                   ],
