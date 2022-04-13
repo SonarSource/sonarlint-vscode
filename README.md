@@ -1,10 +1,10 @@
 # SonarLint for Visual Studio Code
 
-SonarLint is a free IDE extension that lets you fix coding issues before they exist! Like a spell checker, SonarLint highlights Bugs and Security Vulnerabilities as you write code, with clear remediation guidance so you can fix them before the code is even committed. SonarLint in VS Code supports analysis of JavaScript, TypeScript, Python, Java, HTML & PHP code, and you can install it directly from the VS Code Marketplace!
+SonarLint is a free IDE extension that lets you fix coding issues before they exist! Like a spell checker, SonarLint highlights Bugs and Security Vulnerabilities as you write code, with clear remediation guidance so you can fix them before the code is even committed. SonarLint in VS Code supports analysis of C, C++, HTML, Java, JavaScript, PHP, Python and TypeScript, and you can install it directly from the VS Code Marketplace!
 
 ## How it works
 
-Simply open a JS, TS, Python, Java, HTML or PHP file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
+Simply open any source file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
 
 ![sonarlint on-the-fly](images/sonarlint-vscode.gif)
 
@@ -18,6 +18,8 @@ Out of the box, SonarLint automatically checks your code against the following r
 
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
+- [C rules](https://rules.sonarsource.com/c)
+- [C++ rules](https://rules.sonarsource.com/cpp)
 - [Python rules](https://rules.sonarsource.com/python)
 - [Java rules](https://rules.sonarsource.com/java)
 - [HTML rules](https://rules.sonarsource.com/html)
