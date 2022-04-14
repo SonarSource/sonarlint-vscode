@@ -1,3 +1,7 @@
+## 3.4.1
+
+* Fix error during analysis of files not in a Git repo (connected mode only)
+
 ## 3.4.0
 
 * Support analysis of C and C++ code.
