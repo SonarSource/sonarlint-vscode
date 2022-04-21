@@ -236,7 +236,7 @@ gulp.task('create-all-vsix', () => {
 
 gulp.task(
   'deploy',
-  gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
+  gulp.series('clean', 'update-version', 'create-all-vsix', 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
 );
 
 function buildInfo(name, version, buildNumber) {
