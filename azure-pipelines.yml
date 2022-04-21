@@ -255,10 +255,9 @@ stages:
 #          failTaskOnFailedTests: true
 #          testRunTitle: 'ITs $(VSCODE_VERSION)'
 - template: promote-stage.yml@commonTemplates
-#  parameters:
-#    stageDependencies:
-#    - validate
-#    - qa
+  parameters:
+    stageDependencies:
+    - build
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
     burgrName: 'dogfood'
