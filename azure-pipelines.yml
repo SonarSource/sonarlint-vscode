@@ -146,61 +146,61 @@ stages:
 #        displayName: Revert changes made to package.json to not break cache feature
 #      - task: SonarQubeAnalyze@4
 #        displayName: 'Run SonarQube analysis on Next'
-#- template: stage-with-burgr-notifications.yml@commonTemplates
-#  parameters:
-#    burgrName: 'qa'
-#    burgrType: 'qa'
-#    stageName: 'qa'
-#    stageDisplayName: Run ITs
-#    stageDependencies: build
-#    jobs:
-#    - job: its
-#      displayName: Run ITs
-#      strategy:
-#        matrix:
-#          oldest_supported:
-#            VSCODE_VERSION: '1.52.0'
-#          stable:
-#            VSCODE_VERSION: 'stable'
-#          insiders:
-#            VSCODE_VERSION: 'insiders'
-#      variables:
-#        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-#        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-#        npm_config_cache: $(Pipeline.Workspace)/.npm
-#      steps:
-#      - checkout: self
-#        fetchDepth: 1
-#      - task: PythonScript@0
-#        name: computeVersion
-#        displayName: Extract version from package.json and compute build version
-#        inputs:
-#          scriptSource: 'inline'
-#          script: |
-#            import json
-#            with open('package.json') as packageJsonFile:
-#              packageJson = json.load(packageJsonFile)
-#              print("##vso[task.setvariable variable=PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', '+$(Build.BuildId)'))
-#      - task: Cache@2
-#        displayName: Cache Maven local repo
-#        inputs:
-#          key: 'maven | "$(Agent.OS)" | azure-pipelines.yml'
-#          restoreKeys: |
-#            maven | "$(Agent.OS)"
-#            maven
-#          path: $(MAVEN_CACHE_FOLDER)
-#      - task: DownloadSecureFile@1
-#        displayName: 'Download Maven settings'
-#        name: mavenSettings
-#        inputs:
-#          secureFile: 'maven-settings.xml'
-#      - bash: >-
-#          mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa
-#          -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$(PROJECT_VERSION):vsix -DoutputDirectory=$(Build.SourcesDirectory)
-#        displayName: ' Download staged vsix'
-#        env:
-#          ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
-#          ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'qa'
+    burgrType: 'qa'
+    stageName: 'qa'
+    stageDisplayName: Run ITs
+    stageDependencies: build
+    jobs:
+    - job: its
+      displayName: Run ITs
+      strategy:
+        matrix:
+          oldest_supported:
+            VSCODE_VERSION: '1.52.0'
+          stable:
+            VSCODE_VERSION: 'stable'
+          insiders:
+            VSCODE_VERSION: 'insiders'
+      variables:
+        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+        npm_config_cache: $(Pipeline.Workspace)/.npm
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: PythonScript@0
+        name: computeVersion
+        displayName: Extract version from package.json and compute build version
+        inputs:
+          scriptSource: 'inline'
+          script: |
+            import json
+            with open('package.json') as packageJsonFile:
+              packageJson = json.load(packageJsonFile)
+              print("##vso[task.setvariable variable=PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', '+$(Build.BuildId)'))
+      - task: Cache@2
+        displayName: Cache Maven local repo
+        inputs:
+          key: 'maven | "$(Agent.OS)" | azure-pipelines.yml'
+          restoreKeys: |
+            maven | "$(Agent.OS)"
+            maven
+          path: $(MAVEN_CACHE_FOLDER)
+      - task: DownloadSecureFile@1
+        displayName: 'Download Maven settings'
+        name: mavenSettings
+        inputs:
+          secureFile: 'maven-settings.xml'
+      - bash: >-
+          mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa
+          -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$(PROJECT_VERSION):vsix -DoutputDirectory=$(Build.SourcesDirectory)
+        displayName: ' Download staged vsix'
+        env:
+          ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
+          ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
 #      - task: Cache@2
 #        inputs:
 #          key: 'npm | "$(Agent.OS)" | its/package-lock.json'
