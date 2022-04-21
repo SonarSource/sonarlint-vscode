@@ -20,7 +20,7 @@ stages:
     burgrName: 'build'
     burgrType: 'build'
     stageName: 'build'
-    - name: targetPlatforms
+    name: targetPlatforms
       type: object
       default:
         - "win32-x64"
