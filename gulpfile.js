@@ -231,12 +231,13 @@ gulp.task(
 );
 
 gulp.task(
-    'deploy-all-platforms', () => {
-      let platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
+    'deploy-all-platforms', (done) => {
+      const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
       platforms.forEach(platform => {
         gulp.series('clean', 'update-version', vsce.createVSIX(platform),
             'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-      })
+      });
+      done();
     });
 
 function buildInfo(name, version, buildNumber) {
