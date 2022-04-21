@@ -248,19 +248,25 @@ gulp.task('create-all-vsix', () => {
 });
 
 gulp.task(
-  'deploy', async (done) => {
-      platforms.forEach(platform => {
-        gulp.series('clean', 'update-version');
-        if (platform === 'darwin-arm64') {
-          downloadJre(platform, 17, done);
-        } else {
-          downloadJre(platform, 11, done);
-        }
-        vsce.createVSIX({target: platform});
-        gulp.series('compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-      });
+    'deploy',
+    async (done) => {
+      for (const i in platforms) {
+        const platform = platforms[i];
+        await deployForPlatform(platform);
+      }
       done();
-});
+    });
+
+async function deployForPlatform(platform) {
+  await gulp.series('clean', 'update-version');
+  if (platform === 'darwin-arm64') {
+    await downloadJre(platform, 17, done);
+  } else {
+    await downloadJre(platform, 11, done);
+  }
+  await vsce.createVSIX({target: platform});
+  await gulp.series('compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+}
 
 function buildInfo(name, version, buildNumber) {
   const {
