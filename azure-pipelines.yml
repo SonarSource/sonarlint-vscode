@@ -57,203 +57,203 @@ stages:
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
-- template: stage-with-burgr-notifications.yml@commonTemplates
-  parameters:
-    burgrName: 'validate'
-    burgrType: 'validate'
-    stageName: 'validate'
-    stageDisplayName: Run tests and SonarQube analysis
-    jobs:
-    - job: test
-      displayName: Run tests and SonarQube analysis
-      variables:
-        npm_config_cache: $(Pipeline.Workspace)/.npm
-      steps:
-      - task: PythonScript@0
-        name: extractPackageVersion
-        displayName: Extract version from package.json
-        inputs:
-          scriptSource: 'inline'
-          script: |
-            import json
-            with open('package.json') as packageJsonFile:
-              packageJson = json.load(packageJsonFile)
-              print("##vso[task.setvariable variable=packageVersion]" + packageJson['version'])
-      - task: Cache@2
-        inputs:
-          key: 'npm | "$(Agent.OS)" | its/package-lock.json'
-          restoreKeys: |
-            npm | "$(Agent.OS)"
-            npm
-          path: $(npm_config_cache)
-        displayName: Cache npm
-      - bash: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
-          sudo chmod +x /etc/init.d/xvfb
-          sudo update-rc.d xvfb defaults
-          sudo service xvfb start
-          export DISPLAY=':10'
-        displayName: 'Install and start xvfb'
-      - template: prepare-sq-analysis-steps.yml
-        parameters:
-          scannerMode: CLI
-          configMode: manual
-          projectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
-          projectName: 'SonarLint for VSCode'
-          projectVersion: $(packageVersion)
-          extraProperties: |
-            sonar.tests=test,its/src
-            sonar.exclusions=test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**, **/its/**, **/dogfood/**
-            sonar.javascript.lcov.reportPaths=coverage/lcov.info
-            sonar.coverage.exclusions=gulpfile.js, webpack.config.js, scripts/**
-      - task: Npm@1
-        displayName: 'Install NPM dependencies'
-        env:
-          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
-          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
-        inputs:
-          command: ci
-      - task: Npm@1
-        displayName: 'Compile TypeScript'
-        inputs:
-          command: custom
-          customCommand: run compile
-      - task: Npm@1
-        displayName: 'Fetch language server and its dependencies'
-        continueOnError: true
-        inputs:
-          command: custom
-          customCommand: run prepare
-        env:
-          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
-          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
-      - task: Npm@1
-        displayName: 'Run tests with coverage'
-        inputs:
-          command: custom
-          customCommand: run test-cov
-      - task: PublishTestResults@2
-        condition: succeededOrFailed()
-        inputs:
-          testResultsFiles: '**/alltests.xml'
-          failTaskOnFailedTests: true
-          testRunTitle: UTs
-      - bash: git checkout .
-        name: revertPackageJsonChanges
-        displayName: Revert changes made to package.json to not break cache feature
-      - task: SonarQubeAnalyze@4
-        displayName: 'Run SonarQube analysis on Next'
-- template: stage-with-burgr-notifications.yml@commonTemplates
-  parameters:
-    burgrName: 'qa'
-    burgrType: 'qa'
-    stageName: 'qa'
-    stageDisplayName: Run ITs
-    stageDependencies: build
-    jobs:
-    - job: its
-      displayName: Run ITs
-      strategy:
-        matrix:
-          oldest_supported:
-            VSCODE_VERSION: '1.52.0'
-          stable:
-            VSCODE_VERSION: 'stable'
-          insiders:
-            VSCODE_VERSION: 'insiders'
-      variables:
-        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-        npm_config_cache: $(Pipeline.Workspace)/.npm
-      steps:
-      - checkout: self
-        fetchDepth: 1
-      - task: PythonScript@0
-        name: computeVersion
-        displayName: Extract version from package.json and compute build version
-        inputs:
-          scriptSource: 'inline'
-          script: |
-            import json
-            with open('package.json') as packageJsonFile:
-              packageJson = json.load(packageJsonFile)
-              print("##vso[task.setvariable variable=PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', '+$(Build.BuildId)'))
-      - task: Cache@2
-        displayName: Cache Maven local repo
-        inputs:
-          key: 'maven | "$(Agent.OS)" | azure-pipelines.yml'
-          restoreKeys: |
-            maven | "$(Agent.OS)"
-            maven
-          path: $(MAVEN_CACHE_FOLDER)
-      - task: DownloadSecureFile@1
-        displayName: 'Download Maven settings'
-        name: mavenSettings
-        inputs:
-          secureFile: 'maven-settings.xml'
-      - bash: >-
-          mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa
-          -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$(PROJECT_VERSION):vsix -DoutputDirectory=$(Build.SourcesDirectory)
-        displayName: ' Download staged vsix'
-        env:
-          ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
-          ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
-      - task: Cache@2
-        inputs:
-          key: 'npm | "$(Agent.OS)" | its/package-lock.json'
-          restoreKeys: |
-            npm | "$(Agent.OS)"
-            npm
-          path: $(npm_config_cache)
-        displayName: Cache npm
-      - bash: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
-          sudo chmod +x /etc/init.d/xvfb
-          sudo update-rc.d xvfb defaults
-          sudo service xvfb start
-          export DISPLAY=':10'
-        displayName: 'Install and start xvfb'
-      - task: JavaToolInstaller@0
-        displayName: 'Switch to Java 11'
-        inputs:
-          versionSpec: '11'
-          jdkSourceOption: PreInstalled
-          jdkArchitectureOption: x64
-          cleanDestinationDirectory: false
-      - task: Npm@1
-        displayName: 'Install NPM dependencies'
-        inputs:
-          workingDir: its
-          command: ci
-      - task: Npm@1
-        displayName: 'Run ITs'
-        inputs:
-          workingDir: its
-          command: custom
-          customCommand: test
-      - bash: |
-          echo " "
-          echo " >>>>> SonarLint console"
-          echo " "
-          find its/userdir -name '*SonarLint.log' -exec cat {} \;
-          echo " "
-          echo " >>>>> Extension host log"
-          echo " "
-          find its/userdir -name 'exthost.log' -exec cat {} \;
-        condition: succeededOrFailed()
-        displayName: 'Dump Code logs'
-      - task: PublishTestResults@2
-        condition: succeededOrFailed()
-        inputs:
-          testResultsFiles: '**/*tests.xml'
-          failTaskOnFailedTests: true
-          testRunTitle: 'ITs $(VSCODE_VERSION)'
+#- template: stage-with-burgr-notifications.yml@commonTemplates
+#  parameters:
+#    burgrName: 'validate'
+#    burgrType: 'validate'
+#    stageName: 'validate'
+#    stageDisplayName: Run tests and SonarQube analysis
+#    jobs:
+#    - job: test
+#      displayName: Run tests and SonarQube analysis
+#      variables:
+#        npm_config_cache: $(Pipeline.Workspace)/.npm
+#      steps:
+#      - task: PythonScript@0
+#        name: extractPackageVersion
+#        displayName: Extract version from package.json
+#        inputs:
+#          scriptSource: 'inline'
+#          script: |
+#            import json
+#            with open('package.json') as packageJsonFile:
+#              packageJson = json.load(packageJsonFile)
+#              print("##vso[task.setvariable variable=packageVersion]" + packageJson['version'])
+#      - task: Cache@2
+#        inputs:
+#          key: 'npm | "$(Agent.OS)" | its/package-lock.json'
+#          restoreKeys: |
+#            npm | "$(Agent.OS)"
+#            npm
+#          path: $(npm_config_cache)
+#        displayName: Cache npm
+#      - bash: |
+#          set -euo pipefail
+#          sudo apt-get update
+#          sudo apt-get install -y xvfb
+#          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+#          sudo chmod +x /etc/init.d/xvfb
+#          sudo update-rc.d xvfb defaults
+#          sudo service xvfb start
+#          export DISPLAY=':10'
+#        displayName: 'Install and start xvfb'
+#      - template: prepare-sq-analysis-steps.yml
+#        parameters:
+#          scannerMode: CLI
+#          configMode: manual
+#          projectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
+#          projectName: 'SonarLint for VSCode'
+#          projectVersion: $(packageVersion)
+#          extraProperties: |
+#            sonar.tests=test,its/src
+#            sonar.exclusions=test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**, **/its/**, **/dogfood/**
+#            sonar.javascript.lcov.reportPaths=coverage/lcov.info
+#            sonar.coverage.exclusions=gulpfile.js, webpack.config.js, scripts/**
+#      - task: Npm@1
+#        displayName: 'Install NPM dependencies'
+#        env:
+#          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+#          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+#        inputs:
+#          command: ci
+#      - task: Npm@1
+#        displayName: 'Compile TypeScript'
+#        inputs:
+#          command: custom
+#          customCommand: run compile
+#      - task: Npm@1
+#        displayName: 'Fetch language server and its dependencies'
+#        continueOnError: true
+#        inputs:
+#          command: custom
+#          customCommand: run prepare
+#        env:
+#          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+#          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+#      - task: Npm@1
+#        displayName: 'Run tests with coverage'
+#        inputs:
+#          command: custom
+#          customCommand: run test-cov
+#      - task: PublishTestResults@2
+#        condition: succeededOrFailed()
+#        inputs:
+#          testResultsFiles: '**/alltests.xml'
+#          failTaskOnFailedTests: true
+#          testRunTitle: UTs
+#      - bash: git checkout .
+#        name: revertPackageJsonChanges
+#        displayName: Revert changes made to package.json to not break cache feature
+#      - task: SonarQubeAnalyze@4
+#        displayName: 'Run SonarQube analysis on Next'
+#- template: stage-with-burgr-notifications.yml@commonTemplates
+#  parameters:
+#    burgrName: 'qa'
+#    burgrType: 'qa'
+#    stageName: 'qa'
+#    stageDisplayName: Run ITs
+#    stageDependencies: build
+#    jobs:
+#    - job: its
+#      displayName: Run ITs
+#      strategy:
+#        matrix:
+#          oldest_supported:
+#            VSCODE_VERSION: '1.52.0'
+#          stable:
+#            VSCODE_VERSION: 'stable'
+#          insiders:
+#            VSCODE_VERSION: 'insiders'
+#      variables:
+#        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+#        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+#        npm_config_cache: $(Pipeline.Workspace)/.npm
+#      steps:
+#      - checkout: self
+#        fetchDepth: 1
+#      - task: PythonScript@0
+#        name: computeVersion
+#        displayName: Extract version from package.json and compute build version
+#        inputs:
+#          scriptSource: 'inline'
+#          script: |
+#            import json
+#            with open('package.json') as packageJsonFile:
+#              packageJson = json.load(packageJsonFile)
+#              print("##vso[task.setvariable variable=PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', '+$(Build.BuildId)'))
+#      - task: Cache@2
+#        displayName: Cache Maven local repo
+#        inputs:
+#          key: 'maven | "$(Agent.OS)" | azure-pipelines.yml'
+#          restoreKeys: |
+#            maven | "$(Agent.OS)"
+#            maven
+#          path: $(MAVEN_CACHE_FOLDER)
+#      - task: DownloadSecureFile@1
+#        displayName: 'Download Maven settings'
+#        name: mavenSettings
+#        inputs:
+#          secureFile: 'maven-settings.xml'
+#      - bash: >-
+#          mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa
+#          -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$(PROJECT_VERSION):vsix -DoutputDirectory=$(Build.SourcesDirectory)
+#        displayName: ' Download staged vsix'
+#        env:
+#          ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
+#          ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
+#      - task: Cache@2
+#        inputs:
+#          key: 'npm | "$(Agent.OS)" | its/package-lock.json'
+#          restoreKeys: |
+#            npm | "$(Agent.OS)"
+#            npm
+#          path: $(npm_config_cache)
+#        displayName: Cache npm
+#      - bash: |
+#          set -euo pipefail
+#          sudo apt-get update
+#          sudo apt-get install -y xvfb
+#          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+#          sudo chmod +x /etc/init.d/xvfb
+#          sudo update-rc.d xvfb defaults
+#          sudo service xvfb start
+#          export DISPLAY=':10'
+#        displayName: 'Install and start xvfb'
+#      - task: JavaToolInstaller@0
+#        displayName: 'Switch to Java 11'
+#        inputs:
+#          versionSpec: '11'
+#          jdkSourceOption: PreInstalled
+#          jdkArchitectureOption: x64
+#          cleanDestinationDirectory: false
+#      - task: Npm@1
+#        displayName: 'Install NPM dependencies'
+#        inputs:
+#          workingDir: its
+#          command: ci
+#      - task: Npm@1
+#        displayName: 'Run ITs'
+#        inputs:
+#          workingDir: its
+#          command: custom
+#          customCommand: test
+#      - bash: |
+#          echo " "
+#          echo " >>>>> SonarLint console"
+#          echo " "
+#          find its/userdir -name '*SonarLint.log' -exec cat {} \;
+#          echo " "
+#          echo " >>>>> Extension host log"
+#          echo " "
+#          find its/userdir -name 'exthost.log' -exec cat {} \;
+#        condition: succeededOrFailed()
+#        displayName: 'Dump Code logs'
+#      - task: PublishTestResults@2
+#        condition: succeededOrFailed()
+#        inputs:
+#          testResultsFiles: '**/*tests.xml'
+#          failTaskOnFailedTests: true
+#          testRunTitle: 'ITs $(VSCODE_VERSION)'
 - template: promote-stage.yml@commonTemplates
   parameters:
     stageDependencies:
