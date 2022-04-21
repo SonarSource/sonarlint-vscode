@@ -248,12 +248,20 @@ gulp.task('create-all-vsix', () => {
 });
 
 gulp.task(
-    'deploy',
+    'deploy-all',
     async (done) => {
       for (const i in platforms) {
         const platform = platforms[i];
         await deployForPlatform(platform, done);
       }
+      done();
+    });
+
+gulp.task(
+    'deploy',
+    async (done) => {
+      const platform = platforms[0];
+      await deployForPlatform(platform, done);
       done();
     });
 
