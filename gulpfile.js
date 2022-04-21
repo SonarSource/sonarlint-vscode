@@ -49,7 +49,11 @@ gulp.task('update-version', function () {
   }
 });
 
-gulp.task('package', gulp.series('clean', 'update-version', vsce.createVSIX));
+gulp.task('package', async (done) => {
+  const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
+    await gulp.series(await vsce.createVSIX({ target: platforms[0] }));
+  done();
+});
 
 function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json').toString());
@@ -227,13 +231,13 @@ gulp.task('deploy-buildinfo', function (done) {
 
 gulp.task(
   'deploy',
-  gulp.series('clean', 'update-version', vsce.createVSIX('linux-x64'), 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
+  gulp.series('clean', 'update-version', vsce.createVSIX({target: 'win32-x64'}), 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
 );
 
 gulp.task('deploy-all-platforms', async (done) => {
       const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
-      for(const platform in platforms) {
-        await gulp.series('clean', 'update-version', vsce.createVSIX(platform),
+      for(const i in platforms) {
+        await gulp.series('clean', 'update-version', vsce.createVSIX({target: platforms[i]}),
             'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
       }
       done();
