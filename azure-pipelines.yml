@@ -255,7 +255,7 @@ stages:
 #          failTaskOnFailedTests: true
 #          testRunTitle: 'ITs $(VSCODE_VERSION)'
 - template: promote-stage.yml@commonTemplates
-  parameters:
+#  parameters:
 #    stageDependencies:
 #    - validate
 #    - qa
