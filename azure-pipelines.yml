@@ -20,14 +20,6 @@ stages:
     burgrName: 'build'
     burgrType: 'build'
     stageName: 'build'
-    name: targetPlatforms
-      type: object
-      default:
-        - "win32-x64"
-        - "linux-x64"
-        - "linux-arm64"
-        - "darwin-x64"
-        - "darwin-arm64"
     stageDisplayName: Build and stage to repox
     jobs:
     - job: build
