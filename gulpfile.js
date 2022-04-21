@@ -228,13 +228,16 @@ gulp.task('deploy-buildinfo', function (done) {
     .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
 });
 
-gulp.task(
-  'deploy', () => {
-    platforms.forEach(platform =>{
-      return gulp.series('clean', 'update-version', vsce.createVSIX({target: platform}),
-          'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
-    });
+gulp.task('create-all-vsix', () => {
+  platforms.forEach(platform => {
+    return vsce.createVSIX({target: platform});
   });
+});
+
+gulp.task(
+  'deploy',
+  gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
+);
 
 function buildInfo(name, version, buildNumber) {
   const {
