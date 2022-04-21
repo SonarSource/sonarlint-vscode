@@ -25,7 +25,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           SLACK_API_TOKEN: ${{secrets.SLACK_API_TOKEN }}
         uses: SonarSource/gh-action_release/main@v4
+      - name: Check outputs
+        if: always()
+        run: |
+          echo "${{ steps.sl_release.outputs.releasability }}"
+          echo "${{ steps.sl_release.outputs.release }}"
 
+  deploy_to_microsoft_marketplace:
+    runs-on: ubuntu-latest
+    name: Deploy to Visual Studio marketplace
+    needs: sonar_release
+    strategy:
+      matrix:
+        platform: ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64', 'universal']
+    steps:
       - name: Checkout custom actions
         uses: actions/checkout@v2
         with:
@@ -34,9 +47,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Install dependencies for ovsx-publish
-        run: npm install
-        working-directory: ./.github/actions/ovsx-publish
       - name: Install dependencies for vsce-publish
         run: npm install
         working-directory: ./.github/actions/vsce-publish
@@ -48,15 +58,18 @@ jobs:
           #
           # Extract version, build file name and download URL from GH ref
           #
-          import os
           # See https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
           tagName = '${{ github.ref_name }}'
           # tagName = <version>+<buildId>
           version = tagName.split('+')[0]
+          platform = '${{ matrix.platform }}'
 
           artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases'
           slvscodeBaseUrl = f'{artifactoryPublicRepo}/org/sonarsource/sonarlint/vscode/sonarlint-vscode'
-          artifactName = f'sonarlint-vscode-{version}.vsix'
+          if platform == 'universal':
+            artifactName = f'sonarlint-vscode-{version}.vsix'
+          else:
+            artifactName = f'sonarlint-vscode-{platform}-{version}.vsix'
           artifactUrl = f'{slvscodeBaseUrl}/{version}/{artifactName}'
 
           print(f'::set-output name=artifactUrl::{artifactUrl}')
@@ -72,9 +85,50 @@ jobs:
         id: vsce_publish
         env:
           ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
+          TARGET_PLATFORM: ${{ matrix.platform }}
           VSCE_TOKEN: ${{ secrets.VISUALSTUDIO_PAT }}
         uses: ./.github/actions/vsce-publish
 
+  deploy_to_openvsx:
+    runs-on: ubuntu-latest
+    name: Deploy to OpenVSX
+    needs: sonar_release
+    steps:
+      - name: Checkout custom actions
+        uses: actions/checkout@v2
+      - name: Use Node 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Install dependencies for ovsx-publish
+        run: npm install
+        working-directory: ./.github/actions/ovsx-publish
+
+      - name: Extract version, file name and download URL
+        id: extract_version
+        shell: python
+        run: |
+          #
+          # Extract version, build file name and download URL from GH ref
+          #
+          # See https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+          tagName = '${{ github.ref_name }}'
+          # tagName = <version>+<buildId>
+          version = tagName.split('+')[0]
+          
+          artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases'
+          slvscodeBaseUrl = f'{artifactoryPublicRepo}/org/sonarsource/sonarlint/vscode/sonarlint-vscode'
+          artifactName = f'sonarlint-vscode-{version}.vsix'
+          artifactUrl = f'{slvscodeBaseUrl}/{version}/{artifactName}'
+          
+          print(f'::set-output name=artifactUrl::{artifactUrl}')
+          print(f'::set-output name=artifactName::{artifactName}')
+
+      - name: Download promoted file
+        id: download_artifact
+        run: |
+          curl -s -o ${{ steps.extract_version.outputs.artifactName }} ${{ steps.extract_version.outputs.artifactUrl }}
+          echo '::set-output name=artifactFile::'$(pwd)/${{ steps.extract_version.outputs.artifactName }}
       - name: Publish to OpenVSX
         if: success()
         id: ovsx_publish
@@ -82,10 +136,3 @@ jobs:
           ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
           OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
         uses: ./.github/actions/ovsx-publish
-
-      - name: Check outputs
-        if: always()
-        run: |
-          echo "${{ steps.sl_release.outputs.releasability }}"
-          echo "${{ steps.sl_release.outputs.release }}"
-

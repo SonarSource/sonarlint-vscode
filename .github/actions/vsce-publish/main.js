@@ -16,8 +16,18 @@
 
 import * as vsce from 'vsce';
 
+/*
+ * See https://code.visualstudio.com/api/working-with-extensions/publishing-extension#platformspecific-extensions
+ * See also https://github.com/microsoft/vsmarketplace/issues/219
+ * See complement in release.yml:deploy_to_microsoft_marketplace.strategy.matrix.platform
+ */
+const UNIVERSAL_PLATFORMS = [
+  'win32-ia32', 'win32-arm64', 'linux-armhf', 'alpine-x64', 'alpine-arm64'
+];
+
 const {
   ARTIFACT_FILE,
+  TARGET_PLATFORM,
   VSCE_TOKEN
 } = process.env;
 
@@ -28,7 +38,16 @@ const {
   const options = {
     pat: VSCE_TOKEN
   };
-  await vsce.publishVSIX(ARTIFACT_FILE, options);
+
+  if (TARGET_PLATFORM === 'universal') {
+    for (target of UNIVERSAL_PLATFORMS) {
+      options.target = target;
+      await vsce.publishVSIX(ARTIFACT_FILE, options);
+    }
+  } else {
+    options.target = TARGET_PLATFORM;
+    await vsce.publishVSIX(ARTIFACT_FILE, options);
+  }
 
 })()
   .then(() => {
