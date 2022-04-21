@@ -229,15 +229,18 @@ gulp.task('deploy-buildinfo', function (done) {
 });
 
 gulp.task('create-all-vsix', () => {
-  platforms.forEach(platform => {
-    return vsce.createVSIX({target: platform});
+  platforms.forEach(async platform => {
+    await vsce.createVSIX({target: platform});
   });
 });
 
 gulp.task(
-  'deploy',
-  gulp.series('clean', 'update-version', 'create-all-vsix', 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
-);
+  'deploy', () => {
+      platforms.forEach(async platform => {
+        gulp.series('clean', 'update-version', await vsce.createVSIX({target: platform}),
+            'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
+      });
+});
 
 function buildInfo(name, version, buildNumber) {
   const {
