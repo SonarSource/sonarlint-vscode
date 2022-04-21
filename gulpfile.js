@@ -26,6 +26,7 @@ const jarDependencies = require('./scripts/dependencies.json');
 //...
 
 const LATEST_JRE = 17;
+const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
 
 gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
 
@@ -49,10 +50,8 @@ gulp.task('update-version', function () {
   }
 });
 
-gulp.task('package', async (done) => {
-  const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
-    await gulp.series(await vsce.createVSIX({ target: platforms[0] }));
-  done();
+gulp.task('package', () => {
+  return vsce.createVSIX({ target: platforms[0] });
 });
 
 function getPackageJSON() {
@@ -230,18 +229,12 @@ gulp.task('deploy-buildinfo', function (done) {
 });
 
 gulp.task(
-  'deploy',
-  gulp.series('clean', 'update-version', vsce.createVSIX({target: 'win32-x64'}), 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
-);
-
-gulp.task('deploy-all-platforms', async (done) => {
-      const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
-      for(const i in platforms) {
-        await gulp.series('clean', 'update-version', vsce.createVSIX({target: platforms[i]}),
-            'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-      }
-      done();
+  'deploy', () => {
+    platforms.forEach(platform =>{
+      return gulp.series('clean', 'update-version', vsce.createVSIX({target: platform}),
+          'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
     });
+  });
 
 function buildInfo(name, version, buildNumber) {
   const {
