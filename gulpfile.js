@@ -237,8 +237,8 @@ gulp.task('create-all-vsix', () => {
 gulp.task(
   'deploy', () => {
       platforms.forEach(async platform => {
-        gulp.series('clean', 'update-version', await vsce.createVSIX({target: platform}),
-            'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
+        return gulp.series('clean', 'update-version', await vsce.createVSIX({target: platform}),
+            'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
       });
 });
 
