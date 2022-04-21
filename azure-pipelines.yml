@@ -53,7 +53,7 @@ stages:
           ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
         inputs:
           gulpjs: node_modules/.bin/gulp
-          targets: deploy-all-platforms
+          targets: deploy
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature

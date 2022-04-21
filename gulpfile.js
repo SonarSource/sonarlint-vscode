@@ -227,7 +227,7 @@ gulp.task('deploy-buildinfo', function (done) {
 
 gulp.task(
   'deploy',
-  gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
+  gulp.series('clean', 'update-version', vsce.createVSIX('linux-x64'), 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
 );
 
 gulp.task('deploy-all-platforms', async (done) => {
