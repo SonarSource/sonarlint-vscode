@@ -18,6 +18,7 @@ import { Commands } from './commands';
 import * as jre from './jre';
 import { PlatformInformation } from './platform';
 import * as util from './util';
+ import * as fse from 'fs-extra';
 
 
 const REQUIRED_JAVA_VERSION = 11;
@@ -166,6 +167,19 @@ function invalidJavaHome(reject, cause: string) {
       message: cause
     });
   }
+}
+
+async function findEmbeddedJRE(context: vscode.ExtensionContext): Promise<string | undefined> {
+  const jreHome = context.asAbsolutePath('jre');
+  if (fse.existsSync(jreHome) && fse.statSync(jreHome).isDirectory()) {
+    const candidates = fse.readdirSync(jreHome);
+    for (const candidate of candidates) {
+      if (fse.existsSync(path.join(jreHome, candidate, 'bin', JAVA_FILENAME))) {
+        return path.join(jreHome, candidate);
+      }
+    }
+  }
+  return Promise.resolve(undefined);
 }
 
 export function installManagedJre() {
