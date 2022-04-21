@@ -248,7 +248,7 @@ gulp.task('create-all-vsix', () => {
 });
 
 gulp.task(
-  'deploy', async () => {
+  'deploy', async (done) => {
       platforms.forEach(platform => {
         if (platform === 'darwin-arm64') {
           downloadJre(platform, 17, done);
@@ -258,6 +258,7 @@ gulp.task(
         vsce.createVSIX({target: platform});
       });
       gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+      done();
 });
 
 function buildInfo(name, version, buildNumber) {
