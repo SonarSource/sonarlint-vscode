@@ -252,12 +252,12 @@ gulp.task(
     async (done) => {
       for (const i in platforms) {
         const platform = platforms[i];
-        await deployForPlatform(platform);
+        await deployForPlatform(platform, done);
       }
       done();
     });
 
-async function deployForPlatform(platform) {
+async function deployForPlatform(platform, done) {
   await gulp.series('clean', 'update-version');
   if (platform === 'darwin-arm64') {
     await downloadJre(platform, 17, done);
