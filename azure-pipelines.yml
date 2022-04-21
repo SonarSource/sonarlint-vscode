@@ -257,7 +257,7 @@ stages:
 - template: promote-stage.yml@commonTemplates
   parameters:
     stageDependencies:
-    - build
+    - qa
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
     burgrName: 'dogfood'
