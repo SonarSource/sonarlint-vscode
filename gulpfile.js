@@ -261,6 +261,7 @@ gulp.task(
     'deploy',
     async (done) => {
       const platform = platforms[0];
+      await downloadJre(platform, 11, done);
       await deployForPlatform(platform, done);
       done();
     });
