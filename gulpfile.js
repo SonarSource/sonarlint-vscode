@@ -28,6 +28,7 @@ const jarDependencies = require('./scripts/dependencies.json');
 const LATEST_JRE = 17;
 const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
 
+
 gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
 
 gulp.task(
@@ -50,8 +51,16 @@ gulp.task('update-version', function () {
   }
 });
 
-gulp.task('package', () => {
-  return vsce.createVSIX({ target: platforms[0] });
+gulp.task('package', async (done) => {
+  platforms.forEach(platform => {
+    if (platform === 'darwin-arm64') {
+      downloadJre(platform, 17, done);
+    } else {
+      downloadJre(platform, 11, done);
+    }
+    vsce.createVSIX({target: platform});
+  });
+  done();
 });
 
 function getPackageJSON() {
@@ -127,6 +136,13 @@ gulp.task('clean_jre', function(done) {
  *  darwin-arm64
  */
 gulp.task('download_jre', async (done) => {
+  const targetPlatform = argv.target || `${process.platform}-${process.arch}`;
+  const javaVersion = (!argv.javaVersion || argv.javaVersion === 'latest') ? LATEST_JRE : argv.javaVersion;
+  await downloadJre(targetPlatform, javaVersion, done);
+  done();
+});
+
+async function downloadJre(targetPlatform, javaVersion, done) {
   if (fse.existsSync('./jre')) {
     fse.removeSync('./jre');
   }
@@ -139,9 +155,7 @@ gulp.task('download_jre', async (done) => {
     'win32-x64': 'win32-x86_64'
   };
 
-  const targetPlatform = argv.target || `${process.platform}-${process.arch}`;
   if (targetPlatform && Object.keys(platformMapping).includes(targetPlatform)) {
-    const javaVersion = (!argv.javaVersion || argv.javaVersion === 'latest') ? LATEST_JRE : argv.javaVersion;
     console.log(`Downloading justj JRE ${javaVersion} for the platform ${targetPlatform} ...`);
 
     const manifestUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/justj.manifest`;
@@ -204,8 +218,7 @@ gulp.task('download_jre', async (done) => {
     }
   }
 
-  done();
-});
+}
 
 gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
@@ -235,11 +248,16 @@ gulp.task('create-all-vsix', () => {
 });
 
 gulp.task(
-  'deploy', () => {
-      return platforms.forEach(async platform => {
-        await gulp.series('clean', 'update-version', await vsce.createVSIX({target: platform}),
-            'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+  'deploy', async () => {
+      platforms.forEach(platform => {
+        if (platform === 'darwin-arm64') {
+          downloadJre(platform, 17, done);
+        } else {
+          downloadJre(platform, 11, done);
+        }
+        vsce.createVSIX({target: platform});
       });
+      gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
 });
 
 function buildInfo(name, version, buildNumber) {
