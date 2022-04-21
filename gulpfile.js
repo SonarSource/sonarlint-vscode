@@ -230,13 +230,12 @@ gulp.task(
   gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
 );
 
-gulp.task(
-    'deploy-all-platforms', (done) => {
+gulp.task('deploy-all-platforms', async (done) => {
       const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
-      platforms.forEach(platform => {
-        gulp.series('clean', 'update-version', vsce.createVSIX(platform),
+      for(const platform in platforms) {
+        await gulp.series('clean', 'update-version', vsce.createVSIX(platform),
             'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-      });
+      }
       done();
     });
 
