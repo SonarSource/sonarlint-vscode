@@ -17,4 +17,5 @@ dogfood/
 scripts/
 .azure-pipelines
 azure-pipelines.yml
+.github/
 
