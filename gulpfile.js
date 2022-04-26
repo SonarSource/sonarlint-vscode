@@ -53,11 +53,7 @@ gulp.task('update-version', function () {
 
 gulp.task('package', async (done) => {
   platforms.forEach(platform => {
-    if (platform === 'darwin-arm64') {
-      downloadJre(platform, 17, done);
-    } else {
-      downloadJre(platform, 11, done);
-    }
+    downloadJre(platform, 17, done);
     vsce.createVSIX({target: platform});
   });
   done();

@@ -18,7 +18,8 @@ import { Commands } from './commands';
 import * as jre from './jre';
 import { PlatformInformation } from './platform';
 import * as util from './util';
- import * as fse from 'fs-extra';
+import * as fse from 'fs-extra';
+import {logToSonarLintOutput} from './extension';
 
 
 const REQUIRED_JAVA_VERSION = 11;
@@ -40,7 +41,8 @@ interface ErrorData {
 }
 
 export async function resolveRequirements(context: vscode.ExtensionContext): Promise<RequirementsData> {
-  const javaHome = await checkJavaRuntime(context);
+  const javaHome = path.join(context.extensionPath, './jre/17.0.2-linux-x86_64');
+  logToSonarLintOutput(`Java Home set to: ${javaHome}`);
   const javaVersion = await checkJavaVersion(javaHome);
   return { javaHome, javaVersion };
 }

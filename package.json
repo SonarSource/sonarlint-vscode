@@ -1,10 +1,10 @@
 {
-  "name": "sonarlint-vscode",
-  "displayName": "SonarLint",
-  "description": "SonarLint is an IDE extension that helps you detect and fix quality issues as you write code in C, C++, Java, JavaScript, PHP, Python, HTML and TypeScript.",
-  "version": "3.5.0-SNAPSHOT",
+  "name": "test-extension-vscode",
+  "displayName": "Test Extension",
+  "description": "Removed.",
+  "version": "1.0.2",
   "icon": "images/sonarlint_wave_128px.png",
-  "publisher": "SonarSource",
+  "publisher": "KirillKnize",
   "homepage": "http://www.sonarlint.org",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "2.7.0"
+    "vscode": "^1.61.0"
   },
   "categories": [
     "Linters"
@@ -32,7 +32,6 @@
     "TypeScript",
     "Code Analysis"
   ],
-  "qna": "https://community.sonarsource.com/c/help/sl",
   "activationEvents": [
     "onCommand:SonarLint.UpdateAllBindings",
     "onCommand:SonarLint.ShowSonarLintOutput",

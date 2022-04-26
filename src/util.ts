@@ -18,7 +18,7 @@ export function startedInDebugMode(process: NodeJS.Process): boolean {
   return false;
 }
 
-export const extension = vscode.extensions.getExtension('SonarSource.sonarlint-vscode');
+export const extension = vscode.extensions.getExtension('KirillKnize.test-extension-vscode');
 export const packageJson = extension.packageJSON;
 
 export let extensionPath: string;

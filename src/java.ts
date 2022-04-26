@@ -95,10 +95,10 @@ export async function getJavaConfig(
     const extensionApi = await extension?.activate();
     if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
       installClasspathListener(languageClient);
-      installServerModeChangeListener(languageClient);
-      if (extensionApi.serverMode === ServerMode.LIGHTWEIGHT) {
-        return javaConfigDisabledInLightWeightMode();
-      }
+      // installServerModeChangeListener(languageClient);
+      // if (extensionApi.serverMode === ServerMode.LIGHTWEIGHT) {
+      //   return javaConfigDisabledInLightWeightMode();
+      // }
       const isTest: boolean = await extensionApi.isTestFile(fileUri);
       const COMPILER_COMPLIANCE_SETTING_KEY = 'org.eclipse.jdt.core.compiler.compliance';
       const VM_LOCATION_SETTING_KEY = 'org.eclipse.jdt.ls.core.vm.location';
