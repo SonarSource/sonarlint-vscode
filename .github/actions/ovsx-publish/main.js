@@ -14,62 +14,28 @@
 
 'use strict';
 
-import * as fs from 'fs';
-import fetch from 'node-fetch';
 import * as ovsx from 'ovsx';
 
 const {
-  GITHUB_REF,
+  ARTIFACT_FILE,
   OPENVSX_TOKEN
 } = process.env;
 
-const artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases';
-const slvscodeBaseDir = artifactoryPublicRepo + '/org/sonarsource/sonarlint/vscode/sonarlint-vscode';
-
 (async () => {
-
-  // GITHUB_REF = refs/tags/<tagName>
-  const tagName = GITHUB_REF.replace('refs/tags/', '');
-  // tagName = <version>+<buildNumber>
-  const version = tagName.split('+')[0];
-
-  const artifactUrl = `${slvscodeBaseDir}/${version}/sonarlint-vscode-${version}.vsix`;
-
-  const fetchResult = await fetch(artifactUrl);
-  if (! fetchResult.ok || fetchResult.status !== 200) {
-    throw Error(`Could not fetch artifact from Repox: ${fetchResult.statusText}`);
-  }
-
-  const extensionFile = fetchResult.headers.get('X-Artifactory-Filename');
-  await new Promise((resolve, reject) => {
-    const destination = fs.createWriteStream(extensionFile);
-    destination.on('error', err => reject(err));
-    fetchResult.body.pipe(destination);
-    fetchResult.body.on('end', () => resolve());
-  });
-
-  // Create SonarSource namespace on OpenVSX if needed.
-  try {
-    await ovsx.createNamespace({ name: 'SonarSource', pat: OPENVSX_TOKEN });
-  } catch (error) {
-    console.log(`Creating Open VSX namespace failed -- assuming that it already exists`);
-    console.log(error);
-  }
-
   /**
    * @type ovsx.PublishOptions
    */
   const options = {
-    extensionFile,
+    extensionFile: ARTIFACT_FILE,
     pat: OPENVSX_TOKEN
   };
   await ovsx.publish(options);
 
 })()
   .then(() => {
-    return 0;
+    process.exit(0);
   })
   .catch(e => {
     console.error(e);
-    return 1;
+    process.exit(1);
   });
