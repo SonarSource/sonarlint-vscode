@@ -32,11 +32,38 @@ jobs:
           node-version: '16'
       - run: npm install
         working-directory: ./.github/actions/ovsx-publish
+
+      - name: Extract version, file name and download URL
+        id: extract_version
+        shell: python
+        run: |
+          #
+          # Extract version, build file name and download URL from GH ref
+          #
+          import os
+          # See https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+          tagName = '${{ github.ref_name }}'
+          # tagName = <version>+<buildId>
+          version = tagName.split('+')[0]
+
+          artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases'
+          slvscodeBaseUrl = f'{artifactoryPublicRepo}/org/sonarsource/sonarlint/vscode/sonarlint-vscode'
+          artifactName = f'sonarlint-vscode-{version}.vsix'
+          artifactUrl = f'{slvscodeBaseUrl}/{version}/{artifactName}'
+
+          print(f'::set-output name=artifactUrl::{artifactUrl}')
+          print(f'::set-output name=artifactName::{artifactName}')
+      - name: Download promoted file
+        id: download_artifact
+        run: |
+          curl -s -o ${{ steps.extract_version.outputs.artifactName }} ${{ steps.extract_version.outputs.artifactUrl }}
+          echo '::set-output name=artifactFile::'$(pwd)/${{ steps.extract_version.outputs.artifactName }}
+
       - name: Publish to OpenVSX
         if: success()
         id: ovsx_release
         env:
-          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
           OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
         uses: ./.github/actions/ovsx-publish
 
