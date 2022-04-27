@@ -26,12 +26,18 @@ jobs:
           SLACK_API_TOKEN: ${{secrets.SLACK_API_TOKEN }}
         uses: SonarSource/gh-action_release/main@v4
 
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - name: Checkout custom actions
+        uses: actions/checkout@v2
+      - name: Use Node 16
+        uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - run: npm install
+      - name: Install dependencies for ovsx-publish
+        run: npm install
         working-directory: ./.github/actions/ovsx-publish
+      - name: Install dependencies for vsce-publish
+        run: npm install
+        working-directory: ./.github/actions/vsce-publish
 
       - name: Extract version, file name and download URL
         id: extract_version
@@ -59,9 +65,17 @@ jobs:
           curl -s -o ${{ steps.extract_version.outputs.artifactName }} ${{ steps.extract_version.outputs.artifactUrl }}
           echo '::set-output name=artifactFile::'$(pwd)/${{ steps.extract_version.outputs.artifactName }}
 
+      - name: Publish to Visual Studio Marketplace
+        if: success()
+        id: vsce_publish
+        env:
+          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
+          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+        uses: ./.github/actions/vsce-publish
+
       - name: Publish to OpenVSX
         if: success()
-        id: ovsx_release
+        id: ovsx_publish
         env:
           ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
           OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
