@@ -8,7 +8,7 @@
   {
     "groupId": "org.sonarsource.javascript",
     "artifactId": "sonar-javascript-plugin",
-    "version": "9.1.0.17747",
+    "version": "9.2.0.17876",
     "output": "analyzers/sonarjs.jar"
   },
   {
