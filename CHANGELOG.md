@@ -1,3 +1,7 @@
+## 3.5.0
+
+* Update Java analyzer 7.8.1 -> [7.9](https://github.com/SonarSource/sonar-java/releases/tag/7.9.0.28969) -> [7.10](https://github.com/SonarSource/sonar-java/releases/tag/7.10.0.29108) -> [7.11](https://github.com/SonarSource/sonar-java/releases/tag/7.11.0.29148), enable parsing of Java 18 preview features, rules fixes.
+
 ## 3.4.1
 
 * Fix error during analysis of files not in a Git repo (connected mode only)
