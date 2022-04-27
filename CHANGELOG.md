@@ -2,6 +2,8 @@
 
 * Update Java analyzer 7.8.1 -> [7.9](https://github.com/SonarSource/sonar-java/releases/tag/7.9.0.28969) -> [7.10](https://github.com/SonarSource/sonar-java/releases/tag/7.10.0.29108) -> [7.11](https://github.com/SonarSource/sonar-java/releases/tag/7.11.0.29148), enable parsing of Java 18 preview features, rules fixes.
 * Update JS/TS analyzer 9.1 -> [9.2](https://github.com/SonarSource/SonarJS/releases/tag/9.2.0.17876), node.js 12.22.0 or later required, improvements and FP fixes
+* Update CFamily analyzer 6.32 -> [6.33](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10090&version=17352), bug-fixes for compilation database
+
 
 ## 3.4.1
 
