@@ -70,7 +70,7 @@ jobs:
         id: vsce_publish
         env:
           ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+          VSCE_TOKEN: ${{ secrets.VISUALSTUDIO_PAT }}
         uses: ./.github/actions/vsce-publish
 
       - name: Publish to OpenVSX
