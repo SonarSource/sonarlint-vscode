@@ -71,6 +71,7 @@ function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
         const server = Net.createServer(socket => {
           if (isVerboseEnabled()) {
             logToSonarLintOutput(`Child process connected on port ${(server.address() as Net.AddressInfo).port}`);
+            logToSonarLintOutput(`Java resolved to: ${requirements.javaHome}`);
           }
           resolve({
             reader: socket,
@@ -617,9 +618,24 @@ function showMessageAndUpdateConfig(compilationDbPath: string) {
   VSCode.window.showInformationMessage(
     `Analysis configured. Compilation database path is set to: ${compilationDbPath}`
   );
+  const compilationDbPathWithWorkspaceFolder = getPathWithWorkspaceVariableForPathIfInWorkspace(compilationDbPath);
+
   return VSCode.workspace
     .getConfiguration()
-    .update(PATH_TO_COMPILE_COMMANDS, compilationDbPath, VSCode.ConfigurationTarget.Workspace);
+    .update(PATH_TO_COMPILE_COMMANDS, compilationDbPathWithWorkspaceFolder, VSCode.ConfigurationTarget.Workspace);
+}
+
+function getPathWithWorkspaceVariableForPathIfInWorkspace(path: string) {
+  if (!Path.isAbsolute(path)) {
+    return path;
+  }
+  for (const folder of VSCode.workspace.workspaceFolders || []) {
+    const folderPath = folder.uri.fsPath;
+    if (path.startsWith(folderPath)) {
+      return "${workspaceFolder}" + path.replace(folderPath, '');
+    }
+  }
+  return path;
 }
 
 async function configureCompilationDatabase() {
