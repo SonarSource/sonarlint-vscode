@@ -48,7 +48,7 @@ describe('CFamily Test Suite', () => {
     createCompilationDatabase(firstCompileDbToCreate.path);
     await vscode.commands.executeCommand('SonarLint.ConfigureCompilationDatabase');
     let pathToCompileCommands = vscode.workspace.getConfiguration('sonarlint', projectUri).get('pathToCompileCommands');
-    assert.equal(pathToCompileCommands, firstCompileDbToCreate.path, 'should have selected default one');
+    assert.equal(pathToCompileCommands, "${workspaceFolder}/compile_commands.json", 'should have selected default one');
 
     createDir(innerDir);
     const secondCompileDbToCreate = vscode.Uri.file(path.join(__dirname, sampleCFamilyFolderLocation, "inner", 'compile_commands.json'));
