@@ -616,26 +616,31 @@ async function showCompilationDatabaseOptions(paths: VSCode.Uri[]) {
 
 function showMessageAndUpdateConfig(compilationDbPath: string) {
   VSCode.window.showInformationMessage(
-    `Analysis configured. Compilation database path is set to: ${compilationDbPath}`
+      `Analysis configured. Compilation database path is set to: ${compilationDbPath}`
   );
-  const compilationDbPathWithWorkspaceFolder = getPathWithWorkspaceVariableForPathIfInWorkspace(compilationDbPath);
+  const [pathForSettings, workspaceFolder] = getPathWithWorkspaceVariableForPathIfInWorkspace(compilationDbPath);
 
+  if (workspaceFolder !== undefined) {
+    const config = VSCode.workspace.getConfiguration('sonarlint', workspaceFolder.uri);
+    return config.update('pathToCompileCommands', pathForSettings, VSCode.ConfigurationTarget.WorkspaceFolder);
+  }
   return VSCode.workspace
-    .getConfiguration()
-    .update(PATH_TO_COMPILE_COMMANDS, compilationDbPathWithWorkspaceFolder, VSCode.ConfigurationTarget.Workspace);
+      .getConfiguration()
+      .update(PATH_TO_COMPILE_COMMANDS, pathForSettings, VSCode.ConfigurationTarget.Workspace);
 }
 
-function getPathWithWorkspaceVariableForPathIfInWorkspace(path: string) {
+function getPathWithWorkspaceVariableForPathIfInWorkspace(path: string): [string, VSCode.WorkspaceFolder] {
   if (!Path.isAbsolute(path)) {
-    return path;
+    return [path, undefined];
   }
   for (const folder of VSCode.workspace.workspaceFolders || []) {
     const folderPath = folder.uri.fsPath;
     if (path.startsWith(folderPath)) {
-      return "${workspaceFolder}" + path.replace(folderPath, '');
+      const pathWithVariable = `\${workspaceFolder}${path.replace(folderPath, '')}`;
+      return [pathWithVariable, folder];
     }
   }
-  return path;
+  return [path, undefined];
 }
 
 async function configureCompilationDatabase() {
