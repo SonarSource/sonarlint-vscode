@@ -215,6 +215,8 @@ export function activate(context: VSCode.ExtensionContext) {
         workspaceName: VSCode.workspace.name,
         firstSecretDetected: isFirstSecretDetected(context),
         showVerboseLogs: VSCode.workspace.getConfiguration().get('sonarlint.output.showVerboseLogs', false),
+        platform: getPlatform(),
+        architecture: process.arch,
         additionalAttributes: {
           vscode: {
             remoteName: cleanRemoteName(VSCode.env.remoteName),
@@ -343,6 +345,30 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
+}
+
+function getPlatform(): string {
+  const platform = process.platform;
+  if (platform === 'linux' && isAlpineLinux()) {
+    return 'alpine';
+  }
+  return platform;
+}
+
+// inspired from https://github.com/microsoft/vscode/blob/4e69b30b4c6618e99ffc831bb9441c3e65c6596e/
+// src/vs/platform/extensionManagement/common/extensionManagementUtil.ts#L180
+function isAlpineLinux(): boolean {
+  let fileContent: string | undefined;
+  try {
+    fileContent = FS.readFileSync('/etc/os-release', 'utf-8');
+  } catch (error1) {
+    try {
+      fileContent = FS.readFileSync('/usr/lib/os-release', 'utf-8');
+    } catch (error2) {
+      return false;
+    }
+  }
+  return !!fileContent && (fileContent.match(/^ID=([^\u001b\r\n]*)/m) || [])[1] === 'alpine';
 }
 
 /**
