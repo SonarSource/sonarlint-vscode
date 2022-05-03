@@ -156,6 +156,10 @@ export namespace NeedCompilationDatabaseRequest {
   export const type = new lsp.NotificationType('sonarlint/needCompilationDatabase');
 }
 
+export namespace EditorOpenCheck {
+  export const type = new lsp.RequestType<string, boolean, void>('sonarlint/isOpenInEditor');
+}
+
 //#endregion
 
 //#region Server side extensions to LSP
