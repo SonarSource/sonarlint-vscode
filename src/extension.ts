@@ -38,7 +38,7 @@ let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 const SONARLINT_CATEGORY='sonarlint';
 const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
-const FULL_PATH_TO_COMPILE_COMMANDS=`${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`
+const FULL_PATH_TO_COMPILE_COMMANDS=`${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
 
