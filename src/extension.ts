@@ -36,7 +36,9 @@ declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
-const PATH_TO_COMPILE_COMMANDS = 'sonarlint.pathToCompileCommands';
+const SONARLINT_CATEGORY='sonarlint';
+const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
+const FULL_PATH_TO_COMPILE_COMMANDS=`${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
 
@@ -618,18 +620,18 @@ function showMessageAndUpdateConfig(compilationDbPath: string) {
   VSCode.window.showInformationMessage(
       `Analysis configured. Compilation database path is set to: ${compilationDbPath}`
   );
-  const [pathForSettings, workspaceFolder] = getPathWithWorkspaceVariableForPathIfInWorkspace(compilationDbPath);
+  const [pathForSettings, workspaceFolder] = tryRelativizeToWorkspaceFolder(compilationDbPath);
 
   if (workspaceFolder !== undefined) {
-    const config = VSCode.workspace.getConfiguration('sonarlint', workspaceFolder.uri);
-    return config.update('pathToCompileCommands', pathForSettings, VSCode.ConfigurationTarget.WorkspaceFolder);
+    const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
+    return config.update(PATH_TO_COMPILE_COMMANDS, pathForSettings, VSCode.ConfigurationTarget.WorkspaceFolder);
   }
   return VSCode.workspace
       .getConfiguration()
-      .update(PATH_TO_COMPILE_COMMANDS, pathForSettings, VSCode.ConfigurationTarget.Workspace);
+      .update(FULL_PATH_TO_COMPILE_COMMANDS, pathForSettings, VSCode.ConfigurationTarget.Workspace);
 }
 
-function getPathWithWorkspaceVariableForPathIfInWorkspace(path: string): [string, VSCode.WorkspaceFolder] {
+function tryRelativizeToWorkspaceFolder(path: string): [string, VSCode.WorkspaceFolder] {
   if (!Path.isAbsolute(path)) {
     return [path, undefined];
   }
@@ -652,7 +654,7 @@ async function configureCompilationDatabase() {
 [How to generate compile commands](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis)`);
     VSCode.workspace
       .getConfiguration()
-      .update(PATH_TO_COMPILE_COMMANDS, undefined, VSCode.ConfigurationTarget.Workspace);
+      .update(FULL_PATH_TO_COMPILE_COMMANDS, undefined, VSCode.ConfigurationTarget.Workspace);
   } else {
     await showCompilationDatabaseOptions(paths);
   }
