@@ -52,10 +52,11 @@ gulp.task('update-version', function () {
 });
 
 gulp.task('package', async (done) => {
-  platforms.forEach(platform => {
-    downloadJre(platform, 17, done);
-    vsce.createVSIX({target: platform});
-  });
+  for(const i in platforms) {
+    const platform = platforms[i];
+    await downloadJre(platform, 17, done);
+    await vsce.createVSIX({target: platform});
+  }
   done();
 });
 
