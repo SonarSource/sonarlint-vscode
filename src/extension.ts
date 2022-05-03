@@ -466,6 +466,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
+  languageClient.onRequest(protocol.EditorOpenCheck.type, fileUri => isOpenInEditor(fileUri));
   languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
   );
@@ -580,6 +581,10 @@ export async function performIsIgnoredCheck(
   } catch (e) {
     return Promise.resolve(false);
   }
+}
+
+function isOpenInEditor(fileUri: string) {
+  return (VSCode.workspace.textDocuments.some(document => document.uri.toString(true) === fileUri));
 }
 
 async function showAllLocations(issue: protocol.Issue) {
