@@ -41,7 +41,10 @@ interface ErrorData {
 }
 
 export async function resolveRequirements(context: vscode.ExtensionContext): Promise<RequirementsData> {
-  const javaHome = path.join(context.extensionPath, './jre/17.0.2-linux-x86_64');
+  const jreDir = path.join(context.extensionPath, 'jre');
+  const dirs = fse.readdirSync(jreDir);
+  const javaDir = dirs[0];
+  const javaHome = path.join(jreDir, javaDir);
   logToSonarLintOutput(`Java Home set to: ${javaHome}`);
   const javaVersion = await checkJavaVersion(javaHome);
   return { javaHome, javaVersion };
