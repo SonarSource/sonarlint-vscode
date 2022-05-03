@@ -45,7 +45,7 @@ stages:
         inputs:
           command: install
       - task: gulp@1
-        displayName: 'Build and deploy default VSIX'
+        displayName: 'Build and deploy VSIX'
         env:
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
@@ -257,6 +257,7 @@ stages:
 - template: promote-stage.yml@commonTemplates
   parameters:
     stageDependencies:
+    - validate
     - qa
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
