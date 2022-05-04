@@ -266,8 +266,8 @@ gulp.task('download-jre-build-vsix', async (done) => {
 });
 
 gulp.task(
-    'deploy', async (deployDone) => {
-      const deployPlatform = async (done) => {
+    'deploy', (deployDone) => {
+      const deployPlatform = (done) => {
         const platform = platforms[0];
         const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
         const createVsixTask = () => vsce.createVSIX({target: platform});
