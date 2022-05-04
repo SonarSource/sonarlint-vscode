@@ -261,10 +261,8 @@ const deployAllPlatformsSeries = (done) => {
         'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
   }
   //tasks[platforms.length] = gulp.task('clean_jre');
-  tasks[platforms.length] = gulp.series('clean', 'update-version', vsce.createVSIX,
-      'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-  console.log('Tasks: ' + JSON.stringify(tasks));
-  return gulp.parallel(...tasks, (seriesDone) => {
+  //tasks[platforms.length] = gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+  return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
     done();
   })();
