@@ -279,7 +279,8 @@ function downloadJreAndInstallVsixForPlatform(platform) {
 
 const deployAllPlatformsSeries = (done) => {
   const tasks = [];
-  tasks[0] = gulp.series('clean', 'update-version', vsce.createVSIX,
+  const createVsixTask = () => vsce.createVSIX();
+  tasks[0] = gulp.series('clean', 'update-version', createVsixTask,
       'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
   for (let i in platforms) {
     const platform = platforms[i];
