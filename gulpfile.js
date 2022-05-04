@@ -262,9 +262,10 @@ gulp.task(
     'deploy',
     () => {
       const platform = platforms[0];
-      async function downloadJreAndBuildVsix() {
+      async function downloadJreAndBuildVsix(done) {
         await downloadJre(platform, LATEST_JRE, done);
         await vsce.createVSIX({target: platform});
+        done();
       }
       gulp.series('clean', 'update-version', downloadJreAndBuildVsix,
           'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
