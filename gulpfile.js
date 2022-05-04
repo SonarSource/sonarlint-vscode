@@ -71,12 +71,10 @@ const hashes = {
 };
 
 gulp.task('compute-vsix-hashes', function () {
-  console.log('compute-vsix-hashes started');
   return gulp.src('*.vsix').pipe(hashsum());
 });
 
 gulp.task('deploy-vsix', function () {
-  console.log('Deploy VSIX started');
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -223,7 +221,6 @@ async function downloadJre(targetPlatform, javaVersion, done) {
 }
 
 gulp.task('deploy-buildinfo', function (done) {
-  console.log('deploy-buildinfo started');
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_BUILDID;
