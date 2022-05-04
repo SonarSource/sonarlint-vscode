@@ -44,9 +44,16 @@ stages:
           ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
         inputs:
           command: install
+      - task: DownloadSecureFile@1
+        displayName: 'Download the sign key'
+        name: signKey
+        inputs:
+          secureFile: 'sign-key.asc'
       - task: gulp@1
         displayName: 'Build and deploy VSIX'
         env:
+          SIGN_KEY: $(signKey.secureFilePath)
+          PGP_PASSPHRASE: $(PGP_PASSPHRASE)
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
           ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
