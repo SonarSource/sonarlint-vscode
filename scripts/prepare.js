@@ -24,6 +24,7 @@ const credentialsDefined = ARTIFACTORY_PRIVATE_READER_USERNAME !== undefined
 
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
+const log = require("fancy-log");
 
 const HTTP_OK = 200;
 
@@ -73,15 +74,10 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!fs.existsSync(dest)) {
     console.info(`File doesn't exists: '${dest}'. Will download it!`);
     sendRequest(url)
-        .on('Runtime.exceptionThrown', (e) => {
-          console.log('Got error during downloading ' + dest);
-          console.log(e);
+        .on('error', function (err) {
+          throw err;
         })
-        .pipe(fs.createWriteStream(dest))
-        .on('Runtime.exceptionThrown', (e) => {
-          console.log('Got error during downloading ' + dest);
-          console.log(e);
-        });
+        .pipe(fs.createWriteStream(dest));
   } else {
     fs.createReadStream(dest)
       .pipe(crypto.createHash('sha1').setEncoding('hex'))
@@ -105,9 +101,14 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
 }
 
 function sendRequest(url) {
+  const callback = (error, response, body) => {
+    if (error) {
+      log.error('Got error during downloading ' + url, error);
+    }
+  };
   if (credentialsDefined) {
-    return request(url, { auth });
+    return request(url, { auth }, callback);
   } else {
-    return request(url);
+    return request(url, callback);
   }
 }
