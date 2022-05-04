@@ -57,6 +57,7 @@ gulp.task('package', async (done) => {
     await downloadJre(platform, LATEST_JRE, done);
     await vsce.createVSIX({target: platform});
   }
+  await vsce.createVSIX();
   done();
 });
 
@@ -142,10 +143,14 @@ gulp.task('download_jre', async (done) => {
   done();
 });
 
-async function downloadJre(targetPlatform, javaVersion, done) {
+function cleanupJre() {
   if (fse.existsSync('./jre')) {
     fse.removeSync('./jre');
   }
+}
+
+async function downloadJre(targetPlatform, javaVersion, done) {
+  cleanupJre();
 
   const platformMapping = {
     'linux-arm64': 'linux-aarch64',
@@ -242,34 +247,12 @@ gulp.task('deploy-buildinfo', function (done) {
     .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
 });
 
-gulp.task('create-all-vsix', () => {
-  platforms.forEach(async platform => {
-    await vsce.createVSIX({target: platform});
-  });
-});
-
-gulp.task(
-    'deploy-all',
-    async (done) => {
-      for (const i in platforms) {
-        const platform = platforms[i];
-        await deployForPlatform(platform, done);
-      }
-      done();
-    });
-
-gulp.task('download-jre-build-vsix', async (done) => {
-  const platform = platforms[0];
-  await downloadJre(platform, LATEST_JRE, done);
-  await vsce.createVSIX({target: platform});
-  done();
-});
-
 function downloadJreAndInstallVsixForPlatform(platform) {
   return function (done) {
     const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
     const createVsixTask = () => vsce.createVSIX({target: platform});
-    const tasks = [downloadJreTask, createVsixTask];
+    const cleanupJreTask = () => cleanupJre();
+    const tasks = [downloadJreTask, createVsixTask, cleanupJreTask];
     return gulp.series(...tasks, (seriesDone) => {
       seriesDone();
       done();
@@ -292,21 +275,6 @@ const deployAllPlatformsSeries = (done) => {
     done();
   })();
 };
-
-const deployPlatform = (done) => {
-  const platform = platforms[0];
-  const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
-  const createVsixTask = () => vsce.createVSIX({target: platform});
-  const tasks = [downloadJreTask, createVsixTask];
-  return gulp.series(...tasks, (seriesDone) => {
-    seriesDone();
-    done();
-  })();
-};
-
-const deployPlatformSeries = gulp.series('clean', 'update-version', deployPlatform,
-    'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-
 
 gulp.task('deploy', deployAllPlatformsSeries);
 
