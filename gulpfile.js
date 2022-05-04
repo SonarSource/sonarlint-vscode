@@ -143,11 +143,7 @@ gulp.task('download_jre', async (done) => {
   done();
 });
 
-function cleanupJre() {
-  if (fse.existsSync('./jre')) {
-    fse.removeSync('./jre');
-  }
-}
+
 
 async function downloadJre(targetPlatform, javaVersion, done) {
   cleanupJre();
@@ -251,13 +247,12 @@ function downloadJreAndInstallVsixForPlatform(platform) {
   return function (done) {
     const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
     const createVsixTask = () => vsce.createVSIX({target: platform});
-    const cleanupJreTask = () => cleanupJre();
-    const tasks = [downloadJreTask, createVsixTask, cleanupJreTask];
+    const tasks = [downloadJreTask, createVsixTask, 'clean_jre'];
     return gulp.series(...tasks, (seriesDone) => {
       seriesDone();
       done();
     })();
-  }
+  };
 }
 
 const deployAllPlatformsSeries = (done) => {
