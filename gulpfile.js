@@ -54,7 +54,7 @@ gulp.task('update-version', function () {
 gulp.task('package', async (done) => {
   for(const i in platforms) {
     const platform = platforms[i];
-    await downloadJre(platform, 17, done);
+    await downloadJre(platform, LATEST_JRE, done);
     await vsce.createVSIX({target: platform});
   }
   done();
@@ -88,6 +88,7 @@ gulp.task('deploy-vsix', function () {
   const { version, name } = packageJSON;
   const packagePath = 'org/sonarsource/sonarlint/vscode';
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
+  console.log(`Artifactory target URL: ${artifactoryTargetUrl}`);
   return gulp
     .src('*.vsix')
     .pipe(
@@ -259,7 +260,7 @@ gulp.task(
     async (done) => {
       const platform = platforms[0];
       await gulp.series('clean', 'update-version');
-      await downloadJre(platform, 11, done);
+      await downloadJre(platform, LATEST_JRE, done);
       await vsce.createVSIX({target: platform});
       await gulp.series('compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
       done();
@@ -267,11 +268,7 @@ gulp.task(
 
 async function deployForPlatform(platform, done) {
   await gulp.series('clean', 'update-version');
-  if (platform === 'darwin-arm64') {
-    await downloadJre(platform, 17, done);
-  } else {
-    await downloadJre(platform, 11, done);
-  }
+  await downloadJre(platform, LATEST_JRE, done);
   await vsce.createVSIX({target: platform});
   await gulp.series('compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
 }
