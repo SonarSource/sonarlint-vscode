@@ -116,13 +116,14 @@ gulp.task('deploy-vsix', function () {
     .on('error', log.error);
 });
 
-gulp.task('clean_jre', function(done) {
+gulp.task('clean_jre', cleanJre);
+
+const cleanJre = (done) => {
   if (fse.existsSync('./jre')) {
     fse.removeSync('./jre');
   }
-
   done();
-});
+}
 
 /**
  * Usage:
@@ -247,7 +248,7 @@ function downloadJreAndInstallVsixForPlatform(platform) {
   return function (done) {
     const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
     const createVsixTask = () => vsce.createVSIX({target: platform});
-    const tasks = [downloadJreTask, createVsixTask, 'clean_jre'];
+    const tasks = [downloadJreTask, createVsixTask, cleanJre];
     return gulp.series(...tasks, (seriesDone) => {
       seriesDone();
       done();
