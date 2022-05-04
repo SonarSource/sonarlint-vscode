@@ -71,6 +71,7 @@ function downloadIfNeeded(url, dest) {
 
 function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!fs.existsSync(dest)) {
+    console.info(`File doesn't exists: '${dest}'. Will download it!`);
     sendRequest(url).pipe(fs.createWriteStream(dest));
   } else {
     fs.createReadStream(dest)
