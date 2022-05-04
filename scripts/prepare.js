@@ -72,7 +72,12 @@ function downloadIfNeeded(url, dest) {
 function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!fs.existsSync(dest)) {
     console.info(`File doesn't exists: '${dest}'. Will download it!`);
-    sendRequest(url).pipe(fs.createWriteStream(dest));
+    sendRequest(url)
+        .pipe(fs.createWriteStream(dest))
+        .error((_jq, _status, e)=>{
+          console.log('Got error during downloading ' + dest);
+          console.log(e);
+        });
   } else {
     fs.createReadStream(dest)
       .pipe(crypto.createHash('sha1').setEncoding('hex'))
