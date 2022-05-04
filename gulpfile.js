@@ -263,9 +263,13 @@ gulp.task(
     () => {
       const platform = platforms[0];
       async function downloadJreAndBuildVsix(done) {
-        await downloadJre(platform, LATEST_JRE, done);
-        await vsce.createVSIX({target: platform});
-        done();
+        const tasks = [];
+        tasks[0] = downloadJre(platform, LATEST_JRE, done);
+        tasks[1] = vsce.createVSIX({target: platform});
+        return gulp.series(...tasks, (seriesDone)=>{
+          seriesDone();
+          done();
+        })();
       }
       gulp.series('clean', 'update-version', downloadJreAndBuildVsix,
           'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
