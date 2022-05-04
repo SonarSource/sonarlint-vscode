@@ -147,7 +147,7 @@ gulp.task('download_jre', async (done) => {
 
 
 async function downloadJre(targetPlatform, javaVersion, done) {
-  cleanupJre();
+  cleanJre();
 
   const platformMapping = {
     'linux-arm64': 'linux-aarch64',
