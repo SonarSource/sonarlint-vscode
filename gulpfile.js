@@ -265,23 +265,21 @@ gulp.task('download-jre-build-vsix', async (done) => {
   done();
 });
 
-gulp.task(
-    'deploy', async (deployDone) => {
-      const deployPlatform = (done) => {
-        const platform = platforms[0];
-        const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
-        const createVsixTask = () => vsce.createVSIX({target: platform});
-        const tasks = [downloadJreTask, createVsixTask];
-        return gulp.series(...tasks, (seriesDone) => {
-          seriesDone();
-          done();
-        })();
-      };
+const deployPlatform = (done) => {
+  const platform = platforms[0];
+  const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
+  const createVsixTask = () => vsce.createVSIX({target: platform});
+  const tasks = [downloadJreTask, createVsixTask];
+  return gulp.series(...tasks, (seriesDone) => {
+    seriesDone();
+    done();
+  })();
+};
 
-      await gulp.series('clean', 'update-version', deployPlatform,
-          'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-      deployDone();
-});
+const series = gulp.series('clean', 'update-version', deployPlatform,
+    'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+
+gulp.task('deploy', series);
 
 async function deployForPlatform(platform, done) {
   await gulp.series('clean', 'update-version');
