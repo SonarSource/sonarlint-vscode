@@ -248,16 +248,6 @@ gulp.task('create-all-vsix', () => {
   });
 });
 
-gulp.task(
-    'deploy-all',
-    async (done) => {
-      for (const i in platforms) {
-        const platform = platforms[i];
-        await deployForPlatform(platform, done);
-      }
-      done();
-    });
-
 gulp.task('download-jre-build-vsix', async (done) => {
   const platform = platforms[0];
   await downloadJre(platform, LATEST_JRE, done);
@@ -274,14 +264,16 @@ function downloadJreAndInstallVsixForPlatform(platform) {
       seriesDone();
       done();
     })();
-  }
+  };
 }
 
 const deployAllPlatformsSeries = (done) => {
-  const tasks = []
+  const tasks = [];
+  tasks[0] = gulp.series('clean', 'update-version', vsce.createVSIX,
+      'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
   for (let i in platforms) {
     const platform = platforms[i];
-    tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
+    tasks[i + 1] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
         'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
   }
   return gulp.series(...tasks, (seriesDone) => {
@@ -290,29 +282,7 @@ const deployAllPlatformsSeries = (done) => {
   })();
 };
 
-const deployPlatform = (done) => {
-  const platform = platforms[0];
-  const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
-  const createVsixTask = () => vsce.createVSIX({target: platform});
-  const tasks = [downloadJreTask, createVsixTask];
-  return gulp.series(...tasks, (seriesDone) => {
-    seriesDone();
-    done();
-  })();
-};
-
-const deployPlatformSeries = gulp.series('clean', 'update-version', deployPlatform,
-    'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-
-
 gulp.task('deploy', deployAllPlatformsSeries);
-
-async function deployForPlatform(platform, done) {
-  await gulp.series('clean', 'update-version');
-  await downloadJre(platform, LATEST_JRE, done);
-  await vsce.createVSIX({target: platform});
-  await gulp.series('compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-}
 
 function buildInfo(name, version, buildNumber) {
   const {
