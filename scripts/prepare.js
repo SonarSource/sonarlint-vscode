@@ -74,7 +74,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
     console.info(`File doesn't exists: '${dest}'. Will download it!`);
     sendRequest(url)
         .pipe(fs.createWriteStream(dest))
-        .error((_jq, _status, e)=>{
+        .on('error', (e) => {
           console.log('Got error during downloading ' + dest);
           console.log(e);
         });
