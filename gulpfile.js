@@ -116,14 +116,14 @@ gulp.task('deploy-vsix', function () {
     .on('error', log.error);
 });
 
-gulp.task('clean_jre', cleanJre);
-
 const cleanJre = (done) => {
   if (fse.existsSync('./jre')) {
     fse.removeSync('./jre');
   }
   done();
-}
+};
+
+gulp.task('clean_jre', cleanJre);
 
 /**
  * Usage:
@@ -273,13 +273,6 @@ const deployAllPlatformsSeries = (done) => {
 };
 
 gulp.task('deploy', deployAllPlatformsSeries);
-
-async function deployForPlatform(platform, done) {
-  await gulp.series('clean', 'update-version');
-  await downloadJre(platform, LATEST_JRE, done);
-  await vsce.createVSIX({target: platform});
-  await gulp.series('compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-}
 
 function buildInfo(name, version, buildNumber) {
   const {
