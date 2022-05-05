@@ -274,7 +274,7 @@ const deployAllPlatformsSeries = (done) => {
   })();
 };
 
-gulp.task('deploy', deployAllPlatformsSeries());
+gulp.task('deploy', deployAllPlatformsSeries);
 
 function buildInfo(name, version, buildNumber) {
   const {
