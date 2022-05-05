@@ -258,11 +258,8 @@ const deployAllPlatformsSeries = (done) => {
     return gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
         'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix', 'clean-jre');
   });
-
-  tasks[platforms.length] = () => {
-    return gulp.series('clean', 'update-version', vsce.createVSIX,
+  tasks[platforms.length] =  gulp.series('update-version', vsce.createVSIX,
         'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-  };
   return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
     done();
