@@ -33,7 +33,7 @@ gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
 
 gulp.task(
   'clean',
-  gulp.series('clean:vsix', () => del(['server', 'out', 'out-cov']), 'clean-jre')
+  gulp.series('clean:vsix', () => del(['server', 'out', 'out-cov']))
 );
 
 gulp.task('update-version', function () {
