@@ -254,10 +254,12 @@ function downloadJreAndInstallVsixForPlatform(platform) {
 }
 
 const deployAllPlatformsSeries = () => {
-  const tasks = platforms.map((platform) => {
-    return gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
-            'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix', 'clean-jre');
-      });
+  const tasks = [];
+  for (let i in platforms) {
+    const platform = platforms[i];
+    tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
+        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+  }
   // tasks[platforms.length] = async (universalDone) => {
   //   await gulp.series('clean', 'update-version', vsce.createVSIX,
   //       'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
