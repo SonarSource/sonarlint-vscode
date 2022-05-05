@@ -33,7 +33,7 @@ gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
 
 gulp.task(
   'clean',
-  gulp.series('clean:vsix', () => del(['server', 'out', 'out-cov']))
+  gulp.parallel('clean:vsix', () => del(['server', 'out', 'out-cov']))
 );
 
 gulp.task('update-version', function () {
@@ -246,7 +246,7 @@ function downloadJreAndInstallVsixForPlatform(platform) {
     const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
     const createVsixTask = () => vsce.createVSIX({target: platform});
     const tasks = [downloadJreTask, createVsixTask];
-    return gulp.series(tasks, (seriesDone) => {
+    return gulp.series(...tasks, (seriesDone) => {
       seriesDone();
       done();
     })();
@@ -254,15 +254,19 @@ function downloadJreAndInstallVsixForPlatform(platform) {
 }
 
 const deployAllPlatformsSeries = (done) => {
-  const tasks = [];
-  for (const i in platforms) {
-    const platform = platforms[i];
-    tasks[i] = gulp.series('update-version', downloadJreAndInstallVsixForPlatform(platform),
-        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix','clean', 'clean-jre');
-  }
-  tasks[platforms.length] = gulp.series('update-version', vsce.createVSIX,
-      'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix', 'clean');
-  return gulp.series(tasks, (seriesDone) => {
+  const tasks = platforms.map((platform) =>{
+    return (donePlatform) => {
+      gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
+          'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix', 'clean-jre');
+      donePlatform();
+    };
+  });
+  tasks[platforms.length] = (universalDone) => {
+    gulp.series('clean', 'update-version', vsce.createVSIX,
+        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix', 'clean');
+    universalDone();
+  };
+  return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
     done();
   })();
