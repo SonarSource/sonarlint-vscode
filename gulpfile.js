@@ -263,7 +263,9 @@ const deployAllPlatformsSeries = () => {
   //       'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
   //   universalDone();
   // };
-  return gulp.series(...tasks)();
+  return gulp.series(...tasks, (seriesDone) => {
+    seriesDone();
+  })();
 };
 
 gulp.task('deploy', deployAllPlatformsSeries());
