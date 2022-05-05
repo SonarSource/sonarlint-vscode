@@ -253,7 +253,7 @@ function downloadJreAndInstallVsixForPlatform(platform) {
   };
 }
 
-const deployAllPlatformsSeries = () => {
+const deployAllPlatformsSeries = (done) => {
   const tasks = [];
   for (let i in platforms) {
     const platform = platforms[i];
@@ -267,6 +267,7 @@ const deployAllPlatformsSeries = () => {
   // };
   return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
+    done();
   })();
 };
 
