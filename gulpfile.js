@@ -266,7 +266,6 @@ const deployAllPlatformsSeries = (done) => {
       'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
 
   return gulp.series(...tasks, (seriesDone) => {
-    console.log(gulp.tree());
     seriesDone();
     done();
   })();
