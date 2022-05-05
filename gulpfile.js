@@ -256,13 +256,14 @@ function downloadJreAndInstallVsixForPlatform(platform) {
 
 const deployAllPlatformsSeries = (done) => {
   const tasks = [];
-  tasks[0] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platforms[0]),
+  for (let i in platforms) {
+    const platform = platforms[i];
+    tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
+        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+  }
+  tasks[platforms.length] = gulp.series('clean-jre');
+  tasks[platforms.length + 1] = gulp.series('clean', 'update-version', vsce.createVSIX,
       'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-  // for (let i in platforms) {
-  //   const platform = platforms[i];
-  //   tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
-  //       'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-  // }
 
   return gulp.series(...tasks, (seriesDone) => {
     console.log(gulp.tree());
