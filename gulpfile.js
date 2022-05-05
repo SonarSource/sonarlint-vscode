@@ -255,15 +255,9 @@ function downloadJreAndInstallVsixForPlatform(platform) {
 
 const deployAllPlatformsSeries = () => {
   const tasks = platforms.map((platform) => {
-    return async (donePlatform) => {
-      await new Promise((resolve, reject) => {
-        gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
+    return gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
             'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix', 'clean-jre');
-        donePlatform();
-        resolve();
       });
-    };
-  });
   // tasks[platforms.length] = async (universalDone) => {
   //   await gulp.series('clean', 'update-version', vsce.createVSIX,
   //       'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
