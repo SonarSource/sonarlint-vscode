@@ -261,7 +261,7 @@ const deployAllPlatformsSeries = (done) => {
     tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
         'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
   }
-  console.log(tasks.tree());
+  console.log(gulp.tree());
 
   return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
