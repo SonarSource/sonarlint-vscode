@@ -33,7 +33,7 @@ gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
 
 gulp.task(
   'clean',
-  gulp.parallel('clean:vsix', () => del(['server', 'out', 'out-cov']))
+  gulp.series('clean:vsix', () => del(['server', 'out', 'out-cov']))
 );
 
 gulp.task('update-version', function () {
@@ -257,20 +257,12 @@ const deployAllPlatformsSeries = (done) => {
   const tasks = [];
   for (let i in platforms) {
     const platform = platforms[i];
-    const task = async (done) => {
-      await gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
-          'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-      done();
-    };
-    tasks[i] = task;
+    tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
+        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
   }
   tasks[platforms.length] = gulp.task('clean_jre');
-  const universalVsixTask = async (done) => {
-    await gulp.series('clean', 'update-version', vsce.createVSIX,
-        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
-    done();
-  };
-  tasks[platforms.length + 1] = universalVsixTask;
+  tasks[platforms.length + 1] = gulp.series('clean', 'update-version', vsce.createVSIX,
+      'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
   return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
     done();
