@@ -39,9 +39,6 @@
     "onCommand:SonarLint.ConfigureCompilationDatabase",
     "onStartupFinished"
   ],
-  "extensionDependencies": [
-    "vscode.typescript-language-features"
-  ],
   "contributes": {
     "configuration": {
       "type": "object",
