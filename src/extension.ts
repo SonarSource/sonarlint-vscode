@@ -158,46 +158,6 @@ export function toUrl(filePath: string) {
   return encodeURI('file://' + pathName);
 }
 
-function resolveInAnyWorkspaceFolder(tsdkPathSetting) {
-  if (Path.isAbsolute(tsdkPathSetting)) {
-    return FS.existsSync(tsdkPathSetting) ? tsdkPathSetting : undefined;
-  }
-  for (const folder of VSCode.workspace.workspaceFolders || []) {
-    const configuredTsPath = Path.join(folder.uri.fsPath, tsdkPathSetting);
-    if (FS.existsSync(configuredTsPath)) {
-      return configuredTsPath;
-    }
-  }
-  return undefined;
-}
-
-function findTypeScriptLocation(): string | undefined {
-  const tsExt = VSCode.extensions.getExtension('vscode.typescript-language-features');
-  if (tsExt) {
-    const bundledTypeScriptPath = Path.resolve(tsExt.extensionPath, '..', 'node_modules', 'typescript', 'lib');
-    if (!FS.existsSync(bundledTypeScriptPath)) {
-      logToSonarLintOutput(
-        `Unable to locate bundled TypeScript module in "${bundledTypeScriptPath}". Please report this error to SonarLint project.`
-      );
-    }
-    const tsdkPathSetting = VSCode.workspace.getConfiguration('typescript').get('tsdk');
-
-    if (tsdkPathSetting) {
-      const configuredTsPath = resolveInAnyWorkspaceFolder(tsdkPathSetting);
-      if (configuredTsPath !== undefined) {
-        return configuredTsPath;
-      }
-      logToSonarLintOutput(
-        `Unable to locate TypeScript module in "${configuredTsPath}". Falling back to the VSCode's one at "${bundledTypeScriptPath}"`
-      );
-    }
-    return bundledTypeScriptPath;
-  } else {
-    logToSonarLintOutput('Unable to locate TypeScript extension. TypeScript support in SonarLint might not work.');
-    return undefined;
-  }
-}
-
 function toggleRule(level: protocol.ConfigLevel) {
   return (ruleKey: string | RuleNode) => {
     const configuration = getSonarLintConfiguration();
@@ -231,8 +191,6 @@ export function activate(context: VSCode.ExtensionContext) {
 
   const serverOptions = () => runJavaServer(context);
 
-  const tsPath = findTypeScriptLocation();
-
   const pythonWatcher = VSCode.workspace.createFileSystemWatcher('**/*.py');
   context.subscriptions.push(pythonWatcher);
 
@@ -255,7 +213,6 @@ export function activate(context: VSCode.ExtensionContext) {
         productName: 'SonarLint VSCode',
         productVersion: util.packageJson.version,
         workspaceName: VSCode.workspace.name,
-        typeScriptLocation: tsPath ? Path.dirname(Path.dirname(tsPath)) : undefined,
         firstSecretDetected: isFirstSecretDetected(context),
         showVerboseLogs: VSCode.workspace.getConfiguration().get('sonarlint.output.showVerboseLogs', false),
         additionalAttributes: {
