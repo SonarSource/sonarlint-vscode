@@ -257,11 +257,11 @@ const deployAllPlatformsSeries = (done) => {
   const tasks = [];
   for (const i in platforms) {
     const platform = platforms[i];
-    tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
-        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix', 'clean-jre');
+    tasks[i] = gulp.series('update-version', downloadJreAndInstallVsixForPlatform(platform),
+        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix','clean', 'clean-jre');
   }
-  tasks[platforms.length] = gulp.series('clean', 'update-version', vsce.createVSIX,
-      'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+  tasks[platforms.length] = gulp.series('update-version', vsce.createVSIX,
+      'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix', 'clean');
   return gulp.series(tasks, (seriesDone) => {
     seriesDone();
     done();
