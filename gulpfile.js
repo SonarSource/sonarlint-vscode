@@ -114,14 +114,12 @@ gulp.task('deploy-vsix', function () {
     .on('error', log.error);
 });
 
-const cleanJre = (done) => {
+gulp.task('clean-jre', (done) => {
   if (fse.existsSync('./jre')) {
     fse.removeSync('./jre');
   }
   done();
-};
-
-gulp.task('clean-jre', cleanJre);
+});
 
 /**
  * Usage:
@@ -145,7 +143,9 @@ gulp.task('download_jre', async (done) => {
 
 
 async function downloadJre(targetPlatform, javaVersion, done) {
-  cleanJre(done);
+  if (fse.existsSync('./jre')) {
+    fse.removeSync('./jre');
+  }
 
   const platformMapping = {
     'linux-arm64': 'linux-aarch64',
