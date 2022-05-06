@@ -523,19 +523,29 @@ export async function performIsIgnoredCheck(
   const parsedFileUri = VSCode.Uri.parse(fileUri);
   const workspaceFolder = VSCode.workspace.getWorkspaceFolder(parsedFileUri);
   if (workspaceFolder == null) {
+    logToSonarLintOutput(`The '${fileUri}' file is not in the workspace, consider as not ignored`);
     return Promise.resolve(false);
   }
-  const relativeFileUri = VSCode.workspace.asRelativePath(parsedFileUri, false);
   const gitExtension = VSCode.extensions.getExtension<GitExtension>('vscode.git').exports;
   if (gitExtension == null) {
+    logToSonarLintOutput(`The git extension is not installed, consider the '${fileUri}' file as not ignored`);
     return Promise.resolve(false);
   }
   try {
-    const gitPath = gitExtension.getAPI(1).git.path;
-    const command = `"${gitPath}" check-ignore ${relativeFileUri}`;
-    const fileIgnoredForFolder = await scmCheck(workspaceFolder.uri.fsPath, command);
-    return Promise.resolve(fileIgnoredForFolder);
+    const gitApi = gitExtension.getAPI(1);
+    const gitPath = gitApi.git.path;
+    const repo = gitApi.getRepository(parsedFileUri);
+    if (repo) {
+      // use the absolute file path, Git is able to manage
+      const command = `"${gitPath}" check-ignore "${parsedFileUri.fsPath}"`;
+      const fileIgnoredForFolder = await scmCheck(repo.rootUri.fsPath, command);
+      return Promise.resolve(fileIgnoredForFolder);
+    } else {
+      logToSonarLintOutput(`The '${fileUri}' file is not in a git repo, consider as not ignored`);
+      return Promise.resolve(false);
+    }
   } catch (e) {
+    logToSonarLintOutput(`Error requesting ignored status, consider the '${fileUri}' file as not ignored`);
     return Promise.resolve(false);
   }
 }
