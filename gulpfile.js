@@ -34,7 +34,7 @@ gulp.task(
 gulp.task('cycloneDx',function (cb) {
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
-  exec(`npm run cyclonedx-run -- --output sonarlint-vscode-${version}.sbom-cyclonedx.json`, function (err, stdout, stderr) {
+  exec(`npm run cyclonedx-run -- -d --output sonarlint-vscode-${version}.sbom-cyclonedx.json`, function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
     cb(err);
