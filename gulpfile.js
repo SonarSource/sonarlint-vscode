@@ -349,7 +349,7 @@ function hashsum(platform, version) {
   allPlatforms[platform].fileName = platform === platformUniversal ?
       `sonarlint-vscode-${version}.vsix` :
       `sonarlint-vscode-${platform}-${version}.vsix`;
-  return gulp.src(allPlatforms[platform].fileName).obj(processFile);
+  return gulp.src(allPlatforms[platform].fileName).pipe(processFile);
 }
 
 function updateHashes(platform, file) {
