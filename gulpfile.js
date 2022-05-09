@@ -27,7 +27,17 @@ const jarDependencies = require('./scripts/dependencies.json');
 
 const LATEST_JRE = 17;
 const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
-
+const platformUniversal = 'universal';
+const allPlatforms = {};
+[...platforms, platformUniversal].forEach(platform => {
+  allPlatforms[platform] = {
+    fileName: '',
+    hashes: {
+      'md5': '',
+      'sha1': ''
+    }
+  }
+});
 
 gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
 
@@ -52,11 +62,10 @@ gulp.task('update-version', function () {
 });
 
 gulp.task('package', async (done) => {
-  for(const i in platforms) {
-    const platform = platforms[i];
+  await Promise.all(platforms.map(async platform => {
     await downloadJre(platform, LATEST_JRE, done);
     await vsce.createVSIX({target: platform});
-  }
+  }));
   await vsce.createVSIX();
   done();
 });
@@ -65,13 +74,10 @@ function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json').toString());
 }
 
-const hashes = {
-  sha1: '',
-  md5: ''
-};
-
 gulp.task('compute-vsix-hashes', function () {
-  return gulp.src('*.vsix').pipe(hashsum());
+  const version = getPackageJSON().version;
+  const tasks = Object.keys(allPlatforms).map(platform => hashsum(platform, version));
+  return gulp.series(tasks);
 });
 
 gulp.task('deploy-vsix', function () {
@@ -90,28 +96,28 @@ gulp.task('deploy-vsix', function () {
   const packagePath = 'org/sonarsource/sonarlint/vscode';
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
   console.log(`Artifactory target URL: ${artifactoryTargetUrl}`);
-  return gulp
-    .src('*.vsix')
-    .pipe(
-      artifactoryUpload({
-        url: artifactoryTargetUrl,
-        username: ARTIFACTORY_DEPLOY_USERNAME,
-        password: ARTIFACTORY_DEPLOY_PASSWORD,
-        properties: {
-          'vcs.revision': BUILD_SOURCEVERSION,
-          'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
-          'build.name': name,
-          'build.number': BUILD_BUILDID
-        },
-        request: {
-          headers: {
-            'X-Checksum-MD5': hashes.md5,
-            'X-Checksum-Sha1': hashes.sha1
+  return gulp.series(Object.keys(allPlatforms).map(platform =>
+    gulp.src(allPlatforms[platform].fileName)
+      .pipe(
+        artifactoryUpload({
+          url: artifactoryTargetUrl,
+          username: ARTIFACTORY_DEPLOY_USERNAME,
+          password: ARTIFACTORY_DEPLOY_PASSWORD,
+          properties: {
+            'vcs.revision': BUILD_SOURCEVERSION,
+            'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+            'build.name': name,
+            'build.number': BUILD_BUILDID
+          },
+          request: {
+            headers: {
+              'X-Checksum-MD5': allPlatforms[platform].hashes.md5,
+              'X-Checksum-Sha1': allPlatforms[platform].hashes.sha1
+            }
           }
-        }
-      })
-    )
-    .on('error', log.error);
+        })
+      )
+      .on('error', log.error)));
 });
 
 gulp.task('clean-jre', (done) => {
@@ -220,37 +226,6 @@ async function downloadJre(targetPlatform, javaVersion, done) {
 
 }
 
-function deployBuildInfoForPlatform(targetPlatform) {
-  return function (done) {
-    const packageJSON = getPackageJSON();
-    const { version, name } = packageJSON;
-    const buildNumber = process.env.BUILD_BUILDID;
-    const json = buildInfo(name, version, buildNumber, targetPlatform);
-    const task = () => {
-      return request
-        .put(
-          {
-            url: `${process.env.ARTIFACTORY_URL}/api/build`,
-            json
-          },
-          function (error, _response, _body) {
-            if (error) {
-              log.error('error:', error);
-            }
-            done();
-          }
-        )
-        .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
-    }
-
-    const tasks = [task];
-    return gulp.series(...tasks, (seriesDone) => {
-      seriesDone();
-      done();
-    })();
-  };
-}
-
 gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
@@ -286,15 +261,13 @@ function downloadJreAndInstallVsixForPlatform(platform) {
 }
 
 const deployAllPlatformsSeries = (done) => {
-  const tasks = [];
-  for (let i in platforms) {
-    const platform = platforms[i];
-    tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
-        'compute-vsix-hashes', deployBuildInfoForPlatform(platform), 'deploy-vsix');
-  }
-  tasks[platforms.length] = gulp.series('clean-jre');
-  tasks[platforms.length + 1] = gulp.series('clean', 'update-version', vsce.createVSIX,
-      'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+  const tasks = ['clean', 'update-version'];
+  platforms.forEach(
+    platform => tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)))
+  );
+  tasks.push('clean-jre');
+  tasks.push(gulp.series(vsce.createVSIX()));
+  tasks.push(gulp.series('compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix'));
 
   return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
@@ -304,7 +277,7 @@ const deployAllPlatformsSeries = (done) => {
 
 gulp.task('deploy', deployAllPlatformsSeries);
 
-function buildInfo(name, version, buildNumber, platform) {
+function buildInfo(name, version, buildNumber) {
   const {
     SYSTEM_TEAMPROJECTID,
     BUILD_BUILDID,
@@ -326,12 +299,15 @@ function buildInfo(name, version, buildNumber, platform) {
   });
 
   const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
-  let artifactName;
-  if (platform !== undefined) {
-    artifactName = `${name}-${platform}-${version}.vsix`;
-  } else {
-    artifactName = `${name}-${version}.vsix`;
-  }
+
+  const artifacts = Object.keys(allPlatforms).map(platform => (
+    {
+      type: 'vsix',
+      sha1: allPlatforms[platform].hashes.sha1,
+      md5: allPlatforms[platform].hashes.md5,
+      name: allPlatforms[platform].fileName
+    }
+  ));
 
   return {
     version: '1.0.1',
@@ -347,14 +323,7 @@ function buildInfo(name, version, buildNumber, platform) {
         properties: {
           artifactsToDownload: `org.sonarsource.sonarlint.vscode:${name}:vsix`
         },
-        artifacts: [
-          {
-            type: 'vsix',
-            sha1: hashes.sha1,
-            md5: hashes.md5,
-            name: artifactName
-          }
-        ],
+        artifacts,
         dependencies
       }
     ],
@@ -370,17 +339,20 @@ function buildInfo(name, version, buildNumber, platform) {
   };
 }
 
-function hashsum() {
+function hashsum(platform, version) {
   function processFile(file, encoding, callback) {
-    updateHashes(file);
+    updateHashes(platform, file);
     this.push(file);
     callback();
   }
 
-  return through.obj(processFile);
+  allPlatforms[platform].fileName = platform === platformUniversal ?
+      `sonarlint-vscode-${version}.vsix` :
+      `sonarlint-vscode-${platform}-${version}.vsix`;
+  return gulp.src(allPlatforms[platform].fileName).obj(processFile);
 }
 
-function updateHashes(file) {
+function updateHashes(platform, file) {
   if (file.isNull()) {
     return;
   }
@@ -388,12 +360,12 @@ function updateHashes(file) {
     log.warn('Streams not supported');
     return;
   }
-  updateBinaryHashes(file.contents, hashes);
+  updateBinaryHashes(file.contents, allPlatforms[platform].hashes);
 }
 
 function computeDependencyHashes(dependencyLocation) {
   const dependencyContents = fs.readFileSync(dependencyLocation);
-  const dependencyHashes = Object.assign({}, hashes);
+  const dependencyHashes = {'md5': '', 'sha1': ''};
   updateBinaryHashes(dependencyContents, dependencyHashes);
   return dependencyHashes;
 }
