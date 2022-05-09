@@ -77,7 +77,7 @@ function getPackageJSON() {
 
 gulp.task('compute-vsix-hashes', function () {
   const version = getPackageJSON().version;
-  const tasks = Object.keys(allPlatforms).map(platform => hashsum(platform, version));
+  const tasks = Object.keys(allPlatforms).map(platform => () => hashsum(platform, version));
   return gulp.series(tasks);
 });
 
