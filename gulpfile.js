@@ -75,10 +75,14 @@ function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json').toString());
 }
 
-gulp.task('compute-vsix-hashes', function () {
+gulp.task('compute-vsix-hashes', function (done) {
   const version = getPackageJSON().version;
   const tasks = Object.keys(allPlatforms).map(platform => () => hashsum(platform, version));
-  return gulp.series(tasks);
+
+  return gulp.series(...tasks, (seriesDone) => {
+    seriesDone();
+    done();
+  })();
 });
 
 gulp.task('deploy-vsix', function () {
