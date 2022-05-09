@@ -327,7 +327,7 @@ function buildInfo(name, version, buildNumber, platform) {
 
   const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
   let artifactName;
-  if (name !== undefined) {
+  if (platform !== undefined) {
     artifactName = `${name}-${platform}-${version}.vsix`;
   } else {
     artifactName = `${name}-${version}.vsix`;
