@@ -26,7 +26,8 @@ const jarDependencies = require('./scripts/dependencies.json');
 //...
 
 const LATEST_JRE = 17;
-const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
+// const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
+const platforms = ['win32-x64'];
 const platformUniversal = 'universal';
 const allPlatforms = {};
 [...platforms, platformUniversal].forEach(platform => {
@@ -116,8 +117,7 @@ gulp.task('deploy-vsix', function () {
             }
           }
         })
-      )))
-      .on('Runtime.exceptionThrown', (message) => log.error(message.text));
+      )));
 });
 
 gulp.task('clean-jre', (done) => {
