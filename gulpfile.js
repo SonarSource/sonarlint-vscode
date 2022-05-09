@@ -116,8 +116,8 @@ gulp.task('deploy-vsix', function () {
             }
           }
         })
-      )
-      .on('error', log.error)));
+      )))
+      .on('Runtime.exceptionThrown', (message) => log.error(message.text));
 });
 
 gulp.task('clean-jre', (done) => {
