@@ -326,6 +326,12 @@ function buildInfo(name, version, buildNumber, platform) {
   });
 
   const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
+  let artifactName;
+  if (name !== undefined) {
+    artifactName = `${name}-${platform}-${version}.vsix`;
+  } else {
+    artifactName = `${name}-${version}.vsix`;
+  }
 
   return {
     version: '1.0.1',
@@ -346,7 +352,7 @@ function buildInfo(name, version, buildNumber, platform) {
             type: 'vsix',
             sha1: hashes.sha1,
             md5: hashes.md5,
-            name: `${name}-${platform}-${version}.vsix`
+            name: artifactName
           }
         ],
         dependencies
