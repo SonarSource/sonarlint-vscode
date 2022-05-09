@@ -220,6 +220,37 @@ async function downloadJre(targetPlatform, javaVersion, done) {
 
 }
 
+function deployBuildInfoForPlatform(targetPlatform) {
+  return function (done) {
+    const packageJSON = getPackageJSON();
+    const { version, name } = packageJSON;
+    const buildNumber = process.env.BUILD_BUILDID;
+    const json = buildInfo(name, version, buildNumber, targetPlatform);
+    const task = () => {
+      return request
+        .put(
+          {
+            url: `${process.env.ARTIFACTORY_URL}/api/build`,
+            json
+          },
+          function (error, _response, _body) {
+            if (error) {
+              log.error('error:', error);
+            }
+            done();
+          }
+        )
+        .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
+    }
+
+    const tasks = [task];
+    return gulp.series(...tasks, (seriesDone) => {
+      seriesDone();
+      done();
+    })();
+  };
+}
+
 gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
@@ -231,7 +262,7 @@ gulp.task('deploy-buildinfo', function (done) {
         url: `${process.env.ARTIFACTORY_URL}/api/build`,
         json
       },
-      function (error, response, body) {
+      function (error, _response, _body) {
         if (error) {
           log.error('error:', error);
         }
@@ -259,7 +290,7 @@ const deployAllPlatformsSeries = (done) => {
   for (let i in platforms) {
     const platform = platforms[i];
     tasks[i] = gulp.series('clean', 'update-version', downloadJreAndInstallVsixForPlatform(platform),
-        'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix');
+        'compute-vsix-hashes', deployBuildInfoForPlatform(platform), 'deploy-vsix');
   }
   tasks[platforms.length] = gulp.series('clean-jre');
   tasks[platforms.length + 1] = gulp.series('clean', 'update-version', vsce.createVSIX,
@@ -273,7 +304,7 @@ const deployAllPlatformsSeries = (done) => {
 
 gulp.task('deploy', deployAllPlatformsSeries);
 
-function buildInfo(name, version, buildNumber) {
+function buildInfo(name, version, buildNumber, platform) {
   const {
     SYSTEM_TEAMPROJECTID,
     BUILD_BUILDID,
@@ -315,7 +346,7 @@ function buildInfo(name, version, buildNumber) {
             type: 'vsix',
             sha1: hashes.sha1,
             md5: hashes.md5,
-            name: `${name}-${version}.vsix`
+            name: `${name}-${platform}-${version}.vsix`
           }
         ],
         dependencies
