@@ -101,7 +101,7 @@ gulp.task('deploy-vsix', function () {
   const packagePath = 'org/sonarsource/sonarlint/vscode';
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
   console.log(`Artifactory target URL: ${artifactoryTargetUrl}`);
-  return gulp.series(Object.keys(allPlatforms).map(platform =>
+  return gulp.series(() => Object.keys(allPlatforms).map(platform =>
     gulp.src(allPlatforms[platform].fileName)
       .pipe(
         artifactoryUpload({
