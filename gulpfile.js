@@ -26,18 +26,18 @@ const jarDependencies = require('./scripts/dependencies.json');
 //...
 
 const LATEST_JRE = 17;
+const UNIVERSAL_PLATFORM = 'universal';
 // const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
-const platforms = ['win32-x64'];
-const platformUniversal = 'universal';
+const TARGETED_PLATFORMS = ['win32-x64'];
 const allPlatforms = {};
-[...platforms, platformUniversal].forEach(platform => {
+[...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {
   allPlatforms[platform] = {
     fileName: '',
     hashes: {
       'md5': '',
       'sha1': ''
     }
-  }
+  };
 });
 
 gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
@@ -63,7 +63,7 @@ gulp.task('update-version', function () {
 });
 
 gulp.task('package', async (done) => {
-  await Promise.all(platforms.map(async platform => {
+  await Promise.all(TARGETED_PLATFORMS.map(async platform => {
     await downloadJre(platform, LATEST_JRE, done);
     await vsce.createVSIX({target: platform});
   }));
@@ -165,68 +165,69 @@ async function downloadJre(targetPlatform, javaVersion, done) {
     'win32-x64': 'win32-x86_64'
   };
 
-  if (targetPlatform && Object.keys(platformMapping).includes(targetPlatform)) {
-    console.log(`Downloading justj JRE ${javaVersion} for the platform ${targetPlatform} ...`);
-
-    const manifestUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/justj.manifest`;
-    // Download justj.manifest file
-    const manifest = await new Promise(function(resolve, reject) {
-      request.get(manifestUrl, function(err, response, body) {
-        if(err || response.statusCode >= 400) {
-          reject(err || `${response.statusCode} returned from ${manifestUrl}`);
-        } else {
-          resolve(String(body));
-        }
-      });
-    });
-
-    if (!manifest) {
-      done(new Error(`Failed to download justj.manifest, please check if the link ${manifestUrl} is valid.`));
-      return;
-    }
-
-    /**
-     * Here are the contents for a sample justj.manifest file:
-     * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-linux-aarch64.tar.gz
-     * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-linux-x86_64.tar.gz
-     * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-macosx-aarch64.tar.gz
-     * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-macosx-x86_64.tar.gz
-     * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-win32-x86_64.tar.gz
-     */
-    const javaPlatform = platformMapping[targetPlatform];
-    const list = manifest.split(/\r?\n/);
-    const jreIdentifier = list.find((value) => {
-      return value.indexOf('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') >= 0
-          && value.indexOf(javaPlatform) >= 0;
-    });
-
-    if (!jreIdentifier) {
-      done(new Error(`justj doesn't support the jre ${javaVersion} for the platform ${javaPlatform}
-      (${targetPlatform}), please refer to the link ${manifestUrl} for the supported platforms.`));
-      return;
-    }
-
-    const jreDownloadUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/${jreIdentifier}`;
-    const parsedDownloadUrl = url.parse(jreDownloadUrl);
-    const jreFileName = path.basename(parsedDownloadUrl.pathname)
-        .replace(/[\.7z|\.bz2|\.gz|\.rar|\.tar|\.zip|\.xz]*$/, '');
-    const idx = jreFileName.indexOf('-');
-    const jreVersionLabel = idx >= 0 ? jreFileName.substring(idx + 1) : jreFileName;
-    // Download justj JRE.
-    await new Promise(function(resolve, reject) {
-      download(jreDownloadUrl)
-          .on('error', reject)
-          .pipe(decompress({strip: 0}))
-          .pipe(gulp.dest('./jre/' + jreVersionLabel))
-          .on('end', resolve);
-    });
-  } else {
+  if (!targetPlatform || !Object.keys(platformMapping).includes(targetPlatform)) {
     console.log('[Error] download_jre failed, please specify a valid target platform via --target argument. ' +
         'Here are the supported platform list:');
     for (const platform of Object.keys(platformMapping)) {
       console.log(platform);
     }
+    return;
   }
+
+  console.log(`Downloading justj JRE ${javaVersion} for the platform ${targetPlatform} ...`);
+
+  const manifestUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/justj.manifest`;
+  // Download justj.manifest file
+  const manifest = await new Promise(function (resolve, reject) {
+    request.get(manifestUrl, function (err, response, body) {
+      if (err || response.statusCode >= 400) {
+        reject(err || `${response.statusCode} returned from ${manifestUrl}`);
+      } else {
+        resolve(String(body));
+      }
+    });
+  });
+
+  if (!manifest) {
+    done(new Error(`Failed to download justj.manifest, please check if the link ${manifestUrl} is valid.`));
+    return;
+  }
+
+  /**
+   * Here are the contents for a sample justj.manifest file:
+   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-linux-aarch64.tar.gz
+   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-linux-x86_64.tar.gz
+   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-macosx-aarch64.tar.gz
+   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-macosx-x86_64.tar.gz
+   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-win32-x86_64.tar.gz
+   */
+  const javaPlatform = platformMapping[targetPlatform];
+  const list = manifest.split(/\r?\n/);
+  const jreIdentifier = list.find((value) => {
+    return value.indexOf('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') >= 0
+        && value.indexOf(javaPlatform) >= 0;
+  });
+
+  if (!jreIdentifier) {
+    done(new Error(`justj doesn't support the jre ${javaVersion} for the platform ${javaPlatform}
+      (${targetPlatform}), please refer to the link ${manifestUrl} for the supported platforms.`));
+    return;
+  }
+
+  const jreDownloadUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/${jreIdentifier}`;
+  const parsedDownloadUrl = url.parse(jreDownloadUrl);
+  const jreFileName = path.basename(parsedDownloadUrl.pathname)
+      .replace(/[\.7z|\.bz2|\.gz|\.rar|\.tar|\.zip|\.xz]*$/, '');
+  const idx = jreFileName.indexOf('-');
+  const jreVersionLabel = idx >= 0 ? jreFileName.substring(idx + 1) : jreFileName;
+  // Download justj JRE.
+  await new Promise(function (resolve, reject) {
+    download(jreDownloadUrl)
+        .on('error', reject)
+        .pipe(decompress({strip: 0}))
+        .pipe(gulp.dest('./jre/' + jreVersionLabel))
+        .on('end', resolve);
+  });
 
 }
 
@@ -266,7 +267,7 @@ function downloadJreAndInstallVsixForPlatform(platform) {
 
 const deployAllPlatformsSeries = (done) => {
   const tasks = ['clean', 'update-version'];
-  platforms.forEach(
+  TARGETED_PLATFORMS.forEach(
     platform => tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)))
   );
   tasks.push('clean-jre');
@@ -344,13 +345,13 @@ function buildInfo(name, version, buildNumber) {
 }
 
 function hashsum(platform, version) {
-  function processFile(file, encoding, callback) {
+  function processFile(file, _encoding, callback) {
     updateHashes(platform, file);
     this.push(file);
     callback();
   }
 
-  allPlatforms[platform].fileName = platform === platformUniversal ?
+  allPlatforms[platform].fileName = platform === UNIVERSAL_PLATFORM ?
       `sonarlint-vscode-${version}.vsix` :
       `sonarlint-vscode-${platform}-${version}.vsix`;
   return gulp.src(allPlatforms[platform].fileName).pipe(through.obj(processFile));
