@@ -23,11 +23,10 @@ const path = require('path');
 const url = require('url');
 const dateformat = require('dateformat');
 const jarDependencies = require('./scripts/dependencies.json');
-//...
 
 const LATEST_JRE = 17;
 const UNIVERSAL_PLATFORM = 'universal';
-// const platforms = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
+// const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
 const TARGETED_PLATFORMS = ['win32-x64'];
 const allPlatforms = {};
 [...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {

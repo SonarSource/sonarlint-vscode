@@ -24,7 +24,7 @@ const credentialsDefined = ARTIFACTORY_PRIVATE_READER_USERNAME !== undefined
 
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
-const log = require("fancy-log");
+const log = require('fancy-log');
 
 const HTTP_OK = 200;
 
@@ -100,7 +100,7 @@ function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
 }
 
 function sendRequest(url) {
-  const callback = (error, response, body) => {
+  const callback = (error, _response, _body) => {
     if (error) {
       log.error('Got error during downloading ' + url, error);
     }
