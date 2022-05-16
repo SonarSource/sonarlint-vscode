@@ -17,6 +17,11 @@ const request = require('request');
 const bump = require('gulp-bump');
 const dateformat = require('dateformat');
 const jarDependencies = require('./scripts/dependencies.json');
+const exec = require('child_process').exec;
+const { getSignature } = require('./scripts/gulp-sign.js');
+const path = require('path');
+const globby = require('globby');
+const mergeStream = require('merge-stream');
 //...
 
 gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
@@ -25,6 +30,18 @@ gulp.task(
   'clean',
   gulp.parallel('clean:vsix', () => del(['server', 'out', 'out-cov']))
 );
+
+gulp.task('cycloneDx',function (cb) {
+  const packageJSON = getPackageJSON();
+  const version = packageJSON.version;
+  const cycloneDxCommand = `npm run cyclonedx-run -- -d --output sonarlint-vscode-${version}.sbom-cyclonedx.json`;
+  exec(cycloneDxCommand, (err, stdout, stderr) => {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
 
 gulp.task('update-version', function () {
   const buildNumber = process.env.BUILD_BUILDID;
@@ -71,28 +88,33 @@ gulp.task('deploy-vsix', function () {
   const { version, name } = packageJSON;
   const packagePath = 'org/sonarsource/sonarlint/vscode';
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
-  return gulp
-    .src('*.vsix')
-    .pipe(
-      artifactoryUpload({
-        url: artifactoryTargetUrl,
-        username: ARTIFACTORY_DEPLOY_USERNAME,
-        password: ARTIFACTORY_DEPLOY_PASSWORD,
-        properties: {
-          'vcs.revision': BUILD_SOURCEVERSION,
-          'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
-          'build.name': name,
-          'build.number': BUILD_BUILDID
-        },
-        request: {
-          headers: {
-            'X-Checksum-MD5': hashes.md5,
-            'X-Checksum-Sha1': hashes.sha1
-          }
-        }
-      })
-    )
-    .on('error', log.error);
+  return mergeStream(
+    globby.sync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
+      const [sha1, md5] = fileHashsum(filePath);
+      return gulp
+        .src(filePath)
+        .pipe(
+          artifactoryUpload({
+            url:artifactoryTargetUrl,
+            username: ARTIFACTORY_DEPLOY_USERNAME,
+            password: ARTIFACTORY_DEPLOY_PASSWORD,
+            properties: {
+              'vcs.revision': BUILD_SOURCEVERSION,
+              'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+              'build.name': name,
+              'build.number': BUILD_BUILDID
+            },
+            request: {
+              headers: {
+                'X-Checksum-MD5': md5,
+                'X-Checksum-Sha1': sha1
+              }
+            }
+          })
+        )
+        .on('error', log.error);
+    })
+  );
 });
 
 gulp.task('deploy-buildinfo', function (done) {
@@ -106,7 +128,7 @@ gulp.task('deploy-buildinfo', function (done) {
         url: `${process.env.ARTIFACTORY_URL}/api/build`,
         json
       },
-      function (error, response, body) {
+      (error, _response, _body) => {
         if (error) {
           log.error('error:', error);
         }
@@ -116,9 +138,27 @@ gulp.task('deploy-buildinfo', function (done) {
     .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
 });
 
+gulp.task('sign', () => {
+  return gulp.src(path.join('*{.vsix,-cyclonedx.json}'))
+  .pipe(getSignature({
+    keyPath: process.env.SIGN_KEY,
+    passphrase: process.env.PGP_PASSPHRASE
+  }))
+  .pipe(gulp.dest('./'));
+});
+
 gulp.task(
   'deploy',
-  gulp.series('clean', 'update-version', vsce.createVSIX, 'compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix')
+  gulp.series(
+    'clean',
+    'update-version',
+    'cycloneDx',
+    vsce.createVSIX,
+    'compute-vsix-hashes',
+    'sign',
+    'deploy-buildinfo',
+    'deploy-vsix'
+  )
 );
 
 function buildInfo(name, version, buildNumber) {
@@ -143,6 +183,8 @@ function buildInfo(name, version, buildNumber) {
   });
 
   const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
+  const vsixPaths = globby.sync(path.join('*.vsix'));
+  const additionalPaths = globby.sync(path.join('*{-cyclonedx.json,.asc}'));
 
   return {
     version: '1.0.1',
@@ -158,14 +200,15 @@ function buildInfo(name, version, buildNumber) {
         properties: {
           artifactsToDownload: `org.sonarsource.sonarlint.vscode:${name}:vsix`
         },
-        artifacts: [
-          {
-            type: 'vsix',
-            sha1: hashes.sha1,
-            md5: hashes.md5,
-            name: `${name}-${version}.vsix`
-          }
-        ],
+        artifacts: [...vsixPaths, ...additionalPaths].map(filePath => {
+          const [sha1, md5] = fileHashsum(filePath);
+          return {
+            type: path.extname(filePath).slice(1),
+            sha1,
+            md5,
+            name: path.basename(filePath)
+          };
+        }),
         dependencies
       }
     ],
@@ -181,8 +224,21 @@ function buildInfo(name, version, buildNumber) {
   };
 }
 
+function fileHashsum(filePath) {
+  const fileContent = fs.readFileSync(filePath);
+  return ['sha1', 'md5'].map(algo => {
+    const hash = crypto
+      .createHash(algo)
+      .update(fileContent, 'binary')
+      .digest('hex');
+    console.log(`Computed "${path.basename(filePath)}" ${algo}: ${hash}`);
+    return hash;
+  });
+}
+exports.fileHashsum = fileHashsum;
+
 function hashsum() {
-  function processFile(file, encoding, callback) {
+  function processFile(file, _encoding, callback) {
     updateHashes(file);
     this.push(file);
     callback();
