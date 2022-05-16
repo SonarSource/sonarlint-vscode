@@ -1,43 +1,53 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2022 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+'use strict';
+
 const openpgp = require('openpgp');
 const through = require('through2');
-const Vinyl = require('vinyl')
+const Vinyl = require('vinyl');
 const Stream = require('stream');
 const fs = require('fs');
 
 exports.getSignature = (opts = {}) => {
-    return through.obj(getTransform(opts, false))
-}
+    return through.obj(getTransform(opts, false));
+};
 
 exports.addSignature = (opts = {}) => {
-    return through.obj(getTransform(opts, true))
+    return through.obj(getTransform(opts, true));
 };
 
 function getTransform(opts, keep) {
-    return function transform(file, encoding, callback) {
+    return function transform(file, _encoding, callback) {
         if (file.isNull()) {
-            this.push(file)
-            return callback()
+            this.push(file);
+            return callback();
         }
 
-        let stream = new Stream.PassThrough()
+        let stream = new Stream.PassThrough();
 
         if (file.isBuffer() && !file.pipe) {
-            stream.end(file.contents)
+            stream.end(file.contents);
         } else {
-            stream = file
+            stream = file;
         }
 
         sign(stream, opts.keyPath, opts.passphrase).then(signature => {
             this.push(new Vinyl({
                 cwd: file.cwd,
                 base: file.base,
-                path: file.path + ".asc",
+                path: file.path + '.asc',
                 contents: signature
-            }))
-            if(keep) this.push(file)
-            callback()
-        })
-    }
+            }));
+            if(keep) {
+                this.push(file);
+            }
+            callback();
+        });
+    };
 }
 
 async function sign(content, keyPath, passphrase) {
@@ -45,12 +55,12 @@ async function sign(content, keyPath, passphrase) {
         privateKey: await openpgp.readPrivateKey({ armoredKey: getKey(keyPath) }),
         passphrase
     });
-    const message = await openpgp.createMessage({ binary: content })
-    return await openpgp.sign({
+    const message = await openpgp.createMessage({ binary: content });
+    return openpgp.sign({
         message,
         signingKeys: privateKey,
         detached: true
-    })
+    });
 }
 
 function getKey(keyPath) {
@@ -58,5 +68,5 @@ function getKey(keyPath) {
     return fs.readFileSync(keyPath, 'utf8');
   } catch (err) {
     throw new Error(`Unable to get sign key ${keyPath}`);
-  }  
+  }
 }

@@ -18,7 +18,7 @@ const bump = require('gulp-bump');
 const dateformat = require('dateformat');
 const jarDependencies = require('./scripts/dependencies.json');
 const exec = require('child_process').exec;
-const { addSignature, getSignature } = require('./scripts/gulp-sign.js');
+const { getSignature } = require('./scripts/gulp-sign.js');
 const path = require('path');
 const globby = require('globby');
 const mergeStream = require('merge-stream');
@@ -34,7 +34,8 @@ gulp.task(
 gulp.task('cycloneDx',function (cb) {
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
-  exec(`npm run cyclonedx-run -- -d --output sonarlint-vscode-${version}.sbom-cyclonedx.json`, function (err, stdout, stderr) {
+  const cycloneDxCommand = `npm run cyclonedx-run -- -d --output sonarlint-vscode-${version}.sbom-cyclonedx.json`;
+  exec(cycloneDxCommand, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
     cb(err);
@@ -127,7 +128,7 @@ gulp.task('deploy-buildinfo', function (done) {
         url: `${process.env.ARTIFACTORY_URL}/api/build`,
         json
       },
-      function (error, response, body) {
+      (error, _response, _body) => {
         if (error) {
           log.error('error:', error);
         }
@@ -137,18 +138,27 @@ gulp.task('deploy-buildinfo', function (done) {
     .auth(process.env.ARTIFACTORY_DEPLOY_USERNAME, process.env.ARTIFACTORY_DEPLOY_PASSWORD, true);
 });
 
-gulp.task('sign', () => {  
+gulp.task('sign', () => {
   return gulp.src(path.join('*{.vsix,-cyclonedx.json}'))
   .pipe(getSignature({
     keyPath: process.env.SIGN_KEY,
     passphrase: process.env.PGP_PASSPHRASE
   }))
-  .pipe(gulp.dest('./'))
+  .pipe(gulp.dest('./'));
 });
 
 gulp.task(
   'deploy',
-  gulp.series('clean', 'update-version', 'cycloneDx', vsce.createVSIX, 'compute-vsix-hashes', 'sign', 'deploy-buildinfo', 'deploy-vsix')
+  gulp.series(
+    'clean',
+    'update-version',
+    'cycloneDx',
+    vsce.createVSIX,
+    'compute-vsix-hashes',
+    'sign',
+    'deploy-buildinfo',
+    'deploy-vsix'
+  )
 );
 
 function buildInfo(name, version, buildNumber) {
@@ -228,7 +238,7 @@ function fileHashsum(filePath) {
 exports.fileHashsum = fileHashsum;
 
 function hashsum() {
-  function processFile(file, encoding, callback) {
+  function processFile(file, _encoding, callback) {
     updateHashes(file);
     this.push(file);
     callback();
