@@ -73,7 +73,6 @@ describe('CFamily Test Suite', () => {
         console.log(`${firstCompileDbToCreatePath} is deleted!`);
       });
     }
-    await resetPathToCompileCommands();
   });
 });
 
