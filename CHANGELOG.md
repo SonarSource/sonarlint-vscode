@@ -4,6 +4,8 @@
 * Update JS/TS analyzer 9.1 -> [9.2](https://github.com/SonarSource/SonarJS/releases/tag/9.2.0.17876), Node.js 12.22.0 or later required, improvements and FP fixes
 * Update CFamily analyzer 6.32 -> [6.33](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10090&version=17352), bug-fixes for compilation database
 * Update Python analyzer 3.12 -> [3.13](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17370) -> [3.14](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10958&version=17400), fixes for false positives
+* Subscribe to server events to synchronize quality profiles and rule configuration
+* Lots of small bug fixes
 
 
 ## 3.4.1
