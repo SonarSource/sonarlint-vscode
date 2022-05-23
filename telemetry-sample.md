@@ -11,6 +11,8 @@
       "install_time":"2018-02-01T16:30:49.124+01:00",
       "analyses":[{"language":"js","rate_per_duration":{"0-300":100,"300-500":0,"500-1000":0,"1000-2000":0,"2000-4000":0,"4000+":0}}],
       "os": "Linux",
+      "platform": "linux",
+      "architecture": "x64",
       "jre": "11.0.6",
       "nodejs": "11.12.0",
       "server_notifications": {
