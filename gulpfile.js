@@ -316,13 +316,15 @@ const deployAllPlatformsSeries = (done) => {
   );
   tasks.push('clean-jre');
   tasks.push(gulp.series(vsce.createVSIX));
-  tasks.push(gulp.series('compute-vsix-hashes', 'deploy-buildinfo', 'deploy-vsix'));
+  tasks.push(gulp.series('compute-vsix-hashes', 'sign', 'deploy-buildinfo', 'deploy-vsix'));
 
   return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
     done();
   })();
 };
+
+gulp.task('deploy-all', deployAllPlatformsSeries);
 
 gulp.task('sign', () => {
   return gulp.src(path.join('*{.vsix,-cyclonedx.json}'))
