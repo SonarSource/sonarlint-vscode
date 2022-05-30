@@ -13,11 +13,18 @@ import * as os from 'os';
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
-import {performIsIgnoredCheck} from "../../src/extension";
+import { performIsIgnoredCheck } from '../../src/extension';
+import { Commands } from '../../src/commands';
 
 const sampleFolderLocation = '../../../test/samples/';
 
 suite('Extension Test Suite', () => {
+
+  setup(async () => {
+    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    await vscode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT);
+  });
+
   test('Extension should be present', () => {
     assert.ok(util.extension);
   });
@@ -39,8 +46,6 @@ suite('Extension Test Suite', () => {
 
     assert.strictEqual(diags.length, 1);
     assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
-
-    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(60 * 1000);
 
   test('should report issue on js file with URI-encoded characters', async function() {
@@ -52,8 +57,6 @@ suite('Extension Test Suite', () => {
 
     assert.strictEqual(diags.length, 1);
     assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
-
-    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(60 * 1000);
 
   test('consider file not ignored if it is not in workspace', async function () {
