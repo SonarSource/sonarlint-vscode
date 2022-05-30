@@ -102,7 +102,6 @@ class GitScm implements Scm {
   }
 
   getReferenceBranchNameForFile(fileUri?: vscode.Uri) {
-    console.log(fileUri);
     if (fileUri) {
       const workspaceFolderForFile = vscode.workspace.getWorkspaceFolder(fileUri);
       return this.referenceBranchByFolderUri.get(workspaceFolderForFile?.uri?.toString(true));

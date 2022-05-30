@@ -37,8 +37,21 @@ suite('Extension Test Suite', () => {
 
     var diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.deepEqual(diags.length, 1);
-    assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable.");
+    assert.strictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
+
+    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  }).timeout(60 * 1000);
+
+  test('should report issue on js file with URI-encoded characters', async function() {
+    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', '# {}', 'main.js'));
+    const document = await vscode.workspace.openTextDocument(fileUri);
+    const editor = await vscode.window.showTextDocument(document);
+
+    var diags = await waitForSonarLintDiagnostics(fileUri);
+
+    assert.strictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(60 * 1000);
