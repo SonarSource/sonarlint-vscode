@@ -26,7 +26,7 @@ import { getJavaConfig, installClasspathListener } from './java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './locations';
 import * as protocol from './protocol';
 import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
-import { computeRuleDescPanelContent } from './rulepanel';
+import { showRuleDescription } from './rulepanel';
 import { AllRulesTreeDataProvider, RuleNode } from './rules';
 import { initScm } from './scm';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
@@ -45,7 +45,6 @@ let remindMeLaterAboutCompileCommandsFlag = false;
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
 let sonarlintOutput: VSCode.OutputChannel;
-let ruleDescriptionPanel: VSCode.WebviewPanel;
 let secondaryLocationsTree: SecondaryLocationsTree;
 let issueLocationsView: VSCode.TreeView<LocationTreeItem>;
 let languageClient: SonarLintExtendedLanguageClient;
@@ -420,32 +419,7 @@ function isFirstSecretDetected(context: VSCode.ExtensionContext): boolean {
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
-  languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, params => {
-    if (!ruleDescriptionPanel) {
-      ruleDescriptionPanel = VSCode.window.createWebviewPanel(
-        'sonarlint.RuleDesc',
-        'SonarLint Rule Description',
-        VSCode.ViewColumn.Two,
-        {
-          enableScripts: false
-        }
-      );
-      ruleDescriptionPanel.onDidDispose(
-        () => {
-          ruleDescriptionPanel = undefined;
-        },
-        null,
-        context.subscriptions
-      );
-    }
-    const ruleDescPanelContent = computeRuleDescPanelContent(context, ruleDescriptionPanel.webview, params);
-    ruleDescriptionPanel.webview.html = ruleDescPanelContent;
-    ruleDescriptionPanel.iconPath = {
-      light: util.resolveExtensionFile('images/sonarlint.svg'),
-      dark: util.resolveExtensionFile('images/sonarlint.svg')
-    };
-    ruleDescriptionPanel.reveal();
-  });
+  languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
