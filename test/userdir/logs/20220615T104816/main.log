@@ -1,0 +1,4 @@
+[2022-06-15 10:48:16.573] [main] [info] update#setState idle
+[2022-06-15 10:48:21.218] [main] [info] Starting extension host with pid 93590 (fork() took 4 ms).
+[2022-06-15 10:48:40.139] [main] [info] Waiting for extension host with pid 93590 to exit.
+[2022-06-15 10:48:45.194] [main] [info] Extension host with pid 93590 exited with code: 0, signal: null.
