@@ -1,0 +1,186 @@
+Executing /usr/bin/java -Dsonarlint.telemetry.disabled=true -jar /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/server/sonarlint-ls.jar 54532 -analyzers /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/analyzers/sonarjava.jar /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/analyzers/sonarjs.jar /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/analyzers/sonarphp.jar /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/analyzers/sonarpython.jar /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/analyzers/sonarhtml.jar /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/analyzers/sonarxml.jar /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/analyzers/sonarcfamily.jar -extraAnalyzers /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/analyzers/sonarsecrets.jar
+[stdout] Binding to 54532
+Child process connected on port 54532
+Java resolved to: /usr
+[Info  - 17:57:28.359] Started security hotspot handler on port 64120
+[Debug - 17:57:28.425] Telemetry disabled by system property
+Initializing file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples on branch SLVSCODE-296
+[Debug - 17:57:28.486] Fetching global configuration
+[Debug - 17:57:28.489] Folder file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples is now on branch SLVSCODE-296.
+[Debug - 17:57:28.532] Fetching configuration for folder 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples'
+[Debug - 17:57:28.540] Workspace folder 'WorkspaceFolder[name=samples,uri=file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples]' configuration updated: WorkspaceFolderSettings[analyzerProperties={},connectionId=<null>,pathToCompileCommands=,projectKey=<null>,testFilePattern=**/test/samples/**/test/**]
+[Debug - 17:57:28.545] Global settings updated: WorkspaceSettings[connections={<default>=ServerConnectionSettings[connectionId=<default>,disableNotifications=false,organizationKey=<null>,serverUrl=https://sonarqube.example,token=definitely not a valid token]},disableTelemetry=false,excludedRules=[],includedRules=[],pathToNodeExecutable=,ruleParameters={},showAnalyzerLogs=true,showVerboseLogs=true]
+[Debug - 17:57:28.548] Default settings updated: WorkspaceFolderSettings[analyzerProperties={},connectionId=<null>,pathToCompileCommands=,projectKey=<null>,testFilePattern=**/test/samples/**/test/**]
+[Debug - 17:57:29.559] Fetching global configuration
+[Debug - 17:57:29.570] Fetching configuration for folder 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples'
+[Debug - 17:57:29.575] Global settings updated: WorkspaceSettings[connections={},disableTelemetry=false,excludedRules=[],includedRules=[],pathToNodeExecutable=,ruleParameters={},showAnalyzerLogs=true,showVerboseLogs=true]
+[Debug - 17:57:30.288] Queuing analysis of file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js' (version 1)
+[Debug - 17:57:30.330] Cached SCM ignore status for file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js': Not ignored
+[Info  - 17:57:30.340] Analyzing file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js'...
+[Debug - 17:57:30.355] Analysis triggered with configuration:
+[
+  baseDir: /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples
+  extraProperties: {sonar.cfamily.compile-commands=}
+  moduleKey: file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples
+  excludedRules: []
+  includedRules: []
+  ruleParameters: {}
+  inputFiles: [
+    file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js (UTF-8) [js]
+  ]
+]
+
+[Debug - 17:57:30.357] Starting standalone SonarLint engine...
+[Debug - 17:57:30.357] Using 7 analyzers
+[Debug - 17:57:30.361] Looking for node in the PATH
+[Debug - 17:57:30.366] Execute command '/usr/libexec/path_helper -s'...
+[Debug - 17:57:30.394] Command '/usr/libexec/path_helper -s' exited with 0
+stdout: PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/node_modules/.bin:/Users/sophio.japharidze/Documents/Sonar/node_modules/.bin:/Users/sophio.japharidze/Documents/node_modules/.bin:/Users/sophio.japharidze/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/opt/homebrew/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/sophio.japharidze/miniconda3/bin:/Users/sophio.japharidze/miniconda3/condabin"; export PATH;
+MANPATH="/usr/share/man:/usr/local/share/man:/opt/homebrew/share/man"; export MANPATH;
+[Debug - 17:57:30.395] Execute command 'which node'...
+[Debug - 17:57:30.413] Command 'which node' exited with 0
+stdout: /usr/local/bin/node
+[Debug - 17:57:30.414] Found node at /usr/local/bin/node
+[Debug - 17:57:30.414] Checking node version...
+[Debug - 17:57:30.414] Execute command '/usr/local/bin/node -v'...
+[Debug - 17:57:30.437] Command '/usr/local/bin/node -v' exited with 0
+stdout: v16.13.2
+[Debug - 17:57:30.438] Detected node version: 16.13.2
+[Warn  - 17:57:30.496] Plugin 'secrets' embeds dependencies. This will be deprecated soon. Plugin should be updated.
+[Debug - 17:57:30.605] Loaded 8 plugins
+[Debug - 17:57:30.605]   * Python Code Quality and Security 3.14.0.9677 (python)
+[Debug - 17:57:30.605]   * CFamily Code Quality and Security 6.33.0.46593 (cpp)
+[Debug - 17:57:30.636]   * Java Code Quality and Security 7.11.0.29148 (java)
+[Debug - 17:57:30.660]   * HTML Code Quality and Security 3.6.0.3106 (web)
+[Debug - 17:57:30.662]   * XML Code Quality and Security 2.5.0.3376 (xml)
+[Debug - 17:57:30.662]   * PHP Code Quality and Security 3.23.0.8726 (php)
+[Debug - 17:57:30.662]   * Sonar Secrets Plugin for SonarQube 1.1.0.36766 (secrets)
+[Debug - 17:57:30.662]   * JavaScript/TypeScript/CSS Code Quality and Security 9.2.0.17876 (javascript)
+Folder file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples is now on branch SLVSCODE-296
+[Debug - 17:57:30.800] Folder file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples is now on branch SLVSCODE-296.
+[Debug - 17:57:33.215] Creating container for module 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples'
+[Debug - 17:57:33.228] Standalone SonarLint engine started
+[Debug - 17:57:33.354] Start analysis
+[Info  - 17:57:33.376] Index files
+[Debug - 17:57:33.380] Language of file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js' is set to 'JavaScript'
+[Debug - 17:57:33.395] Average line length for [uri=file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js] is 8
+[Info  - 17:57:33.408] 1 file indexed
+[Debug - 17:57:33.866] 'JavaSensor' skipped because there is no related files in the current project
+[Debug - 17:57:33.867] 'CFamily' skipped because there is no related files in the current project
+[Debug - 17:57:33.867] Execute Sensor: HTML
+[Debug - 17:57:33.872] Execute Sensor: Sonar Secrets Detection Sensor
+[Debug - 17:57:33.876] 'XML Sensor' skipped because there is no related files in the current project
+[Debug - 17:57:33.876] 'PHP sensor' skipped because there is no related files in the current project
+[Debug - 17:57:33.876] 'Analyzer for "php.ini" files' skipped because there is no related files in the current project
+[Debug - 17:57:33.876] 'Python Sensor' skipped because there is no related files in the current project
+[Debug - 17:57:33.876] Execute Sensor: JavaScript analysis
+[Debug - 17:57:33.879] Deploying bundle
+[Debug - 17:57:33.879] Deploying eslint-bridge into /Users/sophio.japharidze/.sonarlint/work/.sonartmp_2729938004347278920/eslint-bridge-bundle
+Folder file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples is now on branch SLVSCODE-296
+[Debug - 17:57:35.863] Folder file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples is now on branch SLVSCODE-296.
+[Debug - 17:57:35.865] Deploying bundle (done) | time=1982ms
+[Debug - 17:57:35.871] Starting server
+[Warn  - 17:57:35.874] No workDir in SonarLint
+[Info  - 17:57:35.875] Running in SonarLint context, metrics will not be computed.
+[Info  - 17:57:35.882] Using Node.js executable /usr/local/bin/node from property sonar.nodejs.executable.
+[Debug - 17:57:35.882] Checking Node.js version
+[Debug - 17:57:35.883] Launching command /usr/local/bin/node -v
+[Debug - 17:57:35.905] Using Node.js v16.13.2.
+[Debug - 17:57:35.908] Starting Node.js process to start eslint-bridge server at port 54639
+[Debug - 17:57:35.909] Launching command /usr/local/bin/node /Users/sophio.japharidze/.sonarlint/work/.sonartmp_2729938004347278920/eslint-bridge-bundle/package/bin/server 54639 127.0.0.1 /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples true true 
+[Debug - 17:57:36.605] starting eslint-bridge server at port 54639
+[Debug - 17:57:36.608] eslint-bridge server is running at port 54639
+[Debug - 17:57:36.706] Starting server (done) | time=835ms
+[Warn  - 17:57:36.710] Generating temporary tsconfig is not supported in SonarLint context.
+[Info  - 17:57:36.725] 1 source file to be analyzed
+[Debug - 17:57:36.754] initializing linter with for-loop-increment-sign,no-empty-group,no-accessor-field-mismatch,no-collection-size-mischeck,unverified-certificate,no-empty-collection,no-unthrown-error,updated-const-var,no-duplicate-imports,no-globals-shadowing,null-dereference,unverified-hostname,no-extra-arguments,no-redundant-jump,no-redeclare,constructor-for-side-effects,no-octal,post-message,no-identical-functions,no-element-overwrite,prefer-regex-literals,sonar-no-regex-spaces,weak-ssl,no-throw-literal,no-empty-alternatives,no-useless-increment,no-same-line-conditional,sonar-no-control-regex,conditional-indentation,no-use-of-empty-return-value,session-regeneration,no-associative-arrays,super-invocation,no-try-promise,no-weak-keys,existing-groups,void-use,comma-or-logical-or-case,label-position,no-with,no-unused-collection,single-character-alternation,unused-named-groups,no-sequences,no-global-this,no-array-delete,no-alphabetical-sort,arguments-order,inconsistent-function-call,no-same-argument-assert,file-uploads,prefer-for-of,sonar-no-misleading-character-class,no-inverted-boolean-check,xml-parser-xxe,default-param-last,non-existent-operator,duplicates-in-character-class,new-operator-misuse,todo-tag,fixme-tag,no-sparse-arrays,anchor-precedence,no-equals-in-for-termination,no-invalid-await,no-infinite-loop,array-callback-without-return,prefer-default-last,no-commented-code,sonar-no-fallthrough,no-primitive-wrappers,no-empty-pattern,no-gratuitous-expressions,sonar-no-invalid-regexp,no-dupe-keys,file-name-differ-from-class,no-self-assign,no-new-symbol,no-dupe-args,no-small-switch,no-unsafe-finally,prefer-while,sonar-no-unused-vars,index-of-compare-to-positive-number,argument-type,empty-string-repetition,no-incomplete-assertions,in-operator-type-error,prefer-promise-shorthand,no-unreachable,prefer-immediate-return,regex-complexity,assertions-in-tests,no-identical-expressions,no-empty-after-reluctant,no-useless-catch,future-reserved-words,no-labels,bitwise-operators,no-shadow,no-extra-semi,no-redundant-parentheses,no-unenclosed-multiline-block,no-unused-expressions,no-empty,call-argument-line,max-params,generator-without-yield,no-caller,no-ignored-return,no-duplicated-branches,no-one-iteration-loop,cognitive-complexity,misplaced-loop-counter,use-isnan,deprecation,max-switch-cases,no-nested-template-literals,inverted-assertion-arguments,test-check-exception,no-unsafe-negation,function-inside-loop,class-name,no-multi-str,unused-import,prefer-single-boolean-return,no-redundant-boolean,no-nested-assignment,chai-determinate-assertion,sonar-block-scoped-var,no-code-after-done,concise-regex,no-delete-var,encryption-secure-mode,updated-loop-counter,no-setter-return,no-weak-cipher,no-identical-conditions,different-types-comparison,function-return-type,no-all-duplicated-branches,no-case-label-in-switch,no-in-misuse,disabled-timeout,no-unused-function-argument,no-misleading-array-reverse,no-redundant-assignments,no-return-await,no-nested-conditional,insecure-jwt-token,no-dead-store,no-invariant-returns,no-implicit-global,no-parameter-reassignment,no-empty-function,stateful-regex
+[Debug - 17:57:36.809] Saving issue for rule sonar-no-unused-vars on line 2
+[Debug - 17:57:36.812] Initializing metadata of file file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js
+[Info  - 17:57:36.862] 1/1 source file has been analyzed
+[Debug - 17:57:36.864] Execute Sensor: TypeScript analysis
+[Info  - 17:57:36.866] No input files found for analysis
+[Info  - 17:57:36.870] Found 1 issue
+[Debug - 17:57:37.431] Queuing analysis of file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/%23%20%7B%7D/main.js' (version 1)
+[Debug - 17:57:37.469] Cached SCM ignore status for file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/%23%20%7B%7D/main.js': Not ignored
+[Info  - 17:57:37.471] Analyzing file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/%23%20%7B%7D/main.js'...
+[Debug - 17:57:37.475] Analysis triggered with configuration:
+[
+  baseDir: /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples
+  extraProperties: {sonar.cfamily.compile-commands=}
+  moduleKey: file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples
+  excludedRules: []
+  includedRules: []
+  ruleParameters: {}
+  inputFiles: [
+    file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/%23%20%7B%7D/main.js (UTF-8) [js]
+  ]
+]
+
+[Debug - 17:57:37.507] Start analysis
+[Info  - 17:57:37.515] Index files
+[Debug - 17:57:37.516] Language of file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/%23%20%7B%7D/main.js' is set to 'JavaScript'
+[Debug - 17:57:37.518] Average line length for [uri=file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/%23%20%7B%7D/main.js] is 8
+[Info  - 17:57:37.520] 1 file indexed
+[Debug - 17:57:37.585] 'JavaSensor' skipped because there is no related files in the current project
+[Debug - 17:57:37.585] 'CFamily' skipped because there is no related files in the current project
+[Debug - 17:57:37.586] Execute Sensor: HTML
+[Debug - 17:57:37.586] Execute Sensor: Sonar Secrets Detection Sensor
+[Debug - 17:57:37.588] 'XML Sensor' skipped because there is no related files in the current project
+[Debug - 17:57:37.588] 'PHP sensor' skipped because there is no related files in the current project
+[Debug - 17:57:37.588] 'Analyzer for "php.ini" files' skipped because there is no related files in the current project
+[Debug - 17:57:37.589] 'Python Sensor' skipped because there is no related files in the current project
+[Debug - 17:57:37.589] Execute Sensor: JavaScript analysis
+[Debug - 17:57:37.596] eslint-bridge server is up, no need to start.
+[Warn  - 17:57:37.597] Generating temporary tsconfig is not supported in SonarLint context.
+[Info  - 17:57:37.598] 1 source file to be analyzed
+[Debug - 17:57:37.603] initializing linter with for-loop-increment-sign,no-empty-group,no-accessor-field-mismatch,no-collection-size-mischeck,unverified-certificate,no-empty-collection,no-unthrown-error,updated-const-var,no-duplicate-imports,no-globals-shadowing,null-dereference,unverified-hostname,no-extra-arguments,no-redundant-jump,no-redeclare,constructor-for-side-effects,no-octal,post-message,no-identical-functions,no-element-overwrite,prefer-regex-literals,sonar-no-regex-spaces,weak-ssl,no-throw-literal,no-empty-alternatives,no-useless-increment,no-same-line-conditional,sonar-no-control-regex,conditional-indentation,no-use-of-empty-return-value,session-regeneration,no-associative-arrays,super-invocation,no-try-promise,no-weak-keys,existing-groups,void-use,comma-or-logical-or-case,label-position,no-with,no-unused-collection,single-character-alternation,unused-named-groups,no-sequences,no-global-this,no-array-delete,no-alphabetical-sort,arguments-order,inconsistent-function-call,no-same-argument-assert,file-uploads,prefer-for-of,sonar-no-misleading-character-class,no-inverted-boolean-check,xml-parser-xxe,default-param-last,non-existent-operator,duplicates-in-character-class,new-operator-misuse,todo-tag,fixme-tag,no-sparse-arrays,anchor-precedence,no-equals-in-for-termination,no-invalid-await,no-infinite-loop,array-callback-without-return,prefer-default-last,no-commented-code,sonar-no-fallthrough,no-primitive-wrappers,no-empty-pattern,no-gratuitous-expressions,sonar-no-invalid-regexp,no-dupe-keys,file-name-differ-from-class,no-self-assign,no-new-symbol,no-dupe-args,no-small-switch,no-unsafe-finally,prefer-while,sonar-no-unused-vars,index-of-compare-to-positive-number,argument-type,empty-string-repetition,no-incomplete-assertions,in-operator-type-error,prefer-promise-shorthand,no-unreachable,prefer-immediate-return,regex-complexity,assertions-in-tests,no-identical-expressions,no-empty-after-reluctant,no-useless-catch,future-reserved-words,no-labels,bitwise-operators,no-shadow,no-extra-semi,no-redundant-parentheses,no-unenclosed-multiline-block,no-unused-expressions,no-empty,call-argument-line,max-params,generator-without-yield,no-caller,no-ignored-return,no-duplicated-branches,no-one-iteration-loop,cognitive-complexity,misplaced-loop-counter,use-isnan,deprecation,max-switch-cases,no-nested-template-literals,inverted-assertion-arguments,test-check-exception,no-unsafe-negation,function-inside-loop,class-name,no-multi-str,unused-import,prefer-single-boolean-return,no-redundant-boolean,no-nested-assignment,chai-determinate-assertion,sonar-block-scoped-var,no-code-after-done,concise-regex,no-delete-var,encryption-secure-mode,updated-loop-counter,no-setter-return,no-weak-cipher,no-identical-conditions,different-types-comparison,function-return-type,no-all-duplicated-branches,no-case-label-in-switch,no-in-misuse,disabled-timeout,no-unused-function-argument,no-misleading-array-reverse,no-redundant-assignments,no-return-await,no-nested-conditional,insecure-jwt-token,no-dead-store,no-invariant-returns,no-implicit-global,no-parameter-reassignment,no-empty-function,stateful-regex
+[Debug - 17:57:37.622] Saving issue for rule sonar-no-unused-vars on line 2
+[Debug - 17:57:37.624] Initializing metadata of file file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/%23%20%7B%7D/main.js
+[Info  - 17:57:37.629] 1/1 source file has been analyzed
+[Debug - 17:57:37.630] Execute Sensor: TypeScript analysis
+[Info  - 17:57:37.632] No input files found for analysis
+[Info  - 17:57:37.634] Found 1 issue
+The '/var/folders/y1/6_hk36cj2n7339jnz7p83bpc0000gp/T/tmpdirjoRU8h/main.js' file is not in the workspace, consider as not ignored
+Error requesting ignored status, consider the 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js' file as not ignored
+Multiple candidates found for 'main.js', using first match 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js'
+Multiple candidates found for 'sample.js', using first match 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-multi-js/folder2/sample.js'
+[Debug - 17:57:38.835] Queuing analysis of file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-multi-js/folder2/sample.js' (version 1)
+[Debug - 17:57:38.871] Cached SCM ignore status for file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-multi-js/folder2/sample.js': Not ignored
+[Info  - 17:57:38.873] Analyzing file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-multi-js/folder2/sample.js'...
+[Debug - 17:57:38.873] Analysis triggered with configuration:
+[
+  baseDir: /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples
+  extraProperties: {sonar.cfamily.compile-commands=}
+  moduleKey: file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples
+  excludedRules: []
+  includedRules: []
+  ruleParameters: {}
+  inputFiles: [
+    file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-multi-js/folder2/sample.js (UTF-8) [js]
+  ]
+]
+
+[Debug - 17:57:38.889] Start analysis
+[Info  - 17:57:38.892] Index files
+[Debug - 17:57:38.893] Language of file 'file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-multi-js/folder2/sample.js' is set to 'JavaScript'
+[Debug - 17:57:38.895] Average line length for [uri=file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-multi-js/folder2/sample.js] is 0
+[Info  - 17:57:38.895] 1 file indexed
+[Debug - 17:57:38.939] 'JavaSensor' skipped because there is no related files in the current project
+[Debug - 17:57:38.939] 'CFamily' skipped because there is no related files in the current project
+[Debug - 17:57:38.939] Execute Sensor: HTML
+[Debug - 17:57:38.940] Execute Sensor: Sonar Secrets Detection Sensor
+[Debug - 17:57:38.940] 'XML Sensor' skipped because there is no related files in the current project
+[Debug - 17:57:38.940] 'PHP sensor' skipped because there is no related files in the current project
+[Debug - 17:57:38.940] 'Analyzer for "php.ini" files' skipped because there is no related files in the current project
+[Debug - 17:57:38.940] 'Python Sensor' skipped because there is no related files in the current project
+[Debug - 17:57:38.940] Execute Sensor: JavaScript analysis
+[Debug - 17:57:38.950] eslint-bridge server is up, no need to start.
+[Warn  - 17:57:38.950] Generating temporary tsconfig is not supported in SonarLint context.
+[Info  - 17:57:38.950] 1 source file to be analyzed
+[Debug - 17:57:38.963] initializing linter with for-loop-increment-sign,no-empty-group,no-accessor-field-mismatch,no-collection-size-mischeck,unverified-certificate,no-empty-collection,no-unthrown-error,updated-const-var,no-duplicate-imports,no-globals-shadowing,null-dereference,unverified-hostname,no-extra-arguments,no-redundant-jump,no-redeclare,constructor-for-side-effects,no-octal,post-message,no-identical-functions,no-element-overwrite,prefer-regex-literals,sonar-no-regex-spaces,weak-ssl,no-throw-literal,no-empty-alternatives,no-useless-increment,no-same-line-conditional,sonar-no-control-regex,conditional-indentation,no-use-of-empty-return-value,session-regeneration,no-associative-arrays,super-invocation,no-try-promise,no-weak-keys,existing-groups,void-use,comma-or-logical-or-case,label-position,no-with,no-unused-collection,single-character-alternation,unused-named-groups,no-sequences,no-global-this,no-array-delete,no-alphabetical-sort,arguments-order,inconsistent-function-call,no-same-argument-assert,file-uploads,prefer-for-of,sonar-no-misleading-character-class,no-inverted-boolean-check,xml-parser-xxe,default-param-last,non-existent-operator,duplicates-in-character-class,new-operator-misuse,todo-tag,fixme-tag,no-sparse-arrays,anchor-precedence,no-equals-in-for-termination,no-invalid-await,no-infinite-loop,array-callback-without-return,prefer-default-last,no-commented-code,sonar-no-fallthrough,no-primitive-wrappers,no-empty-pattern,no-gratuitous-expressions,sonar-no-invalid-regexp,no-dupe-keys,file-name-differ-from-class,no-self-assign,no-new-symbol,no-dupe-args,no-small-switch,no-unsafe-finally,prefer-while,sonar-no-unused-vars,index-of-compare-to-positive-number,argument-type,empty-string-repetition,no-incomplete-assertions,in-operator-type-error,prefer-promise-shorthand,no-unreachable,prefer-immediate-return,regex-complexity,assertions-in-tests,no-identical-expressions,no-empty-after-reluctant,no-useless-catch,future-reserved-words,no-labels,bitwise-operators,no-shadow,no-extra-semi,no-redundant-parentheses,no-unenclosed-multiline-block,no-unused-expressions,no-empty,call-argument-line,max-params,generator-without-yield,no-caller,no-ignored-return,no-duplicated-branches,no-one-iteration-loop,cognitive-complexity,misplaced-loop-counter,use-isnan,deprecation,max-switch-cases,no-nested-template-literals,inverted-assertion-arguments,test-check-exception,no-unsafe-negation,function-inside-loop,class-name,no-multi-str,unused-import,prefer-single-boolean-return,no-redundant-boolean,no-nested-assignment,chai-determinate-assertion,sonar-block-scoped-var,no-code-after-done,concise-regex,no-delete-var,encryption-secure-mode,updated-loop-counter,no-setter-return,no-weak-cipher,no-identical-conditions,different-types-comparison,function-return-type,no-all-duplicated-branches,no-case-label-in-switch,no-in-misuse,disabled-timeout,no-unused-function-argument,no-misleading-array-reverse,no-redundant-assignments,no-return-await,no-nested-conditional,insecure-jwt-token,no-dead-store,no-invariant-returns,no-implicit-global,no-parameter-reassignment,no-empty-function,stateful-regex
+[Info  - 17:57:39.093] 1/1 source file has been analyzed
+[Debug - 17:57:39.098] Execute Sensor: TypeScript analysis
+[Info  - 17:57:39.103] No input files found for analysis
+[Info  - 17:57:39.109] Found 0 issues
+[stderr] Jun 14, 2022 5:57:39 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+[stderr] WARNING: Unmatched cancel notification for request id 6

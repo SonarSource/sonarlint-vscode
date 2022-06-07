@@ -1,0 +1,18 @@
+{
+  // Start with no editor open
+  "workbench.startupEditor": "none",
+  // Disable telemetry pings to Microsoft
+  "telemetry.enableTelemetry": false,
+  // Disable workspace trust check (1.57+)
+  "security.workspace.trust.enabled": false,
+  // Force Java LS in Standard mode
+  "java.server.launchMode": "Standard",
+  // Enable auto import of Java projects
+  "java.project.importOnFirstTimeStartup": "automatic",
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  // Disable SonarLint product telemetry in ITs
+  "sonarlint.ls.vmargs": " -Dsonarlint.telemetry.disabled=true ",
+  "sonarlint.output.showAnalyzerLogs": true,
+  "sonarlint.output.showVerboseLogs": true
+}

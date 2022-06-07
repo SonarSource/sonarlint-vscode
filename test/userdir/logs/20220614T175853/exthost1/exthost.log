@@ -1,0 +1,29 @@
+[2022-06-14 17:59:00.587] [exthost] [info] Extension host with pid 89587 started
+[2022-06-14 17:59:00.587] [exthost] [info] Skipping acquiring lock for /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/userdir/User/workspaceStorage/47dc5207004fbc4a7ebf5aaf758baa43.
+[2022-06-14 17:59:00.935] [exthost] [info] ExtensionService#_doActivateExtension vscode.microsoft-authentication, startup: false, activationEvent: 'onAuthenticationRequest:microsoft'
+[2022-06-14 17:59:01.043] [exthost] [info] ExtensionService#_doActivateExtension vscode.debug-auto-launch, startup: true, activationEvent: '*'
+[2022-06-14 17:59:01.048] [exthost] [info] ExtensionService#_doActivateExtension vscode.git-base, startup: true, activationEvent: '*', root cause: vscode.git
+[2022-06-14 17:59:01.054] [exthost] [info] ExtensionService#_doActivateExtension vscode.ipynb, startup: true, activationEvent: '*'
+[2022-06-14 17:59:01.130] [exthost] [info] ExtensionService#_doActivateExtension vscode.git, startup: true, activationEvent: '*'
+[2022-06-14 17:59:01.193] [exthost] [info] ExtensionService#_doActivateExtension vscode.github, startup: true, activationEvent: '*'
+[2022-06-14 17:59:01.234] [exthost] [info] ExtensionService#_doActivateExtension vscode.github-authentication, startup: false, activationEvent: 'onAuthenticationRequest:github'
+[2022-06-14 17:59:01.313] [exthost] [warning] [vscode.git] Accessing a resource scoped configuration without providing a resource is not expected. To get the effective value for 'git.commandsToLog', provide the URI of a resource or 'null' for any resource.
+[2022-06-14 17:59:01.332] [exthost] [info] Eager extensions activated
+[2022-06-14 17:59:01.642] [exthost] [info] ExtensionService#_doActivateExtension vscode.emmet, startup: false, activationEvent: 'onStartupFinished'
+[2022-06-14 17:59:01.661] [exthost] [info] ExtensionService#_doActivateExtension vscode.merge-conflict, startup: false, activationEvent: 'onStartupFinished'
+[2022-06-14 17:59:01.666] [exthost] [info] ExtensionService#_doActivateExtension SonarSource.sonarlint-vscode, startup: false, activationEvent: 'onStartupFinished'
+[2022-06-14 17:59:01.882] [exthost] [warning] [vscode.emmet] Accessing a resource scoped configuration without providing a resource is not expected. To get the effective value for 'emmet.includeLanguages', provide the URI of a resource or 'null' for any resource.
+[2022-06-14 17:59:03.092] [exthost] [info] ExtensionService#_doActivateExtension vscode.configuration-editing, startup: false, activationEvent: 'onLanguage:jsonc'
+[2022-06-14 17:59:03.104] [exthost] [info] ExtensionService#_doActivateExtension vscode.json-language-features, startup: false, activationEvent: 'onLanguage:jsonc'
+[2022-06-14 17:59:03.149] [exthost] [info] ExtensionService#_doActivateExtension vscode.typescript-language-features, startup: false, activationEvent: 'onLanguage:jsonc'
+[2022-06-14 17:59:14.879] [exthost] [info] Extension host terminating: test runner requested exit with code 1
+[2022-06-14 17:59:15.221] [exthost] [error] Error: Could NOT open editor for "file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js".
+	at E.showTextDocument (/Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/.vscode-test/vscode-darwin-1.68.0/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:83:269808)
+	at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2022-06-14 17:59:15.284] [exthost] [error] Error: Could NOT open editor for "file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js" because another editor opened in the meantime.
+	at E.showTextDocument (/Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/.vscode-test/vscode-darwin-1.68.0/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:83:269700)
+	at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2022-06-14 17:59:15.861] [exthost] [error] Error: Could NOT open editor for "file:///Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/samples/sample-js/main.js" because another editor opened in the meantime.
+	at E.showTextDocument (/Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/.vscode-test/vscode-darwin-1.68.0/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:83:269700)
+	at processTicksAndRejections (node:internal/process/task_queues:96:5)
+[2022-06-14 17:59:19.899] [exthost] [info] Extension host with pid 89587 exiting with code 1
