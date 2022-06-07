@@ -41,4 +41,6 @@ export namespace Commands {
   export const HIDE_HOTSPOT = 'SonarLint.HideHotspot';
   export const SHOW_HOTSPOT_DESCRIPTION = 'SonarLint.ShowHotspotDescription';
   export const CONFIGURE_COMPILATION_DATABASE = 'SonarLint.ConfigureCompilationDatabase';
+
+  export const CONNECT_TO_SONARQUBE = 'SonarLint.ConnectToSonarQube';
 }
