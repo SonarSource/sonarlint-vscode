@@ -21,3 +21,28 @@ export class ResourceResolver {
       .toString();
   }
 }
+
+const entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
+
+export function escapeHtml(str: string) {
+  return String(str).replace(/[&<>"'\/`=]/g, function (s) {
+    return entityMap[s];
+  });
+}
+
+export function clean(str: string) {
+  return capitalizeName(str.toLowerCase().split('_').join(' '));
+}
+
+export function capitalizeName(name: string) {
+  return name.replace(/\b(\w)/g, s => s.toUpperCase());
+}
