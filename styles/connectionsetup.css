@@ -1,0 +1,36 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2022 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+p {
+    margin-block: 0.5rem;
+}
+
+ul {
+    margin: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+#connectionCheck {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+#connectionStatus {
+    display: inline-block;
+}
