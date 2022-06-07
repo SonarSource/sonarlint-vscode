@@ -14,6 +14,7 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
+import { connectToSonarQube } from './connectionsetup';
 import { GitExtension } from './git';
 import {
   hideSecurityHotspot,
@@ -332,6 +333,10 @@ export function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE, configureCompilationDatabase)
+  );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
   );
 
   languageClient.start();
