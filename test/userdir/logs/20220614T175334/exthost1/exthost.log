@@ -1,0 +1,26 @@
+[2022-06-14 17:53:45.489] [exthost] [info] Extension host with pid 89102 started
+[2022-06-14 17:53:45.489] [exthost] [info] Skipping acquiring lock for /Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/test/userdir/User/workspaceStorage/47dc5207004fbc4a7ebf5aaf758baa43.
+[2022-06-14 17:53:45.642] [exthost] [info] ExtensionService#_doActivateExtension vscode.microsoft-authentication, startup: false, activationEvent: 'onAuthenticationRequest:microsoft'
+[2022-06-14 17:53:45.696] [exthost] [info] ExtensionService#_doActivateExtension vscode.debug-auto-launch, startup: true, activationEvent: '*'
+[2022-06-14 17:53:45.700] [exthost] [info] ExtensionService#_doActivateExtension vscode.git-base, startup: true, activationEvent: '*', root cause: vscode.git
+[2022-06-14 17:53:45.711] [exthost] [info] ExtensionService#_doActivateExtension vscode.ipynb, startup: true, activationEvent: '*'
+[2022-06-14 17:53:45.852] [exthost] [info] ExtensionService#_doActivateExtension vscode.git, startup: true, activationEvent: '*'
+[2022-06-14 17:53:45.914] [exthost] [info] ExtensionService#_doActivateExtension vscode.github, startup: true, activationEvent: '*'
+[2022-06-14 17:53:45.962] [exthost] [info] ExtensionService#_doActivateExtension vscode.github-authentication, startup: false, activationEvent: 'onAuthenticationRequest:github'
+[2022-06-14 17:53:46.047] [exthost] [warning] [vscode.git] Accessing a resource scoped configuration without providing a resource is not expected. To get the effective value for 'git.commandsToLog', provide the URI of a resource or 'null' for any resource.
+[2022-06-14 17:53:46.064] [exthost] [info] Eager extensions activated
+[2022-06-14 17:53:46.348] [exthost] [info] ExtensionService#_doActivateExtension vscode.emmet, startup: false, activationEvent: 'onStartupFinished'
+[2022-06-14 17:53:46.397] [exthost] [info] ExtensionService#_doActivateExtension vscode.merge-conflict, startup: false, activationEvent: 'onStartupFinished'
+[2022-06-14 17:53:46.419] [exthost] [info] ExtensionService#_doActivateExtension SonarSource.sonarlint-vscode, startup: false, activationEvent: 'onStartupFinished'
+[2022-06-14 17:53:46.695] [exthost] [warning] [vscode.emmet] Accessing a resource scoped configuration without providing a resource is not expected. To get the effective value for 'emmet.includeLanguages', provide the URI of a resource or 'null' for any resource.
+[2022-06-14 17:53:46.779] [exthost] [info] Extension host terminating: renderer closed the socket
+[2022-06-14 17:53:47.030] [exthost] [error] Error: Channel has been closed
+	at a (/Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/.vscode-test/vscode-darwin-1.68.0/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:87:2215)
+	at Object.appendLine (/Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/.vscode-test/vscode-darwin-1.68.0/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:87:2333)
+	at logToSonarLintOutput (/Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/out/src/extension.js:54:25)
+	at Server.<anonymous> (/Users/sophio.japharidze/Documents/Sonar/sonarlint-vscode/out/src/extension.js:87:21)
+	at Object.onceWrapper (node:events:509:28)
+	at Server.emit (node:events:390:28)
+	at emitListeningNT (node:net:1368:10)
+	at processTicksAndRejections (node:internal/process/task_queues:82:21)
+[2022-06-14 17:53:51.806] [exthost] [info] Extension host with pid 89102 exiting with code 0

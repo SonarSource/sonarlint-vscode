@@ -450,8 +450,61 @@
       },
       {
         "command": "SonarLint.ConnectToSonarQube",
-        "title": "Connect To SonarQube",
-        "category": "SonarLint"
+        "title": "Connect to SonarQube",
+        "category": "SonarLint",
+        "icon": {
+          "light": "images/connection/light/add.svg",
+          "dark": "images/connection/dark/add.svg"
+        }
+      },
+      {
+        "command": "SonarLint.ConnectToSonarCloud",
+        "title": "Connect to SonarCloud",
+        "category": "SonarLint",
+        "icon": {
+          "light": "images/connection/light/add.svg",
+          "dark": "images/connection/dark/add.svg"
+        }
+      },
+      {
+        "command": "SonarLint.EditSonarQubeConnection",
+        "title": "Edit SonarQube Connection",
+        "category": "SonarLint",
+        "icon": {
+          "light": "images/connection/light/edit.svg",
+          "dark": "images/connection/dark/edit.svg"
+        },
+        "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.EditSonarCloudConnection",
+        "title": "Edit SonarCloud Connection",
+        "category": "SonarLint",
+        "icon": {
+          "light": "images/connection/light/edit.svg",
+          "dark": "images/connection/dark/edit.svg"
+        },
+        "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.RemoveConnection",
+        "title": "Remove SonarQube/SonarCloud Connection",
+        "category": "SonarLint",
+        "icon": {
+          "light": "images/connection/light/remove.svg",
+          "dark": "images/connection/dark/remove.svg"
+        },
+        "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.RefreshConnection",
+        "title": "Refresh SonarQube Connection",
+        "category": "SonarLint",
+        "icon": {
+          "light": "images/connection/light/refresh.svg",
+          "dark": "images/connection/dark/refresh.svg"
+        },
+        "enablement": "view == SonarLint.ConnectedMode"
       }
     ],
     "views": {
@@ -463,6 +516,10 @@
         {
           "id": "SonarLint.IssueLocations",
           "name": "SonarLint Issue Locations"
+        },
+        {
+          "id": "SonarLint.ConnectedMode",
+          "name": "SonarLint Connected Mode"
         }
       ]
     },
@@ -470,6 +527,10 @@
       {
         "view": "SonarLint.IssueLocations",
         "contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarLint issue."
+      },
+      {
+        "view": "SonarLint.ConnectedMode",
+        "contents": "No SonarQube/SonarCloud connections found [learn more](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode#connected-mode).\n[Add SonarQube Connection](command:SonarLint.ConnectToSonarQube)\n[Add SonarCloud Connection](command:SonarLint.ConnectToSonarCloud)"
       }
     ],
     "menus": {
@@ -508,6 +569,40 @@
         {
           "command": "SonarLint.ActivateRule",
           "when": "view == SonarLint.AllRules && viewItem == rule-off",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.ConnectToSonarQube",
+          "when": "view == SonarLint.ConnectedMode && viewItem == sonarQubeGroup",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.ConnectToSonarCloud",
+          "when": "view == SonarLint.ConnectedMode && viewItem == sonarCloudGroup",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.EditSonarQubeConnection",
+          "title": "Edit",
+          "when": "view == SonarLint.ConnectedMode && viewItem == sonarqubeConnection",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.EditSonarCloudConnection",
+          "title": "Edit",
+          "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.RemoveConnection",
+          "title": "Remove",
+          "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection || viewItem == sonarqubeConnection",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.RefreshConnection",
+          "title": "Refresh",
+          "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection || viewItem == sonarqubeConnection",
           "group": "inline"
         }
       ]
