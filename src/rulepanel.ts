@@ -9,9 +9,41 @@
 import * as FS from 'fs';
 import * as VSCode from 'vscode';
 import { ShowRuleDescriptionParams } from './protocol';
-import { ResourceResolver } from './webview';
+import * as util from './util';
+import { clean, escapeHtml, ResourceResolver } from './webview';
 
-export function computeRuleDescPanelContent(
+let ruleDescriptionPanel: VSCode.WebviewPanel;
+
+export function showRuleDescription(context: VSCode.ExtensionContext) {
+  return params => {
+    lazyCreateRuleDescriptionPanel(context);
+    ruleDescriptionPanel.webview.html = computeRuleDescPanelContent(context, ruleDescriptionPanel.webview, params);
+    ruleDescriptionPanel.iconPath = util.resolveExtensionFile('images', 'sonarlint.svg');
+    ruleDescriptionPanel.reveal();
+  };
+}
+
+function lazyCreateRuleDescriptionPanel(context: VSCode.ExtensionContext) {
+  if (!ruleDescriptionPanel) {
+    ruleDescriptionPanel = VSCode.window.createWebviewPanel(
+        'sonarlint.RuleDesc',
+        'SonarLint Rule Description',
+        VSCode.ViewColumn.Two,
+        {
+          enableScripts: false
+        }
+    );
+    ruleDescriptionPanel.onDidDispose(
+        () => {
+          ruleDescriptionPanel = undefined;
+        },
+        null,
+        context.subscriptions
+    );
+  }
+}
+
+function computeRuleDescPanelContent(
   context: VSCode.ExtensionContext,
   webview: VSCode.Webview,
   rule: ShowRuleDescriptionParams
@@ -24,8 +56,9 @@ export function computeRuleDescPanelContent(
 
   const ruleParamsHtml = renderRuleParams(rule);
 
-  return `<!doctype html><html>
+  return `<!doctype html><html lang="en">
     <head>
+    <title>${escapeHtml(rule.name)}</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <meta http-equiv="Encoding" content="utf-8" />
     <meta http-equiv="Content-Security-Policy"
@@ -42,31 +75,6 @@ export function computeRuleDescPanelContent(
     <div class="rule-desc">${rule.htmlDescription}</div>
     ${ruleParamsHtml}
     </body></html>`;
-}
-
-const entityMap = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-  '/': '&#x2F;',
-  '`': '&#x60;',
-  '=': '&#x3D;'
-};
-
-function escapeHtml(str: string) {
-  return String(str).replace(/[&<>""`=\/]/g, function (s) {
-    return entityMap[s];
-  });
-}
-
-function clean(str: string) {
-  return capitalizeName(str.toLowerCase().split('_').join(' '));
-}
-
-function capitalizeName(name: string) {
-  return name.replace(/\b(\w)/g, s => s.toUpperCase());
 }
 
 function base64encode(file: string) {
