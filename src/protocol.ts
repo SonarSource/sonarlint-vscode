@@ -160,6 +160,16 @@ export namespace EditorOpenCheck {
   export const type = new lsp.RequestType<string, boolean, void>('sonarlint/isOpenInEditor');
 }
 
+export interface ConnectionCheckResult {
+  connectionId: string;
+  success: boolean;
+  reason?: string;
+}
+
+export namespace ReportConnectionCheckResult {
+  export const type = new lsp.NotificationType<ConnectionCheckResult>('sonarlint/reportConnectionCheckResult');
+}
+
 //#endregion
 
 //#region Server side extensions to LSP

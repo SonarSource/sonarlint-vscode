@@ -24,11 +24,13 @@ function main() {
   // Passed to `--extensionDevelopmentPath`
   const extensionRootPath = path.resolve(__dirname, '../../');
   console.log('Extension root path: ' + extensionRootPath);
+  const userDataDir = path.resolve(extensionRootPath, 'test', 'userdir');
 
   const launchArgs = [
     path.resolve(extensionRootPath, 'test/samples'),
     '--disable-extensions',
-    '--disable-workspace-trust'
+    '--disable-workspace-trust',
+    `--user-data-dir=${userDataDir}`
   ];
 
   const packageJsonPath = path.resolve(extensionRootPath, 'package.json');

@@ -14,6 +14,7 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
+import { connectToSonarQube, reportConnectionCheckResult } from './connectionsetup';
 import { GitExtension } from './git';
 import {
   hideSecurityHotspot,
@@ -334,6 +335,10 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE, configureCompilationDatabase)
   );
 
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
+  );
+
   languageClient.start();
 
   context.subscriptions.push(onConfigurationChange());
@@ -424,6 +429,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
   languageClient.onRequest(protocol.EditorOpenCheck.type, fileUri => isOpenInEditor(fileUri));
+  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, reportConnectionCheckResult);
   languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
   );
