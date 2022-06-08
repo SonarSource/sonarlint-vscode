@@ -72,21 +72,22 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
     </head>
     <body>
       <h1>SonarQube Connection</h1>
-      <form name="connectionForm">
+      <form id="connectionForm">
         <vscode-text-field id="connectionId" type="text" placeholder="My SonarQube Server"
           title="Please give this connection a memorable name (optional)">
           Connection Name
         </vscode-text-field>
-        <vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/"
+        <vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required
           title="The base URL for your SonarQube server">
           Server URL
         </vscode-text-field>
-        <p>
-          Please use the button below to generate a user token in your SonarQube settings,
-          copy it and paste it in the next field.
-        </p>
         <vscode-button id="generateToken" disabled>Generate Token</vscode-button>
-        <vscode-text-field id="token" type="password" placeholder="········">
+        <p>
+          You can use the button above to generate a user token in your SonarQube settings,
+          copy it and paste it in the field below.
+        </p>
+        <vscode-text-field id="token" type="password" placeholder="········" required
+          title="A user token generated for your account on SonarQube">
           User Token
         </vscode-text-field>
         <vscode-button id="saveConnection" disabled>Save Connection</vscode-button>

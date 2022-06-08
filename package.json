@@ -37,6 +37,7 @@
     "onCommand:SonarLint.UpdateAllBindings",
     "onCommand:SonarLint.ShowSonarLintOutput",
     "onCommand:SonarLint.ConfigureCompilationDatabase",
+    "onCommand:SonarLint.ConnectToSonarQube",
     "onStartupFinished"
   ],
   "contributes": {
