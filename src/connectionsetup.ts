@@ -102,20 +102,21 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
 export async function handleMessage(message) {
   switch(message.command) {
     case 'openTokenGenerationPage':
-      openTokenGenerationPage(message);
+      await openTokenGenerationPage(message);
       break;
     case 'saveConnection':
       delete message.command;
-      saveConnection(message);
+      message.serverUrl = cleanServerUrl(message.serverUrl);
+      await saveConnection(message);
       break;
   }
 }
 
-function openTokenGenerationPage(message) {
+async function openTokenGenerationPage(message) {
   const { serverUrl } = message;
-  // Remove trailing slash(es) before appending actual page
-  const accountSecurityUrl = `${serverUrl.replace(/\/*$/, '')}/account/security/`;
-  return vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
+  const cleanedUrl = cleanServerUrl(serverUrl);
+  const accountSecurityUrl = `${cleanedUrl}/account/security/`;
+  await vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
 }
 
 interface SonarQubeConnection {
@@ -137,4 +138,16 @@ async function saveConnection(message: SonarQubeConnection) {
   }
   await configuration.update(sonarqubeConnectionsSection, existingConnections, ConfigurationTarget.Global);
   connectionSetupPanel.dispose();
+}
+
+function cleanServerUrl(serverUrl: string) {
+  return removeTrailingSlashes(serverUrl.trim());
+}
+
+function removeTrailingSlashes(url: string) {
+  let cleanedUrl = url;
+  while(cleanedUrl.endsWith('/')) {
+    cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length - 1);
+  }
+  return cleanedUrl;
 }
