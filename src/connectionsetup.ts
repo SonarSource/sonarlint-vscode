@@ -96,7 +96,10 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   </html>`;
 }
 
-function handleMessage(message) {
+/*
+ * Exported for unit tests
+ */
+export async function handleMessage(message) {
   switch(message.command) {
     case 'openTokenGenerationPage':
       openTokenGenerationPage(message);
@@ -112,7 +115,7 @@ function openTokenGenerationPage(message) {
   const { serverUrl } = message;
   // Remove trailing slash(es) before appending actual page
   const accountSecurityUrl = `${serverUrl.replace(/\/*$/, '')}/account/security/`;
-  vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
+  return vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
 }
 
 interface SonarQubeConnection {
@@ -121,7 +124,7 @@ interface SonarQubeConnection {
   token: string;
 }
 
-function saveConnection(message: SonarQubeConnection) {
+async function saveConnection(message: SonarQubeConnection) {
   const configuration = vscode.workspace.getConfiguration('sonarlint');
   const sonarqubeConnectionsSection = 'connectedMode.connections.sonarqube';
   const existingConnections = configuration.get<Array<SonarQubeConnection>>(sonarqubeConnectionsSection);
@@ -132,5 +135,6 @@ function saveConnection(message: SonarQubeConnection) {
   } else {
     existingConnections.push(message);
   }
-  configuration.update(sonarqubeConnectionsSection, existingConnections, ConfigurationTarget.Global);
+  await configuration.update(sonarqubeConnectionsSection, existingConnections, ConfigurationTarget.Global);
+  connectionSetupPanel.dispose();
 }
