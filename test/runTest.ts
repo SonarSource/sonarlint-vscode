@@ -27,6 +27,7 @@ function main() {
 
   const launchArgs = [
     path.resolve(extensionRootPath, 'test/samples'),
+    '--disable-extensions',
     '--disable-workspace-trust'
   ];
 
