@@ -225,4 +225,8 @@ export namespace ListAllRulesRequest {
   export const type = new lsp.RequestType0<RulesResponse, void>('sonarlint/listAllRules');
 }
 
+export namespace GetTokenForServer {
+  export const type = new lsp.RequestType<string, string, void>('sonarlint/getTokenForServer');
+}
+
 //#endregion

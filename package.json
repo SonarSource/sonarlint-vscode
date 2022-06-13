@@ -147,8 +147,7 @@
             },
             "additionalProperties": false,
             "required": [
-              "serverUrl",
-              "token"
+              "serverUrl"
             ],
             "examples": [
               {

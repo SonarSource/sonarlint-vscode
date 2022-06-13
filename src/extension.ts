@@ -33,6 +33,7 @@ import { AllRulesTreeDataProvider, RuleNode } from './rules';
 import { initScm } from './scm';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
+import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -43,6 +44,7 @@ const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
 const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
+let secureStorage: ConnectionSettingsService;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -184,8 +186,10 @@ function toggleRule(level: protocol.ConfigLevel) {
 }
 
 export function activate(context: VSCode.ExtensionContext) {
+  ConnectionSettingsService.init(context);
+  secureStorage = ConnectionSettingsService.getInstance;
   currentConfig = getSonarLintConfiguration();
-
+  migrateConnectedModeSettings(currentConfig, secureStorage);
   util.setExtensionContext(context);
   sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
   context.subscriptions.push(sonarlintOutput);
@@ -468,6 +472,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowHotspotNotification.type, showSecurityHotspot);
   languageClient.onNotification(protocol.ShowTaintVulnerabilityNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
+  languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
   async function notifyMissingCompileCommands() {
     if (await doNotAskAboutCompileCommandsFlag(context) || remindMeLaterAboutCompileCommandsFlag) {
@@ -536,6 +541,10 @@ async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promi
 
 async function isIgnoredByScm(fileUri: string): Promise<boolean> {
   return performIsIgnoredCheck(fileUri, isIgnored);
+}
+
+async function getTokenForServer(serverId: string): Promise<string> {
+  return secureStorage.getServerToken(serverId);
 }
 
 export async function performIsIgnoredCheck(
@@ -676,6 +685,7 @@ function onConfigurationChange() {
         }
       });
     }
+    migrateConnectedModeSettings(currentConfig, secureStorage);
   });
 }
 
@@ -716,10 +726,6 @@ export function parseVMargs(params: string[], vmargsLine: string) {
       params.push(arg);
     }
   });
-}
-
-function getSonarLintConfiguration(): VSCode.WorkspaceConfiguration {
-  return VSCode.workspace.getConfiguration('sonarlint');
 }
 
 export function deactivate(): Thenable<void> {
