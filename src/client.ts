@@ -30,4 +30,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     const folderUri = code2ProtocolConverter(folderRoot);
     this.sendNotification(protocol.DidLocalBranchNameChangeNotification.type, { folderUri, branchName });
   }
+
+  refreshConnection(connectionId: string) {
+    return this.sendRequest(protocol.CheckConnection.type, { connectionId })
+  }
 }

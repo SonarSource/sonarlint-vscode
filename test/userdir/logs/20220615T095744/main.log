@@ -1,4 +1,0 @@
-[2022-06-15 09:57:44.909] [main] [info] update#setState idle
-[2022-06-15 09:57:49.470] [main] [info] Starting extension host with pid 91477 (fork() took 10 ms).
-[2022-06-15 09:58:09.188] [main] [info] Waiting for extension host with pid 91477 to exit.
-[2022-06-15 09:58:14.184] [main] [info] Extension host with pid 91477 exited with code: 1, signal: null.

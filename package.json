@@ -1,660 +1,654 @@
 {
-  "name": "sonarlint-vscode",
-  "displayName": "SonarLint",
-  "description": "SonarLint is an IDE extension that helps you detect and fix quality issues as you write code in C, C++, Java, JavaScript, PHP, Python, HTML and TypeScript.",
-  "version": "3.6.0-SNAPSHOT",
-  "icon": "images/sonarlint_wave_128px.png",
-  "publisher": "SonarSource",
-  "homepage": "http://www.sonarlint.org",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/SonarSource/sonarlint-vscode.git"
-  },
-  "bugs": {
-    "url": "https://jira.sonarsource.com/browse/SLVSCODE"
-  },
-  "license": "SEE LICENSE IN LICENSE.txt",
-  "engines": {
-    "vscode": "^1.52.0"
-  },
-  "categories": [
-    "Linters"
-  ],
-  "keywords": [
-    "Code Security",
-    "Code Quality",
-    "C",
-    "C++",
-    "Java",
-    "JavaScript",
-    "PHP",
-    "Python",
-    "TypeScript",
-    "Code Analysis"
-  ],
-  "qna": "https://community.sonarsource.com/c/help/sl",
-  "activationEvents": [
-    "onCommand:SonarLint.UpdateAllBindings",
-    "onCommand:SonarLint.ShowSonarLintOutput",
-    "onCommand:SonarLint.ConfigureCompilationDatabase",
-    "onCommand:SonarLint.ConnectToSonarQube",
-    "onStartupFinished"
-  ],
-  "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "SonarLint",
-      "properties": {
-        "sonarlint.rules": {
-          "order": 1,
-          "type": "object",
-          "scope": "application",
-          "default": {},
-          "markdownDescription": "Customize applied rule set. This property contains a list of rules whose activation level or parameter values differ from the one provided by default. See _SonarLint Rules_ view for the full list of available rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:1481\": {\n            \"level\": \"off\",\n        \"javascript:S103\": {\n            \"level\": \"on\",\n            \"parameters\": {\n                \"maximumLineLength\": \"120\"\n            }\n        }\n    }\n",
-          "patternProperties": {
-            "^[^:]+:[^:]+$": {
-              "type": "object",
-              "markdownDescription": "Property names are rule keys in the form: `repo:key`",
-              "properties": {
-                "level": {
-                  "type": "string",
-                  "enum": [
-                    "off",
-                    "on"
-                  ],
-                  "markdownDescription": "When set to `off`, disable the rule. When set to `on`, enable the rule."
-                },
-                "parameters": {
-                  "type": "object",
-                  "markdownDescription": "Rule parameters. See rule description for accepted parameters. E.g `{ \"intParam\": \"123\" }`."
-                },
-                "additionalProperties": false
-              }
-            }
-          },
-          "additionalProperties": false
-        },
-        "sonarlint.connectedMode.servers": {
-          "deprecationMessage": "The setting is deprecated. Use `sonarlint.connectedMode.connections.sonarqube` or `sonarlint.connectedMode.connections.sonarcloud` instead.",
-          "type": "array",
-          "scope": "application",
-          "default": [],
-          "markdownDescription": "Configure one or more connection(s) to SonarQube/SonarCloud. For security reasons, the token should not be stored in SCM with workspace settings. The `serverId` can be any identifier and will be referenced in `#sonarlint.connectedMode.project#`.\n\nExample for SonarCloud:\n\n    \"sonarlint.connectedMode.servers\": [\n      {\n        \"serverId\": \"my_orga_in_sonarcloud.io\",\n        \"serverUrl\": \"https://sonarcloud.io\",\n        \"organizationKey\": \"my_organization\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nExample for SonarQube:\n\n    \"sonarlint.connectedMode.servers\": [\n      {\n        \"serverId\": \"my_sonarqube\",\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
-          "items": {
-            "properties": {
-              "serverId": {
-                "type": "string",
-                "description": "A unique identifier for this server connection. Will be referenced from `#sonarlint.connectedMode.project#`"
-              },
-              "serverUrl": {
-                "type": "string",
-                "description": "URL of the server. Use https://sonarcloud.io for SonarCloud."
-              },
-              "token": {
-                "type": "string",
-                "description": "Token generated from My Account>Security in SonarQube/SonarCloud"
-              },
-              "organizationKey": {
-                "type": "string",
-                "description": "Only used for SonarCloud"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "sonarlint.connectedMode.connections.sonarqube": {
-          "order": 2,
-          "type": "array",
-          "scope": "application",
-          "default": [],
-          "markdownDescription": "Configure connection(s) to [SonarQube](https://sonarqube.org). For each connection, please provide:\n- `serverUrl`: your SonarQube server URL\n- `token`: a personal authentication token ([How to generate one](https://docs.sonarqube.org/latest/user-guide/user-token/))\n\nOptionally specify a `connectionId` if you want to use multiple connections.\nSet `disableNotifications` to `true` to disable [Smart Notifications](https://docs.sonarqube.org/latest/user-guide/connected-mode/).\n\nDon't forget to also configure project binding for each workspace folder using configuration `#sonarlint.connectedMode.project#`.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarqube\": [\n      {\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
-          "examples": [
-            [
-              {
-                "serverUrl": "https://<replace_with_your_sonarqube_server_url>",
-                "token": "<replace_with_a_sonarqube_token>"
-              }
-            ],
-            [
-              {
-                "connectionId": "MyCompanySonarQube",
-                "serverUrl": "https://<replace_with_your_sonarqube_server_url>",
-                "token": "<replace_with_a_sonarqube_token>",
-                "disableNotifications": false
-              }
-            ]
-          ],
-          "items": {
-            "type": "object",
-            "properties": {
-              "connectionId": {
-                "type": "string",
-                "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud."
-              },
-              "serverUrl": {
-                "type": "string",
-                "description": "URL of the SonarQube server."
-              },
-              "token": {
-                "type": "string",
-                "description": "Token generated from 'My Account>Security' in SonarQube"
-              },
-              "disableNotifications": {
-                "type": "boolean",
-                "description": "SonarLint will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
-              }
-            },
-            "additionalProperties": false,
-            "required": [
-              "serverUrl",
-              "token"
-            ],
-            "examples": [
-              {
-                "serverUrl": "https://<replace_with_your_sonarqube_server_url>",
-                "token": "<replace_with_a_sonarqube_token>"
-              },
-              {
-                "connectionId": "MyCompanySonarQube",
-                "serverUrl": "https://<replace_with_your_sonarqube_server_url>",
-                "token": "<replace_with_a_sonarqube_token>",
-                "disableNotifications": false
-              }
-            ]
-          }
-        },
-        "sonarlint.connectedMode.connections.sonarcloud": {
-          "order": 3,
-          "type": "array",
-          "scope": "application",
-          "default": [],
-          "markdownDescription": "Configure connection(s) to [SonarCloud](https://sonarcloud.io). For each connection, please provide:\n- `organizationKey`: the key of your SonarCloud organization\n- `token`: a personal authentication token ([How to generate one](https://docs.sonarcloud.io/advanced-setup/user-accounts/#user-tokens))\n\nOptionally specify a `connectionId` if you want to use multiple connections.\nSet `disableNotifications` to `true` to disable [Smart Notifications](https://docs.sonarcloud.io/advanced-setup/sonarlint-smart-notifications/).\n\nDon't forget to also configure the project binding for each workspace folder using configuration `#sonarlint.connectedMode.project#`.\nIf you have projects in different SonarCloud organizations, simply declare multiple connections.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarcloud\": [\n      {\n        \"organizationKey\": \"myOrg\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
-          "examples": [
-            [
-              {
-                "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "token": "<replace_with_a_sonarcloud_token>"
-              }
-            ],
-            [
-              {
-                "connectionId": "MyOrganization",
-                "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "token": "<replace_with_a_sonarcloud_token>",
-                "disableNotifications": false
-              }
-            ]
-          ],
-          "items": {
-            "type": "object",
-            "properties": {
-              "connectionId": {
-                "type": "string",
-                "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud."
-              },
-              "organizationKey": {
-                "type": "string",
-                "description": "A SonarCloud organization key. If you want to bind different projects that are in different organizations, simply declare multiple connections."
-              },
-              "token": {
-                "type": "string",
-                "description": "Token generated from 'My Account>Security' in SonarCloud"
-              },
-              "disableNotifications": {
-                "type": "boolean",
-                "description": "SonarLint will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
-              }
-            },
-            "additionalProperties": false,
-            "required": [
-              "organizationKey",
-              "token"
-            ],
-            "examples": [
-              {
-                "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "token": "<replace_with_a_sonarcloud_token>"
-              },
-              {
-                "connectionId": "MyOrganization",
-                "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "token": "<replace_with_a_sonarcloud_token>",
-                "disableNotifications": false
-              }
-            ]
-          }
-        },
-        "sonarlint.connectedMode.project": {
-          "order": 4,
-          "markdownDescription": "Bind the current workspace folder to a [SonarQube](https://sonarqube.org) or [SonarCloud](https://sonarcloud.io) project. Requires connection details to be defined in the setting `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`.\n\nBinding a workspace folder to a project allows to use the same rules and configuration that are defined in the server, as well as issue suppressions.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"projectKey\": \"my_project\"\n    }\n\nSpecify the `connectionId` only if you have defined multiple connections.",
-          "examples": [
-            {
-              "projectKey": "<replace_with_server_project_key>"
-            },
-            {
-              "connectionId": "<replace_with_connection_id>",
-              "projectKey": "<replace_with_server_project_key>"
-            }
-          ],
-          "default": {},
-          "anyOf": [
-            {
-              "type": "object",
-              "properties": {
-                "serverId": {
-                  "type": "string",
-                  "description": "Identifier of the server connection declared in `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`"
-                },
-                "projectKey": {
-                  "type": "string",
-                  "description": "Key of the project in SonarQube/SonarCloud"
-                }
-              },
-              "additionalProperties": false,
-              "required": [
-                "serverId",
-                "projectKey"
-              ],
-              "deprecationMessage": "Replace `serverId` attribute by `connectionId`."
-            },
-            {
-              "type": "object",
-              "properties": {
-                "connectionId": {
-                  "type": "string",
-                  "description": "Identifier of the server connection declared in `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`"
-                },
-                "projectKey": {
-                  "type": "string",
-                  "description": "Key of the project in SonarQube/SonarCloud (can be found on project homepage)"
-                }
-              },
-              "additionalProperties": false,
-              "required": [
-                "projectKey"
-              ]
-            }
-          ],
-          "scope": "resource"
-        },
-        "sonarlint.pathToNodeExecutable": {
-          "order": 10,
-          "type": "string",
-          "markdownDescription": "Path to a Node.js executable (12.22.0 or more recent) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\12-lts\\\\bin\\\\node.exe`",
-          "scope": "machine"
-        },
-        "sonarlint.pathToCompileCommands": {
-          "order": 11,
-          "type": "string",
-          "markdownDescription": "Path to the active compilation database, e.g. `C:\\\\Repos\\\\MyProject\\\\compile_commands.json`",
-          "scope": "resource"
-        },
-        "sonarlint.testFilePattern": {
-          "order": 12,
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files. Example: `{**/test/**,**/*test*,**/*Test*}`",
-          "scope": "resource"
-        },
-        "sonarlint.ls.javaHome": {
-          "order": 20,
-          "type": "string",
-          "markdownDescription": "Path to a Java Runtime Environment (11 or more recent) used to launch the SonarLint Language Server. \n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-11.0.12+7` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/jdk-11.0.12+7.jdk/Contents/Home`",
-          "scope": "machine"
-        },
-        "sonarlint.ls.vmargs": {
-          "order": 21,
-          "type": "string",
-          "markdownDescription": "Extra JVM arguments used to launch the SonarLint Language Server. e.g. `-Xmx1024m`",
-          "scope": "machine"
-        },
-        "sonarlint.output.showVerboseLogs": {
-          "order": 90,
-          "type": "boolean",
-          "default": false,
-          "description": "Enable verbose log level in the SonarLint output.",
-          "scope": "window"
-        },
-        "sonarlint.output.showAnalyzerLogs": {
-          "order": 91,
-          "type": "boolean",
-          "default": false,
-          "description": "Show analyzer's logs in the SonarLint output.",
-          "scope": "window"
-        },
-        "sonarlint.analyzerProperties": {
-          "order": 92,
-          "type": "object",
-          "patternProperties": {
-            "^.*$": {
-              "type": "string",
-              "markdownDescription": "One entry value"
-            },
-            "additionalProperties": false
-          },
-          "markdownDescription": "Extra properties that could be passed to the code analyzers. Only for advanced use cases.",
-          "scope": "resource"
-        },
-        "sonarlint.trace.server": {
-          "order": 98,
-          "default": "off",
-          "description": "Traces the communication between VS Code and the SonarLint language server.",
-          "scope": "window",
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "off",
-                "messages",
-                "verbose"
-              ],
-              "default": "off"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "verbosity": {
-                  "type": "string",
-                  "enum": [
-                    "off",
-                    "messages",
-                    "verbose"
-                  ],
-                  "default": "off"
-                },
-                "format": {
-                  "type": "string",
-                  "enum": [
-                    "text",
-                    "json"
-                  ],
-                  "default": "text"
-                }
-              },
-              "additionalProperties": false
-            }
-          ]
-        },
-        "sonarlint.disableTelemetry": {
-          "order": 99,
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Disable sending anonymous usage statistics to SonarSource. Click [here](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md) to see a sample of the data that are collected.",
-          "scope": "window"
-        }
-      }
-    },
-    "commands": [
-      {
-        "command": "SonarLint.UpdateAllBindings",
-        "title": "Update all project bindings to SonarQube/SonarCloud",
-        "category": "SonarLint"
-      },
-      {
-        "command": "SonarLint.ShowSonarLintOutput",
-        "title": "Show SonarLint Output",
-        "category": "SonarLint"
-      },
-      {
-        "command": "SonarLint.ConfigureCompilationDatabase",
-        "title": "Configure the compilation database for C and C++ analysis",
-        "category": "SonarLint"
-      },
-      {
-        "command": "SonarLint.DeactivateRule",
-        "title": "Deactivate",
-        "icon": {
-          "light": "images/activation/light/cross.svg",
-          "dark": "images/activation/dark/cross.svg"
-        },
-        "enablement": "view == SonarLint.AllRules"
-      },
-      {
-        "command": "SonarLint.ActivateRule",
-        "title": "Activate",
-        "icon": {
-          "light": "images/activation/light/check.svg",
-          "dark": "images/activation/dark/check.svg"
-        },
-        "enablement": "view == SonarLint.AllRules"
-      },
-      {
-        "command": "SonarLint.ResetDefaultRule",
-        "title": "Reset",
-        "enablement": "view == SonarLint.AllRules"
-      },
-      {
-        "command": "SonarLint.ShowAllRules",
-        "title": "All",
-        "enablement": "view == SonarLint.AllRules"
-      },
-      {
-        "command": "SonarLint.ShowActiveRules",
-        "title": "Active",
-        "enablement": "view == SonarLint.AllRules"
-      },
-      {
-        "command": "SonarLint.ShowInactiveRules",
-        "title": "Inactive",
-        "enablement": "view == SonarLint.AllRules"
-      },
-      {
-        "command": "SonarLint.FindRuleByKey",
-        "title": "Find Rule By Key",
-        "enablement": "view == SonarLint.AllRules"
-      },
-      {
-        "command": "SonarLint.ClearLocations",
-        "title": "Clear",
-        "enablement": "view == SonarLint.IssueLocations"
-      },
-      {
-        "command": "SonarLint.ConnectToSonarQube",
-        "title": "Connect to SonarQube",
-        "category": "SonarLint",
-        "icon": {
-          "light": "images/connection/light/add.svg",
-          "dark": "images/connection/dark/add.svg"
-        }
-      },
-      {
-        "command": "SonarLint.ConnectToSonarCloud",
-        "title": "Connect to SonarCloud",
-        "category": "SonarLint",
-        "icon": {
-          "light": "images/connection/light/add.svg",
-          "dark": "images/connection/dark/add.svg"
-        }
-      },
-      {
-        "command": "SonarLint.EditSonarQubeConnection",
-        "title": "Edit SonarQube Connection",
-        "category": "SonarLint",
-        "icon": {
-          "light": "images/connection/light/edit.svg",
-          "dark": "images/connection/dark/edit.svg"
-        },
-        "enablement": "view == SonarLint.ConnectedMode"
-      },
-      {
-        "command": "SonarLint.EditSonarCloudConnection",
-        "title": "Edit SonarCloud Connection",
-        "category": "SonarLint",
-        "icon": {
-          "light": "images/connection/light/edit.svg",
-          "dark": "images/connection/dark/edit.svg"
-        },
-        "enablement": "view == SonarLint.ConnectedMode"
-      },
-      {
-        "command": "SonarLint.RemoveConnection",
-        "title": "Remove SonarQube/SonarCloud Connection",
-        "category": "SonarLint",
-        "icon": {
-          "light": "images/connection/light/remove.svg",
-          "dark": "images/connection/dark/remove.svg"
-        },
-        "enablement": "view == SonarLint.ConnectedMode"
-      },
-      {
-        "command": "SonarLint.RefreshConnection",
-        "title": "Refresh SonarQube Connection",
-        "category": "SonarLint",
-        "icon": {
-          "light": "images/connection/light/refresh.svg",
-          "dark": "images/connection/dark/refresh.svg"
-        },
-        "enablement": "view == SonarLint.ConnectedMode"
-      }
-    ],
-    "views": {
-      "explorer": [
-        {
-          "id": "SonarLint.AllRules",
-          "name": "SonarLint Rules"
-        },
-        {
-          "id": "SonarLint.IssueLocations",
-          "name": "SonarLint Issue Locations"
-        },
-        {
-          "id": "SonarLint.ConnectedMode",
-          "name": "SonarLint Connected Mode"
-        }
-      ]
-    },
-    "viewsWelcome": [
-      {
-        "view": "SonarLint.IssueLocations",
-        "contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarLint issue."
-      },
-      {
-        "view": "SonarLint.ConnectedMode",
-        "contents": "No SonarQube/SonarCloud connections found [learn more](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode#connected-mode).\n[Add SonarQube Connection](command:SonarLint.ConnectToSonarQube)\n[Add SonarCloud Connection](command:SonarLint.ConnectToSonarCloud)"
-      }
-    ],
-    "menus": {
-      "view/title": [
-        {
-          "command": "SonarLint.ShowAllRules",
-          "when": "view == SonarLint.AllRules",
-          "group": "navigation"
-        },
-        {
-          "command": "SonarLint.ShowActiveRules",
-          "when": "view == SonarLint.AllRules",
-          "group": "navigation"
-        },
-        {
-          "command": "SonarLint.ShowInactiveRules",
-          "when": "view == SonarLint.AllRules",
-          "group": "navigation"
-        },
-        {
-          "command": "SonarLint.FindRuleByKey",
-          "when": "view == SonarLint.AllRules"
-        },
-        {
-          "command": "SonarLint.ClearLocations",
-          "when": "view == SonarLint.IssueLocations",
-          "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "SonarLint.DeactivateRule",
-          "when": "view == SonarLint.AllRules && viewItem == rule-on",
-          "group": "inline"
-        },
-        {
-          "command": "SonarLint.ActivateRule",
-          "when": "view == SonarLint.AllRules && viewItem == rule-off",
-          "group": "inline"
-        },
-        {
-          "command": "SonarLint.ConnectToSonarQube",
-          "when": "view == SonarLint.ConnectedMode && viewItem == sonarQubeGroup",
-          "group": "inline"
-        },
-        {
-          "command": "SonarLint.ConnectToSonarCloud",
-          "when": "view == SonarLint.ConnectedMode && viewItem == sonarCloudGroup",
-          "group": "inline"
-        },
-        {
-          "command": "SonarLint.EditSonarQubeConnection",
-          "title": "Edit",
-          "when": "view == SonarLint.ConnectedMode && viewItem == sonarqubeConnection",
-          "group": "inline"
-        },
-        {
-          "command": "SonarLint.EditSonarCloudConnection",
-          "title": "Edit",
-          "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection",
-          "group": "inline"
-        },
-        {
-          "command": "SonarLint.RemoveConnection",
-          "title": "Remove",
-          "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection || viewItem == sonarqubeConnection",
-          "group": "inline"
-        },
-        {
-          "command": "SonarLint.RefreshConnection",
-          "title": "Refresh",
-          "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection || viewItem == sonarqubeConnection",
-          "group": "inline"
-        }
-      ]
-    },
-    "colors": [
-      {
-        "id": "sonarlint.locations.background",
-        "description": "Background color for highlighted secondary locations of SonarLint issues",
-        "defaults": {
-          "light": "#f2dede",
-          "dark": "#523e3e",
-          "highContrast": "#523e3e"
-        }
-      },
-      {
-        "id": "sonarlint.locations.indexText",
-        "description": "Text color for secondary location index of SonarLint issues",
-        "defaults": {
-          "light": "#fff",
-          "dark": "#ccc",
-          "highContrast": "#ccc"
-        }
-      },
-      {
-        "id": "sonarlint.locations.indexBackground",
-        "description": "Background color for secondary location index of SonarLint issues",
-        "defaults": {
-          "light": "#d18582",
-          "dark": "#74232f",
-          "highContrast": "#74232f"
-        }
-      },
-      {
-        "id": "sonarlint.locations.indexSelectedText",
-        "description": "Text color for active secondary location index of SonarLint issues",
-        "defaults": {
-          "light": "#fff",
-          "dark": "#fff",
-          "highContrast": "#fff"
-        }
-      },
-      {
-        "id": "sonarlint.locations.indexSelectedBackground",
-        "description": "Background color for active secondary location index of SonarLint issues",
-        "defaults": {
-          "light": "#a4030f",
-          "dark": "#b4131f",
-          "highContrast": "#b4131f"
-        }
-      }
-    ]
-  },
+	"name": "sonarlint-vscode",
+	"displayName": "SonarLint",
+	"description": "SonarLint is an IDE extension that helps you detect and fix quality issues as you write code in C, C++, Java, JavaScript, PHP, Python, HTML and TypeScript.",
+	"version": "3.6.0-SNAPSHOT",
+	"icon": "images/sonarlint_wave_128px.png",
+	"publisher": "SonarSource",
+	"homepage": "http://www.sonarlint.org",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/SonarSource/sonarlint-vscode.git"
+	},
+	"bugs": {
+		"url": "https://jira.sonarsource.com/browse/SLVSCODE"
+	},
+	"license": "SEE LICENSE IN LICENSE.txt",
+	"engines": {
+		"vscode": "^1.52.0"
+	},
+	"categories": [
+		"Linters"
+	],
+	"keywords": [
+		"Code Security",
+		"Code Quality",
+		"C",
+		"C++",
+		"Java",
+		"JavaScript",
+		"PHP",
+		"Python",
+		"TypeScript",
+		"Code Analysis"
+	],
+	"qna": "https://community.sonarsource.com/c/help/sl",
+	"activationEvents": [
+		"onCommand:SonarLint.UpdateAllBindings",
+		"onCommand:SonarLint.ShowSonarLintOutput",
+		"onCommand:SonarLint.ConfigureCompilationDatabase",
+		"onCommand:SonarLint.ConnectToSonarQube",
+		"onStartupFinished"
+	],
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "SonarLint",
+			"properties": {
+				"sonarlint.rules": {
+					"order": 1,
+					"type": "object",
+					"scope": "application",
+					"default": {},
+					"markdownDescription": "Customize applied rule set. This property contains a list of rules whose activation level or parameter values differ from the one provided by default. See _SonarLint Rules_ view for the full list of available rules. In connected mode, this configuration is overridden by the projects's quality profile, as configured on server side.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:1481\": {\n            \"level\": \"off\",\n        \"javascript:S103\": {\n            \"level\": \"on\",\n            \"parameters\": {\n                \"maximumLineLength\": \"120\"\n            }\n        }\n    }\n",
+					"patternProperties": {
+						"^[^:]+:[^:]+$": {
+							"type": "object",
+							"markdownDescription": "Property names are rule keys in the form: `repo:key`",
+							"properties": {
+								"level": {
+									"type": "string",
+									"enum": [
+										"off",
+										"on"
+									],
+									"markdownDescription": "When set to `off`, disable the rule. When set to `on`, enable the rule."
+								},
+								"parameters": {
+									"type": "object",
+									"markdownDescription": "Rule parameters. See rule description for accepted parameters. E.g `{ \"intParam\": \"123\" }`."
+								},
+								"additionalProperties": false
+							}
+						}
+					},
+					"additionalProperties": false
+				},
+				"sonarlint.connectedMode.servers": {
+					"deprecationMessage": "The setting is deprecated. Use `sonarlint.connectedMode.connections.sonarqube` or `sonarlint.connectedMode.connections.sonarcloud` instead.",
+					"type": "array",
+					"scope": "application",
+					"default": [],
+					"markdownDescription": "Configure one or more connection(s) to SonarQube/SonarCloud. For security reasons, the token should not be stored in SCM with workspace settings. The `serverId` can be any identifier and will be referenced in `#sonarlint.connectedMode.project#`.\n\nExample for SonarCloud:\n\n    \"sonarlint.connectedMode.servers\": [\n      {\n        \"serverId\": \"my_orga_in_sonarcloud.io\",\n        \"serverUrl\": \"https://sonarcloud.io\",\n        \"organizationKey\": \"my_organization\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]\n\nExample for SonarQube:\n\n    \"sonarlint.connectedMode.servers\": [\n      {\n        \"serverId\": \"my_sonarqube\",\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
+					"items": {
+						"properties": {
+							"serverId": {
+								"type": "string",
+								"description": "A unique identifier for this server connection. Will be referenced from `#sonarlint.connectedMode.project#`"
+							},
+							"serverUrl": {
+								"type": "string",
+								"description": "URL of the server. Use https://sonarcloud.io for SonarCloud."
+							},
+							"token": {
+								"type": "string",
+								"description": "Token generated from My Account>Security in SonarQube/SonarCloud"
+							},
+							"organizationKey": {
+								"type": "string",
+								"description": "Only used for SonarCloud"
+							}
+						},
+						"additionalProperties": false
+					}
+				},
+				"sonarlint.connectedMode.connections.sonarqube": {
+					"order": 2,
+					"type": "array",
+					"scope": "application",
+					"default": [],
+					"markdownDescription": "Configure connection(s) to [SonarQube](https://sonarqube.org). For each connection, please provide:\n- `serverUrl`: your SonarQube server URL\n- `token`: a personal authentication token ([How to generate one](https://docs.sonarqube.org/latest/user-guide/user-token/))\n\nOptionally specify a `connectionId` if you want to use multiple connections.\nSet `disableNotifications` to `true` to disable [Smart Notifications](https://docs.sonarqube.org/latest/user-guide/connected-mode/).\n\nDon't forget to also configure project binding for each workspace folder using configuration `#sonarlint.connectedMode.project#`.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarqube\": [\n      {\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
+					"examples": [
+						[
+							{
+								"serverUrl": "https://<replace_with_your_sonarqube_server_url>",
+								"token": "<replace_with_a_sonarqube_token>"
+							}
+						],
+						[
+							{
+								"connectionId": "MyCompanySonarQube",
+								"serverUrl": "https://<replace_with_your_sonarqube_server_url>",
+								"token": "<replace_with_a_sonarqube_token>",
+								"disableNotifications": false
+							}
+						]
+					],
+					"items": {
+						"type": "object",
+						"properties": {
+							"connectionId": {
+								"type": "string",
+								"description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud."
+							},
+							"serverUrl": {
+								"type": "string",
+								"description": "URL of the SonarQube server."
+							},
+							"token": {
+								"type": "string",
+								"description": "Token generated from 'My Account>Security' in SonarQube"
+							},
+							"disableNotifications": {
+								"type": "boolean",
+								"description": "SonarLint will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
+							}
+						},
+						"additionalProperties": false,
+						"required": [
+							"serverUrl",
+							"token"
+						],
+						"examples": [
+							{
+								"serverUrl": "https://<replace_with_your_sonarqube_server_url>",
+								"token": "<replace_with_a_sonarqube_token>"
+							},
+							{
+								"connectionId": "MyCompanySonarQube",
+								"serverUrl": "https://<replace_with_your_sonarqube_server_url>",
+								"token": "<replace_with_a_sonarqube_token>",
+								"disableNotifications": false
+							}
+						]
+					}
+				},
+				"sonarlint.connectedMode.connections.sonarcloud": {
+					"order": 3,
+					"type": "array",
+					"scope": "application",
+					"default": [],
+					"markdownDescription": "Configure connection(s) to [SonarCloud](https://sonarcloud.io). For each connection, please provide:\n- `organizationKey`: the key of your SonarCloud organization\n- `token`: a personal authentication token ([How to generate one](https://docs.sonarcloud.io/advanced-setup/user-accounts/#user-tokens))\n\nOptionally specify a `connectionId` if you want to use multiple connections.\nSet `disableNotifications` to `true` to disable [Smart Notifications](https://docs.sonarcloud.io/advanced-setup/sonarlint-smart-notifications/).\n\nDon't forget to also configure the project binding for each workspace folder using configuration `#sonarlint.connectedMode.project#`.\nIf you have projects in different SonarCloud organizations, simply declare multiple connections.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarcloud\": [\n      {\n        \"organizationKey\": \"myOrg\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
+					"examples": [
+						[
+							{
+								"organizationKey": "<replace_with_your_sonarcloud_organization_key>",
+								"token": "<replace_with_a_sonarcloud_token>"
+							}
+						],
+						[
+							{
+								"connectionId": "MyOrganization",
+								"organizationKey": "<replace_with_your_sonarcloud_organization_key>",
+								"token": "<replace_with_a_sonarcloud_token>",
+								"disableNotifications": false
+							}
+						]
+					],
+					"items": {
+						"type": "object",
+						"properties": {
+							"connectionId": {
+								"type": "string",
+								"description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube/SonarCloud."
+							},
+							"organizationKey": {
+								"type": "string",
+								"description": "A SonarCloud organization key. If you want to bind different projects that are in different organizations, simply declare multiple connections."
+							},
+							"token": {
+								"type": "string",
+								"description": "Token generated from 'My Account>Security' in SonarCloud"
+							},
+							"disableNotifications": {
+								"type": "boolean",
+								"description": "SonarLint will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
+							}
+						},
+						"additionalProperties": false,
+						"required": [
+							"organizationKey",
+							"token"
+						],
+						"examples": [
+							{
+								"organizationKey": "<replace_with_your_sonarcloud_organization_key>",
+								"token": "<replace_with_a_sonarcloud_token>"
+							},
+							{
+								"connectionId": "MyOrganization",
+								"organizationKey": "<replace_with_your_sonarcloud_organization_key>",
+								"token": "<replace_with_a_sonarcloud_token>",
+								"disableNotifications": false
+							}
+						]
+					}
+				},
+				"sonarlint.connectedMode.project": {
+					"order": 4,
+					"markdownDescription": "Bind the current workspace folder to a [SonarQube](https://sonarqube.org) or [SonarCloud](https://sonarcloud.io) project. Requires connection details to be defined in the setting `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`.\n\nBinding a workspace folder to a project allows to use the same rules and configuration that are defined in the server, as well as issue suppressions.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"projectKey\": \"my_project\"\n    }\n\nSpecify the `connectionId` only if you have defined multiple connections.",
+					"examples": [
+						{
+							"projectKey": "<replace_with_server_project_key>"
+						},
+						{
+							"connectionId": "<replace_with_connection_id>",
+							"projectKey": "<replace_with_server_project_key>"
+						}
+					],
+					"default": {},
+					"anyOf": [
+						{
+							"type": "object",
+							"properties": {
+								"serverId": {
+									"type": "string",
+									"description": "Identifier of the server connection declared in `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`"
+								},
+								"projectKey": {
+									"type": "string",
+									"description": "Key of the project in SonarQube/SonarCloud"
+								}
+							},
+							"additionalProperties": false,
+							"required": [
+								"serverId",
+								"projectKey"
+							],
+							"deprecationMessage": "Replace `serverId` attribute by `connectionId`."
+						},
+						{
+							"type": "object",
+							"properties": {
+								"connectionId": {
+									"type": "string",
+									"description": "Identifier of the server connection declared in `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`"
+								},
+								"projectKey": {
+									"type": "string",
+									"description": "Key of the project in SonarQube/SonarCloud (can be found on project homepage)"
+								}
+							},
+							"additionalProperties": false,
+							"required": [
+								"projectKey"
+							]
+						}
+					],
+					"scope": "resource"
+				},
+				"sonarlint.pathToNodeExecutable": {
+					"order": 10,
+					"type": "string",
+					"markdownDescription": "Path to a Node.js executable (12.22.0 or more recent) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\12-lts\\\\bin\\\\node.exe`",
+					"scope": "machine"
+				},
+				"sonarlint.pathToCompileCommands": {
+					"order": 11,
+					"type": "string",
+					"markdownDescription": "Path to the active compilation database, e.g. `C:\\\\Repos\\\\MyProject\\\\compile_commands.json`",
+					"scope": "resource"
+				},
+				"sonarlint.testFilePattern": {
+					"order": 12,
+					"type": "string",
+					"default": "",
+					"markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files. Example: `{**/test/**,**/*test*,**/*Test*}`",
+					"scope": "resource"
+				},
+				"sonarlint.ls.javaHome": {
+					"order": 20,
+					"type": "string",
+					"markdownDescription": "Path to a Java Runtime Environment (11 or more recent) used to launch the SonarLint Language Server. \n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-11.0.12+7` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/jdk-11.0.12+7.jdk/Contents/Home`",
+					"scope": "machine"
+				},
+				"sonarlint.ls.vmargs": {
+					"order": 21,
+					"type": "string",
+					"markdownDescription": "Extra JVM arguments used to launch the SonarLint Language Server. e.g. `-Xmx1024m`",
+					"scope": "machine"
+				},
+				"sonarlint.output.showVerboseLogs": {
+					"order": 90,
+					"type": "boolean",
+					"default": false,
+					"description": "Enable verbose log level in the SonarLint output.",
+					"scope": "window"
+				},
+				"sonarlint.output.showAnalyzerLogs": {
+					"order": 91,
+					"type": "boolean",
+					"default": false,
+					"description": "Show analyzer's logs in the SonarLint output.",
+					"scope": "window"
+				},
+				"sonarlint.analyzerProperties": {
+					"order": 92,
+					"type": "object",
+					"patternProperties": {
+						"^.*$": {
+							"type": "string",
+							"markdownDescription": "One entry value"
+						},
+						"additionalProperties": false
+					},
+					"markdownDescription": "Extra properties that could be passed to the code analyzers. Only for advanced use cases.",
+					"scope": "resource"
+				},
+				"sonarlint.trace.server": {
+					"order": 98,
+					"default": "off",
+					"description": "Traces the communication between VS Code and the SonarLint language server.",
+					"scope": "window",
+					"anyOf": [
+						{
+							"type": "string",
+							"enum": [
+								"off",
+								"messages",
+								"verbose"
+							],
+							"default": "off"
+						},
+						{
+							"type": "object",
+							"properties": {
+								"verbosity": {
+									"type": "string",
+									"enum": [
+										"off",
+										"messages",
+										"verbose"
+									],
+									"default": "off"
+								},
+								"format": {
+									"type": "string",
+									"enum": [
+										"text",
+										"json"
+									],
+									"default": "text"
+								}
+							},
+							"additionalProperties": false
+						}
+					]
+				},
+				"sonarlint.disableTelemetry": {
+					"order": 99,
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Disable sending anonymous usage statistics to SonarSource. Click [here](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md) to see a sample of the data that are collected.",
+					"scope": "window"
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "SonarLint.UpdateAllBindings",
+				"title": "Update all project bindings to SonarQube/SonarCloud",
+				"category": "SonarLint"
+			},
+			{
+				"command": "SonarLint.ShowSonarLintOutput",
+				"title": "Show SonarLint Output",
+				"category": "SonarLint"
+			},
+			{
+				"command": "SonarLint.ConfigureCompilationDatabase",
+				"title": "Configure the compilation database for C and C++ analysis",
+				"category": "SonarLint"
+			},
+			{
+				"command": "SonarLint.DeactivateRule",
+				"title": "Deactivate",
+				"icon": {
+					"light": "images/activation/light/cross.svg",
+					"dark": "images/activation/dark/cross.svg"
+				},
+				"enablement": "view == SonarLint.AllRules"
+			},
+			{
+				"command": "SonarLint.ActivateRule",
+				"title": "Activate",
+				"icon": {
+					"light": "images/activation/light/check.svg",
+					"dark": "images/activation/dark/check.svg"
+				},
+				"enablement": "view == SonarLint.AllRules"
+			},
+			{
+				"command": "SonarLint.ResetDefaultRule",
+				"title": "Reset",
+				"enablement": "view == SonarLint.AllRules"
+			},
+			{
+				"command": "SonarLint.ShowAllRules",
+				"title": "All",
+				"enablement": "view == SonarLint.AllRules"
+			},
+			{
+				"command": "SonarLint.ShowActiveRules",
+				"title": "Active",
+				"enablement": "view == SonarLint.AllRules"
+			},
+			{
+				"command": "SonarLint.ShowInactiveRules",
+				"title": "Inactive",
+				"enablement": "view == SonarLint.AllRules"
+			},
+			{
+				"command": "SonarLint.FindRuleByKey",
+				"title": "Find Rule By Key",
+				"enablement": "view == SonarLint.AllRules"
+			},
+			{
+				"command": "SonarLint.ClearLocations",
+				"title": "Clear",
+				"enablement": "view == SonarLint.IssueLocations"
+			},
+			{
+				"command": "SonarLint.ConnectToSonarQube",
+				"title": "Connect to SonarQube",
+				"category": "SonarLint",
+				"icon": {
+					"light": "images/connection/light/add.svg",
+					"dark": "images/connection/dark/add.svg"
+				}
+			},
+			{
+				"command": "SonarLint.ConnectToSonarCloud",
+				"title": "Connect to SonarCloud",
+				"category": "SonarLint",
+				"icon": {
+					"light": "images/connection/light/add.svg",
+					"dark": "images/connection/dark/add.svg"
+				}
+			},
+			{
+				"command": "SonarLint.EditSonarQubeConnection",
+				"title": "Edit SonarQube Connection",
+				"category": "SonarLint",
+				"icon": {
+					"light": "images/connection/light/edit.svg",
+					"dark": "images/connection/dark/edit.svg"
+				},
+				"enablement": "view == SonarLint.ConnectedMode"
+			},
+			{
+				"command": "SonarLint.EditSonarCloudConnection",
+				"title": "Edit SonarCloud Connection",
+				"category": "SonarLint",
+				"icon": {
+					"light": "images/connection/light/edit.svg",
+					"dark": "images/connection/dark/edit.svg"
+				},
+				"enablement": "view == SonarLint.ConnectedMode"
+			},
+			{
+				"command": "SonarLint.RemoveConnection",
+				"title": "Remove SonarQube/SonarCloud Connection",
+				"category": "SonarLint",
+				"icon": {
+					"light": "images/connection/light/remove.svg",
+					"dark": "images/connection/dark/remove.svg"
+				},
+				"enablement": "view == SonarLint.ConnectedMode"
+			}
+		],
+		"views": {
+			"explorer": [
+				{
+					"id": "SonarLint.AllRules",
+					"name": "SonarLint Rules"
+				},
+				{
+					"id": "SonarLint.IssueLocations",
+					"name": "SonarLint Issue Locations"
+				},
+				{
+					"id": "SonarLint.ConnectedMode",
+					"name": "SonarLint Connected Mode"
+				}
+			]
+		},
+		"viewsWelcome": [
+			{
+				"view": "SonarLint.IssueLocations",
+				"contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarLint issue."
+			},
+			{
+				"view": "SonarLint.ConnectedMode",
+				"contents": "No SonarQube/SonarCloud connections found [learn more](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode#connected-mode).\n[Add SonarQube Connection](command:SonarLint.ConnectToSonarQube)\n[Add SonarCloud Connection](command:SonarLint.ConnectToSonarCloud)"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "SonarLint.ShowAllRules",
+					"when": "view == SonarLint.AllRules",
+					"group": "navigation"
+				},
+				{
+					"command": "SonarLint.ShowActiveRules",
+					"when": "view == SonarLint.AllRules",
+					"group": "navigation"
+				},
+				{
+					"command": "SonarLint.ShowInactiveRules",
+					"when": "view == SonarLint.AllRules",
+					"group": "navigation"
+				},
+				{
+					"command": "SonarLint.FindRuleByKey",
+					"when": "view == SonarLint.AllRules"
+				},
+				{
+					"command": "SonarLint.ClearLocations",
+					"when": "view == SonarLint.IssueLocations",
+					"group": "navigation"
+				},
+				{
+					"command": "SonarLint.ConnectToSonarQube",
+					"when": "view == SonarLint.ConnectedMode",
+					"group": "inline"
+				},
+				{
+					"command": "SonarLint.ConnectToSonarCloud",
+					"when": "view == SonarLint.ConnectedMode",
+					"group": "inline"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "SonarLint.DeactivateRule",
+					"when": "view == SonarLint.AllRules && viewItem == rule-on",
+					"group": "inline"
+				},
+				{
+					"command": "SonarLint.ActivateRule",
+					"when": "view == SonarLint.AllRules && viewItem == rule-off",
+					"group": "inline"
+				},
+				{
+					"command": "SonarLint.ConnectToSonarQube",
+					"when": "view == SonarLint.ConnectedMode && viewItem == sonarQubeGroup",
+					"group": "inline"
+				},
+				{
+					"command": "SonarLint.ConnectToSonarCloud",
+					"when": "view == SonarLint.ConnectedMode && viewItem == sonarCloudGroup",
+					"group": "inline"
+				},
+				{
+					"command": "SonarLint.EditSonarQubeConnection",
+					"title": "Edit",
+					"when": "view == SonarLint.ConnectedMode && viewItem == sonarqubeConnection",
+					"group": "inline"
+				},
+				{
+					"command": "SonarLint.EditSonarCloudConnection",
+					"title": "Edit",
+					"when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection",
+					"group": "inline"
+				},
+				{
+					"command": "SonarLint.RemoveConnection",
+					"title": "Remove",
+					"when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection || viewItem == sonarqubeConnection",
+					"group": "inline"
+				}
+			]
+		},
+		"colors": [
+			{
+				"id": "sonarlint.locations.background",
+				"description": "Background color for highlighted secondary locations of SonarLint issues",
+				"defaults": {
+					"light": "#f2dede",
+					"dark": "#523e3e",
+					"highContrast": "#523e3e"
+				}
+			},
+			{
+				"id": "sonarlint.locations.indexText",
+				"description": "Text color for secondary location index of SonarLint issues",
+				"defaults": {
+					"light": "#fff",
+					"dark": "#ccc",
+					"highContrast": "#ccc"
+				}
+			},
+			{
+				"id": "sonarlint.locations.indexBackground",
+				"description": "Background color for secondary location index of SonarLint issues",
+				"defaults": {
+					"light": "#d18582",
+					"dark": "#74232f",
+					"highContrast": "#74232f"
+				}
+			},
+			{
+				"id": "sonarlint.locations.indexSelectedText",
+				"description": "Text color for active secondary location index of SonarLint issues",
+				"defaults": {
+					"light": "#fff",
+					"dark": "#fff",
+					"highContrast": "#fff"
+				}
+			},
+			{
+				"id": "sonarlint.locations.indexSelectedBackground",
+				"description": "Background color for active secondary location index of SonarLint issues",
+				"defaults": {
+					"light": "#a4030f",
+					"dark": "#b4131f",
+					"highContrast": "#b4131f"
+				}
+			}
+		]
+	},
   "main": "./dist/extension",
   "files": [
     "server/sonarlint-ls.jar",
