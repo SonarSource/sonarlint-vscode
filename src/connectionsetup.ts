@@ -15,19 +15,49 @@ import { ResourceResolver } from './webview';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
+const SONARLINT_SETTINGS_KEY = 'sonarlint';
+const SONARQUBE_CONNECTIONS_KEY = 'connectedMode.connections.sonarqube';
+
 const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/sonarlint-notifications/';
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
   return () => {
+    const initialState = {
+      serverUrl: '',
+      token: '',
+      connectionId: ''
+    };
     lazyCreateConnectionSetupPanel(context);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview);
-    connectionSetupPanel.webview.onDidReceiveMessage(handleMessage);
-    connectionSetupPanel.iconPath = util.resolveExtensionFile('images', 'sonarqube.svg');
-    connectionSetupPanel.reveal();
+    connectionSetupPanel.webview.html =
+        renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'create', initialState });
+    finishSetupAndRevealPanel();
   };
 }
 
-export function reportConnectionCheckResult(result: ConnectionCheckResult) {
+export function editConnection(context: vscode.ExtensionContext) {
+  return async (connectionId: string) => {
+    if (! connectionId) {
+      // TODO This selection step should be removed once hooked up to the tree view
+      const connectionIds = vscode.workspace.getConfiguration(SONARLINT_SETTINGS_KEY)
+          .get<Array<SonarQubeConnection>>(SONARQUBE_CONNECTIONS_KEY)
+          .map(c => c.connectionId);
+      connectionId = await vscode.window.showQuickPick(connectionIds);
+    }
+    const initialState = loadConnection(connectionId);
+    lazyCreateConnectionSetupPanel(context);
+    connectionSetupPanel.webview.html =
+        renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
+    finishSetupAndRevealPanel();
+  };
+}
+
+function finishSetupAndRevealPanel() {
+  connectionSetupPanel.webview.onDidReceiveMessage(handleMessage);
+  connectionSetupPanel.iconPath = util.resolveExtensionFile('images', 'sonarqube.svg');
+  connectionSetupPanel.reveal();
+}
+
+export async function reportConnectionCheckResult(result: ConnectionCheckResult) {
   if (connectionSetupPanel) {
     const command = result.success ? 'connectionCheckSuccess' : 'connectionCheckFailure';
     connectionSetupPanel.webview.postMessage({ command, ...result });
@@ -36,8 +66,12 @@ export function reportConnectionCheckResult(result: ConnectionCheckResult) {
     if (result.success) {
       vscode.window.showInformationMessage(`Connection with '${result.connectionId}' was successful!`);
     } else {
-      // TODO Add a button to modify the connection
-      vscode.window.showErrorMessage(`Connection with '${result.connectionId}' failed: ${result.reason})`);
+      const editConnection = 'Edit Connection';
+      const reply = await vscode.window.showErrorMessage(
+          `Connection with '${result.connectionId}' failed: ${result.reason})`, editConnection);
+      if (reply === editConnection) {
+        vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, result.connectionId);
+      }
     }
   }
 }
@@ -62,17 +96,18 @@ function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext) {
   }
 }
 
-function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: vscode.Webview) {
+interface RenderOptions {
+  mode: 'create' | 'update';
+  initialState: SonarQubeConnection;
+}
+
+function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: vscode.Webview, options: RenderOptions) {
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'connectionsetup.css');
-  const toolkitUri = resolver.resolve(
-    'node_modules',
-    '@vscode',
-    'webview-ui-toolkit',
-    'dist',
-    'toolkit.js'
-  );
+  const toolkitUri = resolver.resolve('node_modules', '@vscode', 'webview-ui-toolkit', 'dist', 'toolkit.js');
   const webviewMainUri = resolver.resolve('webview-ui', 'connectionsetup.js');
+
+  const { mode, initialState } = options;
 
   const serverProductName = 'SonarQube';
 
@@ -88,26 +123,30 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
       <script type="module" src="${webviewMainUri}"></script>
     </head>
     <body>
-      <h1>New ${serverProductName} Connection</h1>
+      <h1>${mode === 'create' ? 'New' : 'Edit'} ${serverProductName} Connection</h1>
       <form id="connectionForm">
         <vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
-          title="The base URL for your SonarQube server" autofocus>
+          title="The base URL for your SonarQube server" autofocus value="${initialState.serverUrl}">
           Server URL
         </vscode-text-field>
-        <vscode-button id="generateToken" disabled>Generate Token</vscode-button>
+        <vscode-button id="generateToken" ${initialState.serverUrl === '' ? 'disabled' : ''}>
+          Generate Token
+        </vscode-button>
         <p>
           You can use the button above to generate a user token in your ${serverProductName} settings,
           copy it and paste it in the field below.
         </p>
         <vscode-text-field id="token" type="password" placeholder="········" required size="40"
-          title="A user token generated for your account on ${serverProductName}">
+          title="A user token generated for your account on ${serverProductName}" value="${initialState.token}">
           User Token
         </vscode-text-field>
         <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Server" size="40"
-          title="Optionally, please give this connection a memorable name">
+          title="Optionally, please give this connection a memorable name" value="${initialState.connectionId}"
+          ${options.mode === 'update' ? 'readonly' : ''}>
           Connection Name
         </vscode-text-field>
-        <vscode-checkbox id="enableNotifications" checked>
+        <input type="hidden" name="shouldGenerateConnectionId" value="${mode === 'create'}"/>
+        <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
         </vscode-checkbox>
         <p>
@@ -129,6 +168,12 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
       </form>
     </body>
   </html>`;
+}
+
+function loadConnection(connectionId: string) {
+  const allSonarQubeConnections = vscode.workspace.getConfiguration(SONARLINT_SETTINGS_KEY)
+      .get<Array<SonarQubeConnection>>(SONARQUBE_CONNECTIONS_KEY);
+  return allSonarQubeConnections.find(c => c.connectionId === connectionId);
 }
 
 /*
@@ -165,11 +210,11 @@ interface SonarQubeConnection {
 }
 
 async function saveConnection(connection: SonarQubeConnection) {
-  const configuration = vscode.workspace.getConfiguration('sonarlint');
-  const sonarqubeConnectionsSection = 'connectedMode.connections.sonarqube';
+  const configuration = vscode.workspace.getConfiguration(SONARLINT_SETTINGS_KEY);
+  const sonarqubeConnectionsSection = SONARQUBE_CONNECTIONS_KEY;
   const existingConnections = configuration.get<Array<SonarQubeConnection>>(sonarqubeConnectionsSection);
   const matchingConnection = existingConnections
-    .find(c => c.connectionId === connection.connectionId || c.serverUrl === connection.serverUrl);
+    .find(c => c.connectionId === connection.connectionId);
   if (matchingConnection) {
     Object.assign(matchingConnection, connection);
   } else {

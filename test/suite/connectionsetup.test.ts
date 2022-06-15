@@ -23,7 +23,7 @@ suite('Connection Setup', () => {
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
-  test('should show webview when command is called', async () => {
+  test('should show creation webview when command is called', async () => {
     const sleepTime = 1000;
     const connectionsBefore = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsBefore, []);
@@ -45,6 +45,27 @@ suite('Connection Setup', () => {
 
     const connectionsAfter = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsAfter, [{ serverUrl, token }]);
+  }).timeout(5000);
+
+  test('should show edit webview when command is called', async () => {
+    const sleepTime = 1000;
+    const connectionsBefore = getSonarQubeConnections();
+    assert.deepStrictEqual(connectionsBefore, []);
+
+    const connectionId = 'test connection';
+    const serverUrl = 'https://notsonarqube.example';
+    const token = 'XXX SUPER SECRET TOKEN XXX';
+    vscode.workspace.getConfiguration('sonarlint').update('connectedMode.connections.sonarqube', [
+      {
+        connectionId,
+        serverUrl,
+        token
+      }
+    ], vscode.ConfigurationTarget.Global);
+    await sleep(sleepTime);
+
+    await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, connectionId);
+    await sleep(sleepTime);
   }).timeout(5000);
 });
 

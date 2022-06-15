@@ -29,12 +29,16 @@ function init() {
 }
 
 function onChangeConnectionId() {
+  // If connection ID is manually changed, we should stop updating it when the URL changes
+  byId('shouldGenerateConnectionId').value = 'false';
   saveState();
 }
 
 function onChangeServerUrl() {
   saveState();
-  byId('connectionId').value = sanitize(byId('serverUrl').value);
+  if (byId('shouldGenerateConnectionId').value === 'true') {
+    byId('connectionId').value = sanitize(byId('serverUrl').value);
+  }
   toggleGenerateTokenButton();
 }
 
@@ -99,7 +103,7 @@ function tryRestore(keyValuePair) {
 
 function saveState() {
   const stateToSave = {};
-  for (const elementId of ['connectionId', 'serverUrl', 'token']) {
+  for (const elementId of ['connectionId', 'serverUrl', 'token', 'shouldGenerateConnectionId']) {
     const value = byId(elementId).value;
     if (value) {
       stateToSave[elementId] = value;
