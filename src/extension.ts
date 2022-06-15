@@ -342,11 +342,19 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
   );
-  const allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider();
+
+  const allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider((connectionId) =>
+    languageClient.onReady().then(() => languageClient.refreshConnection(connectionId))
+  );
+
   const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
     treeDataProvider: allConnectionsTreeDataProvider
   });
   context.subscriptions.push(allConnectionsView);
+  
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
+  );
 
   languageClient.start();
 
