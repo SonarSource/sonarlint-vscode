@@ -166,8 +166,16 @@ export interface ConnectionCheckResult {
   reason?: string;
 }
 
+export interface ConnectionCheckParams {
+  connectionId: string;
+}
+
 export namespace ReportConnectionCheckResult {
   export const type = new lsp.NotificationType<ConnectionCheckResult>('sonarlint/reportConnectionCheckResult');
+}
+
+export namespace CheckConnection {
+  export const type = new lsp.RequestType<ConnectionCheckParams, ConnectionCheckResult, void>('sonarlint/checkConnection');
 }
 
 //#endregion
