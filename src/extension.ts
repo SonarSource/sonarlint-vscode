@@ -351,10 +351,6 @@ export function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: allConnectionsTreeDataProvider
   });
   context.subscriptions.push(allConnectionsView);
-  
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
-  );
 
   languageClient.start();
 
