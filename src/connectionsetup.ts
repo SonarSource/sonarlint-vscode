@@ -104,7 +104,7 @@ interface RenderOptions {
 function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: vscode.Webview, options: RenderOptions) {
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'connectionsetup.css');
-  const toolkitUri = resolver.resolve('node_modules', '@vscode', 'webview-ui-toolkit', 'dist', 'toolkit.js');
+  const toolkitUri = resolver.resolve('node_modules', '@vscode', 'webview-ui-toolkit', 'dist', 'toolkit.min.js');
   const webviewMainUri = resolver.resolve('webview-ui', 'connectionsetup.js');
 
   const { mode, initialState } = options;
