@@ -32,6 +32,7 @@ function onChangeConnectionId() {
   // If connection ID is manually changed, we should stop updating it when the URL changes
   byId('shouldGenerateConnectionId').value = 'false';
   saveState();
+  toggleSaveConnectionButton();
 }
 
 function onChangeServerUrl() {
@@ -40,10 +41,28 @@ function onChangeServerUrl() {
     byId('connectionId').value = sanitize(byId('serverUrl').value);
   }
   toggleGenerateTokenButton();
+  toggleSaveConnectionButton();
 }
 
 function toggleGenerateTokenButton() {
-  byId('generateToken').disabled = !byId('serverUrl').validity.valid;
+  byId('generateToken').disabled = !hasValidServerUrl();
+}
+
+function hasValidServerUrl() {
+  /**
+   * @type {HTMLInputElement}
+   */
+  const serverUrlInput = byId('serverUrl');
+  return serverUrlInput.validity.valid && isValidUrl(serverUrlInput.value);
+}
+
+function isValidUrl(value) {
+  try {
+    const parsedUrl = new URL(value);
+    return /^https?:$/.test(parsedUrl.protocol);
+  } catch(e) {
+    return false;
+  }
 }
 
 function onClickGenerateToken() {
@@ -59,14 +78,21 @@ function onChangeToken() {
   toggleSaveConnectionButton();
 }
 
-function toggleSaveConnectionButton() {
-  const serverUrl = byId('serverUrl');
+function hasValidToken() {
+  /**
+   * @type {HTMLInputElement}
+   */
   const token = byId('token');
-  byId('saveConnection').disabled = !serverUrl.validity.valid && !token.validity.valid;
+  return token.validity.valid && token.value.length > 0;
+}
+
+function toggleSaveConnectionButton() {
+  byId('saveConnection').disabled = !hasUnsavedChanges() || !hasValidServerUrl() || !hasValidToken();
 }
 
 function onChangeEnableNotifications() {
   saveState();
+  toggleSaveConnectionButton();
 }
 
 function onClickSaveConnection() {
@@ -87,8 +113,8 @@ function tryRestoreState() {
   const previousState = vscode.getState();
   if (previousState) {
     Object.entries(previousState).forEach(tryRestore);
+    byId('enableNotifications').checked = previousState.enableNotifications;
   }
-  byId('enableNotifications').checked = previousState.enableNotifications;
   toggleGenerateTokenButton();
   toggleSaveConnectionButton();
 }
@@ -111,6 +137,29 @@ function saveState() {
   }
   stateToSave.enableNotifications = byId('enableNotifications').checked;
   vscode.setState(stateToSave);
+}
+
+function hasUnsavedChanges() {
+  /**
+   * @type {HTMLInputElement}
+   */
+  const enableNotifications = byId('enableNotifications');
+  const enableNotificationsInitial = (byId('enableNotifications-initial').value === 'true');
+  const enableNotificationsHasChanged = (enableNotifications.checked !== enableNotificationsInitial);
+  return enableNotificationsHasChanged ||
+      ['connectionId', 'serverUrl', 'token'].some(hasChanged);
+}
+
+function hasChanged(elementId) {
+  /**
+   * @type {HTMLInputElement}
+   */
+  const element = byId(elementId);
+  /**
+   * @type {HTMLInputElement}
+   */
+  const initial = byId(`${elementId}-initial`);
+  return element && (element.value !== initial.value);
 }
 
 function handleMessage(event) {

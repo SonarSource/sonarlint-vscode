@@ -66,10 +66,10 @@ export async function reportConnectionCheckResult(result: ConnectionCheckResult)
     if (result.success) {
       vscode.window.showInformationMessage(`Connection with '${result.connectionId}' was successful!`);
     } else {
-      const editConnection = 'Edit Connection';
+      const editConnectionAction = 'Edit Connection';
       const reply = await vscode.window.showErrorMessage(
-          `Connection with '${result.connectionId}' failed: ${result.reason})`, editConnection);
-      if (reply === editConnection) {
+          `Connection with '${result.connectionId}' failed: ${result.reason})`, editConnectionAction);
+      if (reply === editConnectionAction) {
         vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, result.connectionId);
       }
     }
