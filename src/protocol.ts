@@ -175,7 +175,8 @@ export namespace ReportConnectionCheckResult {
 }
 
 export namespace CheckConnection {
-  export const type = new lsp.RequestType<ConnectionCheckParams, ConnectionCheckResult, void>('sonarlint/checkConnection');
+  export const type =
+          new lsp.RequestType<ConnectionCheckParams, ConnectionCheckResult, void>('sonarlint/checkConnection');
 }
 
 //#endregion

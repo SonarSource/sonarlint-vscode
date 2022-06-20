@@ -32,7 +32,7 @@ export class Connection extends VSCode.TreeItem {
     }
 
     public refresh() {
-        this.iconPath = this.getIconPath()
+        this.iconPath = this.getIconPath();
     }
 }
 
@@ -66,7 +66,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
             try {
-                const connectionCheckResult = this.connectionChecker ? (await this.connectionChecker(c.connectionId)) : {success: false};
+                const connectionCheckResult =
+                    this.connectionChecker ? (await this.connectionChecker(c.connectionId)) : {success: false};
                 status = connectionCheckResult && connectionCheckResult.success ? 'ok' : 'notok';
             } catch (e){
                 console.log(e);
@@ -102,8 +103,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     }
 
     getInitialState(): ConnectionGroup[] {
-        let sqConnections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)['sonarqube'];
-        let scConnections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)['sonarcloud'];
+        const sqConnections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)['sonarqube'];
+        const scConnections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)['sonarcloud'];
         return [
             sqConnections.length > 0 ? new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup') : null,
             scConnections.length > 0 ? new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup') : null
