@@ -34,14 +34,18 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
   };
 }
 
-export function editConnection(context: vscode.ExtensionContext) {
+export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connectionId: string) => {
     if (! connectionId) {
       // TODO This selection step should be removed once hooked up to the tree view
       const connectionIds = vscode.workspace.getConfiguration(SONARLINT_SETTINGS_KEY)
           .get<Array<SonarQubeConnection>>(SONARQUBE_CONNECTIONS_KEY)
           .map(c => c.connectionId);
-      connectionId = await vscode.window.showQuickPick(connectionIds);
+      if (connectionId.length === 1) {
+        connectionId = connectionIds[0];
+      } else {
+        connectionId = await vscode.window.showQuickPick(connectionIds);
+      }
     }
     const initialState = loadConnection(connectionId);
     lazyCreateConnectionSetupPanel(context);
