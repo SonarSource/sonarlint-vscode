@@ -32,6 +32,6 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   refreshConnection(connectionId: string) {
-    return this.sendRequest(protocol.CheckConnection.type, { connectionId })
+    return this.sendRequest(protocol.CheckConnection.type, { connectionId });
   }
 }
