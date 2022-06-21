@@ -9,6 +9,7 @@
 import * as vscode from 'vscode';
 
 import { Commands } from './commands';
+import { Connection } from './connections';
 import { ConnectionCheckResult } from './protocol';
 import * as util from './util';
 import { ResourceResolver } from './webview';
@@ -35,18 +36,8 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
 }
 
 export function editSonarQubeConnection(context: vscode.ExtensionContext) {
-  return async (connectionId: string) => {
-    if (! connectionId) {
-      // TODO This selection step should be removed once hooked up to the tree view
-      const connectionIds = vscode.workspace.getConfiguration(SONARLINT_SETTINGS_KEY)
-          .get<Array<SonarQubeConnection>>(SONARQUBE_CONNECTIONS_KEY)
-          .map(c => c.connectionId);
-      if (connectionId.length === 1) {
-        connectionId = connectionIds[0];
-      } else {
-        connectionId = await vscode.window.showQuickPick(connectionIds);
-      }
-    }
+  return async (connection: string | Promise<Connection>) => {
+    const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
     const initialState = loadConnection(connectionId);
     lazyCreateConnectionSetupPanel(context);
     connectionSetupPanel.webview.html =
@@ -133,6 +124,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
           title="The base URL for your SonarQube server" autofocus value="${initialState.serverUrl}">
           Server URL
         </vscode-text-field>
+        <input type="hidden" id="serverUrl-initial" value="${initialState.serverUrl}" />
         <vscode-button id="generateToken" ${initialState.serverUrl === '' ? 'disabled' : ''}>
           Generate Token
         </vscode-button>
@@ -144,15 +136,18 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
           title="A user token generated for your account on ${serverProductName}" value="${initialState.token}">
           User Token
         </vscode-text-field>
+        <input type="hidden" id="token-initial" value="${initialState.token}" />
         <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Server" size="40"
           title="Optionally, please give this connection a memorable name" value="${initialState.connectionId}"
           ${options.mode === 'update' ? 'readonly' : ''}>
           Connection Name
         </vscode-text-field>
-        <input type="hidden" name="shouldGenerateConnectionId" value="${mode === 'create'}"/>
+        <input type="hidden" id="connectionId-initial" value="${initialState.connectionId}" />
+        <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create'}"/>
         <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
         </vscode-checkbox>
+        <input type="hidden" id="enableNotifications-initial" value="${!initialState.disableNotifications}" />
         <p>
           You will receive
           <vscode-link target="_blank" href="${sonarQubeNotificationsDocUrl}">notifications</vscode-link>

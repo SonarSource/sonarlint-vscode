@@ -14,8 +14,8 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
-import { connectToSonarQube, editSonarQubeConnection, reportConnectionCheckResult } from './connectionsetup';
 import { AllConnectionsTreeDataProvider } from './connections';
+import { connectToSonarQube, editSonarQubeConnection, reportConnectionCheckResult } from './connectionsetup';
 import { GitExtension } from './git';
 import {
   hideSecurityHotspot,
