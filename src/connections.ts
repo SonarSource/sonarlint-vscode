@@ -5,10 +5,6 @@ import { ConnectionCheckResult } from './protocol';
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 const CONNECTED_MODE_SETTINGS = 'sonarlint.connectedMode.connections';
 
-function getPathToIcon(iconFileName: string) {
-    return path.join(__filename, '../..', 'images', 'connection', iconFileName);
-}
-
 export class Connection extends VSCode.TreeItem {
     constructor(
         public readonly id: string,
@@ -24,11 +20,11 @@ export class Connection extends VSCode.TreeItem {
 
     private getIconPath() {
         if (this.status === 'ok') {
-            return getPathToIcon('ok.svg');
+            return new VSCode.ThemeIcon('pass', new VSCode.ThemeColor('debugIcon.pauseForeground'));
         } else if (this.status === 'notok') {
-            return getPathToIcon('notok.svg');
+            return new VSCode.ThemeIcon('error', new VSCode.ThemeColor('testing.iconFailed'));
         }
-        return getPathToIcon('loading.svg');
+        return new VSCode.ThemeIcon('circle-large-outline', new VSCode.ThemeColor('debugConsole.warningForeground'));
     }
 
     public refresh() {
