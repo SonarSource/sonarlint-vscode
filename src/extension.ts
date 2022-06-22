@@ -44,7 +44,7 @@ const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
 const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
-let secureStorage: ConnectionSettingsService;
+let connectionSettingsService: ConnectionSettingsService;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -187,9 +187,9 @@ function toggleRule(level: protocol.ConfigLevel) {
 
 export function activate(context: VSCode.ExtensionContext) {
   ConnectionSettingsService.init(context);
-  secureStorage = ConnectionSettingsService.getInstance;
+  connectionSettingsService = ConnectionSettingsService.getInstance;
   currentConfig = getSonarLintConfiguration();
-  migrateConnectedModeSettings(currentConfig, secureStorage);
+  migrateConnectedModeSettings(currentConfig, connectionSettingsService);
   util.setExtensionContext(context);
   sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
   context.subscriptions.push(sonarlintOutput);
@@ -350,8 +350,9 @@ export function activate(context: VSCode.ExtensionContext) {
       VSCode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(context))
   );
 
-  const allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider((connectionId) =>
-    languageClient.onReady().then(() => languageClient.refreshConnection(connectionId))
+  const allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(
+    connectionSettingsService,
+    (connectionId) => languageClient.onReady().then(() => languageClient.refreshConnection(connectionId))
   );
 
   const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
@@ -544,7 +545,7 @@ async function isIgnoredByScm(fileUri: string): Promise<boolean> {
 }
 
 async function getTokenForServer(serverId: string): Promise<string> {
-  return secureStorage.getServerToken(serverId);
+  return connectionSettingsService.getServerToken(serverId);
 }
 
 export async function performIsIgnoredCheck(
@@ -685,7 +686,7 @@ function onConfigurationChange() {
         }
       });
     }
-    migrateConnectedModeSettings(currentConfig, secureStorage);
+    migrateConnectedModeSettings(currentConfig, connectionSettingsService);
   });
 }
 

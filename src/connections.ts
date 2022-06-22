@@ -1,6 +1,7 @@
 import * as VSCode from 'vscode';
 import * as path from 'path';
 import { ConnectionCheckResult } from './protocol';
+import { BaseConnection, ConnectionSettingsService, SonarCloudConnection, SonarQubeConnection } from './settings';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 const CONNECTED_MODE_SETTINGS = 'sonarlint.connectedMode.connections';
@@ -54,15 +55,20 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     readonly onDidChangeTreeData: VSCode.Event<ConnectionsNode | undefined> = this._onDidChangeTreeData.event;
     private allConnections = {sonarqube: [], sonarcloud: []};
 
-    constructor(private readonly connectionChecker?: (connectionId) => Thenable<ConnectionCheckResult>) { }
+    constructor(
+      private readonly connectionSettingsService: ConnectionSettingsService,
+      private readonly connectionChecker?: (connectionId) => Thenable<ConnectionCheckResult>
+    ) { }
 
-    getConnections(type: string): Connection[] {
+    async getConnections(type: string): Promise<Connection[]> {
         const contextValue = type === 'sonarqube' ? 'sonarqubeConnection' : 'sonarcloudConnection';
         const labelKey = type === 'sonarqube' ? 'connectionId' : 'organizationKey';
         const alternativeLabelKey = type === 'sonarqube' ? 'serverUrl' : 'organizationKey';
 
-        let connections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)[type];
-        connections = connections.map(async (c) => {
+        const connectionsFromSettings: BaseConnection[] = (type === 'sonarqube' ?
+            this.connectionSettingsService.getSonarQubeConnections() :
+            this.connectionSettingsService.getSonarCloudConnections());
+        const connections = await Promise.all(connectionsFromSettings.map(async (c) => {
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
             try {
@@ -73,7 +79,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
                 console.log(e);
             }
             return new Connection(c['connectionId'], label, contextValue, status);
-        });
+        }));
 
         this.allConnections[type] = connections;
         return connections;
@@ -91,7 +97,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         return element;
     }
 
-    getChildren(element?: ConnectionsNode): ConnectionsNode[] {
+    async getChildren(element?: ConnectionsNode): Promise<ConnectionsNode[]> {
         if (!element) {
             return this.getInitialState();
         } else if (element.contextValue === 'sonarQubeGroup') {
