@@ -9,6 +9,7 @@ src/
 tsconfig.json
 gulpfile.js
 node_modules
+!node_modules/@vscode/webview-ui-toolkit/dist/toolkit.min.js
 webpack.config.js
 sonarlint-vscode.code-workspace
 coverage/
@@ -18,4 +19,4 @@ scripts/
 .azure-pipelines
 azure-pipelines.yml
 .github/
-
+.idea/
