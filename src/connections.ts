@@ -65,7 +65,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         connections = connections.map(async (c) => {
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
-            let connectionId : string = c.connectionId ? c.connectionId : '<default>'
+            const connectionId : string = c.connectionId ? c.connectionId : '<default>';
             try {
                 const connectionCheckResult =
                     this.connectionChecker ? (await this.connectionChecker(connectionId)) : {success: false};
