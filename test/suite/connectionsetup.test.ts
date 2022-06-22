@@ -47,14 +47,46 @@ suite('Connection Setup', () => {
     assert.deepStrictEqual(connectionsAfter, [{ serverUrl, token }]);
   }).timeout(5000);
 
-  test('should show edit webview when command is called', async () => {
+  test('should edit default connection when command is called', async () => {
     const sleepTime = 1000;
     const connectionsBefore = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsBefore, []);
 
-    const connectionId = 'test connection';
     const serverUrl = 'https://notsonarqube.example';
     const token = 'XXX SUPER SECRET TOKEN XXX';
+    vscode.workspace.getConfiguration('sonarlint').update('connectedMode.connections.sonarqube', [
+      {
+        serverUrl,
+        token
+      }
+    ], vscode.ConfigurationTarget.Global);
+    await sleep(sleepTime);
+
+    await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, Promise.resolve({ id: undefined }));
+    await sleep(sleepTime);
+
+    const disableNotifications = true;
+
+    await handleMessage({
+      command: 'saveConnection',
+      serverUrl,
+      token,
+      disableNotifications
+    });
+    await sleep(sleepTime);
+
+    const connectionsAfter = getSonarQubeConnections();
+    assert.deepStrictEqual(connectionsAfter, [{ serverUrl, token, disableNotifications }]);
+  }).timeout(5000);
+
+  test('should edit identified connection when command is called', async () => {
+    const sleepTime = 1000;
+    const connectionsBefore = getSonarQubeConnections();
+    assert.deepStrictEqual(connectionsBefore, []);
+
+    const serverUrl = 'https://stillnotsonarqube.example';
+    const token = 'XXX SUPER SECRET TOKEN XXX';
+    const connectionId = 'My Little SonarQube';
     vscode.workspace.getConfiguration('sonarlint').update('connectedMode.connections.sonarqube', [
       {
         connectionId,
@@ -66,7 +98,22 @@ suite('Connection Setup', () => {
 
     await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, connectionId);
     await sleep(sleepTime);
+
+    const disableNotifications = true;
+
+    await handleMessage({
+      command: 'saveConnection',
+      connectionId,
+      serverUrl,
+      token,
+      disableNotifications
+    });
+    await sleep(sleepTime);
+
+    const connectionsAfter = getSonarQubeConnections();
+    assert.deepStrictEqual(connectionsAfter, [{ connectionId, serverUrl, token, disableNotifications }]);
   }).timeout(5000);
+
 });
 
 function getSonarQubeConnections() {
