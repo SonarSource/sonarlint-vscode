@@ -1,3 +1,7 @@
+## 3.6
+
+* Update Java analyzer 7.11.0 -> [7.12](https://github.com/SonarSource/sonar-java/releases/tag/7.12.0.29739) -> [7.12.1](https://github.com/SonarSource/sonar-java/releases/tag/7.12.1.29810), new rules + rules improvements, Incremental PR analysis with cache.
+
 ## 3.5.4
 
 * Fix an issue with URI-encoded characters in file paths
