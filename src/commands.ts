@@ -42,7 +42,6 @@ export namespace Commands {
   export const SHOW_HOTSPOT_DESCRIPTION = 'SonarLint.ShowHotspotDescription';
   export const CONFIGURE_COMPILATION_DATABASE = 'SonarLint.ConfigureCompilationDatabase';
 
-  // TODO "Enablement" of the connection management commands should probably be tied to the connections view
   export const CONNECT_TO_SONARQUBE = 'SonarLint.ConnectToSonarQube';
   export const CONNECT_TO_SONARCLOUD = 'SonarLint.ConnectToSonarCloud';
   export const EDIT_SONARQUBE_CONNECTION = 'SonarLint.EditSonarQubeConnection';
