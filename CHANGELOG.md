@@ -1,6 +1,7 @@
 ## 3.6
 
 * Update Java analyzer 7.11.0 -> [7.12](https://github.com/SonarSource/sonar-java/releases/tag/7.12.0.29739) -> [7.12.1](https://github.com/SonarSource/sonar-java/releases/tag/7.12.1.29810), new rules + rules improvements, Incremental PR analysis with cache.
+* Update PHP analyzer 3.23 -> [3.23.1](https://github.com/SonarSource/sonar-php/releases/tag/3.23.1.8766), descriptions for rule properties of S1808, FP fix for S6328
 
 ## 3.5.4
 
