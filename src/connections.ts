@@ -5,6 +5,8 @@ import { BaseConnection, ConnectionSettingsService } from './settings';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 
+const DEFAULT_CONNECTION_ID = '<default>';
+
 function getPathToIcon(iconFileName: string) {
     return path.join(__filename, '../..', 'images', 'connection', iconFileName);
 }
@@ -69,8 +71,9 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         const connections = await Promise.all(connectionsFromSettings.map(async (c) => {
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
+            const connectionId : string = c.connectionId ? c.connectionId : DEFAULT_CONNECTION_ID;
             try {
-                const connectionCheckResult = await this.checkConnection(c.connectionId);
+                const connectionCheckResult = await this.checkConnection(connectionId);
                 if (connectionCheckResult.success) {
                     status = 'ok';
                 } else if (!/unknown/.test(connectionCheckResult.reason)) {
@@ -79,7 +82,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
             } catch (e){
                 console.log(e);
             }
-            return new Connection(c['connectionId'], label, contextValue, status);
+            return new Connection(c.connectionId, label, contextValue, status);
         }));
 
         this.allConnections[type] = connections;
@@ -125,6 +128,9 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     }
 
     reportConnectionCheckResult(checkResult: ConnectionCheckResult) {
+        if (checkResult.connectionId === DEFAULT_CONNECTION_ID) {
+            checkResult.connectionId = undefined;
+        }
         const connectionToUpdate = this.allConnections.sonarqube.find(c => c.id === checkResult.connectionId);
         connectionToUpdate.status = checkResult.success ? 'ok' : 'notok';
         connectionToUpdate.refresh();

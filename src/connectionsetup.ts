@@ -104,6 +104,8 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
 
   const serverProductName = 'SonarQube';
 
+  const initialConnectionId = initialState.connectionId || '';
+
   return `<!doctype html><html lang="en">
     <head>
       <title>${serverProductName} Connection</title>
@@ -136,11 +138,11 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         </vscode-text-field>
         <input type="hidden" id="token-initial" value="${initialState.token}" />
         <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Server" size="40"
-          title="Optionally, please give this connection a memorable name" value="${initialState.connectionId}"
+          title="Optionally, please give this connection a memorable name" value="${initialConnectionId}"
           ${options.mode === 'update' ? 'readonly' : ''}>
           Connection Name
         </vscode-text-field>
-        <input type="hidden" id="connectionId-initial" value="${initialState.connectionId}" />
+        <input type="hidden" id="connectionId-initial" value="${initialConnectionId}" />
         <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create'}"/>
         <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
@@ -188,6 +190,9 @@ export async function handleMessage(message) {
       delete message.command;
       if (!message.disableNotifications) {
         delete message.disableNotifications;
+      }
+      if (!message.connectionId) {
+        delete message.connectionId;
       }
       message.serverUrl = cleanServerUrl(message.serverUrl);
       await saveConnection(message);

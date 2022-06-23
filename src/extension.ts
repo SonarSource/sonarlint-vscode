@@ -31,9 +31,9 @@ import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequireme
 import { showRuleDescription } from './rulepanel';
 import { AllRulesTreeDataProvider, RuleNode } from './rules';
 import { initScm } from './scm';
+import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
-import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -696,7 +696,7 @@ function onConfigurationChange() {
         }
       });
     }
-    migrateConnectedModeSettings(currentConfig, connectionSettingsService);
+    migrateConnectedModeSettings(newConfig, connectionSettingsService);
   });
 }
 
