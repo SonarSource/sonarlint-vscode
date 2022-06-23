@@ -31,7 +31,7 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     this.sendNotification(protocol.DidLocalBranchNameChangeNotification.type, { folderUri, branchName });
   }
 
-  refreshConnection(connectionId: string) {
+  checkConnection(connectionId: string) {
     return this.sendRequest(protocol.CheckConnection.type, { connectionId });
   }
 
