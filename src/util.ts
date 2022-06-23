@@ -77,3 +77,7 @@ export function execChildProcess(process: string, workingDirectory: string, chan
 export function resolveExtensionFile(...segments: string[]) {
   return vscode.Uri.file(path.join(extensionPath, ...segments));
 }
+
+export function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

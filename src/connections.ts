@@ -1,9 +1,11 @@
 import * as VSCode from 'vscode';
 import * as path from 'path';
 import { ConnectionCheckResult } from './protocol';
+import { BaseConnection, ConnectionSettingsService } from './settings';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
-const CONNECTED_MODE_SETTINGS = 'sonarlint.connectedMode.connections';
+
+const DEFAULT_CONNECTION_ID = '<default>';
 
 function getPathToIcon(iconFileName: string) {
     return path.join(__filename, '../..', 'images', 'connection', iconFileName);
@@ -52,31 +54,45 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
     private readonly _onDidChangeTreeData = new VSCode.EventEmitter<Connection | undefined>();
     readonly onDidChangeTreeData: VSCode.Event<ConnectionsNode | undefined> = this._onDidChangeTreeData.event;
-    private allConnections = {sonarqube: [], sonarcloud: []};
+    private allConnections = {sonarqube: Array.from<Connection>([]), sonarcloud: Array.from<Connection>([])};
 
-    constructor(private readonly connectionChecker?: (connectionId) => Thenable<ConnectionCheckResult>) { }
+    constructor(
+      private readonly connectionChecker?: (connectionId) => Thenable<ConnectionCheckResult>
+    ) { }
 
-    getConnections(type: string): Connection[] {
+    async getConnections(type: string): Promise<Connection[]> {
         const contextValue = type === 'sonarqube' ? 'sonarqubeConnection' : 'sonarcloudConnection';
         const labelKey = type === 'sonarqube' ? 'connectionId' : 'organizationKey';
         const alternativeLabelKey = type === 'sonarqube' ? 'serverUrl' : 'organizationKey';
 
-        let connections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)[type];
-        connections = connections.map(async (c) => {
+        const connectionsFromSettings: BaseConnection[] = (type === 'sonarqube' ?
+            ConnectionSettingsService.getInstance.getSonarQubeConnections() :
+            ConnectionSettingsService.getInstance.getSonarCloudConnections());
+        const connections = await Promise.all(connectionsFromSettings.map(async (c) => {
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
+            const connectionId : string = c.connectionId ? c.connectionId : DEFAULT_CONNECTION_ID;
             try {
-                const connectionCheckResult =
-                    this.connectionChecker ? (await this.connectionChecker(c.connectionId)) : {success: false};
-                status = connectionCheckResult && connectionCheckResult.success ? 'ok' : 'notok';
+                const connectionCheckResult = await this.checkConnection(connectionId);
+                if (connectionCheckResult.success) {
+                    status = 'ok';
+                } else if (!/unknown/.test(connectionCheckResult.reason)) {
+                    status = 'notok';
+                }
             } catch (e){
                 console.log(e);
             }
-            return new Connection(c['connectionId'], label, contextValue, status);
-        });
+            return new Connection(c.connectionId, label, contextValue, status);
+        }));
 
         this.allConnections[type] = connections;
         return connections;
+    }
+
+    async checkConnection(connectionId) {
+        return this.connectionChecker ?
+          this.connectionChecker(connectionId) :
+          { success: false, reason: 'Connection checker not available yet' };
     }
 
     refresh(connection?: Connection) {
@@ -91,7 +107,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         return element;
     }
 
-    getChildren(element?: ConnectionsNode): ConnectionsNode[] {
+    async getChildren(element?: ConnectionsNode): Promise<ConnectionsNode[]> {
         if (!element) {
             return this.getInitialState();
         } else if (element.contextValue === 'sonarQubeGroup') {
@@ -103,11 +119,21 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     }
 
     getInitialState(): ConnectionGroup[] {
-        const sqConnections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)['sonarqube'];
-        const scConnections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)['sonarcloud'];
+        const sqConnections = ConnectionSettingsService.getInstance.getSonarQubeConnections();
+        const scConnections = ConnectionSettingsService.getInstance.getSonarCloudConnections();
         return [
             sqConnections.length > 0 ? new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup') : null,
             scConnections.length > 0 ? new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup') : null
         ];
+    }
+
+    reportConnectionCheckResult(checkResult: ConnectionCheckResult) {
+        if (checkResult.connectionId === DEFAULT_CONNECTION_ID) {
+            checkResult.connectionId = undefined;
+        }
+        const connectionToUpdate = this.allConnections.sonarqube.find(c => c.id === checkResult.connectionId);
+        connectionToUpdate.status = checkResult.success ? 'ok' : 'notok';
+        connectionToUpdate.refresh();
+        this.refresh(connectionToUpdate);
     }
 }

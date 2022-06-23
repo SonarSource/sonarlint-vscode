@@ -11,13 +11,11 @@ import * as vscode from 'vscode';
 import { Commands } from './commands';
 import { Connection } from './connections';
 import { ConnectionCheckResult } from './protocol';
+import { ConnectionSettingsService, SonarQubeConnection } from './settings';
 import * as util from './util';
 import { ResourceResolver } from './webview';
 
 let connectionSetupPanel: vscode.WebviewPanel;
-
-const SONARLINT_SETTINGS_KEY = 'sonarlint';
-const SONARQUBE_CONNECTIONS_KEY = 'connectedMode.connections.sonarqube';
 
 const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/sonarlint-notifications/';
 
@@ -38,7 +36,7 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
 export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
-    const initialState = loadConnection(connectionId);
+    const initialState = await loadConnection(connectionId);
     lazyCreateConnectionSetupPanel(context);
     connectionSetupPanel.webview.html =
         renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
@@ -106,6 +104,8 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
 
   const serverProductName = 'SonarQube';
 
+  const initialConnectionId = initialState.connectionId || '';
+
   return `<!doctype html><html lang="en">
     <head>
       <title>${serverProductName} Connection</title>
@@ -138,11 +138,11 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         </vscode-text-field>
         <input type="hidden" id="token-initial" value="${initialState.token}" />
         <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Server" size="40"
-          title="Optionally, please give this connection a memorable name" value="${initialState.connectionId}"
+          title="Optionally, please give this connection a memorable name" value="${initialConnectionId}"
           ${options.mode === 'update' ? 'readonly' : ''}>
           Connection Name
         </vscode-text-field>
-        <input type="hidden" id="connectionId-initial" value="${initialState.connectionId}" />
+        <input type="hidden" id="connectionId-initial" value="${initialConnectionId}" />
         <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create'}"/>
         <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
@@ -169,10 +169,13 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   </html>`;
 }
 
-function loadConnection(connectionId: string) {
-  const allSonarQubeConnections = vscode.workspace.getConfiguration(SONARLINT_SETTINGS_KEY)
-      .get<Array<SonarQubeConnection>>(SONARQUBE_CONNECTIONS_KEY);
-  return allSonarQubeConnections.find(c => c.connectionId === connectionId);
+async function loadConnection(connectionId: string) {
+  const allSonarQubeConnections = ConnectionSettingsService.getInstance.getSonarQubeConnections();
+  const loadedConnection = allSonarQubeConnections.find(c => c.connectionId === connectionId);
+  if (loadedConnection) {
+    loadedConnection.token = await ConnectionSettingsService.getInstance.getServerToken(loadedConnection.serverUrl);
+  }
+  return loadedConnection;
 }
 
 /*
@@ -188,6 +191,9 @@ export async function handleMessage(message) {
       if (!message.disableNotifications) {
         delete message.disableNotifications;
       }
+      if (!message.connectionId) {
+        delete message.connectionId;
+      }
       message.serverUrl = cleanServerUrl(message.serverUrl);
       await saveConnection(message);
       break;
@@ -201,26 +207,14 @@ async function openTokenGenerationPage(message) {
   await vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
 }
 
-interface SonarQubeConnection {
-  connectionId?: string;
-  serverUrl: string;
-  token: string;
-  disableNotifications?: boolean;
-}
-
 async function saveConnection(connection: SonarQubeConnection) {
-  const configuration = vscode.workspace.getConfiguration(SONARLINT_SETTINGS_KEY);
-  const sonarqubeConnectionsSection = SONARQUBE_CONNECTIONS_KEY;
-  const existingConnections = configuration.get<Array<SonarQubeConnection>>(sonarqubeConnectionsSection);
-  const matchingConnection = existingConnections
-    .find(c => c.connectionId === connection.connectionId);
-  if (matchingConnection) {
-    Object.assign(matchingConnection, connection);
-  } else {
-    existingConnections.push(connection);
-  }
+  const matchingConnection = await loadConnection(connection.connectionId);
   await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
-  await configuration.update(sonarqubeConnectionsSection, existingConnections, vscode.ConfigurationTarget.Global);
+  if (matchingConnection) {
+    await ConnectionSettingsService.getInstance.updateSonarQubeConnection(connection);
+  } else {
+    await ConnectionSettingsService.getInstance.addSonarQubeConnection(connection);
+  }
 }
 
 function cleanServerUrl(serverUrl: string) {
