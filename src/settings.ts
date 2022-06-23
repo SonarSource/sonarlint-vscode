@@ -16,7 +16,7 @@ const SONARCLOUD = 'sonarcloud';
 const SONARQUBE_CONNECTIONS_CATEGORY = `${SONARLINT_CATEGORY}.${CONNECTIONS_SECTION}.${SONARQUBE}`;
 const SONARCLOUD_CONNECTIONS_CATEGORY = `${SONARLINT_CATEGORY}.${CONNECTIONS_SECTION}.${SONARCLOUD}`;
 
-async function hasUnmigratedConnections(sqConnections: SqConnection[],
+async function hasUnmigratedConnections(sqConnections: SonarQubeConnection[],
                                         settingsService: ConnectionSettingsService): Promise<boolean> {
   for (const connection of sqConnections) {
     if (!await settingsService.hasTokenForServer(connection.serverUrl)) {
@@ -28,16 +28,16 @@ async function hasUnmigratedConnections(sqConnections: SqConnection[],
 
 export async function migrateConnectedModeSettings(settings: VSCode.WorkspaceConfiguration,
   settingsService: ConnectionSettingsService) {
-  const sqConnections = settings.get<SqConnection[]>(`${CONNECTIONS_SECTION}.${SONARQUBE}`);
+  const sqConnections = settings.get<SonarQubeConnection[]>(`${CONNECTIONS_SECTION}.${SONARQUBE}`);
   if (await hasUnmigratedConnections(sqConnections, settingsService)) {
     suggestMigrationToSecureStorage(sqConnections, settingsService);
   }
 }
 
-async function suggestMigrationToSecureStorage(sqConnections: SqConnection[],
+async function suggestMigrationToSecureStorage(sqConnections: SonarQubeConnection[],
   settingsService: ConnectionSettingsService) {
   const remindMeLaterAction = 'Ask me later';
-  const migrateToSecureStorageAction = 'Migrate connection settings to secure storage';
+  const migrateToSecureStorageAction = 'Migrate';
   const message = `SonarLint found SonarQube token in settings file. Do you want to migrate them to secure storage?`;
   const selection = await VSCode.window.showWarningMessage(message, migrateToSecureStorageAction, remindMeLaterAction);
   switch (selection) {
@@ -70,25 +70,30 @@ export class ConnectionSettingsService {
 
   /**
    *
-   * @param serverId SonarQube URL or SonarCloud organization ID
+   * @param serverUrlOrOrganizationKey SonarQube URL or SonarCloud organization ID
    * @param token auth token
    */
-  async storeServerToken(serverId: string, token: string): Promise<void> {
+  async storeServerToken(serverUrlOrOrganizationKey: string, token: string): Promise<void> {
     if (token) {
-      this.secretStorage.store(serverId, token);
+      this.secretStorage.store(serverUrlOrOrganizationKey, token);
     }
   }
 
-  async getServerToken(serverId: string): Promise<string | undefined> {
-    return this.secretStorage.get(serverId);
+  async getServerToken(serverUrlOrOrganizationKey: string): Promise<string | undefined> {
+    return this.secretStorage.get(serverUrlOrOrganizationKey);
   }
 
-  async hasTokenForServer(serverId: string): Promise<boolean> {
-    return (await this.getServerToken(serverId)) !== undefined;
+  async hasTokenForServer(serverUrlOrOrganizationKey: string): Promise<boolean> {
+    try {
+      const serverToken = await this.getServerToken(serverUrlOrOrganizationKey);
+      return serverToken !== undefined;
+    } catch(errorWhileFetchingToken) {
+      return false;
+    }
   }
 
-  async deleteTokenForServer(serverId: string): Promise<void> {
-    return this.secretStorage.delete(serverId);
+  async deleteTokenForServer(serverUrlOrOrganizationKey: string): Promise<void> {
+    return this.secretStorage.delete(serverUrlOrOrganizationKey);
   }
 
   getSonarQubeConnections(): SonarQubeConnection[] {
@@ -140,7 +145,7 @@ export class ConnectionSettingsService {
       .get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`);
   }
 
-  async addTokensFromSettingsToSecureStorage(sqConnections: SqConnection[]) {
+  async addTokensFromSettingsToSecureStorage(sqConnections: SonarQubeConnection[]) {
     await Promise.all(
       sqConnections.map(async c => {
         if (c.token !== undefined && !await this.hasTokenForServer(c.serverUrl)) {
@@ -154,8 +159,6 @@ export class ConnectionSettingsService {
   }
 
 }
-
-type SqConnection = { connectionId?: string, serverUrl?: string, organizationKey?: string, token?: string };
 
 export interface BaseConnection {
   token?: string;
