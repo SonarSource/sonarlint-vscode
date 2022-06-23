@@ -52,6 +52,7 @@ let sonarlintOutput: VSCode.OutputChannel;
 let secondaryLocationsTree: SecondaryLocationsTree;
 let issueLocationsView: VSCode.TreeView<LocationTreeItem>;
 let languageClient: SonarLintExtendedLanguageClient;
+let allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider;
 
 export function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
@@ -186,10 +187,7 @@ function toggleRule(level: protocol.ConfigLevel) {
 }
 
 export function activate(context: VSCode.ExtensionContext) {
-  ConnectionSettingsService.init(context);
-  connectionSettingsService = ConnectionSettingsService.getInstance;
   currentConfig = getSonarLintConfiguration();
-  migrateConnectedModeSettings(currentConfig, connectionSettingsService);
   util.setExtensionContext(context);
   sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
   context.subscriptions.push(sonarlintOutput);
@@ -242,6 +240,10 @@ export function activate(context: VSCode.ExtensionContext) {
     serverOptions,
     clientOptions
   );
+
+  ConnectionSettingsService.init(context, languageClient);
+  connectionSettingsService = ConnectionSettingsService.getInstance;
+  migrateConnectedModeSettings(currentConfig, connectionSettingsService);
 
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
@@ -347,10 +349,16 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
   );
   context.subscriptions.push(
-      VSCode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(context))
+    VSCode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(context))
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(
+      Commands.REMOVE_CONNECTION,
+      (connection) =>  ConnectionSettingsService.getInstance.removeConnection(connection)
+    )
   );
 
-  const allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(
+  allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(
     (connectionId) => languageClient.onReady().then(() => languageClient.refreshConnection(connectionId))
   );
 
@@ -449,7 +457,10 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
   languageClient.onRequest(protocol.EditorOpenCheck.type, fileUri => isOpenInEditor(fileUri));
-  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, reportConnectionCheckResult);
+  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, async (checkResult) => {
+    await reportConnectionCheckResult(checkResult);
+    allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
+  });
   languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
   );

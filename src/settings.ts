@@ -7,7 +7,8 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { ExtensionContext } from 'vscode';
+import { Connection } from './connections';
+import { SonarLintExtendedLanguageClient } from './client';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const CONNECTIONS_SECTION = 'connectedMode.connections';
@@ -40,11 +41,8 @@ async function suggestMigrationToSecureStorage(sqConnections: SonarQubeConnectio
   const migrateToSecureStorageAction = 'Migrate';
   const message = `SonarLint found SonarQube token in settings file. Do you want to migrate them to secure storage?`;
   const selection = await VSCode.window.showWarningMessage(message, migrateToSecureStorageAction, remindMeLaterAction);
-  switch (selection) {
-    case migrateToSecureStorageAction:
-      await settingsService.addTokensFromSettingsToSecureStorage(sqConnections);
-      break;
-    case remindMeLaterAction:
+  if (selection === migrateToSecureStorageAction) {
+    await settingsService.addTokensFromSettingsToSecureStorage(sqConnections);
   }
 }
 
@@ -57,11 +55,14 @@ export class ConnectionSettingsService {
 
   private static instance: ConnectionSettingsService;
 
-  constructor(private readonly secretStorage: VSCode.SecretStorage) {
+  constructor(
+    private readonly secretStorage: VSCode.SecretStorage,
+    private readonly client: SonarLintExtendedLanguageClient
+  ) {
   }
 
-  static init(context: ExtensionContext): void {
-    ConnectionSettingsService.instance = new ConnectionSettingsService(context.secrets);
+  static init(context: VSCode.ExtensionContext, client: SonarLintExtendedLanguageClient): void {
+    ConnectionSettingsService.instance = new ConnectionSettingsService(context.secrets, client);
   }
 
   static get getInstance(): ConnectionSettingsService {
@@ -116,7 +117,6 @@ export class ConnectionSettingsService {
       newConnection.disableNotifications = true;
     }
     await this.storeServerToken(connection.serverUrl, connection.token);
-    delete connection.token;
     connections.push(newConnection);
     VSCode.workspace.getConfiguration()
       .update(SONARQUBE_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
@@ -135,6 +135,7 @@ export class ConnectionSettingsService {
       delete connectionToUpdate.disableNotifications;
     }
     await this.storeServerToken(connection.serverUrl, connection.token);
+    this.client.onTokenUpdate();
     delete connectionToUpdate.token;
     VSCode.workspace.getConfiguration()
       .update(SONARQUBE_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
@@ -143,6 +144,11 @@ export class ConnectionSettingsService {
   getSonarCloudConnections(): SonarCloudConnection[] {
     return VSCode.workspace.getConfiguration(SONARLINT_CATEGORY)
       .get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`);
+  }
+
+  setSonarCloudConnections(scConnections: SonarCloudConnection[]) {
+    VSCode.workspace.getConfiguration()
+      .update(SONARCLOUD_CONNECTIONS_CATEGORY, scConnections, VSCode.ConfigurationTarget.Global);
   }
 
   async addTokensFromSettingsToSecureStorage(sqConnections: SonarQubeConnection[]) {
@@ -158,6 +164,35 @@ export class ConnectionSettingsService {
       .update(SONARQUBE_CONNECTIONS_CATEGORY, sqConnections, VSCode.ConfigurationTarget.Global);
   }
 
+  async removeConnection(connectionItem: Promise<Connection>) {
+    const connection = await connectionItem;
+
+    const isSonarQube = connection.contextValue === 'sonarqubeConnection';
+
+    const deleteAction = 'Delete';
+    const confirm = await VSCode.window.showWarningMessage(
+      `Are you sure you want to delete ${isSonarQube ? 'SonarQube' : 'SonarCloud'} connection '${connection.id}'?`,
+      { modal: true },
+      deleteAction
+    );
+    if (confirm !== deleteAction) {
+      return;
+    }
+
+    if (isSonarQube) {
+      const sqConnections = this.getSonarQubeConnections();
+      const matchingConnectionIndex = sqConnections.findIndex(c => c.connectionId === connection.id);
+      await this.deleteTokenForServer(sqConnections[matchingConnectionIndex].serverUrl);
+      sqConnections.splice(matchingConnectionIndex, 1);
+      this.setSonarQubeConnections(sqConnections);
+    } else {
+      const scConnections = this.getSonarCloudConnections();
+      const matchingConnectionIndex = scConnections.findIndex(c => c.connectionId === connection.id);
+      await this.deleteTokenForServer(scConnections[matchingConnectionIndex].organizationKey);
+      scConnections.splice(matchingConnectionIndex, 1);
+      this.setSonarCloudConnections(scConnections);
+    }
+  }
 }
 
 export interface BaseConnection {

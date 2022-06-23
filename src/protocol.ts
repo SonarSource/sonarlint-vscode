@@ -229,4 +229,8 @@ export namespace GetTokenForServer {
   export const type = new lsp.RequestType<string, string, void>('sonarlint/getTokenForServer');
 }
 
+export namespace OnTokenUpdate {
+  export const type = new lsp.NotificationType<void>('sonarlint/onTokenUpdate');
+}
+
 //#endregion

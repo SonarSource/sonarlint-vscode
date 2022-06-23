@@ -52,7 +52,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
     private readonly _onDidChangeTreeData = new VSCode.EventEmitter<Connection | undefined>();
     readonly onDidChangeTreeData: VSCode.Event<ConnectionsNode | undefined> = this._onDidChangeTreeData.event;
-    private allConnections = {sonarqube: [], sonarcloud: []};
+    private allConnections = {sonarqube: Array.from<Connection>([]), sonarcloud: Array.from<Connection>([])};
 
     constructor(
       private readonly connectionChecker?: (connectionId) => Thenable<ConnectionCheckResult>
@@ -70,9 +70,12 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
             try {
-                const connectionCheckResult =
-                    this.connectionChecker ? (await this.connectionChecker(c.connectionId)) : {success: false};
-                status = connectionCheckResult && connectionCheckResult.success ? 'ok' : 'notok';
+                const connectionCheckResult = await this.checkConnection(c.connectionId);
+                if (connectionCheckResult.success) {
+                    status = 'ok';
+                } else if (!/unknown/.test(connectionCheckResult.reason)) {
+                    status = 'notok';
+                }
             } catch (e){
                 console.log(e);
             }
@@ -81,6 +84,12 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
         this.allConnections[type] = connections;
         return connections;
+    }
+
+    async checkConnection(connectionId) {
+        return this.connectionChecker ?
+          this.connectionChecker(connectionId) :
+          { success: false, reason: 'Connection checker not available yet' };
     }
 
     refresh(connection?: Connection) {
@@ -113,5 +122,12 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
             sqConnections.length > 0 ? new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup') : null,
             scConnections.length > 0 ? new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup') : null
         ];
+    }
+
+    reportConnectionCheckResult(checkResult: ConnectionCheckResult) {
+        const connectionToUpdate = this.allConnections.sonarqube.find(c => c.id === checkResult.connectionId);
+        connectionToUpdate.status = checkResult.success ? 'ok' : 'notok';
+        connectionToUpdate.refresh();
+        this.refresh(connectionToUpdate);
     }
 }
