@@ -31,6 +31,7 @@ import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequireme
 import { showRuleDescription } from './rulepanel';
 import { AllRulesTreeDataProvider, RuleNode } from './rules';
 import { initScm } from './scm';
+import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
 
@@ -43,6 +44,7 @@ const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
 const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
+let connectionSettingsService: ConnectionSettingsService;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -50,6 +52,7 @@ let sonarlintOutput: VSCode.OutputChannel;
 let secondaryLocationsTree: SecondaryLocationsTree;
 let issueLocationsView: VSCode.TreeView<LocationTreeItem>;
 let languageClient: SonarLintExtendedLanguageClient;
+let allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider;
 
 export function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
@@ -185,7 +188,6 @@ function toggleRule(level: protocol.ConfigLevel) {
 
 export function activate(context: VSCode.ExtensionContext) {
   currentConfig = getSonarLintConfiguration();
-
   util.setExtensionContext(context);
   sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
   context.subscriptions.push(sonarlintOutput);
@@ -238,6 +240,10 @@ export function activate(context: VSCode.ExtensionContext) {
     serverOptions,
     clientOptions
   );
+
+  ConnectionSettingsService.init(context, languageClient);
+  connectionSettingsService = ConnectionSettingsService.getInstance;
+  migrateConnectedModeSettings(currentConfig, connectionSettingsService);
 
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
@@ -343,11 +349,17 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
   );
   context.subscriptions.push(
-      VSCode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(context))
+    VSCode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(context))
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(
+      Commands.REMOVE_CONNECTION,
+      (connection) =>  ConnectionSettingsService.getInstance.removeConnection(connection)
+    )
   );
 
-  const allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider((connectionId) =>
-    languageClient.onReady().then(() => languageClient.refreshConnection(connectionId))
+  allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(
+    (connectionId) => languageClient.onReady().then(() => languageClient.checkConnection(connectionId))
   );
 
   const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
@@ -445,7 +457,10 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
   languageClient.onRequest(protocol.EditorOpenCheck.type, fileUri => isOpenInEditor(fileUri));
-  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, reportConnectionCheckResult);
+  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, async (checkResult) => {
+    await reportConnectionCheckResult(checkResult);
+    allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
+  });
   languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
   );
@@ -468,6 +483,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowHotspotNotification.type, showSecurityHotspot);
   languageClient.onNotification(protocol.ShowTaintVulnerabilityNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
+  languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
   async function notifyMissingCompileCommands() {
     if (await doNotAskAboutCompileCommandsFlag(context) || remindMeLaterAboutCompileCommandsFlag) {
@@ -536,6 +552,10 @@ async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promi
 
 async function isIgnoredByScm(fileUri: string): Promise<boolean> {
   return performIsIgnoredCheck(fileUri, isIgnored);
+}
+
+async function getTokenForServer(serverId: string): Promise<string> {
+  return connectionSettingsService.getServerToken(serverId);
 }
 
 export async function performIsIgnoredCheck(
@@ -676,6 +696,7 @@ function onConfigurationChange() {
         }
       });
     }
+    migrateConnectedModeSettings(newConfig, connectionSettingsService);
   });
 }
 
@@ -716,10 +737,6 @@ export function parseVMargs(params: string[], vmargsLine: string) {
       params.push(arg);
     }
   });
-}
-
-function getSonarLintConfiguration(): VSCode.WorkspaceConfiguration {
-  return VSCode.workspace.getConfiguration('sonarlint');
 }
 
 export function deactivate(): Thenable<void> {

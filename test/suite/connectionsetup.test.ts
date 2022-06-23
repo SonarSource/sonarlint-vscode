@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/commands';
 import { handleMessage } from '../../src/connectionsetup';
+import { ConnectionSettingsService } from '../../src/settings';
 
 suite('Connection Setup', () => {
 
@@ -44,7 +45,7 @@ suite('Connection Setup', () => {
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarQubeConnections();
-    assert.deepStrictEqual(connectionsAfter, [{ serverUrl, token }]);
+    assert.deepStrictEqual(connectionsAfter, [{ serverUrl }]);
   }).timeout(5000);
 
   test('should edit default connection when command is called', async () => {
@@ -54,12 +55,12 @@ suite('Connection Setup', () => {
 
     const serverUrl = 'https://notsonarqube.example';
     const token = 'XXX SUPER SECRET TOKEN XXX';
-    vscode.workspace.getConfiguration('sonarlint').update('connectedMode.connections.sonarqube', [
-      {
-        serverUrl,
-        token
-      }
-    ], vscode.ConfigurationTarget.Global);
+
+    await ConnectionSettingsService.getInstance.addSonarQubeConnection({
+      serverUrl,
+      token
+    });
+
     await sleep(sleepTime);
 
     await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, Promise.resolve({ id: undefined }));
@@ -76,7 +77,7 @@ suite('Connection Setup', () => {
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarQubeConnections();
-    assert.deepStrictEqual(connectionsAfter, [{ serverUrl, token, disableNotifications }]);
+    assert.deepStrictEqual(connectionsAfter, [{ serverUrl, disableNotifications }]);
   }).timeout(5000);
 
   test('should edit identified connection when command is called', async () => {
@@ -87,13 +88,15 @@ suite('Connection Setup', () => {
     const serverUrl = 'https://stillnotsonarqube.example';
     const token = 'XXX SUPER SECRET TOKEN XXX';
     const connectionId = 'My Little SonarQube';
-    vscode.workspace.getConfiguration('sonarlint').update('connectedMode.connections.sonarqube', [
+
+    await ConnectionSettingsService.getInstance.addSonarQubeConnection(
       {
         connectionId,
         serverUrl,
         token
       }
-    ], vscode.ConfigurationTarget.Global);
+    );
+
     await sleep(sleepTime);
 
     await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, connectionId);
@@ -111,7 +114,7 @@ suite('Connection Setup', () => {
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarQubeConnections();
-    assert.deepStrictEqual(connectionsAfter, [{ connectionId, serverUrl, token, disableNotifications }]);
+    assert.deepStrictEqual(connectionsAfter, [{ connectionId, serverUrl, disableNotifications }]);
   }).timeout(5000);
 
 });
