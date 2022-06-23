@@ -12,13 +12,10 @@ import {
   AllConnectionsTreeDataProvider, ConnectionGroup
 } from '../../src/connections';
 import {describe, beforeEach} from 'mocha';
-import { ConnectionSettingsService } from '../../src/settings';
 
 const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
-
-const connectionSettingsService: ConnectionSettingsService = null;
 
 suite('Connected Mode Test Suite', () => {
   beforeEach(async () => {
@@ -38,22 +35,22 @@ suite('Connected Mode Test Suite', () => {
   describe('getConnections()', () => {
     let underTest;
     beforeEach(() => {
-        underTest = new AllConnectionsTreeDataProvider(connectionSettingsService);
+        underTest = new AllConnectionsTreeDataProvider();
     });
 
-    test('should return same number of sonarqube settings as in config file', () => {
+    test('should return same number of sonarqube settings as in config file', async () => {
       const connectionConfig = vscode.workspace.getConfiguration('sonarlint.connectedMode.connections');
-      expect(connectionConfig.sonarqube.length).to.equal(underTest.getConnections('sonarqube').length);
+      expect(connectionConfig.sonarqube.length).to.equal((await underTest.getConnections('sonarqube')).length);
     });
 
     test('should return no sq/sc connections when config is blank', async () => {
-      expect(underTest.getConnections('sonarqube').length).to.equal(0);
-      expect(underTest.getConnections('sonarcloud').length).to.equal(0);
+      expect((await underTest.getConnections('sonarqube')).length).to.equal(0);
+      expect((await underTest.getConnections('sonarcloud')).length).to.equal(0);
     });
 
-    test('should return same number of sonarcloud settings as in config file', () => {
+    test('should return same number of sonarcloud settings as in config file', async () => {
       const connectionConfig = vscode.workspace.getConfiguration('sonarlint.connectedMode.connections');
-      expect(connectionConfig.sonarcloud.length).to.equal(underTest.getConnections('sonarcloud').length);
+      expect(connectionConfig.sonarcloud.length).to.equal((await underTest.getConnections('sonarcloud')).length);
     });
 
   });
@@ -63,7 +60,7 @@ suite('Connected Mode Test Suite', () => {
     const SCGroup = new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup');
 
     test('should return empty lists when expanding SQ and SC tabs and no connections exist', async () => {
-      const underTest = new AllConnectionsTreeDataProvider(connectionSettingsService);
+      const underTest = new AllConnectionsTreeDataProvider();
 
       const initialChildren = await underTest.getChildren(null);
 
@@ -79,7 +76,7 @@ suite('Connected Mode Test Suite', () => {
       await vscode.workspace.getConfiguration('sonarlint')
           .update(CONNECTED_MODE_SETTINGS_SONARQUBE, testSQConfig, vscode.ConfigurationTarget.Global);
 
-      const underTest = new AllConnectionsTreeDataProvider(connectionSettingsService);
+      const underTest = new AllConnectionsTreeDataProvider();
 
       const sonarQubeChildren = await underTest.getChildren(SQGroup);
 
@@ -95,7 +92,7 @@ suite('Connected Mode Test Suite', () => {
       await vscode.workspace.getConfiguration('sonarlint')
           .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, testSCConfig, vscode.ConfigurationTarget.Global);
 
-      const underTest = new AllConnectionsTreeDataProvider(connectionSettingsService);
+      const underTest = new AllConnectionsTreeDataProvider();
 
       const sonarCloudChildren = await underTest.getChildren(SCGroup);
 

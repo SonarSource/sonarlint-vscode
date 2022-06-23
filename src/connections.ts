@@ -1,10 +1,9 @@
 import * as VSCode from 'vscode';
 import * as path from 'path';
 import { ConnectionCheckResult } from './protocol';
-import { BaseConnection, ConnectionSettingsService, SonarCloudConnection, SonarQubeConnection } from './settings';
+import { BaseConnection, ConnectionSettingsService } from './settings';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
-const CONNECTED_MODE_SETTINGS = 'sonarlint.connectedMode.connections';
 
 function getPathToIcon(iconFileName: string) {
     return path.join(__filename, '../..', 'images', 'connection', iconFileName);
@@ -56,7 +55,6 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     private allConnections = {sonarqube: [], sonarcloud: []};
 
     constructor(
-      private readonly connectionSettingsService: ConnectionSettingsService,
       private readonly connectionChecker?: (connectionId) => Thenable<ConnectionCheckResult>
     ) { }
 
@@ -66,8 +64,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         const alternativeLabelKey = type === 'sonarqube' ? 'serverUrl' : 'organizationKey';
 
         const connectionsFromSettings: BaseConnection[] = (type === 'sonarqube' ?
-            this.connectionSettingsService.getSonarQubeConnections() :
-            this.connectionSettingsService.getSonarCloudConnections());
+            ConnectionSettingsService.getInstance.getSonarQubeConnections() :
+            ConnectionSettingsService.getInstance.getSonarCloudConnections());
         const connections = await Promise.all(connectionsFromSettings.map(async (c) => {
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
@@ -109,8 +107,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     }
 
     getInitialState(): ConnectionGroup[] {
-        const sqConnections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)['sonarqube'];
-        const scConnections = VSCode.workspace.getConfiguration(CONNECTED_MODE_SETTINGS)['sonarcloud'];
+        const sqConnections = ConnectionSettingsService.getInstance.getSonarQubeConnections();
+        const scConnections = ConnectionSettingsService.getInstance.getSonarCloudConnections();
         return [
             sqConnections.length > 0 ? new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup') : null,
             scConnections.length > 0 ? new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup') : null

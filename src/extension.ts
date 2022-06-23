@@ -351,7 +351,6 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   const allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(
-    connectionSettingsService,
     (connectionId) => languageClient.onReady().then(() => languageClient.refreshConnection(connectionId))
   );
 
