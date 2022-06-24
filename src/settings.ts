@@ -20,7 +20,7 @@ const SONARCLOUD_CONNECTIONS_CATEGORY = `${SONARLINT_CATEGORY}.${CONNECTIONS_SEC
 async function hasUnmigratedConnections(sqConnections: SonarQubeConnection[],
                                         settingsService: ConnectionSettingsService): Promise<boolean> {
   for (const connection of sqConnections) {
-    if (!await settingsService.hasTokenForServer(connection.serverUrl)) {
+    if (!await settingsService.hasTokenForServer(connection.serverUrl) && connection.token) {
       return true;
     }
   }
