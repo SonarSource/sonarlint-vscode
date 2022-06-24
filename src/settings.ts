@@ -182,17 +182,33 @@ export class ConnectionSettingsService {
     if (isSonarQube) {
       const sqConnections = this.getSonarQubeConnections();
       const matchingConnectionIndex = sqConnections.findIndex(c => c.connectionId === connection.id);
-      await this.deleteTokenForServer(sqConnections[matchingConnectionIndex].serverUrl);
+      const foundConnection = sqConnections[matchingConnectionIndex];
+      if (!foundConnection) {
+        showSaveSettingsWarning();
+        return;
+      }
+      await this.deleteTokenForServer(foundConnection.serverUrl);
       sqConnections.splice(matchingConnectionIndex, 1);
       this.setSonarQubeConnections(sqConnections);
     } else {
       const scConnections = this.getSonarCloudConnections();
       const matchingConnectionIndex = scConnections.findIndex(c => c.connectionId === connection.id);
-      await this.deleteTokenForServer(scConnections[matchingConnectionIndex].organizationKey);
+      const foundConnection = scConnections[matchingConnectionIndex];
+      if (!foundConnection) {
+        showSaveSettingsWarning();
+        return;
+      }
+      await this.deleteTokenForServer(foundConnection.organizationKey);
       scConnections.splice(matchingConnectionIndex, 1);
       this.setSonarCloudConnections(scConnections);
     }
   }
+}
+
+function showSaveSettingsWarning() {
+  const saveSettings = 'You trying to delete connection with modified settings file.' +
+    ' Please save your settings file and try again.';
+  VSCode.window.showWarningMessage(saveSettings);
 }
 
 export interface BaseConnection {
