@@ -86,61 +86,25 @@ Connected mode will also allow to unlock analysis of those languages:
 - [Apex rules](https://rules.sonarsource.com/apex)
 - [PL/SQL rules](https://rules.sonarsource.com/plsql).
 
-The first step is to configure connection details (user token, SonarQube server URL or SonarCloud organization). For security reasons, the token should not be stored in SCM with workspace settings. That's why we suggest to configure them in VSCode user settings.
+Starting from v3.6 of SonarLint for VSCode, to set up SonarQube/SonarCloud connections, open up a `SONARLINT CONNECTED MODE` view in VSCode.
 
-Example for SonarQube:
+<img src='images/connected_mode_treeview.png' alt='Empty Connected Mode View' width='500'/>
 
-    {
-        "sonarlint.connectedMode.connections.sonarqube": [
-            { "serverUrl": "https://sonarqube.mycompany.com", "token": "<generated from SonarQube account/security page>" }
-        ]
-    }
+Click on the relevant button to start setting up SonarQube/SonarCloud connection and fill in the details.
 
-Example for SonarCloud:
+<img src='images/create_view.png' alt='Create Connection View' width='600'/>
 
-    {
-        "sonarlint.connectedMode.connections.sonarcloud": [
-            { "organizationKey": "myOrg", "token": "<generated from https://sonarcloud.io/account/security/>" }
-        ]
-    }
+For SonarQube connections, you need to provide your SonarQube Server URL and Token. Provide Organization Key and Token for SonarCloud connections. A User Token should be generated on the SonarQube/SonarCloud side and pasted in the `User Token` field.
 
-The second step is to configure the project binding, either at workspace level, or in every workspace folders. Example:
+`Connection Name` is a friendly name for your connections. In case of multiple connections, it also acts as a `connectionId`.
 
-    {
-        "sonarlint.connectedMode.project": {
-            "projectKey": "the-project-key"
-        }
-    }
+Click `Save Connection` and verify that the new connection was set up successfully in the Connected Mode view.
 
-If you plan to use multiple connections, to different SonarQube servers and/or SonarCloud organizations, simply give a unique `connectionId` to each entry, and use them as reference in the binding.
+<img src='images/connection_success.png' alt='Create Connection View' width='400'/>
 
-Example:
+If needed, you can edit/delete existing, or create additional connections. Action buttons will be revealed when hovering over the relevant item.
 
-    // In user settings
-    {
-        "sonarlint.connectedMode.connections.sonarqube": [
-            { "connectionId": "mySonar", "serverUrl": "https://sonarqube.mycompany.com", "token": "xxx" }
-        ]
-        "sonarlint.connectedMode.connections.sonarcloud": [
-            { "connectionId": "myOrgOnSonarCloud", "organizationKey": "myOrg", "token": "yyy" }
-        ]
-    }
-
-    // In project1/.vscode/settings.json
-    {
-        "sonarlint.connectedMode.project": {
-            "connectionId": "mySonar",
-            "projectKey": "the-project-key-on-sq"
-        }
-    }
-
-    // In project2/.vscode/settings.json
-    {
-        "sonarlint.connectedMode.project": {
-            "connectionId": "myOrgOnSonarCloud",
-            "projectKey": "the-project-key-on-sc"
-        }
-    }
+### Project Binding
 
 Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace. SonarLint will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness).
 
