@@ -182,22 +182,22 @@ export class ConnectionSettingsService {
     if (isSonarQube) {
       const sqConnections = this.getSonarQubeConnections();
       const matchingConnectionIndex = sqConnections.findIndex(c => c.connectionId === connection.id);
-      const foundConnection = sqConnections[matchingConnectionIndex];
-      if (!foundConnection) {
+      if (matchingConnectionIndex === -1) {
         showSaveSettingsWarning();
         return;
       }
+      const foundConnection = sqConnections[matchingConnectionIndex];
       await this.deleteTokenForServer(foundConnection.serverUrl);
       sqConnections.splice(matchingConnectionIndex, 1);
       this.setSonarQubeConnections(sqConnections);
     } else {
       const scConnections = this.getSonarCloudConnections();
       const matchingConnectionIndex = scConnections.findIndex(c => c.connectionId === connection.id);
-      const foundConnection = scConnections[matchingConnectionIndex];
-      if (!foundConnection) {
+      if (matchingConnectionIndex === -1) {
         showSaveSettingsWarning();
         return;
       }
+      const foundConnection = scConnections[matchingConnectionIndex];
       await this.deleteTokenForServer(foundConnection.organizationKey);
       scConnections.splice(matchingConnectionIndex, 1);
       this.setSonarCloudConnections(scConnections);
