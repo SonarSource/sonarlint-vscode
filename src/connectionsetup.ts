@@ -32,10 +32,11 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
       token: '',
       connectionId: ''
     };
-    lazyCreateConnectionSetupPanel(context, 'SonarQube');
+    const serverProductName = 'SonarQube';
+    lazyCreateConnectionSetupPanel(context, serverProductName);
     connectionSetupPanel.webview.html =
         renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'create', initialState });
-    finishSetupAndRevealPanel();
+    finishSetupAndRevealPanel(serverProductName);
   };
 }
 
@@ -46,10 +47,11 @@ export function connectToSonarCloud(context: vscode.ExtensionContext) {
       token: '',
       connectionId: ''
     };
-    lazyCreateConnectionSetupPanel(context, 'SonarCloud');
+    const serverProductName = 'SonarCloud';
+    lazyCreateConnectionSetupPanel(context, serverProductName);
     connectionSetupPanel.webview.html =
       renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'create', initialState });
-    finishSetupAndRevealPanel();
+    finishSetupAndRevealPanel(serverProductName);
   };
 }
 
@@ -57,10 +59,11 @@ export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
     const initialState = await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId);
-    lazyCreateConnectionSetupPanel(context, 'SonarQube');
+    const serverProductName = 'SonarQube';
+    lazyCreateConnectionSetupPanel(context, serverProductName);
     connectionSetupPanel.webview.html =
         renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
-    finishSetupAndRevealPanel();
+    finishSetupAndRevealPanel(serverProductName);
   };
 }
 
@@ -68,16 +71,17 @@ export function editSonarCloudConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
     const initialState = await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
-    lazyCreateConnectionSetupPanel(context, 'SonarCloud');
+    const serverProductName = 'SonarCloud';
+    lazyCreateConnectionSetupPanel(context, serverProductName);
     connectionSetupPanel.webview.html =
       renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
-    finishSetupAndRevealPanel();
+    finishSetupAndRevealPanel(serverProductName);
   };
 }
 
-function finishSetupAndRevealPanel() {
+function finishSetupAndRevealPanel(serverProductName: string) {
   connectionSetupPanel.webview.onDidReceiveMessage(handleMessage);
-  connectionSetupPanel.iconPath = util.resolveExtensionFile('images', 'sonarqube.svg');
+  connectionSetupPanel.iconPath = util.resolveExtensionFile('images', `${serverProductName.toLowerCase()}.svg`);
   connectionSetupPanel.reveal();
 }
 
