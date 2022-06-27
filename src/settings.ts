@@ -206,7 +206,7 @@ export class ConnectionSettingsService {
 }
 
 function showSaveSettingsWarning() {
-  const saveSettings = 'You trying to delete connection with modified settings file.' +
+  const saveSettings = 'You are trying to delete connection with modified settings file.' +
     ' Please save your settings file and try again.';
   VSCode.window.showWarningMessage(saveSettings);
 }
