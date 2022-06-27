@@ -96,7 +96,7 @@ Click on the relevant button to start setting up SonarQube/SonarCloud connection
 
 For SonarQube connections, you need to provide your SonarQube Server URL and Token. Provide Organization Key and Token for SonarCloud connections. A User Token should be generated on the SonarQube/SonarCloud side and pasted in the `User Token` field.
 
-User Token can be generated using:
+User Token can be generated from:
 * SonarQube - `https://<your-sonarqube-url>/sonarqube/account/security/` page
 * SonarCloud - `https://sonarcloud.io/account/security/` page
 
