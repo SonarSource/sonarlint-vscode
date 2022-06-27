@@ -32,7 +32,7 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
       token: '',
       connectionId: ''
     };
-    lazyCreateConnectionSetupPanel(context);
+    lazyCreateConnectionSetupPanel(context, 'SonarQube');
     connectionSetupPanel.webview.html =
         renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'create', initialState });
     finishSetupAndRevealPanel();
@@ -46,7 +46,7 @@ export function connectToSonarCloud(context: vscode.ExtensionContext) {
       token: '',
       connectionId: ''
     };
-    lazyCreateConnectionSetupPanel(context);
+    lazyCreateConnectionSetupPanel(context, 'SonarCloud');
     connectionSetupPanel.webview.html =
       renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'create', initialState });
     finishSetupAndRevealPanel();
@@ -57,7 +57,7 @@ export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
     const initialState = await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId);
-    lazyCreateConnectionSetupPanel(context);
+    lazyCreateConnectionSetupPanel(context, 'SonarQube');
     connectionSetupPanel.webview.html =
         renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
     finishSetupAndRevealPanel();
@@ -68,7 +68,7 @@ export function editSonarCloudConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
     const initialState = await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
-    lazyCreateConnectionSetupPanel(context);
+    lazyCreateConnectionSetupPanel(context, 'SonarCloud');
     connectionSetupPanel.webview.html =
       renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
     finishSetupAndRevealPanel();
@@ -100,11 +100,11 @@ export async function reportConnectionCheckResult(result: ConnectionCheckResult)
   }
 }
 
-function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext) {
+function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, serverProductName) {
   if (!connectionSetupPanel) {
     connectionSetupPanel = vscode.window.createWebviewPanel(
       'sonarlint.ConnectionSetup',
-      'SonarQube Connection',
+      `${serverProductName} Connection`,
       vscode.ViewColumn.Active,
       {
         enableScripts: true

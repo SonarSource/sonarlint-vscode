@@ -61,7 +61,7 @@ function onChangeOrganizationKey() {
 }
 
 function toggleGenerateTokenButton() {
-  byId('generateToken').disabled = !hasValidRequiredField();
+  byId('generateToken').disabled = byId('serverUrl') && !hasValidRequiredField();
 }
 
 function hasValidRequiredField() {

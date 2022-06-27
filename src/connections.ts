@@ -57,7 +57,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
     async getConnections(type: string): Promise<Connection[]> {
         const contextValue = type === 'sonarqube' ? 'sonarqubeConnection' : 'sonarcloudConnection';
-        const labelKey = type === 'sonarqube' ? 'connectionId' : 'organizationKey';
+        const labelKey = 'connectionId';
         const alternativeLabelKey = type === 'sonarqube' ? 'serverUrl' : 'organizationKey';
 
         const connectionsFromSettings: BaseConnection[] = (type === 'sonarqube' ?
