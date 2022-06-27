@@ -61,8 +61,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         const alternativeLabelKey = type === 'sonarqube' ? 'serverUrl' : 'organizationKey';
 
         const connectionsFromSettings: BaseConnection[] = (type === 'sonarqube' ?
-            ConnectionSettingsService.getInstance.getSonarQubeConnections() :
-            ConnectionSettingsService.getInstance.getSonarCloudConnections());
+            ConnectionSettingsService.instance.getSonarQubeConnections() :
+            ConnectionSettingsService.instance.getSonarCloudConnections());
         const connections = await Promise.all(connectionsFromSettings.map(async (c) => {
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
@@ -114,8 +114,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     }
 
     getInitialState(): ConnectionGroup[] {
-        const sqConnections = ConnectionSettingsService.getInstance.getSonarQubeConnections();
-        const scConnections = ConnectionSettingsService.getInstance.getSonarCloudConnections();
+        const sqConnections = ConnectionSettingsService.instance.getSonarQubeConnections();
+        const scConnections = ConnectionSettingsService.instance.getSonarCloudConnections();
         return [
             sqConnections.length > 0 ? new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup') : null,
             scConnections.length > 0 ? new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup') : null

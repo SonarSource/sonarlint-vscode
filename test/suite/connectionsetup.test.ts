@@ -89,7 +89,7 @@ suite('Connection Setup', () => {
     const serverUrl = 'https://notsonarqube.example';
     const token = 'XXX SUPER SECRET TOKEN XXX';
 
-    await ConnectionSettingsService.getInstance.addSonarQubeConnection({
+    await ConnectionSettingsService.instance.addSonarQubeConnection({
       serverUrl,
       token
     });
@@ -122,7 +122,7 @@ suite('Connection Setup', () => {
     const token = 'XXX SUPER SECRET TOKEN XXX';
     const connectionId = 'My Little SonarQube';
 
-    await ConnectionSettingsService.getInstance.addSonarQubeConnection(
+    await ConnectionSettingsService.instance.addSonarQubeConnection(
       {
         connectionId,
         serverUrl,
@@ -159,7 +159,7 @@ suite('Connection Setup', () => {
     const token = 'XXX SUPER SECRET TOKEN XXX';
     const connectionId = 'My Little SonarQube';
 
-    await ConnectionSettingsService.getInstance.addSonarCloudConnection(
+    await ConnectionSettingsService.instance.addSonarCloudConnection(
       {
         connectionId,
         organizationKey,

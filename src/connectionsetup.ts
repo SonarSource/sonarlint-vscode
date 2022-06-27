@@ -22,7 +22,8 @@ import { ResourceResolver } from './webview';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
-const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/sonarlint-notifications/';
+const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/connected-mode/';
+const sonarCloudNotificationsDocUrl = 'https://docs.sonarcloud.io/advanced-setup/sonarlint-smart-notifications/';
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
   return () => {
@@ -55,7 +56,7 @@ export function connectToSonarCloud(context: vscode.ExtensionContext) {
 export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
-    const initialState = await loadSonarQubeConnection(connectionId);
+    const initialState = await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId);
     lazyCreateConnectionSetupPanel(context);
     connectionSetupPanel.webview.html =
         renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
@@ -66,7 +67,7 @@ export function editSonarQubeConnection(context: vscode.ExtensionContext) {
 export function editSonarCloudConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
-    const initialState = await loadSonarCloudConnection(connectionId);
+    const initialState = await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
     lazyCreateConnectionSetupPanel(context);
     connectionSetupPanel.webview.html =
       renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
@@ -134,6 +135,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const isSonarQube = isSonarQubeConnection(initialState);
 
   const serverProductName = isSonarQube ? 'SonarQube' : 'SonarCloud';
+  const serverDocUrl = isSonarQube ? sonarQubeNotificationsDocUrl : sonarCloudNotificationsDocUrl;
 
   const initialConnectionId = initialState.connectionId || '';
 
@@ -172,7 +174,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <input type="hidden" id="enableNotifications-initial" value="${!initialState.disableNotifications}" />
         <p>
           You will receive
-          <vscode-link target="_blank" href="${sonarQubeNotificationsDocUrl}">notifications</vscode-link>
+          <vscode-link target="_blank" href="${serverDocUrl}">notifications</vscode-link>
           from ${serverProductName} in situations like:
         </p>
         <ul>
@@ -224,24 +226,6 @@ function renderOrganizationKeyField(connection) {
     <input type="hidden" id="organizationKey-initial" value="${connection.organizationKey}" />`;
 }
 
-async function loadSonarQubeConnection(connectionId: string) {
-  const allSonarQubeConnections = ConnectionSettingsService.getInstance.getSonarQubeConnections();
-  const loadedConnection = allSonarQubeConnections.find(c => c.connectionId === connectionId);
-  if (loadedConnection) {
-    loadedConnection.token = await ConnectionSettingsService.getInstance.getServerToken(loadedConnection.serverUrl);
-  }
-  return loadedConnection;
-}
-
-async function loadSonarCloudConnection(connectionId: string) {
-  const allSonarCloudConnections = ConnectionSettingsService.getInstance.getSonarCloudConnections();
-  const loadedConnection = allSonarCloudConnections.find(c => c.connectionId === connectionId);
-  if (loadedConnection) {
-    loadedConnection.token = await ConnectionSettingsService.getInstance.getServerToken(loadedConnection.organizationKey);
-  }
-  return loadedConnection;
-}
-
 /*
  * Exported for unit tests
  */
@@ -275,20 +259,20 @@ async function openTokenGenerationPage(message) {
 
 async function saveConnection(connection: SonarQubeConnection | SonarCloudConnection) {
   if (isSonarQubeConnection(connection)) {
-    const matchingConnection = await loadSonarQubeConnection(connection.connectionId);
+    const foundConnection = await ConnectionSettingsService.instance.loadSonarQubeConnection(connection.connectionId);
     await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
-    if (matchingConnection) {
-      await ConnectionSettingsService.getInstance.updateSonarQubeConnection(connection);
+    if (foundConnection) {
+      await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
     } else {
-      await ConnectionSettingsService.getInstance.addSonarQubeConnection(connection);
+      await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
     }
   } else {
-    const matchingConnection = await loadSonarCloudConnection(connection.connectionId);
+    const foundConnection = await ConnectionSettingsService.instance.loadSonarCloudConnection(connection.connectionId);
     await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
-    if (matchingConnection) {
-      await ConnectionSettingsService.getInstance.updateSonarCloudConnection(connection);
+    if (foundConnection) {
+      await ConnectionSettingsService.instance.updateSonarCloudConnection(connection);
     } else {
-      await ConnectionSettingsService.getInstance.addSonarCloudConnection(connection);
+      await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
     }
   }
 }

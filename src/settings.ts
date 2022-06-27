@@ -64,7 +64,7 @@ export function getSonarLintConfiguration(): VSCode.WorkspaceConfiguration {
 
 export class ConnectionSettingsService {
 
-  private static instance: ConnectionSettingsService;
+  private static _instance: ConnectionSettingsService;
 
   constructor(
     private readonly secretStorage: VSCode.SecretStorage,
@@ -73,11 +73,11 @@ export class ConnectionSettingsService {
   }
 
   static init(context: VSCode.ExtensionContext, client: SonarLintExtendedLanguageClient): void {
-    ConnectionSettingsService.instance = new ConnectionSettingsService(context.secrets, client);
+    ConnectionSettingsService._instance = new ConnectionSettingsService(context.secrets, client);
   }
 
-  static get getInstance(): ConnectionSettingsService {
-    return ConnectionSettingsService.instance;
+  static get instance(): ConnectionSettingsService {
+    return ConnectionSettingsService._instance;
   }
 
   /**
@@ -220,6 +220,24 @@ export class ConnectionSettingsService {
       .update(SONARQUBE_CONNECTIONS_CATEGORY, sqConnections, VSCode.ConfigurationTarget.Global);
     await VSCode.workspace.getConfiguration()
       .update(SONARCLOUD_CONNECTIONS_CATEGORY, scConnections, VSCode.ConfigurationTarget.Global);
+  }
+
+  async loadSonarQubeConnection(connectionId: string) {
+    const allSonarQubeConnections = this.getSonarQubeConnections();
+    const loadedConnection = allSonarQubeConnections.find(c => c.connectionId === connectionId);
+    if (loadedConnection) {
+      loadedConnection.token = await this.getServerToken(loadedConnection.serverUrl);
+    }
+    return loadedConnection;
+  }
+
+  async loadSonarCloudConnection(connectionId: string) {
+    const allSonarCloudConnections = this.getSonarCloudConnections();
+    const loadedConnection = allSonarCloudConnections.find(c => c.connectionId === connectionId);
+    if (loadedConnection) {
+      loadedConnection.token = await this.getServerToken(loadedConnection.organizationKey);
+    }
+    return loadedConnection;
   }
 
   async removeConnection(connectionItem: Promise<Connection>) {

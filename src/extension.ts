@@ -248,7 +248,7 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   ConnectionSettingsService.init(context, languageClient);
-  connectionSettingsService = ConnectionSettingsService.getInstance;
+  connectionSettingsService = ConnectionSettingsService.instance;
   migrateConnectedModeSettings(currentConfig, connectionSettingsService);
 
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
@@ -366,7 +366,7 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(
       Commands.REMOVE_CONNECTION,
-      (connection) =>  ConnectionSettingsService.getInstance.removeConnection(connection)
+      (connection) =>  ConnectionSettingsService.instance.removeConnection(connection)
     )
   );
 
