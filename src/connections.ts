@@ -1,5 +1,4 @@
 import * as VSCode from 'vscode';
-import * as path from 'path';
 import { ConnectionCheckResult } from './protocol';
 import { BaseConnection, ConnectionSettingsService } from './settings';
 

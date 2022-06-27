@@ -20,7 +20,7 @@ const SONARCLOUD_CONNECTIONS_CATEGORY = `${SONARLINT_CATEGORY}.${CONNECTIONS_SEC
 async function hasUnmigratedConnections(sqConnections: SonarQubeConnection[],
                                         settingsService: ConnectionSettingsService): Promise<boolean> {
   for (const connection of sqConnections) {
-    if (!await settingsService.hasTokenForServer(connection.serverUrl)) {
+    if (!await settingsService.hasTokenForServer(connection.serverUrl) && connection.token) {
       return true;
     }
   }
@@ -182,17 +182,33 @@ export class ConnectionSettingsService {
     if (isSonarQube) {
       const sqConnections = this.getSonarQubeConnections();
       const matchingConnectionIndex = sqConnections.findIndex(c => c.connectionId === connection.id);
-      await this.deleteTokenForServer(sqConnections[matchingConnectionIndex].serverUrl);
+      if (matchingConnectionIndex === -1) {
+        showSaveSettingsWarning();
+        return;
+      }
+      const foundConnection = sqConnections[matchingConnectionIndex];
+      await this.deleteTokenForServer(foundConnection.serverUrl);
       sqConnections.splice(matchingConnectionIndex, 1);
       this.setSonarQubeConnections(sqConnections);
     } else {
       const scConnections = this.getSonarCloudConnections();
       const matchingConnectionIndex = scConnections.findIndex(c => c.connectionId === connection.id);
-      await this.deleteTokenForServer(scConnections[matchingConnectionIndex].organizationKey);
+      if (matchingConnectionIndex === -1) {
+        showSaveSettingsWarning();
+        return;
+      }
+      const foundConnection = scConnections[matchingConnectionIndex];
+      await this.deleteTokenForServer(foundConnection.organizationKey);
       scConnections.splice(matchingConnectionIndex, 1);
       this.setSonarCloudConnections(scConnections);
     }
   }
+}
+
+function showSaveSettingsWarning() {
+  const saveSettings = 'You are trying to delete connection with modified settings file.' +
+    ' Please save your settings file and try again.';
+  VSCode.window.showWarningMessage(saveSettings);
 }
 
 export interface BaseConnection {
