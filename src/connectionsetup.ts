@@ -11,7 +11,12 @@ import * as vscode from 'vscode';
 import { Commands } from './commands';
 import { Connection } from './connections';
 import { ConnectionCheckResult } from './protocol';
-import { ConnectionSettingsService, SonarQubeConnection } from './settings';
+import {
+  ConnectionSettingsService,
+  isSonarQubeConnection,
+  SonarCloudConnection,
+  SonarQubeConnection
+} from './settings';
 import * as util from './util';
 import { ResourceResolver } from './webview';
 
@@ -33,13 +38,38 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
   };
 }
 
+export function connectToSonarCloud(context: vscode.ExtensionContext) {
+  return () => {
+    const initialState = {
+      organizationKey: '',
+      token: '',
+      connectionId: ''
+    };
+    lazyCreateConnectionSetupPanel(context);
+    connectionSetupPanel.webview.html =
+      renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'create', initialState });
+    finishSetupAndRevealPanel();
+  };
+}
+
 export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
-    const initialState = await loadConnection(connectionId);
+    const initialState = await loadSonarQubeConnection(connectionId);
     lazyCreateConnectionSetupPanel(context);
     connectionSetupPanel.webview.html =
         renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
+    finishSetupAndRevealPanel();
+  };
+}
+
+export function editSonarCloudConnection(context: vscode.ExtensionContext) {
+  return async (connection: string | Promise<Connection>) => {
+    const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
+    const initialState = await loadSonarCloudConnection(connectionId);
+    lazyCreateConnectionSetupPanel(context);
+    connectionSetupPanel.webview.html =
+      renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
     finishSetupAndRevealPanel();
   };
 }
@@ -91,7 +121,7 @@ function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext) {
 
 interface RenderOptions {
   mode: 'create' | 'update';
-  initialState: SonarQubeConnection;
+  initialState: SonarQubeConnection | SonarCloudConnection;
 }
 
 function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: vscode.Webview, options: RenderOptions) {
@@ -101,8 +131,9 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const webviewMainUri = resolver.resolve('webview-ui', 'connectionsetup.js');
 
   const { mode, initialState } = options;
+  const isSonarQube = isSonarQubeConnection(initialState);
 
-  const serverProductName = 'SonarQube';
+  const serverProductName = isSonarQube ? 'SonarQube' : 'SonarCloud';
 
   const initialConnectionId = initialState.connectionId || '';
 
@@ -120,24 +151,15 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
     <body>
       <h1>${mode === 'create' ? 'New' : 'Edit'} ${serverProductName} Connection</h1>
       <form id="connectionForm">
-        <vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
-          title="The base URL for your SonarQube server" autofocus value="${initialState.serverUrl}">
-          Server URL
-        </vscode-text-field>
-        <input type="hidden" id="serverUrl-initial" value="${initialState.serverUrl}" />
-        <vscode-button id="generateToken" ${initialState.serverUrl === '' ? 'disabled' : ''}>
-          Generate Token
-        </vscode-button>
-        <p>
-          You can use the button above to generate a user token in your ${serverProductName} settings,
-          copy it and paste it in the field below.
-        </p>
+        ${renderServerUrlField(initialState)}
+        ${renderGenerateTokenButton(initialState, serverProductName)}
         <vscode-text-field id="token" type="password" placeholder="········" required size="40"
           title="A user token generated for your account on ${serverProductName}" value="${initialState.token}">
           User Token
         </vscode-text-field>
         <input type="hidden" id="token-initial" value="${initialState.token}" />
-        <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Server" size="40"
+        ${renderOrganizationKeyField(initialState)}
+        <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Connection" size="40"
           title="Optionally, please give this connection a memorable name" value="${initialConnectionId}"
           ${options.mode === 'update' ? 'readonly' : ''}>
           Connection Name
@@ -169,11 +191,53 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   </html>`;
 }
 
-async function loadConnection(connectionId: string) {
+function renderServerUrlField(connection) {
+  if (isSonarQubeConnection(connection)) {
+    return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
+    title="The base URL for your SonarQube server" autofocus value="${connection.serverUrl}">
+      Server URL
+    </vscode-text-field>
+    <input type="hidden" id="serverUrl-initial" value="${connection.serverUrl}" />`;
+  }
+  return '';
+}
+
+function renderGenerateTokenButton(connection, serverProductName) {
+  const buttonDisabled = (isSonarQubeConnection(connection) && connection.serverUrl === '') ? 'disabled' : '';
+  return `<vscode-button id="generateToken" ${buttonDisabled}>
+      Generate Token
+    </vscode-button>
+    <p>
+      You can use the button above to generate a user token in your ${serverProductName} settings,
+      copy it and paste it in the field below.
+    </p>`;
+}
+
+function renderOrganizationKeyField(connection) {
+  if (isSonarQubeConnection(connection)) {
+    return '';
+  }
+  return `<vscode-text-field id="organizationKey" type="text" placeholder="your-organization" required size="40"
+    title="The key of your organization on SonarCloud" autofocus value="${connection.organizationKey}">
+      Organization Key
+    </vscode-text-field>
+    <input type="hidden" id="organizationKey-initial" value="${connection.organizationKey}" />`;
+}
+
+async function loadSonarQubeConnection(connectionId: string) {
   const allSonarQubeConnections = ConnectionSettingsService.getInstance.getSonarQubeConnections();
   const loadedConnection = allSonarQubeConnections.find(c => c.connectionId === connectionId);
   if (loadedConnection) {
     loadedConnection.token = await ConnectionSettingsService.getInstance.getServerToken(loadedConnection.serverUrl);
+  }
+  return loadedConnection;
+}
+
+async function loadSonarCloudConnection(connectionId: string) {
+  const allSonarCloudConnections = ConnectionSettingsService.getInstance.getSonarCloudConnections();
+  const loadedConnection = allSonarCloudConnections.find(c => c.connectionId === connectionId);
+  if (loadedConnection) {
+    loadedConnection.token = await ConnectionSettingsService.getInstance.getServerToken(loadedConnection.organizationKey);
   }
   return loadedConnection;
 }
@@ -208,7 +272,7 @@ async function openTokenGenerationPage(message) {
 }
 
 async function saveConnection(connection: SonarQubeConnection) {
-  const matchingConnection = await loadConnection(connection.connectionId);
+  const matchingConnection = await loadSonarQubeConnection(connection.connectionId);
   await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
   if (matchingConnection) {
     await ConnectionSettingsService.getInstance.updateSonarQubeConnection(connection);

@@ -18,8 +18,16 @@ function byId(elementId) {
 function init() {
   byId('connectionId').addEventListener('change', onChangeConnectionId);
   byId('connectionId').addEventListener('keyup', onChangeConnectionId);
-  byId('serverUrl').addEventListener('change', onChangeServerUrl);
-  byId('serverUrl').addEventListener('keyup', onChangeServerUrl);
+  const serverUrl = byId('serverUrl');
+  if (serverUrl) {
+    serverUrl.addEventListener('change', onChangeServerUrl);
+    serverUrl.addEventListener('keyup', onChangeServerUrl);
+  }
+  const organizationKey = byId('organizationKey');
+  if (serverUrl) {
+    organizationKey.addEventListener('change', onChangeOrganizationKey);
+    organizationKey.addEventListener('keyup', onChangeOrganizationKey);
+  }
   byId('generateToken').addEventListener('click', onClickGenerateToken);
   byId('token').addEventListener('change', onChangeToken);
   byId('token').addEventListener('keyup', onChangeToken);
@@ -41,6 +49,14 @@ function onChangeServerUrl() {
     byId('connectionId').value = sanitize(byId('serverUrl').value);
   }
   toggleGenerateTokenButton();
+  toggleSaveConnectionButton();
+}
+
+function onChangeOrganizationKey() {
+  saveState();
+  if (byId('shouldGenerateConnectionId').value === 'true') {
+    byId('connectionId').value = sanitize(byId('organizationKey').value);
+  }
   toggleSaveConnectionButton();
 }
 
@@ -97,16 +113,23 @@ function onChangeEnableNotifications() {
 
 function onClickSaveConnection() {
   const connectionId = byId('connectionId').value;
-  const serverUrl = byId('serverUrl').value;
   const token = byId('token').value;
   const disableNotifications = !byId('enableNotifications').checked;
-  vscode.postMessage({
+  const saveConnectionMessage = {
     command: 'saveConnection',
     connectionId,
-    serverUrl,
     token,
     disableNotifications
-  });
+  };
+  const serverUrl = byId('serverUrl');
+  if (serverUrl) {
+    saveConnectionMessage.serverUrl = serverUrl.value;
+  }
+  const organizationKey = byId('organizationKey');
+  if (organizationKey) {
+    saveConnectionMessage.organizationKey = organizationKey.value;
+  }
+  vscode.postMessage(saveConnectionMessage);
 }
 
 function tryRestoreState() {
@@ -129,10 +152,16 @@ function tryRestore(keyValuePair) {
 
 function saveState() {
   const stateToSave = {};
-  for (const elementId of ['connectionId', 'serverUrl', 'token', 'shouldGenerateConnectionId']) {
-    const value = byId(elementId).value;
-    if (value) {
-      stateToSave[elementId] = value;
+  for (const elementId of ['connectionId', 'organizationKey', 'serverUrl', 'token', 'shouldGenerateConnectionId']) {
+    /**
+     * @type {HTMLInputElement}
+     */
+    const inputElement = byId(elementId);
+    if (inputElement) {
+      const value = inputElement.value;
+      if (value) {
+        stateToSave[elementId] = value;
+      }
     }
   }
   stateToSave.enableNotifications = byId('enableNotifications').checked;
@@ -147,7 +176,7 @@ function hasUnsavedChanges() {
   const enableNotificationsInitial = (byId('enableNotifications-initial').value === 'true');
   const enableNotificationsHasChanged = (enableNotifications.checked !== enableNotificationsInitial);
   return enableNotificationsHasChanged ||
-      ['connectionId', 'serverUrl', 'token'].some(hasChanged);
+      ['connectionId', 'organizationKey', 'serverUrl', 'token'].some(hasChanged);
 }
 
 function hasChanged(elementId) {
@@ -159,7 +188,7 @@ function hasChanged(elementId) {
    * @type {HTMLInputElement}
    */
   const initial = byId(`${elementId}-initial`);
-  return element && (element.value !== initial.value);
+  return element && initial && (element.value !== initial.value);
 }
 
 function handleMessage(event) {

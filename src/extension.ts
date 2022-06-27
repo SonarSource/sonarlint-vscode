@@ -15,7 +15,13 @@ import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { SonarLintExtendedLanguageClient } from './client';
 import { Commands } from './commands';
 import { AllConnectionsTreeDataProvider } from './connections';
-import { connectToSonarQube, editSonarQubeConnection, reportConnectionCheckResult } from './connectionsetup';
+import {
+  connectToSonarCloud,
+  connectToSonarQube,
+  editSonarCloudConnection,
+  editSonarQubeConnection,
+  reportConnectionCheckResult
+} from './connectionsetup';
 import { GitExtension } from './git';
 import {
   hideSecurityHotspot,
@@ -349,7 +355,13 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
   );
   context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARCLOUD, connectToSonarCloud(context))
+  );
+  context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(context))
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.EDIT_SONARCLOUD_CONNECTION, editSonarCloudConnection(context))
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(

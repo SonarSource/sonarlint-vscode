@@ -18,9 +18,15 @@ const SONARQUBE_CONNECTIONS_CATEGORY = `${SONARLINT_CATEGORY}.${CONNECTIONS_SECT
 const SONARCLOUD_CONNECTIONS_CATEGORY = `${SONARLINT_CATEGORY}.${CONNECTIONS_SECTION}.${SONARCLOUD}`;
 
 async function hasUnmigratedConnections(sqConnections: SonarQubeConnection[],
+                                        scConnections: SonarCloudConnection[],
                                         settingsService: ConnectionSettingsService): Promise<boolean> {
   for (const connection of sqConnections) {
     if (!await settingsService.hasTokenForServer(connection.serverUrl) && connection.token) {
+      return true;
+    }
+  }
+  for (const connection of scConnections) {
+    if (!await settingsService.hasTokenForServer(connection.organizationKey)) {
       return true;
     }
   }
@@ -30,19 +36,24 @@ async function hasUnmigratedConnections(sqConnections: SonarQubeConnection[],
 export async function migrateConnectedModeSettings(settings: VSCode.WorkspaceConfiguration,
   settingsService: ConnectionSettingsService) {
   const sqConnections = settings.get<SonarQubeConnection[]>(`${CONNECTIONS_SECTION}.${SONARQUBE}`);
-  if (await hasUnmigratedConnections(sqConnections, settingsService)) {
-    suggestMigrationToSecureStorage(sqConnections, settingsService);
+  const scConnections = settings.get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`);
+  if (await hasUnmigratedConnections(sqConnections, scConnections, settingsService)) {
+    suggestMigrationToSecureStorage(sqConnections, scConnections, settingsService);
   }
 }
 
-async function suggestMigrationToSecureStorage(sqConnections: SonarQubeConnection[],
-  settingsService: ConnectionSettingsService) {
+async function suggestMigrationToSecureStorage(
+    sqConnections: SonarQubeConnection[],
+    scConnections: SonarCloudConnection[],
+    settingsService: ConnectionSettingsService
+  ) {
   const remindMeLaterAction = 'Ask me later';
   const migrateToSecureStorageAction = 'Migrate';
-  const message = `SonarLint found SonarQube token in settings file. Do you want to migrate them to secure storage?`;
+  const message = `SonarLint found SonarQube/SonarCloud token in settings file.
+   Do you want to migrate them to secure storage?`;
   const selection = await VSCode.window.showWarningMessage(message, migrateToSecureStorageAction, remindMeLaterAction);
   if (selection === migrateToSecureStorageAction) {
-    await settingsService.addTokensFromSettingsToSecureStorage(sqConnections);
+    await settingsService.addTokensFromSettingsToSecureStorage(sqConnections, scConnections);
   }
 }
 
@@ -151,7 +162,44 @@ export class ConnectionSettingsService {
       .update(SONARCLOUD_CONNECTIONS_CATEGORY, scConnections, VSCode.ConfigurationTarget.Global);
   }
 
-  async addTokensFromSettingsToSecureStorage(sqConnections: SonarQubeConnection[]) {
+  async addSonarCloudConnection(connection: SonarCloudConnection) {
+    const connections = this.getSonarCloudConnections();
+    const newConnection: SonarCloudConnection = { organizationKey: connection.organizationKey };
+    if (connection.connectionId !== undefined) {
+      newConnection.connectionId = connection.connectionId;
+    }
+    if (connection.disableNotifications) {
+      newConnection.disableNotifications = true;
+    }
+    await this.storeServerToken(connection.organizationKey, connection.token);
+    connections.push(newConnection);
+    VSCode.workspace.getConfiguration()
+      .update(SONARCLOUD_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
+  }
+
+  async updateSonarCloudConnection(connection: SonarCloudConnection) {
+    const connections = this.getSonarCloudConnections();
+    const connectionToUpdate = connections.find(c => c.connectionId === connection.connectionId);
+    if (!connectionToUpdate) {
+      throw new Error(`Could not find connection '${connection.connectionId}' to update`);
+    }
+    connectionToUpdate.organizationKey = connection.organizationKey;
+    if (connection.disableNotifications) {
+      connectionToUpdate.disableNotifications = true;
+    } else {
+      delete connectionToUpdate.disableNotifications;
+    }
+    await this.storeServerToken(connection.organizationKey, connection.token);
+    this.client.onTokenUpdate();
+    delete connectionToUpdate.token;
+    VSCode.workspace.getConfiguration()
+      .update(SONARCLOUD_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
+  }
+
+  async addTokensFromSettingsToSecureStorage(
+      sqConnections: SonarQubeConnection[],
+      scConnections: SonarCloudConnection[]
+  ) {
     await Promise.all(
       sqConnections.map(async c => {
         if (c.token !== undefined && !await this.hasTokenForServer(c.serverUrl)) {
@@ -160,8 +208,18 @@ export class ConnectionSettingsService {
         }
       })
     );
-    return VSCode.workspace.getConfiguration()
+    await Promise.all(
+      scConnections.map(async c => {
+        if (c.token !== undefined && !await this.hasTokenForServer(c.organizationKey)) {
+          await this.storeServerToken(c.organizationKey, c.token);
+          c.token = undefined;
+        }
+      })
+    );
+    await VSCode.workspace.getConfiguration()
       .update(SONARQUBE_CONNECTIONS_CATEGORY, sqConnections, VSCode.ConfigurationTarget.Global);
+    await VSCode.workspace.getConfiguration()
+      .update(SONARCLOUD_CONNECTIONS_CATEGORY, scConnections, VSCode.ConfigurationTarget.Global);
   }
 
   async removeConnection(connectionItem: Promise<Connection>) {
@@ -223,4 +281,8 @@ export interface SonarQubeConnection extends BaseConnection {
 
 export interface SonarCloudConnection extends BaseConnection {
   organizationKey: string;
+}
+
+export function isSonarQubeConnection(connection: BaseConnection): connection is SonarQubeConnection {
+  return (connection as SonarQubeConnection).serverUrl !== undefined;
 }
