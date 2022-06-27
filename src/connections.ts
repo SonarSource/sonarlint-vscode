@@ -126,9 +126,12 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         if (checkResult.connectionId === DEFAULT_CONNECTION_ID) {
             checkResult.connectionId = undefined;
         }
-        const connectionToUpdate = this.allConnections.sonarqube.find(c => c.id === checkResult.connectionId);
-        connectionToUpdate.status = checkResult.success ? 'ok' : 'notok';
-        connectionToUpdate.refresh();
-        this.refresh(connectionToUpdate);
+        const allConnections = [...this.allConnections.sonarqube, ...this.allConnections.sonarcloud];
+        const connectionToUpdate = allConnections.find(c => c.id === checkResult.connectionId);
+        if (connectionToUpdate) {
+            connectionToUpdate.status = checkResult.success ? 'ok' : 'notok';
+            connectionToUpdate.refresh();
+            this.refresh(connectionToUpdate);
+        }
     }
 }
