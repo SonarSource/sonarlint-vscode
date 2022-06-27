@@ -24,7 +24,7 @@ function init() {
     serverUrl.addEventListener('keyup', onChangeServerUrl);
   }
   const organizationKey = byId('organizationKey');
-  if (serverUrl) {
+  if (organizationKey) {
     organizationKey.addEventListener('change', onChangeOrganizationKey);
     organizationKey.addEventListener('keyup', onChangeOrganizationKey);
   }
@@ -61,7 +61,15 @@ function onChangeOrganizationKey() {
 }
 
 function toggleGenerateTokenButton() {
-  byId('generateToken').disabled = !hasValidServerUrl();
+  byId('generateToken').disabled = !hasValidRequiredField();
+}
+
+function hasValidRequiredField() {
+  if (byId('serverUrl')) {
+    return hasValidServerUrl();
+  } else {
+    return hasValidOrganizationKey();
+  }
 }
 
 function hasValidServerUrl() {
@@ -79,6 +87,14 @@ function isValidUrl(value) {
   } catch(e) {
     return false;
   }
+}
+
+function hasValidOrganizationKey() {
+  /**
+   * @type {HTMLInputElement}
+   */
+  const organizationKeyInput = byId('organizationKey');
+  return organizationKeyInput.validity.valid;
 }
 
 function onClickGenerateToken() {
@@ -103,7 +119,7 @@ function hasValidToken() {
 }
 
 function toggleSaveConnectionButton() {
-  byId('saveConnection').disabled = !hasUnsavedChanges() || !hasValidServerUrl() || !hasValidToken();
+  byId('saveConnection').disabled = !hasUnsavedChanges() || !hasValidRequiredField() || !hasValidToken();
 }
 
 function onChangeEnableNotifications() {

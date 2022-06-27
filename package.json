@@ -151,13 +151,11 @@
             ],
             "examples": [
               {
-                "serverUrl": "https://<replace_with_your_sonarqube_server_url>",
-                "token": "<replace_with_a_sonarqube_token>"
+                "serverUrl": "https://<replace_with_your_sonarqube_server_url>"
               },
               {
                 "connectionId": "MyCompanySonarQube",
                 "serverUrl": "https://<replace_with_your_sonarqube_server_url>",
-                "token": "<replace_with_a_sonarqube_token>",
                 "disableNotifications": false
               }
             ]
@@ -172,15 +170,13 @@
           "examples": [
             [
               {
-                "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "token": "<replace_with_a_sonarcloud_token>"
+                "organizationKey": "<replace_with_your_sonarcloud_organization_key>"
               }
             ],
             [
               {
                 "connectionId": "MyOrganization",
                 "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "token": "<replace_with_a_sonarcloud_token>",
                 "disableNotifications": false
               }
             ]
@@ -207,18 +203,15 @@
             },
             "additionalProperties": false,
             "required": [
-              "organizationKey",
-              "token"
+              "organizationKey"
             ],
             "examples": [
               {
-                "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "token": "<replace_with_a_sonarcloud_token>"
+                "organizationKey": "<replace_with_your_sonarcloud_organization_key>"
               },
               {
                 "connectionId": "MyOrganization",
                 "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "token": "<replace_with_a_sonarcloud_token>",
                 "disableNotifications": false
               }
             ]
