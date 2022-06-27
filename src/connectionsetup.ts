@@ -258,7 +258,9 @@ export async function handleMessage(message) {
       if (!message.connectionId) {
         delete message.connectionId;
       }
-      message.serverUrl = cleanServerUrl(message.serverUrl);
+      if (message.serverUrl) {
+        message.serverUrl = cleanServerUrl(message.serverUrl);
+      }
       await saveConnection(message);
       break;
   }
@@ -271,13 +273,23 @@ async function openTokenGenerationPage(message) {
   await vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
 }
 
-async function saveConnection(connection: SonarQubeConnection) {
-  const matchingConnection = await loadSonarQubeConnection(connection.connectionId);
-  await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
-  if (matchingConnection) {
-    await ConnectionSettingsService.getInstance.updateSonarQubeConnection(connection);
+async function saveConnection(connection: SonarQubeConnection | SonarCloudConnection) {
+  if (isSonarQubeConnection(connection)) {
+    const matchingConnection = await loadSonarQubeConnection(connection.connectionId);
+    await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
+    if (matchingConnection) {
+      await ConnectionSettingsService.getInstance.updateSonarQubeConnection(connection);
+    } else {
+      await ConnectionSettingsService.getInstance.addSonarQubeConnection(connection);
+    }
   } else {
-    await ConnectionSettingsService.getInstance.addSonarQubeConnection(connection);
+    const matchingConnection = await loadSonarCloudConnection(connection.connectionId);
+    await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
+    if (matchingConnection) {
+      await ConnectionSettingsService.getInstance.updateSonarCloudConnection(connection);
+    } else {
+      await ConnectionSettingsService.getInstance.addSonarCloudConnection(connection);
+    }
   }
 }
 
