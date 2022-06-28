@@ -98,7 +98,11 @@ function hasValidOrganizationKey() {
 }
 
 function onClickGenerateToken() {
-  const serverUrl = byId('serverUrl').value;
+  /**
+   * @type {HTMLInputElement}
+   */
+  const serverUrlElement = byId('serverUrl');
+  const serverUrl = serverUrlElement ? serverUrlElement.value : 'https://sonarcloud.io';
   vscode.postMessage({
     command: 'openTokenGenerationPage',
     serverUrl
