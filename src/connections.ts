@@ -57,12 +57,12 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
     async getConnections(type: string): Promise<Connection[]> {
         const contextValue = type === 'sonarqube' ? 'sonarqubeConnection' : 'sonarcloudConnection';
-        const labelKey = type === 'sonarqube' ? 'connectionId' : 'organizationKey';
+        const labelKey = 'connectionId';
         const alternativeLabelKey = type === 'sonarqube' ? 'serverUrl' : 'organizationKey';
 
         const connectionsFromSettings: BaseConnection[] = (type === 'sonarqube' ?
-            ConnectionSettingsService.getInstance.getSonarQubeConnections() :
-            ConnectionSettingsService.getInstance.getSonarCloudConnections());
+            ConnectionSettingsService.instance.getSonarQubeConnections() :
+            ConnectionSettingsService.instance.getSonarCloudConnections());
         const connections = await Promise.all(connectionsFromSettings.map(async (c) => {
             const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
             let status : ConnectionStatus = 'loading';
@@ -114,8 +114,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     }
 
     getInitialState(): ConnectionGroup[] {
-        const sqConnections = ConnectionSettingsService.getInstance.getSonarQubeConnections();
-        const scConnections = ConnectionSettingsService.getInstance.getSonarCloudConnections();
+        const sqConnections = ConnectionSettingsService.instance.getSonarQubeConnections();
+        const scConnections = ConnectionSettingsService.instance.getSonarCloudConnections();
         return [
             sqConnections.length > 0 ? new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup') : null,
             scConnections.length > 0 ? new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup') : null
@@ -126,9 +126,12 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         if (checkResult.connectionId === DEFAULT_CONNECTION_ID) {
             checkResult.connectionId = undefined;
         }
-        const connectionToUpdate = this.allConnections.sonarqube.find(c => c.id === checkResult.connectionId);
-        connectionToUpdate.status = checkResult.success ? 'ok' : 'notok';
-        connectionToUpdate.refresh();
-        this.refresh(connectionToUpdate);
+        const allConnections = [...this.allConnections.sonarqube, ...this.allConnections.sonarcloud];
+        const connectionToUpdate = allConnections.find(c => c.id === checkResult.connectionId);
+        if (connectionToUpdate) {
+            connectionToUpdate.status = checkResult.success ? 'ok' : 'notok';
+            connectionToUpdate.refresh();
+            this.refresh(connectionToUpdate);
+        }
     }
 }
