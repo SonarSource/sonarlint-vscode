@@ -39,7 +39,7 @@ export class ConnectionGroup extends VSCode.TreeItem {
         public readonly label: 'SonarQube' | 'SonarCloud',
         public readonly contextValue: 'sonarQubeGroup' | 'sonarCloudGroup'
     ) {
-        super(label, VSCode.TreeItemCollapsibleState.Expanded);
+        super(label, VSCode.TreeItemCollapsibleState.Collapsed);
     }
 }
 
