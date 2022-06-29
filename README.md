@@ -108,6 +108,8 @@ Click `Save Connection` and verify that the new connection was set up successful
 
 If needed, you can edit/delete existing, or create additional connections. Action buttons will be revealed when hovering over the relevant item.
 
+For instructions on setting up a Connected Mode for SonarLint v3.5.4 and lower, see [Wiki](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#sonarlint-versions-354-and-lower)
+
 ### Project Binding
 
 Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace. SonarLint will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness).
