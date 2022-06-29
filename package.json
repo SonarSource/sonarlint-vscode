@@ -108,23 +108,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Configure connection(s) to [SonarQube](https://sonarqube.org). For each connection, please provide:\n- `serverUrl`: your SonarQube server URL\n- `token`: a personal authentication token ([How to generate one](https://docs.sonarqube.org/latest/user-guide/user-token/))\n\nOptionally specify a `connectionId` if you want to use multiple connections.\nSet `disableNotifications` to `true` to disable [Smart Notifications](https://docs.sonarqube.org/latest/user-guide/connected-mode/).\n\nDon't forget to also configure project binding for each workspace folder using configuration `#sonarlint.connectedMode.project#`.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarqube\": [\n      {\n        \"serverUrl\": \"https://sonar.mycompany.com\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
-          "examples": [
-            [
-              {
-                "serverUrl": "https://<replace_with_your_sonarqube_server_url>",
-                "token": "<replace_with_a_sonarqube_token>"
-              }
-            ],
-            [
-              {
-                "connectionId": "MyCompanySonarQube",
-                "serverUrl": "https://<replace_with_your_sonarqube_server_url>",
-                "token": "<replace_with_a_sonarqube_token>",
-                "disableNotifications": false
-              }
-            ]
-          ],
+          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other other analysis settings. Please find the documentation [here](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode)",
           "items": {
             "type": "object",
             "properties": {
@@ -166,21 +150,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Configure connection(s) to [SonarCloud](https://sonarcloud.io). For each connection, please provide:\n- `organizationKey`: the key of your SonarCloud organization\n- `token`: a personal authentication token ([How to generate one](https://docs.sonarcloud.io/advanced-setup/user-accounts/#user-tokens))\n\nOptionally specify a `connectionId` if you want to use multiple connections.\nSet `disableNotifications` to `true` to disable [Smart Notifications](https://docs.sonarcloud.io/advanced-setup/sonarlint-smart-notifications/).\n\nDon't forget to also configure the project binding for each workspace folder using configuration `#sonarlint.connectedMode.project#`.\nIf you have projects in different SonarCloud organizations, simply declare multiple connections.\n\nExample:\n\n    \"sonarlint.connectedMode.connections.sonarcloud\": [\n      {\n        \"organizationKey\": \"myOrg\",\n        \"token\": \"V2VkIE1...\"\n      }\n    ]",
-          "examples": [
-            [
-              {
-                "organizationKey": "<replace_with_your_sonarcloud_organization_key>"
-              }
-            ],
-            [
-              {
-                "connectionId": "MyOrganization",
-                "organizationKey": "<replace_with_your_sonarcloud_organization_key>",
-                "disableNotifications": false
-              }
-            ]
-          ],
+          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other other analysis settings. Please find the documentation [here](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode)",
           "items": {
             "type": "object",
             "properties": {
