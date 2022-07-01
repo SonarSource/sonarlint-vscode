@@ -108,7 +108,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other other analysis settings. Please find the documentation [here](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode)",
+          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other analysis settings. Please find the documentation [here](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode)",
           "items": {
             "type": "object",
             "properties": {
@@ -150,7 +150,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other other analysis settings. Please find the documentation [here](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode)",
+          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other analysis settings. Please find the documentation [here](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode)",
           "items": {
             "type": "object",
             "properties": {
