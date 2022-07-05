@@ -1,3 +1,7 @@
+## 3.7
+
+* Update JS/TS analyzer 9.2 -> [9.3](https://github.com/SonarSource/SonarJS/releases/tag/9.3.0.18033) -> [9.4](https://github.com/SonarSource/SonarJS/releases/tag/9.4.0.18205), Support for Typescript 4.7, Upgrade stylelint to 14.9.1, 3 new rules added, FP fixes
+
 ## 3.6
 
 * Add views to manage connected mode authentication, move authentication tokens to secret storage
