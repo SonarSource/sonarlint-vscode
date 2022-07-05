@@ -25,7 +25,6 @@ const dateformat = require('dateformat');
 const jarDependencies = require('./scripts/dependencies.json');
 const exec = require('child_process').exec;
 const { getSignature } = require('./scripts/gulp-sign.js');
-const path = require('path');
 const globby = require('globby');
 const mergeStream = require('merge-stream');
 //...
