@@ -1,6 +1,7 @@
 ## 3.7
 
 * Update JS/TS analyzer 9.2 -> [9.3](https://github.com/SonarSource/SonarJS/releases/tag/9.3.0.18033) -> [9.4](https://github.com/SonarSource/SonarJS/releases/tag/9.4.0.18205), Support for Typescript 4.7, Upgrade stylelint to 14.9.1, 3 new rules added, FP fixes
+* Update CFamily analyzer 6.34 -> [6.35](https://jira.sonarsource.com/secure/ReleaseNote.jspa?projectId=10090&version=17447), 2 new rules, bug fixes and improvements
 
 ## 3.6
 
