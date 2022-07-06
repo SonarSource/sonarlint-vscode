@@ -120,36 +120,29 @@ gulp.task('deploy-vsix', function (done) {
   return mergeStream(
       globby.sync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
         const [sha1, md5] = fileHashsum(filePath);
-        return gulp.series(Object.keys(allPlatforms).map(platform => {
-          return gulp
-              .src(allPlatforms[platform].fileName)
-              .pipe(
-                  artifactoryUpload({
-                    url: artifactoryTargetUrl,
-                    username: ARTIFACTORY_DEPLOY_USERNAME,
-                    password: ARTIFACTORY_DEPLOY_PASSWORD,
-                    properties: {
-                      'vcs.revision': BUILD_SOURCEVERSION,
-                      'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
-                      'build.name': name,
-                      'build.number': BUILD_BUILDID
-                    },
-                    request: {
-                      headers: {
-                        'X-Checksum-MD5': md5,
-                        'X-Checksum-Sha1': sha1
-                      }
+        return gulp
+            .src(filePath)
+            .pipe(
+                artifactoryUpload({
+                  url: artifactoryTargetUrl,
+                  username: ARTIFACTORY_DEPLOY_USERNAME,
+                  password: ARTIFACTORY_DEPLOY_PASSWORD,
+                  properties: {
+                    'vcs.revision': BUILD_SOURCEVERSION,
+                    'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+                    'build.name': name,
+                    'build.number': BUILD_BUILDID
+                  },
+                  request: {
+                    headers: {
+                      'X-Checksum-MD5': md5,
+                      'X-Checksum-Sha1': sha1
                     }
-                  })
-              )
-              .on('error', log.error);
-        }),
-            (seriesDone) => {
-              seriesDone();
-              done();
-        });
-      })
-  );
+                  }
+                })
+            )
+            .on('error', log.error);
+        }));
 });
 
 gulp.task('clean-jre', (done) => {
