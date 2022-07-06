@@ -101,7 +101,7 @@ gulp.task('compute-vsix-hashes', function (done) {
   })();
 });
 
-gulp.task('deploy-vsix', function () {
+gulp.task('deploy-vsix', function (done) {
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -143,7 +143,11 @@ gulp.task('deploy-vsix', function () {
                   })
               )
               .on('error', log.error);
-        }));
+        }),
+            (seriesDone) => {
+              seriesDone();
+              done();
+        });
       })
   );
 });
