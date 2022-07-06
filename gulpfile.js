@@ -101,7 +101,7 @@ gulp.task('compute-vsix-hashes', function (done) {
   })();
 });
 
-gulp.task('deploy-vsix', function (done) {
+gulp.task('deploy-vsix', function () {
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -325,8 +325,6 @@ gulp.task(
     'deploy-vsix'
   )
 );
-
-// gulp.task('deploy', deployAllPlatformsSeries);
 
 function buildInfo(name, version, buildNumber) {
   const {

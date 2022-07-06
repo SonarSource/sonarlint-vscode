@@ -50,7 +50,20 @@ stages:
         inputs:
           secureFile: 'sign-key.asc'
       - task: gulp@1
-        displayName: 'Build and deploy VSIX'
+        displayName: 'Build and deploy universal VSIX'
+        env:
+          SIGN_KEY: $(signKey.secureFilePath)
+          PGP_PASSPHRASE: $(PGP_PASSPHRASE)
+          ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
+          ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
+          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+        inputs:
+          gulpjs: node_modules/.bin/gulp
+          targets: deploy
+        condition: and(succeeded(), and(ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(endsWith(variables['Build.SourceBranch'], 'allvsix'), 'False')))
+      - task: gulp@1
+        displayName: 'Build and deploy all VSIX files'
         env:
           SIGN_KEY: $(signKey.secureFilePath)
           PGP_PASSPHRASE: $(PGP_PASSPHRASE)
@@ -61,9 +74,11 @@ stages:
         inputs:
           gulpjs: node_modules/.bin/gulp
           targets: deploy-all
+        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), endsWith(variables['Build.SourceBranch'], 'allvsix')))
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
+
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
     burgrName: 'validate'
