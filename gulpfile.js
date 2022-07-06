@@ -116,53 +116,34 @@ gulp.task('deploy-vsix', function () {
   const { version, name } = packageJSON;
   const packagePath = 'org/sonarsource/sonarlint/vscode';
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
-  // console.log(`Artifactory target URL: ${artifactoryTargetUrl}`);
-  // return gulp.series(Object.keys(allPlatforms).map(platform =>
-  //     gulp.src(allPlatforms[platform].fileName)
-  //         .pipe(
-  //             artifactoryUpload({
-  //               url: artifactoryTargetUrl,
-  //               username: ARTIFACTORY_DEPLOY_USERNAME,
-  //               password: ARTIFACTORY_DEPLOY_PASSWORD,
-  //               properties: {
-  //                 'vcs.revision': BUILD_SOURCEVERSION,
-  //                 'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
-  //                 'build.name': name,
-  //                 'build.number': BUILD_BUILDID
-  //               },
-  //               request: {
-  //                 headers: {
-  //                   'X-Checksum-MD5': allPlatforms[platform].hashes.md5,
-  //                   'X-Checksum-Sha1': allPlatforms[platform].hashes.sha1
-  //                 }
-  //               }
-  //             })
-  //         )));
+  console.log(`Artifactory target URL: ${artifactoryTargetUrl}`);
   return mergeStream(
       globby.sync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
         const [sha1, md5] = fileHashsum(filePath);
-        return gulp
-            .src(filePath)
-            .pipe(
-                artifactoryUpload({
-                  url:artifactoryTargetUrl,
-                  username: ARTIFACTORY_DEPLOY_USERNAME,
-                  password: ARTIFACTORY_DEPLOY_PASSWORD,
-                  properties: {
-                    'vcs.revision': BUILD_SOURCEVERSION,
-                    'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
-                    'build.name': name,
-                    'build.number': BUILD_BUILDID
-                  },
-                  request: {
-                    headers: {
-                      'X-Checksum-MD5': md5,
-                      'X-Checksum-Sha1': sha1
+        return gulp.series(Object.keys(allPlatforms).map(platform => {
+          return gulp
+              .src(allPlatforms[platform].fileName)
+              .pipe(
+                  artifactoryUpload({
+                    url: artifactoryTargetUrl,
+                    username: ARTIFACTORY_DEPLOY_USERNAME,
+                    password: ARTIFACTORY_DEPLOY_PASSWORD,
+                    properties: {
+                      'vcs.revision': BUILD_SOURCEVERSION,
+                      'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+                      'build.name': name,
+                      'build.number': BUILD_BUILDID
+                    },
+                    request: {
+                      headers: {
+                        'X-Checksum-MD5': md5,
+                        'X-Checksum-Sha1': sha1
+                      }
                     }
-                  }
-                })
-            )
-            .on('error', log.error);
+                  })
+              )
+              .on('error', log.error);
+        }));
       })
   );
 });
@@ -309,7 +290,7 @@ function downloadJreAndInstallVsixForPlatform(platform) {
 }
 
 const deployAllPlatformsSeries = (done) => {
-  const tasks = ['clean', 'update-version'];
+  const tasks = ['clean', 'update-version', 'cycloneDx'];
   TARGETED_PLATFORMS.forEach(
       platform => tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)))
   );
