@@ -45,8 +45,9 @@ suite('Extension Test Suite', () => {
 
     var diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.strictEqual(diags.length, 1);
+    assert.strictEqual(diags.length, 2);
     assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
+    assert.strictEqual(diags[1].message, "Unexpected var, use let or const instead.");
   }).timeout(60 * 1000);
 
   test('should report issue on js file with URI-encoded characters', async function() {
@@ -55,9 +56,10 @@ suite('Extension Test Suite', () => {
     const editor = await vscode.window.showTextDocument(document);
 
     var diags = await waitForSonarLintDiagnostics(fileUri);
-
-    assert.strictEqual(diags.length, 1);
+    
+    assert.strictEqual(diags.length, 2);
     assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
+    assert.strictEqual(diags[1].message, "Unexpected var, use let or const instead.");
   }).timeout(60 * 1000);
 
   test('consider file not ignored if it is not in workspace', async function () {
