@@ -61,7 +61,7 @@ stages:
         inputs:
           gulpjs: node_modules/.bin/gulp
           targets: deploy
-        condition: and(succeeded(), and(ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(endsWith(variables['Build.SourceBranch'], 'allvsix'), 'False')))
+        condition: and(succeeded(), and(ne(variables['Build.SourceBranch'], 'refs/heads/master'), not(endsWith(variables['Build.SourceBranch'], 'allvsix'))))
       - task: gulp@1
         displayName: 'Build and deploy all VSIX files'
         env:
