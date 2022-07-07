@@ -18,6 +18,8 @@ import { Commands } from './commands';
 import * as jre from './jre';
 import { PlatformInformation } from './platform';
 import * as util from './util';
+import * as fse from 'fs-extra';
+
 
 
 const REQUIRED_JAVA_VERSION = 11;
@@ -39,12 +41,20 @@ interface ErrorData {
 }
 
 export async function resolveRequirements(context: vscode.ExtensionContext): Promise<RequirementsData> {
-  const javaHome = await checkJavaRuntime(context);
+  const jreDir = path.join(context.extensionPath, 'jre');
+  let javaHome;
+  if (fse.existsSync(jreDir) && fse.statSync(jreDir).isDirectory()) {
+    const dirs = fse.readdirSync(jreDir);
+    const javaDir = dirs[0];
+    javaHome = path.join(jreDir, javaDir);
+  } else {
+    javaHome = await checkJavaRuntime();
+  }
   const javaVersion = await checkJavaVersion(javaHome);
   return { javaHome, javaVersion };
 }
 
-function checkJavaRuntime(context: vscode.ExtensionContext): Promise<string> {
+function checkJavaRuntime(): Promise<string> {
   return new Promise((resolve, reject) => {
     let { source, javaHome } = tryExplicitConfiguration();
     if (javaHome) {
@@ -166,6 +176,19 @@ function invalidJavaHome(reject, cause: string) {
       message: cause
     });
   }
+}
+
+async function findEmbeddedJRE(context: vscode.ExtensionContext): Promise<string | undefined> {
+  const jreHome = context.asAbsolutePath('jre');
+  if (fse.existsSync(jreHome) && fse.statSync(jreHome).isDirectory()) {
+    const candidates = fse.readdirSync(jreHome);
+    for (const candidate of candidates) {
+      if (fse.existsSync(path.join(jreHome, candidate, 'bin', JAVA_FILENAME))) {
+        return path.join(jreHome, candidate);
+      }
+    }
+  }
+  return Promise.resolve(undefined);
 }
 
 export function installManagedJre() {

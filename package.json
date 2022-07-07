@@ -15,7 +15,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.52.0"
+    "vscode": "^1.61.0"
   },
   "categories": [
     "Linters"
@@ -32,7 +32,6 @@
     "TypeScript",
     "Code Analysis"
   ],
-  "qna": "https://community.sonarsource.com/c/help/sl",
   "activationEvents": [
     "onCommand:SonarLint.UpdateAllBindings",
     "onCommand:SonarLint.ShowSonarLintOutput",
@@ -639,11 +638,14 @@
     "del": "^2.2.2",
     "expect.js": "^0.3.1",
     "fancy-log": "1.3.3",
+    "fs-extra": "^10.1.0",
     "glob": "^7.1.6",
     "gulp": "4.0.2",
     "gulp-artifactory-upload": "^1.4.0",
     "gulp-bump": "3.2.0",
     "gulp-cli": "2.3.0",
+    "gulp-decompress": "^3.0.0",
+    "gulp-download": "^0.0.1",
     "gulp-exec": "5.0.0",
     "gulp-rename": "^1.4.0",
     "istanbul-lib-coverage": "^2.0.5",
@@ -662,7 +664,7 @@
     "ts-loader": "6.0.4",
     "typescript": "^3.8.3",
     "vinyl": "^2.2.1",
-    "vsce": "^1.100.2",
+    "vsce": "2.7.0",
     "vscode-test": "^1.3.0",
     "webpack": "5.60.0",
     "webpack-cli": "4.9.1"
