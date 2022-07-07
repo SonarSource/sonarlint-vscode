@@ -83,7 +83,7 @@ gulp.task('package', async () => {
 
 gulp.task('package-all', (done) => {
   const tasks = [];
-  TARGETED_PLATFORMS.map(async platform => {
+  TARGETED_PLATFORMS.forEach(async platform => {
     tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)));
   });
   tasks.push(gulp.series('clean-jre', vsce.createVSIX));
