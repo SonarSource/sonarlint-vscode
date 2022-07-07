@@ -37,7 +37,7 @@ jobs:
     needs: sonar_release
     strategy:
       matrix:
-        platform: ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64', 'universal']
+        platform: ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal']
     steps:
       - name: Checkout custom actions
         uses: actions/checkout@v2

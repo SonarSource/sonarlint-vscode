@@ -22,7 +22,7 @@ import * as vsce from 'vsce';
  * See complement in release.yml:deploy_to_microsoft_marketplace.strategy.matrix.platform
  */
 const UNIVERSAL_PLATFORMS = [
-  'win32-ia32', 'win32-arm64', 'linux-armhf', 'alpine-x64', 'alpine-arm64'
+  'win32-ia32', 'win32-arm64', 'linux-arm64', 'linux-armhf', 'alpine-x64', 'alpine-arm64'
 ];
 
 const {
