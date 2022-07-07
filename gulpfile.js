@@ -92,7 +92,8 @@ function getPackageJSON() {
 }
 
 gulp.task('compute-universal-vsix-hashes', function () {
-  return gulp.src('*.vsix').pipe(hashsum());
+  const version = getPackageJSON().version;
+  return gulp.src('*.vsix').pipe(hashsum(UNIVERSAL_PLATFORM, version));
 });
 
 gulp.task('compute-all-vsix-hashes', function (done) {
