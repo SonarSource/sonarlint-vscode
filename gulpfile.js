@@ -91,7 +91,11 @@ function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json').toString());
 }
 
-gulp.task('compute-vsix-hashes', function (done) {
+gulp.task('compute-universal-vsix-hashes', function () {
+  return gulp.src('*.vsix').pipe(hashsum());
+});
+
+gulp.task('compute-all-vsix-hashes', function (done) {
   const version = getPackageJSON().version;
   const tasks = Object.keys(allPlatforms).map(platform => () => hashsum(platform, version));
 
@@ -293,7 +297,7 @@ const deployAllPlatformsSeries = (done) => {
   );
   tasks.push('clean-jre');
   tasks.push(gulp.series(vsce.createVSIX));
-  tasks.push(gulp.series('compute-vsix-hashes', 'sign', 'deploy-buildinfo', 'deploy-vsix'));
+  tasks.push(gulp.series('compute-all-vsix-hashes', 'sign', 'deploy-buildinfo', 'deploy-vsix'));
 
   return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
@@ -319,7 +323,7 @@ gulp.task(
     'update-version',
     'cycloneDx',
     vsce.createVSIX,
-    'compute-vsix-hashes',
+    'compute-universal-vsix-hashes',
     'sign',
     'deploy-buildinfo',
     'deploy-vsix'
