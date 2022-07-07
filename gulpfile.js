@@ -44,6 +44,7 @@ const allPlatforms = {};
 });
 
 
+
 gulp.task('clean:vsix', () => del(['*.vsix', 'server', 'out', 'out-cov']));
 
 gulp.task(
