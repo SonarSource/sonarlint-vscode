@@ -31,8 +31,7 @@ const mergeStream = require('merge-stream');
 
 const LATEST_JRE = 17;
 const UNIVERSAL_PLATFORM = 'universal';
-// const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64'];
-const TARGETED_PLATFORMS = ['win32-x64'];
+const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
 const allPlatforms = {};
 [...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {
   allPlatforms[platform] = {
