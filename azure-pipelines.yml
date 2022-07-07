@@ -74,7 +74,7 @@ stages:
         inputs:
           gulpjs: node_modules/.bin/gulp
           targets: deploy-all
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), endsWith(variables['Build.SourceBranch'], 'allvsix')))
+        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), endsWith(variables['System.PullRequest.SourceBranch'], 'allvsix')))
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
