@@ -77,22 +77,23 @@ gulp.task('update-version', function () {
   }
 });
 
-gulp.task('package', async (done) => {
+gulp.task('package', async () => {
   await vsce.createVSIX();
-  done();
 });
 
-gulp.task('package-all', async (done) => {
-  await Promise.all(TARGETED_PLATFORMS.map(async platform => {
-    await downloadJre(platform, LATEST_JRE, done);
-    await vsce.createVSIX({target: platform});
-  }));
-  if (fse.existsSync('./jre')) {
-    fse.removeSync('./jre');
-  }
-  await vsce.createVSIX();
-  done();
+gulp.task('package-all', (done) => {
+  const tasks = [];
+  TARGETED_PLATFORMS.map(async platform => {
+    tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)));
+  });
+  tasks.push(gulp.series('clean-jre', vsce.createVSIX));
+
+  return gulp.series(...tasks, (seriesDone) => {
+    seriesDone();
+    done();
+  })();
 });
+
 function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json').toString());
 }
