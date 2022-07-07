@@ -355,15 +355,6 @@ function buildInfo(name, version, buildNumber) {
   const vsixPaths = globby.sync(path.join('*.vsix'));
   const additionalPaths = globby.sync(path.join('*{-cyclonedx.json,.asc}'));
 
-  const artifacts = Object.keys(allPlatforms).map(platform => (
-    {
-      type: 'vsix',
-      sha1: allPlatforms[platform].hashes.sha1,
-      md5: allPlatforms[platform].hashes.md5,
-      name: allPlatforms[platform].fileName
-    }
-  ));
-
   return {
     version: '1.0.1',
     name,
