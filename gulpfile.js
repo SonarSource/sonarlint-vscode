@@ -250,7 +250,7 @@ async function downloadJre(targetPlatform, javaVersion, done) {
   const jreDownloadUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/${jreIdentifier}`;
   const parsedDownloadUrl = url.parse(jreDownloadUrl);
   const jreFileName = path.basename(parsedDownloadUrl.pathname)
-      .replace(/[\.7z|\.bz2|\.gz|\.rar|\.tar|\.zip|\.xz]*$/, '');
+      .replace(/\.(?:7z|bz2|gz|rar|tar|zip|xz)*$/, '');
   const idx = jreFileName.indexOf('-');
   const jreVersionLabel = idx >= 0 ? jreFileName.substring(idx + 1) : jreFileName;
   // Download justj JRE.
