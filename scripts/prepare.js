@@ -5,8 +5,9 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-const fs = require('fs');
 const crypto = require('crypto');
+const fs = require('fs');
+const log = require('fancy-log');
 const request = require('request');
 
 const {
@@ -19,12 +20,12 @@ const auth = {
   pass: ARTIFACTORY_PRIVATE_READER_PASSWORD,
   sendImmediate: true
 };
+
 const credentialsDefined = ARTIFACTORY_PRIVATE_READER_USERNAME !== undefined
     && ARTIFACTORY_PRIVATE_READER_PASSWORD !== undefined;
 
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 const jarDependencies = require('./dependencies.json');
-const log = require('fancy-log');
 
 const HTTP_OK = 200;
 
