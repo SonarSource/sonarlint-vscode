@@ -261,7 +261,7 @@
         "sonarlint.ls.javaHome": {
           "order": 20,
           "type": "string",
-          "markdownDescription": "Path to a Java Runtime Environment (11 or more recent) used to launch the SonarLint Language Server. \n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-11.0.12+7` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/jdk-11.0.12+7.jdk/Contents/Home`",
+          "markdownDescription": "Path to a Java Runtime Environment (11 or more recent) used to launch the SonarLint Language Server.\n* On the following platforms, this property is ignored:\n  * Windows x86-64\n  * Linux x86-64\n  * macOS x86-64 (Intel) and arm-64 (Apple Silicon)\n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-11.0.12+7` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/jdk-11.0.12+7.jdk/Contents/Home`",
           "scope": "machine"
         },
         "sonarlint.ls.vmargs": {
