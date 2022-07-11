@@ -30,7 +30,14 @@ The full list of available rules is visible in the "SonarLint Rules" view in the
 
 ## Requirements
 
-The SonarLint language server needs a Java Runtime (JRE) 11+. If one is already installed on your computer, SonarLint should automatically find and use it. Here is how SonarLint will search for an installed JRE (in priority order):
+The SonarLint language server needs a Java Runtime (JRE) 11+.
+
+On the following platforms, SonarLint comes with its own Java runtime:
+- Windows x86-64
+- Linux x86-64
+- macOS x86-64 (Intel Macs) and arm-64 (Apple Silicon Macs)
+
+On other platforms and if a Java runtime is already installed on your computer, SonarLint should automatically find and use it. Here is how SonarLint will search for an installed JRE (in priority order):
 
 1. the `sonarlint.ls.javaHome` variable in VS Code settings if set. For instance:
 
