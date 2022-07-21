@@ -154,6 +154,27 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return null;
   }
 
+  getAllBindings(): Map<string, Map<string, Array<string>>> {
+    const allBindings = new Map();
+    VSCode.workspace.workspaceFolders
+      .map(folder => {
+        const folderConfig = VSCode.workspace.getConfiguration('sonarlint', folder.uri);
+        return { folder, binding: folderConfig.get<ProjectBinding>('connectedMode.project')};
+      })
+      .filter(b => b.binding !== undefined)
+      .forEach(b => {
+        if (!allBindings.has(b.binding.connectionId)) {
+          allBindings.set(b.binding.connectionId, new Map());
+        }
+        const bindingsForConnection = allBindings.get(b.binding.connectionId);
+        if (!bindingsForConnection.has(b.binding.projectKey)) {
+          bindingsForConnection.set(b.binding.projectKey, []);
+        }
+        bindingsForConnection.get(b.binding.projectKey).push(b.folder.name);
+      });
+    return allBindings;
+  }
+
   async getRemoteProjects(connectionId) {
     const remoteProjects = BindingService.instance.getAllBindings().get(connectionId);
     if (!remoteProjects) {
@@ -167,7 +188,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   getWorkspaceFoldersBoundTo(connectionId, projectKey) {
-    const remoteProjects = BindingService.instance.getAllBindings().get(connectionId);
+    const remoteProjects = this.getAllBindings().get(connectionId);
     if (!remoteProjects) {
       return [];
     }
@@ -176,7 +197,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
       return [];
     }
     return boundFolders
-      .map(f => new WorkspaceFolder(f.folder.name, f.folder.uri));
+      .map(name => new WorkspaceFolder(name));
   }
 
   getInitialState(): ConnectionGroup[] {
