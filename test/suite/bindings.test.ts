@@ -78,16 +78,17 @@ suite('Bindings Test Suite', () => {
     test('Save binding updates configuration', async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
 
+
       const existingBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
+      awaitunderTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
 
       const updatedBinding = VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-        .get<ProjectBinding>(BINDING_SETTINGS);
+          .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+          .get<ProjectBinding>(BINDING_SETTINGS);
 
       expect(updatedBinding).to.deep.equal(TEST_BINDING);
     });
