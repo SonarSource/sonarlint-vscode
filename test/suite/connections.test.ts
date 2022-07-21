@@ -7,15 +7,23 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {expect} from 'chai';
-import {
-  AllConnectionsTreeDataProvider, ConnectionGroup
-} from '../../src/connections';
-import {describe, beforeEach} from 'mocha';
+import { expect } from 'chai';
+import { AllConnectionsTreeDataProvider, ConnectionGroup } from '../../src/connections';
+import { beforeEach, describe } from 'mocha';
+import { SonarLintExtendedLanguageClient } from '../../src/client';
 
 const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
+
+const mockClient = {
+  async onReady() {
+    return Promise.resolve();
+  },
+  async checkConnection(connectionId: string) {
+    return Promise.resolve({ connectionId, success: true });
+  }
+} as SonarLintExtendedLanguageClient;
 
 suite('Connected Mode Test Suite', () => {
   beforeEach(async () => {
@@ -35,7 +43,7 @@ suite('Connected Mode Test Suite', () => {
   describe('getConnections()', () => {
     let underTest;
     beforeEach(() => {
-        underTest = new AllConnectionsTreeDataProvider();
+        underTest = new AllConnectionsTreeDataProvider(mockClient);
     });
 
     test('should return same number of sonarqube settings as in config file', async () => {
@@ -60,7 +68,7 @@ suite('Connected Mode Test Suite', () => {
     const SCGroup = new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup');
 
     test('should return empty lists when expanding SQ and SC tabs and no connections exist', async () => {
-      const underTest = new AllConnectionsTreeDataProvider();
+      const underTest = new AllConnectionsTreeDataProvider(mockClient);
 
       const initialChildren = await underTest.getChildren(null);
 
@@ -71,12 +79,12 @@ suite('Connected Mode Test Suite', () => {
 
     test('should return singleton list when expanding SQ and one connection exists', async () => {
       const testSQConfig = [
-        { "serverUrl": "https://sonarqube.mycompany.com", "token": "<generated from SonarQube account/security page>" }
+        { serverUrl: 'https://sonarqube.mycompany.com', token: '<generated from SonarQube account/security page>' }
       ];
       await vscode.workspace.getConfiguration('sonarlint')
           .update(CONNECTED_MODE_SETTINGS_SONARQUBE, testSQConfig, vscode.ConfigurationTarget.Global);
 
-      const underTest = new AllConnectionsTreeDataProvider();
+      const underTest = new AllConnectionsTreeDataProvider(mockClient);
 
       const sonarQubeChildren = await underTest.getChildren(SQGroup);
 
@@ -86,13 +94,13 @@ suite('Connected Mode Test Suite', () => {
 
     test('should return two element list when expanding SC and two connections exist', async () => {
       const testSCConfig = [
-        { "organizationKey": "myOrg1", "token": "ggggg" },
-        { "organizationKey": "myOrg2", "token": "ddddd" }
+        { organizationKey: 'myOrg1', token: 'ggggg' },
+        { organizationKey: 'myOrg2', token: 'ddddd' }
       ];
       await vscode.workspace.getConfiguration('sonarlint')
           .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, testSCConfig, vscode.ConfigurationTarget.Global);
 
-      const underTest = new AllConnectionsTreeDataProvider();
+      const underTest = new AllConnectionsTreeDataProvider(mockClient);
 
       const sonarCloudChildren = await underTest.getChildren(SCGroup);
 

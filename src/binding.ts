@@ -40,21 +40,22 @@ export class BindingService {
   private static _instance: BindingService;
 
   static init(languageClient: SonarLintExtendedLanguageClient,
-    settingsService: ConnectionSettingsService): void {
+              settingsService: ConnectionSettingsService): void {
     BindingService._instance = new BindingService(languageClient, settingsService);
   }
 
   constructor(
     private readonly languageClient: SonarLintExtendedLanguageClient,
     private readonly settingsService: ConnectionSettingsService
-  ) { }
+  ) {
+  }
 
   static get instance(): BindingService {
     return BindingService._instance;
   }
 
-  async getAllBindings(): Promise<Map<string, Map<string, ProjectBinding[]>>> {
-    const bindings = new Map<string, Map<string, ProjectBinding[]>>();
+  getAllBindings(): Map<string, Map<string, BoundFolder[]>> {
+    const bindings = new Map();
     for (const folder of VSCode.workspace.workspaceFolders || []) {
       const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
       const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
@@ -63,13 +64,13 @@ export class BindingService {
         const connectionId = binding.connectionId || binding.serverId || '<default>';
         let connectionBindings = bindings.get(connectionId);
         if (!bindings.has(connectionId)) {
-          bindings.set(connectionId, new Map<string, ProjectBinding[]>());
+          bindings.set(connectionId, new Map());
         }
         connectionBindings = bindings.get(connectionId);
         if (!connectionBindings.has(projectKey)) {
           connectionBindings.set(projectKey, []);
         }
-        connectionBindings.get(projectKey).push(binding);
+        connectionBindings.get(projectKey).push({ folder, binding });
       }
     }
     return bindings;
@@ -156,8 +157,8 @@ export class BindingService {
   }
 
   async getRemoteProjectsItems(connectionId: string,
-    workspaceFolder: VSCode.WorkspaceFolder,
-    serverType: 'SonarQube' | 'SonarCloud') {
+                               workspaceFolder: VSCode.WorkspaceFolder,
+                               serverType: 'SonarQube' | 'SonarCloud') {
     const getRemoteProjectsParam = connectionId ? connectionId : DEFAULT_CONNECTION_ID;
     const itemsList = [];
 
@@ -194,4 +195,15 @@ export class BindingService {
 
     return itemsList;
   }
+}
+
+export interface ProjectBinding {
+  projectKey: string;
+  serverId?: string;
+  connectionId?: string;
+}
+
+export interface BoundFolder {
+  folder: VSCode.WorkspaceFolder;
+  binding: ProjectBinding;
 }

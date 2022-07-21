@@ -378,9 +378,7 @@ export function activate(context: VSCode.ExtensionContext) {
     )
   );
 
-  allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(
-    (connectionId) => languageClient.onReady().then(() => languageClient.checkConnection(connectionId))
-  );
+  allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
   const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
     treeDataProvider: allConnectionsTreeDataProvider
