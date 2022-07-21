@@ -40,6 +40,7 @@ import { initScm } from './scm';
 import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings';
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
+import { BindingService } from './binding';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -51,6 +52,7 @@ const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_C
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
 let connectionSettingsService: ConnectionSettingsService;
+let bindingService: BindingService;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -248,6 +250,8 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   ConnectionSettingsService.init(context, languageClient);
+  BindingService.init();
+  bindingService = BindingService.instance;
   connectionSettingsService = ConnectionSettingsService.instance;
   migrateConnectedModeSettings(currentConfig, connectionSettingsService);
 
