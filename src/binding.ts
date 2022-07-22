@@ -33,28 +33,27 @@ export class BindingService {
     return config.update(PROJECT_BINDING_PROPERTY, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
   }
 
-  async getAllBindings() : Promise<Map<string, Map<string,ProjectBinding[]>>> {
-    const bindings = new Map<string,Map<string, ProjectBinding[]>>();
-
+  async getAllBindings(): Promise<Map<string, Map<string, ProjectBinding[]>>> {
+    const bindings = new Map<string, Map<string, ProjectBinding[]>>();
     for (const folder of VSCode.workspace.workspaceFolders || []) {
       const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
-      const binding =  config.get<ProjectBinding>(PROJECT_BINDING_PROPERTY);
-      if (binding) {
-        const connectionId = binding.connectionId ||  binding.serverId || '<default>';
+      const binding = config.get<ProjectBinding>(PROJECT_BINDING_PROPERTY);
+      const projectKey = binding.projectKey;
+      if (projectKey) {
+        const connectionId = binding.connectionId || binding.serverId || '<default>';
         let connectionBindings = bindings.get(connectionId);
         if (!bindings.has(connectionId)) {
-          bindings.set(connectionId, new Map<string,ProjectBinding[]>());
+          bindings.set(connectionId, new Map<string, ProjectBinding[]>());
         }
         connectionBindings = bindings.get(connectionId);
-        if (!connectionBindings.has(binding.projectKey)) {
-          connectionBindings.set(binding.projectKey, []);
+        if (!connectionBindings.has(projectKey)) {
+          connectionBindings.set(projectKey, []);
         }
-        connectionBindings.get(binding.projectKey).push(binding);
+        connectionBindings.get(projectKey).push(binding);
       }
     }
     return bindings;
   }
-
 
 }
 
