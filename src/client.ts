@@ -38,4 +38,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   onTokenUpdate() {
     return this.sendNotification(protocol.OnTokenUpdate.type);
   }
+
+  getRemoteProjectsForConnection(connectionId: string) {
+    return this.sendRequest(protocol.GetRemoteProjectsForConnection.type, { connectionId });
+  }
 }

@@ -250,11 +250,12 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   ConnectionSettingsService.init(context, languageClient);
-  BindingService.init();
-  bindingService = BindingService.instance;
   connectionSettingsService = ConnectionSettingsService.instance;
   migrateConnectedModeSettings(currentConfig, connectionSettingsService);
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
+
+  BindingService.init(languageClient, connectionSettingsService);
+  bindingService = BindingService.instance;
 
   languageClient.onReady().then(() => {
     const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
@@ -345,7 +346,7 @@ export function activate(context: VSCode.ExtensionContext) {
     if (event.affectsConfiguration('sonarlint.rules')) {
       allRulesTreeDataProvider.refresh();
     }
-    if(event.affectsConfiguration('sonarlint.connectedMode')) {
+    if (event.affectsConfiguration('sonarlint.connectedMode')) {
       allConnectionsTreeDataProvider.refresh();
     }
   });
@@ -367,9 +368,13 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.EDIT_SONARCLOUD_CONNECTION, editSonarCloudConnection(context))
   );
   context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.ADD_PROJECT_BINDING,
+      (connection) => bindingService.createOrUpdateBinding(connection.id, connection.contextValue))
+  );
+  context.subscriptions.push(
     VSCode.commands.registerCommand(
       Commands.REMOVE_CONNECTION,
-      (connection) =>  ConnectionSettingsService.instance.removeConnection(connection)
+      (connection) => ConnectionSettingsService.instance.removeConnection(connection)
     )
   );
 

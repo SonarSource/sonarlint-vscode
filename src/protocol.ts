@@ -176,7 +176,7 @@ export namespace ReportConnectionCheckResult {
 
 export namespace CheckConnection {
   export const type =
-          new lsp.RequestType<ConnectionCheckParams, ConnectionCheckResult, void>('sonarlint/checkConnection');
+    new lsp.RequestType<ConnectionCheckParams, ConnectionCheckResult, void>('sonarlint/checkConnection');
 }
 
 //#endregion
@@ -231,6 +231,20 @@ export namespace GetTokenForServer {
 
 export namespace OnTokenUpdate {
   export const type = new lsp.NotificationType<void>('sonarlint/onTokenUpdate');
+}
+
+export interface GetRemoteProjectsForConnectionParams {
+  connectionId: string;
+}
+
+export interface RemoteProject {
+  [projectKey: string]: string;
+}
+
+export namespace GetRemoteProjectsForConnection {
+  export const type =
+    new lsp.RequestType<GetRemoteProjectsForConnectionParams,
+          Map<string, string>, void>('sonarlint/getRemoteProjectsForConnection');
 }
 
 //#endregion

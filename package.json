@@ -437,6 +437,13 @@
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
+        "command": "SonarLint.AddProjectBinding",
+        "title": "Add Project Binding",
+        "category": "SonarLint",
+        "icon": "$(plus)",
+        "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
         "command": "SonarLint.RemoveConnection",
         "title": "Remove SonarQube/SonarCloud Connection",
         "category": "SonarLint",
@@ -538,6 +545,12 @@
           "command": "SonarLint.EditSonarCloudConnection",
           "title": "Edit",
           "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.AddProjectBinding",
+          "title": "Add Project Binding",
+          "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection || viewItem == sonarqubeConnection",
           "group": "inline"
         },
         {
