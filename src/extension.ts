@@ -254,7 +254,9 @@ export function activate(context: VSCode.ExtensionContext) {
   bindingService = BindingService.instance;
   connectionSettingsService = ConnectionSettingsService.instance;
   migrateConnectedModeSettings(currentConfig, connectionSettingsService);
-
+  // bindingService.getAllBindings().then(bindings => {
+  //   logToSonarLintOutput(bindings);
+  // });
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
   languageClient.onReady().then(() => {

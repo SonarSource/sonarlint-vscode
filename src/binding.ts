@@ -23,14 +23,43 @@ export class BindingService {
     return BindingService._instance;
   }
 
-  async updateWorkspaceFolderBinding(workspaceFolderUri: VSCode.Uri, projectKey: string): Promise<void> {
+  async updateBinding(workspaceFolderUri: VSCode.Uri, projectBinding: ProjectBinding): Promise<void> {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolderUri);
-    return config.update(PROJECT_BINDING_PROPERTY, { projectKey }, VSCode.ConfigurationTarget.WorkspaceFolder);
+    return config.update(PROJECT_BINDING_PROPERTY, projectBinding, VSCode.ConfigurationTarget.WorkspaceFolder);
   }
 
-  async deleteWorkspaceFolderBinding(workspaceFolderUri: VSCode.Uri): Promise<void> {
+  async deleteBinding(workspaceFolderUri: VSCode.Uri): Promise<void> {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolderUri);
     return config.update(PROJECT_BINDING_PROPERTY, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
   }
 
+  async getAllBindings() : Promise<Map<string, Map<string,ProjectBinding[]>>> {
+    const bindings = new Map<string,Map<string, ProjectBinding[]>>();
+
+    for (const folder of VSCode.workspace.workspaceFolders || []) {
+      const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
+      const binding =  config.get<ProjectBinding>(PROJECT_BINDING_PROPERTY);
+      if (binding) {
+        const connectionId = binding.connectionId ||  binding.serverId || '<default>';
+        let connectionBindings = bindings.get(connectionId);
+        if (!bindings.has(connectionId)) {
+          bindings.set(connectionId, new Map<string,ProjectBinding[]>());
+        }
+        connectionBindings = bindings.get(connectionId);
+        if (!connectionBindings.has(binding.projectKey)) {
+          connectionBindings.set(binding.projectKey, []);
+        }
+        connectionBindings.get(binding.projectKey).push(binding);
+      }
+    }
+    return bindings;
+  }
+
+
+}
+
+export interface ProjectBinding {
+  projectKey: string,
+  serverId?: string,
+  connectionId?: string
 }
