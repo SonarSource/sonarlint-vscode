@@ -47,4 +47,6 @@ export namespace Commands {
   export const EDIT_SONARQUBE_CONNECTION = 'SonarLint.EditSonarQubeConnection';
   export const EDIT_SONARCLOUD_CONNECTION = 'SonarLint.EditSonarCloudConnection';
   export const REMOVE_CONNECTION = 'SonarLint.RemoveConnection';
+
+  export const ADD_PROJECT_BINDING = 'SonarLint.AddProjectBinding';
 }
