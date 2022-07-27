@@ -84,7 +84,7 @@ suite('Bindings Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      awaitunderTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
+      await underTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
 
       const updatedBinding = VSCode.workspace
           .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
