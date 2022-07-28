@@ -152,7 +152,7 @@ export class BindingService {
   }
 
   async saveBinding(projectKey: string, connectionId?: string, workspaceFolder?: VSCode.WorkspaceFolder) {
-    VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
+    return VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId, projectKey });
   }
 

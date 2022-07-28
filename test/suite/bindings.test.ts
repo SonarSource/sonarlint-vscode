@@ -7,8 +7,7 @@
 'use strict';
 
 import { expect } from 'chai';
-import { describe, beforeEach } from 'mocha';
-import { BindingService } from '../../src/binding';
+import { BindingService, ProjectBinding } from '../../src/binding';
 import { ConnectionSettingsService } from '../../src/settings';
 
 import * as VSCode from 'vscode';
@@ -48,55 +47,49 @@ const mockClient = {
   }
 } as SonarLintExtendedLanguageClient;
 
+async function resetBindings() {
+  return Promise.all(VSCode.workspace.workspaceFolders.map(folder => {
+    return VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri)
+      .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
+  }));
+}
+
 suite('Bindings Test Suite', () => {
-  beforeEach(async () => {
+  setup(async () => {
     // start from 1 SQ connection config
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
       .update(CONNECTED_MODE_SETTINGS_SONARQUBE, [TEST_SONARQUBE_CONNECTION], VSCode.ConfigurationTarget.Global);
 
-    // remove all existing bindings
-    VSCode.workspace.workspaceFolders.forEach(async folder => {
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, folder.uri)
-        .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.Global);
-    });
+    await resetBindings();
   });
 
   teardown(async () => {
-    await VSCode.workspace
-      .getConfiguration(SONARLINT_CATEGORY)
-      .update(CONNECTED_MODE_SETTINGS, undefined, VSCode.ConfigurationTarget.Global);
-    VSCode.workspace.workspaceFolders.forEach(async folder => {
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, folder.uri)
-        .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.Global);
-    });
+    await resetBindings();
     await VSCode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
-  describe('Bindings Manager', () => {
+  suite('Bindings Manager', () => {
     let underTest;
-    beforeEach(() => {
+    setup(() => {
       underTest = new BindingService(mockClient, connectionSettingsService);
     });
 
     test('Save binding updates configuration', async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-      let updatedBinding;
 
       const existingBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      underTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder).then(_a => {
-        updatedBinding = VSCode.workspace
-          .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-          .get(BINDING_SETTINGS);
-        expect(updatedBinding.connectionId).to.equal(TEST_BINDING.connectionId);
-        expect(updatedBinding.projectKey).to.equal(TEST_BINDING.projectKey);
-      });
+      await underTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
+
+      const updatedBinding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+
+      expect(updatedBinding).to.deep.equal(TEST_BINDING);
     });
 
     test('Get remote projects items correctly maps keys and names', async () => {
