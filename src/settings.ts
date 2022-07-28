@@ -243,12 +243,13 @@ export class ConnectionSettingsService {
 
     const deleteAction = 'Delete';
     const confirm = await VSCode.window.showWarningMessage(
-      `Are you sure you want to delete ${isSonarQube ? 'SonarQube' : 'SonarCloud'} connection '${connection.id}'?`,
+      `Are you sure you want to delete ${isSonarQube ? 'SonarQube' : 'SonarCloud'} connection '${connection.id}'
+       and project bindings related to it?`,
       { modal: true },
       deleteAction
     );
     if (confirm !== deleteAction) {
-      return;
+      return false;
     }
 
     if (isSonarQube) {
@@ -256,7 +257,7 @@ export class ConnectionSettingsService {
       const matchingConnectionIndex = sqConnections.findIndex(c => c.connectionId === connection.id);
       if (matchingConnectionIndex === -1) {
         showSaveSettingsWarning();
-        return;
+        return false;
       }
       const foundConnection = sqConnections[matchingConnectionIndex];
       await this.deleteTokenForConnection(foundConnection);
@@ -267,13 +268,14 @@ export class ConnectionSettingsService {
       const matchingConnectionIndex = scConnections.findIndex(c => c.connectionId === connection.id);
       if (matchingConnectionIndex === -1) {
         showSaveSettingsWarning();
-        return;
+        return false;
       }
       const foundConnection = scConnections[matchingConnectionIndex];
       await this.deleteTokenForConnection(foundConnection);
       scConnections.splice(matchingConnectionIndex, 1);
       this.setSonarCloudConnections(scConnections);
     }
+    return true;
   }
 }
 

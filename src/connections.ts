@@ -160,11 +160,11 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   async getBoundProjects(connectionId, serverType) {
-    const remoteProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
-    if (!remoteProjects) {
+    const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
+    if (!boundProjects) {
       return [];
     }
-    const allKeys = [...remoteProjects.keys()];
+    const allKeys = [...boundProjects.keys()];
     await this.client.onReady();
     const keysToNames = await this.client.getRemoteProjectNames(connectionId || DEFAULT_CONNECTION_ID, allKeys);
     return allKeys
@@ -172,11 +172,11 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   getWorkspaceFoldersBoundTo(connectionId, projectKey, serverType) {
-    const remoteProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
-    if (!remoteProjects) {
+    const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
+    if (!boundProjects) {
       return [];
     }
-    const boundFolders = remoteProjects.get(projectKey);
+    const boundFolders = boundProjects.get(projectKey);
     if (!boundFolders) {
       return [];
     }
