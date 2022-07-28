@@ -9,10 +9,38 @@
 import * as VSCode from 'vscode';
 import { ConnectionCheckResult } from './protocol';
 import { BaseConnection, ConnectionSettingsService } from './settings';
+import { SonarLintExtendedLanguageClient } from './client';
+import { BindingService } from './binding';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 
 const DEFAULT_CONNECTION_ID = '<default>';
+
+export class WorkspaceFolder extends VSCode.TreeItem {
+  constructor(
+    public readonly name: string,
+    public readonly uri: VSCode.Uri
+  ) {
+    super(name, VSCode.TreeItemCollapsibleState.None);
+    this.iconPath = VSCode.ThemeIcon.Folder;
+    this.contextValue = 'workspaceFolder';
+  }
+
+}
+
+export class RemoteProject extends VSCode.TreeItem {
+  constructor(
+    public readonly connectionId: string,
+    public readonly key: string,
+    public readonly name?: string
+  ) {
+    super(name || key, VSCode.TreeItemCollapsibleState.Expanded);
+    this.description = name ? key : null;
+    this.iconPath = new VSCode.ThemeIcon('cloud');
+    this.contextValue = 'remoteProject';
+  }
+
+}
 
 export class Connection extends VSCode.TreeItem {
   constructor(
@@ -21,10 +49,10 @@ export class Connection extends VSCode.TreeItem {
     public readonly contextValue: 'sonarqubeConnection' | 'sonarcloudConnection',
     public status: ConnectionStatus
   ) {
-    super(label, VSCode.TreeItemCollapsibleState.None);
+    super(label, VSCode.TreeItemCollapsibleState.Collapsed);
   }
 
-  collapsibleState = VSCode.TreeItemCollapsibleState.None;
+  collapsibleState = VSCode.TreeItemCollapsibleState.Collapsed;
 
   iconPath = this.getIconPath();
 
@@ -52,14 +80,14 @@ export class ConnectionGroup extends VSCode.TreeItem {
   }
 }
 
-export type ConnectionsNode = Connection | ConnectionGroup;
+export type ConnectionsNode = Connection | ConnectionGroup | RemoteProject | WorkspaceFolder;
 
 export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<ConnectionsNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<Connection | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<ConnectionsNode | undefined> = this._onDidChangeTreeData.event;
   private allConnections = { sonarqube: Array.from<Connection>([]), sonarcloud: Array.from<Connection>([]) };
 
-  constructor(private readonly connectionChecker?: (connectionId) => Thenable<ConnectionCheckResult>) {}
+  constructor(private readonly client: SonarLintExtendedLanguageClient) {}
 
   async getConnections(type: string): Promise<Connection[]> {
     const contextValue = type === 'sonarqube' ? 'sonarqubeConnection' : 'sonarcloudConnection';
@@ -94,9 +122,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   async checkConnection(connectionId) {
-    return this.connectionChecker
-      ? this.connectionChecker(connectionId)
-      : { success: false, reason: 'Connection checker not available yet' };
+    return this.client.onReady().then(_ => this.client.checkConnection(connectionId));
   }
 
   refresh(connection?: Connection) {
@@ -118,8 +144,39 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
       return this.getConnections('sonarqube');
     } else if (element.contextValue === 'sonarCloudGroup') {
       return this.getConnections('sonarcloud');
+    } else if (element.contextValue === 'sonarqubeConnection' || element.contextValue === 'sonarcloudConnection') {
+      const connection = (element as Connection);
+      return this.getRemoteProjects(connection.id || DEFAULT_CONNECTION_ID);
+    } else if (element.contextValue === 'remoteProject') {
+      const project = (element as RemoteProject);
+      return this.getWorkspaceFoldersBoundTo(project.connectionId || DEFAULT_CONNECTION_ID, project.key);
     }
     return null;
+  }
+
+  async getRemoteProjects(connectionId) {
+    const remoteProjects = BindingService.instance.getAllBindings().get(connectionId);
+    if (!remoteProjects) {
+      return [];
+    }
+    const allKeys = [...remoteProjects.keys()];
+    const keysToNames = await this.client.onReady()
+      .then(_ => this.client.getRemoteProjectNames(connectionId, allKeys));
+    return allKeys
+      .map(k => new RemoteProject(connectionId, k, keysToNames[k]));
+  }
+
+  getWorkspaceFoldersBoundTo(connectionId, projectKey) {
+    const remoteProjects = BindingService.instance.getAllBindings().get(connectionId);
+    if (!remoteProjects) {
+      return [];
+    }
+    const boundFolders = remoteProjects.get(projectKey);
+    if (!boundFolders) {
+      return [];
+    }
+    return boundFolders
+      .map(f => new WorkspaceFolder(f.folder.name, f.folder.uri));
   }
 
   getInitialState(): ConnectionGroup[] {
