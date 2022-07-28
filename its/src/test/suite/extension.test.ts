@@ -43,4 +43,24 @@ suite('Extension Test Suite', () => {
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(60 * 1000);
+
+  test('should report issue on single yaml file', async function () {
+    const ext = vscode.extensions.getExtension('sonarsource.sonarlint-vscode')!;
+    await ext.activate();
+
+    vscode.commands.executeCommand('SonarLint.ShowSonarLintOutput');
+
+    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'lambda.yaml'));
+    const document = await vscode.workspace.openTextDocument(fileUri);
+    await vscode.window.showTextDocument(document);
+
+    const diags = await waitForSonarLintDiagnostics(fileUri);
+
+    dumpLogOutput();
+
+    assert.strictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'x' variable.");
+
+    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  }).timeout(60 * 1000);
 });

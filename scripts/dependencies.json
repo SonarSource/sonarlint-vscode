@@ -2,13 +2,13 @@
   {
     "groupId": "org.sonarsource.sonarlint.ls",
     "artifactId": "sonarlint-language-server",
-    "version": "2.8.1.52024",
+    "version": "2.9.0.52648",
     "output": "server/sonarlint-ls.jar"
   },
   {
     "groupId": "org.sonarsource.javascript",
     "artifactId": "sonar-javascript-plugin",
-    "version": "9.4.0.18205",
+    "version": "9.7.0.18911",
     "output": "analyzers/sonarjs.jar"
   },
   {
