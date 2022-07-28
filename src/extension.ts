@@ -369,7 +369,7 @@ export function activate(context: VSCode.ExtensionContext) {
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.ADD_PROJECT_BINDING,
-      (connection) => bindingService.createOrUpdateBinding(connection.id, connection.contextValue))
+      (connection) => bindingService.createOrEditBinding(connection.id, connection.contextValue))
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(
@@ -380,7 +380,14 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(
       Commands.EDIT_PROJECT_BINDING,
-      (binding) =>  BindingService.instance.editBinding(binding)
+      (binding) =>  BindingService.instance.createOrEditBinding(binding.connectionId,
+        binding.contextValue, binding.uri, binding.serverType)
+    )
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(
+      Commands.REMOVE_PROJECT_BINDING,
+      (binding) => BindingService.instance.deleteBindingWithConfirmation(binding)
     )
   );
 

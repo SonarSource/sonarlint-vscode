@@ -50,4 +50,5 @@ export namespace Commands {
 
   export const ADD_PROJECT_BINDING = 'SonarLint.AddProjectBinding';
   export const EDIT_PROJECT_BINDING = 'SonarLint.EditProjectBinding';
+  export const REMOVE_PROJECT_BINDING = 'SonarLint.RemoveProjectBinding';
 }

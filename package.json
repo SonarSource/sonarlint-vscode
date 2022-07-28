@@ -452,9 +452,16 @@
       },
       {
         "command": "SonarLint.EditProjectBinding",
-        "title": "Edit SonarQube/SonarCloud Connection",
+        "title": "Edit Project Binding",
         "category": "SonarLint",
         "icon": "$(pencil)",
+        "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.RemoveProjectBinding",
+        "title": "Remove Project Binding",
+        "category": "SonarLint",
+        "icon": "$(trash)",
         "enablement": "view == SonarLint.ConnectedMode"
       }
     ],
@@ -572,6 +579,12 @@
         },
         {
           "command": "SonarLint.EditProjectBinding",
+          "title": "Edit",
+          "when": "view == SonarLint.ConnectedMode && viewItem == workspaceFolder",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.RemoveProjectBinding",
           "title": "Remove",
           "when": "view == SonarLint.ConnectedMode && viewItem == workspaceFolder",
           "group": "inline"
