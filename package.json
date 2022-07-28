@@ -365,19 +365,13 @@
       {
         "command": "SonarLint.DeactivateRule",
         "title": "Deactivate",
-        "icon": {
-          "light": "images/activation/light/cross.svg",
-          "dark": "images/activation/dark/cross.svg"
-        },
+        "icon": "$(x)",
         "enablement": "view == SonarLint.AllRules"
       },
       {
         "command": "SonarLint.ActivateRule",
         "title": "Activate",
-        "icon": {
-          "light": "images/activation/light/check.svg",
-          "dark": "images/activation/dark/check.svg"
-        },
+        "icon": "$(check)",
         "enablement": "view == SonarLint.AllRules"
       },
       {
