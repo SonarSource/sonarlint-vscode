@@ -11,7 +11,7 @@ import * as VSCode from 'vscode';
 import { Commands } from './commands';
 import { ConnectionSettingsService } from './settings';
 import { SonarLintExtendedLanguageClient } from './client';
-import { ServerType, WorkspaceFolderItem } from './connections';
+import { Connection, ServerType, WorkspaceFolderItem } from './connections';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -61,9 +61,20 @@ export class BindingService {
     return this.deleteBinding(binding);
   }
 
-  async deleteBinding(binding: WorkspaceFolderItem): Promise<void> {
-    const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, binding.uri);
+  async deleteBinding(workspaceFolderItem: WorkspaceFolderItem | BoundFolder): Promise<void> {
+    const folder = workspaceFolderItem instanceof WorkspaceFolderItem ?
+                                workspaceFolderItem.uri : workspaceFolderItem.folder;
+    const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder);
     return config.update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
+  }
+
+  deleteBindingsForConnection(connection: Connection) {
+    const connectionId = connection.id || DEFAULT_CONNECTION_ID;
+    const allBindings = this.getAllBindings();
+    const bindingsForConnection : Map<string, BoundFolder[]> = allBindings.get(connectionId);
+    bindingsForConnection.forEach((folders) => {
+      folders.forEach(f => this.deleteBinding(f));
+    });
   }
 
   getAllBindings(): Map<string, Map<string, BoundFolder[]>> {

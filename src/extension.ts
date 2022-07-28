@@ -374,7 +374,12 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(
       Commands.REMOVE_CONNECTION,
-      (connection) => ConnectionSettingsService.instance.removeConnection(connection)
+      async (connection) => {
+        const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
+        if(connectionDeleted){
+          BindingService.instance.deleteBindingsForConnection(connection);
+        }
+      }
     )
   );
   context.subscriptions.push(
