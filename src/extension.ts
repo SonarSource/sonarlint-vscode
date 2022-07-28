@@ -368,26 +368,31 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.EDIT_SONARCLOUD_CONNECTION, editSonarCloudConnection(context))
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.ADD_PROJECT_BINDING,
-      (connection) => bindingService.createOrEditBinding(connection.id, connection.contextValue))
-  );
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(
-      Commands.REMOVE_CONNECTION,
-      (connection) => ConnectionSettingsService.instance.removeConnection(connection)
+    VSCode.commands.registerCommand(Commands.ADD_PROJECT_BINDING, connection =>
+      bindingService.createOrEditBinding(connection.id, connection.contextValue)
     )
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(
-      Commands.EDIT_PROJECT_BINDING,
-      (binding) =>  BindingService.instance.createOrEditBinding(binding.connectionId,
-        binding.contextValue, binding.uri, binding.serverType)
+    VSCode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
+      const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
+      if (connectionDeleted) {
+        BindingService.instance.deleteBindingsForConnection(connection);
+      }
+    })
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.EDIT_PROJECT_BINDING, binding =>
+      BindingService.instance.createOrEditBinding(
+        binding.connectionId,
+        binding.contextValue,
+        binding.uri,
+        binding.serverType
+      )
     )
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(
-      Commands.REMOVE_PROJECT_BINDING,
-      (binding) => BindingService.instance.deleteBindingWithConfirmation(binding)
+    VSCode.commands.registerCommand(Commands.REMOVE_PROJECT_BINDING, binding =>
+      BindingService.instance.deleteBindingWithConfirmation(binding)
     )
   );
 
@@ -461,8 +466,8 @@ async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionCon
   VSCode.window
     .showWarningMessage(
       'SonarLint detected some secrets in one of the open files.\n' +
-      'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
-      'Please refer to the Problems view for more information.',
+        'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
+        'Please refer to the Problems view for more information.',
       showProblemsViewActionTitle
     )
     .then(action => {
@@ -488,7 +493,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
   languageClient.onRequest(protocol.EditorOpenCheck.type, fileUri => isOpenInEditor(fileUri));
-  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, async (checkResult) => {
+  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, async checkResult => {
     await reportConnectionCheckResult(checkResult);
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
   });
@@ -517,7 +522,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
   async function notifyMissingCompileCommands() {
-    if (await doNotAskAboutCompileCommandsFlag(context) || remindMeLaterAboutCompileCommandsFlag) {
+    if ((await doNotAskAboutCompileCommandsFlag(context)) || remindMeLaterAboutCompileCommandsFlag) {
       return;
     }
     const doNotAskAgainAction = `Don't ask again`;
@@ -525,7 +530,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarLint is unable to analyze C and C++ file(s) because there is no configured compilation 
     database.`;
-    VSCode.window.showWarningMessage(message, configureCompileCommandsAction, remindMeLaterAction, doNotAskAgainAction)
+    VSCode.window
+      .showWarningMessage(message, configureCompileCommandsAction, remindMeLaterAction, doNotAskAgainAction)
       .then(selection => {
         switch (selection) {
           case doNotAskAgainAction:
