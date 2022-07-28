@@ -443,6 +443,12 @@
         "category": "SonarLint",
         "icon": "$(trash)",
         "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.UpdateAllBindings",
+        "title": "Update Bindings",
+        "icon": "$(refresh)",
+        "enablement": "view == SonarLint.ConnectedMode"
       }
     ],
     "views": {
@@ -506,6 +512,10 @@
           "command": "SonarLint.ConnectToSonarCloud",
           "when": "view == SonarLint.ConnectedMode",
           "group": "inline"
+        },
+        {
+          "command": "SonarLint.UpdateAllBindings",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
