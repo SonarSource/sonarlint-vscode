@@ -150,7 +150,7 @@ export class BindingService {
                                workspaceFolder: VSCode.WorkspaceFolder,
                                serverType: 'SonarQube' | 'SonarCloud') {
     const getRemoteProjectsParam = connectionId ? connectionId : DEFAULT_CONNECTION_ID;
-    const itemsList = [];
+    const itemsList: VSCode.QuickPickItem[] = [];
 
     try {
       let remoteProjects = await this.languageClient.getRemoteProjectsForConnection(getRemoteProjectsParam);
@@ -183,6 +183,7 @@ export class BindingService {
         ' Please check the connection.');
     }
 
+    itemsList.sort((i1, i2) => i1.label.localeCompare(i2.label, 'en'));
     return itemsList;
   }
 }
