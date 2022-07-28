@@ -9,12 +9,20 @@
 import * as vscode from 'vscode';
 import { expect } from 'chai';
 import { AllConnectionsTreeDataProvider, ConnectionGroup } from '../../src/connections';
-import { beforeEach, describe } from 'mocha';
 import { SonarLintExtendedLanguageClient } from '../../src/client';
+import * as path from 'path';
 
 const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
+
+const sampleFolderLocation = '../../../test/samples/';
+const sampleFolderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
+
+const projectKeysToNames = {
+  projectKey1: 'Project Name 1',
+  projectKey2: 'Project Name 2'
+} as {[k: string]: string}
 
 const mockClient = {
   async onReady() {
@@ -22,11 +30,14 @@ const mockClient = {
   },
   async checkConnection(connectionId: string) {
     return Promise.resolve({ connectionId, success: true });
+  },
+  async getRemoteProjectNames(_connectionId, _projectKeys ) {
+    return Promise.resolve(projectKeysToNames);
   }
 } as SonarLintExtendedLanguageClient;
 
 suite('Connected Mode Test Suite', () => {
-  beforeEach(async () => {
+  setup(async () => {
     // start from scratch config
     await vscode.workspace.getConfiguration('sonarlint')
         .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, vscode.ConfigurationTarget.Global);
@@ -37,12 +48,14 @@ suite('Connected Mode Test Suite', () => {
   teardown(async () => {
     await vscode.workspace.getConfiguration('sonarlint')
         .update(CONNECTED_MODE_SETTINGS, undefined, vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration('sonarlint', sampleFolderUri)
+        .update('connectedMode.project', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
-  describe('getConnections()', () => {
+  suite('getConnections()', () => {
     let underTest;
-    beforeEach(() => {
+    setup(() => {
         underTest = new AllConnectionsTreeDataProvider(mockClient);
     });
 
@@ -63,7 +76,7 @@ suite('Connected Mode Test Suite', () => {
 
   });
 
-  describe('ConnectedMode TreeView', () => {
+  suite('ConnectedMode TreeView', () => {
     const SQGroup = new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup');
     const SCGroup = new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup');
 
@@ -83,13 +96,27 @@ suite('Connected Mode Test Suite', () => {
       ];
       await vscode.workspace.getConfiguration('sonarlint')
           .update(CONNECTED_MODE_SETTINGS_SONARQUBE, testSQConfig, vscode.ConfigurationTarget.Global);
+      await vscode.workspace.getConfiguration('sonarlint', sampleFolderUri)
+          .update('connectedMode.project', { projectKey: 'projectKey1' }, vscode.ConfigurationTarget.WorkspaceFolder);
 
       const underTest = new AllConnectionsTreeDataProvider(mockClient);
 
       const sonarQubeChildren = await underTest.getChildren(SQGroup);
 
       expect(sonarQubeChildren.length).to.equal(1);
-      expect(sonarQubeChildren[0].label).to.equal(testSQConfig[0].serverUrl);
+      const connectionNode = sonarQubeChildren[0];
+      expect(connectionNode.label).to.equal(testSQConfig[0].serverUrl);
+
+      const connectionChildren = await underTest.getChildren(connectionNode);
+      expect(connectionChildren.length).to.equal(1);
+      const remoteProjectNode = connectionChildren[0];
+      expect(remoteProjectNode.label).to.equal('Project Name 1');
+      expect(remoteProjectNode.description).to.equal('projectKey1');
+
+      const remoteProjectChildren = await underTest.getChildren(remoteProjectNode);
+      expect(remoteProjectChildren.length).to.equal(1);
+      const workspaceFolderNode = remoteProjectChildren[0];
+      expect(workspaceFolderNode.label).to.equal('samples');
     });
 
     test('should return two element list when expanding SC and two connections exist', async () => {

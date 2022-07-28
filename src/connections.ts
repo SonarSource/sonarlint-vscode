@@ -145,10 +145,11 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     } else if (element.contextValue === 'sonarCloudGroup') {
       return this.getConnections('sonarcloud');
     } else if (element.contextValue === 'sonarqubeConnection' || element.contextValue === 'sonarcloudConnection') {
-      return this.getRemoteProjects(element.id);
+      const connection = (element as Connection);
+      return this.getRemoteProjects(connection.id || DEFAULT_CONNECTION_ID);
     } else if (element.contextValue === 'remoteProject') {
       const project = (element as RemoteProject);
-      return this.getWorkspaceFoldersBoundTo(project.connectionId, project.key);
+      return this.getWorkspaceFoldersBoundTo(project.connectionId || DEFAULT_CONNECTION_ID, project.key);
     }
     return null;
   }
