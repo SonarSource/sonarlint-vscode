@@ -49,4 +49,5 @@ export namespace Commands {
   export const REMOVE_CONNECTION = 'SonarLint.RemoveConnection';
 
   export const ADD_PROJECT_BINDING = 'SonarLint.AddProjectBinding';
+  export const EDIT_PROJECT_BINDING = 'SonarLint.EditProjectBinding';
 }

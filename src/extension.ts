@@ -377,6 +377,12 @@ export function activate(context: VSCode.ExtensionContext) {
       (connection) => ConnectionSettingsService.instance.removeConnection(connection)
     )
   );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(
+      Commands.EDIT_PROJECT_BINDING,
+      (binding) =>  BindingService.instance.editBinding(binding)
+    )
+  );
 
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
