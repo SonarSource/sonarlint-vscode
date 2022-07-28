@@ -36,6 +36,8 @@ jobs:
     name: Deploy to Visual Studio marketplace
     needs: sonar_release
     strategy:
+      # Deployment jobs are executed sequentially to make sure that the universal package is the last one deployed
+      max-parallel: 1
       matrix:
         platform: ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal']
     steps:
