@@ -7,10 +7,10 @@
 'use strict';
 
 import * as VSCode from 'vscode';
+import { BindingService } from './binding';
+import { SonarLintExtendedLanguageClient } from './client';
 import { ConnectionCheckResult } from './protocol';
 import { BaseConnection, ConnectionSettingsService } from './settings';
-import { SonarLintExtendedLanguageClient } from './client';
-import { BindingService } from './binding';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 
@@ -34,9 +34,9 @@ export class RemoteProject extends VSCode.TreeItem {
     public readonly key: string,
     public readonly name?: string
   ) {
-    super(name || key, VSCode.TreeItemCollapsibleState.Expanded);
-    this.description = name ? key : null;
-    this.iconPath = new VSCode.ThemeIcon('cloud');
+    super(name || '<project not found>', VSCode.TreeItemCollapsibleState.Expanded);
+    this.description = key;
+    this.iconPath = new VSCode.ThemeIcon(name ? 'cloud' : 'question');
     this.contextValue = 'remoteProject';
   }
 
