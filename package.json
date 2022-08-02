@@ -443,6 +443,26 @@
         "category": "SonarLint",
         "icon": "$(trash)",
         "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.UpdateAllBindings",
+        "title": "Update Bindings",
+        "icon": "$(refresh)",
+        "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.EditProjectBinding",
+        "title": "Edit Project Binding",
+        "category": "SonarLint",
+        "icon": "$(pencil)",
+        "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.RemoveProjectBinding",
+        "title": "Remove Project Binding",
+        "category": "SonarLint",
+        "icon": "$(trash)",
+        "enablement": "view == SonarLint.ConnectedMode"
       }
     ],
     "views": {
@@ -506,6 +526,10 @@
           "command": "SonarLint.ConnectToSonarCloud",
           "when": "view == SonarLint.ConnectedMode",
           "group": "inline"
+        },
+        {
+          "command": "SonarLint.UpdateAllBindings",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -551,6 +575,18 @@
           "command": "SonarLint.RemoveConnection",
           "title": "Remove",
           "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection || viewItem == sonarqubeConnection",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.EditProjectBinding",
+          "title": "Edit",
+          "when": "view == SonarLint.ConnectedMode && viewItem == workspaceFolder",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.RemoveProjectBinding",
+          "title": "Remove",
+          "when": "view == SonarLint.ConnectedMode && viewItem == workspaceFolder",
           "group": "inline"
         }
       ]
