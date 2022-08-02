@@ -86,46 +86,65 @@ The support for PL/SQL analysis is only available together with SonarQube Develo
 
 ## Connected mode
 
-You can connect SonarLint to SonarQube >= 7.9 or SonarCloud and bind your workspace folders to a SonarQube/SonarCloud project to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint then hides in VSCode the issues that are marked as **Won’t Fix** or **False Positive**.
+You can connect SonarLint to SonarQube >= 7.9 or SonarCloud and bind your workspace folders to a SonarQube/SonarCloud project to benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any project sub-folder added to the workspace. 
 
-Connected mode will also allow to unlock analysis of those languages:
+In Connected Mode with SonarCloud or any commercial edition of SonarQube, SonarLint receives notifications about your Quality Gate changes and new issues. Starting from SonarLint for VSCode v3.6, notifications can be enabled or disabled from the UI while creating or editing the connection setting. COMMENT ABOUT WHERE TO FIND INFO FOR <v3.6
+
+When connected with SonarQube >= 8.6 and browsing a [security hotspot](https://docs.sonarqube.org/latest/user-guide/security-hotspots/), there will be a button offering to open the hotspot in SonarLint (with SonarLint already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in CodeSpaces.
+
+Connected Mode will also allow unlocking of your analysis for these languages:
 
 - [Apex rules](https://rules.sonarsource.com/apex)
 - [PL/SQL rules](https://rules.sonarsource.com/plsql).
 
+For configuring Connected Mode, follow the [Connection Setup instructions](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup) below.
+
+### Project Binding
+SonarLint keeps server-side data in a local storage. If you change something on the server such as the Quality Profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). SonarLint will also automatically attempt to synchronize with configured servers at startup and once every hour and will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness).
+
+## Connection Setup
+
+
 Starting from v3.6 of SonarLint for VSCode, to set up SonarQube/SonarCloud connections, open up a `SONARLINT CONNECTED MODE` view in VSCode.
 
-<img src='images/connected_mode_treeview.png' alt='Empty Connected Mode View' width='500'/>
+<img src='images/connected_mode_treeview.png' alt='Empty Connected Mode View' width='350'/>
 
-Click on the relevant button to start setting up SonarQube/SonarCloud connection and fill in the details.
+Click on the relevant button to choose the SonarQube/SonarCloud connection you use, and complete the fields.
 
 <img src='images/create_view.png' alt='Create Connection View' width='600'/>
 
 For SonarQube connections, you need to provide your SonarQube Server URL and Token. Provide Organization Key and Token for SonarCloud connections. A User Token should be generated on the SonarQube/SonarCloud side and pasted in the `User Token` field.
 
-User Token can be generated from:
+User Token can be generated using:
 * SonarQube - `https://<your-sonarqube-url>/sonarqube/account/security/` page
 * SonarCloud - `https://sonarcloud.io/account/security/` page
 
 `Connection Name` is a friendly name for your connections. In case of multiple connections, it also acts as a `connectionId`.
 
-Click `Save Connection` and verify that the new connection was set up successfully in the Connected Mode view.
-
-<img src='images/connection_success.png' alt='Create Connection View' width='400'/>
-
-If needed, you can edit/delete existing, or create additional connections. Action buttons will be revealed when hovering over the relevant item.
+Click `Save Connection` and verify that the new connection was set up successfully in the Connected Mode view. You can edit/delete existing, or create additional connections as needed. Action buttons will be revealed when hovering over the relevant item.
 
 For instructions on setting up a Connected Mode for SonarLint v3.5.4 and lower, see [Wiki](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#sonarlint-versions-354-and-lower)
 
-### Project Binding
+### SonarLint Versions 3.8
 
-Configuring a project binding at the workspace level mutes **Won’t Fix** and **False Positive** issues in any of the project's sub-folders added to the workspace. SonarLint will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness).
+To configure a project binding, navigate to the `SONARLINT CONNECTED MODE` view in the VSCode Explorer and click the `Add Project` Binding button for the desired connection.
 
-In connected mode with SonarCloud or any commercial edition of SonarQube, SonarLint receives notifications about Quality Gate changes and new issues. This feature can be toggled using the `disableNotifications` field in a server connection definition.
+<img src='images/3.8_addBinding.png' alt='Add Project Binding' width='500'/>
 
-When using SonarQube >= 8.6 and browsing a [security hotspot](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) there will be a button offering to open the hotspot in SonarLint if you have already SonarLint running in VSCode. Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in CodeSpaces.
 
-SonarLint keeps server side data in a local storage. If you change something on the server such as the quality profile, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). SonarLint will also automatically attempt to synchronize with configured servers at startup and every hour.
+If your open workspace contains multiple folders, you will be prompted to select the folder you would like to create the binding for.
+
+<img src='images/3.8_selectFolder.png' alt='Select Folder' width='500'/>
+
+
+After selecting the folder, you will be prompted to select the remote SonarQube/SonarCloud project you would like to bind with SonarLint.
+
+<img src='images/3.8_selectProject.png' alt='Select Project' width='500'/>
+
+
+Click on the desired project and enjoy Connected Mode!
+You can also edit/delete bindings from the `SONARLINT CONNECTED MODE` view
+
 
 ## Other settings
 
@@ -165,3 +184,4 @@ Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.g
 ## Data and telemetry
 
 This extension collects anonymous usage data and sends it to SonarSource to help improve SonarLint functionality.  No source code nor IP address is collected, and SonarSource does not share the data with anyone else. Collection of telemetry is controlled via the setting: `sonarlint.disableTelemetry`. Click [here](telemetry-sample.md) to see a sample of the data that are collected.
+
