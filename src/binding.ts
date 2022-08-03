@@ -71,9 +71,11 @@ export class BindingService {
     const connectionId = connection.id || DEFAULT_CONNECTION_ID;
     const allBindings = this.getAllBindings();
     const bindingsForConnection: Map<string, BoundFolder[]> = allBindings.get(connectionId);
-    bindingsForConnection.forEach(folders => {
-      folders.forEach(f => this.deleteBinding(f));
-    });
+    if (bindingsForConnection) {
+      bindingsForConnection.forEach(folders => {
+        folders.forEach(f => this.deleteBinding(f));
+      });
+    }
   }
 
   getAllBindings(): Map<string, Map<string, BoundFolder[]>> {
