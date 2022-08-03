@@ -145,7 +145,8 @@ export class BindingService {
     if (remoteProjects) {
       const remoteProjectsQuickPick = VSCode.window.createQuickPick();
       remoteProjectsQuickPick.title = `Select ${serverType} Project to Bind with '${selectedFolderName}/'`;
-      remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with '${selectedFolderName}/' folder`;
+      remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with 
+      '${selectedFolderName}/' folder`;
       remoteProjectsQuickPick.items = remoteProjects;
       remoteProjectsQuickPick.ignoreFocusOut = true;
 
