@@ -243,8 +243,7 @@ export class ConnectionSettingsService {
 
     const deleteAction = 'Delete';
     const confirm = await VSCode.window.showWarningMessage(
-      `Are you sure you want to delete ${isSonarQube ? 'SonarQube' : 'SonarCloud'} connection '${connection.id}'
-       and project bindings related to it?`,
+      `Are you sure you want to delete ${isSonarQube ? 'SonarQube' : 'SonarCloud'} connection '${connection.id}' and project bindings related to it?`,
       { modal: true },
       deleteAction
     );
