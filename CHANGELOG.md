@@ -1,3 +1,7 @@
+## 3.8
+
+* Add views to manage project binding with connected mode
+
 ## 3.7
 
 * Ship Java 17 runtime with select supported platforms (Windows x86-64, macOS x86-64 and arm-64, Linux x86-64)
