@@ -67,14 +67,14 @@ export class BindingService {
     return config.update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
   }
 
-  deleteBindingsForConnection(connection: Connection) {
+  async deleteBindingsForConnection(connection: Connection) {
     const connectionId = connection.id || DEFAULT_CONNECTION_ID;
     const allBindings = this.getAllBindings();
     const bindingsForConnection: Map<string, BoundFolder[]> = allBindings.get(connectionId);
     if (bindingsForConnection) {
-      bindingsForConnection.forEach(folders => {
-        folders.forEach(f => this.deleteBinding(f));
-      });
+      for (const folders of bindingsForConnection.values()) {
+        await Promise.all(folders.map(f => this.deleteBinding(f)));
+      }
     }
   }
 
@@ -177,12 +177,12 @@ export class BindingService {
     return workspaceFolders.length === 1
       ? workspaceFolders[0].name
       : VSCode.window.showQuickPick(
-          workspaceFolders.map(f => f.name),
-          {
-            title: 'Select Folder to Bind',
-            placeHolder: 'Select the workspace folder you want to create binding for'
-          }
-        );
+        workspaceFolders.map(f => f.name),
+        {
+          title: 'Select Folder to Bind',
+          placeHolder: 'Select the workspace folder you want to create binding for'
+        }
+      );
   }
 
   async saveBinding(projectKey: string, connectionId?: string, workspaceFolder?: VSCode.WorkspaceFolder) {
