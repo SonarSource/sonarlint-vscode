@@ -7,8 +7,8 @@
 'use strict';
 
 import { expect } from 'chai';
-import { BindingService, BoundFolder, ProjectBinding } from '../../src/binding';
-import { ConnectionSettingsService } from '../../src/settings';
+import { BindingService, ProjectBinding } from '../../src/binding';
+import { ConnectionSettingsService, SonarQubeConnection } from '../../src/settings';
 
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/client';
@@ -26,10 +26,19 @@ const TEST_SONARQUBE_CONNECTION = {
   serverUrl: 'https://test.sonarqube.com'
 };
 
+const DEFAULT_TEST_SONARQUBE_CONNECTION = {
+  serverUrl: 'https://test.sonarqube.com'
+};
+
 const TEST_BINDING = {
   connectionId: 'test',
   projectKey: 'test.project.key'
 };
+
+const DEFAULT_TEST_BINDING = {
+  projectKey: 'test.project.key'
+};
+
 
 const TWO = 2;
 
@@ -47,6 +56,12 @@ const mockClient = {
     return Promise.resolve({ connectionId, success: true });
   }
 } as SonarLintExtendedLanguageClient;
+
+const mockSettingsService = {
+  async loadSonarQubeConnection(connectionId: string): Promise<SonarQubeConnection> {
+    return { serverUrl: "https://next.sonarqube.com/sonarqube", connectionId: connectionId };
+  }
+} as ConnectionSettingsService;
 
 async function resetBindings() {
   return Promise.all(VSCode.workspace.workspaceFolders.map(folder => {
@@ -73,7 +88,7 @@ suite('Bindings Test Suite', () => {
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
-      underTest = new BindingService(mockClient, connectionSettingsService);
+      underTest = new BindingService(mockClient, mockSettingsService);
     });
 
     test('Save binding updates configuration', async () => {
@@ -89,21 +104,14 @@ suite('Bindings Test Suite', () => {
       const updatedBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get<ProjectBinding>(BINDING_SETTINGS);
-
       expect(updatedBinding).to.deep.equal(TEST_BINDING);
-      let bindingsForConnection = underTest.getAllBindings().get(TEST_BINDING.connectionId);
-      console.log(`Bindings for connection: ${JSON.stringify(bindingsForConnection, replacer)}`);
 
       await underTest.deleteBinding(new WorkspaceFolderItem('name', workspaceFolder, TEST_BINDING.connectionId, 'SonarQube'));
 
-      bindingsForConnection = underTest.getAllBindings().get(TEST_BINDING.connectionId);
-      console.log(`Bindings for connection: ${JSON.stringify(bindingsForConnection, replacer)}`);
       const deletedBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get(BINDING_SETTINGS);
       expect(deletedBinding).to.be.empty;
-
-
     });
 
     test('Get remote projects items correctly maps keys and names', async () => {
@@ -143,7 +151,7 @@ suite('Bindings Test Suite', () => {
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(binding).to.deep.equal(TEST_BINDING);
 
-      await underTest.deleteBindingsForConnection(new Connection(TEST_SONARQUBE_CONNECTION.connectionId, 
+      await underTest.deleteBindingsForConnection(new Connection(TEST_SONARQUBE_CONNECTION.connectionId,
         TEST_SONARQUBE_CONNECTION.connectionId, 'sonarqubeConnection', 'ok'));
 
       binding = VSCode.workspace
@@ -152,37 +160,66 @@ suite('Bindings Test Suite', () => {
       expect(binding).to.be.empty;
     });
 
+    test('Default connection ID to <default> if not provided during deletion', async () => {
+      await VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY)
+        .update(CONNECTED_MODE_SETTINGS_SONARQUBE, [DEFAULT_TEST_SONARQUBE_CONNECTION], VSCode.ConfigurationTarget.Global);
+      await resetBindings();
+
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      let binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+
+      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, '<default>', workspaceFolder);
+
+      binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(binding).to.deep.equal({
+          "connectionId": "<default>",
+          "projectKey": "test.project.key"
+        }
+      );
+
+      await underTest.deleteBindingsForConnection(new Connection(undefined,
+        TEST_SONARQUBE_CONNECTION.connectionId, 'sonarqubeConnection', 'ok'));
+
+      const defaultConnectionBindings = await underTest.getAllBindings().get('<default>');
+      expect(defaultConnectionBindings).to.be.equal(undefined);
+    });
+
+    test('Create Or Edit Binding', async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      let binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+      await underTest.createOrEditBinding(TEST_BINDING.connectionId, 'contextValue', workspaceFolder, 'SonarQube');
+      // Wait quick pick list to display
+      await sleep(100);
+      await VSCode.commands.executeCommand('workbench.action.quickOpenNavigateNext');
+      // Wait for the selection to happen
+      await sleep(100);
+      await VSCode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+      // Wait settings to save
+      await sleep(500);
+
+      binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(binding).to.deep.equal({
+          "connectionId": TEST_BINDING.connectionId,
+          "projectKey": "key2"
+        }
+      );
+    });
   });
 });
 
-function replacer(key, value) {
-  if(value instanceof Map) {
-    return {
-      dataType: 'Map',
-      value: Array.from(value.entries()), // or with spread: value: [...value]
-    };
-  } else {
-    return value;
-  }
-}
-
-function delay(time) {
+function sleep(time) {
   return new Promise(resolve => setTimeout(resolve, time));
-}
-
-
-const json = {
-  "dataType": "Map",
-  "value": [["test.project.key", [{
-    "folder": {
-      "uri": {
-        "$mid": 1,
-        "fsPath": "/Users/kirill.knize/IdeaProjects/sonarlint-vscode/test/samples",
-        "external": "file:///Users/kirill.knize/IdeaProjects/sonarlint-vscode/test/samples",
-        "path": "/Users/kirill.knize/IdeaProjects/sonarlint-vscode/test/samples",
-        "scheme": "file"
-      }, "name": "samples", "index": 0
-    },
-    "binding": { "connectionId": "test", "projectKey": "test.project.key" }
-  }]]]
 }
