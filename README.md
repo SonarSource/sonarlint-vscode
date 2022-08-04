@@ -97,7 +97,7 @@ Connected Mode will also allow unlocking of your analysis for these languages:
 - [Apex rules](https://rules.sonarsource.com/apex)
 - [PL/SQL rules](https://rules.sonarsource.com/plsql).
 
-When configuring Connected Mode, follow the [Connection Setup instructions](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup) below.
+When configuring Connected Mode, follow the [Connection Setup instructions](#connection-setup) below.
 
 ### Project Binding
 SonarLint keeps server-side data in a local storage. If you change something on the server such as the Quality Profile, SonarLint will automatically attempt to synchronize with configured servers at startup & once every hour, and will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness). Additionally, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). 
@@ -125,7 +125,7 @@ Click `Save Connection` and verify that the new connection was set up successful
 
 To set up a Connected Mode for SonarLint v3.5.4 and lower, please see the relevant wiki for [Connection Setup](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup).
 
-### Project Binding SonarLint v3.8 and above
+### Project Binding Setup
 
 To configure a project binding in SonarLint v3.8 and above, navigate to the `SONARLINT CONNECTED MODE` view in the VSCode Explorer and click the `Add Project` Binding button for the desired connection.
 
