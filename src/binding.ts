@@ -41,8 +41,7 @@ export class BindingService {
   constructor(
     private readonly languageClient: SonarLintExtendedLanguageClient,
     private readonly settingsService: ConnectionSettingsService
-  ) {
-  }
+  ) {}
 
   static get instance(): BindingService {
     return BindingService._instance;

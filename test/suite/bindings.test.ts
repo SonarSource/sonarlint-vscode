@@ -19,8 +19,6 @@ const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
 
-const connectionSettingsService = ConnectionSettingsService.instance;
-
 const TEST_SONARQUBE_CONNECTION = {
   connectionId: 'test',
   serverUrl: 'https://test.sonarqube.com'
@@ -38,7 +36,6 @@ const TEST_BINDING = {
 const DEFAULT_TEST_BINDING = {
   projectKey: 'test.project.key'
 };
-
 
 const TWO = 2;
 
