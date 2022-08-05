@@ -60,16 +60,24 @@ If a suitable JRE cannot be found at those places, SonarLint will ask for your p
 
 To analyze JavaScript and TypeScript code, SonarLint requires Node.js executable. The minimal supported version is `12.22.0` for standalone analysis or connected mode with SonarCloud. For connected mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate node, or you can force the location using:
 
+```json
     {
         "sonarlint.pathToNodeExecutable": "/home/yourname/.nvm/versions/node/v12.22.0/bin/node"
     }
+```
+
+Analysis of TypeScript in connected mode with SonarQube requires the server to use version 8.1 or above.
 
 ### C and C++ analysis specific requirements
 
 To analyze C and C++ code, SonarLint requires [compile commands json file](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis):
+
+```json
     {
         "sonarlint.pathToCompileCommands": "/home/yourname/repos/proj/compile_commands.json"
     }
+```
+
 Note: if you are using Microsoft compiler, the environment should be ready to build the code. For example, by launching VS Code from your Visual Studio Command Prompt
 
 ### Java analysis specific requirements
@@ -158,12 +166,14 @@ For earlier versions, please see the relevant wiki to configure your [Connection
 
 It is possible to specify extra analyzer properties that will be used for analysis. Example:
 
+```json
     // In project/.vscode/settings.json
     {
         "sonarlint.analyzerProperties": {
             "sonar.javascript.node.maxspace": "4096"
         }
     }
+```
 
 ## Contributions
 
