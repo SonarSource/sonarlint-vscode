@@ -14,7 +14,7 @@ Install dependencies:
 
 Download resources (language server and analyzers):
 
-    node scripts/prepare.js
+    node scripts/prepare.mjs
 
 Press `F5` to launch a new VSCode instance with the extension installed.
 
@@ -25,7 +25,7 @@ Packaging, publishing
 
 Verify `package.json` content, especially version.
 
-Verify the package versions to download in `scripts/prepare.js`.
+Verify the package versions to download in `scripts/prepare.mjs`.
 
 TODO
 
