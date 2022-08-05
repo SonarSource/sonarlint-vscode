@@ -55,11 +55,13 @@ suite('Java Test Suite', () => {
       const codeActionsResult = (await vscode.commands.executeCommand<(vscode.Command | vscode.CodeAction)[]>('vscode.executeCodeActionProvider', document.uri, rangeInMiddleOfThrowsMyException, vscode.CodeActionKind.QuickFix.value))!;
       // With old versions of VSCode, code actions are not necessarily filtered on kind
       const expectedActionTitles = [
-        'SonarLint: Remove "MyException"',
+        "SonarLint: Deactivate rule 'java:S1130'",
         "SonarLint: Open description of rule 'java:S1130'",
-        "SonarLint: Deactivate rule 'java:S1130'"
+        'SonarLint: Remove "MyException"'
       ];
       const actualCodeActionTitles = codeActionsResult.filter(c => expectedActionTitles.indexOf(c.title) >= 0).map(c => c.title);
+      // Order of code actions is not stable, forcing lexicographic order for assertion
+      actualCodeActionTitles.sort();
       assert.deepEqual(actualCodeActionTitles, expectedActionTitles);
 
       // Check that first fix has an edit that can be applied
