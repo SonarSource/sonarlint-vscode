@@ -645,13 +645,13 @@
     "analyzers"
   ],
   "scripts": {
-    "vscode:prepublish": "node scripts/prepare.js && webpack --mode production",
+    "vscode:prepublish": "node scripts/prepare.mjs && webpack --mode production",
     "compile": "tsc -p ./",
     "webpack": "webpack --mode development",
     "pretest": "webpack --mode development && tsc -p ./",
     "test": "node out/test/runTest.js",
     "test-cov": "node out/test/runTest.js --coverage",
-    "prepare": "node scripts/prepare.js",
+    "prepare": "node scripts/prepare.mjs",
     "cyclonedx-run": "cyclonedx-node",
     "cyclonedx": "gulp cycloneDx"
   },
