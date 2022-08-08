@@ -78,7 +78,7 @@ gulp.task('update-version', function () {
 });
 
 gulp.task('package', async () => {
-  await vsce.createVSIX();
+  await vsce.createVSIX({ useYarn: true });
 });
 
 gulp.task('package-all', (done) => {
@@ -86,7 +86,7 @@ gulp.task('package-all', (done) => {
   TARGETED_PLATFORMS.forEach(async platform => {
     tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)));
   });
-  tasks.push(gulp.series('clean-jre', vsce.createVSIX));
+  tasks.push(gulp.series('clean-jre', () =>  vsce.createVSIX({ useYarn: true })));
 
   return gulp.series(...tasks, (seriesDone) => {
     seriesDone();
@@ -288,7 +288,7 @@ gulp.task('deploy-buildinfo', function (done) {
 function downloadJreAndInstallVsixForPlatform(platform) {
   return function (done) {
     const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
-    const createVsixTask = () => vsce.createVSIX({target: platform});
+    const createVsixTask = () => vsce.createVSIX({target: platform, useYarn: true});
     const tasks = [downloadJreTask, createVsixTask];
 
     return gulp.series(...tasks, (seriesDone) => {
@@ -304,7 +304,7 @@ const deployAllPlatformsSeries = (done) => {
       platform => tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)))
   );
   tasks.push('clean-jre');
-  tasks.push(gulp.series(vsce.createVSIX));
+  tasks.push(gulp.series(() => vsce.createVSIX({ useYarn: true })));
   tasks.push(gulp.series('compute-all-vsix-hashes', 'sign', 'deploy-buildinfo', 'deploy-vsix'));
 
   return gulp.series(...tasks, (seriesDone) => {
@@ -330,7 +330,7 @@ gulp.task(
     'clean',
     'update-version',
     'cycloneDx',
-    vsce.createVSIX,
+    () => vsce.createVSIX({ useYarn: true }),
     'compute-universal-vsix-hashes',
     'sign',
     'deploy-buildinfo',
