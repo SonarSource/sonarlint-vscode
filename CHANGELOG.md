@@ -1,7 +1,8 @@
 ## 3.9
 
-* Update JS/TS analyzer 9.4 -> [9.5](https://github.com/SonarSource/SonarJS/releases/tag/9.5.0.18531) -> [9.6](https://github.com/SonarSource/SonarJS/releases/tag/9.6.0.18814) -> [9.7](https://github.com/SonarSource/SonarJS/releases/tag/9.7.0.18911), add React rules, support for JavaScript in YAML, new security hotspots targeting AWS S3 buckets with Node AWS CDK, FP fixes for React
 * Automatically synchronize issues and taint vulnerabilities in connected mode (with SQ 9.6+)
+* Update JS/TS analyzer 9.4 -> [9.5](https://github.com/SonarSource/SonarJS/releases/tag/9.5.0.18531) -> [9.6](https://github.com/SonarSource/SonarJS/releases/tag/9.6.0.18814) -> [9.7](https://github.com/SonarSource/SonarJS/releases/tag/9.7.0.18911), add React rules, support for JavaScript in YAML, FP fixes for React
+* Update CFamily analyzer 6.35 -> [6.36](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013776%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), bug fixes and improvements
 
 ## 3.8
 
