@@ -58,7 +58,7 @@ If a suitable JRE cannot be found at those places, SonarLint will ask for your p
 
 ### JS/TS analysis specific requirements
 
-To analyze JavaScript and TypeScript code, SonarLint requires Node.js executable. The minimal supported version is `12.22.0` for standalone analysis or connected mode with SonarCloud. For connected mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate node, or you can force the location using:
+To analyze JavaScript and TypeScript code, SonarLint requires Node.js executable. The minimal supported version is `12.22.0` for standalone analysis or Connected Mode with SonarCloud. For Connected Mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate node, or you can force the location using:
 
 ```json
     {
@@ -66,7 +66,7 @@ To analyze JavaScript and TypeScript code, SonarLint requires Node.js executable
     }
 ```
 
-Analysis of TypeScript in connected mode with SonarQube requires the server to use version 8.1 or above.
+Analysis of TypeScript in Connected Mode with SonarQube requires the server to use version 8.1 or above.
 
 ### C and C++ analysis specific requirements
 
@@ -86,13 +86,13 @@ To enable the support for Java analysis, you need the [Language support for Java
 
 ### Apex analysis specific requirements
 
-The support for Apex analysis is only available together with SonarQube Enterprise Edition or SonarCloud (see connected mode below). You also need the [Salesforce Extension Pack](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode) VSCode extension.
+The support for Apex analysis is only available together with SonarQube Enterprise Edition or SonarCloud (see Connected Mode below). You also need the [Salesforce Extension Pack](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode) VSCode extension.
 
 ### PL/SQL analysis specific requirements
 
-The support for PL/SQL analysis is only available together with SonarQube Developer Edition or SonarCloud (see connected mode below). You also need the [Oracle Developer Tools for VSCode](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
+The support for PL/SQL analysis is only available together with SonarQube Developer Edition or SonarCloud (see Connected Mode below). You also need the [Oracle Developer Tools for VSCode](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
 
-## Connected mode
+## Connected Mode
 
 You can connect SonarLint to SonarQube 7.9+/SonarCloud by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder. 
 
@@ -103,7 +103,7 @@ When running in Connected Mode with SonarQube 8.6 and above, and browsing a [sec
 Connected Mode will also allow unlocking of your analysis for these languages:
 
 - [Apex rules](https://rules.sonarsource.com/apex)
-- [PL/SQL rules](https://rules.sonarsource.com/plsql).
+- [PL/SQL rules](https://rules.sonarsource.com/plsql)
 
 When configuring Connected Mode, follow the [Connection Setup instructions](#connection-setup) below.
 
@@ -111,36 +111,36 @@ When configuring Connected Mode, follow the [Connection Setup instructions](#con
 SonarLint keeps server-side data in a local storage. If you change something on the server such as the Quality Profile, SonarLint will automatically attempt to synchronize with configured servers at startup & once every hour, and will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness). Additionally, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). 
 
 ## Connection Setup
-In SonarLint v3.6 and above for VSCode, to set up SonarQube/SonarCloud connections, open up a `SONARLINT CONNECTED MODE` view in VSCode.
+In SonarLint v3.6 and above for VSCode, to set up SonarQube/SonarCloud connections, open a **SONARLINT CONNECTED MODE** view in VSCode.
 
 <img src='images/connected_mode_treeview.png' alt='Empty Connected Mode View' width='350'/>
 
-Click on the relevant button to choose the SonarQube/SonarCloud connection you use, and complete the fields.
+Select either **Add SonarQube Connection** or **Add SonarCloud Connection**, and complete the fields.
 
 <img src='images/create_view.png' alt='Create Connection View' width='600'/>
 
-For SonarQube connections, provide your SonarQube Server URL and Token. For SonarCloud connections, provide your Organization Key and Token. User Tokens should be generated on the SonarQube/SonarCloud side and pasted in the `User Token` field.
+For SonarQube connections, provide your SonarQube **Server URL** and **User Token**. For SonarCloud connections, provide your **Organization Key** and **User Token**. User Tokens should be generated on the SonarQube/SonarCloud side and pasted in the **User Token** field.
 
 User Token can be generated using these pages:
 * SonarQube - `https://<your-sonarqube-url>/account/security/`
 * SonarCloud - `https://sonarcloud.io/account/security/`
 
-`Connection Name` is a friendly name for your connections. In case of multiple connections, it also acts as a `connectionId`.
+**Connection Name** is a friendly name for your connections. In case of multiple connections, it also acts as a `connectionId`.
 
 In SonarLint for VSCode v3.6 and above, notifications can be enabled or disabled here, or from the UI while creating or editing the connection setting. Action buttons in the UI used to edit/delete existing, or create additional connections will be revealed when hovering over each connection (see next image).
 
-Click `Save Connection` and verify that the new connection was set up successfully in the Connected Mode view.
+Select **Save Connection** and verify that the new connection was set up successfully in the Connected Mode view.
 
 To set up a Connected Mode for SonarLint v3.5.4 and lower, please see the relevant wiki for [Connection Setup](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup).
 
 ### Project Binding Setup
 
-To configure a project binding in SonarLint v3.8 and above, navigate to the `SONARLINT CONNECTED MODE` view in the VSCode Explorer and click the `Add Project` Binding button for the desired connection.
+To configure a project binding in SonarLint v3.8 and above, navigate to the **SONARLINT CONNECTED MODE** view in the VSCode Explorer and select **Add Project Binding** to add the desired connection.
 
 <img src='images/3.8_addBinding.png' alt='Add Project Binding' width='500'/>
 
 
-If your open workspace contains multiple folders, you will be prompted to select a specific folder.
+If your open workspace contains multiple folders, you will be prompted to choose a specific folder.
 
 <img src='images/3.8_selectFolder.png' alt='Select Folder' width='500'/>
 
@@ -150,8 +150,8 @@ After selecting the folder, choose the remote SonarQube/SonarCloud project you w
 <img src='images/3.8_selectProject.png' alt='Select Project' width='500'/>
 
 
-Click on the desired project and enjoy Connected Mode!
-You can also edit/delete bindings from the `SONARLINT CONNECTED MODE` view.
+Select the desired project and enjoy Connected Mode!
+You can also edit/delete bindings from the **SONARLINT CONNECTED MODE** view.
 
 <img src='images/3.8_editBinding.png' alt='Edit Binding' width='500'/>
 
@@ -185,7 +185,7 @@ With that in mind, if you would like to submit a code contribution, please creat
 
 Make sure that you follow our [code style](https://github.com/SonarSource/sonar-developer-toolset#code-style) and all tests are passing.
 
-## Have Question or Feedback?
+## Have Questions or Feedback?
 
 For SonarLint support questions ("How do I?", "I got this error, why?", ...), please first read the [FAQ](https://community.sonarsource.com/t/frequently-asked-questions/7204) and then head to the [SonarSource forum](https://community.sonarsource.com/c/help/sl). There are chances that a question similar to yours has already been answered.
 
