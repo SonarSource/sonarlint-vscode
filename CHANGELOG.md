@@ -1,6 +1,7 @@
 ## 3.10
 
 * Update Python analyzer 3.15 -> [3.16](https://github.com/SonarSource/sonar-python/releases/tag/3.16.0.9967), 8 new unit test rules
+* Update Secrets analyzer 1.1 -> 1.2, remove warning about packaged dependencies
 
 ## 3.9
 
