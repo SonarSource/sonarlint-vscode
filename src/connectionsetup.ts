@@ -19,6 +19,7 @@ import {
 } from './settings';
 import * as util from './util';
 import { ResourceResolver } from './webview';
+import { AutoBindingService } from "./autobinding";
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -269,6 +270,7 @@ async function saveConnection(connection: SonarQubeConnection | SonarCloudConnec
       await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
     } else {
       await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+      await AutoBindingService.instance.autoBindAllUnboundFolders();
     }
   } else {
     const foundConnection = await ConnectionSettingsService.instance.loadSonarCloudConnection(connection.connectionId);
@@ -277,6 +279,7 @@ async function saveConnection(connection: SonarQubeConnection | SonarCloudConnec
       await ConnectionSettingsService.instance.updateSonarCloudConnection(connection);
     } else {
       await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
+      await AutoBindingService.instance.autoBindAllUnboundFolders();
     }
   }
 }
