@@ -7,12 +7,12 @@
 'use strict';
 
 import { expect } from 'chai';
-import { BindingService, ProjectBinding } from '../../src/binding';
-import { ConnectionSettingsService, SonarQubeConnection } from '../../src/settings';
+import { BindingService, ProjectBinding } from '../../src/connected/binding';
+import { ConnectionSettingsService, SonarQubeConnection } from '../../src/settings/settings';
 
 import * as VSCode from 'vscode';
-import { SonarLintExtendedLanguageClient } from '../../src/client';
-import { Connection, WorkspaceFolderItem } from '../../src/connections';
+import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
+import { Connection, WorkspaceFolderItem } from '../../src/connected/connections';
 
 const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';

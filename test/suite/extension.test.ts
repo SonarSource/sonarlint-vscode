@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 import * as assert from 'assert';
 import * as path from 'path';
-import * as util from '../../src/util';
+import * as util from '../../src/util/util';
 import * as FS from 'fs';
 import * as os from 'os';
 
@@ -15,7 +15,7 @@ import * as os from 'os';
 import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { performIsIgnoredCheck } from '../../src/extension';
-import { Commands } from '../../src/commands';
+import { Commands } from '../../src/util/commands';
 
 const sampleFolderLocation = '../../../test/samples/';
 

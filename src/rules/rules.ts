@@ -7,7 +7,7 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { ConfigLevel, Rule, RulesResponse } from './protocol';
+import { ConfigLevel, Rule, RulesResponse } from '../lsp/protocol';
 
 function isActive(rule: Rule) {
   return (rule.activeByDefault && rule.levelFromConfig !== 'off') || rule.levelFromConfig === 'on';

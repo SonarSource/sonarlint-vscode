@@ -5,7 +5,7 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import * as assert from 'assert';
-import { parseMajorVersion } from '../../src/requirements';
+import { parseMajorVersion } from '../../src/util/requirements';
 
 suite('requirements', () => {
   test('should parse Java version', function() {
