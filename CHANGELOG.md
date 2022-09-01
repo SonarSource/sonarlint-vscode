@@ -1,3 +1,7 @@
+## 3.10
+
+* Update Python analyzer 3.15 -> [3.16](https://github.com/SonarSource/sonar-python/releases/tag/3.16.0.9967), 8 new unit test rules
+
 ## 3.9
 
 * Automatically synchronize issues and taint vulnerabilities in connected mode (with SQ 9.6+)
