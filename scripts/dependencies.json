@@ -44,7 +44,7 @@
   {
     "groupId": "com.sonarsource.secrets",
     "artifactId": "sonar-secrets-plugin",
-    "version": "1.1.0.36766",
+    "version": "1.2.0.53269",
     "output": "analyzers/sonarsecrets.jar",
     "requiresCredentials": true
   },
