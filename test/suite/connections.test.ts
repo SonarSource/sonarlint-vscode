@@ -8,8 +8,8 @@
 
 import * as vscode from 'vscode';
 import { expect } from 'chai';
-import { AllConnectionsTreeDataProvider, ConnectionGroup } from '../../src/connections';
-import { SonarLintExtendedLanguageClient } from '../../src/client';
+import { AllConnectionsTreeDataProvider, ConnectionGroup } from '../../src/connected/connections';
+import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import * as path from 'path';
 
 const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';

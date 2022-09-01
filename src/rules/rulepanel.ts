@@ -8,9 +8,9 @@
 
 import * as FS from 'fs';
 import * as VSCode from 'vscode';
-import { ShowRuleDescriptionParams } from './protocol';
-import * as util from './util';
-import { clean, escapeHtml, ResourceResolver } from './webview';
+import { ShowRuleDescriptionParams } from '../lsp/protocol';
+import * as util from '../util/util';
+import { clean, escapeHtml, ResourceResolver } from '../util/webview';
 
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 

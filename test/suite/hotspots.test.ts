@@ -8,9 +8,9 @@
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { Commands } from '../../src/commands';
-import { diagnosticSeverity, HOTSPOT_SOURCE, showSecurityHotspot } from '../../src/hotspots';
-import { HotspotProbability, HotspotStatus, RemoteHotspot } from '../../src/protocol';
+import { Commands } from '../../src/util/commands';
+import { diagnosticSeverity, HOTSPOT_SOURCE, showSecurityHotspot } from '../../src/hotspot/hotspots';
+import { HotspotProbability, HotspotStatus, RemoteHotspot } from '../../src/lsp/protocol';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',

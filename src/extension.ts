@@ -12,35 +12,35 @@ import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
-import { SonarLintExtendedLanguageClient } from './client';
-import { Commands } from './commands';
-import { AllConnectionsTreeDataProvider } from './connections';
+import { SonarLintExtendedLanguageClient } from './lsp/client';
+import { Commands } from './util/commands';
+import { AllConnectionsTreeDataProvider } from './connected/connections';
 import {
   connectToSonarCloud,
   connectToSonarQube,
   editSonarCloudConnection,
   editSonarQubeConnection,
   reportConnectionCheckResult
-} from './connectionsetup';
-import { GitExtension } from './git';
+} from './connected/connectionsetup';
+import { GitExtension } from './scm/git';
 import {
   hideSecurityHotspot,
   HotspotsCodeActionProvider,
   hotspotsCollection,
   showHotspotDescription,
   showSecurityHotspot
-} from './hotspots';
-import { getJavaConfig, installClasspathListener } from './java';
-import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './locations';
-import * as protocol from './protocol';
-import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
-import { showRuleDescription } from './rulepanel';
-import { AllRulesTreeDataProvider, RuleNode } from './rules';
-import { initScm } from './scm';
-import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings';
-import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
-import * as util from './util';
-import { BindingService } from './binding';
+} from './hotspot/hotspots';
+import { getJavaConfig, installClasspathListener } from './java/java';
+import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
+import * as protocol from './lsp/protocol';
+import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './util/requirements';
+import { showRuleDescription } from './rules/rulepanel';
+import { AllRulesTreeDataProvider, RuleNode } from './rules/rules';
+import { initScm } from './scm/scm';
+import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings/settings';
+import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
+import * as util from './util/util';
+import { BindingService } from './connected/binding';
 import { AutoBindingService } from './autobinding';
 
 declare let v8debug: object;

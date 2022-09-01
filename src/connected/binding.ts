@@ -8,9 +8,9 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { Commands } from './commands';
-import { ConnectionSettingsService } from './settings';
-import { SonarLintExtendedLanguageClient } from './client';
+import { Commands } from '../util/commands';
+import { ConnectionSettingsService } from '../settings/settings';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
 
 const SONARLINT_CATEGORY = 'sonarlint';

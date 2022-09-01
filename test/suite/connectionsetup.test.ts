@@ -8,9 +8,9 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { sleep } from '../testutil';
-import { Commands } from '../../src/commands';
-import { handleMessage } from '../../src/connectionsetup';
-import { ConnectionSettingsService } from '../../src/settings';
+import { Commands } from '../../src/util/commands';
+import { handleMessage } from '../../src/connected/connectionsetup';
+import { ConnectionSettingsService } from '../../src/settings/settings';
 
 const FIVE_SECONDS = 5000;
 
