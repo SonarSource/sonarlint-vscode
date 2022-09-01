@@ -8,8 +8,8 @@
 
 import * as vscode from 'vscode';
 import { API, GitExtension, Repository } from './git';
-import { SonarLintExtendedLanguageClient } from './client';
-import { logToSonarLintOutput } from './extension';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { logToSonarLintOutput } from '../extension';
 
 const GIT_EXTENSION_ID = 'vscode.git';
 const GIT_API_VERSION = 1;

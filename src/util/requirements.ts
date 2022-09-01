@@ -15,7 +15,7 @@ import * as path from 'path';
 import * as pathExists from 'path-exists';
 import * as vscode from 'vscode';
 import { Commands } from './commands';
-import * as jre from './jre';
+import * as jre from '../java/jre';
 import { PlatformInformation } from './platform';
 import * as util from './util';
 import * as fse from 'fs-extra';

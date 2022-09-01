@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { buildUrl } from '../../src/jre';
+import { buildUrl } from '../../src/java/jre';
 import { expect } from 'chai';
 
 suite('jre', () => {

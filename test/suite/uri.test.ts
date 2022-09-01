@@ -7,7 +7,7 @@
 'use strict';
 
 import { Uri } from 'vscode';
-import { code2ProtocolConverter, protocol2CodeConverter } from '../../src/uri';
+import { code2ProtocolConverter, protocol2CodeConverter } from '../../src/util/uri';
 import { expect } from 'chai';
 
 suite('uri', () => {

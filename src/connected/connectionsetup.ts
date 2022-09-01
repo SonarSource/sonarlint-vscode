@@ -8,17 +8,17 @@
 
 import * as vscode from 'vscode';
 
-import { Commands } from './commands';
+import { Commands } from '../util/commands';
 import { Connection } from './connections';
-import { ConnectionCheckResult } from './protocol';
+import { ConnectionCheckResult } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
   SonarCloudConnection,
   SonarQubeConnection
-} from './settings';
-import * as util from './util';
-import { ResourceResolver } from './webview';
+} from '../settings/settings';
+import * as util from '../util/util';
+import { ResourceResolver } from '../util/webview';
 import { AutoBindingService } from './autobinding';
 
 let connectionSetupPanel: vscode.WebviewPanel;
