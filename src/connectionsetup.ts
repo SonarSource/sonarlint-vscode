@@ -19,7 +19,7 @@ import {
 } from './settings';
 import * as util from './util';
 import { ResourceResolver } from './webview';
-import { AutoBindingService } from "./autobinding";
+import { AutoBindingService } from './autobinding';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 

@@ -41,8 +41,7 @@ import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedM
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
 import { BindingService } from './binding';
-import { workspace } from "vscode";
-import { AutoBindingService } from "./autobinding";
+import { AutoBindingService } from './autobinding';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
