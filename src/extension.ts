@@ -41,6 +41,8 @@ import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedM
 import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
 import * as util from './util';
 import { BindingService } from './binding';
+import { workspace } from "vscode";
+import { AutoBindingService } from "./autobinding";
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -53,6 +55,7 @@ const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
+let autoBindingService: AutoBindingService;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -256,6 +259,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
   BindingService.init(languageClient, connectionSettingsService);
   bindingService = BindingService.instance;
+  AutoBindingService.init(bindingService);
 
   languageClient.onReady().then(() => {
     const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
@@ -351,6 +355,13 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   });
 
+  VSCode.workspace.onDidChangeWorkspaceFolders(async event => {
+    event.added.filter(workspaceFolder => !BindingService.instance.shouldBeAutoBound(workspaceFolder))
+      .forEach(unboundFolder => {
+        AutoBindingService.instance.autoBindFolder(unboundFolder);
+      });
+  });
+
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE, configureCompilationDatabase)
   );
@@ -413,6 +424,7 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
+  AutoBindingService.instance.autoBindAllUnboundFolders();
 }
 
 function getPlatform(): string {

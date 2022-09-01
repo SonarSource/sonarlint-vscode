@@ -230,6 +230,16 @@ export class BindingService {
     itemsList.sort((i1, i2) => i1.label.localeCompare(i2.label, 'en'));
     return itemsList;
   }
+
+  shouldBeAutoBound(workspaceFolder: VSCode.WorkspaceFolder) {
+    // TODO if user chosen not be asked again - should return true
+    return !this.isBound(workspaceFolder);
+  }
+
+  private isBound(workspaceFolder: VSCode.WorkspaceFolder) {
+    const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
+    return !!config.get(BINDING_SETTINGS);
+  }
 }
 
 export interface ProjectBinding {
