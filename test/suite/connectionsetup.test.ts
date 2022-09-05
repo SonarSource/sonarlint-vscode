@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
 import { handleMessage } from '../../src/connected/connectionsetup';
-import { ConnectionSettingsService } from '../../src/settings/settings';
+import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 
 const FIVE_SECONDS = 5000;
 

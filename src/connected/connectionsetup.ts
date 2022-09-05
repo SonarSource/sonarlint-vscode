@@ -16,7 +16,7 @@ import {
   isSonarQubeConnection,
   SonarCloudConnection,
   SonarQubeConnection
-} from '../settings/settings';
+} from '../settings/connectionsettings';
 import * as util from '../util/util';
 import { ResourceResolver } from '../util/webview';
 import { AutoBindingService } from './autobinding';
@@ -270,7 +270,7 @@ async function saveConnection(connection: SonarQubeConnection | SonarCloudConnec
       await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
     } else {
       await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
-      await AutoBindingService.instance.autoBindAllUnboundFolders();
+      await AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
     }
   } else {
     const foundConnection = await ConnectionSettingsService.instance.loadSonarCloudConnection(connection.connectionId);
@@ -279,7 +279,7 @@ async function saveConnection(connection: SonarQubeConnection | SonarCloudConnec
       await ConnectionSettingsService.instance.updateSonarCloudConnection(connection);
     } else {
       await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
-      await AutoBindingService.instance.autoBindAllUnboundFolders();
+      await AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
     }
   }
 }

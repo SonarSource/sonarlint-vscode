@@ -8,13 +8,12 @@
 
 import { expect } from 'chai';
 import { BindingService, ProjectBinding } from '../../src/connected/binding';
-import { ConnectionSettingsService, SonarQubeConnection } from '../../src/settings/settings';
+import { ConnectionSettingsService, SonarQubeConnection } from '../../src/settings/connectionsettings';
 
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { Connection, WorkspaceFolderItem } from '../../src/connected/connections';
 
-const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -213,6 +212,30 @@ suite('Bindings Test Suite', () => {
           "projectKey": "key2"
         }
       );
+    });
+
+    test('Unbound folder should be autobound', () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      let binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+
+      expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.true;
+    });
+
+    test('Bound folder should not be autobound', async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      await VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY)
+        .update(CONNECTED_MODE_SETTINGS_SONARQUBE, [TEST_SONARQUBE_CONNECTION], VSCode.ConfigurationTarget.Global);
+
+      await VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+            .update(BINDING_SETTINGS, TEST_BINDING);
+
+      expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.false;
     });
   });
 });

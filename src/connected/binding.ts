@@ -9,7 +9,7 @@
 
 import * as VSCode from 'vscode';
 import { Commands } from '../util/commands';
-import { ConnectionSettingsService } from '../settings/settings';
+import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
 
@@ -232,13 +232,13 @@ export class BindingService {
   }
 
   shouldBeAutoBound(workspaceFolder: VSCode.WorkspaceFolder) {
-    // TODO if user chosen not be asked again - should return true
     return !this.isBound(workspaceFolder);
   }
 
   private isBound(workspaceFolder: VSCode.WorkspaceFolder) {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
-    return !!config.get(BINDING_SETTINGS);
+    const binding : ProjectBinding = config.get(BINDING_SETTINGS);
+    return !!binding.projectKey;
   }
 }
 
