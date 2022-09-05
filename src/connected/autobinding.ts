@@ -8,8 +8,13 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { BindingService } from './binding';
-import { ConnectionSettingsService } from '../settings/connectionsettings';
+import { QuickPickItem, QuickPickItemKind } from 'vscode';
+import { BindingService, ServerProject } from './binding';
+import {
+  BaseConnection, ConnectionSettingsService,
+} from '../settings/connectionsettings';
+import { getDisplayName, getServerType, tokenizeString } from '../util/util';
+import { Commands } from '../util/commands';
 
 const AUTOBINDING_THRESHOLD = 5;
 const ATTEMPT_AUTOBINDING_ACTION = 'Attempt Auto-binding';
@@ -33,10 +38,25 @@ export class AutoBindingService {
     private readonly bindingService: BindingService,
     private readonly workspaceState: VSCode.Memento,
     private readonly settingsService: ConnectionSettingsService
-  ) {}
+  ) {
+  }
 
   static get instance(): AutoBindingService {
     return AutoBindingService._instance;
+  }
+
+  async autoBindAllUnboundFolders(unboundFolders: VSCode.WorkspaceFolder[]) {
+    unboundFolders.forEach(unboundFolder => this.autoBindFolder(unboundFolder));
+  }
+
+  async autoBindFolder(unboundFolder: VSCode.WorkspaceFolder) {
+    // TODO [SLVSCODE-326] detect file config and suggest binding
+    const sqConnections = this.settingsService.getSonarQubeConnections();
+    const scConnections = this.settingsService.getSonarCloudConnections();
+    const connectionToServerProjects =
+      await this.bindingService.getConnectionToServerProjects(scConnections, sqConnections);
+    const connectionToBestHits = await this.getBestHitsForConnections(connectionToServerProjects, unboundFolder);
+    this.promptToAutoBind(connectionToBestHits, unboundFolder);
   }
 
   async checkConditionsAndAttemptAutobinding() {
@@ -63,18 +83,6 @@ export class AutoBindingService {
     const sonarCloudConnections = this.settingsService.getSonarCloudConnections();
     const sonarQubeConnections = this.settingsService.getSonarQubeConnections();
     return sonarCloudConnections.length > 0 || sonarQubeConnections.length > 0;
-  }
-
-  async autoBindAllUnboundFolders(unboundFolders) {
-    unboundFolders.forEach(unboundFolder => {
-      this.autoBindFolder(unboundFolder);
-    });
-  }
-
-  async autoBindFolder(unboundFolder: VSCode.WorkspaceFolder) {
-    console.log(`attempting auto-binding for ${unboundFolder.name}`);
-    // TODO [SLVSCODE-326] detect file config and suggest binding
-    // TODO [SLVSCODE-328] match by name and suggest binding
   }
 
   async getTargetConnectionForManualBinding() {
@@ -136,8 +144,8 @@ export class AutoBindingService {
     return VSCode.window
       .showInformationMessage(
         `We found folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
-      Do you want to attempt binding automatically?
-      [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
+       Do you want to attempt binding automatically?
+       [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
         ATTEMPT_AUTOBINDING_ACTION,
         CHOOSE_MANUALLY_ACTION,
         DONT_ASK_AGAIN_ACTION
@@ -156,4 +164,163 @@ export class AutoBindingService {
         return false;
       });
   }
+
+  private async getBestHitsForConnections(connectionToServerProjects: Map<BaseConnection, ServerProject[]>,
+                                          unboundFolder: VSCode.WorkspaceFolder):
+    Promise<Map<BaseConnection, MatchHit[]>> {
+    const folderName = unboundFolder.name;
+    const workspaceName = VSCode.workspace.name;
+    const folderNameTokens = [...tokenizeString(folderName)];
+    const workspaceNameTokens = [...tokenizeString(workspaceName)];
+    const connectionToBestHits = new Map<BaseConnection, MatchHit[]>();
+    for (const [connection, projects] of connectionToServerProjects) {
+      let bestHits: MatchHit[] = [];
+      bestHits.push({ hits: 0, projectKey: '', connection: { connectionId: '' } });
+      for (const project of projects) {
+        const projectKey = project.key;
+        const projectName = project.name;
+        const serverProjectString = (projectKey + projectName).toLowerCase();
+        const folderNameHits = this.getHits(folderNameTokens, serverProjectString);
+        const workspaceNameHits = this.getHits(workspaceNameTokens, serverProjectString);
+        const bestHitCount = bestHits[0].hits;
+        if (folderNameHits >= bestHitCount || workspaceNameHits >= bestHitCount) {
+          bestHits = this.updateBestHits(bestHits, folderNameHits, workspaceNameHits,
+            projectKey, connection);
+        }
+      }
+      if (bestHits[0].hits > 0) {
+        connectionToBestHits.set(connection, bestHits);
+      }
+    }
+    return connectionToBestHits;
+  }
+
+  private async promptToAutoBind(connectionToBestHits: Map<BaseConnection, MatchHit[]>,
+                                 unboundFolder: VSCode.WorkspaceFolder) {
+    const [bestHits] = connectionToBestHits.values();
+    if (connectionToBestHits.size === 1 && bestHits.length === 1) {
+      const bestHit = bestHits[0];
+      this.promptToAutoBindSingleOption(bestHit, connectionToBestHits, unboundFolder);
+    } else {
+      this.promptToAutoBindMultiChoice(connectionToBestHits, unboundFolder);
+    }
+  }
+
+  private async promptToAutoBindSingleOption(bestHit: MatchHit, connectionToBestHits: Map<BaseConnection,
+    MatchHit[]>, unboundFolder: VSCode.WorkspaceFolder) {
+    const [connection] = connectionToBestHits.keys();
+    const connectionName = getDisplayName(connection);
+    const result = await VSCode.window.showInformationMessage(
+      `There is a project to bind on ${connectionName}. Do you want to bind?`, 'Bind');
+    if (result === 'Bind') {
+      this.bindingService.saveBinding(bestHit.projectKey, connection.connectionId, unboundFolder);
+      VSCode.window.showInformationMessage(`Workspace folder '${unboundFolder.name}/'
+                      has been bound with project '${bestHit.projectKey}'`);
+    }
+  }
+
+  private async promptToAutoBindMultiChoice(connectionToBestHits: Map<BaseConnection, MatchHit[]>,
+                                            unboundFolder: VSCode.WorkspaceFolder) {
+    const result = await VSCode.window.showInformationMessage(
+      `There are projects chosen to bind on Sonar server(s). Do you want to bind?`, 'Bind');
+    if (result === 'Bind') {
+      this.showQuickPickListOfProjects(unboundFolder, connectionToBestHits);
+    }
+  }
+
+  showQuickPickListOfProjects(unboundFolder: VSCode.WorkspaceFolder,
+                              connectionToBestHits: Map<BaseConnection, MatchHit[]>) {
+    const remoteProjectsQuickPick = VSCode.window.createQuickPick();
+    const folderName = unboundFolder.name;
+    remoteProjectsQuickPick.title = `Select Project to Bind with '${folderName}/'`;
+    remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with 
+      '${folderName}/' folder`;
+    remoteProjectsQuickPick.items = this.getQuickPickItemsToAutoBind(connectionToBestHits);
+    remoteProjectsQuickPick.ignoreFocusOut = true;
+    remoteProjectsQuickPick.onDidChangeSelection(selection => {
+      const projectToBind = selection[0] as AutoBindProjectQuickPickItem;
+      this.bindingService.saveBinding(projectToBind.description, projectToBind.connectionId, unboundFolder);
+      VSCode.window.showInformationMessage(`Workspace folder '${folderName}/' has been bound with 
+      project '${projectToBind.description} on ${projectToBind.connectionId} server'`);
+      remoteProjectsQuickPick.dispose();
+    });
+    remoteProjectsQuickPick.onDidTriggerItemButton(async e => {
+      const [connectionId, projectKey] = e.item.label.split(' - ');
+      const connection = Array.from(connectionToBestHits.keys()).find(c => c.connectionId === connectionId);
+      const serverType = getServerType(connection);
+      const baseServerUrl = this.bindingService.getBaseServerUrl(connection.connectionId, serverType);
+      remoteProjectsQuickPick.busy = true;
+      VSCode.commands.executeCommand(
+        Commands.OPEN_BROWSER,
+        VSCode.Uri.parse(`${baseServerUrl}?id=${projectKey}`)
+      );
+    });
+    remoteProjectsQuickPick.show();
+  }
+
+  private getQuickPickItemsToAutoBind(connectionToBestHits: Map<BaseConnection, MatchHit[]>) {
+    const itemsList: VSCode.QuickPickItem[] = [];
+    for (const [connection, hits] of connectionToBestHits) {
+      const connectionServerType = getServerType(connection);
+      const connectionDisplayName = getDisplayName(connection);
+      itemsList.push({ label: connectionDisplayName, kind: QuickPickItemKind.Separator });
+      for (const hit of hits) {
+        itemsList.push({
+          label: `${connectionDisplayName} - ${hit.projectKey}`,
+          description: hit.projectKey,
+          connectionId: connection.connectionId,
+          buttons: [
+            {
+              iconPath: new VSCode.ThemeIcon('link-external'),
+              tooltip: `View in ${connectionServerType}`
+            }
+          ]
+        } as AutoBindProjectQuickPickItem);
+      }
+    }
+    return itemsList;
+  }
+
+  private getHits(localTokens: string[], serverProjectString: string): number {
+    let hits = 0;
+    for (const localToken of localTokens) {
+      if (serverProjectString.includes(localToken)) {
+        hits++;
+      }
+    }
+    return hits;
+  }
+
+  private updateBestHits(bestHits: MatchHit[], folderNameHits: number, workspaceNameHits: number,
+                         projectKey: string, connection: BaseConnection) {
+    const previousHitCount = bestHits[0].hits;
+    const newHitCount = folderNameHits > workspaceNameHits ? folderNameHits : workspaceNameHits;
+    return this.updateHits(newHitCount, previousHitCount, bestHits, projectKey, connection);
+  }
+
+  private updateHits(hits: number, bestHitCount: number, bestHits: MatchHit[],
+                     projectKey: string, connection: BaseConnection) {
+    const bestHit = {
+      hits,
+      projectKey,
+      connection
+    };
+    if (hits === bestHitCount) {
+      bestHits.push(bestHit);
+    } else {
+      bestHits = [];
+      bestHits.push(bestHit);
+    }
+    return bestHits;
+  }
+}
+
+export interface MatchHit {
+  hits: number;
+  projectKey: string;
+  connection: BaseConnection;
+}
+
+interface AutoBindProjectQuickPickItem extends QuickPickItem {
+  connectionId?: string
 }
