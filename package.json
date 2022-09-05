@@ -669,6 +669,7 @@
     "inly": "4.0.8",
     "luxon": "2.3.0",
     "path-exists": "4.0.0",
+    "properties": "1.2.1",
     "vscode-languageclient": "7.0.0"
   },
   "devDependencies": {

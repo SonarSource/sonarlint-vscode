@@ -9,6 +9,7 @@
 
 import * as VSCode from 'vscode';
 import { QuickPickItem, QuickPickItemKind } from 'vscode';
+import * as properties from 'properties';
 import { BindingService, ServerProject } from './binding';
 import {
   BaseConnection, ConnectionSettingsService,
@@ -22,6 +23,8 @@ const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
 const DONT_ASK_AGAIN_ACTION = "Don't ask again";
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FLAG = 'doNotAskAboutAutoBinding';
 const DEFAULT_CONNECTION_ID = '<default>';
+
+const ANALYSIS_SETTINGS_FILE_NAMES = ['sonar-project.properties', '.sonarcloud.properties'];
 
 export class AutoBindingService {
   private static _instance: AutoBindingService;
@@ -95,6 +98,42 @@ export class AutoBindingService {
     const sonarCloudConnections = this.settingsService.getSonarCloudConnections();
     const sonarQubeConnections = this.settingsService.getSonarQubeConnections();
     return sonarCloudConnections.length > 0 || sonarQubeConnections.length > 0;
+  }
+
+  async autoBindAllUnboundFolders(unboundFolders) {
+    unboundFolders.forEach(unboundFolder => {
+      this.autoBindFolder(unboundFolder);
+    });
+  }
+
+  async autoBindFolder(unboundFolder: VSCode.WorkspaceFolder) {
+    await this.autoDetectAnalysisSettings(unboundFolder);
+    const sqConnections = this.settingsService.getSonarQubeConnections();
+    const scConnections = this.settingsService.getSonarCloudConnections();
+    const connectionToServerProjects =
+      await this.bindingService.getConnectionToServerProjects(scConnections, sqConnections);
+    const connectionToBestHits = await this.getBestHitsForConnections(connectionToServerProjects, unboundFolder);
+    this.promptToAutoBind(connectionToBestHits, unboundFolder);
+  }
+
+  async autoDetectAnalysisSettings(unboundFolder: VSCode.WorkspaceFolder) {
+    const folderFiles = await VSCode.workspace.fs.readDirectory(unboundFolder.uri);
+    const analysisSettingsFile = folderFiles.find(([ name, type ]) => {
+      return type === VSCode.FileType.File && ANALYSIS_SETTINGS_FILE_NAMES.includes(name);
+    });
+    if (analysisSettingsFile) {
+      const analysisSettingsFileName = analysisSettingsFile[0];
+      const projectPropertiesUri = VSCode.Uri.joinPath(unboundFolder.uri, analysisSettingsFileName);
+      const projectPropertiesContents = await VSCode.workspace.fs.readFile(projectPropertiesUri);
+      const projectProperties = properties.parse(projectPropertiesContents.toString());
+      const serverUrl = projectProperties['sonar.host.url'];
+      const projectKey = projectProperties['sonar.projectKey'];
+      const organization = projectProperties['organization'];
+      const message = organization ?
+        `Do you want to bind to project ${projectKey} of SonarCloud organization ${organization}?` :
+        `Do you want to bind to project ${projectKey} of SonarQube server ${serverUrl}?`;
+      const result = VSCode.window.showInformationMessage(message, 'Yes', 'Bind Manually', `Don't show again`);
+    }
   }
 
   async getTargetConnectionForManualBinding() {
