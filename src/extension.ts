@@ -37,7 +37,11 @@ import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequireme
 import { showRuleDescription } from './rules/rulepanel';
 import { AllRulesTreeDataProvider, RuleNode } from './rules/rules';
 import { initScm } from './scm/scm';
-import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings/settings';
+import {
+  ConnectionSettingsService,
+  getSonarLintConfiguration,
+  migrateConnectedModeSettings
+} from './settings/connectionsettings';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 import { BindingService } from './connected/binding';
@@ -54,7 +58,6 @@ const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
-let autoBindingService: AutoBindingService;
 
 const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
 
@@ -258,7 +261,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
   BindingService.init(languageClient, connectionSettingsService);
   bindingService = BindingService.instance;
-  AutoBindingService.init(bindingService);
+  AutoBindingService.init(bindingService, context.workspaceState, connectionSettingsService);
 
   languageClient.onReady().then(() => {
     const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
@@ -354,11 +357,8 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   });
 
-  VSCode.workspace.onDidChangeWorkspaceFolders(async event => {
-    event.added.filter(workspaceFolder => !BindingService.instance.shouldBeAutoBound(workspaceFolder))
-      .forEach(unboundFolder => {
-        AutoBindingService.instance.autoBindFolder(unboundFolder);
-      });
+  VSCode.workspace.onDidChangeWorkspaceFolders(async _event => {
+    AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
   });
 
   context.subscriptions.push(
@@ -423,7 +423,7 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
-  AutoBindingService.instance.autoBindAllUnboundFolders();
+  AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
 }
 
 function getPlatform(): string {
