@@ -20,7 +20,7 @@ import { Commands } from '../util/commands';
 const AUTOBINDING_THRESHOLD = 5;
 const ATTEMPT_AUTOBINDING_ACTION = 'Attempt Auto-binding';
 const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
-const DONT_ASK_AGAIN_ACTION = "Don't ask again";
+const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FLAG = 'doNotAskAboutAutoBinding';
 const DEFAULT_CONNECTION_ID = '<default>';
 
@@ -118,22 +118,55 @@ export class AutoBindingService {
 
   async autoDetectAnalysisSettings(unboundFolder: VSCode.WorkspaceFolder) {
     const folderFiles = await VSCode.workspace.fs.readDirectory(unboundFolder.uri);
-    const analysisSettingsFile = folderFiles.find(([ name, type ]) => {
+    const analysisSettingsFile = folderFiles.find(([name, type]) => {
       return type === VSCode.FileType.File && ANALYSIS_SETTINGS_FILE_NAMES.includes(name);
     });
     if (analysisSettingsFile) {
-      const analysisSettingsFileName = analysisSettingsFile[0];
-      const projectPropertiesUri = VSCode.Uri.joinPath(unboundFolder.uri, analysisSettingsFileName);
-      const projectPropertiesContents = await VSCode.workspace.fs.readFile(projectPropertiesUri);
-      const projectProperties = properties.parse(projectPropertiesContents.toString());
-      const serverUrl = projectProperties['sonar.host.url'];
-      const projectKey = projectProperties['sonar.projectKey'];
-      const organization = projectProperties['organization'];
-      const message = organization ?
-        `Do you want to bind to project ${projectKey} of SonarCloud organization ${organization}?` :
-        `Do you want to bind to project ${projectKey} of SonarQube server ${serverUrl}?`;
-      const result = VSCode.window.showInformationMessage(message, 'Yes', 'Bind Manually', `Don't show again`);
+      const { serverUrl, projectKey, organization } =
+        await this.parseAnalysisSettings(analysisSettingsFile[0], unboundFolder);
+      const existingConnection = organization
+        ? this.settingsService.getSonarCloudConnectionForOrganization(organization)
+        : this.settingsService.getSonarQubeConnectionForUrl(serverUrl);
+      // TODO Handle non-existing connection...
+      // TODO Check for existence of project key on server
+      const commonMessage = `Do you want to bind folder ${unboundFolder.name} to project ${projectKey}`;
+      const message = organization
+        ? `${commonMessage} of SonarCloud organization ${organization}?`
+        : `${commonMessage} of SonarQube server ${serverUrl}?`;
+      const ACTION_BIND = 'Bind To Project';
+      const ACTION_BIND_MANUALLY = 'Bind Manually';
+      const result = await VSCode.window.showInformationMessage(
+        message,
+        ACTION_BIND,
+        ACTION_BIND_MANUALLY,
+        DONT_ASK_AGAIN_ACTION
+      );
+      switch (result) {
+        case ACTION_BIND:
+          this.bindingService.saveBinding(projectKey, existingConnection.connectionId, unboundFolder);
+          break;
+        case ACTION_BIND_MANUALLY:
+          const targetConnection = await this.getTargetConnectionForManualBinding();
+          this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+          break;
+        case DONT_ASK_AGAIN_ACTION:
+          // TODO Store in workspace state (needs access to the extension context)
+          break;
+        default:
+          // NOP
+          break;
+      }
     }
+  }
+
+  private async parseAnalysisSettings(analysisSettingsFileName: string, unboundFolder: VSCode.WorkspaceFolder) {
+    const projectPropertiesUri = VSCode.Uri.joinPath(unboundFolder.uri, analysisSettingsFileName);
+    const projectPropertiesContents = await VSCode.workspace.fs.readFile(projectPropertiesUri);
+    const projectProperties = properties.parse(projectPropertiesContents.toString());
+    const serverUrl = projectProperties['sonar.host.url'];
+    const projectKey = projectProperties['sonar.projectKey'];
+    const organization = projectProperties['sonar.organization'];
+    return { serverUrl, projectKey, organization };
   }
 
   async getTargetConnectionForManualBinding() {
