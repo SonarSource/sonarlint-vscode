@@ -160,7 +160,7 @@ export class BindingService {
     let selectedRemoteProject;
     const remoteProjects = await this.getRemoteProjectsItems(connectionId, workspaceFolder, serverType);
     // TODO replace suggestedProjects assignment to get real suggestions
-    const suggestedProjects = [{label: 'SonarLint for VSCode'}, {label: 'b'}];
+    const suggestedProjects = [{label: 'SonarLint for VSCode', description: 'key1'}, {label: 'b', description: 'key2'}];
     const allProjectsGroup = { label: 'All Projects', kind: VSCode.QuickPickItemKind.Separator };
     const suggestedProjectsGroup = { label: 'Suggested Projects', kind: VSCode.QuickPickItemKind.Separator };
     if (remoteProjects) {
