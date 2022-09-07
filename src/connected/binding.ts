@@ -159,11 +159,15 @@ export class BindingService {
     const baseServerUrl = this.getBaseServerUrl(connectionId, serverType);
     let selectedRemoteProject;
     const remoteProjects = await this.getRemoteProjectsItems(connectionId, workspaceFolder, serverType);
+    // TODO replace suggestedProjects assignment to get real suggestions
+    const suggestedProjects = [{label: 'SonarLint for VSCode'}, {label: 'b'}];
+    const allProjectsGroup = { label: 'All Projects', kind: VSCode.QuickPickItemKind.Separator };
+    const suggestedProjectsGroup = { label: 'Suggested Projects', kind: VSCode.QuickPickItemKind.Separator };
     if (remoteProjects) {
       const remoteProjectsQuickPick = VSCode.window.createQuickPick();
       remoteProjectsQuickPick.title = `Select ${serverType} Project to Bind with '${selectedFolderName}/'`;
       remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with '${selectedFolderName}/' folder`;
-      remoteProjectsQuickPick.items = remoteProjects;
+      remoteProjectsQuickPick.items = [suggestedProjectsGroup, ...suggestedProjects, allProjectsGroup, ...remoteProjects];
       remoteProjectsQuickPick.ignoreFocusOut = true;
 
       remoteProjectsQuickPick.onDidTriggerItemButton(e => {
