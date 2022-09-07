@@ -40,6 +40,9 @@ export class AutoBindingService {
   }
 
   async checkConditionsAndAttemptAutobinding() {
+    if (!this.isConnectionConfigured()) {
+      return;
+    }
     if (this.workspaceState.get(DO_NOT_ASK_ABOUT_AUTO_BINDING_FLAG)) {
       return;
     }
@@ -54,6 +57,12 @@ export class AutoBindingService {
     } else {
       this.autoBindAllUnboundFolders(unboundFolders);
     }
+  }
+
+  isConnectionConfigured(): boolean {
+    const sonarCloudConnections = this.settingsService.getSonarCloudConnections();
+    const sonarQubeConnections = this.settingsService.getSonarQubeConnections();
+    return sonarCloudConnections.length > 0 || sonarQubeConnections.length > 0;
   }
 
   async autoBindAllUnboundFolders(unboundFolders) {
