@@ -211,7 +211,7 @@ export class AutoBindingService {
     const [connection] = connectionToBestHits.keys();
     const connectionName = getDisplayName(connection);
     const result = await VSCode.window.showInformationMessage(
-      `There is a project to bind on ${connectionName}. Do you want to bind?`, 'Bind');
+      `There is a project ${bestHit.projectKey} on ${connectionName}. Do you want to bind?`, 'Bind');
     if (result === 'Bind') {
       this.bindingService.saveBinding(bestHit.projectKey, connection.connectionId, unboundFolder);
       VSCode.window.showInformationMessage(`Workspace folder '${unboundFolder.name}/'
