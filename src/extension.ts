@@ -427,6 +427,7 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
+
   setTimeout(() => {
     AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
   }, WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION);

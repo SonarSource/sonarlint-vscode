@@ -41,7 +41,8 @@ export class AutoBindingService {
     private readonly bindingService: BindingService,
     private readonly workspaceState: VSCode.Memento,
     private readonly settingsService: ConnectionSettingsService
-  ) {}
+  ) {
+  }
 
   static get instance(): AutoBindingService {
     return AutoBindingService._instance;
