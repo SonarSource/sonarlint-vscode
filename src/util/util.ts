@@ -9,6 +9,8 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { BaseConnection, SonarCloudConnection, SonarQubeConnection } from '../settings/connectionsettings';
+import { ServerType } from '../connected/connections';
 
 export function startedInDebugMode(process: NodeJS.Process): boolean {
   const args = process.execArgv;
@@ -80,4 +82,38 @@ export function resolveExtensionFile(...segments: string[]) {
 
 export function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Splits string by popular separator symbols: '-', '.', ':' and space
+ * @param str - project name, project key, folder name, workspace name
+ */
+export function tokenizeString(str: string): string[] {
+  const tokens = str.split(/[-.: ]/);
+  return tokens.map(t => t.toLowerCase());
+}
+
+export function getServerType(connection: BaseConnection): ServerType {
+  return 'serverUrl' in connection ? 'SonarQube' : 'SonarCloud';
+}
+
+export function getDisplayName(connection: BaseConnection): string {
+  if (connection.connectionId) {
+    return connection.connectionId;
+  }
+  return getServerUrlOrOrganizationKey(connection);
+}
+
+export function getServerUrlOrOrganizationKey(connection: BaseConnection) {
+  const serverType = getServerType(connection);
+  if (serverType === 'SonarQube') {
+    return (connection as SonarQubeConnection).serverUrl;
+  }
+  return (connection as SonarCloudConnection).organizationKey;
+}
+
+export function buildBaseServerUrl(serverType: ServerType, serverUrlOrOrganizationKey: string) {
+  return serverType === 'SonarQube'
+    ? `${serverUrlOrOrganizationKey}/dashboard`
+    : 'https://sonarcloud.io/project/overview';
 }
