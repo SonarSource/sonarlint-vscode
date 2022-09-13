@@ -202,7 +202,6 @@ export class BindingService {
   }
 
   async getRemoteProjects(connectionId: string) {
-    console.log(connectionId)
     await this.languageClient.onReady();
     return await this.languageClient.getRemoteProjectsForConnection(connectionId);
   }
