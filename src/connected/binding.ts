@@ -245,7 +245,7 @@ export class BindingService {
     return !this.isBound(workspaceFolder);
   }
 
-  private isBound(workspaceFolder: VSCode.WorkspaceFolder) {
+  isBound(workspaceFolder: VSCode.WorkspaceFolder) {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
     const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
     return !!binding.projectKey;
