@@ -201,12 +201,18 @@ export class BindingService {
       .update(BINDING_SETTINGS, { connectionId, projectKey });
   }
 
+  async getRemoteProjects(connectionId: string) {
+    console.log(connectionId)
+    await this.languageClient.onReady();
+    return await this.languageClient.getRemoteProjectsForConnection(connectionId);
+  }
+
   async getRemoteProjectsItems(connectionId: string, workspaceFolder: VSCode.WorkspaceFolder, serverType: ServerType) {
     const getRemoteProjectsParam = connectionId ? connectionId : DEFAULT_CONNECTION_ID;
     const itemsList: VSCode.QuickPickItem[] = [];
 
     try {
-      let remoteProjects = await this.languageClient.getRemoteProjectsForConnection(getRemoteProjectsParam);
+      let remoteProjects = await this.getRemoteProjects(getRemoteProjectsParam);
       if (!(remoteProjects instanceof Map)) {
         remoteProjects = new Map(Object.entries(remoteProjects));
       }

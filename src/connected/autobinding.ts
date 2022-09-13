@@ -21,7 +21,8 @@ const AUTOBINDING_THRESHOLD = 5;
 const ATTEMPT_AUTOBINDING_ACTION = 'Attempt Auto-binding';
 const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
-export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FLAG = 'doNotAskAboutAutoBinding';
+export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindingForWorkspace';
+export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 const DEFAULT_CONNECTION_ID = '<default>';
 
 const ANALYSIS_SETTINGS_FILE_NAMES = ['sonar-project.properties', '.sonarcloud.properties'];
@@ -78,7 +79,7 @@ export class AutoBindingService {
     if (!this.isConnectionConfigured()) {
       return;
     }
-    if (this.workspaceState.get(DO_NOT_ASK_ABOUT_AUTO_BINDING_FLAG)) {
+    if (this.workspaceState.get(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG)) {
       return;
     }
     const unboundFolders = VSCode.workspace.workspaceFolders.filter(workspaceFolder =>
@@ -117,18 +118,23 @@ export class AutoBindingService {
   }
 
   async autoDetectAnalysisSettings(unboundFolder: VSCode.WorkspaceFolder) {
-    const folderFiles = await VSCode.workspace.fs.readDirectory(unboundFolder.uri);
-    const analysisSettingsFile = folderFiles.find(([name, type]) => {
-      return type === VSCode.FileType.File && ANALYSIS_SETTINGS_FILE_NAMES.includes(name);
-    });
+    const analysisSettingsFile = await this.getAnalysisSettingsFile(unboundFolder);
     if (analysisSettingsFile) {
-      const { serverUrl, projectKey, organization } =
-        await this.parseAnalysisSettings(analysisSettingsFile[0], unboundFolder);
+      const { serverUrl, projectKey, organization } = await this.parseAnalysisSettings(
+        analysisSettingsFile[0],
+        unboundFolder
+      );
       const existingConnection = organization
         ? this.settingsService.getSonarCloudConnectionForOrganization(organization)
         : this.settingsService.getSonarQubeConnectionForUrl(serverUrl);
-      // TODO Handle non-existing connection...
-      // TODO Check for existence of project key on server
+      if (!existingConnection) {
+        // TODO suggest user to create a connection
+        return;
+      }
+
+      if (!(await this.matchingRemoteProjectExists(projectKey, existingConnection))) {
+        return;
+      }
       const commonMessage = `Do you want to bind folder ${unboundFolder.name} to project ${projectKey}`;
       const message = organization
         ? `${commonMessage} of SonarCloud organization ${organization}?`
@@ -141,6 +147,7 @@ export class AutoBindingService {
         ACTION_BIND_MANUALLY,
         DONT_ASK_AGAIN_ACTION
       );
+
       switch (result) {
         case ACTION_BIND:
           this.bindingService.saveBinding(projectKey, existingConnection.connectionId, unboundFolder);
@@ -150,13 +157,36 @@ export class AutoBindingService {
           this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
           break;
         case DONT_ASK_AGAIN_ACTION:
-          // TODO Store in workspace state (needs access to the extension context)
+          this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
+            ...this.getFoldersThatShouldNotBeAutoBound(),
+            unboundFolder.uri
+          ]);
           break;
         default:
           // NOP
           break;
       }
     }
+  }
+
+  async getAnalysisSettingsFile(unboundFolder : VSCode.WorkspaceFolder) {
+    const folderFiles = await VSCode.workspace.fs.readDirectory(unboundFolder.uri);
+    return folderFiles.find(([name, type]) => {
+      return type === VSCode.FileType.File && ANALYSIS_SETTINGS_FILE_NAMES.includes(name);
+    });
+  }
+
+  private getFoldersThatShouldNotBeAutoBound(): string[] {
+    const currentList = this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG);
+    return currentList === undefined ? [] : currentList;
+  }
+
+  private async matchingRemoteProjectExists(projectKey: string, existingConnection): Promise<boolean> {
+    const getRemoteProjectsParam = existingConnection.connectionId
+      ? existingConnection.connectionId
+      : DEFAULT_CONNECTION_ID;
+    const remoteProjects = await this.bindingService.getRemoteProjects(getRemoteProjectsParam);
+    return remoteProjects[projectKey] !== undefined;
   }
 
   private async parseAnalysisSettings(analysisSettingsFileName: string, unboundFolder: VSCode.WorkspaceFolder) {
@@ -236,7 +266,7 @@ export class AutoBindingService {
       )
       .then(async action => {
         if (action === DONT_ASK_AGAIN_ACTION) {
-          this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FLAG, true);
+          this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
           return false;
         } else if (action === CHOOSE_MANUALLY_ACTION) {
           const targetConnection = await this.getTargetConnectionForManualBinding();
