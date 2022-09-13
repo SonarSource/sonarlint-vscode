@@ -24,6 +24,7 @@ const BINDING_SETTINGS = 'connectedMode.project';
 const DEFAULT_CONNECTION_ID = '<default>';
 const OPEN_FOLDER_ACTION = 'Open Folder';
 const BIND_MANUALLY_ACTION = 'Bind Manually';
+export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 
 async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
   const existingSettings = VSCode.workspace
@@ -40,13 +41,14 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
 export class BindingService {
   private static _instance: BindingService;
 
-  static init(languageClient: SonarLintExtendedLanguageClient, settingsService: ConnectionSettingsService): void {
-    BindingService._instance = new BindingService(languageClient, settingsService);
+  static init(languageClient: SonarLintExtendedLanguageClient, workspaceState: VSCode.Memento, settingsService: ConnectionSettingsService): void {
+    BindingService._instance = new BindingService(languageClient, workspaceState, settingsService);
   }
 
   constructor(
     private readonly languageClient: SonarLintExtendedLanguageClient,
-    private readonly settingsService: ConnectionSettingsService
+    private readonly workspaceState: VSCode.Memento,
+    private readonly settingsService: ConnectionSettingsService    
   ) {
   }
 
@@ -157,8 +159,7 @@ export class BindingService {
     if (remoteProjects) {
       const remoteProjectsQuickPick = VSCode.window.createQuickPick();
       remoteProjectsQuickPick.title = `Select ${serverType} Project to Bind with '${selectedFolderName}/'`;
-      remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with 
-      '${selectedFolderName}/' folder`;
+      remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with '${selectedFolderName}/' folder`;
       remoteProjectsQuickPick.items = remoteProjects;
       remoteProjectsQuickPick.ignoreFocusOut = true;
 
@@ -174,8 +175,6 @@ export class BindingService {
         selectedRemoteProject = selection[0];
 
         this.saveBinding(selectedRemoteProject.description, connectionId, workspaceFolder);
-        VSCode.window.showInformationMessage(`Workspace folder '${selectedFolderName}/'
-                      has been bound with ${serverType} project '${selectedRemoteProject.label}'`);
         remoteProjectsQuickPick.dispose();
       });
 
@@ -196,6 +195,8 @@ export class BindingService {
   }
 
   async saveBinding(projectKey: string, connectionId?: string, workspaceFolder?: VSCode.WorkspaceFolder) {
+    VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/'
+                      has been bound with project '${projectKey}'`);
     return VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId, projectKey });
@@ -247,7 +248,8 @@ export class BindingService {
   }
 
   shouldBeAutoBound(workspaceFolder: VSCode.WorkspaceFolder) {
-    return !this.isBound(workspaceFolder);
+    const foldersToBeIgnored = this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
+    return !this.isBound(workspaceFolder) && !foldersToBeIgnored.includes(workspaceFolder.uri.toString());
   }
 
   isBound(workspaceFolder: VSCode.WorkspaceFolder) {

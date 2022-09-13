@@ -66,6 +66,17 @@ async function resetBindings() {
   }));
 }
 
+const mockWorkspaceState = {
+  state: false,
+  keys: () => [],
+  get(_identifier: string) {
+    return this.state;
+  },
+  async update(_identifier: string, newState: boolean) {
+    this.state = newState;
+  }
+};
+
 suite('Bindings Test Suite', () => {
   setup(async () => {
     // start from 1 SQ connection config
@@ -84,7 +95,7 @@ suite('Bindings Test Suite', () => {
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
-      underTest = new BindingService(mockClient, mockSettingsService);
+      underTest = new BindingService(mockClient, mockSettingsService, mockWorkspaceState);
     });
 
     test('Save binding updates configuration', async () => {
