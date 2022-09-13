@@ -191,6 +191,26 @@ export class AutoBindingService {
     return remoteProjects[projectKey] !== undefined;
   }
 
+  async getAnalysisSettingsFile(unboundFolder : VSCode.WorkspaceFolder) {
+    const folderFiles = await VSCode.workspace.fs.readDirectory(unboundFolder.uri);
+    return folderFiles.find(([name, type]) => {
+      return type === VSCode.FileType.File && ANALYSIS_SETTINGS_FILE_NAMES.includes(name);
+    });
+  }
+
+  private getFoldersThatShouldNotBeAutoBound(): string[] {
+    const currentList = this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG);
+    return currentList === undefined ? [] : currentList;
+  }
+
+  private async matchingRemoteProjectExists(projectKey: string, existingConnection): Promise<boolean> {
+    const getRemoteProjectsParam = existingConnection.connectionId
+      ? existingConnection.connectionId
+      : DEFAULT_CONNECTION_ID;
+    const remoteProjects = await this.bindingService.getRemoteProjects(getRemoteProjectsParam);
+    return remoteProjects[projectKey] !== undefined;
+  }
+
   private async parseAnalysisSettings(analysisSettingsFileName: string, unboundFolder: VSCode.WorkspaceFolder) {
     const projectPropertiesUri = VSCode.Uri.joinPath(unboundFolder.uri, analysisSettingsFileName);
     const projectPropertiesContents = await VSCode.workspace.fs.readFile(projectPropertiesUri);
