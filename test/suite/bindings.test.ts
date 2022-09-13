@@ -8,7 +8,7 @@
 
 import { expect } from 'chai';
 import { BindingService, ProjectBinding } from '../../src/connected/binding';
-import { ConnectionSettingsService, SonarQubeConnection } from '../../src/settings/connectionsettings';
+import { ConnectionSettingsService, SonarCloudConnection, SonarQubeConnection } from '../../src/settings/connectionsettings';
 
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
@@ -42,11 +42,9 @@ const mockClient = {
   async onReady() {
     return Promise.resolve();
   },
-  async getRemoteProjectsForConnection(_connectionId: string): Promise<Map<string, string>> {
-    return new Map([
-      ['key1', 'name1'],
-      ['key2', 'name2']
-    ]);
+  async getRemoteProjectsForConnection(_connectionId: string): Promise<Object> {
+    console.log('mocked getRemoteProjectsForConnection');
+    return { 'projectKey1': 'projectName1', 'projectKey2': 'projectName2' };
   },
   async checkConnection(connectionId: string) {
     return Promise.resolve({ connectionId, success: true });
@@ -56,6 +54,8 @@ const mockClient = {
 const mockSettingsService = {
   async loadSonarQubeConnection(connectionId: string): Promise<SonarQubeConnection> {
     return { serverUrl: "https://next.sonarqube.com/sonarqube", connectionId: connectionId };
+  }, async loadSonarCloudConnection(connectionId: string): Promise<SonarCloudConnection> {
+    return { organizationKey: "orgKey", connectionId: connectionId };
   }
 } as ConnectionSettingsService;
 
@@ -114,14 +114,14 @@ suite('Bindings Test Suite', () => {
       const items = await underTest.getRemoteProjectsItems(TEST_SONARQUBE_CONNECTION.connectionId);
       const remoteProjects = await mockClient.getRemoteProjectsForConnection(TEST_SONARQUBE_CONNECTION.connectionId);
 
-      const remoteProjectNames = remoteProjects.values();
-      const remoteProjectKeys = remoteProjects.keys();
+      const remoteProjectNames = Object.values(remoteProjects);
+      const remoteProjectKeys = Object.keys(remoteProjects);
 
       expect(items.length).to.equal(TWO);
-      expect(items[0].label).to.equal(remoteProjectNames.next().value);
-      expect(items[0].description).to.equal(remoteProjectKeys.next().value);
-      expect(items[1].label).to.equal(remoteProjectNames.next().value);
-      expect(items[1].description).to.equal(remoteProjectKeys.next().value);
+      expect(items[0].label).to.equal(remoteProjectNames[0]);
+      expect(items[0].description).to.equal(remoteProjectKeys[0]);
+      expect(items[1].label).to.equal(remoteProjectNames[1]);
+      expect(items[1].description).to.equal(remoteProjectKeys[1]);
     });
 
     test('Folder selection QuickPick should directly return folder name when only 1 folder in WS', async () => {
@@ -209,7 +209,7 @@ suite('Bindings Test Suite', () => {
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(binding).to.deep.equal({
           "connectionId": TEST_BINDING.connectionId,
-          "projectKey": "key2"
+          "projectKey": "projectKey2"
         }
       );
     });
@@ -237,6 +237,12 @@ suite('Bindings Test Suite', () => {
 
       expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.false;
     });
+
+    test('should get base server url', async () => {
+      expect(await underTest.getBaseServerUrl('connectionId', 'SonarQube')).to.be.equal('https://next.sonarqube.com/sonarqube/dashboard');
+      expect(await underTest.getBaseServerUrl('connectionId', 'SonarCloud')).to.be.equal('https://sonarcloud.io/project/overview');
+    });
+
   });
 });
 

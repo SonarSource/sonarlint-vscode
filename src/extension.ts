@@ -56,6 +56,7 @@ const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
 const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
+const WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION = 5000;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
 
@@ -423,7 +424,10 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
-  AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
+
+  setTimeout(() => {
+    AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
+  }, WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION);
 }
 
 function getPlatform(): string {
@@ -477,8 +481,8 @@ async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionCon
   VSCode.window
     .showWarningMessage(
       'SonarLint detected some secrets in one of the open files.\n' +
-        'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
-        'Please refer to the Problems view for more information.',
+      'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
+      'Please refer to the Problems view for more information.',
       showProblemsViewActionTitle
     )
     .then(action => {
