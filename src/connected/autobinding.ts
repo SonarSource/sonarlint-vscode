@@ -55,8 +55,8 @@ export class AutoBindingService {
       if (unboundFolders.length > 0) {
         this.autoBindAllFolders(unboundFolders);
       } else {
-        VSCode.window.showInformationMessage(`All folders in this workspace are bound
-         to SonarQube or SonarCloud projects already`);
+        VSCode.window.showInformationMessage(`All folders in this workspace are already bound
+         to SonarQube or SonarCloud projects`);
       }
     } else {
       VSCode.window.showWarningMessage(`"Bind all workspace folders to SonarQube or SonarCloud"
