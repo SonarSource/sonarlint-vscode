@@ -23,7 +23,7 @@ export function getBestHitsForConnections(
   const connectionToBestHits = new Map<BaseConnection, MatchHit[]>();
   for (const [connection, projects] of connectionToServerProjects) {
     let bestHits: MatchHit[] = [];
-    bestHits.push({ hits: 0, projectKey: '', connection: { connectionId: '' } });
+    bestHits.push({ hits: 0, projectKey: '', projectName: '', connection: { connectionId: '' } });
     for (const project of projects) {
       const projectKey = project.key;
       const projectName = project.name;
@@ -32,7 +32,7 @@ export function getBestHitsForConnections(
       const workspaceNameHits = getHits(workspaceNameTokens, serverProjectString);
       const bestHitCount = bestHits[0].hits;
       if (folderNameHits >= bestHitCount || workspaceNameHits >= bestHitCount) {
-        bestHits = updateBestHits(bestHits, folderNameHits, workspaceNameHits, projectKey, connection);
+        bestHits = updateBestHits(bestHits, folderNameHits, workspaceNameHits, projectKey, projectName, connection);
       }
     }
     if (bestHits[0].hits > 0) {
@@ -57,11 +57,12 @@ function updateBestHits(
   folderNameHits: number,
   workspaceNameHits: number,
   projectKey: string,
+  projectName: string,
   connection: BaseConnection
 ) {
   const previousHitCount = bestHits[0].hits;
   const newHitCount = folderNameHits > workspaceNameHits ? folderNameHits : workspaceNameHits;
-  return updateHits(newHitCount, previousHitCount, bestHits, projectKey, connection);
+  return updateHits(newHitCount, previousHitCount, bestHits, projectKey, projectName, connection);
 }
 
 function updateHits(
@@ -69,11 +70,13 @@ function updateHits(
   bestHitCount: number,
   bestHits: MatchHit[],
   projectKey: string,
+  projectName: string,
   connection: BaseConnection
 ) {
   const bestHit = {
     hits,
     projectKey,
+    projectName,
     connection
   };
   if (hits === bestHitCount) {
@@ -104,6 +107,23 @@ export function getQuickPickItemsToAutoBind(connectionToBestHits: Map<BaseConnec
         ]
       } as AutoBindProjectQuickPickItem);
     }
+  }
+  return itemsList;
+}
+
+export function serverProjectsToQuickPickItems(serverProjects: MatchHit[], serverType: ServerType) {
+  const itemsList: VSCode.QuickPickItem[] = [];
+  for (const project of serverProjects) {
+      itemsList.push({
+        label: project.projectName,
+        description: project.projectKey,
+        buttons: [
+          {
+            iconPath: new VSCode.ThemeIcon('link-external'),
+            tooltip: `View in ${serverType}`
+          }
+        ]
+      } as AutoBindProjectQuickPickItem);
   }
   return itemsList;
 }
@@ -146,6 +166,7 @@ export function buildBaseServerUrl(serverType: ServerType, serverUrlOrOrganizati
 export interface MatchHit {
   hits: number;
   projectKey: string;
+  projectName: string;
   connection: BaseConnection;
 }
 
