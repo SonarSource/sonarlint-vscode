@@ -260,7 +260,7 @@ export function activate(context: VSCode.ExtensionContext) {
   migrateConnectedModeSettings(currentConfig, connectionSettingsService);
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
-  BindingService.init(languageClient, connectionSettingsService);
+  BindingService.init(languageClient, context.workspaceState, connectionSettingsService);
   bindingService = BindingService.instance;
   AutoBindingService.init(bindingService, context.workspaceState, connectionSettingsService);
 
@@ -427,7 +427,6 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
-
   setTimeout(() => {
     AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
   }, WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION);

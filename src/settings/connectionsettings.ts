@@ -128,6 +128,10 @@ export class ConnectionSettingsService {
       .update(SONARQUBE_CONNECTIONS_CATEGORY, sqConnections, VSCode.ConfigurationTarget.Global);
   }
 
+  getSonarQubeConnectionForUrl(serverUrl: string): SonarQubeConnection | undefined {
+    return this.getSonarQubeConnections().find(c => c.serverUrl === serverUrl);
+  }
+
   async addSonarQubeConnection(connection: SonarQubeConnection) {
     const connections = this.getSonarQubeConnections();
     const newConnection: SonarQubeConnection = { serverUrl: connection.serverUrl };
@@ -168,6 +172,10 @@ export class ConnectionSettingsService {
     return VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
       .get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`);
+  }
+
+  getSonarCloudConnectionForOrganization(organization: string): SonarCloudConnection | undefined {
+    return this.getSonarCloudConnections().find(c => c.organizationKey === organization);
   }
 
   setSonarCloudConnections(scConnections: SonarCloudConnection[]) {
