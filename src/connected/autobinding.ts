@@ -11,9 +11,15 @@ import * as VSCode from 'vscode';
 import * as properties from 'properties';
 import { BindingService } from './binding';
 import { BaseConnection, ConnectionSettingsService } from '../settings/connectionsettings';
-import { getDisplayName, getServerType } from '../util/bindingUtils';
+import {
+  getDisplayName,
+  getQuickPickItemsToAutoBind,
+  getServerType,
+  AutoBindProjectQuickPickItem,
+  getBestHitsForConnections,
+  MatchHit
+} from '../util/bindingUtils';
 import { Commands } from '../util/commands';
-import { AutoBindProjectQuickPickItem, getBestHitsForConnections, MatchHit } from '../util/bindingUtils';
 
 const AUTOBINDING_THRESHOLD = 5;
 const ATTEMPT_AUTOBINDING_ACTION = 'Attempt Auto-binding';
@@ -404,9 +410,5 @@ export class AutoBindingService {
       VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(`${baseServerUrl}?id=${projectKey}`));
     });
     remoteProjectsQuickPick.show();
-  } 
-}
-
-function getQuickPickItemsToAutoBind(connectionToBestHits: Map<BaseConnection, MatchHit[]>): readonly VSCode.QuickPickItem[] {
-  throw new Error('Function not implemented.');
+  }
 }

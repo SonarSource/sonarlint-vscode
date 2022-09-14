@@ -85,7 +85,7 @@ function updateHits(
   return bestHits;
 }
 
-function getQuickPickItemsToAutoBind(connectionToBestHits: Map<BaseConnection, MatchHit[]>) {
+export function getQuickPickItemsToAutoBind(connectionToBestHits: Map<BaseConnection, MatchHit[]>) {
   const itemsList: VSCode.QuickPickItem[] = [];
   for (const [connection, hits] of connectionToBestHits) {
     const connectionServerType = getServerType(connection);

@@ -17,8 +17,7 @@ import {
 } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
-import { buildBaseServerUrl } from '../util/bindingUtils';
-import { getBestHitsForConnections } from '../util/bindingUtils';
+import { buildBaseServerUrl, getQuickPickItemsToAutoBind, getBestHitsForConnections } from '../util/bindingUtils';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -329,7 +328,3 @@ export interface ServerProject {
   key: string;
   name: string;
 }
-function getQuickPickItemsToAutoBind(bestHits: Map<BaseConnection, import("../util/bindingUtils").MatchHit[]>): VSCode.QuickPickItem[] | PromiseLike<VSCode.QuickPickItem[]> {
-  throw new Error('Function not implemented.');
-}
-
