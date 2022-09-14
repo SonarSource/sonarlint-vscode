@@ -41,16 +41,19 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
 export class BindingService {
   private static _instance: BindingService;
 
-  static init(languageClient: SonarLintExtendedLanguageClient, workspaceState: VSCode.Memento, settingsService: ConnectionSettingsService): void {
+  static init(
+    languageClient: SonarLintExtendedLanguageClient,
+    workspaceState: VSCode.Memento,
+    settingsService: ConnectionSettingsService
+  ): void {
     BindingService._instance = new BindingService(languageClient, workspaceState, settingsService);
   }
 
   constructor(
     private readonly languageClient: SonarLintExtendedLanguageClient,
     private readonly workspaceState: VSCode.Memento,
-    private readonly settingsService: ConnectionSettingsService    
-  ) {
-  }
+    private readonly settingsService: ConnectionSettingsService
+  ) {}
 
   static get instance(): BindingService {
     return BindingService._instance;
@@ -186,12 +189,12 @@ export class BindingService {
     return workspaceFolders.length === 1
       ? workspaceFolders[0].name
       : VSCode.window.showQuickPick(
-        workspaceFolders.map(f => f.name),
-        {
-          title: 'Select Folder to Bind',
-          placeHolder: 'Select the workspace folder you want to create binding for'
-        }
-      );
+          workspaceFolders.map(f => f.name),
+          {
+            title: 'Select Folder to Bind',
+            placeHolder: 'Select the workspace folder you want to create binding for'
+          }
+        );
   }
 
   async saveBinding(projectKey: string, connectionId?: string, workspaceFolder?: VSCode.WorkspaceFolder) {
@@ -204,7 +207,7 @@ export class BindingService {
 
   async getRemoteProjects(connectionId: string) {
     await this.languageClient.onReady();
-    return await this.languageClient.getRemoteProjectsForConnection(connectionId);
+    return this.languageClient.getRemoteProjectsForConnection(connectionId);
   }
 
   async getRemoteProjectsItems(connectionId: string, workspaceFolder: VSCode.WorkspaceFolder, serverType: ServerType) {
@@ -258,8 +261,10 @@ export class BindingService {
     return !!binding.projectKey;
   }
 
-  async getConnectionToServerProjects(scConnections: SonarCloudConnection[], sqConnections: SonarQubeConnection[]):
-    Promise<Map<BaseConnection, ServerProject[]>> {
+  async getConnectionToServerProjects(
+    scConnections: SonarCloudConnection[],
+    sqConnections: SonarQubeConnection[]
+  ): Promise<Map<BaseConnection, ServerProject[]>> {
     const connectionToServerProjects = new Map<BaseConnection, ServerProject[]>();
     await this.languageClient.onReady();
     await this.setProjectsForConnection(scConnections, connectionToServerProjects);
@@ -267,8 +272,10 @@ export class BindingService {
     return connectionToServerProjects;
   }
 
-  private async setProjectsForConnection(connections: SonarCloudConnection[] | SonarQubeConnection[],
-                                         connectionToServerProjects: Map<BaseConnection, ServerProject[]>) {
+  private async setProjectsForConnection(
+    connections: SonarCloudConnection[] | SonarQubeConnection[],
+    connectionToServerProjects: Map<BaseConnection, ServerProject[]>
+  ) {
     for (const connection of connections) {
       const remoteProjects = await this.languageClient.getRemoteProjectsForConnection(connection.connectionId);
       const serverProjects = Object.entries(remoteProjects).map(it => {

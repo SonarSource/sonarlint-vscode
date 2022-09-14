@@ -173,6 +173,7 @@ export class AutoBindingService {
       }
       return true;
     }
+    return false;
   }
 
   async getAnalysisSettingsFile(unboundFolder: VSCode.WorkspaceFolder) {
@@ -396,7 +397,7 @@ export class AutoBindingService {
     );
     switch (result) {
       case BIND_ACTION:
-        await this.showQuickPickListOfProjects(unboundFolder, connectionToBestHits);
+        this.showQuickPickListOfProjects(unboundFolder, connectionToBestHits);
         break;
       case DONT_ASK_AGAIN_ACTION:
         await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
