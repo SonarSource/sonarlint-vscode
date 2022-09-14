@@ -113,7 +113,8 @@ export function getQuickPickItemsToAutoBind(connectionToBestHits: Map<BaseConnec
 
 export function serverProjectsToQuickPickItems(serverProjects: MatchHit[], serverType: ServerType) {
   const itemsList: VSCode.QuickPickItem[] = [];
-  for (const project of serverProjects) {
+  if (serverProjects) {
+    for (const project of serverProjects) {
       itemsList.push({
         label: project.projectName,
         description: project.projectKey,
@@ -124,6 +125,7 @@ export function serverProjectsToQuickPickItems(serverProjects: MatchHit[], serve
           }
         ]
       } as AutoBindProjectQuickPickItem);
+    }
   }
   return itemsList;
 }
@@ -132,7 +134,7 @@ export function serverProjectsToQuickPickItems(serverProjects: MatchHit[], serve
  * Splits string by popular separator symbols: '-', '.', ':' and space
  * @param str - project name, project key, folder name, workspace name
  */
- export function tokenizeString(str: string): string[] {
+export function tokenizeString(str: string): string[] {
   const tokens = str.split(/[-.: ]/);
   return tokens.map(t => t.toLowerCase());
 }
@@ -162,7 +164,6 @@ export function buildBaseServerUrl(serverType: ServerType, serverUrlOrOrganizati
     : 'https://sonarcloud.io/project/overview';
 }
 
-
 export interface MatchHit {
   hits: number;
   projectKey: string;
@@ -170,8 +171,6 @@ export interface MatchHit {
   connection: BaseConnection;
 }
 
-
 export interface AutoBindProjectQuickPickItem extends VSCode.QuickPickItem {
   connectionId?: string;
 }
-

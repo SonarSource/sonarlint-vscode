@@ -20,10 +20,7 @@ import {
   tokenizeString
 } from '../../src/util/bindingUtils';
 
-const SONARLINT_CATEGORY = 'sonarlint';
-const BINDING_SETTINGS = 'connectedMode.project';
-
-suite('Auto Binding Test Suite', () => {
+suite('Binding Utils Test Suite', () => {
   test('should return zero hits if nothing found', async () => {
     const myFolder = {
       uri: VSCode.Uri.file('/'),
@@ -61,6 +58,7 @@ suite('Auto Binding Test Suite', () => {
       {
         hits: 2,
         projectKey: 'project1',
+        projectName: 'My Name',
         connection: {
           id: 'CONNECTION_ONE',
           serverType: 'SonarQube'
@@ -69,6 +67,7 @@ suite('Auto Binding Test Suite', () => {
       {
         hits: 2,
         projectKey: 'project2',
+        projectName: 'My Name',
         connection: {
           id: 'CONNECTION_ONE',
           serverType: 'SonarQube'
@@ -99,6 +98,7 @@ suite('Auto Binding Test Suite', () => {
       {
         hits: 3,
         projectKey: 'project1',
+        projectName: 'My Folder Name',
         connection: {
           id: 'CONNECTION_ONE',
           serverType: 'SonarQube'
@@ -137,6 +137,7 @@ suite('Auto Binding Test Suite', () => {
       {
         hits: 3,
         projectKey: 'key2',
+        projectName: 'SonarQube My Project Name',
         connection: {
           id: 'CONNECTION_ONE',
           serverType: 'SonarQube'
@@ -147,6 +148,7 @@ suite('Auto Binding Test Suite', () => {
       {
         hits: 3,
         projectKey: 'key2',
+        projectName: 'SonarCloud My Project Name',
         connection: {
           id: 'CONNECTION_TWO',
           serverType: 'SonarCloud'
@@ -191,13 +193,3 @@ suite('Auto Binding Test Suite', () => {
     expect(scBaseServerUrl).to.be.equal('https://sonarcloud.io/project/overview');
   });
 });
-
-async function cleanBindings() {
-  return Promise.all(
-    VSCode.workspace.workspaceFolders.map(folder => {
-      return VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, folder.uri)
-        .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
-    })
-  );
-}
