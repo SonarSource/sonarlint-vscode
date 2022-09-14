@@ -397,8 +397,6 @@ export class AutoBindingService {
     remoteProjectsQuickPick.onDidChangeSelection(selection => {
       const projectToBind = selection[0] as AutoBindProjectQuickPickItem;
       this.bindingService.saveBinding(projectToBind.description, projectToBind.connectionId, unboundFolder);
-      VSCode.window.showInformationMessage(`Workspace folder '${folderName}/' has been bound with 
-      project '${projectToBind.description} on ${projectToBind.connectionId} server'`);
       remoteProjectsQuickPick.dispose();
     });
     remoteProjectsQuickPick.onDidTriggerItemButton(async e => {
