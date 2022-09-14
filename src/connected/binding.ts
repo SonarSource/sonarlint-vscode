@@ -17,7 +17,7 @@ import {
 } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
-import { buildBaseServerUrl, getQuickPickItemsToAutoBind, getBestHitsForConnections, serverProjectsToQuickPickItems } from '../util/bindingUtils';
+import { buildBaseServerUrl, getBestHitsForConnections, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -158,7 +158,6 @@ export class BindingService {
   ) {
     const baseServerUrl = this.getBaseServerUrl(connectionId, serverType);
     let selectedRemoteProject;
-    // TODO replace suggestedProjects assignment to get real suggestions
     const suggestedProjects = await this.getSuggestedItems(connectionId, workspaceFolder, serverType);
     const remoteProjects = await this.getRemoteProjectsItems(connectionId, workspaceFolder, serverType);
     const remoteProjectsItems = this.deduplicateQuickPickItems(suggestedProjects, remoteProjects);
@@ -195,10 +194,10 @@ export class BindingService {
     }
   }
 
-  private deduplicateQuickPickItems(suggestedProjects : VSCode.QuickPickItem[], remoteProjects : VSCode.QuickPickItem[]) {
+  private deduplicateQuickPickItems(suggestedProjects: VSCode.QuickPickItem[], remoteProjects: VSCode.QuickPickItem[]) {
     suggestedProjects.forEach(sp => {
       remoteProjects = remoteProjects.filter(rp => rp.description !== sp.description);
-    })
+    });
 
     return remoteProjects;
   }
