@@ -95,7 +95,7 @@ suite('Bindings Test Suite', () => {
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
-      underTest = new BindingService(mockClient, mockSettingsService, mockWorkspaceState);
+      underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService);
     });
 
     test('Save binding updates configuration', async () => {
