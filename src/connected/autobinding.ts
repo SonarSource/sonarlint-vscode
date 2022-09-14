@@ -63,16 +63,6 @@ export class AutoBindingService {
     unboundFolders.forEach(unboundFolder => this.autoBindFolder(unboundFolder));
   }
 
-  async autoBindFolder(unboundFolder: VSCode.WorkspaceFolder) {
-    // TODO [SLVSCODE-326] detect file config and suggest binding
-    const sqConnections = this.settingsService.getSonarQubeConnections();
-    const scConnections = this.settingsService.getSonarCloudConnections();
-    const connectionToServerProjects =
-      await this.bindingService.getConnectionToServerProjects(scConnections, sqConnections);
-    const connectionToBestHits = await this.getBestHitsForConnections(connectionToServerProjects, unboundFolder);
-    this.promptToAutoBind(connectionToBestHits, unboundFolder);
-  }
-
   async checkConditionsAndAttemptAutobinding() {
     if (!this.isConnectionConfigured()) {
       return;
