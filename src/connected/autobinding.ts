@@ -45,7 +45,19 @@ export class AutoBindingService {
     return AutoBindingService._instance;
   }
 
-  async autoBindAllUnboundFolders(unboundFolders: VSCode.WorkspaceFolder[]) {
+  async autoBindWorkspace() {
+    if (VSCode.workspace.workspaceFolders) {
+      const unboundFolders = VSCode.workspace.workspaceFolders.filter(workspaceFolder =>
+        !this.bindingService.isBound(workspaceFolder)
+      );
+      this.autoBindAllFolders(unboundFolders);
+    } else {
+      VSCode.window.showWarningMessage(`"Bind all workspace folders to SonarQube or SonarCloud"
+      can only be invoked on an open workspace`);
+    }
+  }
+
+  async autoBindAllFolders(unboundFolders: VSCode.WorkspaceFolder[]) {
     unboundFolders.forEach(unboundFolder => this.autoBindFolder(unboundFolder));
   }
 
@@ -72,10 +84,10 @@ export class AutoBindingService {
     if (unboundFolders.length > AUTOBINDING_THRESHOLD) {
       const userPermission = await this.askUserBeforeAutoBinding();
       if (userPermission) {
-        this.autoBindAllUnboundFolders(unboundFolders);
+        this.autoBindAllFolders(unboundFolders);
       }
     } else {
-      this.autoBindAllUnboundFolders(unboundFolders);
+      this.autoBindAllFolders(unboundFolders);
     }
   }
 

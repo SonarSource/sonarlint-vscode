@@ -363,6 +363,11 @@
         "category": "SonarLint"
       },
       {
+        "command": "SonarLint.AutoBindWorkspaceFolders",
+        "title": "Bind all workspace folders to SonarQube or SonarCloud",
+        "category": "SonarLint"
+      },
+      {
         "command": "SonarLint.DeactivateRule",
         "title": "Deactivate",
         "icon": "$(x)",

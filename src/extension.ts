@@ -407,6 +407,9 @@ export function activate(context: VSCode.ExtensionContext) {
     )
   );
 
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS,
+    () => AutoBindingService.instance.autoBindWorkspace()));
+
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
   const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
