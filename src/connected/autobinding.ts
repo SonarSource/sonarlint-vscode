@@ -52,7 +52,8 @@ export class AutoBindingService {
       );
       this.autoBindAllFolders(unboundFolders);
     } else {
-      VSCode.window.showWarningMessage('"Auto bind all folders in workspace" can only be invoked on an open workspace');
+      VSCode.window.showWarningMessage(`"Bind all workspace folders to SonarQube or SonarCloud"
+      can only be invoked on an open workspace`);
     }
   }
 

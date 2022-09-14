@@ -364,7 +364,7 @@
       },
       {
         "command": "SonarLint.AutoBindWorkspaceFolders",
-        "title": "Auto bind all folders in workspace",
+        "title": "Bind all workspace folders to SonarQube or SonarCloud",
         "category": "SonarLint"
       },
       {
