@@ -46,10 +46,14 @@ export class AutoBindingService {
   }
 
   async autoBindWorkspace() {
-    const unboundFolders = VSCode.workspace.workspaceFolders.filter(workspaceFolder =>
-      !this.bindingService.isBound(workspaceFolder)
-    );
-    this.autoBindAllFolders(unboundFolders);
+    if (VSCode.workspace.workspaceFolders) {
+      const unboundFolders = VSCode.workspace.workspaceFolders.filter(workspaceFolder =>
+        !this.bindingService.isBound(workspaceFolder)
+      );
+      this.autoBindAllFolders(unboundFolders);
+    } else {
+      VSCode.window.showWarningMessage('"Auto bind all folders in workspace" can only be invoked on an open workspace');
+    }
   }
 
   async autoBindAllFolders(unboundFolders: VSCode.WorkspaceFolder[]) {
