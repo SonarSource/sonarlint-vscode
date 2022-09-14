@@ -1,5 +1,6 @@
 ## 3.10
 
+* Suggest users using SonarLint Connected Mode to configure project bindings with their SonarQube/SonarCloud projects
 * Update Python analyzer 3.15 -> [3.16](https://github.com/SonarSource/sonar-python/releases/tag/3.16.0.9967) -> [3.17](https://github.com/SonarSource/sonar-python/releases/tag/3.17.0.10029), 8 new unit test rules, bugfixes and false positive fixes
 * Update Secrets analyzer 1.1 -> 1.2, remove warning about packaged dependencies
 

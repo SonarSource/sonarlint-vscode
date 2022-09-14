@@ -17,7 +17,7 @@ import { Commands } from '../util/commands';
 
 const AUTOBINDING_THRESHOLD = 5;
 const ATTEMPT_AUTOBINDING_ACTION = 'Attempt Auto-binding';
-const BIND_ACTION = 'Bind';
+const BIND_ACTION = 'Configure Binding';
 const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindingForWorkspace';
@@ -334,7 +334,7 @@ export class AutoBindingService {
       .showInformationMessage(
         `We found folders in your workspace that are not bound to any SonarQube/SonarCloud projects. Do you want to configure bindings?
        [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
-        CHOOSE_MANUALLY_ACTION,
+        BIND_ACTION,
         DONT_ASK_AGAIN_ACTION
       )
       .then(async action => {
@@ -343,7 +343,7 @@ export class AutoBindingService {
             ...this.getFoldersThatShouldNotBeAutoBound(),
             unboundFolder.uri.toString()
           ]);
-        } else if (action === CHOOSE_MANUALLY_ACTION) {
+        } else if (action === BIND_ACTION) {
           const targetConnection = await this.getTargetConnectionForManualBinding();
           this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         }
@@ -358,7 +358,8 @@ export class AutoBindingService {
     const [connection] = connectionToBestHits.keys();
     const connectionName = getDisplayName(connection);
     const result = await VSCode.window.showInformationMessage(
-      `There is a project ${bestHit.projectKey} on ${connectionName}. Do you want to bind?`,
+      `There is a project ${bestHit.projectKey} on ${connectionName}. Do you want to configure binding?
+      [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
       BIND_ACTION,
       CHOOSE_MANUALLY_ACTION,
       DONT_ASK_AGAIN_ACTION
@@ -388,11 +389,24 @@ export class AutoBindingService {
     unboundFolder: VSCode.WorkspaceFolder
   ) {
     const result = await VSCode.window.showInformationMessage(
-      `There are projects chosen to bind on Sonar server(s). Do you want to bind?`,
-      'Bind'
+      `There are multiple projects on Sonar server(s) that match your local workspace. Do you want to configure binding?
+      [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
+      BIND_ACTION,
+      DONT_ASK_AGAIN_ACTION
     );
-    if (result === 'Bind') {
-      this.showQuickPickListOfProjects(unboundFolder, connectionToBestHits);
+    switch (result) {
+      case BIND_ACTION:
+        await this.showQuickPickListOfProjects(unboundFolder, connectionToBestHits);
+        break;
+      case DONT_ASK_AGAIN_ACTION:
+        await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
+          ...this.getFoldersThatShouldNotBeAutoBound(),
+          unboundFolder.uri.toString()
+        ]);
+        break;
+      default:
+        // NOP
+        break;
     }
   }
 
