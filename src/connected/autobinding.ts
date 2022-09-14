@@ -286,8 +286,6 @@ export class AutoBindingService {
       });
   }
 
-  
-
   private async promptToAutoBind(
     connectionToBestHits: Map<BaseConnection, MatchHit[]>,
     unboundFolder: VSCode.WorkspaceFolder

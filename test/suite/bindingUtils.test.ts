@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { BindingService, ServerProject } from '../../src/connected/binding';
+import { ServerProject } from '../../src/connected/binding';
 import { BaseConnection } from '../../src/settings/connectionsettings';
 
 import * as VSCode from 'vscode';
