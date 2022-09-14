@@ -17,7 +17,8 @@ import {
 } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
-import { buildBaseServerUrl } from '../util/util';
+import { buildBaseServerUrl } from '../util/bindingUtils';
+import { getBestHitsForConnections } from '../util/bindingUtils';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -53,8 +54,7 @@ export class BindingService {
     private readonly languageClient: SonarLintExtendedLanguageClient,
     private readonly workspaceState: VSCode.Memento,
     private readonly settingsService: ConnectionSettingsService
-  ) {
-  }
+  ) {}
 
   static get instance(): BindingService {
     return BindingService._instance;
@@ -161,14 +161,19 @@ export class BindingService {
     let selectedRemoteProject;
     const remoteProjects = await this.getRemoteProjectsItems(connectionId, workspaceFolder, serverType);
     // TODO replace suggestedProjects assignment to get real suggestions
-    const suggestedProjects = [{label: 'SonarLint for VSCode', description: 'key1'}, {label: 'b', description: 'key2'}];
+    const suggestedProjects = await this.getSuggestedItems(connectionId, workspaceFolder, serverType);
     const allProjectsGroup = { label: 'All Projects', kind: VSCode.QuickPickItemKind.Separator };
     const suggestedProjectsGroup = { label: 'Suggested Projects', kind: VSCode.QuickPickItemKind.Separator };
     if (remoteProjects) {
       const remoteProjectsQuickPick = VSCode.window.createQuickPick();
       remoteProjectsQuickPick.title = `Select ${serverType} Project to Bind with '${selectedFolderName}/'`;
       remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with '${selectedFolderName}/' folder`;
-      remoteProjectsQuickPick.items = [suggestedProjectsGroup, ...suggestedProjects, allProjectsGroup, ...remoteProjects];
+      remoteProjectsQuickPick.items = [
+        suggestedProjectsGroup,
+        ...suggestedProjects,
+        allProjectsGroup,
+        ...remoteProjects
+      ];
       remoteProjectsQuickPick.ignoreFocusOut = true;
 
       remoteProjectsQuickPick.onDidTriggerItemButton(e => {
@@ -188,6 +193,24 @@ export class BindingService {
 
       remoteProjectsQuickPick.show();
     }
+  }
+
+  private async getSuggestedItems(
+    connectionId: string,
+    workspaceFolder: VSCode.WorkspaceFolder,
+    serverType: ServerType
+  ): Promise<VSCode.QuickPickItem[]> {
+    const connection =
+      serverType === 'SonarQube'
+        ? await this.settingsService.loadSonarQubeConnection(connectionId)
+        : await this.settingsService.loadSonarCloudConnection(connectionId);
+    const serverProjects =
+      serverType === 'SonarQube'
+        ? await this.getConnectionToServerProjects([], [connection as SonarQubeConnection])
+        : await this.getConnectionToServerProjects([connection as SonarCloudConnection], []);
+
+    const bestHits = getBestHitsForConnections(serverProjects, workspaceFolder);
+    return getQuickPickItemsToAutoBind(bestHits);
   }
 
   async showFolderSelectionQuickPickOrReturnDefaultSelection(workspaceFolders: readonly VSCode.WorkspaceFolder[]) {
@@ -306,3 +329,7 @@ export interface ServerProject {
   key: string;
   name: string;
 }
+function getQuickPickItemsToAutoBind(bestHits: Map<BaseConnection, import("../util/bindingUtils").MatchHit[]>): VSCode.QuickPickItem[] | PromiseLike<VSCode.QuickPickItem[]> {
+  throw new Error('Function not implemented.');
+}
+

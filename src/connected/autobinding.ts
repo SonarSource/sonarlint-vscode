@@ -8,12 +8,12 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { QuickPickItem, QuickPickItemKind } from 'vscode';
 import * as properties from 'properties';
-import { BindingService, ServerProject } from './binding';
+import { BindingService } from './binding';
 import { BaseConnection, ConnectionSettingsService } from '../settings/connectionsettings';
-import { getDisplayName, getServerType, tokenizeString } from '../util/util';
+import { getDisplayName, getServerType } from '../util/bindingUtils';
 import { Commands } from '../util/commands';
+import { AutoBindProjectQuickPickItem, getBestHitsForConnections, MatchHit } from '../util/bindingUtils';
 
 const AUTOBINDING_THRESHOLD = 5;
 const ATTEMPT_AUTOBINDING_ACTION = 'Attempt Auto-binding';
@@ -114,7 +114,7 @@ export class AutoBindingService {
       scConnections,
       sqConnections
     );
-    const connectionToBestHits = await this.getBestHitsForConnections(connectionToServerProjects, unboundFolder);
+    const connectionToBestHits = getBestHitsForConnections(connectionToServerProjects, unboundFolder);
     this.promptToAutoBind(connectionToBestHits, unboundFolder);
   }
 
@@ -280,35 +280,7 @@ export class AutoBindingService {
       });
   }
 
-  private async getBestHitsForConnections(
-    connectionToServerProjects: Map<BaseConnection, ServerProject[]>,
-    unboundFolder: VSCode.WorkspaceFolder
-  ): Promise<Map<BaseConnection, MatchHit[]>> {
-    const folderName = unboundFolder.name;
-    const workspaceName = VSCode.workspace.name;
-    const folderNameTokens = [...tokenizeString(folderName)];
-    const workspaceNameTokens = [...tokenizeString(workspaceName)];
-    const connectionToBestHits = new Map<BaseConnection, MatchHit[]>();
-    for (const [connection, projects] of connectionToServerProjects) {
-      let bestHits: MatchHit[] = [];
-      bestHits.push({ hits: 0, projectKey: '', connection: { connectionId: '' } });
-      for (const project of projects) {
-        const projectKey = project.key;
-        const projectName = project.name;
-        const serverProjectString = (projectKey + projectName).toLowerCase();
-        const folderNameHits = this.getHits(folderNameTokens, serverProjectString);
-        const workspaceNameHits = this.getHits(workspaceNameTokens, serverProjectString);
-        const bestHitCount = bestHits[0].hits;
-        if (folderNameHits >= bestHitCount || workspaceNameHits >= bestHitCount) {
-          bestHits = this.updateBestHits(bestHits, folderNameHits, workspaceNameHits, projectKey, connection);
-        }
-      }
-      if (bestHits[0].hits > 0) {
-        connectionToBestHits.set(connection, bestHits);
-      }
-    }
-    return connectionToBestHits;
-  }
+  
 
   private async promptToAutoBind(
     connectionToBestHits: Map<BaseConnection, MatchHit[]>,
@@ -414,7 +386,7 @@ export class AutoBindingService {
     const folderName = unboundFolder.name;
     remoteProjectsQuickPick.title = `Select Project to Bind with '${folderName}/'`;
     remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with '${folderName}/' folder`;
-    remoteProjectsQuickPick.items = this.getQuickPickItemsToAutoBind(connectionToBestHits);
+    remoteProjectsQuickPick.items = getQuickPickItemsToAutoBind(connectionToBestHits);
     remoteProjectsQuickPick.ignoreFocusOut = true;
     remoteProjectsQuickPick.onDidChangeSelection(selection => {
       const projectToBind = selection[0] as AutoBindProjectQuickPickItem;
@@ -432,81 +404,9 @@ export class AutoBindingService {
       VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(`${baseServerUrl}?id=${projectKey}`));
     });
     remoteProjectsQuickPick.show();
-  }
-
-  private getQuickPickItemsToAutoBind(connectionToBestHits: Map<BaseConnection, MatchHit[]>) {
-    const itemsList: VSCode.QuickPickItem[] = [];
-    for (const [connection, hits] of connectionToBestHits) {
-      const connectionServerType = getServerType(connection);
-      const connectionDisplayName = getDisplayName(connection);
-      itemsList.push({ label: connectionDisplayName, kind: QuickPickItemKind.Separator });
-      for (const hit of hits) {
-        itemsList.push({
-          label: `${connectionDisplayName} - ${hit.projectKey}`,
-          description: hit.projectKey,
-          connectionId: connection.connectionId,
-          buttons: [
-            {
-              iconPath: new VSCode.ThemeIcon('link-external'),
-              tooltip: `View in ${connectionServerType}`
-            }
-          ]
-        } as AutoBindProjectQuickPickItem);
-      }
-    }
-    return itemsList;
-  }
-
-  private getHits(localTokens: string[], serverProjectString: string): number {
-    let hits = 0;
-    for (const localToken of localTokens) {
-      if (serverProjectString.includes(localToken)) {
-        hits++;
-      }
-    }
-    return hits;
-  }
-
-  private updateBestHits(
-    bestHits: MatchHit[],
-    folderNameHits: number,
-    workspaceNameHits: number,
-    projectKey: string,
-    connection: BaseConnection
-  ) {
-    const previousHitCount = bestHits[0].hits;
-    const newHitCount = folderNameHits > workspaceNameHits ? folderNameHits : workspaceNameHits;
-    return this.updateHits(newHitCount, previousHitCount, bestHits, projectKey, connection);
-  }
-
-  private updateHits(
-    hits: number,
-    bestHitCount: number,
-    bestHits: MatchHit[],
-    projectKey: string,
-    connection: BaseConnection
-  ) {
-    const bestHit = {
-      hits,
-      projectKey,
-      connection
-    };
-    if (hits === bestHitCount) {
-      bestHits.push(bestHit);
-    } else {
-      bestHits = [];
-      bestHits.push(bestHit);
-    }
-    return bestHits;
-  }
+  } 
 }
 
-export interface MatchHit {
-  hits: number;
-  projectKey: string;
-  connection: BaseConnection;
-}
-
-interface AutoBindProjectQuickPickItem extends QuickPickItem {
-  connectionId?: string;
+function getQuickPickItemsToAutoBind(connectionToBestHits: Map<BaseConnection, MatchHit[]>): readonly VSCode.QuickPickItem[] {
+  throw new Error('Function not implemented.');
 }
