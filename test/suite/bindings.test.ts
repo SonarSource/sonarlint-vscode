@@ -67,10 +67,13 @@ async function resetBindings() {
 }
 
 const mockWorkspaceState = {
-  state: false,
+  state: {
+    'doNotAskAboutAutoBindingForFolder' : [],
+    'doNotAskAboutAutoBindingForWorkspace' : false
+  },
   keys: () => [],
-  get(_identifier: string) {
-    return this.state;
+  get(identifier: string) {
+    return this.state[identifier];
   },
   async update(_identifier: string, newState: boolean) {
     this.state = newState;
