@@ -403,7 +403,7 @@ export class AutoBindingService {
       const [connectionId, projectKey] = e.item.label.split(' - ');
       const connection = Array.from(connectionToBestHits.keys()).find(c => c.connectionId === connectionId);
       const serverType = getServerType(connection);
-      const baseServerUrl = this.bindingService.getBaseServerUrl(connection.connectionId, serverType);
+      const baseServerUrl = await this.bindingService.getBaseServerUrl(connection.connectionId, serverType);
       remoteProjectsQuickPick.busy = true;
       VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(`${baseServerUrl}?id=${projectKey}`));
     });

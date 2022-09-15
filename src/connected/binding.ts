@@ -156,7 +156,7 @@ export class BindingService {
     serverType: ServerType,
     selectedFolderName
   ) {
-    const baseServerUrl = this.getBaseServerUrl(connectionId, serverType);
+    const baseServerUrl = await this.getBaseServerUrl(connectionId, serverType);
     let selectedRemoteProject;
     const suggestedProjects = await this.getSuggestedItems(connectionId, workspaceFolder, serverType);
     const remoteProjects = await this.getRemoteProjectsItems(connectionId, workspaceFolder, serverType);
