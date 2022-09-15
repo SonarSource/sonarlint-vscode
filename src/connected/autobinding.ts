@@ -29,6 +29,7 @@ const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindingForWorkspace';
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 const DEFAULT_CONNECTION_ID = '<default>';
+const LEARN_MORE_DOCS_LINK = 'https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode';
 
 const ANALYSIS_SETTINGS_FILE_NAMES = ['sonar-project.properties', '.sonarcloud.properties'];
 
@@ -266,7 +267,7 @@ export class AutoBindingService {
       .showInformationMessage(
         `We found folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
        Do you want to attempt binding automatically?
-       [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
+       [Learn More](${LEARN_MORE_DOCS_LINK})`,
         ATTEMPT_AUTOBINDING_ACTION,
         CHOOSE_MANUALLY_ACTION,
         DONT_ASK_AGAIN_ACTION
@@ -290,11 +291,12 @@ export class AutoBindingService {
     connectionToBestHits: Map<BaseConnection, MatchHit[]>,
     unboundFolder: VSCode.WorkspaceFolder
   ) {
-    const [bestHits] = connectionToBestHits.values();
-    if (connectionToBestHits.size === 1 && bestHits.length === 1) {
-      const bestHit = bestHits[0];
+    const allHitsArray = Array.from(connectionToBestHits.values());
+    const allHitsFlat = [].concat.apply([], allHitsArray);
+    if (connectionToBestHits.size === 1 && allHitsFlat.length === 1) {
+      const bestHit = allHitsFlat[0];
       this.promptToAutoBindSingleOption(bestHit, connectionToBestHits, unboundFolder);
-    } else if (bestHits.length > 1) {
+    } else if (allHitsFlat.length > 1) {
       this.promptToAutoBindMultiChoice(connectionToBestHits, unboundFolder);
     } else {
       this.promptToBindManually(unboundFolder);
@@ -305,7 +307,7 @@ export class AutoBindingService {
     VSCode.window
       .showInformationMessage(
         `We found folders in your workspace that are not bound to any SonarQube/SonarCloud projects. Do you want to configure bindings?
-       [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
+       [Learn More](${LEARN_MORE_DOCS_LINK})`,
         BIND_ACTION,
         DONT_ASK_AGAIN_ACTION
       )
@@ -331,7 +333,7 @@ export class AutoBindingService {
     const connectionName = getDisplayName(connection);
     const result = await VSCode.window.showInformationMessage(
       `There is a project ${bestHit.projectKey} on ${connectionName}. Do you want to configure binding?
-      [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
+      [Learn More](${LEARN_MORE_DOCS_LINK})`,
       BIND_ACTION,
       CHOOSE_MANUALLY_ACTION,
       DONT_ASK_AGAIN_ACTION
@@ -362,7 +364,7 @@ export class AutoBindingService {
   ) {
     const result = await VSCode.window.showInformationMessage(
       `There are multiple projects on Sonar server(s) that match your local workspace. Do you want to configure binding?
-      [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#project-binding)`,
+      [Learn More](${LEARN_MORE_DOCS_LINK})`,
       BIND_ACTION,
       DONT_ASK_AGAIN_ACTION
     );
