@@ -363,6 +363,11 @@
         "category": "SonarLint"
       },
       {
+        "command": "SonarLint.AutoBindWorkspaceFolders",
+        "title": "Bind all workspace folders to SonarQube or SonarCloud",
+        "category": "SonarLint"
+      },
+      {
         "command": "SonarLint.DeactivateRule",
         "title": "Deactivate",
         "icon": "$(x)",
@@ -664,6 +669,7 @@
     "inly": "4.0.8",
     "luxon": "2.3.0",
     "path-exists": "4.0.0",
+    "properties": "1.2.1",
     "vscode-languageclient": "7.0.0"
   },
   "devDependencies": {

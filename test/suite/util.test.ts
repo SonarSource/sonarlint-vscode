@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { startedInDebugMode } from '../../src/util';
+import { startedInDebugMode } from '../../src/util/util';
 import { expect } from 'chai';
 
 suite('util', () => {
@@ -34,4 +34,5 @@ suite('util', () => {
     process.execArgv = null;
     expect(startedInDebugMode(process)).to.be.false;
   });
+
 });

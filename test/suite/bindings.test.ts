@@ -7,14 +7,13 @@
 'use strict';
 
 import { expect } from 'chai';
-import { BindingService, ProjectBinding } from '../../src/binding';
-import { ConnectionSettingsService, SonarQubeConnection } from '../../src/settings';
+import { BindingService, ProjectBinding } from '../../src/connected/binding';
+import { ConnectionSettingsService, SonarCloudConnection, SonarQubeConnection } from '../../src/settings/connectionsettings';
 
 import * as VSCode from 'vscode';
-import { SonarLintExtendedLanguageClient } from '../../src/client';
-import { Connection, WorkspaceFolderItem } from '../../src/connections';
+import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
+import { Connection, WorkspaceFolderItem } from '../../src/connected/connections';
 
-const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -43,11 +42,9 @@ const mockClient = {
   async onReady() {
     return Promise.resolve();
   },
-  async getRemoteProjectsForConnection(_connectionId: string): Promise<Map<string, string>> {
-    return new Map([
-      ['key1', 'name1'],
-      ['key2', 'name2']
-    ]);
+  async getRemoteProjectsForConnection(_connectionId: string): Promise<Object> {
+    console.log('mocked getRemoteProjectsForConnection');
+    return { 'projectKey1': 'projectName1', 'projectKey2': 'projectName2' };
   },
   async checkConnection(connectionId: string) {
     return Promise.resolve({ connectionId, success: true });
@@ -57,6 +54,8 @@ const mockClient = {
 const mockSettingsService = {
   async loadSonarQubeConnection(connectionId: string): Promise<SonarQubeConnection> {
     return { serverUrl: "https://next.sonarqube.com/sonarqube", connectionId: connectionId };
+  }, async loadSonarCloudConnection(connectionId: string): Promise<SonarCloudConnection> {
+    return { organizationKey: "orgKey", connectionId: connectionId };
   }
 } as ConnectionSettingsService;
 
@@ -66,6 +65,20 @@ async function resetBindings() {
       .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
   }));
 }
+
+const mockWorkspaceState = {
+  state: {
+    'doNotAskAboutAutoBindingForFolder' : [],
+    'doNotAskAboutAutoBindingForWorkspace' : false
+  },
+  keys: () => [],
+  get(identifier: string) {
+    return this.state[identifier];
+  },
+  async update(_identifier: string, newState: boolean) {
+    this.state = newState;
+  }
+};
 
 suite('Bindings Test Suite', () => {
   setup(async () => {
@@ -85,7 +98,7 @@ suite('Bindings Test Suite', () => {
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
-      underTest = new BindingService(mockClient, mockSettingsService);
+      underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService);
     });
 
     test('Save binding updates configuration', async () => {
@@ -115,14 +128,14 @@ suite('Bindings Test Suite', () => {
       const items = await underTest.getRemoteProjectsItems(TEST_SONARQUBE_CONNECTION.connectionId);
       const remoteProjects = await mockClient.getRemoteProjectsForConnection(TEST_SONARQUBE_CONNECTION.connectionId);
 
-      const remoteProjectNames = remoteProjects.values();
-      const remoteProjectKeys = remoteProjects.keys();
+      const remoteProjectNames = Object.values(remoteProjects);
+      const remoteProjectKeys = Object.keys(remoteProjects);
 
       expect(items.length).to.equal(TWO);
-      expect(items[0].label).to.equal(remoteProjectNames.next().value);
-      expect(items[0].description).to.equal(remoteProjectKeys.next().value);
-      expect(items[1].label).to.equal(remoteProjectNames.next().value);
-      expect(items[1].description).to.equal(remoteProjectKeys.next().value);
+      expect(items[0].label).to.equal(remoteProjectNames[0]);
+      expect(items[0].description).to.equal(remoteProjectKeys[0]);
+      expect(items[1].label).to.equal(remoteProjectNames[1]);
+      expect(items[1].description).to.equal(remoteProjectKeys[1]);
     });
 
     test('Folder selection QuickPick should directly return folder name when only 1 folder in WS', async () => {
@@ -210,10 +223,40 @@ suite('Bindings Test Suite', () => {
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(binding).to.deep.equal({
           "connectionId": TEST_BINDING.connectionId,
-          "projectKey": "key2"
+          "projectKey": "projectKey2"
         }
       );
     });
+
+    test('Unbound folder should be autobound', () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      let binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+
+      expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.true;
+    });
+
+    test('Bound folder should not be autobound', async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      await VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY)
+        .update(CONNECTED_MODE_SETTINGS_SONARQUBE, [TEST_SONARQUBE_CONNECTION], VSCode.ConfigurationTarget.Global);
+
+      await VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+            .update(BINDING_SETTINGS, TEST_BINDING);
+
+      expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.false;
+    });
+
+    test('should get base server url', async () => {
+      expect(await underTest.getBaseServerUrl('connectionId', 'SonarQube')).to.be.equal('https://next.sonarqube.com/sonarqube/dashboard');
+      expect(await underTest.getBaseServerUrl('connectionId', 'SonarCloud')).to.be.equal('https://sonarcloud.io/project/overview');
+    });
+
   });
 });
 

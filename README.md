@@ -135,7 +135,11 @@ To set up a Connected Mode for SonarLint v3.5.4 and lower, please see the releva
 
 ### Project Binding Setup
 
-To configure a project binding in SonarLint v3.8 and above, navigate to the **SONARLINT CONNECTED MODE** view in the VSCode Explorer and select **Add Project Binding** to add the desired connection.
+Starting from v3.10, SonarLint for VSCode tries to automatically detect a remote SonarQube/SonarCloud project to bind to the workspace folder open locally. If the local folder contains `sonar-project.properties` or `.sonarcloud.properties` file, SonarLint will try to configure binding with the remote project specified in these configuration files.
+
+If no remote match is found, you will be prompted to configure binding manually.
+
+To configure a project binding, navigate to the **SONARLINT CONNECTED MODE** view in the VSCode Explorer and select **Add Project Binding** to add the desired connection.
 
 <img src='images/3.8_addBinding.png' alt='Add Project Binding' width='500'/>
 

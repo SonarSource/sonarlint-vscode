@@ -7,9 +7,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Commands } from './commands';
-import { Flow, Issue, Location, TextRange } from './protocol';
-import { resolveExtensionFile } from './util';
+import { Commands } from '../util/commands';
+import { Flow, Issue, Location, TextRange } from '../lsp/protocol';
+import { resolveExtensionFile } from '../util/util';
 
 /**
  * Base decoration type for secondary locations.

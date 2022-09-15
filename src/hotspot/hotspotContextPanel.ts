@@ -7,9 +7,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { HotspotProbability, HotspotStatus, RemoteHotspot } from './protocol';
-import * as util from './util';
-import { ResourceResolver } from './webview';
+import { HotspotProbability, HotspotStatus, RemoteHotspot } from '../lsp/protocol';
+import * as util from '../util/util';
+import { ResourceResolver } from '../util/webview';
 
 function formatProbability(vulnerabilityProbability: HotspotProbability) {
   const probabilityName = HotspotProbability[vulnerabilityProbability];

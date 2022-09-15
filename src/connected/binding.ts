@@ -8,16 +8,23 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { Commands } from './commands';
-import { ConnectionSettingsService } from './settings';
-import { SonarLintExtendedLanguageClient } from './client';
+import { Commands } from '../util/commands';
+import {
+  BaseConnection,
+  ConnectionSettingsService,
+  SonarCloudConnection,
+  SonarQubeConnection
+} from '../settings/connectionsettings';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
+import { buildBaseServerUrl, getBestHitsForConnections, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
 const DEFAULT_CONNECTION_ID = '<default>';
 const OPEN_FOLDER_ACTION = 'Open Folder';
 const BIND_MANUALLY_ACTION = 'Bind Manually';
+export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 
 async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
   const existingSettings = VSCode.workspace
@@ -34,12 +41,17 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
 export class BindingService {
   private static _instance: BindingService;
 
-  static init(languageClient: SonarLintExtendedLanguageClient, settingsService: ConnectionSettingsService): void {
-    BindingService._instance = new BindingService(languageClient, settingsService);
+  static init(
+    languageClient: SonarLintExtendedLanguageClient,
+    workspaceState: VSCode.Memento,
+    settingsService: ConnectionSettingsService
+  ): void {
+    BindingService._instance = new BindingService(languageClient, workspaceState, settingsService);
   }
 
   constructor(
     private readonly languageClient: SonarLintExtendedLanguageClient,
+    private readonly workspaceState: VSCode.Memento,
     private readonly settingsService: ConnectionSettingsService
   ) {}
 
@@ -130,26 +142,38 @@ export class BindingService {
     await this.pickRemoteProjectToBind(connectionId, workspaceFolder, serverType, selectedFolderName);
   }
 
+  async getBaseServerUrl(connectionId: string, serverType: ServerType): Promise<string> {
+    const serverUrlOrOrganizationKey =
+      serverType === 'SonarQube'
+        ? (await this.settingsService.loadSonarQubeConnection(connectionId)).serverUrl
+        : (await this.settingsService.loadSonarCloudConnection(connectionId)).organizationKey;
+    return buildBaseServerUrl(serverType, serverUrlOrOrganizationKey);
+  }
+
   private async pickRemoteProjectToBind(
     connectionId: string,
     workspaceFolder: VSCode.WorkspaceFolder,
     serverType: ServerType,
     selectedFolderName
   ) {
-    const serverUrlOrOrganizationKey =
-      serverType === 'SonarQube'
-        ? (await this.settingsService.loadSonarQubeConnection(connectionId)).serverUrl
-        : (await this.settingsService.loadSonarCloudConnection(connectionId)).organizationKey;
-    const baseServerUrl =
-      serverType === 'SonarQube' ? `${serverUrlOrOrganizationKey}/dashboard` : 'https://sonarcloud.io/project/overview';
+    const baseServerUrl = await this.getBaseServerUrl(connectionId, serverType);
     let selectedRemoteProject;
+    const suggestedProjects = await this.getSuggestedItems(connectionId, workspaceFolder, serverType);
     const remoteProjects = await this.getRemoteProjectsItems(connectionId, workspaceFolder, serverType);
+    const remoteProjectsItems = this.deduplicateQuickPickItems(suggestedProjects, remoteProjects);
+    const allProjectsGroup = { label: 'All Projects', kind: VSCode.QuickPickItemKind.Separator };
+    const suggestedProjectsGroup = { label: 'Suggested Projects', kind: VSCode.QuickPickItemKind.Separator };
     if (remoteProjects) {
       const remoteProjectsQuickPick = VSCode.window.createQuickPick();
       remoteProjectsQuickPick.title = `Select ${serverType} Project to Bind with '${selectedFolderName}/'`;
       remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with 
       '${selectedFolderName}/' folder`;
-      remoteProjectsQuickPick.items = remoteProjects;
+      remoteProjectsQuickPick.items = [
+        suggestedProjectsGroup,
+        ...suggestedProjects,
+        allProjectsGroup,
+        ...remoteProjectsItems
+      ];
       remoteProjectsQuickPick.ignoreFocusOut = true;
 
       remoteProjectsQuickPick.onDidTriggerItemButton(e => {
@@ -164,8 +188,6 @@ export class BindingService {
         selectedRemoteProject = selection[0];
 
         this.saveBinding(selectedRemoteProject.description, connectionId, workspaceFolder);
-        VSCode.window.showInformationMessage(`Workspace folder '${selectedFolderName}/'
-                      has been bound with ${serverType} project '${selectedRemoteProject.label}'`);
         remoteProjectsQuickPick.dispose();
       });
 
@@ -173,22 +195,55 @@ export class BindingService {
     }
   }
 
+  private deduplicateQuickPickItems(suggestedProjects: VSCode.QuickPickItem[], remoteProjects: VSCode.QuickPickItem[]) {
+    suggestedProjects.forEach(sp => {
+      remoteProjects = remoteProjects.filter(rp => rp.description !== sp.description);
+    });
+
+    return remoteProjects;
+  }
+
+  private async getSuggestedItems(
+    connectionId: string,
+    workspaceFolder: VSCode.WorkspaceFolder,
+    serverType: ServerType
+  ): Promise<VSCode.QuickPickItem[]> {
+    const connection =
+      serverType === 'SonarQube'
+        ? await this.settingsService.loadSonarQubeConnection(connectionId)
+        : await this.settingsService.loadSonarCloudConnection(connectionId);
+    const serverProjects =
+      serverType === 'SonarQube'
+        ? await this.getConnectionToServerProjects([], [connection as SonarQubeConnection])
+        : await this.getConnectionToServerProjects([connection as SonarCloudConnection], []);
+
+    const bestHits = getBestHitsForConnections(serverProjects, workspaceFolder);
+    return serverProjectsToQuickPickItems(bestHits.get(connection), serverType);
+  }
+
   async showFolderSelectionQuickPickOrReturnDefaultSelection(workspaceFolders: readonly VSCode.WorkspaceFolder[]) {
     return workspaceFolders.length === 1
       ? workspaceFolders[0].name
       : VSCode.window.showQuickPick(
-        workspaceFolders.map(f => f.name),
-        {
-          title: 'Select Folder to Bind',
-          placeHolder: 'Select the workspace folder you want to create binding for'
-        }
-      );
+          workspaceFolders.map(f => f.name),
+          {
+            title: 'Select Folder to Bind',
+            placeHolder: 'Select the workspace folder you want to create binding for'
+          }
+        );
   }
 
   async saveBinding(projectKey: string, connectionId?: string, workspaceFolder?: VSCode.WorkspaceFolder) {
+    VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/'
+                      has been bound with project '${projectKey}'`);
     return VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId, projectKey });
+  }
+
+  async getRemoteProjects(connectionId: string) {
+    await this.languageClient.onReady();
+    return this.languageClient.getRemoteProjectsForConnection(connectionId);
   }
 
   async getRemoteProjectsItems(connectionId: string, workspaceFolder: VSCode.WorkspaceFolder, serverType: ServerType) {
@@ -196,7 +251,7 @@ export class BindingService {
     const itemsList: VSCode.QuickPickItem[] = [];
 
     try {
-      let remoteProjects = await this.languageClient.getRemoteProjectsForConnection(getRemoteProjectsParam);
+      let remoteProjects = await this.getRemoteProjects(getRemoteProjectsParam);
       if (!(remoteProjects instanceof Map)) {
         remoteProjects = new Map(Object.entries(remoteProjects));
       }
@@ -230,6 +285,41 @@ export class BindingService {
     itemsList.sort((i1, i2) => i1.label.localeCompare(i2.label, 'en'));
     return itemsList;
   }
+
+  shouldBeAutoBound(workspaceFolder: VSCode.WorkspaceFolder) {
+    const foldersToBeIgnored = this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
+    return !this.isBound(workspaceFolder) && !foldersToBeIgnored.includes(workspaceFolder.uri.toString());
+  }
+
+  isBound(workspaceFolder: VSCode.WorkspaceFolder) {
+    const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
+    const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
+    return !!binding.projectKey;
+  }
+
+  async getConnectionToServerProjects(
+    scConnections: SonarCloudConnection[],
+    sqConnections: SonarQubeConnection[]
+  ): Promise<Map<BaseConnection, ServerProject[]>> {
+    const connectionToServerProjects = new Map<BaseConnection, ServerProject[]>();
+    await this.languageClient.onReady();
+    await this.setProjectsForConnection(scConnections, connectionToServerProjects);
+    await this.setProjectsForConnection(sqConnections, connectionToServerProjects);
+    return connectionToServerProjects;
+  }
+
+  private async setProjectsForConnection(
+    connections: SonarCloudConnection[] | SonarQubeConnection[],
+    connectionToServerProjects: Map<BaseConnection, ServerProject[]>
+  ) {
+    for (const connection of connections) {
+      const remoteProjects = await this.languageClient.getRemoteProjectsForConnection(connection.connectionId);
+      const serverProjects = Object.entries(remoteProjects).map(it => {
+        return { key: it[0], name: it[1] };
+      });
+      connectionToServerProjects.set(connection, serverProjects);
+    }
+  }
 }
 
 export interface ProjectBinding {
@@ -241,4 +331,9 @@ export interface ProjectBinding {
 export interface BoundFolder {
   folder: VSCode.WorkspaceFolder;
   binding: ProjectBinding;
+}
+
+export interface ServerProject {
+  key: string;
+  name: string;
 }

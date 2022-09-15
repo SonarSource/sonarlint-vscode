@@ -7,11 +7,11 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Commands } from './commands';
-import { logToSonarLintOutput } from './extension';
-import { computeHotspotContextPanelContent } from './hotspotContextPanel';
-import { HotspotProbability, RemoteHotspot } from './protocol';
-import { resolveExtensionFile } from './util';
+import { Commands } from '../util/commands';
+import { logToSonarLintOutput } from '../extension';
+import { computeHotspotContextPanelContent } from '../hotspot/hotspotContextPanel';
+import { HotspotProbability, RemoteHotspot } from '../lsp/protocol';
+import { resolveExtensionFile } from '../util/util';
 
 export const HOTSPOT_SOURCE = 'SonarQube Security Hotspot';
 

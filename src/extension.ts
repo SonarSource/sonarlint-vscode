@@ -12,35 +12,40 @@ import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
-import { SonarLintExtendedLanguageClient } from './client';
-import { Commands } from './commands';
-import { AllConnectionsTreeDataProvider } from './connections';
+import { SonarLintExtendedLanguageClient } from './lsp/client';
+import { Commands } from './util/commands';
+import { AllConnectionsTreeDataProvider } from './connected/connections';
 import {
   connectToSonarCloud,
   connectToSonarQube,
   editSonarCloudConnection,
   editSonarQubeConnection,
   reportConnectionCheckResult
-} from './connectionsetup';
-import { GitExtension } from './git';
+} from './connected/connectionsetup';
+import { GitExtension } from './scm/git';
 import {
   hideSecurityHotspot,
   HotspotsCodeActionProvider,
   hotspotsCollection,
   showHotspotDescription,
   showSecurityHotspot
-} from './hotspots';
-import { getJavaConfig, installClasspathListener } from './java';
-import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './locations';
-import * as protocol from './protocol';
-import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './requirements';
-import { showRuleDescription } from './rulepanel';
-import { AllRulesTreeDataProvider, RuleNode } from './rules';
-import { initScm } from './scm';
-import { ConnectionSettingsService, getSonarLintConfiguration, migrateConnectedModeSettings } from './settings';
-import { code2ProtocolConverter, protocol2CodeConverter } from './uri';
-import * as util from './util';
-import { BindingService } from './binding';
+} from './hotspot/hotspots';
+import { getJavaConfig, installClasspathListener } from './java/java';
+import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
+import * as protocol from './lsp/protocol';
+import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './util/requirements';
+import { showRuleDescription } from './rules/rulepanel';
+import { AllRulesTreeDataProvider, RuleNode } from './rules/rules';
+import { initScm } from './scm/scm';
+import {
+  ConnectionSettingsService,
+  getSonarLintConfiguration,
+  migrateConnectedModeSettings
+} from './settings/connectionsettings';
+import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
+import * as util from './util/util';
+import { BindingService } from './connected/binding';
+import { AutoBindingService } from './connected/autobinding';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -51,6 +56,7 @@ const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
 const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
+const WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION = 5000;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
 
@@ -254,8 +260,9 @@ export function activate(context: VSCode.ExtensionContext) {
   migrateConnectedModeSettings(currentConfig, connectionSettingsService);
   languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
-  BindingService.init(languageClient, connectionSettingsService);
+  BindingService.init(languageClient, context.workspaceState, connectionSettingsService);
   bindingService = BindingService.instance;
+  AutoBindingService.init(bindingService, context.workspaceState, connectionSettingsService);
 
   languageClient.onReady().then(() => {
     const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
@@ -351,6 +358,10 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   });
 
+  VSCode.workspace.onDidChangeWorkspaceFolders(async _event => {
+    AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
+  });
+
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE, configureCompilationDatabase)
   );
@@ -396,6 +407,9 @@ export function activate(context: VSCode.ExtensionContext) {
     )
   );
 
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS,
+    () => AutoBindingService.instance.autoBindWorkspace()));
+
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
   const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
@@ -413,6 +427,9 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
+  setTimeout(() => {
+    AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
+  }, WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION);
 }
 
 function getPlatform(): string {
@@ -466,8 +483,8 @@ async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionCon
   VSCode.window
     .showWarningMessage(
       'SonarLint detected some secrets in one of the open files.\n' +
-        'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
-        'Please refer to the Problems view for more information.',
+      'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
+      'Please refer to the Problems view for more information.',
       showProblemsViewActionTitle
     )
     .then(action => {

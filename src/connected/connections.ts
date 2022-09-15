@@ -8,9 +8,9 @@
 
 import * as VSCode from 'vscode';
 import { BindingService } from './binding';
-import { SonarLintExtendedLanguageClient } from './client';
-import { ConnectionCheckResult } from './protocol';
-import { BaseConnection, ConnectionSettingsService } from './settings';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { ConnectionCheckResult } from '../lsp/protocol';
+import { BaseConnection, ConnectionSettingsService } from '../settings/connectionsettings';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 
