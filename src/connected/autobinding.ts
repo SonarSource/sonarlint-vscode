@@ -12,17 +12,16 @@ import * as properties from 'properties';
 import { BindingService } from './binding';
 import { BaseConnection, ConnectionSettingsService } from '../settings/connectionsettings';
 import {
-  getDisplayName,
   getQuickPickItemsToAutoBind,
   getServerType,
   AutoBindProjectQuickPickItem,
   getBestHitsForConnections,
-  MatchHit
+  MatchHit,
+  getServerUrlOrOrganizationKey
 } from '../util/bindingUtils';
 import { Commands } from '../util/commands';
 
 const AUTOBINDING_THRESHOLD = 5;
-const ATTEMPT_AUTOBINDING_ACTION = 'Attempt Auto-binding';
 const BIND_ACTION = 'Configure Binding';
 const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
@@ -56,8 +55,8 @@ export class AutoBindingService {
 
   async autoBindWorkspace() {
     if (VSCode.workspace.workspaceFolders) {
-      const unboundFolders = VSCode.workspace.workspaceFolders.filter(workspaceFolder =>
-        !this.bindingService.isBound(workspaceFolder)
+      const unboundFolders = VSCode.workspace.workspaceFolders.filter(
+        workspaceFolder => !this.bindingService.isBound(workspaceFolder)
       );
       if (unboundFolders.length > 0) {
         this.autoBindAllFolders(unboundFolders);
@@ -145,8 +144,10 @@ export class AutoBindingService {
       }
       const commonMessage = `Do you want to bind folder ${unboundFolder.name} to project ${projectKey}`;
       const message = organization
-        ? `${commonMessage} of SonarCloud organization ${organization}?`
-        : `${commonMessage} of SonarQube server ${serverUrl}?`;
+        ? `${commonMessage} of SonarCloud organization ${organization}?
+        [Learn More](${LEARN_MORE_DOCS_LINK})`
+        : `${commonMessage} of SonarQube server ${serverUrl}?
+        [Learn More](${LEARN_MORE_DOCS_LINK})`;
 
       const result = await VSCode.window.showInformationMessage(
         message,
@@ -177,7 +178,7 @@ export class AutoBindingService {
     }
     return false;
   }
-  
+
   async getAnalysisSettingsFile(unboundFolder: VSCode.WorkspaceFolder) {
     const folderFiles = await VSCode.workspace.fs.readDirectory(unboundFolder.uri);
     return folderFiles.find(([name, type]) => {
@@ -265,10 +266,10 @@ export class AutoBindingService {
   async askUserBeforeAutoBinding() {
     return VSCode.window
       .showInformationMessage(
-        `We found folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
-       Do you want to attempt binding automatically?
+        `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
+       Do you want to configure binding?
        [Learn More](${LEARN_MORE_DOCS_LINK})`,
-        ATTEMPT_AUTOBINDING_ACTION,
+        BIND_ACTION,
         CHOOSE_MANUALLY_ACTION,
         DONT_ASK_AGAIN_ACTION
       )
@@ -280,7 +281,7 @@ export class AutoBindingService {
           const targetConnection = await this.getTargetConnectionForManualBinding();
           this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
           return false;
-        } else if (action === ATTEMPT_AUTOBINDING_ACTION) {
+        } else if (action === BIND_ACTION) {
           return true;
         }
         return false;
@@ -306,7 +307,8 @@ export class AutoBindingService {
   private async promptToBindManually(unboundFolder: VSCode.WorkspaceFolder) {
     VSCode.window
       .showInformationMessage(
-        `We found folders in your workspace that are not bound to any SonarQube/SonarCloud projects. Do you want to configure bindings?
+        `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
+        Do you want to configure binding?
        [Learn More](${LEARN_MORE_DOCS_LINK})`,
         BIND_ACTION,
         DONT_ASK_AGAIN_ACTION
@@ -330,9 +332,17 @@ export class AutoBindingService {
     unboundFolder: VSCode.WorkspaceFolder
   ) {
     const [connection] = connectionToBestHits.keys();
-    const connectionName = getDisplayName(connection);
+    const serverUrlOrOrganizationKey = getServerUrlOrOrganizationKey(connection);
+    const serverType = getServerType(connection);
+
+    const commonMessage = `Do you want to bind folder ${unboundFolder.name} to project ${bestHit.projectKey}`;
+    const message =
+      serverType === 'SonarQube'
+        ? `${commonMessage} of SonarCloud organization ${serverUrlOrOrganizationKey}?`
+        : `${commonMessage} of SonarQube server ${serverUrlOrOrganizationKey}?`;
+
     const result = await VSCode.window.showInformationMessage(
-      `There is a project ${bestHit.projectKey} on ${connectionName}. Do you want to configure binding?
+      `${message}
       [Learn More](${LEARN_MORE_DOCS_LINK})`,
       BIND_ACTION,
       CHOOSE_MANUALLY_ACTION,
@@ -363,7 +373,8 @@ export class AutoBindingService {
     unboundFolder: VSCode.WorkspaceFolder
   ) {
     const result = await VSCode.window.showInformationMessage(
-      `There are multiple projects on Sonar server(s) that match your local workspace. Do you want to configure binding?
+      `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
+      Do you want to configure binding?
       [Learn More](${LEARN_MORE_DOCS_LINK})`,
       BIND_ACTION,
       DONT_ASK_AGAIN_ACTION

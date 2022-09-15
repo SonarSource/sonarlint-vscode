@@ -21,7 +21,6 @@ import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
 import { TextEncoder } from 'util';
 
-
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -35,36 +34,41 @@ const TEST_SONARQUBE_CONNECTION = {
 
 const mockSettingsService = {
   async loadSonarQubeConnection(connectionId: string): Promise<SonarQubeConnection> {
-    return { serverUrl: 'https://next.sonarqube.com/sonarqube', connectionId: connectionId };
-  }, getSonarQubeConnections(): SonarQubeConnection[] {
-    return [{
-      connectionId: 'SQconnectionId',
-      disableNotifications: true,
-      serverUrl: 'serverUrl'
-    }];
-  }, getSonarCloudConnections(): SonarCloudConnection[] {
-    return [{
-      connectionId: 'SCconnectionId',
-      disableNotifications: true,
-      organizationKey: 'organizationKey'
-    }]
+    return { serverUrl: 'https://next.sonarqube.com/sonarqube', connectionId };
+  },
+  getSonarQubeConnections(): SonarQubeConnection[] {
+    return [
+      {
+        connectionId: 'SQconnectionId',
+        disableNotifications: true,
+        serverUrl: 'serverUrl'
+      }
+    ];
+  },
+  getSonarCloudConnections(): SonarCloudConnection[] {
+    return [
+      {
+        connectionId: 'SCconnectionId',
+        disableNotifications: true,
+        organizationKey: 'organizationKey'
+      }
+    ];
   }
-
-
 } as ConnectionSettingsService;
 
 const mockBindingService = {
-  async getConnectionToServerProjects(_scConnections: SonarCloudConnection[],
-                                      _sqConnections: SonarQubeConnection[]):
-    Promise<Map<BaseConnection, ServerProject[]>> {
+  async getConnectionToServerProjects(
+    _scConnections: SonarCloudConnection[],
+    _sqConnections: SonarQubeConnection[]
+  ): Promise<Map<BaseConnection, ServerProject[]>> {
     const projects = new Map<BaseConnection, ServerProject[]>();
-    projects.set({ connectionId: 'connectionId' },
-      [{ key: 'projectkey1', name: 'projectName1' },
-        { key: 'projectkey2', name: 'projectName2' },
-        { key: 'sample', name: 'Sample' }]);
+    projects.set({ connectionId: 'connectionId' }, [
+      { key: 'projectkey1', name: 'projectName1' },
+      { key: 'projectkey2', name: 'projectName2' },
+      { key: 'sample', name: 'Sample' }
+    ]);
     return projects;
   }
-
 } as BindingService;
 
 const mockWorkspaceState = {
@@ -79,9 +83,7 @@ const mockWorkspaceState = {
 };
 
 suite('Auto Binding Test Suite', () => {
-  let underTest;
   setup(async () => {
-    underTest = new AutoBindingService(mockBindingService, mockWorkspaceState, mockSettingsService);
     // start from 1 SQ connection config
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
@@ -102,25 +104,10 @@ suite('Auto Binding Test Suite', () => {
       underTest = new AutoBindingService(mockBindingService, mockWorkspaceState, mockSettingsService);
     });
 
-    test('One unbound folder gets autobound', async () => {
-      const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
-
-      let bindingBefore = VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder1.uri)
-        .get(BINDING_SETTINGS);
-      expect(bindingBefore).to.be.empty;
-
-      underTest.checkConditionsAndAttemptAutobinding();
-
-      // TODO enable after actual implementation
-      //   let bindingAfter = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder1.uri).get(BINDING_SETTINGS);
-      //   expect(bindingBefore).to.be.empty;
-    });
-
     test(`No autobinding when user said "don't ask again"`, async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
 
-      let bindingBefore = VSCode.workspace
+      const bindingBefore = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get(BINDING_SETTINGS);
       expect(bindingBefore).to.be.empty;
@@ -129,7 +116,7 @@ suite('Auto Binding Test Suite', () => {
 
       underTest.checkConditionsAndAttemptAutobinding();
 
-      let bindingAfter = VSCode.workspace
+      const bindingAfter = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get(BINDING_SETTINGS);
       expect(bindingAfter).to.be.empty;
@@ -206,8 +193,11 @@ suite('Auto Binding Test Suite', () => {
 });
 
 async function cleanBindings() {
-  return Promise.all(VSCode.workspace.workspaceFolders.map(folder => {
-    return VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri)
-      .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
-  }));
+  return Promise.all(
+    VSCode.workspace.workspaceFolders.map(folder => {
+      return VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, folder.uri)
+        .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
+    })
+  );
 }
