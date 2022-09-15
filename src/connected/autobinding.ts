@@ -135,7 +135,6 @@ export class AutoBindingService {
         ? this.settingsService.getSonarCloudConnectionForOrganization(organization)
         : this.settingsService.getSonarQubeConnectionForUrl(serverUrl);
       if (!existingConnection) {
-        // TODO suggest user to create a connection
         return false;
       }
 
