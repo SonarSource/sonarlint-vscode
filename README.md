@@ -107,9 +107,6 @@ Connected Mode will also allow unlocking of your analysis for these languages:
 
 When configuring Connected Mode, follow the [Connection Setup instructions](#connection-setup) below.
 
-### Project Binding
-SonarLint keeps server-side data in a local storage. If you change something on the server such as the Quality Profile, SonarLint will automatically attempt to synchronize with configured servers at startup & once every hour, and will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness). Additionally, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). 
-
 ## Connection Setup
 In SonarLint v3.6 and above for VSCode, to set up SonarQube/SonarCloud connections, open a **SONARLINT CONNECTED MODE** view in VSCode.
 
@@ -132,6 +129,9 @@ In SonarLint for VSCode v3.6 and above, notifications can be enabled or disabled
 Select **Save Connection** and verify that the new connection was set up successfully in the Connected Mode view.
 
 To set up a Connected Mode for SonarLint v3.5.4 and lower, please see the relevant wiki for [Connection Setup](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup).
+
+### Project Binding
+SonarLint keeps server-side data in a local storage. If you change something on the server such as the Quality Profile, SonarLint will automatically attempt to synchronize with configured servers at startup & once every hour, and will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness). Additionally, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). 
 
 ### Project Binding Setup
 
