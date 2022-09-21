@@ -297,7 +297,7 @@ export class AutoBindingService {
       const bestHit = allHitsFlat[0];
       this.promptToAutoBindSingleOption(bestHit, connectionToBestHits, unboundFolder);
     } else if (allHitsFlat.length > 1) {
-      this.promptToAutoBindMultiChoice(connectionToBestHits, unboundFolder);
+      this.promptToAutoBindMultiChoice(unboundFolder);
     } else {
       this.promptToBindManually(unboundFolder);
     }
@@ -368,7 +368,6 @@ export class AutoBindingService {
   }
 
   private async promptToAutoBindMultiChoice(
-    connectionToBestHits: Map<BaseConnection, MatchHit[]>,
     unboundFolder: VSCode.WorkspaceFolder
   ) {
     const result = await VSCode.window.showInformationMessage(
@@ -380,7 +379,8 @@ export class AutoBindingService {
     );
     switch (result) {
       case BIND_ACTION:
-        this.showQuickPickListOfProjects(unboundFolder, connectionToBestHits);
+        const targetConnection = await this.getTargetConnectionForManualBinding();
+        await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;
       case DONT_ASK_AGAIN_ACTION:
         await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
@@ -392,31 +392,5 @@ export class AutoBindingService {
         // NOP
         break;
     }
-  }
-
-  showQuickPickListOfProjects(
-    unboundFolder: VSCode.WorkspaceFolder,
-    connectionToBestHits: Map<BaseConnection, MatchHit[]>
-  ) {
-    const remoteProjectsQuickPick = VSCode.window.createQuickPick();
-    const folderName = unboundFolder.name;
-    remoteProjectsQuickPick.title = `Select Project to Bind with '${folderName}/'`;
-    remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with '${folderName}/' folder`;
-    remoteProjectsQuickPick.items = getQuickPickItemsToAutoBind(connectionToBestHits);
-    remoteProjectsQuickPick.ignoreFocusOut = true;
-    remoteProjectsQuickPick.onDidChangeSelection(selection => {
-      const projectToBind = selection[0] as AutoBindProjectQuickPickItem;
-      this.bindingService.saveBinding(projectToBind.description, projectToBind.connectionId, unboundFolder);
-      remoteProjectsQuickPick.dispose();
-    });
-    remoteProjectsQuickPick.onDidTriggerItemButton(async e => {
-      const [connectionId, projectKey] = e.item.label.split(' - ');
-      const connection = Array.from(connectionToBestHits.keys()).find(c => c.connectionId === connectionId);
-      const serverType = getServerType(connection);
-      const baseServerUrl = await this.bindingService.getBaseServerUrl(connection.connectionId, serverType);
-      remoteProjectsQuickPick.busy = true;
-      VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(`${baseServerUrl}?id=${projectKey}`));
-    });
-    remoteProjectsQuickPick.show();
   }
 }
