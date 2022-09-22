@@ -12,14 +12,11 @@ import * as properties from 'properties';
 import { BindingService } from './binding';
 import { BaseConnection, ConnectionSettingsService } from '../settings/connectionsettings';
 import {
-  getQuickPickItemsToAutoBind,
   getServerType,
-  AutoBindProjectQuickPickItem,
   getBestHitsForConnections,
   MatchHit,
   getServerUrlOrOrganizationKey
 } from '../util/bindingUtils';
-import { Commands } from '../util/commands';
 
 const AUTOBINDING_THRESHOLD = 5;
 const BIND_ACTION = 'Configure Binding';
@@ -337,8 +334,8 @@ export class AutoBindingService {
     const commonMessage = `Do you want to bind folder ${unboundFolder.name} to project ${bestHit.projectKey}`;
     const message =
       serverType === 'SonarQube'
-        ? `${commonMessage} of SonarCloud organization ${serverUrlOrOrganizationKey}?`
-        : `${commonMessage} of SonarQube server ${serverUrlOrOrganizationKey}?`;
+        ? `${commonMessage} of SonarQube server ${serverUrlOrOrganizationKey}?`
+        : `${commonMessage} of SonarCloud organization ${serverUrlOrOrganizationKey}?`;
 
     const result = await VSCode.window.showInformationMessage(
       `${message}
