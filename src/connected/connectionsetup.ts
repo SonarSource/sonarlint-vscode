@@ -163,7 +163,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
       <form id="connectionForm">
         ${renderServerUrlField(initialState)}
         ${renderGenerateTokenButton(initialState, serverProductName)}
-        <div id="tokenField">
+        <div class="formRowWithStatus">
           <vscode-text-field id="token" type="password" placeholder="········" required size="40"
             title="A user token generated for your account on ${serverProductName}" value="${initialState.token}">
             User Token
@@ -192,7 +192,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
           <li>the Quality Gate status of a bound project changes</li>
           <li>the latest analysis of a bound project on ${serverProductName} raises new issues assigned to you</li>
         </ul>
-        <div id="connectionCheck">
+        <div id="connectionCheck" class="formRowWithStatus">
           <vscode-button id="saveConnection" disabled>Save Connection</vscode-button>
           <span id="connectionProgress" class="hidden">
             <vscode-progress-ring/>
@@ -217,9 +217,15 @@ function renderServerUrlField(connection) {
 
 function renderGenerateTokenButton(connection, serverProductName) {
   const buttonDisabled = (isSonarQubeConnection(connection) && connection.serverUrl === '') ? 'disabled' : '';
-  return `<vscode-button id="generateToken" ${buttonDisabled}>
-      Generate Token
-    </vscode-button>
+  return `<div id="tokenGeneration" class="formRowWithStatus">
+      <vscode-button id="generateToken" ${buttonDisabled}>
+        Generate Token
+      </vscode-button>
+      <span id="tokenGenerationProgress" class="hidden">
+        <vscode-progress-ring/>
+      </span>
+      <span id="tokenGenerationResult"></span>
+    </div>
     <p>
       You can use the button above to generate a user token in your ${serverProductName} settings,
       copy it and paste it in the field below.
@@ -264,8 +270,14 @@ export async function handleMessage(message) {
 async function openTokenGenerationPage(message) {
   const { serverUrl } = message;
   const cleanedUrl = cleanServerUrl(serverUrl);
-  const accountSecurityUrl = `${cleanedUrl}/account/security/`;
-  await vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
+  try {
+    const accountSecurityUrl = await ConnectionSettingsService.instance.getTokenGenerationUrl(cleanedUrl);
+    await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen' });
+    await vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
+  } catch(error) {
+    const errorMessage = error.message;
+    await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen', errorMessage });
+  }
 }
 
 async function saveConnection(connection: SonarQubeConnection | SonarCloudConnection) {

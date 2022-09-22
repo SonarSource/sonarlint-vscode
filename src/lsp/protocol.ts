@@ -262,4 +262,15 @@ export namespace GetRemoteProjectNames {
   );
 }
 
+export interface ServerPathResponse {
+  serverPath?: string;
+  errorMessage?: string;
+}
+
+export namespace GetServerPathForTokenGeneration {
+  export const type = new lsp.RequestType<string, ServerPathResponse, null>(
+    'sonarlint/getServerPathForTokenGeneration'
+  );
+}
+
 //#endregion

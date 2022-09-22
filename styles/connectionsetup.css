@@ -24,7 +24,7 @@ ul {
     display: none;
 }
 
-#connectionCheck {
+.formRowWithStatus {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -33,13 +33,6 @@ ul {
 
 #connectionStatus {
     display: inline-block;
-}
-
-#tokenField {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
 }
 
 #tokenStatus {

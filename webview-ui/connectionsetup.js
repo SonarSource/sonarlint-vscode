@@ -103,11 +103,14 @@ function onClickGenerateToken() {
    */
   const serverUrlElement = byId('serverUrl');
   const serverUrl = serverUrlElement ? serverUrlElement.value : 'https://sonarcloud.io';
+  byId('tokenGenerationProgress').classList.remove('hidden');
   vscode.postMessage({
     command: 'openTokenGenerationPage',
     serverUrl
   });
 }
+
+
 
 function onChangeToken() {
   saveState();
@@ -226,6 +229,9 @@ function handleMessage(event) {
     case 'tokenReceived':
       populateTokenField(message.token);
       break;
+    case 'tokenGenerationPageIsOpen':
+      tokenGenerationPageIsOpen(message.errorMessage);
+      break;
   }
 }
 
@@ -249,6 +255,13 @@ function populateTokenField(token) {
   byId('tokenStatus').innerText = 'Token Received!';
   byId('tokenStatus').classList.remove('hidden');
   toggleSaveConnectionButton();
+}
+
+function tokenGenerationPageIsOpen(errorMessage) {
+  byId('tokenGenerationProgress').classList.add('hidden');
+  if (errorMessage) {
+    byId('tokenGenerationResult').innerText = errorMessage;
+  }
 }
 
 function sanitize(serverUrl) {
