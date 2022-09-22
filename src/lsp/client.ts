@@ -10,7 +10,7 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
-import { RulesResponse } from './protocol';
+import { RulesResponse, ServerPathResponse } from './protocol';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<RulesResponse> {
@@ -45,5 +45,9 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   getRemoteProjectsForConnection(connectionId: string) {
     return this.sendRequest(protocol.GetRemoteProjectsForConnection.type, { connectionId });
+  }
+
+  getServerPathForTokenGeneration(serverBaseUrl: string): Promise<ServerPathResponse> {
+    return this.sendRequest(protocol.GetServerPathForTokenGeneration.type, serverBaseUrl);
   }
 }

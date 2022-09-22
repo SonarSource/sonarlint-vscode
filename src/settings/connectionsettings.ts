@@ -9,6 +9,7 @@
 import * as VSCode from 'vscode';
 import { Connection } from '../connected/connections';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { logToSonarLintOutput } from '../extension';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const CONNECTIONS_SECTION = 'connectedMode.connections';
@@ -295,6 +296,15 @@ export class ConnectionSettingsService {
       this.setSonarCloudConnections(scConnections);
     }
     return true;
+  }
+
+  async getTokenGenerationUrl(serverUrl: string) {
+    const { serverPath, errorMessage } = await this.client.getServerPathForTokenGeneration(serverUrl);
+    if (errorMessage) {
+      logToSonarLintOutput(`Could not get token generation params: ${errorMessage}`);
+      throw new Error(errorMessage);
+    }
+    return serverPath;
   }
 }
 
