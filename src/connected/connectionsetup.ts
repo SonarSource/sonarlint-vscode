@@ -25,6 +25,9 @@ let connectionSetupPanel: vscode.WebviewPanel;
 
 const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/connected-mode/';
 const sonarCloudNotificationsDocUrl = 'https://docs.sonarcloud.io/advanced-setup/sonarlint-smart-notifications/';
+const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
+const OPEN_TOKEN_GENERATION_PAGE_COMMAND = 'openTokenGenerationPage';
+const SAVE_CONNECTION_COMMAND = 'saveConnection';
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
   return () => {
@@ -160,11 +163,14 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
       <form id="connectionForm">
         ${renderServerUrlField(initialState)}
         ${renderGenerateTokenButton(initialState, serverProductName)}
-        <vscode-text-field id="token" type="password" placeholder="········" required size="40"
-          title="A user token generated for your account on ${serverProductName}" value="${initialState.token}">
-          User Token
-        </vscode-text-field>
-        <input type="hidden" id="token-initial" value="${initialState.token}" />
+        <div id="tokenField">
+          <vscode-text-field id="token" type="password" placeholder="········" required size="40"
+            title="A user token generated for your account on ${serverProductName}" value="${initialState.token}">
+            User Token
+          </vscode-text-field>
+          <span id="tokenStatus" class="hidden">Token received!</span>
+          <input type="hidden" id="token-initial" value="${initialState.token}" />
+        </div>
         ${renderOrganizationKeyField(initialState)}
         <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Connection" size="40"
           title="Optionally, please give this connection a memorable name" value="${initialConnectionId}"
@@ -236,10 +242,10 @@ function renderOrganizationKeyField(connection) {
  */
 export async function handleMessage(message) {
   switch(message.command) {
-    case 'openTokenGenerationPage':
+    case OPEN_TOKEN_GENERATION_PAGE_COMMAND:
       await openTokenGenerationPage(message);
       break;
-    case 'saveConnection':
+    case SAVE_CONNECTION_COMMAND:
       delete message.command;
       if (!message.disableNotifications) {
         delete message.disableNotifications;
@@ -294,4 +300,10 @@ function removeTrailingSlashes(url: string) {
     cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length - 1);
   }
   return cleanedUrl;
+}
+
+export async function handleTokenReceivedNotification(token: string) {
+  if(connectionSetupPanel && connectionSetupPanel.active) {
+    await connectionSetupPanel.webview.postMessage({ command: TOKEN_RECEIVED_COMMAND, token });
+  }
 }

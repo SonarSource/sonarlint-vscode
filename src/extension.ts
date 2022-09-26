@@ -20,6 +20,7 @@ import {
   connectToSonarQube,
   editSonarCloudConnection,
   editSonarQubeConnection,
+  handleTokenReceivedNotification,
   reportConnectionCheckResult
 } from './connected/connectionsetup';
 import { GitExtension } from './scm/git';
@@ -537,6 +538,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowTaintVulnerabilityNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
+  languageClient.onNotification(protocol.SubmitTokenNotification.type, token => handleTokenReceivedNotification(token));
 
   async function notifyMissingCompileCommands() {
     if ((await doNotAskAboutCompileCommandsFlag(context)) || remindMeLaterAboutCompileCommandsFlag) {

@@ -105,6 +105,10 @@ export namespace ShowHotspotNotification {
   export const type = new lsp.NotificationType<RemoteHotspot>('sonarlint/showHotspot');
 }
 
+export namespace SubmitTokenNotification {
+  export const type = new lsp.NotificationType<string>('sonarlint/submitToken');
+}
+
 export interface TextRange {
   startLine: number;
   endLine?: number;
