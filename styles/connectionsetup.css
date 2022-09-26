@@ -34,3 +34,15 @@ ul {
 #connectionStatus {
     display: inline-block;
 }
+
+#tokenField {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+#tokenStatus {
+    margin-top: 3%;
+    text-align: center;
+}

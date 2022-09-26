@@ -223,6 +223,9 @@ function handleMessage(event) {
     case 'connectionCheckFailure':
       connectionCheckFailure(message.reason);
       break;
+    case 'tokenReceived':
+      populateTokenField(message.token);
+      break;
   }
 }
 
@@ -239,6 +242,13 @@ function connectionCheckSuccess() {
 function connectionCheckFailure(reason) {
   byId('connectionProgress').classList.add('hidden');
   byId('connectionStatus').innerText = `Failed: ${reason}`;
+}
+
+function populateTokenField(token) {
+  byId('token').value = token;
+  byId('tokenStatus').innerText = 'Token Received!';
+  byId('tokenStatus').classList.remove('hidden');
+  toggleSaveConnectionButton();
 }
 
 function sanitize(serverUrl) {
