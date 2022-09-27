@@ -1,3 +1,6 @@
+## 3.11
+* Update CFamily analyzer 6.36 -> [6.37](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013801%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), bug fixes and improvements
+
 ## 3.10
 
 * Suggest users using SonarLint Connected Mode to configure project bindings with their SonarQube/SonarCloud projects
