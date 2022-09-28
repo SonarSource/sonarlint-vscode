@@ -44,10 +44,11 @@ On other platforms and if a Java runtime is already installed on your computer, 
     {
         "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre-11.0.11"
     }
-2. the value of the `JDK_HOME` environment variable if set
-3. the value of the `JAVA_HOME` environment variable if set
-4. on Windows the registry is queried
-5. if a JRE is still not found then:
+2. embedded JRE for platform-specific installations
+3. the value of the `JDK_HOME` environment variable if set
+4. the value of the `JAVA_HOME` environment variable if set
+5. on Windows the registry is queried
+6. if a JRE is still not found then:
    1. the `PATH` is scanned for `javac`
    2. on macOS, the parent directory of `javac` is checked for a `java_home` binary. If that binary exists then it is executed and the result is used
    3. the grandparent directory of `javac` is used. This is similar to `$(dirname $(dirname $(readlink $(which javac))))`

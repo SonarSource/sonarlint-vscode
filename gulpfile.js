@@ -37,8 +37,8 @@ const allPlatforms = {};
   allPlatforms[platform] = {
     fileName: '',
     hashes: {
-      'md5': '',
-      'sha1': ''
+      md5: '',
+      sha1: ''
     }
   };
 });
@@ -50,7 +50,7 @@ gulp.task(
   gulp.parallel('clean:vsix', () => del(['server', 'out', 'out-cov']))
 );
 
-gulp.task('cycloneDx',function (cb) {
+gulp.task('cycloneDx', function (cb) {
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   const cycloneDxCommand = `npm run cyclonedx-run -- -d --output sonarlint-vscode-${version}.sbom-cyclonedx.json`;
@@ -60,7 +60,6 @@ gulp.task('cycloneDx',function (cb) {
     cb(err);
   });
 });
-
 
 gulp.task('update-version', function () {
   const buildNumber = process.env.BUILD_BUILDID;
@@ -81,14 +80,14 @@ gulp.task('package', async () => {
   await vsce.createVSIX();
 });
 
-gulp.task('package-all', (done) => {
+gulp.task('package-all', done => {
   const tasks = [];
   TARGETED_PLATFORMS.forEach(async platform => {
     tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)));
   });
   tasks.push(gulp.series('clean-jre', vsce.createVSIX));
 
-  return gulp.series(...tasks, (seriesDone) => {
+  return gulp.series(...tasks, seriesDone => {
     seriesDone();
     done();
   })();
@@ -107,7 +106,7 @@ gulp.task('compute-all-vsix-hashes', function (done) {
   const version = getPackageJSON().version;
   const tasks = Object.keys(allPlatforms).map(platform => () => hashsum(platform, version));
 
-  return gulp.series(...tasks, (seriesDone) => {
+  return gulp.series(...tasks, seriesDone => {
     seriesDone();
     done();
   })();
@@ -130,34 +129,35 @@ gulp.task('deploy-vsix', function () {
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
   console.log(`Artifactory target URL: ${artifactoryTargetUrl}`);
   return mergeStream(
-      globby.sync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
-        const [sha1, md5] = fileHashsum(filePath);
-        return gulp
-            .src(filePath)
-            .pipe(
-                artifactoryUpload({
-                  url: artifactoryTargetUrl,
-                  username: ARTIFACTORY_DEPLOY_USERNAME,
-                  password: ARTIFACTORY_DEPLOY_PASSWORD,
-                  properties: {
-                    'vcs.revision': BUILD_SOURCEVERSION,
-                    'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
-                    'build.name': name,
-                    'build.number': BUILD_BUILDID
-                  },
-                  request: {
-                    headers: {
-                      'X-Checksum-MD5': md5,
-                      'X-Checksum-Sha1': sha1
-                    }
-                  }
-                })
-            )
-            .on('error', log.error);
-        }));
+    globby.sync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
+      const [sha1, md5] = fileHashsum(filePath);
+      return gulp
+        .src(filePath)
+        .pipe(
+          artifactoryUpload({
+            url: artifactoryTargetUrl,
+            username: ARTIFACTORY_DEPLOY_USERNAME,
+            password: ARTIFACTORY_DEPLOY_PASSWORD,
+            properties: {
+              'vcs.revision': BUILD_SOURCEVERSION,
+              'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+              'build.name': name,
+              'build.number': BUILD_BUILDID
+            },
+            request: {
+              headers: {
+                'X-Checksum-MD5': md5,
+                'X-Checksum-Sha1': sha1
+              }
+            }
+          })
+        )
+        .on('error', log.error);
+    })
+  );
 });
 
-gulp.task('clean-jre', (done) => {
+gulp.task('clean-jre', done => {
   if (fse.existsSync('./jre')) {
     fse.removeSync('./jre');
   }
@@ -176,14 +176,12 @@ gulp.task('clean-jre', (done) => {
  *  darwin-x64,
  *  darwin-arm64
  */
-gulp.task('download_jre', async (done) => {
+gulp.task('download_jre', async done => {
   const targetPlatform = argv.target || `${process.platform}-${process.arch}`;
-  const javaVersion = (!argv.javaVersion || argv.javaVersion === 'latest') ? LATEST_JRE : argv.javaVersion;
+  const javaVersion = !argv.javaVersion || argv.javaVersion === 'latest' ? LATEST_JRE : argv.javaVersion;
   await downloadJre(targetPlatform, javaVersion, done);
   done();
 });
-
-
 
 async function downloadJre(targetPlatform, javaVersion, done) {
   if (fse.existsSync('./jre')) {
@@ -199,8 +197,10 @@ async function downloadJre(targetPlatform, javaVersion, done) {
   };
 
   if (!targetPlatform || !Object.keys(platformMapping).includes(targetPlatform)) {
-    console.log('[Error] download_jre failed, please specify a valid target platform via --target argument. ' +
-        'Here are the supported platform list:');
+    console.log(
+      '[Error] download_jre failed, please specify a valid target platform via --target argument. ' +
+        'Here are the supported platform list:'
+    );
     for (const platform of Object.keys(platformMapping)) {
       console.log(platform);
     }
@@ -236,32 +236,33 @@ async function downloadJre(targetPlatform, javaVersion, done) {
    */
   const javaPlatform = platformMapping[targetPlatform];
   const list = manifest.split(/\r?\n/);
-  const jreIdentifier = list.find((value) => {
-    return value.indexOf('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') >= 0
-        && value.indexOf(javaPlatform) >= 0;
+  const jreIdentifier = list.find(value => {
+    return (
+      value.indexOf('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') >= 0 && value.indexOf(javaPlatform) >= 0
+    );
   });
 
   if (!jreIdentifier) {
-    done(new Error(`justj doesn't support the jre ${javaVersion} for the platform ${javaPlatform}
-      (${targetPlatform}), please refer to the link ${manifestUrl} for the supported platforms.`));
+    done(
+      new Error(`justj doesn't support the jre ${javaVersion} for the platform ${javaPlatform}
+      (${targetPlatform}), please refer to the link ${manifestUrl} for the supported platforms.`)
+    );
     return;
   }
 
   const jreDownloadUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/${jreIdentifier}`;
   const parsedDownloadUrl = url.parse(jreDownloadUrl);
-  const jreFileName = path.basename(parsedDownloadUrl.pathname)
-      .replace(/\.(?:7z|bz2|gz|rar|tar|zip|xz)*$/, '');
+  const jreFileName = path.basename(parsedDownloadUrl.pathname).replace(/\.(?:7z|bz2|gz|rar|tar|zip|xz)*$/, '');
   const idx = jreFileName.indexOf('-');
   const jreVersionLabel = idx >= 0 ? jreFileName.substring(idx + 1) : jreFileName;
   // Download justj JRE.
   await new Promise(function (resolve, reject) {
     download(jreDownloadUrl)
-        .on('error', reject)
-        .pipe(decompress({strip: 0}))
-        .pipe(gulp.dest('./jre/' + jreVersionLabel))
-        .on('end', resolve);
+      .on('error', reject)
+      .pipe(decompress({ strip: 0 }))
+      .pipe(gulp.dest('./jre/' + jreVersionLabel))
+      .on('end', resolve);
   });
-
 }
 
 gulp.task('deploy-buildinfo', function (done) {
@@ -288,26 +289,24 @@ gulp.task('deploy-buildinfo', function (done) {
 function downloadJreAndInstallVsixForPlatform(platform) {
   return function (done) {
     const downloadJreTask = () => downloadJre(platform, LATEST_JRE, done);
-    const createVsixTask = () => vsce.createVSIX({target: platform});
+    const createVsixTask = () => vsce.createVSIX({ target: platform });
     const tasks = [downloadJreTask, createVsixTask];
 
-    return gulp.series(...tasks, (seriesDone) => {
+    return gulp.series(...tasks, seriesDone => {
       seriesDone();
       done();
     })();
   };
 }
 
-const deployAllPlatformsSeries = (done) => {
+const deployAllPlatformsSeries = done => {
   const tasks = ['clean', 'update-version', 'cycloneDx'];
-  TARGETED_PLATFORMS.forEach(
-      platform => tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform)))
-  );
+  TARGETED_PLATFORMS.forEach(platform => tasks.push(gulp.series(downloadJreAndInstallVsixForPlatform(platform))));
   tasks.push('clean-jre');
   tasks.push(gulp.series(vsce.createVSIX));
   tasks.push(gulp.series('compute-all-vsix-hashes', 'sign', 'deploy-buildinfo', 'deploy-vsix'));
 
-  return gulp.series(...tasks, (seriesDone) => {
+  return gulp.series(...tasks, seriesDone => {
     seriesDone();
     done();
   })();
@@ -316,12 +315,15 @@ const deployAllPlatformsSeries = (done) => {
 gulp.task('deploy-all', deployAllPlatformsSeries);
 
 gulp.task('sign', () => {
-  return gulp.src(path.join('*{.vsix,-cyclonedx.json}'))
-  .pipe(getSignature({
-    keyPath: process.env.SIGN_KEY,
-    passphrase: process.env.PGP_PASSPHRASE
-  }))
-  .pipe(gulp.dest('./'));
+  return gulp
+    .src(path.join('*{.vsix,-cyclonedx.json}'))
+    .pipe(
+      getSignature({
+        keyPath: process.env.SIGN_KEY,
+        passphrase: process.env.PGP_PASSPHRASE
+      })
+    )
+    .pipe(gulp.dest('./'));
 });
 
 gulp.task(
@@ -404,10 +406,7 @@ function buildInfo(name, version, buildNumber) {
 function fileHashsum(filePath) {
   const fileContent = fs.readFileSync(filePath);
   return ['sha1', 'md5'].map(algo => {
-    const hash = crypto
-      .createHash(algo)
-      .update(fileContent, 'binary')
-      .digest('hex');
+    const hash = crypto.createHash(algo).update(fileContent, 'binary').digest('hex');
     console.log(`Computed "${path.basename(filePath)}" ${algo}: ${hash}`);
     return hash;
   });
@@ -421,9 +420,10 @@ function hashsum(platform, version) {
     callback();
   }
 
-  allPlatforms[platform].fileName = platform === UNIVERSAL_PLATFORM ?
-      `sonarlint-vscode-${version}.vsix` :
-      `sonarlint-vscode-${platform}-${version}.vsix`;
+  allPlatforms[platform].fileName =
+    platform === UNIVERSAL_PLATFORM
+      ? `sonarlint-vscode-${version}.vsix`
+      : `sonarlint-vscode-${platform}-${version}.vsix`;
   return gulp.src(allPlatforms[platform].fileName).pipe(through.obj(processFile));
 }
 
@@ -440,7 +440,7 @@ function updateHashes(platform, file) {
 
 function computeDependencyHashes(dependencyLocation) {
   const dependencyContents = fs.readFileSync(dependencyLocation);
-  const dependencyHashes = {'md5': '', 'sha1': ''};
+  const dependencyHashes = { md5: '', sha1: '' };
   updateBinaryHashes(dependencyContents, dependencyHashes);
   return dependencyHashes;
 }
