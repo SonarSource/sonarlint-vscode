@@ -1,4 +1,5 @@
 ## 3.11
+* Honor `sonarlint.ls.javaHome` setting for all platforms
 * Update CFamily analyzer 6.36 -> [6.37](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013801%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), bug fixes and improvements
 * Update PHP analyzer 3.23 -> [3.24](https://github.com/SonarSource/sonar-php/releases/tag/3.24.0.8949) -> [3.25](https://github.com/SonarSource/sonar-php/releases/tag/3.25.0.9077), added support for PHP 8.2, improvements and bugfixes
 * Update JS/TS analyzer 9.7 -> [9.8](https://github.com/SonarSource/SonarJS/releases/tag/9.8.0.19239), TypeScript 4.8,deprecation of Node.JS v14, remove support for Node.JS v12

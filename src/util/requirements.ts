@@ -19,8 +19,7 @@ import * as jre from '../java/jre';
 import { PlatformInformation } from './platform';
 import * as util from './util';
 import * as fse from 'fs-extra';
-
-
+import { logToSonarLintOutput } from '../extension';
 
 const REQUIRED_JAVA_VERSION = 11;
 
@@ -41,14 +40,33 @@ interface ErrorData {
 }
 
 export async function resolveRequirements(context: vscode.ExtensionContext): Promise<RequirementsData> {
-  const jreDir = path.join(context.extensionPath, 'jre');
-  let javaHome;
-  if (fse.existsSync(jreDir) && fse.statSync(jreDir).isDirectory()) {
-    const dirs = fse.readdirSync(jreDir);
-    const javaDir = dirs[0];
-    javaHome = path.join(jreDir, javaDir);
-  } else {
-    javaHome = await checkJavaRuntime();
+  let javaHome = readJavaConfig();
+  let tryResolveJre = false;
+  if (javaHome) {
+    const source = `'${JAVA_HOME_CONFIG}' variable defined in VS Code settings`;
+    javaHome = expandHomeDir(javaHome);
+    if (!pathExists.sync(javaHome)) {
+      logToSonarLintOutput(`The ${source} points to a missing or inaccessible folder (${javaHome})`);
+    } else if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
+      let msg: string;
+      if (pathExists.sync(path.resolve(javaHome, JAVA_FILENAME))) {
+        msg = `'bin' should be removed from the ${source} (${javaHome})`;
+      } else {
+        msg = `The ${source} (${javaHome}) does not point to a JRE. Will try to use embedded JRE.`;
+      }
+      logToSonarLintOutput(msg);
+      tryResolveJre = true;
+    }
+  }
+  if (!javaHome || tryResolveJre) {
+    const jreDir = path.join(context.extensionPath, 'jre');
+    if (fse.existsSync(jreDir) && fse.statSync(jreDir).isDirectory()) {
+      const dirs = fse.readdirSync(jreDir);
+      const javaDir = dirs[0];
+      javaHome = path.join(jreDir, javaDir);
+    } else {
+      javaHome = await checkJavaRuntime();
+    }
   }
   const javaVersion = await checkJavaVersion(javaHome);
   return { javaHome, javaVersion };
@@ -112,8 +130,11 @@ function checkJavaVersion(javaHome: string): Promise<number> {
     cp.execFile(javaExec, ['-version'], {}, (error, stdout, stderr) => {
       const javaVersion = parseMajorVersion(stderr);
       if (javaVersion < REQUIRED_JAVA_VERSION) {
-        openJREDownload(reject, `Java ${REQUIRED_JAVA_VERSION} or more recent is required to run.
-Please download and install a recent JRE.`);
+        openJREDownload(
+          reject,
+          `Java ${REQUIRED_JAVA_VERSION} or more recent is required to run.
+Please download and install a recent JRE.`
+        );
       } else {
         resolve(javaVersion);
       }
