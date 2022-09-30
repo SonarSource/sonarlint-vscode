@@ -8,8 +8,8 @@
 
 import * as VSCode from 'vscode';
 import { Connection } from '../connected/connections';
-import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { logToSonarLintOutput } from '../extension';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const CONNECTIONS_SECTION = 'connectedMode.connections';
@@ -298,13 +298,13 @@ export class ConnectionSettingsService {
     return true;
   }
 
-  async getTokenGenerationUrl(serverUrl: string) {
-    const { serverPath, errorMessage } = await this.client.getServerPathForTokenGeneration(serverUrl);
+  async getTokenGenerationUrl(baseServerUrl: string) {
+    const { serverUrl, errorMessage } = await this.client.getServerPathForTokenGeneration(baseServerUrl);
     if (errorMessage) {
       logToSonarLintOutput(`Could not get token generation params: ${errorMessage}`);
       throw new Error(errorMessage);
     }
-    return serverPath;
+    return serverUrl;
   }
 }
 
