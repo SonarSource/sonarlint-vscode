@@ -47,7 +47,7 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetRemoteProjectsForConnection.type, { connectionId });
   }
 
-  getServerPathForTokenGeneration(serverBaseUrl: string): Promise<ServerPathResponse> {
-    return this.sendRequest(protocol.GetServerPathForTokenGeneration.type, serverBaseUrl);
+  getServerPathForTokenGeneration(baseServerUrl: string): Promise<ServerPathResponse> {
+    return this.sendRequest(protocol.GetServerPathForTokenGeneration.type, { baseServerUrl });
   }
 }
