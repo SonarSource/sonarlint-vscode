@@ -241,11 +241,13 @@ function connectionCheckStart() {
 }
 
 function connectionCheckSuccess() {
+  byId('tokenStatus').classList.add('hidden');
   byId('connectionProgress').classList.add('hidden');
   byId('connectionStatus').innerText = 'Success!';
 }
 
 function connectionCheckFailure(reason) {
+  byId('tokenStatus').classList.add('hidden');
   byId('connectionProgress').classList.add('hidden');
   byId('connectionStatus').innerText = `Failed: ${reason}`;
 }
@@ -255,9 +257,11 @@ function populateTokenField(token) {
   byId('tokenStatus').innerText = 'Token Received!';
   byId('tokenStatus').classList.remove('hidden');
   toggleSaveConnectionButton();
+  saveState();
 }
 
 function tokenGenerationPageIsOpen(errorMessage) {
+  byId('tokenGenerationResult').innerText = '';
   byId('tokenGenerationProgress').classList.add('hidden');
   if (errorMessage) {
     byId('tokenGenerationResult').innerText = errorMessage;
