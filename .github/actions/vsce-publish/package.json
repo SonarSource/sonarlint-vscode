@@ -8,6 +8,6 @@
   "license": "SEE LICENSE IN ../../../LICENSE.txt",
   "type": "module",
   "dependencies": {
-    "vsce": "2.7.0"
+    "vsce": "2.11.0"
   }
 }
