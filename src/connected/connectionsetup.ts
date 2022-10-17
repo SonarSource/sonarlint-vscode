@@ -263,8 +263,14 @@ export async function handleMessage(message) {
         message.serverUrl = cleanServerUrl(message.serverUrl);
       }
       await saveConnection(message);
+      waitForConfigAndSuggestBinding();
       break;
   }
+}
+
+async function waitForConfigAndSuggestBinding() {
+  await util.sleep(5000);
+  await AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
 }
 
 async function openTokenGenerationPage(message) {
@@ -288,7 +294,6 @@ async function saveConnection(connection: SonarQubeConnection | SonarCloudConnec
       await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
     } else {
       await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
-      await AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
     }
   } else {
     const foundConnection = await ConnectionSettingsService.instance.loadSonarCloudConnection(connection.connectionId);
@@ -297,7 +302,6 @@ async function saveConnection(connection: SonarQubeConnection | SonarCloudConnec
       await ConnectionSettingsService.instance.updateSonarCloudConnection(connection);
     } else {
       await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
-      await AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
     }
   }
 }
