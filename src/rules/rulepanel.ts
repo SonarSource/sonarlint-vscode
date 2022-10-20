@@ -89,10 +89,12 @@ function renderTaintBanner(rule: ShowRuleDescriptionParams) {
     return '';
   }
   return `<div class="taint-banner-wrapper">
-            <p class="taint-banner">Taint vulnerabilities are only detected by SonarQube/SonarCloud analysis and 
-            reported in the IDE for more convenient investigation and fix. To ensure that issue was fixed it's 
-            necessary to push fix to the repository, wait for SQ/SC analysis and then wait for SonarLint sync with
-            server.</p>
+            <p class="taint-banner"><span></span> 
+            This injection vulnerability was detected by the latest SonarQube or SonarCloud analysis.
+             SonarLint fetches and reports it in your local code to help you investigate it and fix it,
+              but cannot tell you whether you successfully fixed it. To verify your fix, please ensure
+              the code containing your fix is analyzed by SonarQube or SonarCloud.
+            </p>
            </div>`;
 }
 
