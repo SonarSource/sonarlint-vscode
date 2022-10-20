@@ -26,19 +26,19 @@ export function showRuleDescription(context: VSCode.ExtensionContext) {
 function lazyCreateRuleDescriptionPanel(context: VSCode.ExtensionContext) {
   if (!ruleDescriptionPanel) {
     ruleDescriptionPanel = VSCode.window.createWebviewPanel(
-        'sonarlint.RuleDesc',
-        'SonarLint Rule Description',
-        VSCode.ViewColumn.Two,
-        {
-          enableScripts: false
-        }
+      'sonarlint.RuleDesc',
+      'SonarLint Rule Description',
+      VSCode.ViewColumn.Two,
+      {
+        enableScripts: false
+      }
     );
     ruleDescriptionPanel.onDidDispose(
-        () => {
-          ruleDescriptionPanel = undefined;
-        },
-        null,
-        context.subscriptions
+      () => {
+        ruleDescriptionPanel = undefined;
+      },
+      null,
+      context.subscriptions
     );
   }
 }
@@ -47,7 +47,7 @@ function computeRuleDescPanelContent(
   context: VSCode.ExtensionContext,
   webview: VSCode.Webview,
   rule: ShowRuleDescriptionParams
-  ) {
+) {
 
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'rule.css');
@@ -55,6 +55,8 @@ function computeRuleDescPanelContent(
   const typeImgSrc = resolver.resolve('images', 'type', `${rule.type.toLowerCase()}.png`);
 
   const ruleParamsHtml = renderRuleParams(rule);
+
+  const taintBanner = renderTaintBanner(rule);
 
   return `<!doctype html><html lang="en">
     <head>
@@ -72,6 +74,7 @@ function computeRuleDescPanelContent(
     <img class="severity" alt="${rule.severity}" src="${severityImgSrc}" />&nbsp;
     ${clean(rule.severity)}
     </div>
+    ${taintBanner}
     <div class="rule-desc">${rule.htmlDescription}</div>
     ${ruleParamsHtml}
     </body></html>`;
@@ -79,6 +82,18 @@ function computeRuleDescPanelContent(
 
 function base64encode(file: string) {
   return FS.readFileSync(file).toString('base64');
+}
+
+function renderTaintBanner(rule: ShowRuleDescriptionParams) {
+  if (!rule.isTaint) {
+    return '';
+  }
+  return `<div class="taint-banner-wrapper">
+            <p class="taint-banner">Taint vulnerabilities are only detected by SonarQube/SonarCloud analysis and 
+            reported in the IDE for more convenient investigation and fix. To ensure that issue was fixed it's 
+            necessary to push fix to the repository, wait for SQ/SC analysis and then wait for SonarLint sync with
+            server.</p>
+           </div>`;
 }
 
 function renderRuleParams(rule: ShowRuleDescriptionParams) {

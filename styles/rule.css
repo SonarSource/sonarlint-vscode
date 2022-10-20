@@ -92,3 +92,13 @@ a {
   display: block;
   margin-top: 2px;
 }
+
+.taint-banner {
+  /*color: var(--vscode-textCodeBlock);*/
+  margin: 1em;
+}
+
+.taint-banner-wrapper {
+  margin-top: 1em;
+  border: 1px solid var(--vscode-textBlockQuote-border);
+}
