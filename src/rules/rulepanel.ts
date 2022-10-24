@@ -26,19 +26,19 @@ export function showRuleDescription(context: VSCode.ExtensionContext) {
 function lazyCreateRuleDescriptionPanel(context: VSCode.ExtensionContext) {
   if (!ruleDescriptionPanel) {
     ruleDescriptionPanel = VSCode.window.createWebviewPanel(
-      'sonarlint.RuleDesc',
-      'SonarLint Rule Description',
-      VSCode.ViewColumn.Two,
-      {
-        enableScripts: false
-      }
+        'sonarlint.RuleDesc',
+        'SonarLint Rule Description',
+        VSCode.ViewColumn.Two,
+        {
+          enableScripts: false
+        }
     );
     ruleDescriptionPanel.onDidDispose(
-      () => {
-        ruleDescriptionPanel = undefined;
-      },
-      null,
-      context.subscriptions
+        () => {
+          ruleDescriptionPanel = undefined;
+        },
+        null,
+        context.subscriptions
     );
   }
 }
@@ -47,16 +47,18 @@ function computeRuleDescPanelContent(
   context: VSCode.ExtensionContext,
   webview: VSCode.Webview,
   rule: ShowRuleDescriptionParams
-) {
+  ) {
 
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'rule.css');
   const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severity.toLowerCase()}.png`);
   const typeImgSrc = resolver.resolve('images', 'type', `${rule.type.toLowerCase()}.png`);
+  const infoImgSrc = resolver.resolve('images', 'info.png');
+
 
   const ruleParamsHtml = renderRuleParams(rule);
 
-  const taintBanner = renderTaintBanner(rule);
+  const taintBanner = renderTaintBanner(rule, infoImgSrc);
 
   return `<!doctype html><html lang="en">
     <head>
@@ -84,12 +86,12 @@ function base64encode(file: string) {
   return FS.readFileSync(file).toString('base64');
 }
 
-function renderTaintBanner(rule: ShowRuleDescriptionParams) {
+function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string) {
   if (!rule.isTaint) {
     return '';
   }
   return `<div class="taint-banner-wrapper">
-            <p class="taint-banner"><span></span> 
+            <p class="taint-banner"><span><img class="taint-info-icon" src=${infoImgSrc}></span> 
             This injection vulnerability was detected by the latest SonarQube or SonarCloud analysis.
              SonarLint fetches and reports it in your local code to help you investigate it and fix it,
               but cannot tell you whether you successfully fixed it. To verify your fix, please ensure

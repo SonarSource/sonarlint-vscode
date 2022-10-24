@@ -102,4 +102,5 @@ a {
   margin-top: 1em;
   border: 1px solid var(--vscode-textBlockQuote-border);
   border-radius: 2px;
+  background-color: var(--vscode-textBlockQuote-background);
 }
