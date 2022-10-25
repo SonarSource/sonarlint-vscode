@@ -91,7 +91,7 @@ function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string) {
     return '';
   }
   return `<div class="taint-banner-wrapper">
-            <p class="taint-banner"><span><img class="taint-info-icon" src=${infoImgSrc}></span> 
+            <p class="taint-banner"><span><img class="taint-info-icon" src=${infoImgSrc} alt="info"></span> 
             This injection vulnerability was detected by the latest SonarQube or SonarCloud analysis.
              SonarLint fetches and reports it in your local code to help you investigate it and fix it,
               but cannot tell you whether you successfully fixed it. To verify your fix, please ensure
