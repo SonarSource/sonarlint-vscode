@@ -12,8 +12,8 @@ import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
-import { SonarLintExtendedLanguageClient } from './lsp/client';
-import { Commands } from './util/commands';
+import { AutoBindingService } from './connected/autobinding';
+import { BindingService } from './connected/binding';
 import { AllConnectionsTreeDataProvider } from './connected/connections';
 import {
   connectToSonarCloud,
@@ -23,7 +23,6 @@ import {
   handleTokenReceivedNotification,
   reportConnectionCheckResult
 } from './connected/connectionsetup';
-import { GitExtension } from './scm/git';
 import {
   hideSecurityHotspot,
   HotspotsCodeActionProvider,
@@ -33,23 +32,23 @@ import {
 } from './hotspot/hotspots';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
+import { SonarLintExtendedLanguageClient } from './lsp/client';
 import * as protocol from './lsp/protocol';
-import { installManagedJre, JAVA_HOME_CONFIG, RequirementsData, resolveRequirements } from './util/requirements';
+import { languageServerCommand } from './lsp/server';
 import { showRuleDescription } from './rules/rulepanel';
 import { AllRulesTreeDataProvider, RuleNode } from './rules/rules';
+import { GitExtension } from './scm/git';
 import { initScm } from './scm/scm';
 import {
   ConnectionSettingsService,
   getSonarLintConfiguration,
   migrateConnectedModeSettings
 } from './settings/connectionsettings';
+import { Commands } from './util/commands';
+import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
-import { BindingService } from './connected/binding';
-import { AutoBindingService } from './connected/autobinding';
 
-declare let v8debug: object;
-const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -134,37 +133,6 @@ function isVerboseEnabled(): boolean {
   return currentConfig.get('output.showVerboseLogs', false);
 }
 
-function languageServerCommand(
-  context: VSCode.ExtensionContext,
-  requirements: RequirementsData,
-  port: number
-): { command: string; args: string[] } {
-  const serverJar = Path.resolve(context.extensionPath, 'server', 'sonarlint-ls.jar');
-  const javaExecutablePath = Path.resolve(requirements.javaHome + '/bin/java');
-
-  const params = [];
-  if (DEBUG) {
-    params.push('-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000');
-    params.push('-Dsonarlint.telemetry.disabled=true');
-  }
-  const vmargs = getSonarLintConfiguration().get('ls.vmargs', '');
-  parseVMargs(params, vmargs);
-  params.push('-jar', serverJar, `${port}`);
-  params.push('-analyzers');
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarxml.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarcfamily.jar'));
-  const secretsJar = Path.resolve(context.extensionPath, 'analyzers', 'sonarsecrets.jar');
-  if (FS.existsSync(secretsJar)) {
-    params.push('-extraAnalyzers');
-    params.push(secretsJar);
-  }
-  return { command: javaExecutablePath, args: params };
-}
 
 export function toUrl(filePath: string) {
   let pathName = Path.resolve(filePath).replace(/\\/g, '/');
@@ -772,27 +740,6 @@ function configKeyDeepEquals(key, oldConfig, newConfig) {
   // note: lazy implementation; see for something better: https://stackoverflow.com/a/10316616/641955
   // note: may not work well for objects (non-deterministic order of keys)
   return JSON.stringify(oldConfig.get(key)) === JSON.stringify(newConfig.get(key));
-}
-
-export function parseVMargs(params: string[], vmargsLine: string) {
-  if (!vmargsLine) {
-    return;
-  }
-  const vmargs = vmargsLine.match(/(?:[^\s"]+|"[^"]*")+/g);
-  if (vmargs === null) {
-    return;
-  }
-  vmargs.forEach(arg => {
-    //remove all standalone double quotes
-    arg = arg.replace(/(\\)?"/g, function ($0, $1) {
-      return $1 ? $0 : '';
-    });
-    //unescape all escaped double quotes
-    arg = arg.replace(/(\\)"/g, '"');
-    if (params.indexOf(arg) < 0) {
-      params.push(arg);
-    }
-  });
 }
 
 export function deactivate(): Thenable<void> {
