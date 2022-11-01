@@ -1,6 +1,7 @@
 ## 3.12
 
 * Update Python analyzer 3.18 -> [3.19](https://github.com/SonarSource/sonar-python/releases/tag/3.19.0.10254), 1 new rule
+* Update XML analyzer 2.5.0 -> [2.6.0](https://github.com/SonarSource/sonar-xml/releases/tag/2.6.0.3672) -> [2.6.1](https://github.com/SonarSource/sonar-xml/releases/tag/2.6.1.3686), updated dependencies, support OWASP Top 10 2021 metadata tags, read properties in disallowed dependencies rule
 
 ## 3.11
 
