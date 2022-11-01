@@ -1,3 +1,7 @@
+## 3.12
+
+* Update Python analyzer 3.18 -> [3.19](https://github.com/SonarSource/sonar-python/releases/tag/3.19.0.10254), 1 new rule
+
 ## 3.11
 
 * Simplify user token generation when configuring connected mode with SonarQube 9.7+
