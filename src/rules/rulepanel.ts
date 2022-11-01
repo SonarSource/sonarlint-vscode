@@ -53,8 +53,12 @@ function computeRuleDescPanelContent(
   const styleSrc = resolver.resolve('styles', 'rule.css');
   const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severity.toLowerCase()}.png`);
   const typeImgSrc = resolver.resolve('images', 'type', `${rule.type.toLowerCase()}.png`);
+  const infoImgSrc = resolver.resolve('images', 'info.png');
+
 
   const ruleParamsHtml = renderRuleParams(rule);
+
+  const taintBanner = renderTaintBanner(rule, infoImgSrc);
 
   return `<!doctype html><html lang="en">
     <head>
@@ -72,6 +76,7 @@ function computeRuleDescPanelContent(
     <img class="severity" alt="${rule.severity}" src="${severityImgSrc}" />&nbsp;
     ${clean(rule.severity)}
     </div>
+    ${taintBanner}
     <div class="rule-desc">${rule.htmlDescription}</div>
     ${ruleParamsHtml}
     </body></html>`;
@@ -79,6 +84,20 @@ function computeRuleDescPanelContent(
 
 function base64encode(file: string) {
   return FS.readFileSync(file).toString('base64');
+}
+
+function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string) {
+  if (!rule.isTaint) {
+    return '';
+  }
+  return `<div class="taint-banner-wrapper">
+            <p class="taint-banner"><span><img class="taint-info-icon" src=${infoImgSrc} alt="info"></span> 
+            This injection vulnerability was detected by the latest SonarQube or SonarCloud analysis.
+             SonarLint fetches and reports it in your local code to help you investigate it and fix it,
+              but cannot tell you whether you successfully fixed it. To verify your fix, please ensure
+              the code containing your fix is analyzed by SonarQube or SonarCloud.
+            </p>
+           </div>`;
 }
 
 function renderRuleParams(rule: ShowRuleDescriptionParams) {
