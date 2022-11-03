@@ -12,7 +12,7 @@ resources:
     - repository: commonTemplates
       type: git
       name: pipelines-yaml-templates
-      ref:  refs/tags/v1.0.17
+      ref:  refs/tags/v2.0.0
 
 stages:
 - template: stage-with-burgr-notifications.yml@commonTemplates
@@ -84,10 +84,10 @@ stages:
     burgrName: 'validate'
     burgrType: 'validate'
     stageName: 'validate'
-    stageDisplayName: Run tests, SonarQube analysis and WhiteSource scan
+    stageDisplayName: Run tests, SonarQube analysis and Mend scan
     jobs:
     - job: test
-      displayName: Run tests, SonarQube analysis and WhiteSource analysis
+      displayName: Run tests, SonarQube analysis and Mend analysis
       variables:
         npm_config_cache: $(Pipeline.Workspace)/.npm
       steps:
@@ -101,7 +101,7 @@ stages:
             with open('package.json') as packageJsonFile:
               packageJson = json.load(packageJsonFile)
               print("##vso[task.setvariable variable=packageVersion]" + packageJson['version'])
-              print("##vso[task.setvariable variable=WHITESOURCE_PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', ''))
+              print("##vso[task.setvariable variable=MEND_PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', ''))
       - task: Cache@2
         inputs:
           key: 'npm | "$(Agent.OS)" | its/package-lock.json'
@@ -170,10 +170,10 @@ stages:
       - task: SonarQubeAnalyze@4
         displayName: 'Run SonarQube analysis on Next'
 
-      - template: whitesource.yml@commonTemplates
+      - template: mend.yml@commonTemplates
         parameters:
           productName : 'SonarLint/VSCode'
-          releaseVersion: '$(WHITESOURCE_PROJECT_VERSION)'
+          releaseVersion: '$(MEND_PROJECT_VERSION)'
 
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
