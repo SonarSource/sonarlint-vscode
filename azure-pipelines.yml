@@ -173,7 +173,7 @@ stages:
       - template: mend.yml@commonTemplates
         parameters:
           productName : 'SonarLint/VSCode'
-          releaseVersion: '$(WHITESOURCE_PROJECT_VERSION)'
+          releaseVersion: '$(MEND_PROJECT_VERSION)'
 
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
