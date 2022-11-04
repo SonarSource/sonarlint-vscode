@@ -4,6 +4,7 @@
 * Update XML analyzer 2.5.0 -> [2.6.0](https://github.com/SonarSource/sonar-xml/releases/tag/2.6.0.3672) -> [2.6.1](https://github.com/SonarSource/sonar-xml/releases/tag/2.6.1.3686), updated dependencies, support OWASP Top 10 2021 metadata tags, read properties in disallowed dependencies rule
 * Update Java analyzer 7.13.0 -> [7.14.0](https://github.com/SonarSource/sonar-java/releases/tag/7.14.0.30229) -> [7.15.0](https://github.com/SonarSource/sonar-java/releases/tag/7.15.0.30507), FP fixes, bugfixes, quick fix suggestions improved
 * Update JS/TS analyzer 9.8.0 -> [9.9.0](https://github.com/SonarSource/SonarJS/releases/tag/9.9.0.19492) -> [9.10.0](https://github.com/SonarSource/SonarJS/releases/tag/9.10.0.19937), FP fixes, improvements, 2 AWS CDK rules
+* Update CFamily analyzer 6.37.0 -> [6.38.0](https://sonarsource.atlassian.net/browse/CPP-3591?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013853%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC) -> [6.39.0](https://sonarsource.atlassian.net/browse/CPP-3891?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013885%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), bug fixes and improvements
 
 ## 3.11
 
