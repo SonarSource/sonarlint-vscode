@@ -1,6 +1,6 @@
 ## 3.12
 
-* Update Python analyzer 3.18.0 -> [3.19.0](https://github.com/SonarSource/sonar-python/releases/tag/3.19.0.10254), 1 new rule
+* Update Python analyzer 3.18.0 -> [3.19.0](https://github.com/SonarSource/sonar-python/releases/tag/3.19.0.10254) -> [3.20.0](https://github.com/SonarSource/sonar-python/releases/tag/3.20.0.10345), 1 new rule, 4 new quick fixes, improved CDK analysis
 * Update XML analyzer 2.5.0 -> [2.6.0](https://github.com/SonarSource/sonar-xml/releases/tag/2.6.0.3672) -> [2.6.1](https://github.com/SonarSource/sonar-xml/releases/tag/2.6.1.3686), updated dependencies, support OWASP Top 10 2021 metadata tags, read properties in disallowed dependencies rule
 * Update Java analyzer 7.13.0 -> [7.14.0](https://github.com/SonarSource/sonar-java/releases/tag/7.14.0.30229) -> [7.15.0](https://github.com/SonarSource/sonar-java/releases/tag/7.15.0.30507), FP fixes, bugfixes, quick fix suggestions improved
 * Update JS/TS analyzer 9.8.0 -> [9.9.0](https://github.com/SonarSource/SonarJS/releases/tag/9.9.0.19492) -> [9.10.0](https://github.com/SonarSource/SonarJS/releases/tag/9.10.0.19937), FP fixes, improvements, 2 AWS CDK rules
