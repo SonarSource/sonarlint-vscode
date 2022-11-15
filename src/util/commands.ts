@@ -52,4 +52,6 @@ export namespace Commands {
   export const EDIT_PROJECT_BINDING = 'SonarLint.EditProjectBinding';
   export const REMOVE_PROJECT_BINDING = 'SonarLint.RemoveProjectBinding';
   export const AUTO_BIND_WORKSPACE_FOLDERS = 'SonarLint.AutoBindWorkspaceFolders';
+
+  export const SHOW_HOTSPOT_LOCATION = 'SonarLint.ShowHotspotLocation';
 }

@@ -34,3 +34,24 @@ export function code2ProtocolConverter(value: vscode.Uri) {
 export function protocol2CodeConverter(value: string) {
   return vscode.Uri.parse(value);
 }
+
+export function getFileNameFromFullPath(fullPath: string) {
+  // file:///Users/sophio.japharidze/Documents/Sonar/dmaap-datarouter/datarouter-prov/src/main/java/org/onap/dmaap/datarouter/authz/AuthorizationResponseSupplement.java
+  return fullPath.substring(fullPath.lastIndexOf('/') + 1);
+}
+
+export function getRelativePathFromFullPath(
+  fullPath: string,
+  workspaceFolder: vscode.WorkspaceFolder,
+  specifyWorkspaceFolderName: boolean
+) {
+  const fullUri = vscode.Uri.parse(fullPath);
+  const fileName = getFileNameFromFullPath(fullPath);
+  const workspaceFolderUri = workspaceFolder.uri.fsPath;
+  const relativePathWithFileName = fullUri.fsPath.replace(`${workspaceFolderUri}/`, '');
+  const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, '');
+  if(specifyWorkspaceFolderName){
+    return relativePathWithoutFileName ?  `${workspaceFolder.name} • ${relativePathWithoutFileName}` : workspaceFolder.name;
+  }
+  return relativePathWithoutFileName;
+}
