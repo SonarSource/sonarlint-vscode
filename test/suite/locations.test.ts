@@ -16,11 +16,10 @@ import { FileItem, FlowItem, IssueItem, LocationItem, SecondaryLocationsTree } f
 const sampleFolderLocation = '../../../test/samples/';
 
 function uriStringFor(...fragments: string[]) {
-  return vscode.Uri.file(path.join(__dirname, sampleFolderLocation, ...fragments)).toString()
+  return vscode.Uri.file(path.join(__dirname, sampleFolderLocation, ...fragments)).toString();
 }
 
 suite('locations', () => {
-
   teardown(async () => {
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
@@ -60,7 +59,13 @@ suite('locations', () => {
             }
           ]
         }
-      ]
+      ],
+      textRange: {
+        startLine: 1,
+        startLineOffset: 0,
+        endLine: 1,
+        endLineOffset: 9
+      }
     };
 
     await underTest.showAllLocations(issue);
@@ -157,7 +162,13 @@ suite('locations', () => {
             }
           ]
         }
-      ]
+      ],
+      textRange: {
+        startLine: 2,
+        startLineOffset: 2,
+        endLine: 2,
+        endLineOffset: 5
+      }
     };
 
     await underTest.showAllLocations(issue);
@@ -171,7 +182,7 @@ suite('locations', () => {
     const issueChildren = underTest.getChildren(rootNode);
     expect(issueChildren).to.have.lengthOf(2);
 
-    const [ flowNode1, flowNode2 ] = issueChildren as FlowItem[];
+    const [flowNode1, flowNode2] = issueChildren as FlowItem[];
     expect(flowNode1.label).to.equal('Flow 1');
     expect(flowNode2.label).to.equal('Flow 2');
 
@@ -217,7 +228,13 @@ suite('locations', () => {
             }
           ]
         }
-      ]
+      ],
+      textRange: {
+        startLine: 2,
+        startLineOffset: 2,
+        endLine: 2,
+        endLineOffset: 5
+      }
     };
 
     await underTest.showAllLocations(issue);
@@ -326,7 +343,13 @@ suite('locations', () => {
             }
           ]
         }
-      ]
+      ],
+      textRange: {
+        startLine: 2,
+        startLineOffset: 2,
+        endLine: 2,
+        endLineOffset: 12
+      }
     };
 
     await underTest.showAllLocations(issue);
@@ -342,7 +365,7 @@ suite('locations', () => {
 
     const fileChildren = underTest.getChildren(flowChildren[0]);
     expect(fileChildren).to.have.lengthOf(5);
-    const [ main1Node, notFoundNode, sample1Node, sample2Node, main2Node] = fileChildren as FileItem[];
+    const [main1Node, notFoundNode, sample1Node, sample2Node, main2Node] = fileChildren as FileItem[];
 
     expect(underTest.getChildren(main1Node)[0].label).to.equal('1: Follow the white rabbit');
     expect(underTest.getChildren(main1Node)[1].label).to.equal('2: Deeper');

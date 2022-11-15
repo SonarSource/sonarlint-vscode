@@ -48,6 +48,7 @@ import { Commands } from './util/commands';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
+import { AllHotspotsTreeDataProvider, HotspotNode } from './hotspot/hotspotsTreeViewProvider';
 
 let currentConfig: VSCode.WorkspaceConfiguration;
 const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
@@ -67,6 +68,7 @@ let secondaryLocationsTree: SecondaryLocationsTree;
 let issueLocationsView: VSCode.TreeView<LocationTreeItem>;
 let languageClient: SonarLintExtendedLanguageClient;
 let allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider;
+let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 
 export function logToSonarLintOutput(message) {
   if (sonarlintOutput) {
@@ -132,7 +134,6 @@ function logWithPrefix(data, prefix) {
 function isVerboseEnabled(): boolean {
   return currentConfig.get('output.showVerboseLogs', false);
 }
-
 
 export function toUrl(filePath: string) {
   let pathName = Path.resolve(filePath).replace(/\\/g, '/');
@@ -251,6 +252,8 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.window.onDidChangeActiveTextEditor(e => scm.updateReferenceBranchStatusItem(e));
   });
 
+  languageClient.start();
+
   const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() =>
     languageClient.onReady().then(() => languageClient.listAllRules())
   );
@@ -270,6 +273,12 @@ export function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')));
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_LOCATION, (hotspot: HotspotNode) =>
+      languageClient.showHotspotLocations(hotspot.key, hotspot.fileUri)
+    )
+  );
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_ALL_RULES, () => allRulesTreeDataProvider.filter(null))
@@ -376,8 +385,11 @@ export function activate(context: VSCode.ExtensionContext) {
     )
   );
 
-  context.subscriptions.push(VSCode.commands.registerCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS,
-    () => AutoBindingService.instance.autoBindWorkspace()));
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS, () =>
+      AutoBindingService.instance.autoBindWorkspace()
+    )
+  );
 
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
@@ -386,7 +398,12 @@ export function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  languageClient.start();
+  hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(languageClient, connectionSettingsService);
+
+  const allHotspotsView = VSCode.window.createTreeView('SonarLint.SecurityHotspots', {
+    treeDataProvider: hotspotsTreeDataProvider
+  });
+  context.subscriptions.push(allHotspotsView);
 
   context.subscriptions.push(onConfigurationChange());
 
@@ -452,8 +469,8 @@ async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionCon
   VSCode.window
     .showWarningMessage(
       'SonarLint detected some secrets in one of the open files.\n' +
-      'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
-      'Please refer to the Problems view for more information.',
+        'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
+        'Please refer to the Problems view for more information.',
       showProblemsViewActionTitle
     )
     .then(action => {
@@ -503,10 +520,13 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
   languageClient.onNotification(protocol.ShowHotspotNotification.type, showSecurityHotspot);
-  languageClient.onNotification(protocol.ShowTaintVulnerabilityNotification.type, showAllLocations);
+  languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
   languageClient.onNotification(protocol.SubmitTokenNotification.type, token => handleTokenReceivedNotification(token));
+  languageClient.onNotification(protocol.PublishHotspotsForFile.type, hotspotsPerFile =>
+    hotspotsTreeDataProvider.refresh(hotspotsPerFile)
+  );
 
   async function notifyMissingCompileCommands() {
     if ((await doNotAskAboutCompileCommandsFlag(context)) || remindMeLaterAboutCompileCommandsFlag) {
@@ -624,12 +644,18 @@ function isOpenInEditor(fileUri: string) {
 async function showAllLocations(issue: protocol.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);
   if (issue.creationDate) {
-    const createdAgo = DateTime.fromISO(issue.creationDate).toLocaleString(DateTime.DATETIME_MED);
-    issueLocationsView.message = `Analyzed ${createdAgo} on '${issue.connectionId}'`;
+    const createdAgo = issue.creationDate
+      ? DateTime.fromISO(issue.creationDate).toLocaleString(DateTime.DATETIME_MED)
+      : null;
+    issueLocationsView.message = createdAgo
+      ? `Analyzed ${createdAgo} on '${issue.connectionId}'`
+      : `Detected by SonarLint`;
   } else {
     issueLocationsView.message = null;
   }
-  issueLocationsView.reveal(secondaryLocationsTree.getChildren(null)[0]);
+  if (issue.flows.length > 0) {
+    issueLocationsView.reveal(secondaryLocationsTree.getChildren(null)[0]);
+  }
 }
 
 function clearLocations() {

@@ -12,6 +12,7 @@ import { logToSonarLintOutput } from '../extension';
 import { computeHotspotContextPanelContent } from '../hotspot/hotspotContextPanel';
 import { HotspotProbability, RemoteHotspot } from '../lsp/protocol';
 import { resolveExtensionFile } from '../util/util';
+import { HotspotNode } from './hotspotsTreeViewProvider';
 
 export const HOTSPOT_SOURCE = 'SonarQube Security Hotspot';
 
@@ -119,7 +120,6 @@ function createCodeAction(diag: vscode.Diagnostic, command: string, titlePrefix:
 }
 
 export const showHotspotDescription = () => {
-
   if (!hotspotDescriptionPanel) {
     hotspotDescriptionPanel = vscode.window.createWebviewPanel(
       'sonarlint.DiagContext',

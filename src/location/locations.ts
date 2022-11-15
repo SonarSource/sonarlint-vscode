@@ -9,7 +9,8 @@
 import * as vscode from 'vscode';
 import { Commands } from '../util/commands';
 import { Flow, Issue, Location, TextRange } from '../lsp/protocol';
-import { resolveExtensionFile } from '../util/util';
+import { formatIssueMessage, resolveExtensionFile } from '../util/util';
+import { HotspotNode } from '../hotspot/hotspotsTreeViewProvider';
 
 /**
  * Base decoration type for secondary locations.
@@ -40,31 +41,39 @@ const SELECTED_SECONDARY_LOCATION_DECORATION = vscode.window.createTextEditorDec
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
 
+const SINGLE_LOCATION_DECORATION = vscode.window.createTextEditorDecorationType({
+  backgroundColor: new vscode.ThemeColor('sonarlint.locations.background'),
+  textDecoration: 'wavy var(--vscode-inputValidation-warningBorder) 0.25px underline',
+  rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
+});
 
 export class IssueItem extends vscode.TreeItem {
   readonly children: FlowItem[] | LocationItem[];
 
-  constructor(issue: Issue) {
-    const highlightOnly = issue.flows.every(f => f.locations.every(l => !l.message || l.message === ''));
-    const collapsibleState = highlightOnly ?
-      vscode.TreeItemCollapsibleState.None :
-      vscode.TreeItemCollapsibleState.Expanded;
-    super(issue.message, collapsibleState);
-    this.description = `(${issue.ruleKey})`;
-    const severityIcon = resolveExtensionFile('images', 'severity', `${issue.severity.toLowerCase()}.png`);
-    this.iconPath = {
-      light: severityIcon,
-      dark: severityIcon
-    };
+  constructor(issueOrHotspot: Issue | HotspotNode) {
+    const highlightOnly = issueOrHotspot.flows.every(f => f.locations.every(l => !l.message || l.message === ''));
+    const collapsibleState = highlightOnly
+      ? vscode.TreeItemCollapsibleState.None
+      : vscode.TreeItemCollapsibleState.Expanded;
+    super(issueOrHotspot.message, collapsibleState);
+    this.description = `(${issueOrHotspot.ruleKey})`;
+    const severityIcon = resolveIconPath(issueOrHotspot);
+    this.iconPath =
+      severityIcon instanceof vscode.Uri
+        ? {
+            light: severityIcon,
+            dark: severityIcon
+          }
+        : severityIcon;
     if (highlightOnly) {
       // "Highlight only" locations, no node appended
       this.children = [];
-    } else if (issue.flows.every(f => f.locations.length === 1)) {
+    } else if (issueOrHotspot.flows.every(f => f.locations.length === 1)) {
       // All flows have one location (e.g duplication): flatten to location nodes
-      this.children = issue.flows.map((f, i) => new LocationItem(f.locations[0], i + 1, this));
+      this.children = issueOrHotspot.flows.map((f, i) => new LocationItem(f.locations[0], i + 1, this));
     } else {
       // General case
-      this.children = issue.flows.map((f, i) => new FlowItem(f, i, this));
+      this.children = issueOrHotspot.flows.map((f, i) => new FlowItem(f, i, this));
     }
   }
 }
@@ -74,10 +83,11 @@ export class FlowItem extends vscode.TreeItem {
   readonly children: (LocationItem | FileItem)[];
 
   constructor(flow: Flow, index: number, parent: LocationTreeItem) {
-    const collapsibleState = index === 0 ?
-      // Only first flow is expanded by default
-      vscode.TreeItemCollapsibleState.Expanded :
-      vscode.TreeItemCollapsibleState.Collapsed;
+    const collapsibleState =
+      index === 0
+        ? // Only first flow is expanded by default
+          vscode.TreeItemCollapsibleState.Expanded
+        : vscode.TreeItemCollapsibleState.Collapsed;
     super(`Flow ${index + 1}`, collapsibleState);
 
     const flowLocations = Array.from(flow.locations);
@@ -90,7 +100,7 @@ export class FlowItem extends vscode.TreeItem {
       let currentPath = null;
       let fileLocations = [];
       this.children = [];
-      while(locationIndex < flowLocations.length) {
+      while (locationIndex < flowLocations.length) {
         currentUri = flowLocations[locationIndex].uri;
         currentPath = flowLocations[locationIndex].filePath;
         fileLocations.push(flowLocations[locationIndex]);
@@ -113,7 +123,7 @@ export class FileItem extends vscode.TreeItem {
   readonly children: LocationItem[];
   readonly parent: FlowItem;
 
-  constructor(uri: string|null, filePath: string, lastIndex: number, locations: Location[], parent: FlowItem) {
+  constructor(uri: string | null, filePath: string, lastIndex: number, locations: Location[], parent: FlowItem) {
     const label = uri ? uri.substring(uri.lastIndexOf('/') + 1) : filePath.substring(filePath.lastIndexOf('/') + 1);
     super(label, vscode.TreeItemCollapsibleState.Expanded);
     this.children = locations.map((l, i) => new LocationItem(l, lastIndex + 1 - locations.length + i, this));
@@ -144,7 +154,7 @@ export class LocationItem extends vscode.TreeItem {
         this.command = {
           title: 'Navigate',
           command: Commands.NAVIGATE_TO_LOCATION,
-          arguments: [ this ]
+          arguments: [this]
         };
       } else {
         this.description = '(unreachable in local code)';
@@ -180,12 +190,22 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
       const uri = issue.fileUri;
       const editor = await vscode.window.showTextDocument(vscode.Uri.parse(uri));
 
-      const locations = issue.flows
-        .map(f => f.locations)
-        .reduce((acc, cur) => acc.concat(cur), []);
-      editor.setDecorations(SECONDARY_LOCATION_DECORATIONS,
-        locations.map((l, i) => buildDecoration(new LocationItem(l, i + 1, this.rootItem), editor.document))
-      );
+      const locations = issue.flows.map(f => f.locations).reduce((acc, cur) => acc.concat(cur), []);
+      if (locations.length > 0) {
+        editor.setDecorations(
+          SECONDARY_LOCATION_DECORATIONS,
+          locations.map((l, i) => buildDecoration(new LocationItem(l, i + 1, this.rootItem), editor.document))
+        );
+      } else {
+        const range = vscodeRange(issue.textRange);
+        if (isValidRange(range, editor.document)) {
+          editor.selection = new vscode.Selection(range.start, range.end);
+          editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+          editor.setDecorations(SINGLE_LOCATION_DECORATION, [
+            { range, hoverMessage: formatIssueMessage(issue.message, issue.ruleKey) }
+          ]);
+        }
+      }
     } else if (this.rootItem.children[0] instanceof LocationItem) {
       // Flattened locations: take the first one
       navigateToLocation(this.rootItem.children[0]);
@@ -201,12 +221,11 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
   hideLocations() {
     this.rootItem = null;
     this.notifyRootChanged();
-    vscode.window.visibleTextEditors.forEach(
-      e => {
-        e.setDecorations(SECONDARY_LOCATION_DECORATIONS, []);
-        e.setDecorations(SELECTED_SECONDARY_LOCATION_DECORATION, []);
-      }
-    );
+    vscode.window.visibleTextEditors.forEach(e => {
+      e.setDecorations(SECONDARY_LOCATION_DECORATIONS, []);
+      e.setDecorations(SELECTED_SECONDARY_LOCATION_DECORATION, []);
+      e.setDecorations(SINGLE_LOCATION_DECORATION, []);
+    });
   }
 
   private notifyRootChanged() {
@@ -219,8 +238,8 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
 
   getChildren(element?: LocationTreeItem): vscode.ProviderResult<LocationTreeItem[]> {
     if (!element) {
-      return [ this.rootItem ];
-    } else if(element instanceof IssueItem) {
+      return [this.rootItem];
+    } else if (element instanceof IssueItem) {
       return element.children;
     } else if (element instanceof FlowItem) {
       return element.children;
@@ -241,10 +260,11 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
 }
 
 export async function navigateToLocation(item: LocationItem) {
-  const { uri, textRange } = item.location;
+  const textRange = item.location.textRange;
+  const uri = item.location.uri ? item.location.uri : item.location.filePath;
   const editor = await vscode.window.showTextDocument(vscode.Uri.parse(uri));
   const range = vscodeRange(textRange);
-  if(isValidRange(range, editor.document)) {
+  if (isValidRange(range, editor.document)) {
     editor.selection = new vscode.Selection(range.start, range.end);
     editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
   }
@@ -253,16 +273,17 @@ export async function navigateToLocation(item: LocationItem) {
 }
 
 function buildMainDecorations(item: LocationItem, document: vscode.TextDocument) {
-  return [ buildDecoration(item, document) ].filter(d => d);
+  return [buildDecoration(item, document)].filter(d => d);
 }
 
 function buildSiblingDecorations(item: LocationItem, document: vscode.TextDocument) {
-  const locationsInSameFile = item.parent instanceof FileItem ?
-    (item.parent.parent.children as FileItem[])
-      .filter(f => hasSameNullSafeResourceUri(f, item.parent as FileItem))
-      .map(f => f.children)
-      .reduce((acc, cur) => acc.concat(cur), []) :
-    (item.parent.children as LocationItem[]);
+  const locationsInSameFile =
+    item.parent instanceof FileItem
+      ? (item.parent.parent.children as FileItem[])
+          .filter(f => hasSameNullSafeResourceUri(f, item.parent as FileItem))
+          .map(f => f.children)
+          .reduce((acc, cur) => acc.concat(cur), [])
+      : (item.parent.children as LocationItem[]);
   return locationsInSameFile
     .filter(i => i !== item)
     .filter(i => i.location.textRange)
@@ -271,8 +292,10 @@ function buildSiblingDecorations(item: LocationItem, document: vscode.TextDocume
 }
 
 function hasSameNullSafeResourceUri(f1: FileItem, f2: FileItem) {
-  return f1.resourceUri === null && f2.resourceUri === null
-    || f1.resourceUri !== null && f2.resourceUri !== null && f1.resourceUri.toString() === f2.resourceUri.toString();
+  return (
+    (f1.resourceUri === null && f2.resourceUri === null) ||
+    (f1.resourceUri !== null && f2.resourceUri !== null && f1.resourceUri.toString() === f2.resourceUri.toString())
+  );
 }
 
 function buildDecoration(item: LocationItem, document: vscode.TextDocument) {
@@ -281,11 +304,11 @@ function buildDecoration(item: LocationItem, document: vscode.TextDocument) {
     new vscode.Position(location.textRange.startLine - 1, location.textRange.startLineOffset),
     new vscode.Position(location.textRange.endLine - 1, location.textRange.endLineOffset)
   );
-  if(!isValidRange(range, document)) {
+  if (!isValidRange(range, document)) {
     // Range is not exactly matched in local code
     return null;
   }
-  return ({
+  return {
     range,
     hoverMessage: location.message,
     renderOptions: {
@@ -294,7 +317,7 @@ function buildDecoration(item: LocationItem, document: vscode.TextDocument) {
         contentText: `\u2000${item.index}\u2000`
       }
     }
-  });
+  };
 }
 
 function vscodeRange(textRange: TextRange) {
@@ -306,4 +329,12 @@ function vscodeRange(textRange: TextRange) {
 function isValidRange(textRange: vscode.Range, document: vscode.TextDocument) {
   const validatedRange = document.validateRange(textRange);
   return textRange.isEqual(validatedRange);
+}
+
+function resolveIconPath(issueOrHotspot) {
+  if (issueOrHotspot.severity) {
+    return resolveExtensionFile('images', 'severity', `${issueOrHotspot.severity.toLowerCase()}.png`);
+  } else if (issueOrHotspot.vulnerabilityProbability != undefined) {
+    return issueOrHotspot.iconPath;
+  }
 }
