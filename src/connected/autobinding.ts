@@ -123,7 +123,10 @@ export class AutoBindingService {
       sqConnections
     );
     const connectionToBestHits = getBestHitsForConnections(connectionToServerProjects, unboundFolder);
-    this.promptToAutoBind(connectionToBestHits, unboundFolder);
+    if (connectionToBestHits.size > 0) {
+      // We don't want to show notification if it is not actionable
+      this.promptToAutoBind(connectionToBestHits, unboundFolder);
+    }
   }
 
   async autoDetectAnalysisSettings(unboundFolder: VSCode.WorkspaceFolder) {
