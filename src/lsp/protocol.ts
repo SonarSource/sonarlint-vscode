@@ -138,10 +138,11 @@ export interface Issue {
   connectionId?: string;
   creationDate?: string;
   flows: Flow[];
+  textRange: TextRange;
 }
 
-export namespace ShowTaintVulnerabilityNotification {
-  export const type = new lsp.NotificationType<Issue>('sonarlint/showTaintVulnerability');
+export namespace ShowIssueOrHotspotNotification {
+  export const type = new lsp.NotificationType<Issue>('sonarlint/showIssueOrHotspot');
 }
 
 export namespace GetBranchNameForFolderRequest {
@@ -180,8 +181,9 @@ export namespace ReportConnectionCheckResult {
 }
 
 export namespace CheckConnection {
-  export const type =
-    new lsp.RequestType<ConnectionCheckParams, ConnectionCheckResult, void>('sonarlint/checkConnection');
+  export const type = new lsp.RequestType<ConnectionCheckParams, ConnectionCheckResult, void>(
+    'sonarlint/checkConnection'
+  );
 }
 
 //#endregion
@@ -247,9 +249,9 @@ export interface RemoteProject {
 }
 
 export namespace GetRemoteProjectsForConnection {
-  export const type =
-    new lsp.RequestType<GetRemoteProjectsForConnectionParams,
-          Map<string, string>, void>('sonarlint/getRemoteProjectsForConnection');
+  export const type = new lsp.RequestType<GetRemoteProjectsForConnectionParams, Map<string, string>, void>(
+    'sonarlint/getRemoteProjectsForConnection'
+  );
 }
 
 interface GetRemoteProjectNamesParams {
@@ -276,6 +278,45 @@ export namespace GetServerPathForTokenGeneration {
   export const type = new lsp.RequestType<ServerPathParams, ServerPathResponse, null>(
     'sonarlint/getServerPathForTokenGeneration'
   );
+}
+
+export interface Range {
+  line: number;
+  character: number;
+}
+
+export interface DiagnosticRange {
+  start: Range;
+  end: Range;
+}
+
+export interface Diagnostic {
+  range: DiagnosticRange;
+  severity: number;
+  code: string; // ruleKey
+  source: string;
+  message: string;
+  data: string; // issueKey
+  creationDate?: string;
+  flows: Flow[];
+}
+
+export interface PublishHotspotsForFileParams {
+  uri: string;
+  diagnostics: Diagnostic[];
+}
+
+export namespace PublishHotspotsForFile {
+  export const type = new lsp.NotificationType<PublishHotspotsForFileParams>('sonarlint/publishSecurityHotspots');
+}
+
+export interface ShowHotspotLocationsParams {
+  hotspotKey: string;
+  fileUri: string;
+}
+
+export namespace ShowHotspotLocations {
+  export const type = new lsp.RequestType<ShowHotspotLocationsParams, null, null>('sonarlint/showHotspotLocations');
 }
 
 //#endregion

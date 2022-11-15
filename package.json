@@ -408,7 +408,7 @@
       {
         "command": "SonarLint.ClearLocations",
         "title": "Clear",
-        "enablement": "view == SonarLint.IssueLocations"
+        "enablement": "view == SonarLint.IssueLocations || view == SonarLint.SecurityHotspots"
       },
       {
         "command": "SonarLint.ConnectToSonarQube",
@@ -463,6 +463,18 @@
         "category": "SonarLint",
         "icon": "$(trash)",
         "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.ShowHotspotDescription",
+        "title": "Show Rule Description",
+        "category": "SonarLint",
+        "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
+      },
+      {
+        "command": "SonarLint.OpenOnServer",
+        "title": "Review on Server",
+        "category": "SonarLint",
+        "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
       }
     ],
     "viewsContainers": {
@@ -489,6 +501,10 @@
         {
           "id": "SonarLint.ConnectedMode",
           "name": "SonarLint Connected Mode"
+        },
+        {
+          "id": "SonarLint.SecurityHotspots",
+          "name": "SonarLint Security Hotspots"
         }
       ]
     },
@@ -499,7 +515,11 @@
       },
       {
         "view": "SonarLint.ConnectedMode",
-        "contents": "No SonarQube/SonarCloud connections found [learn more](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode#connected-mode).\n[Add SonarQube Connection](command:SonarLint.ConnectToSonarQube)\n[Add SonarCloud Connection](command:SonarLint.ConnectToSonarCloud)"
+        "contents": "No SonarQube/SonarCloud connections found. [Learn more](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode#connected-mode).\n[Add SonarQube Connection](command:SonarLint.ConnectToSonarQube)\n[Add SonarCloud Connection](command:SonarLint.ConnectToSonarCloud)"
+      },
+      {
+        "view": "SonarLint.SecurityHotspots",
+        "contents": "[Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) detected by SonarLint and SonarQube will be visible here if you have set up SonarLint Connected Mode with SonarQube v9.7 or higher. [Learn more](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode#connected-mode)."
       }
     ],
     "menus": {
@@ -600,6 +620,21 @@
           "title": "Remove",
           "when": "view == SonarLint.ConnectedMode && viewItem == workspaceFolder",
           "group": "inline"
+        },
+        {
+          "command": "SonarLint.ShowHotspotDescription",
+          "title": "Show Rule Description",
+          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
+        },
+        {
+          "command": "SonarLint.OpenOnServer",
+          "title": "Review on Server",
+          "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+        },
+        {
+          "command": "SonarLint.ClearLocations",
+          "title": "Clear Locations",
+          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
         }
       ]
     },
