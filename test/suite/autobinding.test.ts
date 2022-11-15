@@ -22,6 +22,7 @@ import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '.
 import { TextEncoder } from 'util';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
+const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
 const TEST_PROJECT_KEY = 'org.sonarsource.sonarlint.vscode:test-project';
@@ -188,6 +189,30 @@ suite('Auto Binding Test Suite', () => {
       expect(organization).to.equal(TEST_ORGANISATION);
 
       await VSCode.workspace.fs.delete(fileUri);
+    });
+
+    test('Do not propose binding when there are no connections',async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      await VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY)
+      .update(CONNECTED_MODE_SETTINGS_SONARQUBE, null, VSCode.ConfigurationTarget.Global);
+
+      await VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY)
+      .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, null, VSCode.ConfigurationTarget.Global);
+
+      const bindingBefore = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(bindingBefore).to.be.empty;
+
+      underTest.checkConditionsAndAttemptAutobinding();
+
+      const bindingAfter = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(bindingAfter).to.be.empty;
     });
   });
 });
