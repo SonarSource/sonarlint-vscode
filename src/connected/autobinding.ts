@@ -138,11 +138,11 @@ export class AutoBindingService {
       if (!(await this.matchingRemoteProjectExists(projectKey, existingConnection))) {
         return false;
       }
-      const commonMessage = `Do you want to bind folder ${unboundFolder.name} to project ${projectKey}`;
+      const commonMessage = `Do you want to bind folder '${unboundFolder.name}' to project '${projectKey}'`;
       const message = organization
-        ? `${commonMessage} of SonarCloud organization ${organization}?
+        ? `${commonMessage} of SonarCloud organization '${organization}'?
         [Learn More](${LEARN_MORE_DOCS_LINK})`
-        : `${commonMessage} of SonarQube server ${serverUrl}?
+        : `${commonMessage} of SonarQube server '${serverUrl}'?
         [Learn More](${LEARN_MORE_DOCS_LINK})`;
 
       const result = await VSCode.window.showInformationMessage(
@@ -331,11 +331,11 @@ export class AutoBindingService {
     const serverUrlOrOrganizationKey = getServerUrlOrOrganizationKey(connection);
     const serverType = getServerType(connection);
 
-    const commonMessage = `Do you want to bind folder ${unboundFolder.name} to project ${bestHit.projectKey}`;
+    const commonMessage = `Do you want to bind folder '${unboundFolder.name}' to project '${bestHit.projectKey}'`;
     const message =
       serverType === 'SonarQube'
-        ? `${commonMessage} of SonarQube server ${serverUrlOrOrganizationKey}?`
-        : `${commonMessage} of SonarCloud organization ${serverUrlOrOrganizationKey}?`;
+        ? `${commonMessage} of SonarQube server '${serverUrlOrOrganizationKey}'?`
+        : `${commonMessage} of SonarCloud organization '${serverUrlOrOrganizationKey}'?`;
 
     const result = await VSCode.window.showInformationMessage(
       `${message}
