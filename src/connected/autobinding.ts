@@ -51,7 +51,7 @@ export class AutoBindingService {
   }
 
   async autoBindWorkspace() {
-    if (VSCode.workspace.workspaceFolders) {
+    if (VSCode.workspace.workspaceFolders && this.isConnectionConfigured()) {
       const unboundFolders = VSCode.workspace.workspaceFolders.filter(
         workspaceFolder => !this.bindingService.isBound(workspaceFolder)
       );
@@ -61,6 +61,11 @@ export class AutoBindingService {
         VSCode.window.showInformationMessage(`All folders in this workspace are already bound
          to SonarQube or SonarCloud projects`);
       }
+    } else if (!this.isConnectionConfigured()) {
+      VSCode.window
+        .showWarningMessage(
+          `"Bind all workspace folders to SonarQube or SonarCloud"
+      can only be invoked if a SonarQube or SonarCloud connection exists`);
     } else {
       VSCode.window.showWarningMessage(`"Bind all workspace folders to SonarQube or SonarCloud"
       can only be invoked on an open workspace`);
@@ -364,9 +369,7 @@ export class AutoBindingService {
     }
   }
 
-  private async promptToAutoBindMultiChoice(
-    unboundFolder: VSCode.WorkspaceFolder
-  ) {
+  private async promptToAutoBindMultiChoice(unboundFolder: VSCode.WorkspaceFolder) {
     const result = await VSCode.window.showInformationMessage(
       `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
       Do you want to configure binding?
