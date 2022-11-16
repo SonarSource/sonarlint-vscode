@@ -470,15 +470,26 @@
         "enablement": "view == SonarLint.ConnectedMode"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "icon": "images/sonarlint.svg",
+          "id": "SonarLint",
+          "title": "SonarLint"
+        }
+      ]
+    },
     "views": {
       "explorer": [
         {
-          "id": "SonarLint.AllRules",
-          "name": "SonarLint Rules"
-        },
-        {
           "id": "SonarLint.IssueLocations",
           "name": "SonarLint Issue Locations"
+        }
+      ],
+      "SonarLint": [
+        {
+          "id": "SonarLint.AllRules",
+          "name": "SonarLint Rules"
         },
         {
           "id": "SonarLint.ConnectedMode",
