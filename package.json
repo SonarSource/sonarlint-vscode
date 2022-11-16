@@ -545,6 +545,7 @@
         },
         {
           "command": "SonarLint.UpdateAllBindings",
+          "when": "view == SonarLint.ConnectedMode",
           "group": "navigation"
         }
       ],
