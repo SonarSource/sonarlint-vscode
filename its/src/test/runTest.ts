@@ -66,7 +66,7 @@ async function main() {
     await runTestSuite('./cfamilySuite', 'workspace-cfamily.code-workspace');
 
     ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
-      cp.spawnSync(cliPath, ['--install-extension', requiredExtensionId], {
+      cp.spawnSync(cliPath, ['--install-extension', requiredExtensionId, '--verbose'], {
         encoding: 'utf-8',
         stdio: 'inherit'
       });
