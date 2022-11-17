@@ -65,13 +65,15 @@ async function main() {
     await runTestSuite('./pythonSuite', 'workspace-python.code-workspace');
     await runTestSuite('./cfamilySuite', 'workspace-cfamily.code-workspace');
 
-    ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
-      cp.spawnSync(cliPath, ['--install-extension', requiredExtensionId], {
-        encoding: 'utf-8',
-        stdio: 'inherit'
+    if (vscodeVersion !== 'insiders') {
+      ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
+        cp.spawnSync(cliPath, ['--install-extension', requiredExtensionId], {
+          encoding: 'utf-8',
+          stdio: 'inherit'
+        });
       });
-    });
-    await runTestSuite('./javaSuite', 'workspace-java.code-workspace');
+      await runTestSuite('./javaSuite', 'workspace-java.code-workspace');
+    }
 
     if (testErrors.length > 0) {
       throw new Error('At least one test suite failed, please check logs above for actual failure.');
