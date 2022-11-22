@@ -1,3 +1,9 @@
+## 3.13
+
+* Introduce dedicated "SonarLint" view container
+* Fix usability issues with automatic project binding
+* Update JS/TS/CSS analyzer 9.10 -> [9.11.0](https://github.com/SonarSource/SonarJS/releases/tag/9.11.0.20161), enable support for CSS, add typed rules for JavaScript, support TypeScript 4.9, improve performance and user experience about `tsconfig.json` files
+
 ## 3.12
 
 * Display all Taint Vulnerabilities for bound projects in Connected Mode, UX improvements
