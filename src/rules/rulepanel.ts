@@ -59,6 +59,7 @@ function computeRuleDescPanelContent(
   const ruleParamsHtml = renderRuleParams(rule);
 
   const taintBanner = renderTaintBanner(rule, infoImgSrc);
+  const hotspotBanner = renderHotspotBanner(rule, infoImgSrc);
 
   return `<!doctype html><html lang="en">
     <head>
@@ -77,6 +78,7 @@ function computeRuleDescPanelContent(
     ${clean(rule.severity)}
     </div>
     ${taintBanner}
+    ${hotspotBanner}
     <div class="rule-desc">${rule.htmlDescription}</div>
     ${ruleParamsHtml}
     </body></html>`;
@@ -96,6 +98,19 @@ function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string) {
              SonarLint fetches and reports it in your local code to help you investigate it and fix it,
               but cannot tell you whether you successfully fixed it. To verify your fix, please ensure
               the code containing your fix is analyzed by SonarQube or SonarCloud.
+            </p>
+           </div>`;
+}
+
+function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string) {
+  if (rule.type !== 'SECURITY_HOTSPOT') {
+    return '';
+  }
+  return `<div class="taint-banner-wrapper">
+            <p class="taint-banner"><span><img class="taint-info-icon" src=${infoImgSrc} alt="info"></span> 
+            A security hotspot highlights a security-sensitive piece of code that the developer <b>needs to review</b>.
+            Upon review, you'll either find there is no threat or you need to apply a fix to secure the code.
+            In order to set review output for a hotspot, please right-click on the hotspot and select the 'Review on Server' option.
             </p>
            </div>`;
 }

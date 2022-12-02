@@ -471,10 +471,16 @@
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
       },
       {
-        "command": "SonarLint.OpenOnServer",
+        "command": "SonarLint.OpenHotspotOnServer",
         "title": "Review on Server",
         "category": "SonarLint",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+      },
+      {
+        "command": "SonarLint.ShowHotspotRuleDescription",
+        "title": "Show Rule Description",
+        "category": "SonarLint",
+        "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
       }
     ],
     "viewsContainers": {
@@ -622,12 +628,12 @@
           "group": "inline"
         },
         {
-          "command": "SonarLint.ShowHotspotDescription",
+          "command": "SonarLint.ShowHotspotRuleDescription",
           "title": "Show Rule Description",
           "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
         },
         {
-          "command": "SonarLint.OpenOnServer",
+          "command": "SonarLint.OpenHotspotOnServer",
           "title": "Review on Server",
           "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
         },
@@ -684,7 +690,16 @@
           "highContrast": "#b4131f"
         }
       }
-    ]
+    ],
+    "icons": {
+      "security-hotspot": {
+        "description": "Security Hotspot",
+        "default": {
+          "fontPath": "icons/sonarlint.woff",
+          "fontCharacter": "H"
+        }
+      }
+    }
   },
   "main": "./dist/extension",
   "files": [
@@ -722,7 +737,7 @@
     "@types/luxon": "2.0.9",
     "@types/mocha": "10.0.0",
     "@types/node": "^10.17.17",
-    "@types/vscode": "^1.41.0",
+    "@types/vscode": "^1.73.1",
     "chai": "^4.2.0",
     "crypto": "^0.0.3",
     "dateformat": "^2.0.0",
@@ -753,7 +768,7 @@
     "stream": "^0.0.2",
     "through2": "^2.0.5",
     "ts-loader": "9.4.1",
-    "typescript": "^3.8.3",
+    "typescript": "^4.9.3",
     "vinyl": "^2.2.1",
     "vsce": "2.15.0",
     "vscode-test": "^1.3.0",

@@ -14,6 +14,17 @@ export namespace ShowRuleDescriptionNotification {
   export const type = new lsp.NotificationType<ShowRuleDescriptionParams>('sonarlint/showRuleDescription');
 }
 
+export namespace ShowHotspotRuleDescriptionNotification {
+  export const type = new lsp.NotificationType<ShowHotspotRuleDescriptionNotificationParams>(
+    'sonarlint/showHotspotRuleDescription'
+  );
+}
+
+export interface ShowHotspotRuleDescriptionNotificationParams {
+  ruleKey: string;
+  fileUri: string;
+}
+
 export interface ShowRuleDescriptionParams {
   key: string;
   name: string;
@@ -290,13 +301,7 @@ export interface DiagnosticRange {
   end: Range;
 }
 
-export interface Diagnostic {
-  range: DiagnosticRange;
-  severity: number;
-  code: string; // ruleKey
-  source: string;
-  message: string;
-  data: string; // issueKey
+export interface Diagnostic extends lsp.Diagnostic {
   creationDate?: string;
   flows: Flow[];
 }
@@ -317,6 +322,15 @@ export interface ShowHotspotLocationsParams {
 
 export namespace ShowHotspotLocations {
   export const type = new lsp.RequestType<ShowHotspotLocationsParams, null, null>('sonarlint/showHotspotLocations');
+}
+
+export interface OpenHotspotParams {
+  hotspotId: string;
+  fileUri: string;
+}
+
+export namespace OpenHotspotOnServer {
+  export const type = new lsp.NotificationType<OpenHotspotParams>('sonarlint/openHotspotInBrowser');
 }
 
 //#endregion
