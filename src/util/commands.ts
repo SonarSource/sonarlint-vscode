@@ -54,4 +54,6 @@ export namespace Commands {
   export const AUTO_BIND_WORKSPACE_FOLDERS = 'SonarLint.AutoBindWorkspaceFolders';
 
   export const SHOW_HOTSPOT_LOCATION = 'SonarLint.ShowHotspotLocation';
+  export const SHOW_HOTSPOT_RULE_DESCRIPTION = 'SonarLint.ShowHotspotRuleDescription';
+  export const OPEN_HOTSPOT_ON_SERVER = 'SonarLint.OpenHotspotOnServer';
 }

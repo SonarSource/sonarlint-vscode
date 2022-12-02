@@ -36,7 +36,6 @@ export function protocol2CodeConverter(value: string) {
 }
 
 export function getFileNameFromFullPath(fullPath: string) {
-  // file:///Users/sophio.japharidze/Documents/Sonar/dmaap-datarouter/datarouter-prov/src/main/java/org/onap/dmaap/datarouter/authz/AuthorizationResponseSupplement.java
   return fullPath.substring(fullPath.lastIndexOf('/') + 1);
 }
 
@@ -50,8 +49,13 @@ export function getRelativePathFromFullPath(
   const workspaceFolderUri = workspaceFolder.uri.fsPath;
   const relativePathWithFileName = fullUri.fsPath.replace(`${workspaceFolderUri}/`, '');
   const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, '');
-  if(specifyWorkspaceFolderName){
-    return relativePathWithoutFileName ?  `${workspaceFolder.name} • ${relativePathWithoutFileName}` : workspaceFolder.name;
+  if (specifyWorkspaceFolderName) {
+    return relativePathWithoutFileName
+      ? `${workspaceFolder.name} • ${relativePathWithoutFileName}`
+      : workspaceFolder.name;
+  }
+  if (relativePathWithFileName.endsWith('/')) {
+    return relativePathWithoutFileName.substring(0, relativePathWithFileName.length - 2);
   }
   return relativePathWithoutFileName;
 }
