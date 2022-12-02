@@ -12,7 +12,6 @@ import { logToSonarLintOutput } from '../extension';
 import { computeHotspotContextPanelContent } from '../hotspot/hotspotContextPanel';
 import { HotspotProbability, RemoteHotspot } from '../lsp/protocol';
 import { resolveExtensionFile } from '../util/util';
-import { HotspotNode } from './hotspotsTreeViewProvider';
 
 export const HOTSPOT_SOURCE = 'SonarQube Security Hotspot';
 
@@ -24,18 +23,22 @@ let hotspotDescriptionPanel: vscode.WebviewPanel;
 export const showSecurityHotspot = async (hotspot: RemoteHotspot) => {
   const foundUris = await vscode.workspace.findFiles(`**/${hotspot.filePath}`);
   if (foundUris.length === 0) {
-    vscode.window.showErrorMessage(`Could not find file '${hotspot.filePath}' in the current workspace.
+    vscode.window
+      .showErrorMessage(
+        `Could not find file '${hotspot.filePath}' in the current workspace.
 
 Please make sure that the right folder is open and bound to the right project on the server,
- and that the file has not been removed or renamed.`, 'Show Documentation')
-  .then(action => {
-      if (action === 'Show Documentation') {
-        vscode.commands.executeCommand(
-          Commands.OPEN_BROWSER,
-          vscode.Uri.parse('https://docs.sonarqube.org/latest/user-guide/security-hotspots/')
-        );
-      }
-    });
+ and that the file has not been removed or renamed.`,
+        'Show Documentation'
+      )
+      .then(action => {
+        if (action === 'Show Documentation') {
+          vscode.commands.executeCommand(
+            Commands.OPEN_BROWSER,
+            vscode.Uri.parse('https://docs.sonarqube.org/latest/user-guide/security-hotspots/')
+          );
+        }
+      });
   } else {
     activeHotspot = hotspot;
     const documentUri = foundUris[0];
@@ -75,7 +78,7 @@ function createHotspotDiagnostic(hotspot: RemoteHotspot) {
 }
 
 export function diagnosticSeverity(hotspot: RemoteHotspot) {
-  switch(hotspot.rule.vulnerabilityProbability) {
+  switch (hotspot.rule.vulnerabilityProbability) {
     case HotspotProbability.High:
       return vscode.DiagnosticSeverity.Error;
     case HotspotProbability.Low:
@@ -86,7 +89,6 @@ export function diagnosticSeverity(hotspot: RemoteHotspot) {
 }
 
 export class HotspotsCodeActionProvider implements vscode.CodeActionProvider {
-
   provideCodeActions(
     document: vscode.TextDocument,
     range: vscode.Range,
@@ -97,12 +99,13 @@ export class HotspotsCodeActionProvider implements vscode.CodeActionProvider {
       return [];
     }
 
-    return hotspotsCollection.get(document.uri)
+    return hotspotsCollection
+      .get(document.uri)
       .filter(d => d.range.intersection(range))
-      .map(it => ([
+      .map(it => [
         createCodeAction(it, Commands.HIDE_HOTSPOT, `Hide Security Hotspot `),
         createCodeAction(it, Commands.SHOW_HOTSPOT_DESCRIPTION, `Show Description For Security Hotspot `)
-      ]))
+      ])
       .reduce((actions, acc) => [...acc, ...actions], []);
   }
 }
@@ -114,7 +117,7 @@ function createCodeAction(diag: vscode.Diagnostic, command: string, titlePrefix:
     title
   };
   const codeAction = new vscode.CodeAction(actualCommand.title, vscode.CodeActionKind.QuickFix);
-  codeAction.diagnostics = [ diag ];
+  codeAction.diagnostics = [diag];
   codeAction.command = actualCommand;
   return codeAction;
 }
@@ -129,11 +132,9 @@ export const showHotspotDescription = () => {
         enableScripts: false
       }
     );
-    hotspotDescriptionPanel.onDidDispose(
-      () => {
-        hotspotDescriptionPanel = undefined;
-      },
-      null);
+    hotspotDescriptionPanel.onDidDispose(() => {
+      hotspotDescriptionPanel = undefined;
+    }, null);
   }
   const diagContextPanelContent = computeHotspotContextPanelContent(activeHotspot, hotspotDescriptionPanel.webview);
   hotspotDescriptionPanel.webview.html = diagContextPanelContent;

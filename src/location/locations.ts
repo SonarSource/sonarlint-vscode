@@ -50,21 +50,18 @@ const SINGLE_LOCATION_DECORATION = vscode.window.createTextEditorDecorationType(
 export class IssueItem extends vscode.TreeItem {
   readonly children: FlowItem[] | LocationItem[];
 
-  constructor(issueOrHotspot: Issue | HotspotNode) {
+  constructor(issueOrHotspot: Issue) {
     const highlightOnly = issueOrHotspot.flows.every(f => f.locations.every(l => !l.message || l.message === ''));
     const collapsibleState = highlightOnly
       ? vscode.TreeItemCollapsibleState.None
       : vscode.TreeItemCollapsibleState.Expanded;
     super(issueOrHotspot.message, collapsibleState);
     this.description = `(${issueOrHotspot.ruleKey})`;
-    const severityIcon = resolveIconPath(issueOrHotspot);
-    this.iconPath =
-      severityIcon instanceof vscode.Uri
-        ? {
-            light: severityIcon,
-            dark: severityIcon
-          }
-        : severityIcon;
+    const severityIcon = resolveExtensionFile('images', 'severity', `${issueOrHotspot.severity.toLowerCase()}.png`);
+    this.iconPath = {
+      light: severityIcon,
+      dark: severityIcon
+    };
     if (highlightOnly) {
       // "Highlight only" locations, no node appended
       this.children = [];
@@ -329,12 +326,4 @@ function vscodeRange(textRange: TextRange) {
 function isValidRange(textRange: vscode.Range, document: vscode.TextDocument) {
   const validatedRange = document.validateRange(textRange);
   return textRange.isEqual(validatedRange);
-}
-
-function resolveIconPath(issueOrHotspot) {
-  if (issueOrHotspot.severity) {
-    return resolveExtensionFile('images', 'severity', `${issueOrHotspot.severity.toLowerCase()}.png`);
-  } else if (issueOrHotspot.vulnerabilityProbability != undefined) {
-    return issueOrHotspot.iconPath;
-  }
 }
