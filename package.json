@@ -350,6 +350,7 @@
       {
         "command": "SonarLint.UpdateAllBindings",
         "title": "Update all project bindings to SonarQube/SonarCloud",
+        "icon": "$(refresh)",
         "category": "SonarLint"
       },
       {
@@ -447,12 +448,6 @@
         "title": "Remove SonarQube/SonarCloud Connection",
         "category": "SonarLint",
         "icon": "$(trash)",
-        "enablement": "view == SonarLint.ConnectedMode"
-      },
-      {
-        "command": "SonarLint.UpdateAllBindings",
-        "title": "Update Bindings",
-        "icon": "$(refresh)",
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
