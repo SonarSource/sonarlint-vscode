@@ -4,7 +4,8 @@
 * Fix usability issues with automatic project binding
 * Update JS/TS/CSS analyzer 9.10 -> [9.11.0](https://github.com/SonarSource/SonarJS/releases/tag/9.11.0.20161) -> [9.12.0](https://github.com/SonarSource/SonarJS/releases/tag/9.12.0.20319) -> [9.12.1](https://github.com/SonarSource/SonarJS/releases/tag/9.12.1.20358), enable support for CSS, add typed rules for JavaScript, support TypeScript 4.9, improve performance and user experience about `tsconfig.json` files, 6 new rules related to performance in React
 * Update Python analyzer 3.20 -> [3.21](https://github.com/SonarSource/sonar-python/releases/tag/3.21.0.10628), support for Python 3.11, improve performance and accuracy
-* Update embedded HTML analyzer 3.6.0 -> [3.7.0](https://github.com/SonarSource/sonar-html/releases/tag/3.7.0.3298) -> [3.7.1](https://github.com/SonarSource/sonar-html/releases/tag/3.7.1.3306), bug fixes and improvements
+* Update HTML analyzer 3.6.0 -> [3.7.0](https://github.com/SonarSource/sonar-html/releases/tag/3.7.0.3298) -> [3.7.1](https://github.com/SonarSource/sonar-html/releases/tag/3.7.1.3306), bug fixes and improvements
+* Update CFamily analyzer 6.39.0 -> [6.40.0](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013928%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), 6 new rules on C++/20 "concepts"
 
 ## 3.12
 
