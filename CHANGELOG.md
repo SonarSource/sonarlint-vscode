@@ -3,6 +3,7 @@
 * Introduce dedicated "SonarLint" view container
 * Fix usability issues with automatic project binding
 * Update JS/TS/CSS analyzer 9.10 -> [9.11.0](https://github.com/SonarSource/SonarJS/releases/tag/9.11.0.20161) -> [9.12.0](https://github.com/SonarSource/SonarJS/releases/tag/9.12.0.20319) -> [9.12.1](https://github.com/SonarSource/SonarJS/releases/tag/9.12.1.20358), enable support for CSS, add typed rules for JavaScript, support TypeScript 4.9, improve performance and user experience about `tsconfig.json` files, 6 new rules related to performance in React
+* Update Python analyzer 3.20 -> [3.21](https://github.com/SonarSource/sonar-python/releases/tag/3.21.0.10628), support for Python 3.11, improve performance and accuracy
 
 ## 3.12
 
