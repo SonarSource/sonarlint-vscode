@@ -10,7 +10,6 @@ import * as vscode from 'vscode';
 import { Commands } from '../util/commands';
 import { Flow, Issue, Location, TextRange } from '../lsp/protocol';
 import { formatIssueMessage, resolveExtensionFile } from '../util/util';
-import { HotspotNode } from '../hotspot/hotspotsTreeViewProvider';
 
 /**
  * Base decoration type for secondary locations.

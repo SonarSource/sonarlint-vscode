@@ -23,14 +23,8 @@ import {
   handleTokenReceivedNotification,
   reportConnectionCheckResult
 } from './connected/connectionsetup';
-import {
-  hideSecurityHotspot,
-  HotspotsCodeActionProvider,
-  hotspotsCollection,
-  showHotspotDescription,
-  showSecurityHotspot
-} from './hotspot/hotspots';
-import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeViewProvider';
+import { hideSecurityHotspot, showHotspotDescription, showSecurityHotspot } from './hotspot/hotspots';
+import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
@@ -294,6 +288,12 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.HIGHLIGHT_REMOTE_HOTSPOT_LOCATION, (hotspot: HotspotNode) =>
+      showSecurityHotspot(allHotspotsView, hotspotsTreeDataProvider)
+    )
+  );
+
+  context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_ALL_RULES, () => allRulesTreeDataProvider.filter(null))
   );
   context.subscriptions.push(
@@ -328,14 +328,19 @@ export function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
-  context.subscriptions.push(hotspotsCollection);
   context.subscriptions.push(
-    VSCode.languages.registerCodeActionsProvider({ scheme: 'file' }, new HotspotsCodeActionProvider(), {
-      providedCodeActionKinds: [VSCode.CodeActionKind.Empty]
+    VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, () => {
+      hideSecurityHotspot(hotspotsTreeDataProvider);
+      const allHotspotsCount = hotspotsTreeDataProvider.countAllHotspots();
+      allHotspotsView.badge =
+        allHotspotsCount > 0
+          ? {
+              value: allHotspotsCount,
+              tooltip: `Total ${allHotspotsCount} Security Hotspots`
+            }
+          : undefined;
     })
   );
-
-  context.subscriptions.push(VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, hideSecurityHotspot));
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DESCRIPTION, showHotspotDescription)
   );
@@ -411,11 +416,11 @@ export function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(languageClient, connectionSettingsService);
-
+  hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(connectionSettingsService);
   allHotspotsView = VSCode.window.createTreeView('SonarLint.SecurityHotspots', {
     treeDataProvider: hotspotsTreeDataProvider
   });
+
   context.subscriptions.push(allHotspotsView);
 
   context.subscriptions.push(onConfigurationChange());
@@ -532,7 +537,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     const targetSection = `sonarlint.connectedMode.connections.${isSonarCloud ? 'sonarcloud' : 'sonarqube'}`;
     return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
-  languageClient.onNotification(protocol.ShowHotspotNotification.type, showSecurityHotspot);
+  languageClient.onNotification(protocol.ShowHotspotNotification.type, h =>
+    showSecurityHotspot(allHotspotsView, hotspotsTreeDataProvider, h)
+  );
   languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));

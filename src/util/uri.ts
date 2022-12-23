@@ -44,11 +44,11 @@ export function getRelativePathFromFullPath(
   workspaceFolder: vscode.WorkspaceFolder,
   specifyWorkspaceFolderName: boolean
 ) {
-  const fullUri = vscode.Uri.parse(fullPath);
-  const fileName = getFileNameFromFullPath(fullPath);
-  const workspaceFolderUri = workspaceFolder.uri.fsPath;
-  const relativePathWithFileName = fullUri.fsPath.replace(`${workspaceFolderUri}/`, '');
-  const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, '');
+  const fullUri = vscode.Uri.parse(fullPath); // /Users/user/sonarlint-vscode/samples/main.js
+  const fileName = getFileNameFromFullPath(fullPath); // main.js
+  const workspaceFolderUri = workspaceFolder.uri.fsPath; // /Users/user/sonarlint-vscode/
+  const relativePathWithFileName = fullUri.fsPath.replace(`${workspaceFolderUri}/`, ''); // samples/main.js
+  const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, ''); // samples/
   if (specifyWorkspaceFolderName) {
     return relativePathWithoutFileName
       ? `${workspaceFolder.name} • ${relativePathWithoutFileName}`
@@ -58,4 +58,9 @@ export function getRelativePathFromFullPath(
     return relativePathWithoutFileName.substring(0, relativePathWithFileName.length - 2);
   }
   return relativePathWithoutFileName;
+}
+
+export function getFullPathFromRelativePath(relativePath: string, workspaceFolder: vscode.WorkspaceFolder) {
+  const workspaceFolderUri = workspaceFolder.uri.fsPath;
+  return `file://${workspaceFolderUri}/${relativePath}`;
 }

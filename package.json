@@ -481,6 +481,12 @@
         "title": "Show Rule Description",
         "category": "SonarLint",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
+      },
+      {
+        "command": "SonarLint.HideHotspot",
+        "title": "Hide Security Hotspot",
+        "category": "SonarLint",
+        "enablement": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
       }
     ],
     "viewsContainers": {
@@ -630,7 +636,7 @@
         {
           "command": "SonarLint.ShowHotspotRuleDescription",
           "title": "Show Rule Description",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
+          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
         },
         {
           "command": "SonarLint.OpenHotspotOnServer",
@@ -641,6 +647,12 @@
           "command": "SonarLint.ClearLocations",
           "title": "Clear Locations",
           "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
+        },
+        {
+          "command": "SonarLint.HideHotspot",
+          "title": "Hide Security Hotspot",
+          "category": "SonarLint",
+          "when": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
         }
       ]
     },
