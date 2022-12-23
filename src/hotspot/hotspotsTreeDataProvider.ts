@@ -1,13 +1,16 @@
 import * as VSCode from 'vscode';
-import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { Diagnostic, Flow, HotspotProbability, PublishHotspotsForFileParams } from '../lsp/protocol';
+import { Diagnostic, PublishHotspotsForFileParams } from '../lsp/protocol';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
-import { resolveExtensionFile } from '../util/util';
-import { ThemeColor, ThemeIcon } from 'vscode';
+import { ProviderResult, ThemeColor, ThemeIcon } from 'vscode';
+import { OPEN_HOTSPOT_IN_IDE_SOURCE } from './hotspots';
 
-enum HotspotReviewPriority {
+const SONARLINT_SOURCE = 'sonarlint';
+const SONARQUBE_SOURCE = 'sonarqube';
+const SONARCLOUD_SOURCE = 'sonarcloud';
+
+export enum HotspotReviewPriority {
   High = 1,
   Medium = 2,
   Low = 3
@@ -15,21 +18,22 @@ enum HotspotReviewPriority {
 
 interface HotspotData {
   hotspotKey: string;
-  hasFlows: boolean;
 }
 
-class HotspotGroup extends VSCode.TreeItem {
+export class HotspotGroup extends VSCode.TreeItem {
   constructor(public readonly keyword: 'new' | 'known', public readonly fileUri) {
     super(keyword === 'new' ? 'Newly detected' : 'Already known', VSCode.TreeItemCollapsibleState.Expanded);
     this.contextValue = keyword === 'new' ? 'newHotspotsGroup' : 'knownHotspotsGroup';
     this.id = `${keyword}-${fileUri}`;
     this.fileUri = fileUri;
-    this.iconPath = new ThemeIcon('security-hotspot',
-      new ThemeColor(keyword === 'new' ? 'problemsWarningIcon.foreground' : 'problemsInfoIcon.foreground'));
+    this.iconPath = new ThemeIcon(
+      'security-hotspot',
+      new ThemeColor(keyword === 'new' ? 'problemsWarningIcon.foreground' : 'problemsInfoIcon.foreground')
+    );
   }
 }
 
-class FileGroup extends VSCode.TreeItem {
+export class FileGroup extends VSCode.TreeItem {
   public fileUri: string;
   constructor(public readonly id: string) {
     super(getFileNameFromFullPath(id), VSCode.TreeItemCollapsibleState.Expanded);
@@ -47,35 +51,36 @@ class FileGroup extends VSCode.TreeItem {
 }
 
 const vulnerabilityProbabilityToIcon = new Map([
-  [
-    HotspotReviewPriority.High,
-    new VSCode.ThemeIcon('error', new VSCode.ThemeColor('problemsErrorIcon.foreground'))
-  ],
+  [HotspotReviewPriority.High, new VSCode.ThemeIcon('error', new VSCode.ThemeColor('problemsErrorIcon.foreground'))],
   [
     HotspotReviewPriority.Medium,
     new VSCode.ThemeIcon('warning', new VSCode.ThemeColor('problemsWarningIcon.foreground'))
   ],
-  [
-    HotspotReviewPriority.Low,
-    new VSCode.ThemeIcon('info', new VSCode.ThemeColor('problemsInfoIcon.foreground'))
-  ]
+  [HotspotReviewPriority.Low, new VSCode.ThemeIcon('info', new VSCode.ThemeColor('problemsInfoIcon.foreground'))]
 ]);
 
 export class HotspotNode extends VSCode.TreeItem {
   constructor(
     public readonly key: string,
-    public readonly contextValue: 'newHotspotItem' | 'knownHotspotItem',
+    public readonly contextValue: 'newHotspotItem' | 'knownHotspotItem' | 'remoteHotspotItem',
     public readonly vulnerabilityProbability: HotspotReviewPriority,
     public readonly source: string,
     public readonly message: string,
     public readonly ruleKey: string,
-    public readonly hasFlows: boolean,
-    public readonly fileUri: string,
+    public readonly fileUri: string
   ) {
     super(message, VSCode.TreeItemCollapsibleState.None);
     this.iconPath = vulnerabilityProbabilityToIcon.get(vulnerabilityProbability);
-    this.command = { command: Commands.SHOW_HOTSPOT_LOCATION, title: 'Show All Locations', arguments: [this] };
-    this.description = `sonarlint(${ruleKey})`;
+    if (source === OPEN_HOTSPOT_IN_IDE_SOURCE) {
+      this.command = {
+        command: Commands.HIGHLIGHT_REMOTE_HOTSPOT_LOCATION,
+        title: 'Show Hotspot Location',
+        arguments: [this]
+      };
+    } else {
+      this.command = { command: Commands.SHOW_HOTSPOT_LOCATION, title: 'Show All Locations', arguments: [this] };
+    }
+    this.description = `${SONARLINT_SOURCE}(${ruleKey})`;
   }
 }
 
@@ -84,26 +89,22 @@ export type HotspotTreeViewItem = HotspotNode | HotspotGroup | FileGroup;
 export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<HotspotTreeViewItem> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<HotspotTreeViewItem | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<HotspotTreeViewItem | undefined> = this._onDidChangeTreeData.event;
-  private readonly fileHotspotsCache = new Map<string, Diagnostic[]>();
+  public fileHotspotsCache = new Map<string, Diagnostic[]>();
+  private readonly filesWithHotspots = new Map<string, FileGroup>();
 
-  constructor(
-    private readonly client: SonarLintExtendedLanguageClient,
-    private readonly connectionSettingsService: ConnectionSettingsService
-  ) {
+  constructor(private readonly connectionSettingsService: ConnectionSettingsService) {
     // NOP
   }
 
   refresh(hotspotsPerFile?: PublishHotspotsForFileParams) {
     if (hotspotsPerFile && hotspotsPerFile.uri && hotspotsPerFile.diagnostics.length > 0) {
       this.fileHotspotsCache.set(hotspotsPerFile.uri, hotspotsPerFile.diagnostics);
-      this._onDidChangeTreeData.fire(null);
     }
+    this._onDidChangeTreeData.fire(null);
   }
 
   countAllHotspots() {
-    return [... this.fileHotspotsCache.values()]
-      .map(diags => diags.length)
-      .reduce((a, b) => a + b, 0);
+    return [...this.fileHotspotsCache.values()].map(diags => diags.length).reduce((a, b) => a + b, 0);
   }
 
   getTreeItem(element: HotspotTreeViewItem): VSCode.TreeItem {
@@ -115,7 +116,11 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     if (!element && !this.isAnyConnectionConfigured()) {
       return [];
     } else if (!element && this.fileHotspotsCache.size > 0) {
-      this.fileHotspotsCache.forEach((_v, fileName) => arr.push(new FileGroup(fileName.toString())));
+      this.fileHotspotsCache.forEach((_v, fileName) => {
+        const fileGroup = new FileGroup(fileName.toString());
+        arr.push(fileGroup);
+        this.filesWithHotspots.set(`${fileGroup.description}${fileGroup.label}`, fileGroup);
+      });
       return arr;
     } else if (element && element.contextValue === 'hotspotsFileGroup') {
       return this.getHotspotsGroupsForFile(element.fileUri);
@@ -129,11 +134,14 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     return null;
   }
 
+  getParent(element: HotspotTreeViewItem): ProviderResult<HotspotTreeViewItem> {
+    return null;
+  }
+
   isAnyConnectionConfigured(): boolean {
     const sonarQubeConnections = this.connectionSettingsService.getSonarQubeConnections();
     const sonarCloudConnections = this.connectionSettingsService.getSonarCloudConnections();
-    // TODO check only if there is SQ connection and it is >v9.7
-    return !(!sonarCloudConnections && !sonarQubeConnections);
+    return sonarCloudConnections.length > 0 || sonarQubeConnections.length > 0;
   }
 
   getHotspotsForFile(fileUri: string, contextValue: string) {
@@ -141,28 +149,50 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       .get(fileUri)
       .filter(h => {
         if (contextValue === 'newHotspotsGroup') {
-          return h.source === 'sonarlint';
+          return h.source === SONARLINT_SOURCE;
         } else if (contextValue === 'knownHotspotsGroup') {
-          return h.source === 'sonarqube' || h.source === 'sonarcloud';
+          return h.source === 'sonarqube' || h.source === 'sonarcloud' || h.source === 'openInIde';
         }
         return false;
       })
-      .map(
-        h => {
-          const { hotspotKey, hasFlows } = h.data as HotspotData;
-          return new HotspotNode(
-            hotspotKey,
-            contextValue === 'knownHotspotsGroup' ? 'knownHotspotItem' : 'newHotspotItem',
-            h.severity,
-            h.source,
-            h.message,
-            h.code as string,
-            hasFlows,
-            fileUri
-          );
-        }
-      )
+      .map(h => {
+        const { hotspotKey } = h.data as HotspotData;
+        return new HotspotNode(
+          hotspotKey,
+          this.getHotspotItemContextValue(h, contextValue),
+          h.severity,
+          h.source,
+          h.message,
+          h.code as string,
+          fileUri
+        );
+      })
       .sort((h1, h2) => h1.vulnerabilityProbability - h2.vulnerabilityProbability);
+  }
+
+  getHotspotItemContextValue(hotspot, hotspotGroupContextValue) {
+    if (hotspot.source === 'openInIde') {
+      return 'remoteHotspotItem';
+    }
+    return hotspotGroupContextValue === 'knownHotspotsGroup' ? 'knownHotspotItem' : 'newHotspotItem';
+  }
+
+  getAllFilesWithHotspots() {
+    return this.filesWithHotspots;
+  }
+
+  hasLocalHotspots() {
+    return (
+      this.fileHotspotsCache.size > 0 &&
+      [...this.fileHotspotsCache.values()] // at least one of the hotspots in cache is in the view already
+        .map(diags =>
+          diags.some(
+            diag =>
+              diag.source === SONARLINT_SOURCE || diag.source === SONARQUBE_SOURCE || diag.source === SONARCLOUD_SOURCE
+          )
+        )
+        .some(v => v)
+    );
   }
 
   getHotspotsGroupsForFile(fileUri: string) {
@@ -170,23 +200,32 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     if (this.fileHasNewHotspots(fileUri)) {
       children.push(new HotspotGroup('new', fileUri));
     }
-    if (this.fileHasTrackedHotspots(fileUri)) {
+    if (this.fileHasTrackedHotspots(fileUri) || this.openHotspotInIdeForFileWasTriggered(fileUri)) {
       children.push(new HotspotGroup('known', fileUri));
     }
     return children;
   }
 
-  private fileHasNewHotspots(fileUri: string) {
+  fileHasNewHotspots(fileUri: string) {
     return (
       this.fileHotspotsCache.get(fileUri).length > 0 &&
-      this.fileHotspotsCache.get(fileUri).some(diag => diag.source === 'sonarlint')
+      this.fileHotspotsCache.get(fileUri).some(diag => diag.source === SONARLINT_SOURCE)
     );
   }
 
-  private fileHasTrackedHotspots(fileUri: string) {
+  fileHasTrackedHotspots(fileUri: string) {
     return (
       this.fileHotspotsCache.get(fileUri).length > 0 &&
-      this.fileHotspotsCache.get(fileUri).some(diag => diag.source === 'sonarqube' || diag.source === 'sonarcloud')
+      this.fileHotspotsCache
+        .get(fileUri)
+        .some(diag => diag.source === SONARQUBE_SOURCE || diag.source === SONARCLOUD_SOURCE)
+    );
+  }
+
+  openHotspotInIdeForFileWasTriggered(fileUri: string) {
+    return (
+      this.fileHotspotsCache.get(fileUri).length > 0 &&
+      this.fileHotspotsCache.get(fileUri).some(diag => diag.source === OPEN_HOTSPOT_IN_IDE_SOURCE)
     );
   }
 }

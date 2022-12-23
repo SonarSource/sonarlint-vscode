@@ -7,14 +7,20 @@
 'use strict';
 
 import { Uri } from 'vscode';
-import { code2ProtocolConverter, protocol2CodeConverter } from '../../src/util/uri';
+import {
+  code2ProtocolConverter,
+  getFileNameFromFullPath,
+  getFullPathFromRelativePath,
+  getRelativePathFromFullPath,
+  protocol2CodeConverter
+} from '../../src/util/uri';
 import { expect } from 'chai';
+import * as vscode from 'vscode';
 
 suite('uri', () => {
-
-  const { standardUri, codeUri } = /^win32/.test(process.platform) ?
-    { standardUri: 'file:///c:/some/file.txt', codeUri: Uri.parse('file:///c%3A/some/file.txt')} :
-    { standardUri: 'file:///some/file.txt', codeUri: Uri.parse('file:///some/file.txt') };
+  const { standardUri, codeUri } = /^win32/.test(process.platform)
+    ? { standardUri: 'file:///c:/some/file.txt', codeUri: Uri.parse('file:///c%3A/some/file.txt') }
+    : { standardUri: 'file:///some/file.txt', codeUri: Uri.parse('file:///some/file.txt') };
 
   test('should fix URI in code => ls message', () => {
     expect(code2ProtocolConverter(codeUri)).to.equal(standardUri);
@@ -22,5 +28,37 @@ suite('uri', () => {
 
   test('should translate URI in ls => code message', () => {
     expect(protocol2CodeConverter(standardUri).toString()).to.equal(codeUri.toString());
+  });
+
+  test('should get relative path from full path without ws name', () => {
+    const workspaceFolder = vscode.workspace.workspaceFolders[0];
+    const fullPath = `${workspaceFolder.uri}/samples/sample-js/main.js`;
+
+    expect(getRelativePathFromFullPath(fullPath, workspaceFolder, false), '/samples/sample-js/main.js');
+  });
+
+  test('should get relative path from full path with ws name', () => {
+    const workspaceFolder = vscode.workspace.workspaceFolders[0];
+    const fullPath = `${workspaceFolder.uri}/samples/sample-js/main.js`;
+
+    expect(
+      getRelativePathFromFullPath(fullPath, workspaceFolder, true),
+      `${workspaceFolder.name} • /samples/sample-js/main.js`
+    );
+  });
+
+  test('should get file name from full path', () => {
+    const workspaceFolder = vscode.workspace.workspaceFolders[0];
+    const fullPath = `${workspaceFolder.uri}/samples/sample-js/main.js`;
+
+    expect(getFileNameFromFullPath(fullPath), 'main.js');
+  });
+
+  test('should get full path from relative path', () => {
+    const relativePath = '/samples/sample-js/main.js';
+    const workspaceFolder = vscode.workspace.workspaceFolders[0];
+    const expectedFullPath = `${workspaceFolder.uri}/samples/sample-js/main.js`;
+
+    expect(getFullPathFromRelativePath(relativePath, workspaceFolder), expectedFullPath);
   });
 });
