@@ -16,10 +16,6 @@ export enum HotspotReviewPriority {
   Low = 3
 }
 
-interface HotspotData {
-  hotspotKey: string;
-}
-
 export class HotspotGroup extends VSCode.TreeItem {
   constructor(public readonly keyword: 'new' | 'known', public readonly fileUri) {
     super(keyword === 'new' ? 'Newly detected' : 'Already known', VSCode.TreeItemCollapsibleState.Expanded);
@@ -144,19 +140,21 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     return sonarCloudConnections.length > 0 || sonarQubeConnections.length > 0;
   }
 
-  getHotspotsForFile(fileUri: string, contextValue: string) {
+  getHotspotsForFile(fileUri: string, contextValue: string): HotspotNode[] {
     return this.fileHotspotsCache
       .get(fileUri)
       .filter(h => {
         if (contextValue === 'newHotspotsGroup') {
           return h.source === SONARLINT_SOURCE;
         } else if (contextValue === 'knownHotspotsGroup') {
-          return h.source === 'sonarqube' || h.source === 'sonarcloud' || h.source === 'openInIde';
+          return (
+            h.source === SONARQUBE_SOURCE || h.source === SONARCLOUD_SOURCE || h.source === OPEN_HOTSPOT_IN_IDE_SOURCE
+          );
         }
         return false;
       })
       .map(h => {
-        const { hotspotKey } = h.data as HotspotData;
+        const hotspotKey = h.data as string;
         return new HotspotNode(
           hotspotKey,
           this.getHotspotItemContextValue(h, contextValue),
@@ -177,25 +175,32 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     return hotspotGroupContextValue === 'knownHotspotsGroup' ? 'knownHotspotItem' : 'newHotspotItem';
   }
 
-  getAllFilesWithHotspots() {
+  getAllFilesWithHotspots(): Map<string, FileGroup> {
     return this.filesWithHotspots;
   }
 
-  hasLocalHotspots() {
+  hasLocalHotspots(): boolean {
+    console.log(this.fileHotspotsCache.size);
+    console.log([...this.fileHotspotsCache.values()]);
     return (
       this.fileHotspotsCache.size > 0 &&
       [...this.fileHotspotsCache.values()] // at least one of the hotspots in cache is in the view already
         .map(diags =>
-          diags.some(
-            diag =>
+          diags.some(diag => {
+            console.log(diag.source);
+            return (
               diag.source === SONARLINT_SOURCE || diag.source === SONARQUBE_SOURCE || diag.source === SONARCLOUD_SOURCE
-          )
+            );
+          })
         )
-        .some(v => v)
+        .some(v => {
+          console.log(v);
+          return v;
+        })
     );
   }
 
-  getHotspotsGroupsForFile(fileUri: string) {
+  getHotspotsGroupsForFile(fileUri: string): HotspotGroup[] {
     const children = [];
     if (this.fileHasNewHotspots(fileUri)) {
       children.push(new HotspotGroup('new', fileUri));
@@ -206,14 +211,14 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     return children;
   }
 
-  fileHasNewHotspots(fileUri: string) {
+  fileHasNewHotspots(fileUri: string): boolean {
     return (
       this.fileHotspotsCache.get(fileUri).length > 0 &&
       this.fileHotspotsCache.get(fileUri).some(diag => diag.source === SONARLINT_SOURCE)
     );
   }
 
-  fileHasTrackedHotspots(fileUri: string) {
+  fileHasTrackedHotspots(fileUri: string): boolean {
     return (
       this.fileHotspotsCache.get(fileUri).length > 0 &&
       this.fileHotspotsCache
@@ -222,7 +227,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     );
   }
 
-  openHotspotInIdeForFileWasTriggered(fileUri: string) {
+  openHotspotInIdeForFileWasTriggered(fileUri: string): boolean {
     return (
       this.fileHotspotsCache.get(fileUri).length > 0 &&
       this.fileHotspotsCache.get(fileUri).some(diag => diag.source === OPEN_HOTSPOT_IN_IDE_SOURCE)

@@ -34,34 +34,19 @@ export const showSecurityHotspot = async (
   const hotspot = remoteHotspot ? remoteHotspot : activeHotspot;
   const foundUris = await vscode.workspace.findFiles(`**/${hotspot.filePath}`);
   if (foundUris.length === 0) {
-    vscode.window
-      .showErrorMessage(
-        `Could not find file '${hotspot.filePath}' in the current workspace.
-
-Please make sure that the right folder is open and bound to the right project on the server,
- and that the file has not been removed or renamed.`,
-        'Show Documentation'
-      )
-      .then(action => {
-        if (action === 'Show Documentation') {
-          vscode.commands.executeCommand(
-            Commands.OPEN_BROWSER,
-            vscode.Uri.parse('https://docs.sonarqube.org/latest/user-guide/security-hotspots/')
-          );
-        }
-      });
+    handleFileForHotspotNotFound(hotspot);
   } else {
-    activeHotspot = hotspot ? hotspot : activeHotspot;
     const documentUri = foundUris[0];
     if (foundUris.length > 1) {
       logToSonarLintOutput(`Multiple candidates found for '${hotspot.filePath}', using first match '${documentUri}'`);
     }
     const editor = await vscode.window.showTextDocument(documentUri);
     if (hotspot instanceof HotspotNode) {
+      activeHotspot = hotspot ? hotspot : activeHotspot;
       await highlightLocation(editor);
     } else {
       const hotspotDiag = createHotspotDiagnostic(hotspot, allHotspotsView, hotspotsTreeDataProvider);
-
+      activeHotspot = hotspot ? hotspot : activeHotspot;
       editor.revealRange(
         new vscode.Range(
           hotspotDiag.range.start.line,
@@ -80,12 +65,32 @@ Please make sure that the right folder is open and bound to the right project on
   }
 };
 
+function handleFileForHotspotNotFound(hotspot) {
+  vscode.window
+    .showErrorMessage(
+      `Could not find file '${hotspot.filePath}' in the current workspace.
+Please make sure that the right folder is open and bound to the right project on the server,
+ and that the file has not been removed or renamed.`,
+      'Show Documentation'
+    )
+    .then(action => {
+      if (action === 'Show Documentation') {
+        vscode.commands.executeCommand(
+          Commands.OPEN_BROWSER,
+          vscode.Uri.parse('https://docs.sonarqube.org/latest/user-guide/security-hotspots/')
+        );
+      }
+    });
+}
+
 export const hideSecurityHotspot = (hotspotsTreeDataProvider: AllHotspotsTreeDataProvider) => {
-  activeHotspot = null;
   if (hotspotDescriptionPanel) {
     hotspotDescriptionPanel.dispose();
   }
-  hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
+  if (!hotspotsTreeDataProvider.hasLocalHotspots()) {
+    hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
+  }
+  activeHotspot = null;
   hotspotsTreeDataProvider.refresh();
 };
 
@@ -112,16 +117,13 @@ function createHotspotDiagnostic(
     }
   } as Diagnostic;
   let fileToHighlight = null;
-  if (hotspotsTreeDataProvider.hasLocalHotspots() && activeHotspot === null) {
+  if (hotspotsTreeDataProvider.hasLocalHotspots()) {
     fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.filePath);
   } else {
     // reset local cache before opening each hotspot
     hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
     const fullHotspotPath = getFullPathFromRelativePath(hotspot.filePath, vscode.workspace.workspaceFolders[0]);
-    hotspotsTreeDataProvider.fileHotspotsCache.set(
-      getFullPathFromRelativePath(hotspot.filePath, vscode.workspace.workspaceFolders[0]),
-      [hotspotDiag]
-    );
+    hotspotsTreeDataProvider.fileHotspotsCache.set(fullHotspotPath, [hotspotDiag]);
     fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(fullHotspotPath);
     hotspotsTreeDataProvider.refresh();
   }
