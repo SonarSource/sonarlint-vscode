@@ -89,7 +89,7 @@ suite('Hotspots Test Suite', async () => {
     assert.strictEqual(vscode.window.activeTextEditor, undefined);
   });
 
-  test('should show and hide hotspot in found file', async () => {
+  test('should show hotspot in found file', async () => {
     const hotspot = buildHotspot('main.js');
     await showSecurityHotspot(mockAllHotspotsView, mockHotspotsTreeDataProvider, hotspot);
 
@@ -117,7 +117,7 @@ suite('Hotspots Test Suite', async () => {
     );
   });
 
-  test('should show and hide hotspot when several files are found', async () => {
+  test('should show hotspot when several files are found', async () => {
     const hotspot = buildHotspot('sample.js');
     await showSecurityHotspot(mockAllHotspotsView, mockHotspotsTreeDataProvider, hotspot);
 

@@ -3,9 +3,10 @@ import {
   SonarCloudConnection,
   SonarQubeConnection
 } from '../../src/settings/connectionsettings';
-import { AllHotspotsTreeDataProvider } from '../../src/hotspot/hotspotsTreeDataProvider';
+import { AllHotspotsTreeDataProvider, HotspotNode } from '../../src/hotspot/hotspotsTreeDataProvider';
 import { assert } from 'chai';
 import * as vscode from 'vscode';
+import { ThemeIcon } from 'vscode';
 
 const mockSettingsServiceWithConnections = {
   getSonarQubeConnections(): SonarQubeConnection[] {
@@ -82,18 +83,14 @@ suite('Hotspots tree view test suite', () => {
       range: { start: { line: 1, character: 1 }, end: { line: 2, character: 1 } },
       message: 'hotspot 1',
       source: 'sonarlint',
-      data: {
-        hotspotKey: 'hotspotKey2'
-      }
+      data: 'hotspotKey2'
     };
     diagnostic6 = {
       flows: [],
       range: { start: { line: 2, character: 1 }, end: { line: 4, character: 1 } },
       message: 'hotspot 2',
       source: 'sonarqube',
-      data: {
-        hotspotKey: 'hotspotKey2'
-      }
+      data: 'hotspotKey2'
     };
 
     fullFile1Uri = `${vscode.workspace.workspaceFolders[0].uri}/sample-js/main.js`;
@@ -271,10 +268,21 @@ suite('Hotspots tree view test suite', () => {
     });
 
     test('should return hotspot groups for files', () => {
-      let children = underTestWithValidInitData.getChildren(null);
-      children = underTestWithValidInitData.getChildren(children[0]);
+      let fileGroups = underTestWithValidInitData.getChildren(null);
+      const hotspotGroups = underTestWithValidInitData.getChildren(fileGroups[0]);
 
-      assert.equal(children.length, 1);
+      assert.equal(hotspotGroups.length, 1);
+      assert.equal((hotspotGroups[0].iconPath as ThemeIcon).id, 'security-hotspot');
+    });
+
+    test('should return a hotspot', () => {
+      const fileGroups = underTestWithValidInitData.getChildren(null);
+      const hotspotGroups = underTestWithValidInitData.getChildren(fileGroups[0]);
+      const hotspots = underTestWithValidInitData.getChildren(hotspotGroups[0]);
+
+      assert.equal(hotspots.length, 1);
+      assert.isTrue((hotspots[0].label as string).includes('hotspot'));
+      assert.equal((hotspots[0] as HotspotNode).key, 'hotspotKey2');
     });
   });
 });

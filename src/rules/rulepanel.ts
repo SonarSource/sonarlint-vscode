@@ -26,19 +26,19 @@ export function showRuleDescription(context: VSCode.ExtensionContext) {
 function lazyCreateRuleDescriptionPanel(context: VSCode.ExtensionContext) {
   if (!ruleDescriptionPanel) {
     ruleDescriptionPanel = VSCode.window.createWebviewPanel(
-        'sonarlint.RuleDesc',
-        'SonarLint Rule Description',
-        VSCode.ViewColumn.Two,
-        {
-          enableScripts: false
-        }
+      'sonarlint.RuleDesc',
+      'SonarLint Rule Description',
+      VSCode.ViewColumn.Two,
+      {
+        enableScripts: false
+      }
     );
     ruleDescriptionPanel.onDidDispose(
-        () => {
-          ruleDescriptionPanel = undefined;
-        },
-        null,
-        context.subscriptions
+      () => {
+        ruleDescriptionPanel = undefined;
+      },
+      null,
+      context.subscriptions
     );
   }
 }
@@ -47,14 +47,12 @@ function computeRuleDescPanelContent(
   context: VSCode.ExtensionContext,
   webview: VSCode.Webview,
   rule: ShowRuleDescriptionParams
-  ) {
-
+) {
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'rule.css');
   const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severity.toLowerCase()}.png`);
   const typeImgSrc = resolver.resolve('images', 'type', `${rule.type.toLowerCase()}.png`);
   const infoImgSrc = resolver.resolve('images', 'info.png');
-
 
   const ruleParamsHtml = renderRuleParams(rule);
 
@@ -88,7 +86,7 @@ function base64encode(file: string) {
   return FS.readFileSync(file).toString('base64');
 }
 
-function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string) {
+function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string) {
   if (!rule.isTaint) {
     return '';
   }
@@ -102,7 +100,7 @@ function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string) {
            </div>`;
 }
 
-function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string) {
+function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string) {
   if (rule.type !== 'SECURITY_HOTSPOT') {
     return '';
   }
@@ -110,7 +108,8 @@ function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc:string)
             <p class="taint-banner"><span><img class="taint-info-icon" src=${infoImgSrc} alt="info"></span> 
             A security hotspot highlights a security-sensitive piece of code that the developer <b>needs to review</b>.
             Upon review, you'll either find there is no threat or you need to apply a fix to secure the code.
-            In order to set review output for a hotspot, please right-click on the hotspot and select the 'Review on Server' option.
+            In order to set the review output for a hotspot, please right-click on the hotspot and select the
+            'Review on Server' option.
             </p>
            </div>`;
 }

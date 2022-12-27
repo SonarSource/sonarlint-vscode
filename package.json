@@ -15,7 +15,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.61.0"
+    "vscode": "^1.73.0"
   },
   "categories": [
     "Linters"
@@ -411,6 +411,11 @@
         "enablement": "view == SonarLint.IssueLocations || view == SonarLint.SecurityHotspots"
       },
       {
+        "command": "SonarLint.ClearHotspotLocations",
+        "title": "Clear Highlighting",
+        "enablement": "view == SonarLint.SecurityHotspots"
+      },
+      {
         "command": "SonarLint.ConnectToSonarQube",
         "title": "Connect to SonarQube",
         "category": "SonarLint",
@@ -465,12 +470,6 @@
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
-        "command": "SonarLint.ShowHotspotDescription",
-        "title": "Show Rule Description",
-        "category": "SonarLint",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
-      },
-      {
         "command": "SonarLint.OpenHotspotOnServer",
         "title": "Review on Server",
         "category": "SonarLint",
@@ -480,7 +479,7 @@
         "command": "SonarLint.ShowHotspotRuleDescription",
         "title": "Show Rule Description",
         "category": "SonarLint",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
+        "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
       },
       {
         "command": "SonarLint.HideHotspot",
@@ -644,8 +643,8 @@
           "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
         },
         {
-          "command": "SonarLint.ClearLocations",
-          "title": "Clear Locations",
+          "command": "SonarLint.ClearHotspotLocations",
+          "title": "Clear Highlighting",
           "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
         },
         {

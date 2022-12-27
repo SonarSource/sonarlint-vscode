@@ -293,6 +293,8 @@ export function activate(context: VSCode.ExtensionContext) {
     )
   );
 
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_HOTSPOT_HIGHLIGHTING, clearLocations));
+
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_ALL_RULES, () => allRulesTreeDataProvider.filter(null))
   );
@@ -331,14 +333,7 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, () => {
       hideSecurityHotspot(hotspotsTreeDataProvider);
-      const allHotspotsCount = hotspotsTreeDataProvider.countAllHotspots();
-      allHotspotsView.badge =
-        allHotspotsCount > 0
-          ? {
-              value: allHotspotsCount,
-              tooltip: `Total ${allHotspotsCount} Security Hotspots`
-            }
-          : undefined;
+      updateSonarLintViewContainerBadge();
     })
   );
   context.subscriptions.push(
@@ -546,14 +541,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.SubmitTokenNotification.type, token => handleTokenReceivedNotification(token));
   languageClient.onNotification(protocol.PublishHotspotsForFile.type, hotspotsPerFile => {
     hotspotsTreeDataProvider.refresh(hotspotsPerFile);
-    const allHotspotsCount = hotspotsTreeDataProvider.countAllHotspots();
-    allHotspotsView.badge =
-      allHotspotsCount > 0
-        ? {
-            value: allHotspotsCount,
-            tooltip: `Total ${allHotspotsCount} Security Hotspots`
-          }
-        : undefined;
+    updateSonarLintViewContainerBadge();
   });
 
   async function notifyMissingCompileCommands() {
@@ -581,6 +569,17 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
         }
       });
   }
+}
+
+function updateSonarLintViewContainerBadge() {
+  const allHotspotsCount = hotspotsTreeDataProvider.countAllHotspots();
+  allHotspotsView.badge =
+    allHotspotsCount > 0
+      ? {
+          value: allHotspotsCount,
+          tooltip: `Total ${allHotspotsCount} Security Hotspots`
+        }
+      : undefined;
 }
 
 async function doNotAskAboutCompileCommandsFlag(context: VSCode.ExtensionContext): Promise<boolean> {

@@ -15,8 +15,11 @@ import { formatIssueMessage, resolveExtensionFile } from '../util/util';
  * Base decoration type for secondary locations.
  * See contributes.colors in package.json for theme color values.
  */
+
+const SONARLINT_LOCATIONS_BACKGROUND = 'sonarlint.locations.background';
+
 const SECONDARY_LOCATION_DECORATIONS = vscode.window.createTextEditorDecorationType({
-  backgroundColor: new vscode.ThemeColor('sonarlint.locations.background'),
+  backgroundColor: new vscode.ThemeColor(SONARLINT_LOCATIONS_BACKGROUND),
   before: {
     backgroundColor: new vscode.ThemeColor('sonarlint.locations.indexBackground'),
     color: new vscode.ThemeColor('sonarlint.locations.indexText'),
@@ -30,7 +33,7 @@ const SECONDARY_LOCATION_DECORATIONS = vscode.window.createTextEditorDecorationT
  * See contributes.colors in package.json for theme color values.
  */
 const SELECTED_SECONDARY_LOCATION_DECORATION = vscode.window.createTextEditorDecorationType({
-  backgroundColor: new vscode.ThemeColor('sonarlint.locations.background'),
+  backgroundColor: new vscode.ThemeColor(SONARLINT_LOCATIONS_BACKGROUND),
   before: {
     backgroundColor: new vscode.ThemeColor('sonarlint.locations.indexSelectedBackground'),
     color: new vscode.ThemeColor('sonarlint.locations.indexSelectedText'),
@@ -41,7 +44,7 @@ const SELECTED_SECONDARY_LOCATION_DECORATION = vscode.window.createTextEditorDec
 });
 
 const SINGLE_LOCATION_DECORATION = vscode.window.createTextEditorDecorationType({
-  backgroundColor: new vscode.ThemeColor('sonarlint.locations.background'),
+  backgroundColor: new vscode.ThemeColor(SONARLINT_LOCATIONS_BACKGROUND),
   textDecoration: 'wavy var(--vscode-inputValidation-warningBorder) 0.25px underline',
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
@@ -79,11 +82,9 @@ export class FlowItem extends vscode.TreeItem {
   readonly children: (LocationItem | FileItem)[];
 
   constructor(flow: Flow, index: number, parent: LocationTreeItem) {
+    // Only first flow is expanded by default
     const collapsibleState =
-      index === 0
-        ? // Only first flow is expanded by default
-          vscode.TreeItemCollapsibleState.Expanded
-        : vscode.TreeItemCollapsibleState.Collapsed;
+      index === 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed;
     super(`Flow ${index + 1}`, collapsibleState);
 
     const flowLocations = Array.from(flow.locations);
