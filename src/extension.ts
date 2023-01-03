@@ -60,7 +60,12 @@ const WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION = 5000;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
 
-const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
+const DOCUMENT_SELECTOR = [
+  { scheme: 'file', pattern: '**/*' },
+  // { scheme: 'vscode-notebook', language: 'python' },
+  // { scheme: 'vscode-notebook-cell', language: 'python' },
+  { notebook: { scheme: 'file', notebookType: 'jupyter-notebook' }, language: 'python' }
+];
 
 let sonarlintOutput: VSCode.OutputChannel;
 let secondaryLocationsTree: SecondaryLocationsTree;
@@ -132,7 +137,6 @@ function logWithPrefix(data, prefix) {
 function isVerboseEnabled(): boolean {
   return currentConfig.get('output.showVerboseLogs', false);
 }
-
 
 export function toUrl(filePath: string) {
   let pathName = Path.resolve(filePath).replace(/\\/g, '/');
@@ -227,33 +231,12 @@ export function activate(context: VSCode.ExtensionContext) {
   ConnectionSettingsService.init(context, languageClient);
   connectionSettingsService = ConnectionSettingsService.instance;
   migrateConnectedModeSettings(currentConfig, connectionSettingsService);
-  languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
   BindingService.init(languageClient, context.workspaceState, connectionSettingsService);
   bindingService = BindingService.instance;
   AutoBindingService.init(bindingService, context.workspaceState, connectionSettingsService);
 
-  languageClient.onReady().then(() => {
-    const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
-    const scm = initScm(languageClient, referenceBranchStatusItem);
-    context.subscriptions.push(scm);
-    context.subscriptions.push(
-      languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type, folderUri => {
-        return scm.getBranchForFolder(VSCode.Uri.parse(folderUri));
-      })
-    );
-    context.subscriptions.push(
-      languageClient.onNotification(protocol.SetReferenceBranchNameForFolderNotification.type, params => {
-        scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
-      })
-    );
-    context.subscriptions.push(referenceBranchStatusItem);
-    VSCode.window.onDidChangeActiveTextEditor(e => scm.updateReferenceBranchStatusItem(e));
-  });
-
-  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() =>
-    languageClient.onReady().then(() => languageClient.listAllRules())
-  );
+  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
   const allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
     treeDataProvider: allRulesTreeDataProvider
   });
@@ -376,8 +359,11 @@ export function activate(context: VSCode.ExtensionContext) {
     )
   );
 
-  context.subscriptions.push(VSCode.commands.registerCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS,
-    () => AutoBindingService.instance.autoBindWorkspace()));
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS, () =>
+      AutoBindingService.instance.autoBindWorkspace()
+    )
+  );
 
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
@@ -386,7 +372,25 @@ export function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  languageClient.start();
+  languageClient.start().then(() => {
+    installCustomRequestHandlers(context);
+
+    const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
+    const scm = initScm(languageClient, referenceBranchStatusItem);
+    context.subscriptions.push(scm);
+    context.subscriptions.push(
+      languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type, folderUri => {
+        return scm.getBranchForFolder(VSCode.Uri.parse(folderUri));
+      })
+    );
+    context.subscriptions.push(
+      languageClient.onNotification(protocol.SetReferenceBranchNameForFolderNotification.type, params => {
+        scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
+      })
+    );
+    context.subscriptions.push(referenceBranchStatusItem);
+    VSCode.window.onDidChangeActiveTextEditor(e => scm.updateReferenceBranchStatusItem(e));
+  });
 
   context.subscriptions.push(onConfigurationChange());
 
@@ -452,8 +456,8 @@ async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionCon
   VSCode.window
     .showWarningMessage(
       'SonarLint detected some secrets in one of the open files.\n' +
-      'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
-      'Please refer to the Problems view for more information.',
+        'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
+        'Please refer to the Problems view for more information.',
       showProblemsViewActionTitle
     )
     .then(action => {

@@ -241,7 +241,6 @@ export class BindingService {
   }
 
   async getRemoteProjects(connectionId: string) {
-    await this.languageClient.onReady();
     return this.languageClient.getRemoteProjectsForConnection(connectionId);
   }
 
@@ -301,7 +300,6 @@ export class BindingService {
     sqConnections: SonarQubeConnection[]
   ): Promise<Map<BaseConnection, ServerProject[]>> {
     const connectionToServerProjects = new Map<BaseConnection, ServerProject[]>();
-    await this.languageClient.onReady();
     await this.setProjectsForConnection(scConnections, connectionToServerProjects);
     await this.setProjectsForConnection(sqConnections, connectionToServerProjects);
     return connectionToServerProjects;

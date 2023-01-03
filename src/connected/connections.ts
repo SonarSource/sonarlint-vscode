@@ -27,7 +27,6 @@ export class WorkspaceFolderItem extends VSCode.TreeItem {
     this.iconPath = VSCode.ThemeIcon.Folder;
     this.contextValue = 'workspaceFolder';
   }
-
 }
 
 export class RemoteProject extends VSCode.TreeItem {
@@ -42,7 +41,6 @@ export class RemoteProject extends VSCode.TreeItem {
     this.iconPath = new VSCode.ThemeIcon(name ? 'cloud' : 'question');
     this.contextValue = 'remoteProject';
   }
-
 }
 
 export class Connection extends VSCode.TreeItem {
@@ -125,7 +123,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   async checkConnection(connectionId) {
-    return this.client.onReady().then(_ => this.client.checkConnection(connectionId));
+    return this.client.checkConnection(connectionId);
   }
 
   refresh(connection?: Connection) {
@@ -148,13 +146,12 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     } else if (element.contextValue === 'sonarCloudGroup') {
       return this.getConnections('sonarcloud');
     } else if (element.contextValue === 'sonarqubeConnection' || element.contextValue === 'sonarcloudConnection') {
-      const connection = (element as Connection);
+      const connection = element as Connection;
       const serverType = element.contextValue === 'sonarqubeConnection' ? 'SonarQube' : 'SonarCloud';
       return this.getBoundProjects(connection.id, serverType);
     } else if (element.contextValue === 'remoteProject') {
-      const project = (element as RemoteProject);
-      return this.getWorkspaceFoldersBoundTo(project.connectionId,
-        project.key, project.serverType);
+      const project = element as RemoteProject;
+      return this.getWorkspaceFoldersBoundTo(project.connectionId, project.key, project.serverType);
     }
     return null;
   }
@@ -165,10 +162,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
       return [];
     }
     const allKeys = [...boundProjects.keys()];
-    await this.client.onReady();
     const keysToNames = await this.client.getRemoteProjectNames(connectionId || DEFAULT_CONNECTION_ID, allKeys);
-    return allKeys
-      .map(k => new RemoteProject(connectionId, k, serverType, keysToNames[k]));
+    return allKeys.map(k => new RemoteProject(connectionId, k, serverType, keysToNames[k]));
   }
 
   getWorkspaceFoldersBoundTo(connectionId, projectKey, serverType) {
@@ -180,8 +175,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     if (!boundFolders) {
       return [];
     }
-    return boundFolders
-      .map(f => new WorkspaceFolderItem(f.folder.name, f.folder, connectionId, serverType));
+    return boundFolders.map(f => new WorkspaceFolderItem(f.folder.name, f.folder, connectionId, serverType));
   }
 
   getInitialState(): ConnectionGroup[] {

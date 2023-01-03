@@ -35,7 +35,7 @@ export function installClasspathListener(languageClient: SonarLintExtendedLangua
       if (extensionApi && isJavaApiRecentEnough(extensionApi.apiVersion)) {
         const onDidClasspathUpdate: VSCode.Event<VSCode.Uri> = extensionApi.onDidClasspathUpdate;
         classpathChangeListener = onDidClasspathUpdate(function (uri) {
-          languageClient.onReady().then(() => languageClient.didClasspathUpdate(uri));
+          languageClient.didClasspathUpdate(uri);
         });
       }
     }
@@ -53,7 +53,7 @@ function newServerModeChangeListener(languageClient: SonarLintExtendedLanguageCl
       // Reset state of LightWeight mode warning
       javaServerInLightWeightModeAlreadyLogged = false;
     }
-    languageClient.onReady().then(() => languageClient.didJavaServerModeChange(serverMode));
+    languageClient.didJavaServerModeChange(serverMode);
   };
 }
 

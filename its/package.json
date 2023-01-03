@@ -4,7 +4,7 @@
   "description": "SonarLint ITs",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.36.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
     "Other"
@@ -32,7 +32,7 @@
     "@types/glob": "^8.0.0",
     "@types/mocha": "10.0.0",
     "@types/node": "^12.11.7",
-    "@types/vscode": "^1.73.0",
+    "@types/vscode": "^1.74.0",
     "compare-versions": "3.6.0",
     "glob": "^8.0.3",
     "mocha": "10.1.0",
