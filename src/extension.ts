@@ -622,7 +622,10 @@ export async function performIsIgnoredCheck(
 
 function isOpenInEditor(fileUri: string) {
   const codeFileUri = VSCode.Uri.parse(fileUri).toString(false);
-  return VSCode.workspace.textDocuments.some(d => d.uri.toString(false) === codeFileUri);
+  return (
+    VSCode.workspace.textDocuments.some(d => d.uri.toString(false) === codeFileUri) ||
+    VSCode.workspace.notebookDocuments.some(d => d.uri.toString(false) === codeFileUri)
+  );
 }
 
 async function showAllLocations(issue: protocol.Issue) {
