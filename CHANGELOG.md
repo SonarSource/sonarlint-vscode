@@ -5,6 +5,7 @@
 * Update CFamily analyzer 6.40.0 -> [6.41.0](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013953%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), 13 new rules on C++20's "std::format"
 * Update Java analyzer 7.15.0 -> [7.16.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/13922/tab/release-report-all-issues), FP fixes, bugfixes, FN fixes
 * Update JS/TS/CSS analyzer 9.12.1 -> [9.13.0](https://github.com/SonarSource/SonarJS/releases/tag/9.13.0.20537), FN and FP fixes, dependency upgrades
+* Update XML analyzer 2.6.1 -> [2.7.0](https://github.com/SonarSource/sonar-xml/releases/tag/2.7.0.3820), Bugfix of XPathCheck, bugfix of memory leak
 
 ## 3.13
 
