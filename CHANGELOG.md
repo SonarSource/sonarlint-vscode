@@ -1,3 +1,8 @@
+## 3.14
+
+* Local detection of [Security Hotspots](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots)
+* Update PHP analyzer 3.25 -> [3.26](https://github.com/SonarSource/sonar-php/releases/tag/3.26.0.9313) -> [3.27](https://github.com/SonarSource/sonar-php/releases/tag/3.27.0.9339) -> [3.27.1](https://github.com/SonarSource/sonar-php/releases/tag/3.27.1.9352), Fix parsing error on namespaces with reserved words
+
 ## 3.13
 
 * Introduce dedicated "SonarLint" view container
