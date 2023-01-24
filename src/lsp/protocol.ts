@@ -29,6 +29,10 @@ export interface ShowRuleDescriptionParams {
   key: string;
   name: string;
   htmlDescription: string;
+  htmlDescriptionTabs: Array<{
+    title: string;
+    description: string;
+  }>;
   type: string;
   severity: string;
   isTaint: boolean;
