@@ -43,7 +43,7 @@ const SELECTED_SECONDARY_LOCATION_DECORATION = vscode.window.createTextEditorDec
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
 
-const SINGLE_LOCATION_DECORATION = vscode.window.createTextEditorDecorationType({
+export const SINGLE_LOCATION_DECORATION = vscode.window.createTextEditorDecorationType({
   backgroundColor: new vscode.ThemeColor(SONARLINT_LOCATIONS_BACKGROUND),
   textDecoration: 'wavy var(--vscode-inputValidation-warningBorder) 0.25px underline',
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
@@ -323,7 +323,7 @@ function vscodeRange(textRange: TextRange) {
   return new vscode.Range(startPosition, endPosition);
 }
 
-function isValidRange(textRange: vscode.Range, document: vscode.TextDocument) {
+export function isValidRange(textRange: vscode.Range, document: vscode.TextDocument) {
   const validatedRange = document.validateRange(textRange);
   return textRange.isEqual(validatedRange);
 }
