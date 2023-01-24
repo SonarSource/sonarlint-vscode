@@ -2,6 +2,7 @@
 
 * Local detection of [Security Hotspots](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots)
 * Update PHP analyzer 3.25 -> [3.26](https://github.com/SonarSource/sonar-php/releases/tag/3.26.0.9313) -> [3.27](https://github.com/SonarSource/sonar-php/releases/tag/3.27.0.9339) -> [3.27.1](https://github.com/SonarSource/sonar-php/releases/tag/3.27.1.9352), Fix parsing error on namespaces with reserved words
+* Update CFamily analyzer 6.40 -> [6.41](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013953%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), 13 new rules on C++20's "std::format"
 
 ## 3.13
 
