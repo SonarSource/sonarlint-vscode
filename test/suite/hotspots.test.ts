@@ -70,6 +70,10 @@ const mockHotspotsTreeDataProvider = {
 
   refresh() {
     return null;
+  },
+
+  getChildren() {
+    return [];
   }
 } as AllHotspotsTreeDataProvider;
 

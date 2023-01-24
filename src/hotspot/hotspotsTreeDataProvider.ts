@@ -1,9 +1,9 @@
 import * as VSCode from 'vscode';
+import { ProviderResult, ThemeColor, ThemeIcon } from 'vscode';
 import { Diagnostic, PublishHotspotsForFileParams } from '../lsp/protocol';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
-import { ProviderResult, ThemeColor, ThemeIcon } from 'vscode';
 import { OPEN_HOTSPOT_IN_IDE_SOURCE } from './hotspots';
 
 const SONARLINT_SOURCE = 'sonarlint';
@@ -180,21 +180,17 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   }
 
   hasLocalHotspots(): boolean {
-    console.log(this.fileHotspotsCache.size);
-    console.log([...this.fileHotspotsCache.values()]);
     return (
       this.fileHotspotsCache.size > 0 &&
       [...this.fileHotspotsCache.values()] // at least one of the hotspots in cache is in the view already
         .map(diags =>
           diags.some(diag => {
-            console.log(diag.source);
             return (
               diag.source === SONARLINT_SOURCE || diag.source === SONARQUBE_SOURCE || diag.source === SONARCLOUD_SOURCE
             );
           })
         )
         .some(v => {
-          console.log(v);
           return v;
         })
     );
@@ -208,6 +204,8 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     if (this.fileHasTrackedHotspots(fileUri) || this.openHotspotInIdeForFileWasTriggered(fileUri)) {
       children.push(new HotspotGroup('known', fileUri));
     }
+    console.log("i'm here getting children for file");
+    console.log(children);
     return children;
   }
 
@@ -232,5 +230,9 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       this.fileHotspotsCache.get(fileUri).length > 0 &&
       this.fileHotspotsCache.get(fileUri).some(diag => diag.source === OPEN_HOTSPOT_IN_IDE_SOURCE)
     );
+  }
+
+  getAllHotspots(): Diagnostic[] {
+    return [...this.fileHotspotsCache.values()].reduce(h => h);
   }
 }

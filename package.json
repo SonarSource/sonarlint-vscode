@@ -530,7 +530,7 @@
       },
       {
         "view": "SonarLint.SecurityHotspots",
-        "contents": "[Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) detected by SonarLint and SonarQube will be visible here if you have set up SonarLint Connected Mode with SonarQube v9.7 or higher. [Learn more](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode#connected-mode)."
+        "contents": "Available in Connected Mode with SonarQube 9.7+. [Learn more](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots)."
       }
     ],
     "menus": {
@@ -645,7 +645,7 @@
         {
           "command": "SonarLint.ClearHotspotLocations",
           "title": "Clear Highlighting",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem"
+          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
         },
         {
           "command": "SonarLint.HideHotspot",
