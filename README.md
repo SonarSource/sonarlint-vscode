@@ -20,6 +20,7 @@ Out of the box, SonarLint automatically checks your code against the following r
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 - [C rules](https://rules.sonarsource.com/c)
 - [C++ rules](https://rules.sonarsource.com/cpp)
+- [CSS rules](https://rules.sonarsource.com/css)
 - [Python rules](https://rules.sonarsource.com/python)
 - [Java rules](https://rules.sonarsource.com/java)
 - [HTML rules](https://rules.sonarsource.com/html)
