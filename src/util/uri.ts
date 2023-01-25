@@ -35,7 +35,7 @@ export function protocol2CodeConverter(value: string) {
   return vscode.Uri.parse(value);
 }
 
-export function getFileNameFromFullPath(fullPath: string) {
+export function getFileNameFromFullPath(fullPath: string): string {
   return fullPath.substring(fullPath.lastIndexOf('/') + 1);
 }
 
@@ -43,7 +43,7 @@ export function getRelativePathFromFullPath(
   fullPath: string,
   workspaceFolder: vscode.WorkspaceFolder,
   specifyWorkspaceFolderName: boolean
-) {
+): string {
   const fullUri = vscode.Uri.parse(fullPath); // /Users/user/sonarlint-vscode/samples/main.js
   const fileName = getFileNameFromFullPath(fullPath); // main.js
   const workspaceFolderUri = workspaceFolder.uri.fsPath; // /Users/user/sonarlint-vscode/
@@ -60,7 +60,7 @@ export function getRelativePathFromFullPath(
   return relativePathWithoutFileName;
 }
 
-export function getFullPathFromRelativePath(relativePath: string, workspaceFolder: vscode.WorkspaceFolder) {
+export function getFullPathFromRelativePath(relativePath: string, workspaceFolder: vscode.WorkspaceFolder): string {
   const workspaceFolderUri = workspaceFolder.uri.fsPath;
   return `file://${workspaceFolderUri}/${relativePath}`;
 }

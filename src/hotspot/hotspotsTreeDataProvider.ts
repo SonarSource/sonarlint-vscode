@@ -66,6 +66,7 @@ export class HotspotNode extends VSCode.TreeItem {
     public readonly fileUri: string
   ) {
     super(message, VSCode.TreeItemCollapsibleState.None);
+    this.id = key;
     this.iconPath = vulnerabilityProbabilityToIcon.get(vulnerabilityProbability);
     if (source === OPEN_HOTSPOT_IN_IDE_SOURCE) {
       this.command = {
@@ -86,7 +87,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<HotspotTreeViewItem | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<HotspotTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   public fileHotspotsCache = new Map<string, Diagnostic[]>();
-  private readonly filesWithHotspots = new Map<string, FileGroup>();
+  private filesWithHotspots = new Map<string, FileGroup>();
 
   constructor(private readonly connectionSettingsService: ConnectionSettingsService) {
     // NOP
@@ -131,6 +132,15 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   }
 
   getParent(element: HotspotTreeViewItem): ProviderResult<HotspotTreeViewItem> {
+    if (element && element.contextValue === 'knownHotspotItem') {
+      const relativeFolderUri = getRelativePathFromFullPath(
+        element.fileUri,
+        VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(element.fileUri)),
+        false
+      );
+      const fileUri = relativeFolderUri + getFileNameFromFullPath(element.fileUri);
+      return this.filesWithHotspots.get(fileUri);
+    }
     return null;
   }
 
@@ -204,13 +214,12 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     if (this.fileHasTrackedHotspots(fileUri) || this.openHotspotInIdeForFileWasTriggered(fileUri)) {
       children.push(new HotspotGroup('known', fileUri));
     }
-    console.log("i'm here getting children for file");
-    console.log(children);
     return children;
   }
 
   fileHasNewHotspots(fileUri: string): boolean {
     return (
+      this.fileHotspotsCache.has(fileUri) &&
       this.fileHotspotsCache.get(fileUri).length > 0 &&
       this.fileHotspotsCache.get(fileUri).some(diag => diag.source === SONARLINT_SOURCE)
     );
@@ -230,9 +239,5 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       this.fileHotspotsCache.get(fileUri).length > 0 &&
       this.fileHotspotsCache.get(fileUri).some(diag => diag.source === OPEN_HOTSPOT_IN_IDE_SOURCE)
     );
-  }
-
-  getAllHotspots(): Diagnostic[] {
-    return [...this.fileHotspotsCache.values()].reduce(h => h);
   }
 }
