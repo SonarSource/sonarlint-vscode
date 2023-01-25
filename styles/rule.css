@@ -93,12 +93,12 @@ a {
   margin-top: 2px;
 }
 
-.taint-banner {
+.info-banner {
   margin: 1em;
 }
 
-.taint-banner-wrapper {
-  margin-top: 1em;
+.info-banner-wrapper {
+  margin: 1em 0;
   border: 1px solid var(--vscode-textBlockQuote-border);
   border-radius: 2px;
   background-color: var(--vscode-textBlockQuote-background);

@@ -50,6 +50,7 @@ function computeRuleDescPanelContent(
 ) {
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'rule.css');
+  const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
   const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severity.toLowerCase()}.png`);
   const typeImgSrc = resolver.resolve('images', 'type', `${rule.type.toLowerCase()}.png`);
   const infoImgSrc = resolver.resolve('images', 'info.png');
@@ -58,15 +59,16 @@ function computeRuleDescPanelContent(
 
   const taintBanner = renderTaintBanner(rule, infoImgSrc);
   const hotspotBanner = renderHotspotBanner(rule, infoImgSrc);
+  const ruleDescription = renderRuleDescription(rule);
 
   return `<!doctype html><html lang="en">
     <head>
     <title>${escapeHtml(rule.name)}</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <meta http-equiv="Encoding" content="utf-8" />
     <meta http-equiv="Content-Security-Policy"
       content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}"/>
     <link rel="stylesheet" type="text/css" href="${styleSrc}" />
+    <link rel="stylesheet" type="text/css" href="${hotspotSrc}" />
     </head>
     <body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
     <div>
@@ -77,21 +79,17 @@ function computeRuleDescPanelContent(
     </div>
     ${taintBanner}
     ${hotspotBanner}
-    <div class="rule-desc">${rule.htmlDescription}</div>
+    ${ruleDescription}
     ${ruleParamsHtml}
     </body></html>`;
 }
 
-function base64encode(file: string) {
-  return FS.readFileSync(file).toString('base64');
-}
-
-function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string) {
+export function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string) {
   if (!rule.isTaint) {
     return '';
   }
-  return `<div class="taint-banner-wrapper">
-            <p class="taint-banner"><span><img class="taint-info-icon" src=${infoImgSrc} alt="info"></span> 
+  return `<div class="info-banner-wrapper">
+            <p class="info-banner"><span><img src=${infoImgSrc} alt="info"></span> 
             This injection vulnerability was detected by the latest SonarQube or SonarCloud analysis.
              SonarLint fetches and reports it in your local code to help you investigate it and fix it,
               but cannot tell you whether you successfully fixed it. To verify your fix, please ensure
@@ -100,12 +98,12 @@ function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string) 
            </div>`;
 }
 
-function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string) {
+export function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string) {
   if (rule.type !== 'SECURITY_HOTSPOT') {
     return '';
   }
-  return `<div class="taint-banner-wrapper">
-            <p class="taint-banner"><span><img class="taint-info-icon" src=${infoImgSrc} alt="info"></span> 
+  return `<div class="info-banner-wrapper">
+            <p class="info-banner"><span><img src=${infoImgSrc} alt="info"></span> 
             A security hotspot highlights a security-sensitive piece of code that the developer <b>needs to review</b>.
             Upon review, you'll either find there is no threat or you need to apply a fix to secure the code.
             In order to set the review output for a hotspot, please right-click on the hotspot and select the
@@ -114,7 +112,22 @@ function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string
            </div>`;
 }
 
-function renderRuleParams(rule: ShowRuleDescriptionParams) {
+export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
+  if (rule.htmlDescriptionTabs.length === 0) {
+    return `<div class="rule-desc">${rule.htmlDescription}</div>`;
+  } else {
+    const tabsContent = rule.htmlDescriptionTabs
+      .map((tab, index) => `<input type="radio" name="tabs" id="tab-${index}" ${index === 0 ? 'checked="checked"' : ''}>
+      <label for="tab-${index}">${tab.title}</label>
+      <section class="tab">
+      ${tab.description}
+      </section>`)
+      .join('');
+    return `<main class="tabs">${tabsContent}</main>`;
+  }
+}
+
+export function renderRuleParams(rule: ShowRuleDescriptionParams) {
   if (rule.parameters && rule.parameters.length > 0) {
     const ruleParamsConfig = VSCode.workspace.getConfiguration(`sonarlint.rules.${rule.key}.parameters`);
     return `<table class="rule-params">
@@ -136,7 +149,7 @@ function renderRuleParams(rule: ShowRuleDescriptionParams) {
   }
 }
 
-function renderRuleParam(param, config) {
+export function renderRuleParam(param, config) {
   const { name, description, defaultValue } = param;
   const descriptionP = description ? `<p>${description}</p>` : '';
   const currentValue = config.has(name) ? `<small>Current value: <code>${config.get(name)}</code></small>` : '';
