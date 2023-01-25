@@ -101,6 +101,12 @@ To browse injection vulnerabilities in SonarLint for VSCode, establish [Connecte
 
 More information about security-related rules are available in the [SonarQube](https://docs.sonarqube.org/latest/user-guide/security-rules/) or [SonarCloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/) documentation.
 
+### Security Hotspots in SonarLint
+​
+In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) is enabled if you are using [Connected Mode](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode) with SonarQube 9.7 or above.
+
+Please see the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Security-hotspots) for more details. 
+
 ## Connected Mode
 
 You can connect SonarLint to SonarQube 7.9+/SonarCloud by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder. 
@@ -208,7 +214,7 @@ Issue tracker (readonly): https://jira.sonarsource.com/browse/SLVSCODE
 
 ## License
 
-Copyright 2017-2022 SonarSource.
+Copyright 2017-2023 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
 
