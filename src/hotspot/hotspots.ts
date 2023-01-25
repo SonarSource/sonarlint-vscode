@@ -11,7 +11,7 @@ import { Commands } from '../util/commands';
 import { logToSonarLintOutput } from '../extension';
 import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import { Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
-import { formatIssueMessage, resolveExtensionFile } from '../util/util';
+import { resolveExtensionFile } from '../util/util';
 import {
   AllHotspotsTreeDataProvider,
   HotspotNode,
@@ -21,7 +21,6 @@ import {
 import { getFullPathFromRelativePath } from '../util/uri';
 import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
 
-export const HOTSPOT_SOURCE = 'SonarQube Security Hotspot';
 export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
 
 let activeHotspot: RemoteHotspot;
@@ -46,23 +45,9 @@ export const showSecurityHotspot = async (
       activeHotspot = hotspot ? hotspot : activeHotspot;
       await highlightLocation(editor);
     } else {
-      const hotspotDiag = createHotspotDiagnostic(hotspot, allHotspotsView, hotspotsTreeDataProvider);
+      revealHotspotInTreeView(hotspot, allHotspotsView, hotspotsTreeDataProvider);
       activeHotspot = hotspot ? hotspot : activeHotspot;
-      const startPosition = new vscode.Position(
-        activeHotspot.textRange.startLine - 1,
-        activeHotspot.textRange.startLineOffset
-      );
-      const endPosition = new vscode.Position(
-        activeHotspot.textRange.endLine - 1,
-        activeHotspot.textRange.endLineOffset
-      );
-      const vscodeRange = new vscode.Range(startPosition, endPosition);
-      editor.revealRange(vscodeRange, vscode.TextEditorRevealType.InCenter);
-      editor.selection = new vscode.Selection(
-        new vscode.Position(hotspotDiag.range.start.line, hotspotDiag.range.start.character),
-        new vscode.Position(hotspotDiag.range.end.line, hotspotDiag.range.end.character)
-      );
-      editor.setDecorations(SINGLE_LOCATION_DECORATION, [vscodeRange]);
+      await highlightLocation(editor);
     }
     vscode.commands.executeCommand(Commands.SHOW_HOTSPOT_DESCRIPTION);
   }
@@ -97,7 +82,7 @@ export const hideSecurityHotspot = (hotspotsTreeDataProvider: AllHotspotsTreeDat
   hotspotsTreeDataProvider.refresh();
 };
 
-function createHotspotDiagnostic(
+function revealHotspotInTreeView(
   hotspot: RemoteHotspot,
   allHotspotsView: vscode.TreeView<HotspotTreeViewItem>,
   hotspotsTreeDataProvider: AllHotspotsTreeDataProvider
@@ -125,22 +110,16 @@ function createHotspotDiagnostic(
     hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
     const fullHotspotPath = getFullPathFromRelativePath(hotspot.filePath, vscode.workspace.workspaceFolders[0]);
     hotspotsTreeDataProvider.fileHotspotsCache.set(fullHotspotPath, [hotspotDiag]);
-    fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(fullHotspotPath);
+    fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.filePath);
+    hotspotsTreeDataProvider.refresh();
   }
-  const groups = hotspotsTreeDataProvider.getChildren(fileToHighlight);
-  const knownHotspotGroup = groups.find(g => {
-    console.log('trying to find known group');
-    console.log(g);
+  const knownHotspotGroup = hotspotsTreeDataProvider.getChildren(fileToHighlight).find(g => {
     return g.contextValue === 'knownHotspotsGroup';
   });
   const hotspotToHighlight = hotspotsTreeDataProvider.getChildren(knownHotspotGroup).find(h => {
-    console.log('trying to find hotspot');
-    console.log(h);
     return h.label === hotspot.message;
   });
   allHotspotsView.reveal(hotspotToHighlight, { focus: true });
-
-  return hotspotDiag;
 }
 
 export function diagnosticSeverity(hotspot: RemoteHotspot) {
@@ -185,10 +164,7 @@ export const highlightLocation = async editor => {
   const endPosition = new vscode.Position(activeHotspot.textRange.endLine - 1, activeHotspot.textRange.endLineOffset);
   const vscodeRange = new vscode.Range(startPosition, endPosition);
   editor.revealRange(vscodeRange, vscode.TextEditorRevealType.InCenter);
-  editor.selection = new vscode.Selection(
-    new vscode.Position(activeHotspot.textRange.startLine, activeHotspot.textRange.startLineOffset),
-    new vscode.Position(activeHotspot.textRange.endLine, activeHotspot.textRange.endLineOffset)
-  );
+  editor.selection = new vscode.Selection(startPosition, endPosition);
   if (isValidRange(vscodeRange, editor.document)) {
     editor.setDecorations(SINGLE_LOCATION_DECORATION, [vscodeRange]);
   }
