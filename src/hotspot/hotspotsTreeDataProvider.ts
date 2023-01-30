@@ -93,10 +93,11 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     // NOP
   }
 
-  refresh(hotspotsPerFile?: PublishHotspotsForFileParams) {
+  async refresh(hotspotsPerFile?: PublishHotspotsForFileParams) {
     if (hotspotsPerFile && hotspotsPerFile.uri && hotspotsPerFile.diagnostics.length > 0) {
       this.fileHotspotsCache.set(hotspotsPerFile.uri, hotspotsPerFile.diagnostics);
     }
+    await this.cleanupHotspotsCache();
     this._onDidChangeTreeData.fire(null);
   }
 
@@ -109,16 +110,10 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   }
 
   getChildren(element?: HotspotTreeViewItem): HotspotTreeViewItem[] {
-    const arr = [];
     if (!element && !this.isAnyConnectionConfigured()) {
       return [];
     } else if (!element && this.fileHotspotsCache.size > 0) {
-      this.fileHotspotsCache.forEach((_v, fileName) => {
-        const fileGroup = new FileGroup(fileName.toString());
-        arr.push(fileGroup);
-        this.filesWithHotspots.set(`${fileGroup.description}${fileGroup.label}`, fileGroup);
-      });
-      return arr;
+      return this.getFiles();
     } else if (element && element.contextValue === 'hotspotsFileGroup') {
       return this.getHotspotsGroupsForFile(element.fileUri);
     } else if (
@@ -176,6 +171,16 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
         );
       })
       .sort((h1, h2) => h1.vulnerabilityProbability - h2.vulnerabilityProbability);
+  }
+
+  getFiles() {
+    const arr = [];
+    this.fileHotspotsCache.forEach((_v, fileName) => {
+      const fileGroup = new FileGroup(fileName.toString());
+      arr.push(fileGroup);
+      this.filesWithHotspots.set(`${fileGroup.description}${fileGroup.label}`, fileGroup);
+    });
+    return arr;
   }
 
   getHotspotItemContextValue(hotspot, hotspotGroupContextValue) {
@@ -239,5 +244,22 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       this.fileHotspotsCache.get(fileUri).length > 0 &&
       this.fileHotspotsCache.get(fileUri).some(diag => diag.source === OPEN_HOTSPOT_IN_IDE_SOURCE)
     );
+  }
+
+  private async cleanupHotspotsCache() {
+    for (const fullFileUri of this.fileHotspotsCache.keys()) {
+      const fileName = getFileNameFromFullPath(fullFileUri);
+      const relativeFilePath = getRelativePathFromFullPath(
+        fullFileUri,
+        VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(fullFileUri)),
+        false
+      );
+      const foundFileUris = await VSCode.workspace.findFiles(`**/${fileName}`);
+      const vscodeUri = VSCode.Uri.parse(fullFileUri);
+      if (!foundFileUris.some(file => file.path === vscodeUri.path)) {
+        this.fileHotspotsCache.delete(fullFileUri);
+        this.filesWithHotspots.delete(`${relativeFilePath}${fileName}`);
+      }
+    }
   }
 }
