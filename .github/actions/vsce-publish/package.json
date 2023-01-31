@@ -1,6 +1,6 @@
 {
   "name": "vsce-publish",
-  "version": "0.1",
+  "version": "0.2",
   "author": {
     "name": "SonarSource",
     "url": "https://www.sonarsource.com"
@@ -8,6 +8,6 @@
   "license": "SEE LICENSE IN ../../../LICENSE.txt",
   "type": "module",
   "dependencies": {
-    "vsce": "2.15.0"
+    "@vscode/vsce": "2.17.0"
   }
 }
