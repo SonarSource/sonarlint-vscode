@@ -42,11 +42,11 @@ jobs:
         platform: ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal']
     steps:
       - name: Checkout custom actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           clean: false
       - name: Use Node 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install dependencies for vsce-publish
@@ -57,6 +57,7 @@ jobs:
         id: extract_version
         shell: python
         run: |
+          import os
           #
           # Extract version, build file name and download URL from GH ref
           #
@@ -74,13 +75,14 @@ jobs:
             artifactName = f'sonarlint-vscode-{platform}-{version}.vsix'
           artifactUrl = f'{slvscodeBaseUrl}/{version}/{artifactName}'
 
-          print(f'::set-output name=artifactUrl::{artifactUrl}')
-          print(f'::set-output name=artifactName::{artifactName}')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:
+            print(f'artifactUrl={artifactUrl}', file=githubOutput)
+            print(f'artifactName={artifactName}', file=githubOutput)
       - name: Download promoted file
         id: download_artifact
         run: |
           curl -s -o ${{ steps.extract_version.outputs.artifactName }} ${{ steps.extract_version.outputs.artifactUrl }}
-          echo '::set-output name=artifactFile::'$(pwd)/${{ steps.extract_version.outputs.artifactName }}
+          echo 'artifactFile='$(pwd)/${{ steps.extract_version.outputs.artifactName }} >> ${GITHUB_OUTPUT}
 
       - name: Publish to Visual Studio Marketplace
         if: success()
@@ -97,9 +99,9 @@ jobs:
     needs: sonar_release
     steps:
       - name: Checkout custom actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Use Node 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install dependencies for ovsx-publish
@@ -110,6 +112,7 @@ jobs:
         id: extract_version
         shell: python
         run: |
+          import os
           #
           # Extract version, build file name and download URL from GH ref
           #
@@ -123,14 +126,15 @@ jobs:
           artifactName = f'sonarlint-vscode-{version}.vsix'
           artifactUrl = f'{slvscodeBaseUrl}/{version}/{artifactName}'
           
-          print(f'::set-output name=artifactUrl::{artifactUrl}')
-          print(f'::set-output name=artifactName::{artifactName}')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:
+            print(f'artifactUrl={artifactUrl}', file=githubOutput)
+            print(f'artifactName={artifactName}', file=githubOutput)
 
       - name: Download promoted file
         id: download_artifact
         run: |
           curl -s -o ${{ steps.extract_version.outputs.artifactName }} ${{ steps.extract_version.outputs.artifactUrl }}
-          echo '::set-output name=artifactFile::'$(pwd)/${{ steps.extract_version.outputs.artifactName }}
+          echo 'artifactFile='$(pwd)/${{ steps.extract_version.outputs.artifactName }} >> ${GITHUB_OUTPUT}
       - name: Publish to OpenVSX
         if: success()
         id: ovsx_publish
