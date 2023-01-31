@@ -55,7 +55,16 @@ const WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION = 5000;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
 
-const DOCUMENT_SELECTOR = [{ scheme: 'file', pattern: '**/*' }];
+const DOCUMENT_SELECTOR = [
+  { scheme: 'file', pattern: '**/*' },
+  {
+    notebook: {
+      scheme: 'file',
+      notebookType: 'jupyter-notebook'
+    },
+    language: 'python'
+  }
+];
 
 let sonarlintOutput: VSCode.OutputChannel;
 let secondaryLocationsTree: SecondaryLocationsTree;
@@ -662,7 +671,9 @@ export async function performIsIgnoredCheck(
 
 function isOpenInEditor(fileUri: string) {
   const codeFileUri = VSCode.Uri.parse(fileUri).toString(false);
-  return VSCode.workspace.textDocuments.some(d => d.uri.toString(false) === codeFileUri);
+  const textDocumentIsOpen = VSCode.workspace.textDocuments.some(d => d.uri.toString(false) === codeFileUri);
+  const notebookDocumentIsOpen = VSCode.workspace.notebookDocuments.some(d => d.uri.toString(false) === codeFileUri);
+  return textDocumentIsOpen || notebookDocumentIsOpen;
 }
 
 async function showAllLocations(issue: protocol.Issue) {
