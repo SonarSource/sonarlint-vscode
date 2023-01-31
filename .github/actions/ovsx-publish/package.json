@@ -1,6 +1,6 @@
 {
   "name": "ovsx-publish",
-  "version": "0.2",
+  "version": "0.3",
   "author": {
     "name": "SonarSource",
     "url": "https://www.sonarsource.com"
@@ -8,6 +8,6 @@
   "license": "SEE LICENSE IN ../../../LICENSE.txt",
   "type": "module",
   "dependencies": {
-    "ovsx": "0.3.0"
+    "ovsx": "0.8.0"
   }
 }
