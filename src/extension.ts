@@ -223,13 +223,14 @@ export function activate(context: VSCode.ExtensionContext) {
   ConnectionSettingsService.init(context, languageClient);
   connectionSettingsService = ConnectionSettingsService.instance;
   migrateConnectedModeSettings(currentConfig, connectionSettingsService);
-  languageClient.onReady().then(() => installCustomRequestHandlers(context));
 
   BindingService.init(languageClient, context.workspaceState, connectionSettingsService);
   bindingService = BindingService.instance;
   AutoBindingService.init(bindingService, context.workspaceState, connectionSettingsService);
 
-  languageClient.onReady().then(() => {
+  languageClient.start().then(() => {
+    installCustomRequestHandlers(context);
+
     const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
     const scm = initScm(languageClient, referenceBranchStatusItem);
     context.subscriptions.push(scm);
@@ -247,11 +248,7 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.window.onDidChangeActiveTextEditor(e => scm.updateReferenceBranchStatusItem(e));
   });
 
-  languageClient.start();
-
-  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() =>
-    languageClient.onReady().then(() => languageClient.listAllRules())
-  );
+  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
   const allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
     treeDataProvider: allRulesTreeDataProvider
   });

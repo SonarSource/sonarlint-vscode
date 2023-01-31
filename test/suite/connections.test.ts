@@ -22,16 +22,13 @@ const sampleFolderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocatio
 const projectKeysToNames = {
   projectKey1: 'Project Name 1',
   projectKey2: 'Project Name 2'
-} as {[k: string]: string}
+} as { [k: string]: string };
 
 const mockClient = {
-  async onReady() {
-    return Promise.resolve();
-  },
   async checkConnection(connectionId: string) {
     return Promise.resolve({ connectionId, success: true });
   },
-  async getRemoteProjectNames(_connectionId, _projectKeys ) {
+  async getRemoteProjectNames(_connectionId, _projectKeys) {
     return Promise.resolve(projectKeysToNames);
   }
 } as SonarLintExtendedLanguageClient;
@@ -39,24 +36,28 @@ const mockClient = {
 suite('Connected Mode Test Suite', () => {
   setup(async () => {
     // start from scratch config
-    await vscode.workspace.getConfiguration('sonarlint')
-        .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, vscode.ConfigurationTarget.Global);
-    await vscode.workspace.getConfiguration('sonarlint')
-        .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, undefined, vscode.ConfigurationTarget.Global);
+    await vscode.workspace
+      .getConfiguration('sonarlint')
+      .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, vscode.ConfigurationTarget.Global);
+    await vscode.workspace
+      .getConfiguration('sonarlint')
+      .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, undefined, vscode.ConfigurationTarget.Global);
   });
 
   teardown(async () => {
-    await vscode.workspace.getConfiguration('sonarlint')
-        .update(CONNECTED_MODE_SETTINGS, undefined, vscode.ConfigurationTarget.Global);
-    await vscode.workspace.getConfiguration('sonarlint', sampleFolderUri)
-        .update('connectedMode.project', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
+    await vscode.workspace
+      .getConfiguration('sonarlint')
+      .update(CONNECTED_MODE_SETTINGS, undefined, vscode.ConfigurationTarget.Global);
+    await vscode.workspace
+      .getConfiguration('sonarlint', sampleFolderUri)
+      .update('connectedMode.project', undefined, vscode.ConfigurationTarget.WorkspaceFolder);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
   suite('getConnections()', () => {
     let underTest;
     setup(() => {
-        underTest = new AllConnectionsTreeDataProvider(mockClient);
+      underTest = new AllConnectionsTreeDataProvider(mockClient);
     });
 
     test('should return same number of sonarqube settings as in config file', async () => {
@@ -73,7 +74,6 @@ suite('Connected Mode Test Suite', () => {
       const connectionConfig = vscode.workspace.getConfiguration('sonarlint.connectedMode.connections');
       expect(connectionConfig.sonarcloud.length).to.equal((await underTest.getConnections('sonarcloud')).length);
     });
-
   });
 
   suite('ConnectedMode TreeView', () => {
@@ -94,10 +94,12 @@ suite('Connected Mode Test Suite', () => {
       const testSQConfig = [
         { serverUrl: 'https://sonarqube.mycompany.com', token: '<generated from SonarQube account/security page>' }
       ];
-      await vscode.workspace.getConfiguration('sonarlint')
-          .update(CONNECTED_MODE_SETTINGS_SONARQUBE, testSQConfig, vscode.ConfigurationTarget.Global);
-      await vscode.workspace.getConfiguration('sonarlint', sampleFolderUri)
-          .update('connectedMode.project', { projectKey: 'projectKey1' }, vscode.ConfigurationTarget.WorkspaceFolder);
+      await vscode.workspace
+        .getConfiguration('sonarlint')
+        .update(CONNECTED_MODE_SETTINGS_SONARQUBE, testSQConfig, vscode.ConfigurationTarget.Global);
+      await vscode.workspace
+        .getConfiguration('sonarlint', sampleFolderUri)
+        .update('connectedMode.project', { projectKey: 'projectKey1' }, vscode.ConfigurationTarget.WorkspaceFolder);
 
       const underTest = new AllConnectionsTreeDataProvider(mockClient);
 
@@ -124,8 +126,9 @@ suite('Connected Mode Test Suite', () => {
         { organizationKey: 'myOrg1', token: 'ggggg' },
         { organizationKey: 'myOrg2', token: 'ddddd' }
       ];
-      await vscode.workspace.getConfiguration('sonarlint')
-          .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, testSCConfig, vscode.ConfigurationTarget.Global);
+      await vscode.workspace
+        .getConfiguration('sonarlint')
+        .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, testSCConfig, vscode.ConfigurationTarget.Global);
 
       const underTest = new AllConnectionsTreeDataProvider(mockClient);
 
