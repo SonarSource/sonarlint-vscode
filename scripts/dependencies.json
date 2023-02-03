@@ -2,7 +2,7 @@
   {
     "groupId": "org.sonarsource.sonarlint.ls",
     "artifactId": "sonarlint-language-server",
-    "version": "2.14.0.60896",
+    "version": "2.15.0-SNAPSHOT",
     "output": "server/sonarlint-ls.jar"
   },
   {
@@ -42,11 +42,10 @@
     "output": "analyzers/sonarxml.jar"
   },
   {
-    "groupId": "com.sonarsource.secrets",
-    "artifactId": "sonar-secrets-plugin",
-    "version": "1.2.0.53269",
-    "output": "analyzers/sonarsecrets.jar",
-    "requiresCredentials": true
+    "groupId": "org.sonarsource.text",
+    "artifactId": "sonar-text-plugin",
+    "version": "2.1.0.621",
+    "output": "analyzers/sonartext.jar"
   },
   {
     "groupId": "com.sonarsource.cpp",
