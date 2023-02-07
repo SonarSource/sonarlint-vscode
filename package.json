@@ -5,7 +5,7 @@
   "version": "3.15.0-SNAPSHOT",
   "icon": "images/sonarlint_wave_128px.png",
   "publisher": "SonarSource",
-  "homepage": "http://www.sonarlint.org",
+  "homepage": "https://www.sonarsource.com/products/sonarlint/",
   "repository": {
     "type": "git",
     "url": "https://github.com/SonarSource/sonarlint-vscode.git"
