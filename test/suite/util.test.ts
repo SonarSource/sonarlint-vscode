@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { startedInDebugMode } from '../../src/util/util';
+import { isRunningAutoBuild, startedInDebugMode } from '../../src/util/util';
 import { expect } from 'chai';
 
 suite('util', () => {
@@ -33,6 +33,16 @@ suite('util', () => {
   test('should not have args', () => {
     process.execArgv = null;
     expect(startedInDebugMode(process)).to.be.false;
+  });
+
+  test('should recognize build running on azure pipelines', () => {
+    process.env.NODE_ENV = 'continuous-integration';
+    expect(isRunningAutoBuild()).to.be.true;
+  });
+
+  test('should recognize build running locallly', () => {
+    delete process.env.NODE_ENV
+    expect(isRunningAutoBuild()).to.be.false;
   });
 
 });

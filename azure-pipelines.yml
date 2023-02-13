@@ -137,6 +137,8 @@ stages:
           inputs:
             command: custom
             customCommand: run test-cov
+          env:
+            NODE_ENV : 'continuous-integration'
         - task: PublishTestResults@2
           condition: succeededOrFailed()
           inputs:
