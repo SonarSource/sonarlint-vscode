@@ -112,16 +112,6 @@ stages:
               npm
             path: $(npm_config_cache)
           displayName: Cache npm
-        - bash: |
-            set -euo pipefail
-            sudo apt-get update
-            sudo apt-get install -y xvfb
-            sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
-            sudo chmod +x /etc/init.d/xvfb
-            sudo update-rc.d xvfb defaults
-            sudo service xvfb start
-            export DISPLAY=':10'
-          displayName: 'Install and start xvfb'
         - template: prepare-sq-analysis-steps.yml
           parameters:
             scannerMode: CLI
