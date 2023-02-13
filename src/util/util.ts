@@ -9,6 +9,7 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as process from 'process';
 
 export function startedInDebugMode(process: NodeJS.Process): boolean {
   const args = process.execArgv;
@@ -27,6 +28,14 @@ export let extensionContext: vscode.ExtensionContext;
 export function setExtensionContext(context: vscode.ExtensionContext): void {
   extensionContext = context;
   extensionPath = extensionContext.extensionPath;
+}
+
+export function isRunningOnWindows() {
+  return /^win32/.test(process.platform);
+}
+
+export function isRunningAutoBuild() {
+  return process.env.NODE_ENV === 'continuous-integration'
 }
 
 export function execChildProcess(process: string, workingDirectory: string, channel?: vscode.OutputChannel) {
