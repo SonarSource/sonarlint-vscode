@@ -86,8 +86,101 @@ stages:
     stageName: 'validate'
     stageDisplayName: Run tests, SonarQube analysis and Mend scan
     jobs:
-    - job: test
-      displayName: Run tests, SonarQube analysis and Mend analysis
+    - job: test_windows
+      displayName: Run tests, SonarQube analysis and Mend analysis on Windows
+      pool:
+        vmImage: 'windows-latest'
+      variables:
+        npm_config_cache: $(Pipeline.Workspace)/.npm
+      steps:
+        - task: PythonScript@0
+          name: extractPackageVersion
+          displayName: Extract version from package.json
+          inputs:
+            scriptSource: 'inline'
+            script: |
+              import json
+              with open('package.json') as packageJsonFile:
+                packageJson = json.load(packageJsonFile)
+                print("##vso[task.setvariable variable=packageVersion]" + packageJson['version'])
+                print("##vso[task.setvariable variable=MEND_PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', ''))
+        - task: Cache@2
+          inputs:
+            key: 'npm | "$(Agent.OS)" | its/package-lock.json'
+            restoreKeys: |
+              npm | "$(Agent.OS)"
+              npm
+            path: $(npm_config_cache)
+          displayName: Cache npm
+        - bash: |
+            set -euo pipefail
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+            sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+            sudo chmod +x /etc/init.d/xvfb
+            sudo update-rc.d xvfb defaults
+            sudo service xvfb start
+            export DISPLAY=':10'
+          displayName: 'Install and start xvfb'
+        - template: prepare-sq-analysis-steps.yml
+          parameters:
+            scannerMode: CLI
+            configMode: manual
+            projectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
+            projectName: 'SonarLint for VSCode'
+            projectVersion: $(packageVersion)
+            extraProperties: |
+              sonar.tests=test,its/src
+              sonar.exclusions=test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**, **/its/**, **/dogfood/**
+              sonar.javascript.lcov.reportPaths=coverage/lcov.info
+              sonar.coverage.exclusions=gulpfile.js, webpack.config.js, scripts/**
+        - task: Npm@1
+          displayName: 'Install NPM dependencies'
+          env:
+            ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+            ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+          inputs:
+            command: ci
+        - task: Npm@1
+          displayName: 'Compile TypeScript'
+          inputs:
+            command: custom
+            customCommand: run compile
+        - task: Npm@1
+          displayName: 'Fetch language server and its dependencies'
+          continueOnError: true
+          inputs:
+            command: custom
+            customCommand: run prepare
+          env:
+            ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+            ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+        - task: Npm@1
+          displayName: 'Run tests with coverage'
+          inputs:
+            command: custom
+            customCommand: run test-cov
+        - task: PublishTestResults@2
+          condition: succeededOrFailed()
+          inputs:
+            testResultsFiles: '**/alltests.xml'
+            failTaskOnFailedTests: true
+            testRunTitle: UTs
+        - bash: git checkout .
+          name: revertPackageJsonChanges
+          displayName: Revert changes made to package.json to not break cache feature
+
+        - task: SonarQubeAnalyze@4
+          displayName: 'Run SonarQube analysis on Next'
+        - template: mend.yml@commonTemplates
+          parameters:
+            productName : 'SonarLint/VSCode'
+            releaseVersion: '$(MEND_PROJECT_VERSION)'
+
+    - job: test_linux
+      displayName: Run tests, SonarQube analysis and Mend analysis on Linux
+      pool:
+        vmImage: 'ubuntu-latest'
       variables:
         npm_config_cache: $(Pipeline.Workspace)/.npm
       steps:
