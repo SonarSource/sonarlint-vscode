@@ -87,7 +87,7 @@ stages:
     stageDisplayName: Run tests, SonarQube analysis and Mend scan
     jobs:
     - job: test_windows
-      displayName: Run tests, SonarQube analysis and Mend analysis on Windows
+      displayName: Run tests on Windows
       pool:
         vmImage: 'windows-latest'
       variables:
@@ -103,27 +103,14 @@ stages:
               with open('package.json') as packageJsonFile:
                 packageJson = json.load(packageJsonFile)
                 print("##vso[task.setvariable variable=packageVersion]" + packageJson['version'])
-                print("##vso[task.setvariable variable=MEND_PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', ''))
         - task: Cache@2
           inputs:
-            key: 'npm | "$(Agent.OS)" | its/package-lock.json'
+            key: 'npm | "$(Agent.OS)" | package-lock.json'
             restoreKeys: |
               npm | "$(Agent.OS)"
               npm
             path: $(npm_config_cache)
           displayName: Cache npm
-        - template: prepare-sq-analysis-steps.yml
-          parameters:
-            scannerMode: CLI
-            configMode: manual
-            projectKey: 'org.sonarsource.sonarlint.vscode:sonarlint-vscode'
-            projectName: 'SonarLint for VSCode'
-            projectVersion: $(packageVersion)
-            extraProperties: |
-              sonar.tests=test,its/src
-              sonar.exclusions=test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**, **/its/**, **/dogfood/**
-              sonar.javascript.lcov.reportPaths=coverage/lcov.info
-              sonar.coverage.exclusions=gulpfile.js, webpack.config.js, scripts/**
         - task: Npm@1
           displayName: 'Install NPM dependencies'
           env:
@@ -146,7 +133,7 @@ stages:
             ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
             ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
         - task: Npm@1
-          displayName: 'Run tests with coverage'
+          displayName: 'Run tests with coverage on Windows'
           inputs:
             command: custom
             customCommand: run test-cov
@@ -155,17 +142,10 @@ stages:
           inputs:
             testResultsFiles: '**/alltests.xml'
             failTaskOnFailedTests: true
-            testRunTitle: UTs
+            testRunTitle: 'UTs on Windows'
         - bash: git checkout .
           name: revertPackageJsonChanges
           displayName: Revert changes made to package.json to not break cache feature
-
-        - task: SonarQubeAnalyze@4
-          displayName: 'Run SonarQube analysis on Next'
-        - template: mend.yml@commonTemplates
-          parameters:
-            productName : 'SonarLint/VSCode'
-            releaseVersion: '$(MEND_PROJECT_VERSION)'
 
     - job: test_linux
       displayName: Run tests, SonarQube analysis and Mend analysis on Linux
@@ -187,7 +167,7 @@ stages:
               print("##vso[task.setvariable variable=MEND_PROJECT_VERSION]" + packageJson['version'].replace('-SNAPSHOT', ''))
       - task: Cache@2
         inputs:
-          key: 'npm | "$(Agent.OS)" | its/package-lock.json'
+          key: 'npm | "$(Agent.OS)" | package-lock.json'
           restoreKeys: |
             npm | "$(Agent.OS)"
             npm
@@ -237,7 +217,7 @@ stages:
           ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
           ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
       - task: Npm@1
-        displayName: 'Run tests with coverage'
+        displayName: 'Run tests with coverage on Linux'
         inputs:
           command: custom
           customCommand: run test-cov
@@ -246,7 +226,7 @@ stages:
         inputs:
           testResultsFiles: '**/alltests.xml'
           failTaskOnFailedTests: true
-          testRunTitle: UTs
+          testRunTitle: 'UTs on Linux'
       - bash: git checkout .
         name: revertPackageJsonChanges
         displayName: Revert changes made to package.json to not break cache feature
