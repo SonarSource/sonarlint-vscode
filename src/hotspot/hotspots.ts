@@ -18,7 +18,7 @@ import {
   HotspotReviewPriority,
   HotspotTreeViewItem
 } from './hotspotsTreeDataProvider';
-import { getFullPathFromRelativePath } from '../util/uri';
+import { getUriFromRelativePath } from '../util/uri';
 import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
 
 export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
@@ -108,8 +108,8 @@ function revealHotspotInTreeView(
   } else {
     // reset local cache before opening each hotspot
     hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
-    const fullHotspotPath = getFullPathFromRelativePath(hotspot.filePath, vscode.workspace.workspaceFolders[0]);
-    hotspotsTreeDataProvider.fileHotspotsCache.set(fullHotspotPath, [hotspotDiag]);
+    const hotspotUri = getUriFromRelativePath(hotspot.filePath, vscode.workspace.workspaceFolders[0]);
+    hotspotsTreeDataProvider.fileHotspotsCache.set(hotspotUri, [hotspotDiag]);
     fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.filePath);
     hotspotsTreeDataProvider.refresh();
   }
@@ -147,8 +147,7 @@ export const showHotspotDescription = () => {
       hotspotDescriptionPanel = undefined;
     }, null);
   }
-  const diagContextPanelContent = computeHotspotContextPanelContent(activeHotspot, hotspotDescriptionPanel.webview);
-  hotspotDescriptionPanel.webview.html = diagContextPanelContent;
+  hotspotDescriptionPanel.webview.html = computeHotspotContextPanelContent(activeHotspot, hotspotDescriptionPanel.webview);
   hotspotDescriptionPanel.iconPath = {
     light: resolveExtensionFile('images/sonarqube.svg'),
     dark: resolveExtensionFile('images/sonarqube.svg')
