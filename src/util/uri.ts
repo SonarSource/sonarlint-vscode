@@ -19,6 +19,7 @@
  */
 
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 // See https://github.com/Microsoft/vscode-languageserver-node/issues/105
 export function code2ProtocolConverter(value: vscode.Uri) {
@@ -44,23 +45,23 @@ export function getRelativePathFromFullPath(
   workspaceFolder: vscode.WorkspaceFolder,
   specifyWorkspaceFolderName: boolean
 ): string {
-  const fullUri = vscode.Uri.parse(fullPath); // /Users/user/sonarlint-vscode/samples/main.js
+  const fullFsPath = vscode.Uri.parse(fullPath).fsPath; // /Users/user/sonarlint-vscode/samples/main.js
   const fileName = getFileNameFromFullPath(fullPath); // main.js
-  const workspaceFolderUri = workspaceFolder.uri.fsPath; // /Users/user/sonarlint-vscode/
-  const relativePathWithFileName = fullUri.fsPath.replace(`${workspaceFolderUri}/`, ''); // samples/main.js
+  const workspaceFolderFsPath = workspaceFolder.uri.fsPath; // /Users/user/sonarlint-vscode/
+  const relativePathWithFileName = fullFsPath.replace(`${workspaceFolderFsPath}${path.sep}`, ''); // samples/main.js
   const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, ''); // samples/
   if (specifyWorkspaceFolderName) {
     return relativePathWithoutFileName
       ? `${workspaceFolder.name} • ${relativePathWithoutFileName}`
       : workspaceFolder.name;
   }
-  if (relativePathWithFileName.endsWith('/')) {
+  if (relativePathWithFileName.endsWith(`${path.sep}`)) { //NB: Use os-specific path separator
     return relativePathWithoutFileName.substring(0, relativePathWithFileName.length - 2);
   }
   return relativePathWithoutFileName;
 }
 
-export function getFullPathFromRelativePath(relativePath: string, workspaceFolder: vscode.WorkspaceFolder): string {
-  const workspaceFolderUri = workspaceFolder.uri.fsPath;
-  return `file://${workspaceFolderUri}/${relativePath}`;
+export function getUriFromRelativePath(relativePath: string, workspaceFolder: vscode.WorkspaceFolder): string {
+  const workspaceFolderUri = workspaceFolder.uri;
+  return `${workspaceFolderUri}/${relativePath}`;
 }
