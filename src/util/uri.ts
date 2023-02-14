@@ -55,7 +55,7 @@ export function getRelativePathFromFullPath(
       ? `${workspaceFolder.name} • ${relativePathWithoutFileName}`
       : workspaceFolder.name;
   }
-  if (relativePathWithFileName.endsWith(`${path.sep}`)) { //NB: Use os-specific path separator
+  if (relativePathWithFileName.endsWith(path.sep)) { //NB: Use os-specific path separator
     return relativePathWithoutFileName.substring(0, relativePathWithFileName.length - 2);
   }
   return relativePathWithoutFileName;
