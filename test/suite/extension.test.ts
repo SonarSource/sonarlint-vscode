@@ -105,8 +105,8 @@ suite('Extension Test Suite', () => {
 
   function skipTestOnWindowsVm(testContext: Context, reason: string) {
     if (isRunningOnWindows() && isRunningAutoBuild()) {
-      testContext.skip();
       console.log(reason)
+      testContext.skip();
     }
   }
 });
