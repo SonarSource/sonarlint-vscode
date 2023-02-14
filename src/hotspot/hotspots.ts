@@ -147,7 +147,8 @@ export const showHotspotDescription = () => {
       hotspotDescriptionPanel = undefined;
     }, null);
   }
-  hotspotDescriptionPanel.webview.html = computeHotspotContextPanelContent(activeHotspot, hotspotDescriptionPanel.webview);
+  hotspotDescriptionPanel.webview.html =
+    computeHotspotContextPanelContent(activeHotspot, hotspotDescriptionPanel.webview);
   hotspotDescriptionPanel.iconPath = {
     light: resolveExtensionFile('images/sonarqube.svg'),
     dark: resolveExtensionFile('images/sonarqube.svg')
