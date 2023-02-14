@@ -35,7 +35,7 @@ export function isRunningOnWindows() {
 }
 
 export function isRunningAutoBuild() {
-  return process.env.NODE_ENV === 'continuous-integration'
+  return process.env.NODE_ENV === 'continuous-integration';
 }
 
 export function execChildProcess(process: string, workingDirectory: string, channel?: vscode.OutputChannel) {
