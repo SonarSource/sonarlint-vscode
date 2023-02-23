@@ -1,5 +1,5 @@
 ## 3.15
-* Update JS/TS/CSS analyzer 9.13.0 -> [10.0.0](https://github.com/SonarSource/SonarJS/releases/tag/10.0.0.20728), support for JavaScript analysis inside HTML files, FN and FP fixes, dependency upgrades
+* Update JS/TS/CSS analyzer 9.13.0 -> [10.0.1](https://github.com/SonarSource/SonarJS/releases/tag/10.0.1.20755), support for JavaScript analysis inside HTML files, FN and FP fixes, dependency upgrades
 
 
 ## 3.14
