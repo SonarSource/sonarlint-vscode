@@ -13,3 +13,4 @@ its/userdir
 test/userdir
 !test/userdir/User
 !test/userdir/User/settings.json
+its/extdir*

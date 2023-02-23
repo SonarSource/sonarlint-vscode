@@ -5,14 +5,16 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import * as cp from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 
 import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath, runTests } from 'vscode-test';
-import { readdirSync } from 'fs';
 
 const XVFB_DISPLAY = ':10';
 
 async function main() {
+  let extensionsDir = '';
+  let exitCode = 0;
   try {
     const xDisplay = process.env['DISPLAY'];
     if (xDisplay) {
@@ -23,6 +25,7 @@ async function main() {
     }
 
     const userDataDir = path.resolve(__dirname, '../../userdir');
+    extensionsDir = fs.mkdtempSync(path.resolve(__dirname, '../../extdir-'));
 
     // The folder containing the Extension Manifest package.json
     // Passed to `--extensionDevelopmentPath`
@@ -32,9 +35,12 @@ async function main() {
     const vscodeExecutablePath = await downloadAndUnzipVSCode(vscodeVersion);
     const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
 
-    const vsixes = readdirSync('..').filter(fn => fn.endsWith('.vsix'));
+    const vsixes = fs.readdirSync('..').filter(fn => fn.endsWith('.vsix'));
     // Use cp.spawn / cp.exec for custom setup
-    cp.spawnSync(cliPath, ['--install-extension', '../' + vsixes[0]], {
+    cp.spawnSync(cliPath, [
+      `--extensions-dir=${extensionsDir}`,
+      '--install-extension', '../' + vsixes[0]
+    ], {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
@@ -42,7 +48,10 @@ async function main() {
     const testErrors = [];
 
     const runTestSuite = async (suiteDir: string, workspaceDir?: string) => {
-      const launchArgs = [`--user-data-dir=${userDataDir}`];
+      const launchArgs = [
+        `--user-data-dir=${userDataDir}`,
+        `--extensions-dir=${extensionsDir}`,
+      ];
       if (workspaceDir) {
         launchArgs.unshift(path.resolve(__dirname, `../../samples/${workspaceDir}`));
       }
@@ -66,7 +75,10 @@ async function main() {
     await runTestSuite('./cfamilySuite', 'workspace-cfamily.code-workspace');
 
     ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
-      cp.spawnSync(cliPath, ['--install-extension', requiredExtensionId], {
+      cp.spawnSync(cliPath, [
+        `--extensions-dir=${extensionsDir}`,
+        '--install-extension', requiredExtensionId
+      ], {
         encoding: 'utf-8',
         stdio: 'inherit'
       });
@@ -78,7 +90,16 @@ async function main() {
     }
   } catch (err) {
     console.error('Failed to run tests', err);
-    process.exit(1);
+    exitCode = 1;
+  } finally {
+    if (extensionsDir !== '' && fs.existsSync(extensionsDir)) {
+      try {
+        fs.rmdirSync(extensionsDir, { recursive: true });
+      } catch(e) {
+        // NOP
+      }
+    }
+    process.exit(exitCode);
   }
 }
 
