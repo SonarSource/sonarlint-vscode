@@ -108,6 +108,9 @@ In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](
 
 Please see the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Security-hotspots) for more details. 
 
+### Secrets detection
+Secrets are pieces of user-specific or system-level credentials that should be protected and accessible to legitimate users only. SonarLint now detects exposed Secrets in your source code and language agnostic config files when running in Connected Mode with SonarQube or SonarCloud.
+
 ## Connected Mode
 
 You can connect SonarLint to SonarQube 7.9+/SonarCloud by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder. 
@@ -120,6 +123,7 @@ Connected Mode will also allow unlocking of your analysis for these languages:
 
 - [Apex rules](https://rules.sonarsource.com/apex)
 - [PL/SQL rules](https://rules.sonarsource.com/plsql)
+- [Secrets rules](https://rules.sonarsource.com/secrets) 
 
 When configuring Connected Mode, follow the [Connection Setup instructions](#connection-setup) below.
 
