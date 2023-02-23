@@ -2,7 +2,7 @@
   // Start with no editor open
   "workbench.startupEditor": "none",
   // Disable telemetry pings to Microsoft
-  "telemetry.enableTelemetry": false,
+  "telemetry.telemetryLevel": "off",
   // Disable workspace trust check (1.57+)
   "security.workspace.trust.enabled": false,
   // Force Java LS in Standard mode
