@@ -1,5 +1,6 @@
 ## 3.15
 * Update JS/TS/CSS analyzer 9.13.0 -> [10.0.1](https://github.com/SonarSource/SonarJS/releases/tag/10.0.1.20755), support for JavaScript analysis inside HTML files, FN and FP fixes, dependency upgrades
+* Update CFamily analyzer 6.41.0 -> [6.42.0](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013995%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), Support for clang-cl and Microchip compilers
 
 
 ## 3.14
