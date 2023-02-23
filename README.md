@@ -109,7 +109,7 @@ In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](
 Please see the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Security-hotspots) for more details. 
 
 ### Secrets detection
-Secrets are pieces of user-specific or system-level credentials that should be protected and accessible to legitimate users only. SonarLint now detects exposed Secrets in your source code and language agnostic config files when running in Connected Mode with SonarQube or SonarCloud.
+Secrets are pieces of user-specific or system-level credentials that should be protected and accessible to legitimate users only. SonarLint detects exposed Secrets in your source code and language agnostic config files when running in Connected Mode with SonarQube or SonarCloud.
 
 ## Connected Mode
 
