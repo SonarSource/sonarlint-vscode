@@ -8,15 +8,11 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import * as properties from 'properties';
+import * as vscode from 'vscode';
+import { FileType, Uri } from 'vscode';
 import { BindingService } from './binding';
-import { BaseConnection, ConnectionSettingsService } from '../settings/connectionsettings';
-import {
-  getServerType,
-  getBestHitsForConnections,
-  MatchHit,
-  getServerUrlOrOrganizationKey
-} from '../util/bindingUtils';
+import { ConnectionSettingsService } from '../settings/connectionsettings';
+import { BindingSuggestion, FindFileByNamesInFolderParams, FoundFileDto, SuggestBindingParams } from '../lsp/protocol';
 
 const AUTOBINDING_THRESHOLD = 5;
 const BIND_ACTION = 'Configure Binding';
@@ -26,8 +22,6 @@ export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindi
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 const DEFAULT_CONNECTION_ID = '<default>';
 const LEARN_MORE_DOCS_LINK = 'https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode';
-
-const ANALYSIS_SETTINGS_FILE_NAMES = ['sonar-project.properties', '.sonarcloud.properties'];
 
 export class AutoBindingService {
   private static _instance: AutoBindingService;
@@ -50,50 +44,29 @@ export class AutoBindingService {
     return AutoBindingService._instance;
   }
 
-  async autoBindWorkspace() {
-    if (VSCode.workspace.workspaceFolders && this.isConnectionConfigured()) {
-      const unboundFolders = VSCode.workspace.workspaceFolders.filter(
-        workspaceFolder => !this.bindingService.isBound(workspaceFolder)
-      );
-      if (unboundFolders.length > 0) {
-        this.autoBindAllFolders(unboundFolders);
-      } else {
-        VSCode.window.showInformationMessage(`All folders in this workspace are already bound
-         to SonarQube or SonarCloud projects`);
-      }
-    } else if (!this.isConnectionConfigured()) {
-      VSCode.window
-        .showWarningMessage(
-          `"Bind all workspace folders to SonarQube or SonarCloud"
-      can only be invoked if a SonarQube or SonarCloud connection exists`);
-    } else {
-      VSCode.window.showWarningMessage(`"Bind all workspace folders to SonarQube or SonarCloud"
-      can only be invoked on an open workspace`);
-    }
-  }
-
-  async autoBindAllFolders(unboundFolders: VSCode.WorkspaceFolder[]) {
-    unboundFolders.forEach(unboundFolder => this.autoBindFolder(unboundFolder));
-  }
-
-  async checkConditionsAndAttemptAutobinding() {
+  async checkConditionsAndAttemptAutobinding(params: SuggestBindingParams) {
     if (!this.isConnectionConfigured()) {
       return;
     }
     if (this.workspaceState.get(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG)) {
       return;
     }
-    const unboundFolders = VSCode.workspace.workspaceFolders.filter(workspaceFolder =>
-      this.bindingService.shouldBeAutoBound(workspaceFolder)
-    );
-    if (unboundFolders.length > AUTOBINDING_THRESHOLD) {
+    const bindingSuggestions = params.suggestions;
+    if (Object.keys(bindingSuggestions).length > AUTOBINDING_THRESHOLD) {
       const userPermission = await this.askUserBeforeAutoBinding();
       if (userPermission) {
-        this.autoBindAllFolders(unboundFolders);
+        this.autoBindAllFolders(bindingSuggestions);
       }
     } else {
-      this.autoBindAllFolders(unboundFolders);
+      this.autoBindAllFolders(bindingSuggestions);
     }
+  }
+
+  private autoBindAllFolders(bindingSuggestions: { [folderUri: string]: Array<BindingSuggestion> }) {
+    Object.keys(bindingSuggestions).forEach((folderUri) => {
+      const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(folderUri));
+      this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
+    });
   }
 
   isConnectionConfigured(): boolean {
@@ -102,114 +75,31 @@ export class AutoBindingService {
     return sonarCloudConnections.length > 0 || sonarQubeConnections.length > 0;
   }
 
-  async autoBindAllUnboundFolders(unboundFolders) {
-    unboundFolders.forEach(unboundFolder => {
-      this.autoBindFolder(unboundFolder);
-    });
-  }
-
-  async autoBindFolder(unboundFolder: VSCode.WorkspaceFolder) {
-    const analysisFileDetected = await this.autoDetectAnalysisSettings(unboundFolder);
-    if (!analysisFileDetected) {
-      this.attemptAutoBindingByMatchingNames(unboundFolder);
-    }
-  }
-
-  async attemptAutoBindingByMatchingNames(unboundFolder: VSCode.WorkspaceFolder) {
-    const sqConnections = this.settingsService.getSonarQubeConnections();
-    const scConnections = this.settingsService.getSonarCloudConnections();
-    const connectionToServerProjects = await this.bindingService.getConnectionToServerProjects(
-      scConnections,
-      sqConnections
+  async findFileByNameInFolderRequest(params: FindFileByNamesInFolderParams) {
+    const folderUri = VSCode.Uri.parse(params.folderUri);
+    const foundFiles = await Promise.all(
+      params.filenames.map(fileName => AutoBindingService.instance.findFileInFolder(fileName, folderUri))
     );
-    const connectionToBestHits = getBestHitsForConnections(connectionToServerProjects, unboundFolder);
-    if (connectionToBestHits.size > 0) {
-      // We don't want to show notification if it is not actionable
-      this.promptToAutoBind(connectionToBestHits, unboundFolder);
-    }
-  }
-
-  async autoDetectAnalysisSettings(unboundFolder: VSCode.WorkspaceFolder) {
-    const analysisSettingsFile = await this.getAnalysisSettingsFile(unboundFolder);
-    if (analysisSettingsFile) {
-      const { serverUrl, projectKey, organization } = await this.parseAnalysisSettings(
-        analysisSettingsFile[0],
-        unboundFolder
-      );
-      const existingConnection = organization
-        ? this.settingsService.getSonarCloudConnectionForOrganization(organization)
-        : this.settingsService.getSonarQubeConnectionForUrl(serverUrl);
-      if (!existingConnection) {
-        return false;
-      }
-
-      if (!(await this.matchingRemoteProjectExists(projectKey, existingConnection))) {
-        return false;
-      }
-      const commonMessage = `Do you want to bind folder '${unboundFolder.name}' to project '${projectKey}'`;
-      const message = organization
-        ? `${commonMessage} of SonarCloud organization '${organization}'?
-        [Learn More](${LEARN_MORE_DOCS_LINK})`
-        : `${commonMessage} of SonarQube server '${serverUrl}'?
-        [Learn More](${LEARN_MORE_DOCS_LINK})`;
-
-      const result = await VSCode.window.showInformationMessage(
-        message,
-        BIND_ACTION,
-        CHOOSE_MANUALLY_ACTION,
-        DONT_ASK_AGAIN_ACTION
-      );
-
-      switch (result) {
-        case BIND_ACTION:
-          await this.bindingService.saveBinding(projectKey, existingConnection.connectionId, unboundFolder);
-          break;
-        case CHOOSE_MANUALLY_ACTION:
-          const targetConnection = await this.getTargetConnectionForManualBinding();
-          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
-          break;
-        case DONT_ASK_AGAIN_ACTION:
-          await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
-            ...this.getFoldersThatShouldNotBeAutoBound(),
-            unboundFolder.uri.toString()
-          ]);
-          break;
-        default:
-          // NOP
-          break;
-      }
-      return true;
-    }
-    return false;
-  }
-
-  async getAnalysisSettingsFile(unboundFolder: VSCode.WorkspaceFolder) {
-    const folderFiles = await VSCode.workspace.fs.readDirectory(unboundFolder.uri);
-    return folderFiles.find(([name, type]) => {
-      return type === VSCode.FileType.File && ANALYSIS_SETTINGS_FILE_NAMES.includes(name);
-    });
+    
+    return { foundFiles: foundFiles.filter(r => r !== null) };
   }
 
   private getFoldersThatShouldNotBeAutoBound(): string[] {
     return this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
   }
 
-  private async matchingRemoteProjectExists(projectKey: string, existingConnection): Promise<boolean> {
-    const getRemoteProjectsParam = existingConnection.connectionId
-      ? existingConnection.connectionId
-      : DEFAULT_CONNECTION_ID;
-    const remoteProjects = await this.bindingService.getRemoteProjects(getRemoteProjectsParam);
-    return remoteProjects[projectKey] !== undefined;
-  }
-
-  private async parseAnalysisSettings(analysisSettingsFileName: string, unboundFolder: VSCode.WorkspaceFolder) {
-    const projectPropertiesUri = VSCode.Uri.joinPath(unboundFolder.uri, analysisSettingsFileName);
-    const projectPropertiesContents = await VSCode.workspace.fs.readFile(projectPropertiesUri);
-    const projectProperties = properties.parse(projectPropertiesContents.toString());
-    const serverUrl = projectProperties['sonar.host.url'];
-    const projectKey = projectProperties['sonar.projectKey'];
-    const organization = projectProperties['sonar.organization'];
-    return { serverUrl, projectKey, organization };
+  async findFileInFolder(fileName: string, folderUri: Uri): Promise<FoundFileDto> {
+    const fullFileUri = VSCode.Uri.joinPath(folderUri, fileName);
+    try {
+      const fileStat = await VSCode.workspace.fs.stat(fullFileUri);
+      if (fileStat.type === FileType.File) {
+        const content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
+        return { fileName, filePath: fileName, content };
+      }
+    } catch (err) {
+      return null
+    }
+    return null;
   }
 
   async getTargetConnectionForManualBinding() {
@@ -283,7 +173,7 @@ export class AutoBindingService {
           return false;
         } else if (action === CHOOSE_MANUALLY_ACTION) {
           const targetConnection = await this.getTargetConnectionForManualBinding();
-          this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
           return false;
         } else if (action === BIND_ACTION) {
           return true;
@@ -292,19 +182,15 @@ export class AutoBindingService {
       });
   }
 
-  private async promptToAutoBind(
-    connectionToBestHits: Map<BaseConnection, MatchHit[]>,
-    unboundFolder: VSCode.WorkspaceFolder
-  ) {
-    const allHitsArray = Array.from(connectionToBestHits.values());
-    const allHitsFlat = [].concat.apply([], allHitsArray);
-    if (connectionToBestHits.size === 1 && allHitsFlat.length === 1) {
-      const bestHit = allHitsFlat[0];
-      this.promptToAutoBindSingleOption(bestHit, connectionToBestHits, unboundFolder);
-    } else if (allHitsFlat.length > 1) {
-      this.promptToAutoBindMultiChoice(unboundFolder);
+  private async promptToAutoBind(bindingSuggestions: BindingSuggestion[], unboundFolder: VSCode.WorkspaceFolder) {
+    if (bindingSuggestions.length === 1) {
+      const bestBindingSuggestion = bindingSuggestions[0];
+      bestBindingSuggestion.connectionId
+      await this.promptToAutoBindSingleOption(bestBindingSuggestion, unboundFolder);
+    } else if (bindingSuggestions.length > 1) {
+      await this.promptToAutoBindMultiChoice(unboundFolder);
     } else {
-      this.promptToBindManually(unboundFolder);
+      await this.promptToBindManually(unboundFolder);
     }
   }
 
@@ -325,25 +211,14 @@ export class AutoBindingService {
           ]);
         } else if (action === BIND_ACTION) {
           const targetConnection = await this.getTargetConnectionForManualBinding();
-          this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         }
       });
   }
 
-  private async promptToAutoBindSingleOption(
-    bestHit: MatchHit,
-    connectionToBestHits: Map<BaseConnection, MatchHit[]>,
-    unboundFolder: VSCode.WorkspaceFolder
-  ) {
-    const [connection] = connectionToBestHits.keys();
-    const serverUrlOrOrganizationKey = getServerUrlOrOrganizationKey(connection);
-    const serverType = getServerType(connection);
+  private async promptToAutoBindSingleOption(bindingSuggestion: BindingSuggestion, unboundFolder: VSCode.WorkspaceFolder) {
 
-    const commonMessage = `Do you want to bind folder '${unboundFolder.name}' to project '${bestHit.projectKey}'`;
-    const message =
-      serverType === 'SonarQube'
-        ? `${commonMessage} of SonarQube server '${serverUrlOrOrganizationKey}'?`
-        : `${commonMessage} of SonarCloud organization '${serverUrlOrOrganizationKey}'?`;
+    const message = `Do you want to bind folder '${unboundFolder.name}' to project '${bindingSuggestion.sonarProjectKey}'?`;
 
     const result = await VSCode.window.showInformationMessage(
       `${message}
@@ -354,7 +229,7 @@ export class AutoBindingService {
     );
     switch (result) {
       case BIND_ACTION:
-        await this.bindingService.saveBinding(bestHit.projectKey, connection.connectionId, unboundFolder);
+        await this.bindingService.saveBinding(bindingSuggestion.sonarProjectKey, bindingSuggestion.connectionId, unboundFolder);
         break;
       case CHOOSE_MANUALLY_ACTION:
         const targetConnection = await this.getTargetConnectionForManualBinding();

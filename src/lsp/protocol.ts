@@ -14,6 +14,42 @@ export namespace ShowRuleDescriptionNotification {
   export const type = new lsp.NotificationType<ShowRuleDescriptionParams>('sonarlint/showRuleDescription');
 }
 
+export namespace SuggestBindingNotification {
+  export const type = new lsp.NotificationType<SuggestBindingParams>('sonarlint/suggestBinding');
+}
+
+export interface SuggestBindingParams {
+  suggestions: {
+    [folderUri: string]: Array<BindingSuggestion>
+  };
+}
+
+export interface BindingSuggestion {
+  connectionId: string;
+  sonarProjectKey: string;
+  sonarProjectName: string;
+}
+
+export namespace FindFileByNamesInFolderRequest {
+  export const type = new lsp.RequestType<FindFileByNamesInFolderParams, FindFileByNamesInFolderResponse, void>
+    ('sonarlint/findFileByNamesInFolder');
+}
+
+export interface FindFileByNamesInFolderParams {
+  folderUri: string;
+  filenames: Array<string>
+}
+
+export interface FindFileByNamesInFolderResponse {
+  foundFiles: Array<FoundFileDto>;
+}
+
+export interface FoundFileDto {
+  fileName: string;
+  filePath: string;
+  content: string;
+}
+
 export namespace ShowHotspotRuleDescriptionNotification {
   export const type = new lsp.NotificationType<ShowHotspotRuleDescriptionNotificationParams>(
     'sonarlint/showHotspotRuleDescription'

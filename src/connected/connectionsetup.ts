@@ -19,7 +19,6 @@ import {
 } from '../settings/connectionsettings';
 import * as util from '../util/util';
 import { ResourceResolver } from '../util/webview';
-import { AutoBindingService } from './autobinding';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -270,7 +269,7 @@ export async function handleMessage(message) {
 
 async function waitForConfigAndSuggestBinding() {
   await util.sleep(5000);
-  await AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
+  //TODO bind unbound folders for the newly added connection
 }
 
 async function openTokenGenerationPage(message) {
