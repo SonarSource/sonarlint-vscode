@@ -48,6 +48,8 @@ class GitScm implements Scm {
 
   private readonly listeners: Array<vscode.Disposable>;
 
+  private readonly localBranchByFolderUri: Map<string, string>;
+
   private readonly referenceBranchByFolderUri: Map<string, string>;
 
   constructor(
@@ -59,6 +61,7 @@ class GitScm implements Scm {
         this.subscribeToRepositoryChanges(r);
       })
     ];
+    this.localBranchByFolderUri = new Map<string, string>();
     this.referenceBranchByFolderUri = new Map<string, string>();
     if (gitApi.state === 'initialized') {
       this.subscribeToAllRepositoryChanges();
@@ -80,6 +83,7 @@ class GitScm implements Scm {
     vscode.workspace.workspaceFolders?.forEach(folder => {
       const branchName = this.gitApi.getRepository(folder.uri)?.state.HEAD?.name;
       logToSonarLintOutput(`Initializing ${folder.uri} on branch ${branchName}`);
+      this.localBranchByFolderUri.set(folder.uri.toString(), branchName);
       this.client.didLocalBranchNameChange(folder.uri, branchName);
     });
   }
@@ -87,10 +91,13 @@ class GitScm implements Scm {
   private subscribeToRepositoryChanges(repository: Repository) {
     this.listeners.push(repository.state.onDidChange(() => {
       vscode.workspace.workspaceFolders?.forEach(folder => {
-        if (folder.uri.toString().startsWith(repository.rootUri.toString())) {
+        const folderUriAsString = folder.uri.toString();
+        if (folderUriAsString.startsWith(repository.rootUri.toString())) {
           const branchName = repository.state.HEAD?.name;
-          logToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
-          this.client.didLocalBranchNameChange(folder.uri, branchName);
+          if (this.localBranchByFolderUri.get(folderUriAsString) !== branchName) {
+            logToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
+            this.client.didLocalBranchNameChange(folder.uri, branchName);
+          }
         }
       });
     }));
