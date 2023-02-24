@@ -22,12 +22,20 @@ suite('Java Test Suite', () => {
   vscode.window.showInformationMessage('Start java tests.');
   vscode.commands.executeCommand('workbench.panel.markers.view.focus');
 
-  test('Extension should be present', () => {
-    assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));
-  });
+  suiteSetup('Ensure readiness of extension and Java LS', function (done) {
+    this.timeout(JAVA_LS_TIMEOUT_MILLIS);
+    assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'), 'Extension did not load');
+    const javaExtension = vscode.extensions.getExtension('redhat.java');
+    assert.ok(javaExtension, 'Java extension did not load');
+    const javaExtensionApi = javaExtension?.exports;
+    assert.ok(javaExtensionApi.onDidServerModeChange, 'Java extension does not export required API');
 
-  test('Java extension should be present', () => {
-    assert.ok(vscode.extensions.getExtension('redhat.java'));
+    javaExtensionApi.onDidServerModeChange((mode: string) => {
+      // At this point, we'll wait at most JAVA_LS_TIMEOUT_MILLIS until the Java LS is up in Standard mode
+      if (mode === 'Standard') {
+        done();
+      }
+    });
   });
 
   test('should report issue on java file', async function () {
@@ -45,7 +53,7 @@ suite('Java Test Suite', () => {
     await vscode.window.showTextDocument(document);
 
     // Check that we have 2 diagnostics in the right order
-    const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2, timeoutMillis: JAVA_LS_TIMEOUT_MILLIS });
+    const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2 });
     assert.deepEqual(diags.map(d => [ d.code, d.message ]), [
       [ 'java:S1130', 'Remove the declaration of thrown exception \'edu.marcelo.App$MyException\', as it cannot be thrown from method\'s body.' ],
       [ 'java:S106', 'Replace this use of System.out or System.err by a logger.' ]
@@ -81,7 +89,7 @@ suite('Java Test Suite', () => {
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
 
-    const diags = await waitForSonarLintDiagnostics(fileUri, { timeoutMillis: JAVA_LS_TIMEOUT_MILLIS });
+    const diags = await waitForSonarLintDiagnostics(fileUri);
 
     assert.deepEqual(diags.length, 1);
     assert.equal(diags[0].message, 'Add at least one assertion to this test case.');
