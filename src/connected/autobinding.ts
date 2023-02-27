@@ -8,7 +8,6 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import * as vscode from 'vscode';
 import { FileType, Uri } from 'vscode';
 import { BindingService } from './binding';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
@@ -64,7 +63,7 @@ export class AutoBindingService {
 
   private autoBindAllFolders(bindingSuggestions: { [folderUri: string]: Array<BindingSuggestion> }) {
     Object.keys(bindingSuggestions).forEach((folderUri) => {
-      const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(folderUri));
+      const workspaceFolder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(folderUri));
       this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
     });
   }
@@ -80,7 +79,7 @@ export class AutoBindingService {
     const foundFiles = await Promise.all(
       params.filenames.map(fileName => AutoBindingService.instance.findFileInFolder(fileName, folderUri))
     );
-    
+
     return { foundFiles: foundFiles.filter(r => r !== null) };
   }
 
@@ -97,7 +96,7 @@ export class AutoBindingService {
         return { fileName, filePath: fileName, content };
       }
     } catch (err) {
-      return null
+      return null;
     }
     return null;
   }
@@ -185,7 +184,6 @@ export class AutoBindingService {
   private async promptToAutoBind(bindingSuggestions: BindingSuggestion[], unboundFolder: VSCode.WorkspaceFolder) {
     if (bindingSuggestions.length === 1) {
       const bestBindingSuggestion = bindingSuggestions[0];
-      bestBindingSuggestion.connectionId
       await this.promptToAutoBindSingleOption(bestBindingSuggestion, unboundFolder);
     } else if (bindingSuggestions.length > 1) {
       await this.promptToAutoBindMultiChoice(unboundFolder);
@@ -216,9 +214,12 @@ export class AutoBindingService {
       });
   }
 
-  private async promptToAutoBindSingleOption(bindingSuggestion: BindingSuggestion, unboundFolder: VSCode.WorkspaceFolder) {
+  private async promptToAutoBindSingleOption(
+    bindingSuggestion: BindingSuggestion,
+    unboundFolder: VSCode.WorkspaceFolder) {
 
-    const message = `Do you want to bind folder '${unboundFolder.name}' to project '${bindingSuggestion.sonarProjectKey}'?`;
+    const message = `Do you want to bind folder '${unboundFolder.name}' 
+    to project '${bindingSuggestion.sonarProjectKey}'?`;
 
     const result = await VSCode.window.showInformationMessage(
       `${message}
@@ -229,7 +230,8 @@ export class AutoBindingService {
     );
     switch (result) {
       case BIND_ACTION:
-        await this.bindingService.saveBinding(bindingSuggestion.sonarProjectKey, bindingSuggestion.connectionId, unboundFolder);
+        await this.bindingService.saveBinding(
+          bindingSuggestion.sonarProjectKey, bindingSuggestion.connectionId, unboundFolder);
         break;
       case CHOOSE_MANUALLY_ACTION:
         const targetConnection = await this.getTargetConnectionForManualBinding();
