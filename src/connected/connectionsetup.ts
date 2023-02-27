@@ -262,14 +262,8 @@ export async function handleMessage(message) {
         message.serverUrl = cleanServerUrl(message.serverUrl);
       }
       await saveConnection(message);
-      waitForConfigAndSuggestBinding();
       break;
   }
-}
-
-async function waitForConfigAndSuggestBinding() {
-  await util.sleep(5000);
-  //TODO bind unbound folders for the newly added connection
 }
 
 async function openTokenGenerationPage(message) {
