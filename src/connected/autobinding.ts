@@ -218,8 +218,12 @@ export class AutoBindingService {
     bindingSuggestion: BindingSuggestion,
     unboundFolder: VSCode.WorkspaceFolder) {
 
-    const message = `Do you want to bind folder '${unboundFolder.name}' 
-    to project '${bindingSuggestion.sonarProjectKey}'?`;
+    const commonMessage =
+      `Do you want to bind folder '${unboundFolder.name}' to project '${bindingSuggestion.sonarProjectKey}'`;
+    const message =
+      this.isBindingSuggestionForSonarCloud(bindingSuggestion)
+        ? `${commonMessage} of SonarCloud organization '${bindingSuggestion.connectionId}'?`
+        : `${commonMessage} of SonarQube server '${bindingSuggestion.connectionId}'?`;
 
     const result = await VSCode.window.showInformationMessage(
       `${message}
@@ -247,6 +251,11 @@ export class AutoBindingService {
         // NOP
         break;
     }
+  }
+
+  private isBindingSuggestionForSonarCloud(bindingSuggestion: BindingSuggestion) {
+    const sonarCloudConnections = this.settingsService.getSonarCloudConnections();
+    return sonarCloudConnections.filter(sc => bindingSuggestion.connectionId.includes(sc.connectionId)).length > 0;
   }
 
   private async promptToAutoBindMultiChoice(unboundFolder: VSCode.WorkspaceFolder) {
