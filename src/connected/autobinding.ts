@@ -8,7 +8,6 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { FileType, Uri } from 'vscode';
 import { BindingService } from './binding';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { BindingSuggestion, FindFileByNamesInFolderParams, FoundFileDto, SuggestBindingParams } from '../lsp/protocol';
@@ -87,11 +86,11 @@ export class AutoBindingService {
     return this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
   }
 
-  async findFileInFolder(fileName: string, folderUri: Uri): Promise<FoundFileDto> {
+  async findFileInFolder(fileName: string, folderUri: VSCode.Uri): Promise<FoundFileDto> {
     const fullFileUri = VSCode.Uri.joinPath(folderUri, fileName);
     try {
       const fileStat = await VSCode.workspace.fs.stat(fullFileUri);
-      if (fileStat.type === FileType.File) {
+      if (fileStat.type === VSCode.FileType.File) {
         const content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
         return { fileName, filePath: fileName, content };
       }

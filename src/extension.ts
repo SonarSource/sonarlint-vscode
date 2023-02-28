@@ -29,7 +29,6 @@ import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
 import * as protocol from './lsp/protocol';
-import { SuggestBindingParams } from './lsp/protocol';
 import { languageServerCommand } from './lsp/server';
 import { showRuleDescription } from './rules/rulepanel';
 import { AllRulesTreeDataProvider, RuleNode } from './rules/rules';
@@ -496,7 +495,7 @@ function isFirstSecretDetected(context: VSCode.ExtensionContext): boolean {
   return context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY, false);
 }
 
-function suggestBinding(params: SuggestBindingParams) {
+function suggestBinding(params: protocol.SuggestBindingParams) {
   logToSonarLintOutput(`Received binding suggestions: ${JSON.stringify(params)}`);
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
