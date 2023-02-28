@@ -20,13 +20,12 @@ import * as VSCode from 'vscode';
 import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
 import { TextEncoder } from 'util';
+import { FindFileByNamesInFolderParams, FindFileByNamesInFolderResponse } from '../../src/lsp/protocol';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
-const TEST_PROJECT_KEY = 'org.sonarsource.sonarlint.vscode:test-project';
-const TEST_ORGANISATION = 'test';
 
 const TEST_SONARQUBE_CONNECTION = {
   connectionId: 'test',
@@ -123,72 +122,42 @@ suite('Auto Binding Test Suite', () => {
       expect(bindingAfter).to.be.empty;
     });
 
-    test('Analysis settings file is properly found when it exists', async () => {
-      const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
-
-      const fileUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, 'sonar-project.properties'));
-
-      await VSCode.workspace.fs.writeFile(
-        fileUri,
-        new TextEncoder().encode(`sonar.host.url=https://test.sonarqube.com
-      sonar.projectKey=org.sonarsource.sonarlint.vscode:test-project`)
-      );
-
-      const p = await underTest.getAnalysisSettingsFile(workspaceFolder1);
-
-      expect(p[0]).to.equal('sonar-project.properties');
-
-      await VSCode.workspace.fs.delete(fileUri);
-    });
-
     test('Nothing crashes when analysis file is not present', async () => {
       const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
 
-      const p = await underTest.getAnalysisSettingsFile(workspaceFolder1);
+      let params: FindFileByNamesInFolderParams = {
+        filenames: ['non-existing-file'],
+        folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
+      };
+      const p = await underTest.findFileByNameInFolderRequest(params);
 
-      expect(p).to.be.undefined;
+      expect(p).to.not.be.undefined
+      expect(p.foundFiles).to.be.empty;
     });
 
-    test('SQ analysis settings file is properly parsed', async () => {
+    test('Analysis settings file is properly found when it exists', async () => {
+      const propsFileName = 'sonar-project.properties';
+      const fileContent = `sonar.host.url=https://test.sonarqube.com
+      sonar.projectKey=org.sonarsource.sonarlint.vscode:test-project`;
+
       const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
-      const fileUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, 'sonar-project.properties'));
+      const projectPropsUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, propsFileName));
 
       await VSCode.workspace.fs.writeFile(
-        fileUri,
-        new TextEncoder().encode(`sonar.host.url=https://test.sonarqube.com
-      sonar.projectKey=org.sonarsource.sonarlint.vscode:test-project`)
+        projectPropsUri,
+        new TextEncoder().encode(fileContent)
       );
+      let params: FindFileByNamesInFolderParams = {
+        filenames: [propsFileName],
+        folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
+      };
+      const foundFiles: FindFileByNamesInFolderResponse = await underTest.findFileByNameInFolderRequest(params);
 
-      const p = await underTest.getAnalysisSettingsFile(workspaceFolder1);
+      expect(foundFiles.foundFiles.length).to.equal(1);
+      expect(foundFiles.foundFiles[0].fileName).to.equal(propsFileName);
+      expect(foundFiles.foundFiles[0].content).to.contain('sonar.host.url=https://test.sonarqube.com');
 
-      const { serverUrl, projectKey, organization } = await underTest.parseAnalysisSettings(p[0], workspaceFolder1);
-
-      expect(serverUrl).to.equal(TEST_SONARQUBE_CONNECTION.serverUrl);
-      expect(projectKey).to.equal(TEST_PROJECT_KEY);
-      expect(organization).to.be.undefined;
-
-      await VSCode.workspace.fs.delete(fileUri);
-    });
-
-    test('SC analysis settings file is properly parsed', async () => {
-      const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
-
-      const fileUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, '.sonarcloud.properties'));
-      await VSCode.workspace.fs.writeFile(
-        fileUri,
-        new TextEncoder().encode(`sonar.organization=test
-      sonar.projectKey=org.sonarsource.sonarlint.vscode:test-project`)
-      );
-
-      const p = await underTest.getAnalysisSettingsFile(workspaceFolder1);
-
-      const { serverUrl, projectKey, organization } = await underTest.parseAnalysisSettings(p[0], workspaceFolder1);
-
-      expect(serverUrl).to.be.undefined;
-      expect(projectKey).to.equal(TEST_PROJECT_KEY);
-      expect(organization).to.equal(TEST_ORGANISATION);
-
-      await VSCode.workspace.fs.delete(fileUri);
+      await VSCode.workspace.fs.delete(projectPropsUri);
     });
 
     test('Do not propose binding when there are no connections',async () => {

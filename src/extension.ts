@@ -51,7 +51,6 @@ const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
 const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
 const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
 let remindMeLaterAboutCompileCommandsFlag = false;
-const WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION = 5000;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
 
@@ -355,10 +354,6 @@ export function activate(context: VSCode.ExtensionContext) {
     }
   });
 
-  VSCode.workspace.onDidChangeWorkspaceFolders(async _event => {
-    AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
-  });
-
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE, configureCompilationDatabase)
   );
@@ -404,12 +399,6 @@ export function activate(context: VSCode.ExtensionContext) {
     )
   );
 
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS, () =>
-      AutoBindingService.instance.autoBindWorkspace()
-    )
-  );
-
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
   const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
@@ -432,9 +421,6 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   installClasspathListener(languageClient);
-  setTimeout(() => {
-    AutoBindingService.instance.checkConditionsAndAttemptAutobinding();
-  }, WAIT_FOR_LANGUAGE_SERVER_INITIALIZATION);
 }
 
 function getPlatform(): string {
@@ -509,8 +495,18 @@ function isFirstSecretDetected(context: VSCode.ExtensionContext): boolean {
   return context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY, false);
 }
 
+function suggestBinding(params: protocol.SuggestBindingParams) {
+  logToSonarLintOutput(`Received binding suggestions: ${JSON.stringify(params)}`);
+  AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
+}
+
+
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
+  languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
+  languageClient.onRequest(protocol.FindFileByNamesInFolderRequest.type,
+      params => AutoBindingService.instance.findFileByNameInFolderRequest(params) );
+  languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
@@ -796,13 +792,6 @@ function hasNodeJsConfigChanged(oldConfig, newConfig) {
 function configKeyEquals(key, oldConfig, newConfig) {
   return oldConfig.get(key) === newConfig.get(key);
 }
-
-function configKeyDeepEquals(key, oldConfig, newConfig) {
-  // note: lazy implementation; see for something better: https://stackoverflow.com/a/10316616/641955
-  // note: may not work well for objects (non-deterministic order of keys)
-  return JSON.stringify(oldConfig.get(key)) === JSON.stringify(newConfig.get(key));
-}
-
 export function deactivate(): Thenable<void> {
   if (!languageClient) {
     return undefined;
