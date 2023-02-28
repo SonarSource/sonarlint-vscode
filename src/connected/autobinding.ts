@@ -255,7 +255,7 @@ export class AutoBindingService {
 
   private isBindingSuggestionForSonarCloud(bindingSuggestion: BindingSuggestion) {
     const sonarCloudConnections = this.settingsService.getSonarCloudConnections();
-    return sonarCloudConnections.filter(sc => bindingSuggestion.connectionId.includes(sc.connectionId)).length > 0;
+    return sonarCloudConnections.filter(sc => bindingSuggestion.connectionId === sc.connectionId).length > 0;
   }
 
   private async promptToAutoBindMultiChoice(unboundFolder: VSCode.WorkspaceFolder) {
