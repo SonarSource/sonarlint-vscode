@@ -6,12 +6,12 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import * as ChildProcess from 'child_process';
-import * as FS from 'fs';
 import { DateTime } from 'luxon';
 import * as Net from 'net';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
+import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
 import { BindingService } from './connected/binding';
 import { AllConnectionsTreeDataProvider } from './connected/connections';
@@ -33,24 +33,21 @@ import { languageServerCommand } from './lsp/server';
 import { showRuleDescription } from './rules/rulepanel';
 import { AllRulesTreeDataProvider, RuleNode } from './rules/rules';
 import { GitExtension } from './scm/git';
-import { initScm } from './scm/scm';
+import { initScm, isIgnoredByScm } from './scm/scm';
+import { isFirstSecretDetected, showNotificationForFirstSecretsIssue } from './secrets/secrets';
+import { getSonarLintConfiguration, isVerboseEnabled } from './settings/settings';
+import { Commands } from './util/commands';
+import { getLogOutput, initLogOutput, logToSonarLintOutput, showLogOutput } from './util/logging';
+import { getPlatform } from './util/platform';
 import {
   ConnectionSettingsService,
-  getSonarLintConfiguration,
   migrateConnectedModeSettings
 } from './settings/connectionsettings';
-import { Commands } from './util/commands';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 
 let currentConfig: VSCode.WorkspaceConfiguration;
-const FIRST_SECRET_ISSUE_DETECTED_KEY = 'FIRST_SECRET_ISSUE_DETECTED_KEY';
-const SONARLINT_CATEGORY = 'sonarlint';
-const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
-const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
-const DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG = 'doNotAskAboutCompileCommands';
-let remindMeLaterAboutCompileCommandsFlag = false;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
 
@@ -58,19 +55,12 @@ const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' }
 ];
 
-let sonarlintOutput: VSCode.OutputChannel;
 let secondaryLocationsTree: SecondaryLocationsTree;
 let issueLocationsView: VSCode.TreeView<LocationTreeItem>;
 let languageClient: SonarLintExtendedLanguageClient;
 let allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider;
 let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
-
-export function logToSonarLintOutput(message) {
-  if (sonarlintOutput) {
-    sonarlintOutput.appendLine(message);
-  }
-}
 
 function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   return resolveRequirements(context)
@@ -127,10 +117,6 @@ function logWithPrefix(data, prefix) {
   }
 }
 
-function isVerboseEnabled(): boolean {
-  return currentConfig.get('output.showVerboseLogs', false);
-}
-
 export function toUrl(filePath: string) {
   let pathName = Path.resolve(filePath).replace(/\\/g, '/');
 
@@ -169,8 +155,7 @@ function toggleRule(level: protocol.ConfigLevel) {
 export function activate(context: VSCode.ExtensionContext) {
   currentConfig = getSonarLintConfiguration();
   util.setExtensionContext(context);
-  sonarlintOutput = VSCode.window.createOutputChannel('SonarLint');
-  context.subscriptions.push(sonarlintOutput);
+  initLogOutput(context);
 
   const serverOptions = () => runJavaServer(context);
 
@@ -208,7 +193,7 @@ export function activate(context: VSCode.ExtensionContext) {
         }
       };
     },
-    outputChannel: sonarlintOutput,
+    outputChannel: getLogOutput(),
     revealOutputChannelOn: 4 // never
   };
 
@@ -321,9 +306,7 @@ export function activate(context: VSCode.ExtensionContext) {
     })
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => {
-      sonarlintOutput.show();
-    })
+    VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => showLogOutput())
   );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
@@ -416,30 +399,6 @@ export function activate(context: VSCode.ExtensionContext) {
   installClasspathListener(languageClient);
 }
 
-function getPlatform(): string {
-  const platform = process.platform;
-  if (platform === 'linux' && isAlpineLinux()) {
-    return 'alpine';
-  }
-  return platform;
-}
-
-// inspired from https://github.com/microsoft/vscode/blob/4e69b30b4c6618e99ffc831bb9441c3e65c6596e/
-// src/vs/platform/extensionManagement/common/extensionManagementUtil.ts#L180
-function isAlpineLinux(): boolean {
-  let fileContent: string | undefined;
-  try {
-    fileContent = FS.readFileSync('/etc/os-release', 'utf-8');
-  } catch (error1) {
-    try {
-      fileContent = FS.readFileSync('/usr/lib/os-release', 'utf-8');
-    } catch (error2) {
-      return false;
-    }
-  }
-  return !!fileContent && (fileContent.match(/^ID=([^\u001b\r\n]*)/m) || [])[1] === 'alpine';
-}
-
 /**
  * Inspired from https://github.com/microsoft/vscode-extension-telemetry/blob/4408adad49f6da5816c28467d90aec15773773a9/src/common/baseTelemetryReporter.ts#L63
  * Given a remoteName ensures it is in the list of valid ones
@@ -460,32 +419,6 @@ function cleanRemoteName(remoteName?: string): string {
   });
 
   return ret;
-}
-
-async function showNotificationForFirstSecretsIssue(context: VSCode.ExtensionContext) {
-  const showProblemsViewActionTitle = 'Show Problems View';
-  VSCode.window
-    .showWarningMessage(
-      'SonarLint detected some secrets in one of the open files.\n' +
-        'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
-        'Please refer to the Problems view for more information.',
-      showProblemsViewActionTitle
-    )
-    .then(action => {
-      if (action === showProblemsViewActionTitle) {
-        VSCode.commands.executeCommand('workbench.panel.markers.view.focus');
-      }
-    });
-  context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, true);
-}
-
-function isFirstSecretDetected(context: VSCode.ExtensionContext): boolean {
-  const result = context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY);
-  if (typeof result == 'string') {
-    // migrate
-    context.globalState.update(FIRST_SECRET_ISSUE_DETECTED_KEY, result === 'true');
-  }
-  return context.globalState.get(FIRST_SECRET_ISSUE_DETECTED_KEY, false);
 }
 
 function suggestBinding(params: protocol.SuggestBindingParams) {
@@ -531,39 +464,13 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     showSecurityHotspot(allHotspotsView, hotspotsTreeDataProvider, h)
   );
   languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
-  languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands);
+  languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
   languageClient.onNotification(protocol.SubmitTokenNotification.type, token => handleTokenReceivedNotification(token));
   languageClient.onNotification(protocol.PublishHotspotsForFile.type, hotspotsPerFile => {
     hotspotsTreeDataProvider.refresh(hotspotsPerFile);
     updateSonarLintViewContainerBadge();
   });
-
-  async function notifyMissingCompileCommands() {
-    if ((await doNotAskAboutCompileCommandsFlag(context)) || remindMeLaterAboutCompileCommandsFlag) {
-      return;
-    }
-    const doNotAskAgainAction = `Don't ask again`;
-    const remindMeLaterAction = 'Ask me later';
-    const configureCompileCommandsAction = 'Configure compile commands';
-    const message = `SonarLint is unable to analyze C and C++ file(s) because there is no configured compilation 
-    database.`;
-    VSCode.window
-      .showWarningMessage(message, configureCompileCommandsAction, remindMeLaterAction, doNotAskAgainAction)
-      .then(selection => {
-        switch (selection) {
-          case doNotAskAgainAction:
-            context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
-            break;
-          case configureCompileCommandsAction:
-            configureCompilationDatabase();
-            break;
-          case remindMeLaterAction:
-            remindMeLaterAboutCompileCommandsFlag = true;
-            break;
-        }
-      });
-  }
 }
 
 function updateSonarLintViewContainerBadge() {
@@ -577,85 +484,8 @@ function updateSonarLintViewContainerBadge() {
       : undefined;
 }
 
-async function doNotAskAboutCompileCommandsFlag(context: VSCode.ExtensionContext): Promise<boolean> {
-  return context.workspaceState.get(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, false);
-}
-
-enum GitReturnCode {
-  E_OK = 0,
-  E_FAIL = 1,
-  E_INVALID = 128
-}
-
-function isNeitherOkNorFail(code?: GitReturnCode) {
-  return [GitReturnCode.E_OK, GitReturnCode.E_FAIL].indexOf(code) < 0;
-}
-
-async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promise<boolean> {
-  const { sout, serr } = await new Promise<{ sout: string; serr: string }>((resolve, reject) => {
-    ChildProcess.exec(
-      gitCommand,
-      { cwd: workspaceFolderPath },
-      (error: Error & { code?: GitReturnCode }, stdout, stderr) => {
-        if (error && isNeitherOkNorFail(error.code)) {
-          if (isVerboseEnabled()) {
-            logToSonarLintOutput(`Error on git command "${gitCommand}": ${error}`);
-          }
-          reject(error);
-          return;
-        }
-        resolve({ sout: stdout, serr: stderr });
-      }
-    );
-  });
-
-  if (serr) {
-    return Promise.resolve(false);
-  }
-
-  return Promise.resolve(sout.length > 0);
-}
-
-async function isIgnoredByScm(fileUri: string): Promise<boolean> {
-  return performIsIgnoredCheck(fileUri, isIgnored);
-}
-
 async function getTokenForServer(serverId: string): Promise<string> {
   return connectionSettingsService.getServerToken(serverId);
-}
-
-export async function performIsIgnoredCheck(
-  fileUri: string,
-  scmCheck: (workspaceFolderPath: string, gitCommand: string) => Promise<boolean>
-): Promise<boolean> {
-  const parsedFileUri = VSCode.Uri.parse(fileUri);
-  const workspaceFolder = VSCode.workspace.getWorkspaceFolder(parsedFileUri);
-  if (workspaceFolder == null) {
-    logToSonarLintOutput(`The '${fileUri}' file is not in the workspace, consider as not ignored`);
-    return Promise.resolve(false);
-  }
-  const gitExtension = VSCode.extensions.getExtension<GitExtension>('vscode.git').exports;
-  if (gitExtension == null) {
-    logToSonarLintOutput(`The git extension is not installed, consider the '${fileUri}' file as not ignored`);
-    return Promise.resolve(false);
-  }
-  try {
-    const gitApi = gitExtension.getAPI(1);
-    const gitPath = gitApi.git.path;
-    const repo = gitApi.getRepository(parsedFileUri);
-    if (repo) {
-      // use the absolute file path, Git is able to manage
-      const command = `"${gitPath}" check-ignore "${parsedFileUri.fsPath}"`;
-      const fileIgnoredForFolder = await scmCheck(repo.rootUri.fsPath, command);
-      return Promise.resolve(fileIgnoredForFolder);
-    } else {
-      logToSonarLintOutput(`The '${fileUri}' file is not in a git repo, consider as not ignored`);
-      return Promise.resolve(false);
-    }
-  } catch (e) {
-    logToSonarLintOutput(`Error requesting ignored status, consider the '${fileUri}' file as not ignored`);
-    return Promise.resolve(false);
-  }
 }
 
 function isOpenInEditor(fileUri: string) {
@@ -685,68 +515,6 @@ async function showAllLocations(issue: protocol.Issue) {
 function clearLocations() {
   secondaryLocationsTree.hideLocations();
   issueLocationsView.message = null;
-}
-
-interface IndexQP extends VSCode.QuickPickItem {
-  index: number;
-}
-
-async function showCompilationDatabaseOptions(paths: VSCode.Uri[]) {
-  if (paths.length === 1) {
-    return showMessageAndUpdateConfig(paths[0].fsPath);
-  }
-  const items = paths.map((path, i) => ({ label: path.fsPath, description: ``, index: i }));
-  items.sort((i1, i2) => i1.label.localeCompare(i2.label));
-  const options = { placeHolder: 'Pick a compilation database' };
-  const selection: IndexQP | undefined = await VSCode.window.showQuickPick(items, options);
-  if (selection) {
-    return showMessageAndUpdateConfig(paths[selection.index].fsPath);
-  }
-  return undefined;
-}
-
-function showMessageAndUpdateConfig(compilationDbPath: string) {
-  VSCode.window.showInformationMessage(
-    `Analysis configured. Compilation database path is set to: ${compilationDbPath}`
-  );
-  const [pathForSettings, workspaceFolder] = tryRelativizeToWorkspaceFolder(compilationDbPath);
-
-  if (workspaceFolder !== undefined) {
-    const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
-    return config.update(PATH_TO_COMPILE_COMMANDS, pathForSettings, VSCode.ConfigurationTarget.WorkspaceFolder);
-  }
-  return VSCode.workspace
-    .getConfiguration()
-    .update(FULL_PATH_TO_COMPILE_COMMANDS, pathForSettings, VSCode.ConfigurationTarget.Workspace);
-}
-
-function tryRelativizeToWorkspaceFolder(path: string): [string, VSCode.WorkspaceFolder] {
-  if (!Path.isAbsolute(path)) {
-    return [path, undefined];
-  }
-  for (const folder of VSCode.workspace.workspaceFolders || []) {
-    const folderPath = folder.uri.fsPath;
-    if (path.startsWith(folderPath)) {
-      const pathWithVariable = `\${workspaceFolder}${path.replace(folderPath, '')}`;
-      return [pathWithVariable, folder];
-    }
-  }
-  return [path, undefined];
-}
-
-async function configureCompilationDatabase() {
-  const paths = (await VSCode.workspace.findFiles(`**/compile_commands.json`)).filter(path =>
-    FS.existsSync(path.fsPath)
-  );
-  if (paths.length === 0) {
-    VSCode.window.showWarningMessage(`No compilation databases were found in the workspace\n 
-[How to generate compile commands](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis)`);
-    VSCode.workspace
-      .getConfiguration()
-      .update(FULL_PATH_TO_COMPILE_COMMANDS, undefined, VSCode.ConfigurationTarget.Workspace);
-  } else {
-    await showCompilationDatabaseOptions(paths);
-  }
 }
 
 function onConfigurationChange() {

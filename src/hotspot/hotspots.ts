@@ -8,9 +8,9 @@
 
 import * as vscode from 'vscode';
 import { Commands } from '../util/commands';
-import { logToSonarLintOutput } from '../extension';
 import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import { Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
+import { logToSonarLintOutput } from '../util/logging';
 import { resolveExtensionFile } from '../util/util';
 import {
   AllHotspotsTreeDataProvider,
