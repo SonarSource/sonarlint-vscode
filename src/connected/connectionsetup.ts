@@ -274,8 +274,8 @@ async function openTokenGenerationPage(message) {
     await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen' });
     await vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
   } catch(error) {
-    const errorMessage = error.message;
-    await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen', errorMessage });
+    await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen',
+      errorMessage: 'Incorrect URL or server is not available' });
   }
 }
 
