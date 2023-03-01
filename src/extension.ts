@@ -31,23 +31,24 @@ import { SonarLintExtendedLanguageClient } from './lsp/client';
 import * as protocol from './lsp/protocol';
 import { languageServerCommand } from './lsp/server';
 import { showRuleDescription } from './rules/rulepanel';
-import { AllRulesTreeDataProvider, RuleNode } from './rules/rules';
-import { GitExtension } from './scm/git';
+import { AllRulesTreeDataProvider, LanguageNode, RuleNode } from './rules/rules';
 import { initScm, isIgnoredByScm } from './scm/scm';
 import { isFirstSecretDetected, showNotificationForFirstSecretsIssue } from './secrets/secrets';
-import { getSonarLintConfiguration, isVerboseEnabled } from './settings/settings';
+import { ConnectionSettingsService, migrateConnectedModeSettings } from './settings/connectionsettings';
+import {
+  getCurrentConfiguration,
+  getSonarLintConfiguration,
+  isVerboseEnabled,
+  loadInitialSettings,
+  onConfigurationChange
+} from './settings/settings';
 import { Commands } from './util/commands';
 import { getLogOutput, initLogOutput, logToSonarLintOutput, showLogOutput } from './util/logging';
 import { getPlatform } from './util/platform';
-import {
-  ConnectionSettingsService,
-  migrateConnectedModeSettings
-} from './settings/connectionsettings';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 
-let currentConfig: VSCode.WorkspaceConfiguration;
 let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
 
@@ -58,6 +59,8 @@ const DOCUMENT_SELECTOR = [
 let secondaryLocationsTree: SecondaryLocationsTree;
 let issueLocationsView: VSCode.TreeView<LocationTreeItem>;
 let languageClient: SonarLintExtendedLanguageClient;
+let allRulesTreeDataProvider: AllRulesTreeDataProvider;
+let allRulesView: VSCode.TreeView<LanguageNode>;
 let allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider;
 let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
@@ -153,7 +156,7 @@ function toggleRule(level: protocol.ConfigLevel) {
 }
 
 export function activate(context: VSCode.ExtensionContext) {
-  currentConfig = getSonarLintConfiguration();
+  loadInitialSettings();
   util.setExtensionContext(context);
   initLogOutput(context);
 
@@ -207,12 +210,10 @@ export function activate(context: VSCode.ExtensionContext) {
   );
 
   ConnectionSettingsService.init(context, languageClient);
-  connectionSettingsService = ConnectionSettingsService.instance;
-  migrateConnectedModeSettings(currentConfig, connectionSettingsService);
+  migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance);
 
-  BindingService.init(languageClient, context.workspaceState, connectionSettingsService);
-  bindingService = BindingService.instance;
-  AutoBindingService.init(bindingService, context.workspaceState, connectionSettingsService);
+  BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
+  AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
 
   languageClient.start().then(() => {
     installCustomRequestHandlers(context);
@@ -234,8 +235,8 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.window.onDidChangeActiveTextEditor(e => scm.updateReferenceBranchStatusItem(e));
   });
 
-  const allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
-  const allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
+  allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
+  allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
     treeDataProvider: allRulesTreeDataProvider
   });
   context.subscriptions.push(allRulesView);
@@ -245,6 +246,70 @@ export function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: secondaryLocationsTree
   });
   context.subscriptions.push(issueLocationsView);
+
+  VSCode.workspace.onDidChangeConfiguration(async event => {
+    if (event.affectsConfiguration('sonarlint.rules')) {
+      allRulesTreeDataProvider.refresh();
+    }
+    if (event.affectsConfiguration('sonarlint.connectedMode')) {
+      allConnectionsTreeDataProvider.refresh();
+    }
+  });
+
+  registerCommands(context);
+
+  allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
+
+  const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
+    treeDataProvider: allConnectionsTreeDataProvider
+  });
+  context.subscriptions.push(allConnectionsView);
+
+  hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(connectionSettingsService);
+  allHotspotsView = VSCode.window.createTreeView('SonarLint.SecurityHotspots', {
+    treeDataProvider: hotspotsTreeDataProvider
+  });
+
+  context.subscriptions.push(allHotspotsView);
+
+  context.subscriptions.push(onConfigurationChange());
+
+  context.subscriptions.push(
+    VSCode.extensions.onDidChange(() => {
+      installClasspathListener(languageClient);
+    })
+  );
+  installClasspathListener(languageClient);
+}
+
+/**
+ * Inspired from https://github.com/microsoft/vscode-extension-telemetry/blob/4408adad49f6da5816c28467d90aec15773773a9/src/common/baseTelemetryReporter.ts#L63
+ * Given a remoteName ensures it is in the list of valid ones
+ * @param remoteName The remotename
+ * @returns The "cleaned" one
+ */
+function cleanRemoteName(remoteName?: string): string {
+  if (!remoteName) {
+    return 'none';
+  }
+
+  let ret = 'other';
+  // Allowed remote authorities
+  ['ssh-remote', 'dev-container', 'attached-container', 'wsl', 'codespaces'].forEach((res: string) => {
+    if (remoteName.indexOf(`${res}`) === 0) {
+      ret = res;
+    }
+  });
+
+  return ret;
+}
+
+function suggestBinding(params: protocol.SuggestBindingParams) {
+  logToSonarLintOutput(`Received binding suggestions: ${JSON.stringify(params)}`);
+  AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
+}
+
+function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_LOCATIONS, clearLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.NAVIGATE_TO_LOCATION, navigateToLocation));
@@ -321,15 +386,6 @@ export function activate(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DESCRIPTION, showHotspotDescription)
   );
 
-  VSCode.workspace.onDidChangeConfiguration(async event => {
-    if (event.affectsConfiguration('sonarlint.rules')) {
-      allRulesTreeDataProvider.refresh();
-    }
-    if (event.affectsConfiguration('sonarlint.connectedMode')) {
-      allConnectionsTreeDataProvider.refresh();
-    }
-  });
-
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.CONFIGURE_COMPILATION_DATABASE, configureCompilationDatabase)
   );
@@ -374,58 +430,7 @@ export function activate(context: VSCode.ExtensionContext) {
       BindingService.instance.deleteBindingWithConfirmation(binding)
     )
   );
-
-  allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
-
-  const allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
-    treeDataProvider: allConnectionsTreeDataProvider
-  });
-  context.subscriptions.push(allConnectionsView);
-
-  hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(connectionSettingsService);
-  allHotspotsView = VSCode.window.createTreeView('SonarLint.SecurityHotspots', {
-    treeDataProvider: hotspotsTreeDataProvider
-  });
-
-  context.subscriptions.push(allHotspotsView);
-
-  context.subscriptions.push(onConfigurationChange());
-
-  context.subscriptions.push(
-    VSCode.extensions.onDidChange(() => {
-      installClasspathListener(languageClient);
-    })
-  );
-  installClasspathListener(languageClient);
 }
-
-/**
- * Inspired from https://github.com/microsoft/vscode-extension-telemetry/blob/4408adad49f6da5816c28467d90aec15773773a9/src/common/baseTelemetryReporter.ts#L63
- * Given a remoteName ensures it is in the list of valid ones
- * @param remoteName The remotename
- * @returns The "cleaned" one
- */
-function cleanRemoteName(remoteName?: string): string {
-  if (!remoteName) {
-    return 'none';
-  }
-
-  let ret = 'other';
-  // Allowed remote authorities
-  ['ssh-remote', 'dev-container', 'attached-container', 'wsl', 'codespaces'].forEach((res: string) => {
-    if (remoteName.indexOf(`${res}`) === 0) {
-      ret = res;
-    }
-  });
-
-  return ret;
-}
-
-function suggestBinding(params: protocol.SuggestBindingParams) {
-  logToSonarLintOutput(`Received binding suggestions: ${JSON.stringify(params)}`);
-  AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
-}
-
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
@@ -517,42 +522,6 @@ function clearLocations() {
   issueLocationsView.message = null;
 }
 
-function onConfigurationChange() {
-  return VSCode.workspace.onDidChangeConfiguration(event => {
-    if (!event.affectsConfiguration('sonarlint')) {
-      return;
-    }
-    const newConfig = getSonarLintConfiguration();
-
-    const sonarLintLsConfigChanged =
-      hasSonarLintLsConfigChanged(currentConfig, newConfig) || hasNodeJsConfigChanged(currentConfig, newConfig);
-
-    if (sonarLintLsConfigChanged) {
-      const msg = 'SonarLint Language Server configuration changed, please restart VS Code.';
-      const action = 'Restart Now';
-      const restartId = 'workbench.action.reloadWindow';
-      currentConfig = newConfig;
-      VSCode.window.showWarningMessage(msg, action).then(selection => {
-        if (action === selection) {
-          VSCode.commands.executeCommand(restartId);
-        }
-      });
-    }
-    migrateConnectedModeSettings(newConfig, connectionSettingsService);
-  });
-}
-
-function hasSonarLintLsConfigChanged(oldConfig, newConfig) {
-  return !configKeyEquals('ls.javaHome', oldConfig, newConfig) || !configKeyEquals('ls.vmargs', oldConfig, newConfig);
-}
-
-function hasNodeJsConfigChanged(oldConfig, newConfig) {
-  return !configKeyEquals('pathToNodeExecutable', oldConfig, newConfig);
-}
-
-function configKeyEquals(key, oldConfig, newConfig) {
-  return oldConfig.get(key) === newConfig.get(key);
-}
 export function deactivate(): Thenable<void> {
   if (!languageClient) {
     return undefined;
