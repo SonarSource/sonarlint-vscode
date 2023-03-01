@@ -35,8 +35,8 @@ export async function migrateConnectedModeSettings(
   settings: VSCode.WorkspaceConfiguration,
   settingsService: ConnectionSettingsService
 ) {
-  const sqConnections = settings.get<SonarQubeConnection[]>(`${CONNECTIONS_SECTION}.${SONARQUBE}`);
-  const scConnections = settings.get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`);
+  const sqConnections = settings.get<SonarQubeConnection[]>(`${CONNECTIONS_SECTION}.${SONARQUBE}`, []);
+  const scConnections = settings.get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`, []);
   if (await hasUnmigratedConnections(sqConnections, scConnections, settingsService)) {
     suggestMigrationToSecureStorage(sqConnections, scConnections, settingsService);
   }
