@@ -1,4 +1,4 @@
-## 3.15
+## 3.15.1
  
 * In Connected Mode, SonarCloud/SonarQube Quality Profile is now being applied for secret detection rules
 * Update JS/TS/CSS analyzer 9.13.0 -> [10.0.0](https://github.com/SonarSource/SonarJS/releases/tag/10.0.0.20728) -> [10.0.1](https://github.com/SonarSource/SonarJS/releases/tag/10.0.1.20755), support for JavaScript analysis inside HTML files, FN and FP fixes, dependency upgrades
