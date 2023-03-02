@@ -55,14 +55,7 @@ let connectionSettingsService: ConnectionSettingsService;
 let bindingService: BindingService;
 
 const DOCUMENT_SELECTOR = [
-  { scheme: 'file', pattern: '**/*' },
-  {
-    notebook: {
-      scheme: 'file',
-      notebookType: 'jupyter-notebook'
-    },
-    language: 'python'
-  }
+  { scheme: 'file', pattern: '**/*' }
 ];
 
 let sonarlintOutput: VSCode.OutputChannel;
