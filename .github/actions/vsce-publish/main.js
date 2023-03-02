@@ -14,7 +14,7 @@
 
 'use strict';
 
-import * as vsce from 'vsce';
+import * as vsce from '@vscode/vsce';
 
 const {
   ARTIFACT_FILE,
