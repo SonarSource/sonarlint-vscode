@@ -8,8 +8,8 @@
 
 import * as VSCode from 'vscode';
 import { Connection } from '../connected/connections';
-import { logToSonarLintOutput } from '../extension';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { logToSonarLintOutput } from '../util/logging';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const CONNECTIONS_SECTION = 'connectedMode.connections';
@@ -35,8 +35,8 @@ export async function migrateConnectedModeSettings(
   settings: VSCode.WorkspaceConfiguration,
   settingsService: ConnectionSettingsService
 ) {
-  const sqConnections = settings.get<SonarQubeConnection[]>(`${CONNECTIONS_SECTION}.${SONARQUBE}`);
-  const scConnections = settings.get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`);
+  const sqConnections = settings.get<SonarQubeConnection[]>(`${CONNECTIONS_SECTION}.${SONARQUBE}`, []);
+  const scConnections = settings.get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`, []);
   if (await hasUnmigratedConnections(sqConnections, scConnections, settingsService)) {
     suggestMigrationToSecureStorage(sqConnections, scConnections, settingsService);
   }
@@ -55,10 +55,6 @@ async function suggestMigrationToSecureStorage(
   if (selection === migrateToSecureStorageAction) {
     await settingsService.addTokensFromSettingsToSecureStorage(sqConnections, scConnections);
   }
-}
-
-export function getSonarLintConfiguration(): VSCode.WorkspaceConfiguration {
-  return VSCode.workspace.getConfiguration(SONARLINT_CATEGORY);
 }
 
 export class ConnectionSettingsService {

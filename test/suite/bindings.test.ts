@@ -44,7 +44,6 @@ const TWO = 2;
 
 const mockClient = {
   async getRemoteProjectsForConnection(_connectionId: string): Promise<Object> {
-    console.log('mocked getRemoteProjectsForConnection');
     return { projectKey1: 'projectName1', projectKey2: 'projectName2' };
   },
   async checkConnection(connectionId: string) {

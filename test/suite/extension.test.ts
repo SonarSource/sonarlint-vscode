@@ -5,20 +5,15 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import * as assert from 'assert';
-import * as path from 'path';
-import * as util from '../../src/util/util';
 import * as FS from 'fs';
+import * as path from 'path';
 import * as os from 'os';
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from 'vscode';
 import { sleep } from '../testutil';
-import { performIsIgnoredCheck } from '../../src/extension';
+import { performIsIgnoredCheck } from '../../src/scm/scm';
 import { Commands } from '../../src/util/commands';
 import { Context } from 'mocha';
-import { isRunningAutoBuild, isRunningOnWindows } from '../../src/util/util';
-import { Uri } from 'vscode';
+import * as util from '../../src/util/util';
 
 const sampleFolderLocation = '../../../test/samples/';
 
@@ -83,7 +78,7 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(notIgnored, false);
   }).timeout(60 * 1000);
 
-  async function checkSonarLintDiagnostics(fileUri: Uri) {
+  async function checkSonarLintDiagnostics(fileUri: vscode.Uri) {
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
 
@@ -104,7 +99,7 @@ suite('Extension Test Suite', () => {
   }
 
   function skipTestOnWindowsVm(testContext: Context, reason: string) {
-    if (isRunningOnWindows() && isRunningAutoBuild()) {
+    if (util.isRunningOnWindows() && util.isRunningAutoBuild()) {
       console.log(reason)
       testContext.skip();
     }

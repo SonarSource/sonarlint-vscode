@@ -6,10 +6,12 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+import * as ChildProcess from 'child_process';
 import * as vscode from 'vscode';
 import { API, GitExtension, Repository } from './git';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { logToSonarLintOutput } from '../extension';
+import { isVerboseEnabled } from '../settings/settings';
+import { logToSonarLintOutput } from '../util/logging';
 
 const GIT_EXTENSION_ID = 'vscode.git';
 const GIT_API_VERSION = 1;
@@ -148,3 +150,75 @@ export function initScm(client: SonarLintExtendedLanguageClient, referenceBranch
   }
 }
 
+enum GitReturnCode {
+  E_OK = 0,
+  E_FAIL = 1,
+  E_INVALID = 128
+}
+
+function isNeitherOkNorFail(code?: GitReturnCode) {
+  return [GitReturnCode.E_OK, GitReturnCode.E_FAIL].indexOf(code) < 0;
+}
+
+async function isIgnored(workspaceFolderPath: string, gitCommand: string): Promise<boolean> {
+  const { sout, serr } = await new Promise<{ sout: string; serr: string }>((resolve, reject) => {
+    ChildProcess.exec(
+      gitCommand,
+      { cwd: workspaceFolderPath },
+      (error: Error & { code?: GitReturnCode }, stdout, stderr) => {
+        if (error && isNeitherOkNorFail(error.code)) {
+          if (isVerboseEnabled()) {
+            logToSonarLintOutput(`Error on git command "${gitCommand}": ${error}`);
+          }
+          reject(error);
+          return;
+        }
+        resolve({ sout: stdout, serr: stderr });
+      }
+    );
+  });
+
+  if (serr) {
+    return Promise.resolve(false);
+  }
+
+  return Promise.resolve(sout.length > 0);
+}
+
+export async function isIgnoredByScm(fileUri: string): Promise<boolean> {
+  return performIsIgnoredCheck(fileUri, isIgnored);
+}
+
+export async function performIsIgnoredCheck(
+  fileUri: string,
+  scmCheck: (workspaceFolderPath: string, gitCommand: string) => Promise<boolean>
+): Promise<boolean> {
+  const parsedFileUri = vscode.Uri.parse(fileUri);
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(parsedFileUri);
+  if (workspaceFolder == null) {
+    logToSonarLintOutput(`The '${fileUri}' file is not in the workspace, consider as not ignored`);
+    return Promise.resolve(false);
+  }
+  const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git').exports;
+  if (gitExtension == null) {
+    logToSonarLintOutput(`The git extension is not installed, consider the '${fileUri}' file as not ignored`);
+    return Promise.resolve(false);
+  }
+  try {
+    const gitApi = gitExtension.getAPI(1);
+    const gitPath = gitApi.git.path;
+    const repo = gitApi.getRepository(parsedFileUri);
+    if (repo) {
+      // use the absolute file path, Git is able to manage
+      const command = `"${gitPath}" check-ignore "${parsedFileUri.fsPath}"`;
+      const fileIgnoredForFolder = await scmCheck(repo.rootUri.fsPath, command);
+      return Promise.resolve(fileIgnoredForFolder);
+    } else {
+      logToSonarLintOutput(`The '${fileUri}' file is not in a git repo, consider as not ignored`);
+      return Promise.resolve(false);
+    }
+  } catch (e) {
+    logToSonarLintOutput(`Error requesting ignored status, consider the '${fileUri}' file as not ignored`);
+    return Promise.resolve(false);
+  }
+}

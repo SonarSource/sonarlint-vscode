@@ -9,8 +9,8 @@ import * as CompareVersions from 'compare-versions';
 import * as VSCode from 'vscode';
 import { Disposable } from 'vscode-languageclient';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { logToSonarLintOutput } from '../extension';
 import { GetJavaConfigResponse } from '../lsp/protocol';
+import { logToSonarLintOutput } from '../util/logging';
 
 let classpathChangeListener: Disposable;
 let serverModeListener: Disposable;

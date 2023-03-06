@@ -11,15 +11,15 @@
 import * as cp from 'child_process';
 import * as expandHomeDir from 'expand-home-dir';
 import * as findJavaHome from 'find-java-home';
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as pathExists from 'path-exists';
 import * as vscode from 'vscode';
 import { Commands } from './commands';
 import * as jre from '../java/jre';
+import { logToSonarLintOutput } from './logging';
 import { PlatformInformation } from './platform';
 import * as util from './util';
-import * as fse from 'fs-extra';
-import { logToSonarLintOutput } from '../extension';
 
 const REQUIRED_JAVA_VERSION = 11;
 

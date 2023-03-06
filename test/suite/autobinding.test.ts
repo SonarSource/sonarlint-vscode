@@ -114,7 +114,7 @@ suite('Auto Binding Test Suite', () => {
 
       mockWorkspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
 
-      underTest.checkConditionsAndAttemptAutobinding();
+      underTest.checkConditionsAndAttemptAutobinding({ suggestions: {} });
 
       const bindingAfter = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -165,18 +165,18 @@ suite('Auto Binding Test Suite', () => {
 
       await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
-      .update(CONNECTED_MODE_SETTINGS_SONARQUBE, null, VSCode.ConfigurationTarget.Global);
+      .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, VSCode.ConfigurationTarget.Global);
 
       await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
-      .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, null, VSCode.ConfigurationTarget.Global);
+      .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, undefined, VSCode.ConfigurationTarget.Global);
 
       const bindingBefore = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get(BINDING_SETTINGS);
       expect(bindingBefore).to.be.empty;
 
-      underTest.checkConditionsAndAttemptAutobinding();
+      underTest.checkConditionsAndAttemptAutobinding({ suggestions: {} });
 
       const bindingAfter = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)

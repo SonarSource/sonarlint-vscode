@@ -5,10 +5,9 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import * as FS from 'fs';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { getSonarLintConfiguration } from '../settings/connectionsettings';
+import { getSonarLintConfiguration } from '../settings/settings';
 import { RequirementsData } from '../util/requirements';
 import * as util from '../util/util';
 
