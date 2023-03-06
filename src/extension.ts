@@ -49,9 +49,6 @@ import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 
-let connectionSettingsService: ConnectionSettingsService;
-let bindingService: BindingService;
-
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' }
 ];
@@ -265,7 +262,7 @@ export function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(connectionSettingsService);
+  hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(ConnectionSettingsService.instance);
   allHotspotsView = VSCode.window.createTreeView('SonarLint.SecurityHotspots', {
     treeDataProvider: hotspotsTreeDataProvider
   });
@@ -404,7 +401,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.ADD_PROJECT_BINDING, connection =>
-      bindingService.createOrEditBinding(connection.id, connection.contextValue)
+      BindingService.instance.createOrEditBinding(connection.id, connection.contextValue)
     )
   );
   context.subscriptions.push(
@@ -490,7 +487,7 @@ function updateSonarLintViewContainerBadge() {
 }
 
 async function getTokenForServer(serverId: string): Promise<string> {
-  return connectionSettingsService.getServerToken(serverId);
+  return ConnectionSettingsService.instance.getServerToken(serverId);
 }
 
 function isOpenInEditor(fileUri: string) {
