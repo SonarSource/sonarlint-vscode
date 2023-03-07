@@ -50,7 +50,14 @@ import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 
 const DOCUMENT_SELECTOR = [
-  { scheme: 'file', pattern: '**/*' }
+  { scheme: 'file', pattern: '**/*' },
+  {
+    notebook: {
+      scheme: 'file',
+      notebookType: 'jupyter-notebook'
+    },
+    language: 'python'
+  }
 ];
 
 let secondaryLocationsTree: SecondaryLocationsTree;
@@ -190,7 +197,8 @@ export function activate(context: VSCode.ExtensionContext) {
             remoteName: cleanRemoteName(VSCode.env.remoteName),
             uiKind: VSCode.UIKind[VSCode.env.uiKind]
           }
-        }
+        },
+        enableNotebooks: true
       };
     },
     outputChannel: getLogOutput(),

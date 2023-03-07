@@ -2,7 +2,7 @@
   {
     "groupId": "org.sonarsource.sonarlint.ls",
     "artifactId": "sonarlint-language-server",
-    "version": "2.15.1.63583",
+    "version": "2.16.0.64253",
     "output": "server/sonarlint-ls.jar"
   },
   {
@@ -26,7 +26,7 @@
   {
     "groupId": "org.sonarsource.python",
     "artifactId": "sonar-python-plugin",
-    "version": "4.0.0.11155",
+    "version": "4.1.0.11316",
     "output": "analyzers/sonarpython.jar"
   },
   {
