@@ -7,6 +7,7 @@
 'use strict';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
+import { TransportKind } from 'vscode-languageclient/node';
 import { getSonarLintConfiguration } from '../settings/settings';
 import { RequirementsData } from '../util/requirements';
 import * as util from '../util/util';
@@ -16,9 +17,8 @@ const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 
 export function languageServerCommand(
   context: VSCode.ExtensionContext,
-  requirements: RequirementsData,
-  port: number
-): { command: string; args: string[] } {
+  requirements: RequirementsData
+) {
   const serverJar = Path.resolve(context.extensionPath, 'server', 'sonarlint-ls.jar');
   const javaExecutablePath = Path.resolve(requirements.javaHome + '/bin/java');
 
@@ -29,7 +29,8 @@ export function languageServerCommand(
   }
   const vmargs = getSonarLintConfiguration().get('ls.vmargs', '');
   parseVMargs(params, vmargs);
-  params.push('-jar', serverJar, `${port}`);
+  params.push('-jar', serverJar);
+  params.push('-stdio');
   params.push('-analyzers');
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar'));
@@ -40,7 +41,7 @@ export function languageServerCommand(
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarcfamily.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonartext.jar'));
 
-  return { command: javaExecutablePath, args: params };
+  return { command: javaExecutablePath, args: params, transport: TransportKind.stdio };
 }
 
 export function parseVMargs(params: string[], vmargsLine: string) {
