@@ -83,31 +83,17 @@ function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
     })
     .then(requirements => {
       return new Promise<StreamInfo>((resolve, reject) => {
-        const server = Net.createServer(socket => {
-          if (isVerboseEnabled()) {
-            logToSonarLintOutput(`Child process connected on port ${(server.address() as Net.AddressInfo).port}`);
-            logToSonarLintOutput(`Java resolved to: ${requirements.javaHome}`);
-          }
-          resolve({
-            reader: socket,
-            writer: socket
-          });
-        });
-        server.listen(0, () => {
-          // Start the child java process
-          const port = (server.address() as Net.AddressInfo).port;
-          const { command, args } = languageServerCommand(context, requirements, port);
-          if (isVerboseEnabled()) {
-            logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
-          }
-          const process = ChildProcess.spawn(command, args);
+        const { command, args } = languageServerCommand(context, requirements);
+        logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
+        const process = ChildProcess.spawn(command, args);
 
-          process.stdout.on('data', function (data) {
-            logWithPrefix(data, '[stdout]');
-          });
-          process.stderr.on('data', function (data) {
-            logWithPrefix(data, '[stderr]');
-          });
+        process.stderr.on('data', function (data) {
+          logWithPrefix(data, '[stderr]');
+        });
+
+        resolve({
+          reader: process.stdout,
+          writer: process.stdin
         });
       });
     });
