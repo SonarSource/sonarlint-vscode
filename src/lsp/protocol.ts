@@ -7,6 +7,7 @@
 'use strict';
 
 import * as lsp from 'vscode-languageserver-protocol';
+import { HelpAndFeedbackItem } from '../help/helpAndFeedbackTreeDataProvider';
 
 //#region Client side extensions to LSP
 
@@ -20,7 +21,7 @@ export namespace SuggestBindingNotification {
 
 export interface SuggestBindingParams {
   suggestions: {
-    [folderUri: string]: Array<BindingSuggestion>
+    [folderUri: string]: Array<BindingSuggestion>;
   };
 }
 
@@ -31,13 +32,14 @@ export interface BindingSuggestion {
 }
 
 export namespace FindFileByNamesInFolderRequest {
-  export const type = new lsp.RequestType<FindFileByNamesInFolderParams, FindFileByNamesInFolderResponse, void>
-    ('sonarlint/findFileByNamesInFolder');
+  export const type = new lsp.RequestType<FindFileByNamesInFolderParams, FindFileByNamesInFolderResponse, void>(
+    'sonarlint/findFileByNamesInFolder'
+  );
 }
 
 export interface FindFileByNamesInFolderParams {
   folderUri: string;
-  filenames: Array<string>
+  filenames: Array<string>;
 }
 
 export interface FindFileByNamesInFolderResponse {
@@ -336,11 +338,6 @@ export interface Range {
   character: number;
 }
 
-export interface DiagnosticRange {
-  start: Range;
-  end: Range;
-}
-
 export interface Diagnostic extends lsp.Diagnostic {
   creationDate?: string;
   flows: Flow[];
@@ -371,6 +368,10 @@ export interface OpenHotspotParams {
 
 export namespace OpenHotspotOnServer {
   export const type = new lsp.NotificationType<OpenHotspotParams>('sonarlint/openHotspotInBrowser');
+}
+
+export namespace HelpAndFeedbackLinkClicked {
+  export const type = new lsp.NotificationType<HelpAndFeedbackItem>('sonarlint/helpAndFeedbackLinkClicked');
 }
 
 //#endregion

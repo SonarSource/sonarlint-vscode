@@ -516,6 +516,10 @@
         {
           "id": "SonarLint.SecurityHotspots",
           "name": "SonarLint Security Hotspots"
+        },
+        {
+          "id": "SonarLint.HelpAndFeedback",
+          "name": "SonarLint Help and Feedback"
         }
       ]
     },

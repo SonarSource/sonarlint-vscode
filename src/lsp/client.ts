@@ -11,6 +11,7 @@ import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
 import { RulesResponse, ServerPathResponse } from './protocol';
+import { HelpAndFeedbackItem } from '../help/helpAndFeedbackTreeDataProvider';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<RulesResponse> {
@@ -61,5 +62,9 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   openHotspotOnServer(hotspotId: string, fileUri: string) {
     this.sendNotification(protocol.OpenHotspotOnServer.type, { hotspotId, fileUri });
+  }
+
+  helpAndFeedbackLinkClicked(helpAndFeedbackItem: HelpAndFeedbackItem) {
+    this.sendNotification(protocol.HelpAndFeedbackLinkClicked.type, helpAndFeedbackItem);
   }
 }
