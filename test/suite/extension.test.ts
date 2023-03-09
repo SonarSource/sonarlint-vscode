@@ -9,7 +9,7 @@ import * as FS from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as vscode from 'vscode';
-import { sleep } from '../testutil';
+import { skipTestOnWindowsVm, sleep } from '../testutil';
 import { performIsIgnoredCheck } from '../../src/scm/scm';
 import { Commands } from '../../src/util/commands';
 import { Context } from 'mocha';
@@ -96,13 +96,6 @@ suite('Extension Test Suite', () => {
       diags = getSonarLintDiagnostics(fileUri);
     }
     return diags;
-  }
-
-  function skipTestOnWindowsVm(testContext: Context, reason: string) {
-    if (util.isRunningOnWindows() && util.isRunningAutoBuild()) {
-      console.log(reason)
-      testContext.skip();
-    }
   }
 });
 function getSonarLintDiagnostics(fileUri: any) {

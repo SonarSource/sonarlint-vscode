@@ -343,21 +343,22 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.SHOW_INACTIVE_RULES, () => allRulesTreeDataProvider.filter('off'))
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.FIND_RULE_BY_KEY, () => {
-      VSCode.window
+    VSCode.commands.registerCommand(Commands.OPEN_RULE_BY_KEY, async (ruleKey: string) => {
+      await VSCode.commands.executeCommand(Commands.SHOW_ALL_RULES);
+      await allRulesView.reveal(new RuleNode({ key: ruleKey.toUpperCase() } as protocol.Rule), {
+        focus: true,
+        expand: true
+      });
+    })
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.FIND_RULE_BY_KEY, async () => {
+      const key = await VSCode.window
         .showInputBox({
           prompt: 'Rule Key',
           validateInput: value => allRulesTreeDataProvider.checkRuleExists(value)
-        })
-        .then(key => {
-          // Reset rules view filter
-          VSCode.commands.executeCommand(Commands.SHOW_ALL_RULES).then(() =>
-            allRulesView.reveal(new RuleNode({ key: key.toUpperCase() } as protocol.Rule), {
-              focus: true,
-              expand: true
-            })
-          );
         });
+      await VSCode.commands.executeCommand(Commands.OPEN_RULE_BY_KEY, key);
     })
   );
   context.subscriptions.push(
