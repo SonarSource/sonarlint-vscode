@@ -32,6 +32,7 @@ export function languageServerCommand(
   params.push('-jar', serverJar);
   params.push('-stdio');
   params.push('-analyzers');
+  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonargo.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar'));
