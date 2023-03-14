@@ -530,7 +530,7 @@
       },
       {
         "view": "SonarLint.SecurityHotspots",
-        "contents": "Available in Connected Mode with SonarQube 9.7+. [Learn more](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots)."
+        "contents": "Please set up a connection with SonarQube 9.7+ and open a source code file. Detected Security Hotspots will be displayed here. [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots)."
       }
     ],
     "menus": {
