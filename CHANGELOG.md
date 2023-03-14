@@ -1,3 +1,7 @@
+## 3.16
+
+* Update Python analyzer 4.0.0 -> [4.1.0](https://sonarsource.atlassian.net/projects/SONARPY/versions/14052/tab/release-report-all-issues), initial support for IPython syntax in Jupyter notebooks
+
 ## 3.15.1
  
 * In Connected Mode, SonarCloud/SonarQube Quality Profile is now being applied for secret detection rules
