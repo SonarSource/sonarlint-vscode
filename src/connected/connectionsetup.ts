@@ -18,7 +18,7 @@ import {
   SonarQubeConnection
 } from '../settings/connectionsettings';
 import * as util from '../util/util';
-import { ResourceResolver } from '../util/webview';
+import { escapeHtml, ResourceResolver } from '../util/webview';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -144,7 +144,8 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const serverProductName = isSonarQube ? 'SonarQube' : 'SonarCloud';
   const serverDocUrl = isSonarQube ? sonarQubeNotificationsDocUrl : sonarCloudNotificationsDocUrl;
 
-  const initialConnectionId = initialState.connectionId || '';
+  const initialConnectionId = escapeHtml(initialState.connectionId) || '';
+  const initialToken = escapeHtml(initialState.token);
 
   return `<!doctype html><html lang="en">
     <head>
@@ -164,11 +165,11 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         ${renderGenerateTokenButton(initialState, serverProductName)}
         <div class="formRowWithStatus">
           <vscode-text-field id="token" type="password" placeholder="········" required size="40"
-            title="A user token generated for your account on ${serverProductName}" value="${initialState.token}">
+            title="A user token generated for your account on ${serverProductName}" value="${initialToken}">
             User Token
           </vscode-text-field>
           <span id="tokenStatus" class="hidden">Token received!</span>
-          <input type="hidden" id="token-initial" value="${initialState.token}" />
+          <input type="hidden" id="token-initial" value="${initialToken}" />
         </div>
         ${renderOrganizationKeyField(initialState)}
         <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Connection" size="40"
@@ -181,7 +182,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
         </vscode-checkbox>
-        <input type="hidden" id="enableNotifications-initial" value="${!initialState.disableNotifications}" />
+        <input type="hidden" id="enableNotifications-initial" value="${!(initialState.disableNotifications)}" />
         <p>
           You will receive
           <vscode-link target="_blank" href="${serverDocUrl}">notifications</vscode-link>
@@ -205,11 +206,12 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
 
 function renderServerUrlField(connection) {
   if (isSonarQubeConnection(connection)) {
+    const serverUrl = escapeHtml(connection.serverUrl);
     return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
-    title="The base URL for your SonarQube server" autofocus value="${connection.serverUrl}">
+    title="The base URL for your SonarQube server" autofocus value="${serverUrl}">
       Server URL
     </vscode-text-field>
-    <input type="hidden" id="serverUrl-initial" value="${connection.serverUrl}" />`;
+    <input type="hidden" id="serverUrl-initial" value="${serverUrl}" />`;
   }
   return '';
 }
@@ -235,11 +237,12 @@ function renderOrganizationKeyField(connection) {
   if (isSonarQubeConnection(connection)) {
     return '';
   }
+  const organizationKey = escapeHtml(connection.organizationKey);
   return `<vscode-text-field id="organizationKey" type="text" placeholder="your-organization" required size="40"
-    title="The key of your organization on SonarCloud" autofocus value="${connection.organizationKey}">
+    title="The key of your organization on SonarCloud" autofocus value="${organizationKey}">
       Organization Key
     </vscode-text-field>
-    <input type="hidden" id="organizationKey-initial" value="${connection.organizationKey}" />`;
+    <input type="hidden" id="organizationKey-initial" value="${organizationKey}" />`;
 }
 
 /*
