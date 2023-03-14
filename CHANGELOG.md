@@ -1,6 +1,7 @@
 ## 3.16
 
-* Update Python analyzer 4.0.0 -> [4.1.0](https://sonarsource.atlassian.net/projects/SONARPY/versions/14052/tab/release-report-all-issues), initial support for IPython syntax in Jupyter notebooks
+* Update Python analyzer 4.0 -> [4.1](https://sonarsource.atlassian.net/projects/SONARPY/versions/14052/tab/release-report-all-issues), initial support for IPython syntax in Jupyter notebooks
+* Update PHP analyzer 3.27.1 -> [3.28](https://sonarsource.atlassian.net/projects/SONARPHP/versions/14048/tab/release-report-all-issues), precision improvements
 
 ## 3.15.1
  
