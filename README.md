@@ -16,16 +16,17 @@ You can access the detailed rule description directly from your editor, using th
 
 Out of the box, SonarLint automatically checks your code against the following rules:
 
-- [JavaScript rules](https://rules.sonarsource.com/javascript)
-- [TypeScript rules](https://rules.sonarsource.com/typescript)
 - [C rules](https://rules.sonarsource.com/c)
 - [C++ rules](https://rules.sonarsource.com/cpp)
 - [CSS rules](https://rules.sonarsource.com/css)
-- [Python rules](https://rules.sonarsource.com/python)
-- [Java rules](https://rules.sonarsource.com/java)
+- [Go rules](https://rules.sonarsource.com/go)
 - [HTML rules](https://rules.sonarsource.com/html)
+- [Java rules](https://rules.sonarsource.com/java)
+- [JavaScript rules](https://rules.sonarsource.com/javascript)
+- [Python rules](https://rules.sonarsource.com/python)
 - [PHP rules](https://rules.sonarsource.com/php)
 - [Secrets rules](https://rules.sonarsource.com/secrets)
+- [TypeScript rules](https://rules.sonarsource.com/typescript)
 
 The full list of available rules is visible in the "SonarLint Rules" view in the explorer, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
 
