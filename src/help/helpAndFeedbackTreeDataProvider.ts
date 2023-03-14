@@ -31,7 +31,7 @@ export const helpAndFeedbackViewItems: HelpAndFeedbackItem[] = [
   {
     id: 'supportedRules',
     label: 'Supported Languages and Rules',
-    url: 'https://github.com/SonarSource/sonarlint-vscode#static-analysis-rules',
+    url: 'https://github.com/SonarSource/sonarlint-vscode/wiki/Languages-and-rules',
     icon: 'checklist'
   },
   {
