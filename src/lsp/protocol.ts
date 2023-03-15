@@ -7,7 +7,6 @@
 'use strict';
 
 import * as lsp from 'vscode-languageserver-protocol';
-import { HelpAndFeedbackItem } from '../help/helpAndFeedbackTreeDataProvider';
 
 //#region Client side extensions to LSP
 
@@ -370,8 +369,14 @@ export namespace OpenHotspotOnServer {
   export const type = new lsp.NotificationType<OpenHotspotParams>('sonarlint/openHotspotInBrowser');
 }
 
+export interface HelpAndFeedbackLinkClickedNotificationParams {
+  id: string;
+}
+
 export namespace HelpAndFeedbackLinkClicked {
-  export const type = new lsp.NotificationType<HelpAndFeedbackItem>('sonarlint/helpAndFeedbackLinkClicked');
+  export const type = new lsp.NotificationType<HelpAndFeedbackLinkClickedNotificationParams>(
+    'sonarlint/helpAndFeedbackLinkClicked'
+  );
 }
 
 //#endregion

@@ -1,5 +1,12 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2023 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+'use strict';
+
 import * as VSCode from 'vscode';
-import { ThemeIcon } from 'vscode';
 import { Commands } from '../util/commands';
 
 export interface HelpAndFeedbackItem {
@@ -54,12 +61,13 @@ function getHelpAndFeedbackItemById(id: string): HelpAndFeedbackItem {
 
 export class HelpAndFeedbackLink extends VSCode.TreeItem {
   constructor(public readonly id) {
-    super(getHelpAndFeedbackItemById(id).label, VSCode.TreeItemCollapsibleState.None);
-    this.iconPath = new ThemeIcon(getHelpAndFeedbackItemById(id).icon);
+    const itemById = getHelpAndFeedbackItemById(id);
+    super(itemById.label, VSCode.TreeItemCollapsibleState.None);
+    this.iconPath = new VSCode.ThemeIcon(itemById.icon);
     this.command = {
       command: Commands.TRIGGER_HELP_AND_FEEDBACK_LINK,
       title: 'Trigger Help and Feedback Link',
-      arguments: [getHelpAndFeedbackItemById(id)]
+      arguments: [itemById]
     };
   }
 }
@@ -73,11 +81,7 @@ export class HelpAndFeedbackTreeDataProvider implements VSCode.TreeDataProvider<
   }
 
   getChildren(element?: HelpAndFeedbackLink): HelpAndFeedbackLink[] {
-    const children = [];
-    helpAndFeedbackViewItems.forEach(item => {
-      children.push(new HelpAndFeedbackLink(item.id));
-    });
-    return children;
+    return helpAndFeedbackViewItems.map(item => new HelpAndFeedbackLink(item.id));
   }
 
   getTreeItem(element: HelpAndFeedbackLink): VSCode.TreeItem {

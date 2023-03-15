@@ -22,6 +22,7 @@ import {
   handleTokenReceivedNotification,
   reportConnectionCheckResult
 } from './connected/connectionsetup';
+import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
 import { hideSecurityHotspot, showHotspotDescription, showSecurityHotspot } from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
@@ -47,8 +48,6 @@ import { getPlatform } from './util/platform';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
-import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
-import OPEN_BROWSER = Commands.OPEN_BROWSER;
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -432,8 +431,8 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItem => {
-      languageClient.helpAndFeedbackLinkClicked(helpAndFeedbackItem);
-      VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
+      languageClient.helpAndFeedbackLinkClicked(helpAndFeedbackItem.id);
+      VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
     })
   );
 }

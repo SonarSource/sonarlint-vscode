@@ -10,11 +10,9 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
-import { RulesResponse, ServerPathResponse } from './protocol';
-import { HelpAndFeedbackItem } from '../help/helpAndFeedbackTreeDataProvider';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
-  listAllRules(): Thenable<RulesResponse> {
+  listAllRules(): Thenable<protocol.RulesResponse> {
     return this.sendRequest(protocol.ListAllRulesRequest.type);
   }
 
@@ -48,7 +46,7 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetRemoteProjectsForConnection.type, { connectionId });
   }
 
-  getServerPathForTokenGeneration(baseServerUrl: string): Promise<ServerPathResponse> {
+  getServerPathForTokenGeneration(baseServerUrl: string): Promise<protocol.ServerPathResponse> {
     return this.sendRequest(protocol.GetServerPathForTokenGeneration.type, { baseServerUrl });
   }
 
@@ -64,7 +62,7 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     this.sendNotification(protocol.OpenHotspotOnServer.type, { hotspotId, fileUri });
   }
 
-  helpAndFeedbackLinkClicked(helpAndFeedbackItem: HelpAndFeedbackItem) {
-    this.sendNotification(protocol.HelpAndFeedbackLinkClicked.type, helpAndFeedbackItem);
+  helpAndFeedbackLinkClicked(itemId: string) {
+    this.sendNotification(protocol.HelpAndFeedbackLinkClicked.type, { id: itemId });
   }
 }
