@@ -1,3 +1,9 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2023 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
 import { assert } from 'chai';
 import { HelpAndFeedbackTreeDataProvider } from '../../src/help/helpAndFeedbackTreeDataProvider';
 import { Commands } from '../../src/util/commands';
