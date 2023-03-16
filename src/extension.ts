@@ -22,6 +22,7 @@ import {
   handleTokenReceivedNotification,
   reportConnectionCheckResult
 } from './connected/connectionsetup';
+import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
 import { hideSecurityHotspot, showHotspotDescription, showSecurityHotspot } from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
@@ -67,6 +68,8 @@ let allRulesView: VSCode.TreeView<LanguageNode>;
 let allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider;
 let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
+let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
+let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 
 function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   return resolveRequirements(context)
@@ -262,6 +265,12 @@ export function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(allHotspotsView);
 
+  helpAndFeedbackTreeDataProvider = new HelpAndFeedbackTreeDataProvider();
+  helpAndFeedbackView = VSCode.window.createTreeView('SonarLint.HelpAndFeedback', {
+    treeDataProvider: helpAndFeedbackTreeDataProvider
+  });
+  context.subscriptions.push(helpAndFeedbackView);
+
   context.subscriptions.push(onConfigurationChange());
 
   context.subscriptions.push(
@@ -361,9 +370,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
       await VSCode.commands.executeCommand(Commands.OPEN_RULE_BY_KEY, key);
     })
   );
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => showLogOutput())
-  );
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => showLogOutput()));
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
@@ -421,13 +428,21 @@ function registerCommands(context: VSCode.ExtensionContext) {
       BindingService.instance.deleteBindingWithConfirmation(binding)
     )
   );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItem => {
+      languageClient.helpAndFeedbackLinkClicked(helpAndFeedbackItem.id);
+      VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
+    })
+  );
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
-  languageClient.onRequest(protocol.FindFileByNamesInFolderRequest.type,
-      params => AutoBindingService.instance.findFileByNameInFolderRequest(params) );
+  languageClient.onRequest(protocol.FindFileByNamesInFolderRequest.type, params =>
+    AutoBindingService.instance.findFileByNameInFolderRequest(params)
+  );
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));

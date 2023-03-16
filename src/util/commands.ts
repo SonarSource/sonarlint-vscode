@@ -59,4 +59,6 @@ export namespace Commands {
   export const OPEN_HOTSPOT_ON_SERVER = 'SonarLint.OpenHotspotOnServer';
   export const HIGHLIGHT_REMOTE_HOTSPOT_LOCATION = 'SonarLint.HighlightRemoteHotspotLocation';
   export const CLEAR_HOTSPOT_HIGHLIGHTING = 'SonarLint.ClearHotspotLocations';
+
+  export const TRIGGER_HELP_AND_FEEDBACK_LINK = 'SonarLint.HelpAndFeedbackLinkClicked';
 }
