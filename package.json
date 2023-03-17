@@ -507,19 +507,19 @@
       "SonarLint": [
         {
           "id": "SonarLint.AllRules",
-          "name": "SonarLint Rules"
+          "name": "Rules"
         },
         {
           "id": "SonarLint.ConnectedMode",
-          "name": "SonarLint Connected Mode"
+          "name": "Connected Mode"
         },
         {
           "id": "SonarLint.SecurityHotspots",
-          "name": "SonarLint Security Hotspots"
+          "name": "Security Hotspots"
         },
         {
           "id": "SonarLint.HelpAndFeedback",
-          "name": "SonarLint Help and Feedback"
+          "name": "Help and Feedback"
         }
       ]
     },
