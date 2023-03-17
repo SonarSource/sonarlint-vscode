@@ -24,26 +24,20 @@ export const helpAndFeedbackViewItems: HelpAndFeedbackItem[] = [
     icon: 'book'
   },
   {
-    id: 'faq',
-    label: 'FAQ',
-    url: 'https://community.sonarsource.com/t/frequently-asked-questions/7204',
-    icon: 'question'
-  },
-  {
     id: 'getHelp',
-    label: 'Get Help / Report Issue',
+    label: 'Get Help | Report Issue',
     url: 'https://community.sonarsource.com/c/sl/vs-code/36',
     icon: 'comment-discussion'
   },
   {
     id: 'supportedRules',
-    label: 'Supported Languages and Rules',
+    label: 'See Languages & Rules',
     url: 'https://github.com/SonarSource/sonarlint-vscode/wiki/Languages-and-rules',
     icon: 'checklist'
   },
   {
     id: 'whatsNew',
-    label: "What's New",
+    label: "Check What's New",
     url: 'https://www.sonarsource.com/products/sonarlint/whats-new/vs-code/',
     icon: 'megaphone'
   },
@@ -52,6 +46,12 @@ export const helpAndFeedbackViewItems: HelpAndFeedbackItem[] = [
     label: 'Suggest a Feature',
     url: 'https://www.sonarsource.com/products/sonarlint/roadmap/',
     icon: 'extensions'
+  },
+  {
+    id: 'faq',
+    label: 'Review FAQ',
+    url: 'https://community.sonarsource.com/t/frequently-asked-questions/7204',
+    icon: 'question'
   }
 ];
 
