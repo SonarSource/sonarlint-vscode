@@ -23,12 +23,12 @@ Out of the box, SonarLint automatically checks your code against the following r
 - [HTML rules](https://rules.sonarsource.com/html)
 - [Java rules](https://rules.sonarsource.com/java)
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
-- [Python rules](https://rules.sonarsource.com/python)
+- [Python and IPython notebook rules](https://rules.sonarsource.com/python)
 - [PHP rules](https://rules.sonarsource.com/php)
 - [Secrets rules](https://rules.sonarsource.com/secrets)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 
-The full list of available rules is visible in the "SonarLint Rules" view in the explorer, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
+The full list of available rules is visible in the **SONARLINT RULES** view in the SonarLint view container, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
 
 ## Requirements
 
@@ -93,7 +93,10 @@ The support for Apex analysis is only available together with SonarQube Enterpri
 
 ### PL/SQL analysis specific requirements
 
-The support for PL/SQL analysis is only available together with SonarQube Developer Edition or SonarCloud (see Connected Mode below). You also need the [Oracle Developer Tools for VSCode](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
+The support for PL/SQL analysis is only available together with SonarQube Developer Edition or SonarCloud (see Connected Mode below). You also need the [Oracle Developer Tools for VS Code](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
+
+### Jupyter notebooks
+SonarLint for VS Code v3.16+ supports analysis of Python code inside Jupyter notebooks. See the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Jupyter-notebooks) page for details.
 
 ### Injection vulnerabilities specific requirements
 
@@ -101,7 +104,7 @@ Security vulnerabilities requiring taint engine analysis (taint vulnerabilities)
 
 To browse injection vulnerabilities in SonarLint for VSCode, establish [Connected Mode](https://github.com/SonarSource/sonarlint-vscode#connected-mode5) with your SonarQube Developer Edition (and above) or SonarCloud instance. Once a [Project Binding](https://github.com/SonarSource/sonarlint-vscode#project-binding) is configured, SonarLint will synchronize with the SonarQube or SonarCloud server to report the detected injection vulnerabilities.
 
-More information about security-related rules are available in the [SonarQube](https://docs.sonarqube.org/latest/user-guide/security-rules/) or [SonarCloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/) documentation.
+More information about security-related rules is available in the [SonarQube](https://docs.sonarqube.org/latest/user-guide/security-rules/) or [SonarCloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/) documentation.
 
 ### Security Hotspots in SonarLint
 ​
@@ -110,17 +113,17 @@ In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](
 Please see the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Security-hotspots) for more details. 
 
 ### Secrets detection
-Secrets are pieces of user-specific or system-level credentials that should be protected and accessible to legitimate users only. SonarLint detects exposed Secrets in your source code and language agnostic config files. When running in Connected Mode, the SonarQube or SonarCloud Quality Profiles are applied to locally detected Secrets.
+Secrets are pieces of user-specific or system-level credentials that should be protected and accessible to legitimate users only. SonarLint detects exposed Secrets in your source code and language-agnostic config files. When running in Connected Mode, the SonarQube or SonarCloud Quality Profiles are applied to locally detected Secrets.
 
 ## Connected Mode
 
 You can connect SonarLint to SonarQube 7.9+/SonarCloud by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder. 
 
-While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings. For editing notificaitons in previous versions, please see [SonarLint Versions 3.5.4 and Lower](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#sonarlint-versions-354-and-lower). Note that Connected Mode notifications are not available in the SonarQube Community Editions 8.6 and earlier.
+While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings. For editing notifications in previous versions, please see [SonarLint Versions 3.5.4 and Lower](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#sonarlint-versions-354-and-lower). Note that Connected Mode notifications are not available in the SonarQube Community Editions 8.6 and earlier.
 
 When running in Connected Mode with SonarQube 8.6 and above, and browsing a [security hotspot](https://docs.sonarqube.org/latest/user-guide/security-hotspots/), a button will be available offering to open the hotspot in SonarLint (with SonarLint already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in some remote environments such as GitPod, or GitHub CodeSpaces.
 
-Connected Mode will also allow unlocking of your analysis for these languages:
+Connected Mode will also unlock your analysis of these languages:
 
 - [Apex rules](https://rules.sonarsource.com/apex)
 - [PL/SQL rules](https://rules.sonarsource.com/plsql)
@@ -142,7 +145,7 @@ User Token can be generated using these pages:
 * SonarQube - `https://<your-sonarqube-url>/account/security/`
 * SonarCloud - `https://sonarcloud.io/account/security/`
 
-**Connection Name** is a friendly name for your connections. In case of multiple connections, it also acts as a `connectionId`.
+**Connection Name** is a friendly name for your connections. In the case of multiple connections, it also acts as a `connectionId`.
 
 In SonarLint for VSCode v3.6 and above, notifications can be enabled or disabled here, or from the UI while creating or editing the connection setting. Action buttons in the UI used to edit/delete existing, or create additional connections will be revealed when hovering over each connection (see next image).
 
@@ -205,7 +208,7 @@ Have a need in SonarLint that’s not being met? Or not being met well? Ever wis
 
 Please read here about why we [deprecated the "Suggest New Features" category](https://community.sonarsource.com/t/introducing-the-product-manager-for-a-day-subcategories/68606) on the Community Forum. The truth is that it's extremely difficult for someone outside SonarSource to comply with our roadmap and expectations. Therefore, we typically only accept minor cosmetic changes and typo fixes.
 
-With that in mind, if you would like to submit a code contribution, please create a pull request for this repository. Please explain your motives to contribute this change: what problem you are trying to fix, what improvement you are trying to make.
+With that in mind, if you would like to submit a code contribution, please create a pull request for this repository. Please explain your motives to contribute: what problem you are trying to fix, what improvement you are trying to make.
 
 Make sure that you follow our [code style](https://github.com/SonarSource/sonar-developer-toolset#code-style) and all tests are passing.
 
@@ -215,7 +218,7 @@ For SonarLint support questions ("How do I?", "I got this error, why?", ...), pl
 
 Be aware that this forum is a community, so the standard pleasantries ("Hi", "Thanks", ...) are expected. And if you don't get an answer to your thread, you should sit on your hands for at least three days before bumping it. Operators are not standing by. :-)
 
-Issue tracker (readonly): https://jira.sonarsource.com/browse/SLVSCODE
+Issue tracker (read-only): https://jira.sonarsource.com/browse/SLVSCODE
 
 ## License
 

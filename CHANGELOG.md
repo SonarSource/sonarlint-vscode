@@ -4,6 +4,9 @@
 * Update PHP analyzer 3.27.1 -> [3.28](https://sonarsource.atlassian.net/projects/SONARPHP/versions/14048/tab/release-report-all-issues), precision improvements
 * Update CFamily analyzer 6.42 -> [6.43](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2014033%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), support for `tiarmclang` compiler
 * Support analysis of Go
+* Support analysis of Python code in Jupyter Documents
+* Add "Help and Feedback" view under SonarLint view container.
+
 
 ## 3.15.1
  
