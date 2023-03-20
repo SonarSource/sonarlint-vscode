@@ -1,3 +1,10 @@
+## 3.17
+
+* Support analysis of CloudFormation
+* Support analysis of Docker
+* Support analysis of Kubernetes
+* Support analysis of Terraform
+
 ## 3.16
 
 * Update Python analyzer 4.0 -> [4.1](https://sonarsource.atlassian.net/projects/SONARPY/versions/14052/tab/release-report-all-issues), initial support for IPython syntax in Jupyter notebooks

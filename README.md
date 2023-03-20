@@ -18,14 +18,18 @@ Out of the box, SonarLint automatically checks your code against the following r
 
 - [C rules](https://rules.sonarsource.com/c)
 - [C++ rules](https://rules.sonarsource.com/cpp)
+- [CloudFormation rules](https://rules.sonarsource.com/cloudformation)
 - [CSS rules](https://rules.sonarsource.com/css)
+- [Docker rules](https://rules.sonarsource.com/docker)
 - [Go rules](https://rules.sonarsource.com/go)
 - [HTML rules](https://rules.sonarsource.com/html)
 - [Java rules](https://rules.sonarsource.com/java)
 - [JavaScript rules](https://rules.sonarsource.com/javascript)
+- [Kubernetes rules](https://rules.sonarsource.com/kubernetes)
 - [Python and IPython notebook rules](https://rules.sonarsource.com/python)
 - [PHP rules](https://rules.sonarsource.com/php)
 - [Secrets rules](https://rules.sonarsource.com/secrets)
+- [Terraform rules](https://rules.sonarsource.com/terraform)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 
 The full list of available rules is visible in the **SONARLINT RULES** view in the SonarLint view container, where you can activate and deactivate rules to match your conventions. SonarLint will also show a code action on each issue to quickly deactivate the corresponding rule.
