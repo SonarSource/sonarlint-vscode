@@ -110,12 +110,12 @@ a {
 
 .other-context-list .do::before {
   content: "\2713";
-  color:green;
+  color: var(--vscode-testing-iconPassed);
   padding-right:5px;
 }
 
 .other-context-list .dont::before {
   content: "\2717";
-  color:red;
+  color: var(--vscode-testing-iconFailed);
   padding-right:5px;
 }
