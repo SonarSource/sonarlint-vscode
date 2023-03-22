@@ -104,17 +104,17 @@ a {
   background-color: var(--vscode-textBlockQuote-background);
 }
 
-.other-tab-list {
+.other-context-list {
   list-style: none;
 }
 
-.other-tab-list .do::before {
+.other-context-list .do::before {
   content: "\2713";
   color:green;
   padding-right:5px;
 }
 
-.other-tab-list .dont::before {
+.other-context-list .dont::before {
   content: "\2717";
   color:red;
   padding-right:5px;
