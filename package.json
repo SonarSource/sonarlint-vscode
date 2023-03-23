@@ -33,11 +33,6 @@
     "Code Analysis"
   ],
   "activationEvents": [
-    "onCommand:SonarLint.UpdateAllBindings",
-    "onCommand:SonarLint.ShowSonarLintOutput",
-    "onCommand:SonarLint.ConfigureCompilationDatabase",
-    "onCommand:SonarLint.ConnectToSonarQube",
-    "onCommand:SonarLint.EditSonarQubeConnection",
     "onStartupFinished"
   ],
   "contributes": {
@@ -486,6 +481,12 @@
         "title": "Hide Security Hotspot",
         "category": "SonarLint",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
+      },
+      {
+        "command": "SonarLint.ScanForHotspotsInFolder",
+        "title": "Find All Security Hotspots",
+        "category": "SonarLint",
+        "enablement": "explorerResourceIsFolder"
       }
     ],
     "viewsContainers": {
@@ -656,6 +657,14 @@
           "title": "Hide Security Hotspot",
           "category": "SonarLint",
           "when": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "SonarLint.ScanForHotspotsInFolder",
+          "title": "Find All Security Hotspots",
+          "when": "explorerResourceIsRoot",
+          "group": "SonarLint"
         }
       ]
     },

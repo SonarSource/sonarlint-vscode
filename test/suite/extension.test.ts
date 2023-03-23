@@ -10,12 +10,10 @@ import * as path from 'path';
 import * as os from 'os';
 import * as vscode from 'vscode';
 import { skipTestOnWindowsVm, sleep } from '../testutil';
-import { performIsIgnoredCheck } from '../../src/scm/scm';
 import { Commands } from '../../src/util/commands';
-import { Context } from 'mocha';
 import * as util from '../../src/util/util';
-
-const sampleFolderLocation = '../../../test/samples/';
+import { isFileIgnoredByScm } from '../../src/scm/scm';
+import { sampleFolderLocation } from './commons';
 
 suite('Extension Test Suite', () => {
 
@@ -48,31 +46,32 @@ suite('Extension Test Suite', () => {
     await checkSonarLintDiagnostics(fileUri)
   }).timeout(60 * 1000);
 
-  test('consider file not ignored if it is not in workspace', async function () {
+  test('consider file not ignored if it is not in workspace', async function() {
     const folder = await FS.promises.mkdtemp(path.join(os.tmpdir(), 'tmpdir'));
     const filePath = path.join(folder, 'main.js');
     await FS.promises.writeFile(filePath, 'var i = 0;');
+    const fileUri = vscode.Uri.parse(folder + '/main.js');
 
-    const isIgnored = await performIsIgnoredCheck(folder + '/main.js', async () => true);
+    const isIgnored = await isFileIgnoredByScm(folder + '/main.js', async () => [fileUri]);
 
     assert.strictEqual(isIgnored, false);
   }).timeout(60 * 1000);
 
-  test('should return git command results for files from workspace', async function () {
+  test('should return git command results for files from workspace', async function() {
     const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
 
-    const ignored = await performIsIgnoredCheck(fileUri.toString(), async () => true);
-    const notIgnored = await performIsIgnoredCheck(fileUri.toString(), async () => false);
+    const ignored = await isFileIgnoredByScm(fileUri.toString(), async () => []);
+    const notIgnored = await isFileIgnoredByScm(fileUri.toString(), async () => [fileUri]);
 
     assert.strictEqual(ignored, true);
     assert.strictEqual(notIgnored, false);
   }).timeout(60 * 1000);
 
-  test('should consider file not ignored if git extension is not enabled', async function () {
+  test('should consider file not ignored if git extension is not enabled', async function() {
     const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
 
-    const notIgnored = await performIsIgnoredCheck(fileUri.toString(), async () => {
-      throw new Error('Git model not found')
+    const notIgnored = await isFileIgnoredByScm(fileUri.toString(), async () => {
+      throw new Error('Git model not found');
     });
 
     assert.strictEqual(notIgnored, false);

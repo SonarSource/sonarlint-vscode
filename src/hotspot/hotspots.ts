@@ -9,17 +9,25 @@
 import * as vscode from 'vscode';
 import { Commands } from '../util/commands';
 import { computeHotspotContextPanelContent } from './hotspotContextPanel';
-import { Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
+import { AnalysisFile, Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
 import { logToSonarLintOutput } from '../util/logging';
-import { resolveExtensionFile } from '../util/util';
+import {
+  createAnalysisFilesFromFileUris,
+  findFilesInFolder,
+  resolveExtensionFile,
+  getQuickPickListItemsForWorkspaceFolders
+} from '../util/util';
 import {
   AllHotspotsTreeDataProvider,
   HotspotNode,
   HotspotReviewPriority,
   HotspotTreeViewItem
 } from './hotspotsTreeDataProvider';
-import { getUriFromRelativePath } from '../util/uri';
+import { code2ProtocolConverter, getUriFromRelativePath } from '../util/uri';
 import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { noWorkspaceFolderToScanMessage } from '../util/showMessage';
+import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 
 export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
 
@@ -169,3 +177,61 @@ export const highlightLocation = async editor => {
     editor.setDecorations(SINGLE_LOCATION_DECORATION, [vscodeRange]);
   }
 };
+
+export async function getFilesForHotspotsAndLaunchScan(folderUri: vscode.Uri,
+                                                languageClient: SonarLintExtendedLanguageClient): Promise<void> {
+  const files = await getFilesForHotspotsScan(folderUri);
+  launchScanForHotspots(languageClient, folderUri, files);
+}
+
+export async function useProvidedFolderOrPickManuallyAndScan(
+  folderUri: vscode.Uri,
+  workspaceFolders: readonly vscode.WorkspaceFolder[],
+  languageClient: SonarLintExtendedLanguageClient,
+  scan: (folderUri: vscode.Uri,
+         languageClient: SonarLintExtendedLanguageClient) => Promise<void>) {
+  if (!folderUri || !folderUri.path) {
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      noWorkspaceFolderToScanMessage();
+      return;
+    }
+    if (workspaceFolders.length === 1) {
+      folderUri = workspaceFolders[0].uri;
+      await scan(folderUri, languageClient);
+    } else {
+      const quickPickItems = getQuickPickListItemsForWorkspaceFolders(workspaceFolders);
+      const workspaceFoldersQuickPick = vscode.window.createQuickPick();
+      workspaceFoldersQuickPick.title = `Select Workspace Folder to scan for Hotspots`;
+      workspaceFoldersQuickPick.placeholder = `Select Workspace Folder to scan for Hotspots`;
+      workspaceFoldersQuickPick.items = quickPickItems;
+      workspaceFoldersQuickPick.ignoreFocusOut = true;
+      workspaceFoldersQuickPick.onDidChangeSelection(async selection => {
+        folderUri = vscode.Uri.parse(selection[0].description);
+        await scan(folderUri, languageClient);
+        workspaceFoldersQuickPick.dispose();
+      });
+      workspaceFoldersQuickPick.show();
+    }
+  } else {
+    await scan(folderUri, languageClient);
+  }
+}
+
+
+function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
+                               folderUri: vscode.Uri, filesForHotspotsAnalysis: AnalysisFile[]) {
+  languageClient.scanFolderForHotspots(
+    {
+      folderUri: code2ProtocolConverter(folderUri),
+      documents: filesForHotspotsAnalysis
+    }
+  );
+}
+
+export async function getFilesForHotspotsScan(folderUri: vscode.Uri): Promise<AnalysisFile[]> {
+  const allFiles = await findFilesInFolder(folderUri);
+  const notIgnoredFiles = await filterOutScmIgnoredFiles(allFiles, filterIgnored);
+  return await createAnalysisFilesFromFileUris(notIgnoredFiles);
+}
+
+

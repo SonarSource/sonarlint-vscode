@@ -248,6 +248,13 @@ export namespace CheckConnection {
   );
 }
 
+export interface AnalysisFile {
+  uri: string;
+  languageId: string;
+  version: number;
+  text: string;
+}
+
 //#endregion
 
 //#region Server side extensions to LSP
@@ -387,6 +394,15 @@ export namespace HelpAndFeedbackLinkClicked {
   export const type = new lsp.NotificationType<HelpAndFeedbackLinkClickedNotificationParams>(
     'sonarlint/helpAndFeedbackLinkClicked'
   );
+}
+
+export interface ScanFolderForHotspotsParams {
+  folderUri: string;
+  documents: Array<lsp.TextDocumentItem>;
+}
+
+export namespace ScanFolderForHotspots {
+  export const type = new lsp.NotificationType<ScanFolderForHotspotsParams>('sonarlint/scanFolderForHotspots');
 }
 
 //#endregion

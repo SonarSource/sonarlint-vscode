@@ -10,10 +10,8 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { expect } from 'chai';
 
-import { Commands } from '../../src/util/commands';
 import { FileItem, FlowItem, IssueItem, LocationItem, SecondaryLocationsTree } from '../../src/location/locations';
-
-const sampleFolderLocation = '../../../test/samples/';
+import { sampleFolderLocation } from './commons';
 
 function uriStringFor(...fragments: string[]) {
   return vscode.Uri.file(path.join(__dirname, sampleFolderLocation, ...fragments)).toString();

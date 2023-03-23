@@ -23,7 +23,13 @@ import {
   reportConnectionCheckResult
 } from './connected/connectionsetup';
 import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
-import { hideSecurityHotspot, showHotspotDescription, showSecurityHotspot } from './hotspot/hotspots';
+import {
+  getFilesForHotspotsAndLaunchScan,
+  hideSecurityHotspot,
+  showHotspotDescription,
+  showSecurityHotspot,
+  useProvidedFolderOrPickManuallyAndScan
+} from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
@@ -435,6 +441,15 @@ function registerCommands(context: VSCode.ExtensionContext) {
       VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
     })
   );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand('SonarLint.ScanForHotspotsInFolder',
+      (folder) => scanFolderForHotspotsCommandHandler(folder)));
+}
+
+async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
+  await useProvidedFolderOrPickManuallyAndScan(folderUri,
+    VSCode.workspace.workspaceFolders, languageClient, getFilesForHotspotsAndLaunchScan);
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
