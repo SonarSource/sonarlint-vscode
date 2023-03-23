@@ -74,29 +74,60 @@ pre {
 }
 
 .tabs {
-  display: flex;
-  flex-wrap: wrap;
+ display: flex;
+ flex-wrap: wrap;
 }
 
-.tabs label {
+.tabLabel {
   order: 1;
-  display: block;
+  display: inline-flex;
   padding: 1rem 2rem;
   margin-right: 0.2rem;
   cursor: pointer;
   background-color: var(--vscode-textBlockQuote-background);
   transition: background-color ease 0.2s;
   z-index: 100;
-  padding-bottom: -1px;
+}
+
+.tabs .contextualTab + label {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  cursor: pointer;
+  width: fit-content;
+  order: 1;
+  padding: 0.2rem;
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-button-background);
+  font-weight: 350;
+  font-size: smaller;
+  z-index: 100;
+  transition: background-color ease 0.2s;
+}
+
+.tabs .contextualTab:checked + label {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
 }
 
 .tabs .tab {
   z-index: 50;
   order: 99;
   flex-grow: 1;
-  width: 100%;
+  width: 90%;
   display: none;
   padding: 1rem;
+  background-color: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-textBlockQuote-background);
+}
+
+.contextualTabs .tab {
+  cursor: pointer;
+  display: inline-flex;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  z-index: 50;
+  order: 99;
+  flex-grow: 1;
   background-color: var(--vscode-editor-background);
   border: 1px solid var(--vscode-textBlockQuote-background);
 }
@@ -105,15 +136,34 @@ pre {
   display: none;
 }
 
-.tabs input[type="radio"]:checked + label {
+.tabs input[type="radio"]:checked + .tabLabel {
   background-color: var(--vscode-editor-background);
   margin-bottom: -1px;
   border: 1px solid var(--vscode-textBlockQuote-background);
   border-bottom-color: var(--vscode-editor-background);
 }
 
+.tabs input[type="radio"] + .contextLabel {
+  border: 1px solid var(--vscode-button-background);
+}
+
+.firstContext {
+  border-top-left-radius: 20%;
+  border-bottom-left-radius: 20%;
+}
+
+.lastContext {
+  border-top-right-radius: 20%;
+  border-bottom-right-radius: 20%;
+}
+
 .tabs input[type="radio"]:checked + label + .tab {
   display: block;
+}
+
+.tabs input[type="radio"]:checked + label + .contextualTabContainer {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .tab h2 {

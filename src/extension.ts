@@ -318,7 +318,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_RULE_DESCRIPTION, hotspot =>
-      languageClient.showHotspotRuleDescription(hotspot.ruleKey, hotspot.fileUri)
+      languageClient.showHotspotRuleDescription(hotspot.ruleKey, hotspot.key, hotspot.fileUri)
     )
   );
 

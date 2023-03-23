@@ -59,6 +59,7 @@ export namespace ShowHotspotRuleDescriptionNotification {
 
 export interface ShowHotspotRuleDescriptionNotificationParams {
   ruleKey: string;
+  hotspotId: string;
   fileUri: string;
 }
 
@@ -68,7 +69,16 @@ export interface ShowRuleDescriptionParams {
   htmlDescription: string;
   htmlDescriptionTabs: Array<{
     title: string;
-    description: string;
+    ruleDescriptionTabNonContextual?:{
+      htmlContent: string;
+    },
+    ruleDescriptionTabContextual:Array<{
+      htmlContent: string;
+      contextKey: string;
+      displayName: string;
+    }>,
+    hasContextualInformation: boolean
+    defaultContextKey: string;
   }>;
   type: string;
   severity: string;
