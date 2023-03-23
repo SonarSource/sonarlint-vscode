@@ -6,7 +6,6 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import * as FS from 'fs';
 import * as VSCode from 'vscode';
 import { ShowRuleDescriptionParams } from '../lsp/protocol';
 import * as util from '../util/util';
@@ -30,7 +29,7 @@ function lazyCreateRuleDescriptionPanel(context: VSCode.ExtensionContext) {
       'SonarLint Rule Description',
       VSCode.ViewColumn.Two,
       {
-        enableScripts: false
+        enableScripts: true
       }
     );
     ruleDescriptionPanel.onDidDispose(
@@ -60,6 +59,8 @@ function computeRuleDescPanelContent(
   const taintBanner = renderTaintBanner(rule, infoImgSrc);
   const hotspotBanner = renderHotspotBanner(rule, infoImgSrc);
   const ruleDescription = renderRuleDescription(rule);
+  const toolkitUri = resolver.resolve('node_modules', '@vscode', 'webview-ui-toolkit', 'dist', 'toolkit.min.js');
+  const webviewMainUri = resolver.resolve('webview-ui', 'ruledescription.js');
 
   return `<!doctype html><html lang="en">
     <head>
@@ -69,6 +70,8 @@ function computeRuleDescPanelContent(
       content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}"/>
     <link rel="stylesheet" type="text/css" href="${styleSrc}" />
     <link rel="stylesheet" type="text/css" href="${hotspotSrc}" />
+    <script type="module" src="${toolkitUri}"></script>
+    <script type="module" src="${webviewMainUri}"></script>
     </head>
     <body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
     <div>
@@ -117,14 +120,45 @@ export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
     return `<div class="rule-desc">${rule.htmlDescription}</div>`;
   } else {
     const tabsContent = rule.htmlDescriptionTabs
-      .map((tab, index) => `<input type="radio" name="tabs" id="tab-${index}" ${index === 0 ? 'checked="checked"' : ''}>
-      <label for="tab-${index}">${tab.title}</label>
-      <section class="tab">
-      ${tab.description}
-      </section>`)
+      .map((tab, index) => {
+        let content;
+        if (tab.hasContextualInformation) {
+          let contextualDescriptions = {};
+          const buttons = tab.ruleDescriptionTabContextual.map((contextualDescription, contextIndex) => {
+            contextualDescriptions[contextualDescription.contextKey] = contextualDescription.htmlContent;
+            return `<input type="radio" name="contextualTabs" id="context-${contextIndex}" class="contextualTab" ${contextIndex === 0 ? 'checked="checked"' : ''}>
+              <label for="context-${contextIndex}" class="contextLabel${computeBorderRadius(contextIndex, tab.ruleDescriptionTabContextual)}">${contextualDescription.displayName}</label>
+              <section class="tab">
+              <h4>${computeHeading(tab, contextualDescription)}</h4>
+              ${contextualDescription.htmlContent}
+              </section>`;
+          });
+          content = buttons.join('');
+        } else {
+          content = tab.ruleDescriptionTabNonContextual.htmlContent;
+        }
+        return `<input type="radio" name="tabs" id="tab-${index}" ${index === 0 ? 'checked="checked"' : ''}>
+        <label for="tab-${index}" class="tabLabel">${tab.title}</label>
+        <section class="tab${ tab.hasContextualInformation ? ' contextualTabContainer' : '' }">
+        ${content}
+        </section>`;
+      })
       .join('');
     return `<main class="tabs">${tabsContent}</main>`;
   }
+}
+
+function computeHeading(tab, contextualDescription) {
+  const trimmedTabTitle = tab.title.endsWith('?') ? tab.title.substring(0, tab.title.length - 1) : tab.title;
+  return contextualDescription.contextKey === 'others' ? '' : `${trimmedTabTitle} in ${contextualDescription.displayName}`;
+}
+
+function computeBorderRadius(contextIndex, contextualTabs) {
+  if(contextIndex === 0){
+    return ' firstContext';
+  } else if(contextIndex === contextualTabs.length - 1) {
+    return ' lastContext';
+  } return '';
 }
 
 export function renderRuleParams(rule: ShowRuleDescriptionParams) {

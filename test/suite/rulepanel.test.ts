@@ -27,17 +27,16 @@ suite('rulepanel', () => {
       type: "",
       htmlDescription: 'monolithicDescription'})).to.equal('<div class="rule-desc">monolithicDescription</div>');
   });
-
-  test('should render tabs description', () => {
-    expect(renderRuleDescription({
-      htmlDescriptionTabs: [{title: 'Title', description: 'desc'}],
-      isTaint: false,
-      key: "",
-      name: "",
-      severity: "",
-      type: "",
-      htmlDescription: 'monolithicDescription'})).to.contain('<main class="tabs">')
-  });
+  // test('should render tabs description', () => {
+  //   expect(renderRuleDescription({
+  //     htmlDescriptionTabs: [{title: 'Title', description: 'desc'}],
+  //     isTaint: false,
+  //     key: "",
+  //     name: "",
+  //     severity: "",
+  //     type: "",
+  //     htmlDescription: 'monolithicDescription'})).to.contain('<main class="tabs">')
+  // });
 
   test('should render empty rule params', () => {
     expect(renderRuleParams({

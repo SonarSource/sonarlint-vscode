@@ -54,8 +54,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     this.sendRequest(protocol.ShowHotspotLocations.type, { hotspotKey, fileUri });
   }
 
-  showHotspotRuleDescription(ruleKey: string, fileUri: string) {
-    this.sendNotification(protocol.ShowHotspotRuleDescriptionNotification.type, { ruleKey, fileUri });
+  showHotspotRuleDescription(ruleKey: string, hotspotId: string, fileUri: string) {
+    this.sendNotification(protocol.ShowHotspotRuleDescriptionNotification.type, { ruleKey, hotspotId, fileUri });
   }
 
   openHotspotOnServer(hotspotId: string, fileUri: string) {
