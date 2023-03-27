@@ -15,10 +15,6 @@ function byId(elementId) {
   return document.getElementById(elementId);
 }
 
-function byIdStarting(elementIdStarting) {
-  return document.querySelectorAll(`[id^="${elementIdStarting}"]`)
-}
-
 function init() {
   byId('connectionId').addEventListener('change', onChangeConnectionId);
   byId('connectionId').addEventListener('keyup', onChangeConnectionId);
@@ -37,12 +33,7 @@ function init() {
   byId('token').addEventListener('keyup', onChangeToken);
   byId('enableNotifications').addEventListener('change', onChangeEnableNotifications);
   byId('saveConnection').addEventListener('click', onClickSaveConnection);
-  byIdStarting('contextSwitchButton').forEach(element => element.addEventListener('click', onClickContextSwitchButton));
   tryRestoreState();
-}
-
-function onClickContextSwitchButton() {
-  console.log('Heloooooo')
 }
 
 function onChangeConnectionId() {

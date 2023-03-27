@@ -59,8 +59,6 @@ function computeRuleDescPanelContent(
   const taintBanner = renderTaintBanner(rule, infoImgSrc);
   const hotspotBanner = renderHotspotBanner(rule, infoImgSrc);
   const ruleDescription = renderRuleDescription(rule);
-  const toolkitUri = resolver.resolve('node_modules', '@vscode', 'webview-ui-toolkit', 'dist', 'toolkit.min.js');
-  const webviewMainUri = resolver.resolve('webview-ui', 'ruledescription.js');
 
   return `<!doctype html><html lang="en">
     <head>
@@ -70,8 +68,6 @@ function computeRuleDescPanelContent(
       content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}"/>
     <link rel="stylesheet" type="text/css" href="${styleSrc}" />
     <link rel="stylesheet" type="text/css" href="${hotspotSrc}" />
-    <script type="module" src="${toolkitUri}"></script>
-    <script type="module" src="${webviewMainUri}"></script>
     </head>
     <body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
     <div>
@@ -123,23 +119,13 @@ export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
       .map((tab, index) => {
         let content;
         if (tab.hasContextualInformation) {
-          let contextualDescriptions = {};
-          const buttons = tab.ruleDescriptionTabContextual.map((contextualDescription, contextIndex) => {
-            contextualDescriptions[contextualDescription.contextKey] = contextualDescription.htmlContent;
-            return `<input type="radio" name="contextualTabs" id="context-${contextIndex}" class="contextualTab" ${contextIndex === 0 ? 'checked="checked"' : ''}>
-              <label for="context-${contextIndex}" class="contextLabel${computeBorderRadius(contextIndex, tab.ruleDescriptionTabContextual)}">${contextualDescription.displayName}</label>
-              <section class="tab">
-              <h4>${computeHeading(tab, contextualDescription)}</h4>
-              ${contextualDescription.htmlContent}
-              </section>`;
-          });
-          content = buttons.join('');
+          content = computeTabContextualDescription(tab);
         } else {
           content = tab.ruleDescriptionTabNonContextual.htmlContent;
         }
         return `<input type="radio" name="tabs" id="tab-${index}" ${index === 0 ? 'checked="checked"' : ''}>
         <label for="tab-${index}" class="tabLabel">${tab.title}</label>
-        <section class="tab${ tab.hasContextualInformation ? ' contextualTabContainer' : '' }">
+        <section class="tab${tab.hasContextualInformation ? ' contextualTabContainer' : ''}">
         ${content}
         </section>`;
       })
@@ -148,17 +134,33 @@ export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
   }
 }
 
-function computeHeading(tab, contextualDescription) {
-  const trimmedTabTitle = tab.title.endsWith('?') ? tab.title.substring(0, tab.title.length - 1) : tab.title;
-  return contextualDescription.contextKey === 'others' ? '' : `${trimmedTabTitle} in ${contextualDescription.displayName}`;
+function computeTabContextualDescription(tab) {
+  const defaultContextKey = tab.defaultContextKey ? tab.defaultContextKey : 'others';
+  const contextRadioButtons = tab.ruleDescriptionTabContextual.map((contextualDescription, contextIndex) => {
+    const checked = isChecked(contextualDescription, defaultContextKey);
+    return `<input type="radio" name="contextualTabs" id="context-${contextIndex}"
+                        class="contextualTab" ${checked}>
+              <label for="context-${contextIndex}" class="contextLabel">${contextualDescription.displayName}</label>
+              <section class="tab">
+              <h4>${computeHeading(tab, contextualDescription)}</h4>
+              ${contextualDescription.htmlContent}
+              </section>`;
+  });
+  return contextRadioButtons.join('');
 }
 
-function computeBorderRadius(contextIndex, contextualTabs) {
-  if(contextIndex === 0){
-    return ' firstContext';
-  } else if(contextIndex === contextualTabs.length - 1) {
-    return ' lastContext';
-  } return '';
+function isChecked(contextualDescription, defaultContextKey) {
+  if(`"${contextualDescription.contextKey}"` === defaultContextKey) {
+    return 'checked="checked"';
+  }
+  return '';
+}
+
+export function computeHeading(tab, contextualDescription) {
+  const trimmedTabTitle = tab.title.endsWith('?') ? tab.title.substring(0, tab.title.length - 1) : tab.title;
+  return contextualDescription.contextKey === 'others'
+    ? ''
+    : `${trimmedTabTitle} in ${contextualDescription.displayName}`;
 }
 
 export function renderRuleParams(rule: ShowRuleDescriptionParams) {
