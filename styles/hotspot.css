@@ -74,8 +74,8 @@ pre {
 }
 
 .tabs {
- display: flex;
- flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .tabLabel {
@@ -120,48 +120,38 @@ pre {
   border: 1px solid var(--vscode-textBlockQuote-background);
 }
 
-.contextualTabs .tab {
-  cursor: pointer;
-  display: inline-flex;
-  width: 100%;
-  padding: 0.5rem 1rem;
-  z-index: 50;
-  order: 99;
-  flex-grow: 1;
-  background-color: var(--vscode-editor-background);
-  border: 1px solid var(--vscode-textBlockQuote-background);
-}
-
-.tabs input[type="radio"] {
+.tabs input[type='radio'] {
   display: none;
 }
 
-.tabs input[type="radio"]:checked + .tabLabel {
+.tabs input[type='radio']:checked + .tabLabel {
   background-color: var(--vscode-editor-background);
   margin-bottom: -1px;
   border: 1px solid var(--vscode-textBlockQuote-background);
   border-bottom-color: var(--vscode-editor-background);
 }
 
-.tabs input[type="radio"] + .contextLabel {
+.tabs input[type='radio'] + .contextLabel {
   border: 1px solid var(--vscode-button-background);
+  margin-right: -1px;
+  margin-bottom: 0.5rem;
 }
 
-.firstContext {
-  border-top-left-radius: 20%;
-  border-bottom-left-radius: 20%;
+.contextLabel:first-of-type {
+  border-top-left-radius: 10%;
+  border-bottom-left-radius: 10%;
 }
 
-.lastContext {
-  border-top-right-radius: 20%;
-  border-bottom-right-radius: 20%;
+.contextLabel:last-of-type {
+  border-top-right-radius: 10%;
+  border-bottom-right-radius: 10%;
 }
 
-.tabs input[type="radio"]:checked + label + .tab {
+.tabs input[type='radio']:checked + label + .tab {
   display: block;
 }
 
-.tabs input[type="radio"]:checked + label + .contextualTabContainer {
+.tabs input[type='radio']:checked + label + .contextualTabContainer {
   display: flex;
   flex-wrap: wrap;
 }

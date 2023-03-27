@@ -226,13 +226,13 @@ export function activate(context: VSCode.ExtensionContext) {
     );
     context.subscriptions.push(referenceBranchStatusItem);
     VSCode.window.onDidChangeActiveTextEditor(e => scm.updateReferenceBranchStatusItem(e));
-  });
 
-  allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
-  allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
-    treeDataProvider: allRulesTreeDataProvider
+    allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
+    allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
+      treeDataProvider: allRulesTreeDataProvider
+    });
+    context.subscriptions.push(allRulesView);
   });
-  context.subscriptions.push(allRulesView);
 
   secondaryLocationsTree = new SecondaryLocationsTree();
   issueLocationsView = VSCode.window.createTreeView('SonarLint.IssueLocations', {
