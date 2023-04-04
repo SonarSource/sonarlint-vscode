@@ -150,7 +150,7 @@ function computeTabContextualDescription(tab) {
 }
 
 function isChecked(contextualDescription, defaultContextKey) {
-  if(`"${contextualDescription.contextKey}"` === defaultContextKey) {
+  if(`${contextualDescription.contextKey}` === defaultContextKey) {
     return 'checked="checked"';
   }
   return '';

@@ -30,37 +30,39 @@ suite('rulepanel', () => {
     ).to.equal('<div class="rule-desc">monolithicDescription</div>');
   });
 
-  test('should render tabs description', () => {
-    expect(
-      renderRuleDescription({
-        htmlDescriptionTabs: [
-          {
-            title: 'Title',
-            ruleDescriptionTabNonContextual: null,
-            hasContextualInformation: true,
-            defaultContextKey: 'jsp',
-            ruleDescriptionTabContextual: [
-              {
-                htmlContent: '<p>context 1</p>',
-                contextKey: 'servlet',
-                displayName: 'Servlet'
-              },
-              {
-                htmlContent: '<p>context 2</p>',
-                contextKey: 'jsp',
-                displayName: 'JSP'
-              }
-            ]
-          }
-        ],
-        isTaint: true,
-        key: '',
-        name: '',
-        severity: '',
-        type: '',
-        htmlDescription: 'monolithicDescription'
-      })
-    ).to.contain('<input type="radio" name="tabs"');
+  test('should render tabs description with correct context tab being checked', () => {
+    let htmlResult = renderRuleDescription({
+      htmlDescriptionTabs: [
+        {
+          title: 'Title',
+          ruleDescriptionTabNonContextual: null,
+          hasContextualInformation: true,
+          defaultContextKey: 'jsp',
+          ruleDescriptionTabContextual: [
+            {
+              htmlContent: '<p>context 1</p>',
+              contextKey: 'servlet',
+              displayName: 'Servlet'
+            },
+            {
+              htmlContent: '<p>context 2</p>',
+              contextKey: 'jsp',
+              displayName: 'JSP'
+            }
+          ]
+        }
+      ],
+      isTaint: true,
+      key: '',
+      name: '',
+      severity: '',
+      type: '',
+      htmlDescription: 'contextualDescription'
+    });
+    let inlineHtmlResult = htmlResult.replace(/(\r\n|\n|\r)/gm, "");
+    expect(inlineHtmlResult).to.match(
+      new RegExp('.*<input type="radio" name="tabs".*class="contextualTab" checked="checked">' +
+        '              <label for="context-1" class="contextLabel">JSP</label>.*'));
   });
 
   test('should correctly compute heading', () => {
