@@ -83,19 +83,37 @@ export class HotspotNode extends VSCode.TreeItem {
 
 export type HotspotTreeViewItem = HotspotNode | HotspotGroup | FileGroup;
 
+type ShowMode = 'Folder' | 'OpenFiles';
+
 export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<HotspotTreeViewItem> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<HotspotTreeViewItem | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<HotspotTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   public fileHotspotsCache = new Map<string, Diagnostic[]>();
-  private filesWithHotspots = new Map<string, FileGroup>();
+  private readonly filesWithHotspots = new Map<string, FileGroup>();
 
   constructor(private readonly connectionSettingsService: ConnectionSettingsService) {
-    // NOP
+    this.updateContextShowMode('OpenFiles');
+  }
+
+  async showHotspotsInFolder() {
+    await this.updateContextShowMode('Folder');
+  }
+
+  async showHotspotsInOpenFiles() {
+    await this.updateContextShowMode('OpenFiles');
+  }
+
+  private async updateContextShowMode(showMode: ShowMode) {
+    await VSCode.commands.executeCommand('setContext', 'SonarLint.Hotspots.ShowMode', showMode);
   }
 
   async refresh(hotspotsPerFile?: PublishHotspotsForFileParams) {
-    if (hotspotsPerFile && hotspotsPerFile.uri && hotspotsPerFile.diagnostics.length > 0) {
-      this.fileHotspotsCache.set(hotspotsPerFile.uri, hotspotsPerFile.diagnostics);
+    if (hotspotsPerFile && hotspotsPerFile.uri) {
+      if (hotspotsPerFile.diagnostics.length > 0) {
+        this.fileHotspotsCache.set(hotspotsPerFile.uri, hotspotsPerFile.diagnostics);
+      } else {
+        this.fileHotspotsCache.delete(hotspotsPerFile.uri);
+      }
     }
     await this.cleanupHotspotsCache();
     this._onDidChangeTreeData.fire(null);

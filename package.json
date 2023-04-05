@@ -396,6 +396,16 @@
         "enablement": "view == SonarLint.AllRules"
       },
       {
+        "command": "SonarLint.ScanForHotspotsInFolder",
+        "title": "In Whole Folder",
+        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'OpenFiles'"
+      },
+      {
+        "command": "SonarLint.ShowHotspotsInOpenFiles",
+        "title": "In Open Files",
+        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'Folder'"
+      },
+      {
         "command": "SonarLint.FindRuleByKey",
         "title": "Find Rule By Key",
         "enablement": "view == SonarLint.AllRules"
@@ -481,12 +491,6 @@
         "title": "Hide Security Hotspot",
         "category": "SonarLint",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
-      },
-      {
-        "command": "SonarLint.ScanForHotspotsInFolder",
-        "title": "Find All Security Hotspots",
-        "category": "SonarLint",
-        "enablement": "explorerResourceIsFolder"
       }
     ],
     "viewsContainers": {
@@ -553,6 +557,16 @@
         {
           "command": "SonarLint.ShowInactiveRules",
           "when": "view == SonarLint.AllRules",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ScanForHotspotsInFolder",
+          "when": "view == SonarLint.SecurityHotspots",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ShowHotspotsInOpenFiles",
+          "when": "view == SonarLint.SecurityHotspots",
           "group": "navigation"
         },
         {
@@ -657,14 +671,6 @@
           "title": "Hide Security Hotspot",
           "category": "SonarLint",
           "when": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "SonarLint.ScanForHotspotsInFolder",
-          "title": "Find All Security Hotspots",
-          "when": "explorerResourceIsRoot",
-          "group": "SonarLint"
         }
       ]
     },

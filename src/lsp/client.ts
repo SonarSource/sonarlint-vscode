@@ -10,6 +10,7 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
+import { ForgetFolderHotspots } from './protocol';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<protocol.RulesResponse> {
@@ -68,5 +69,9 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   scanFolderForHotspots(params: protocol.ScanFolderForHotspotsParams) {
     this.sendNotification(protocol.ScanFolderForHotspots.type, params);
+  }
+
+  forgetFolderHotspots() {
+    this.sendNotification(protocol.ForgetFolderHotspots.type);
   }
 }

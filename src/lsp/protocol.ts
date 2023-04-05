@@ -405,4 +405,8 @@ export namespace ScanFolderForHotspots {
   export const type = new lsp.NotificationType<ScanFolderForHotspotsParams>('sonarlint/scanFolderForHotspots');
 }
 
+export namespace ForgetFolderHotspots {
+  export const type = new lsp.NotificationType('sonarlint/forgetFolderHotspots');
+}
+
 //#endregion

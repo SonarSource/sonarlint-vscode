@@ -443,8 +443,19 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand('SonarLint.ScanForHotspotsInFolder',
-      (folder) => scanFolderForHotspotsCommandHandler(folder)));
+    VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER,
+      async (folder) => {
+        await hotspotsTreeDataProvider.showHotspotsInFolder();
+        await scanFolderForHotspotsCommandHandler(folder);
+      }));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_HOTSPOTS_IN_OPEN_FILES,
+    async () => {
+      await hotspotsTreeDataProvider.showHotspotsInOpenFiles();
+      languageClient.forgetFolderHotspots();
+    }));
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.FORGET_FOLDER_HOTSPOTS, () => languageClient.forgetFolderHotspots()));
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
