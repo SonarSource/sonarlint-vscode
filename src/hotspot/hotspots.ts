@@ -231,7 +231,8 @@ function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
 export async function getFilesForHotspotsScan(folderUri: vscode.Uri): Promise<AnalysisFile[]> {
   const allFiles = await findFilesInFolder(folderUri);
   const notIgnoredFiles = await filterOutScmIgnoredFiles(allFiles, filterIgnored);
-  return await createAnalysisFilesFromFileUris(notIgnoredFiles);
+  const openDocuments = vscode.window.visibleTextEditors.map(e => e.document);
+  return await createAnalysisFilesFromFileUris(notIgnoredFiles, openDocuments);
 }
 
 

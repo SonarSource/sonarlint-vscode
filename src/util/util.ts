@@ -113,11 +113,10 @@ export async function findFilesInFolder(uri: vscode.Uri): Promise<vscode.Uri[]> 
   return myFiles;
 }
 
-export async function createAnalysisFilesFromFileUris(fileUris: vscode.Uri[]): Promise<AnalysisFile[]> {
+export async function createAnalysisFilesFromFileUris(
+  fileUris: vscode.Uri[], openDocuments: vscode.TextDocument[]): Promise<AnalysisFile[]> {
   const openedFileUrisToDocuments = new Map<string, vscode.TextDocument>();
-  vscode.window.visibleTextEditors.map(e => {
-    openedFileUrisToDocuments.set(e.document.uri.path, e.document);
-  });
+  openDocuments.forEach(d => openedFileUrisToDocuments.set(d.uri.path, d));
 
   const filesRes: AnalysisFile[] = [];
   for (const fileUri of fileUris) {

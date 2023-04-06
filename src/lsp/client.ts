@@ -10,7 +10,6 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
-import { ForgetFolderHotspots } from './protocol';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<protocol.RulesResponse> {

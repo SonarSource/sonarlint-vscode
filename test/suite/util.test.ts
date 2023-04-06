@@ -15,6 +15,7 @@ import {
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { Range, Uri } from 'vscode';
 
 
 const sampleFolderLocation = '../../../test/samples/';
@@ -67,31 +68,40 @@ suite('util', () => {
   test('should create analysis files from file uris', async () => {
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
     const fileUris = await findFilesInFolder(folderUri);
-
-    const analysisFiles = await createAnalysisFilesFromFileUris(fileUris);
-
+    // @ts-ignore
+    const openDocuments: vscode.TextDocument[] = [{
+      uri: fileUris[1],
+      version: 11,
+      getText(): string { return 'text in editor' },
+      languageId: 'languageFromEditor'
+  }];
+    const analysisFiles = await createAnalysisFilesFromFileUris(fileUris, openDocuments);
+    analysisFiles.forEach(f => console.log(JSON.stringify(f)));
     expect(analysisFiles.length).to.equal(6);
-    expect(analysisFiles[0].text).to.equal('{\n' +
-      '    "sonarlint.testFilePattern": "**/test/samples/**/test/**",\n' +
-      '    "telemetry.enableTelemetry": false\n' +
-      '}\n');
+    let inlineAnalysisResult = analysisFiles[0].text.replace(/(\r\n|\n|\r)/gm, "");
+    expect(inlineAnalysisResult).to.equal('{    "sonarlint.testFilePattern": "**/test/samples/**/test/**",' +
+      '    "telemetry.enableTelemetry": false}');
     expect(analysisFiles[0].uri.endsWith('settings.json')).to.be.true;
     expect(analysisFiles[0].languageId).to.equal('[unknown]');
     expect(analysisFiles[0].version).to.equal(1);
+    expect(analysisFiles[1].text).to.equal('text in editor');
+    expect(analysisFiles[1].uri.endsWith('main.js')).to.be.true;
+    expect(analysisFiles[1].languageId).to.equal('[unknown]');
+    expect(analysisFiles[1].version).to.equal(11);
   });
 
   test('should generate items for quick pick list from workspace folders', async () => {
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
-    const wf = {
+    const workspaceFolder = {
       uri: folderUri,
       name: 'Name',
       index: 0
     };
 
-    const quickPickListItems = getQuickPickListItemsForWorkspaceFolders([wf]);
+    const quickPickListItems = getQuickPickListItemsForWorkspaceFolders([workspaceFolder]);
 
     expect(quickPickListItems.length).to.equal(1);
-    expect(quickPickListItems[0].label).to.equal(wf.name);
+    expect(quickPickListItems[0].label).to.equal(workspaceFolder.name);
     expect(quickPickListItems[0].description).to.equal(folderUri.path);
   });
 

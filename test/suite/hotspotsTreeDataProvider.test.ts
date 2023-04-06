@@ -7,6 +7,7 @@ import { AllHotspotsTreeDataProvider, HotspotNode } from '../../src/hotspot/hots
 import { assert } from 'chai';
 import * as vscode from 'vscode';
 import { ThemeIcon } from 'vscode';
+import { protocol2CodeConverter } from '../../src/util/uri';
 
 const mockSettingsServiceWithConnections = {
   getSonarQubeConnections(): SonarQubeConnection[] {
@@ -252,7 +253,7 @@ suite('Hotspots tree view test suite', () => {
     });
   });
 
-  suite('getChildren()', () => {
+  suite('getFiles()', () => {
     test('should return empty list when there is no connection', () => {
       const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOutConnections);
       const children = underTest.getChildren(null);
@@ -260,15 +261,20 @@ suite('Hotspots tree view test suite', () => {
       assert.equal(children.length, 0);
     });
 
+    const openDocuments: vscode.TextDocument[] = [
+      createOpenTextDocument(`${vscode.workspace.workspaceFolders[0].uri}/sample-js/main.js`),
+      createOpenTextDocument(`${vscode.workspace.workspaceFolders[0].uri}/sample-multi-js/folder1/sample.js`)
+    ];
+
     test('should return list with file groups when cache is not empty', () => {
-      const children = underTestWithValidInitData.getChildren(null);
+      const children = underTestWithValidInitData.getFiles(openDocuments);
 
       assert.equal(children.length, 2);
       assert.equal(children[0].contextValue, 'hotspotsFileGroup');
     });
 
     test('should return hotspot groups for files', () => {
-      let fileGroups = underTestWithValidInitData.getChildren(null);
+      let fileGroups = underTestWithValidInitData.getFiles(openDocuments);
       const hotspotGroups = underTestWithValidInitData.getChildren(fileGroups[0]);
 
       assert.equal(hotspotGroups.length, 1);
@@ -276,7 +282,7 @@ suite('Hotspots tree view test suite', () => {
     });
 
     test('should return a hotspot', () => {
-      const fileGroups = underTestWithValidInitData.getChildren(null);
+      const fileGroups = underTestWithValidInitData.getFiles(openDocuments);
       const hotspotGroups = underTestWithValidInitData.getChildren(fileGroups[0]);
       const hotspots = underTestWithValidInitData.getChildren(hotspotGroups[0]);
 
@@ -284,5 +290,21 @@ suite('Hotspots tree view test suite', () => {
       assert.isTrue((hotspots[0].label as string).includes('hotspot'));
       assert.equal((hotspots[0] as HotspotNode).key, 'hotspotKey2');
     });
+
+    function createOpenTextDocument(uri: string): vscode.TextDocument {
+      const uriPath = protocol2CodeConverter(uri).path;
+      return {
+        // @ts-ignore
+        uri: {
+          path: uriPath
+        },
+        version: 11,
+        getText(): string {
+          return 'text in editor';
+        },
+        languageId: 'languageFromEditor',
+        fileName: 'sample.js'
+      };
+    }
   });
 });

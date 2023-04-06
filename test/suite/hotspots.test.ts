@@ -212,6 +212,34 @@ suite('Hotspots Test Suite', async () => {
     expect(scanWasPerformedForFolder).to.be.null;
   });
 
+  test('should let to choose form quick pick list if no folder uri provided and more than one workspace folder opened', async () => {
+    let scanWasPerformedForFolder: vscode.Uri = null;
+    const scan : (folderUri: vscode.Uri,
+                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+      scanWasPerformedForFolder = folderUri;
+    }
+    const workspaceFolders = [];
+    const workspaceFolder1 = {
+      uri: {
+        path: '/path1',
+      },
+      name: 'Name1',
+      index: 0
+    };
+    const workspaceFolder2 = {
+      uri: {
+        path: '/path2',
+      },
+      name: 'Name2',
+      index: 1
+    };
+    workspaceFolders.push(workspaceFolder1, workspaceFolder2);
+    useProvidedFolderOrPickManuallyAndScan(undefined, workspaceFolders, null, scan);
+    await vscode.commands.executeCommand('workbench.action.quickOpenNavigateNext');
+    await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+    expect(scanWasPerformedForFolder.path).to.equal(workspaceFolder2.uri.path);
+  });
+
   suite('diagnosticSeverity', () => {
     test('High probability maps to Error severity', () => {
       assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.High)), HotspotReviewPriority.High);
