@@ -72,13 +72,20 @@ const mockBindingService = {
 } as BindingService;
 
 const mockWorkspaceState = {
-  state: false,
+  bindingForWsState: false,
+  bindingForFolderState: [],
   keys: () => [],
   get(_identifier: string) {
-    return this.state;
+    return _identifier === DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG.toString() ? this.bindingForWsState : this.bindingForFolderState;
   },
-  async update(_identifier: string, newState: boolean) {
-    this.state = newState;
+  async updateBindingForWs(newState: boolean) {
+    this.bindingForWsState = newState;
+  },
+  async updateBindingForFolder(newState: string[]) {
+    this.bindingForFolderState = newState;
+  },
+  async update(key: string, value: any) {
+    // For compatibiity
   }
 };
 
@@ -95,7 +102,8 @@ suite('Auto Binding Test Suite', () => {
   teardown(async () => {
     await cleanBindings();
     await VSCode.commands.executeCommand('workbench.action.closeAllEditors');
-    await mockWorkspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, false);
+    await mockWorkspaceState.updateBindingForWs(false);
+    await mockWorkspaceState.updateBindingForFolder([]);
   });
 
   suite('Bindings Manager', () => {
@@ -104,7 +112,7 @@ suite('Auto Binding Test Suite', () => {
       underTest = new AutoBindingService(mockBindingService, mockWorkspaceState, mockSettingsService);
     });
 
-    test(`No autobinding when user said "don't ask again"`, async () => {
+    test(`No autobinding when user said "don't ask again" for folder`, async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
 
       const bindingBefore = VSCode.workspace
@@ -112,7 +120,25 @@ suite('Auto Binding Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(bindingBefore).to.be.empty;
 
-      mockWorkspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
+      mockWorkspaceState.updateBindingForFolder([workspaceFolder.uri.toString()]);
+
+      underTest.checkConditionsAndAttemptAutobinding({ suggestions: {folderUri: [workspaceFolder.uri.toString()]} });
+
+      const bindingAfter = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(bindingAfter).to.be.empty;
+    });
+
+    test(`No autobinding when user said "don't ask again" for workspace`, async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      const bindingBefore = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(bindingBefore).to.be.empty;
+
+      mockWorkspaceState.updateBindingForWs(true);
 
       underTest.checkConditionsAndAttemptAutobinding({ suggestions: {} });
 
