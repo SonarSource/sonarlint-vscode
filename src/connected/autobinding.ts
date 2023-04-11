@@ -20,6 +20,9 @@ export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindi
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 const DEFAULT_CONNECTION_ID = '<default>';
 const LEARN_MORE_DOCS_LINK = 'https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode';
+const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
+      Do you want to configure binding?
+      [Learn More](${LEARN_MORE_DOCS_LINK})`;
 
 export class AutoBindingService {
   private static _instance: AutoBindingService;
@@ -61,9 +64,12 @@ export class AutoBindingService {
   }
 
   private autoBindAllFolders(bindingSuggestions: { [folderUri: string]: Array<BindingSuggestion> }) {
+    const foldersNotToAutoBound = this.getFoldersThatShouldNotBeAutoBound();
     Object.keys(bindingSuggestions).forEach((folderUri) => {
       const workspaceFolder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(folderUri));
-      this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
+      if (!foldersNotToAutoBound.includes(workspaceFolder.uri.toString())) {
+        this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
+      }
     });
   }
 
@@ -158,9 +164,7 @@ export class AutoBindingService {
   async askUserBeforeAutoBinding() {
     return VSCode.window
       .showInformationMessage(
-        `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
-       Do you want to configure binding?
-       [Learn More](${LEARN_MORE_DOCS_LINK})`,
+        CONFIGURE_BINDING_PROMPT_MESSAGE,
         BIND_ACTION,
         CHOOSE_MANUALLY_ACTION,
         DONT_ASK_AGAIN_ACTION
@@ -194,9 +198,7 @@ export class AutoBindingService {
   private async promptToBindManually(unboundFolder: VSCode.WorkspaceFolder) {
     VSCode.window
       .showInformationMessage(
-        `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
-        Do you want to configure binding?
-       [Learn More](${LEARN_MORE_DOCS_LINK})`,
+        CONFIGURE_BINDING_PROMPT_MESSAGE,
         BIND_ACTION,
         DONT_ASK_AGAIN_ACTION
       )
@@ -259,9 +261,7 @@ export class AutoBindingService {
 
   private async promptToAutoBindMultiChoice(unboundFolder: VSCode.WorkspaceFolder) {
     const result = await VSCode.window.showInformationMessage(
-      `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
-      Do you want to configure binding?
-      [Learn More](${LEARN_MORE_DOCS_LINK})`,
+      CONFIGURE_BINDING_PROMPT_MESSAGE,
       BIND_ACTION,
       DONT_ASK_AGAIN_ACTION
     );
