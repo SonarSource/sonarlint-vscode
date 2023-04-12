@@ -11,12 +11,12 @@ import { expect } from 'chai';
 import { AllConnectionsTreeDataProvider, ConnectionGroup } from '../../src/connected/connections';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import * as path from 'path';
+import { sampleFolderLocation } from './commons';
 
 const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
 
-const sampleFolderLocation = '../../../test/samples/';
 const sampleFolderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
 
 const projectKeysToNames = {

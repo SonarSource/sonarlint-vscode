@@ -23,7 +23,13 @@ import {
   reportConnectionCheckResult
 } from './connected/connectionsetup';
 import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
-import { hideSecurityHotspot, showHotspotDescription, showSecurityHotspot } from './hotspot/hotspots';
+import {
+  getFilesForHotspotsAndLaunchScan,
+  hideSecurityHotspot,
+  showHotspotDescription,
+  showSecurityHotspot,
+  useProvidedFolderOrPickManuallyAndScan
+} from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
@@ -435,6 +441,26 @@ function registerCommands(context: VSCode.ExtensionContext) {
       VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
     })
   );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER,
+      async (folder) => {
+        await hotspotsTreeDataProvider.showHotspotsInFolder();
+        await scanFolderForHotspotsCommandHandler(folder);
+      }));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_HOTSPOTS_IN_OPEN_FILES,
+    async () => {
+      await hotspotsTreeDataProvider.showHotspotsInOpenFiles();
+      languageClient.forgetFolderHotspots();
+    }));
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.FORGET_FOLDER_HOTSPOTS, () => languageClient.forgetFolderHotspots()));
+}
+
+async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
+  await useProvidedFolderOrPickManuallyAndScan(folderUri,
+    VSCode.workspace.workspaceFolders, languageClient, getFilesForHotspotsAndLaunchScan);
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {

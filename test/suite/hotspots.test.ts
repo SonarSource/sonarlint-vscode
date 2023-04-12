@@ -9,7 +9,11 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { Commands } from '../../src/util/commands';
-import { diagnosticSeverity, showSecurityHotspot } from '../../src/hotspot/hotspots';
+import {
+  diagnosticSeverity,
+  showSecurityHotspot,
+  useProvidedFolderOrPickManuallyAndScan
+} from '../../src/hotspot/hotspots';
 import { HotspotProbability, HotspotStatus, RemoteHotspot } from '../../src/lsp/protocol';
 import {
   AllHotspotsTreeDataProvider,
@@ -18,6 +22,11 @@ import {
   HotspotTreeViewItem
 } from '../../src/hotspot/hotspotsTreeDataProvider';
 import { Position, Selection } from 'vscode';
+import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
+import { expect } from 'chai';
+import { sampleFolderLocation } from './commons';
+import * as path from 'path';
+import { sleep } from '../testutil';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',
@@ -147,6 +156,88 @@ suite('Hotspots Test Suite', async () => {
       templateHotspotRange.active.character,
       'highlighted range end position matches'
     );
+  });
+
+  test('should use folder if provided', async () => {
+    const sampleFolderUri = vscode.Uri.file(path.join(__dirname, '../../../test/samples'));
+    let scanWasPerformedForFolder: vscode.Uri = null;
+    const scan : (folderUri: vscode.Uri,
+                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+      scanWasPerformedForFolder = folderUri;
+    }
+    const wf = {
+      uri: sampleFolderUri,
+      name: 'Name',
+      index: 0
+    };
+
+    await useProvidedFolderOrPickManuallyAndScan(sampleFolderUri, [wf], null, scan);
+    expect(scanWasPerformedForFolder.path).to.equal(sampleFolderUri.path);
+  });
+
+  test('should use only opened folder if not provided', async () => {
+    const sampleFolderUri = vscode.Uri.file(path.join(__dirname, '../../../test/samples'));
+    let scanWasPerformedForFolder: vscode.Uri = null;
+    const scan : (folderUri: vscode.Uri,
+                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+      scanWasPerformedForFolder = folderUri;
+    }
+    const wf = {
+      uri: sampleFolderUri,
+      name: 'Name',
+      index: 0
+    };
+
+    await useProvidedFolderOrPickManuallyAndScan(undefined, [wf], null, scan);
+    expect(scanWasPerformedForFolder.path).to.equal(sampleFolderUri.path);
+
+    scanWasPerformedForFolder = null;
+    // @ts-ignore
+    // empty object may be provided for first argument by VSCode runtime
+    await useProvidedFolderOrPickManuallyAndScan({}, [wf], null, scan);
+    expect(scanWasPerformedForFolder.path).to.equal(sampleFolderUri.path);
+  });
+
+  test('should scan nothing if no folder uri provided and no workspace folders opened', async () => {
+    let scanWasPerformedForFolder: vscode.Uri = null;
+    const scan : (folderUri: vscode.Uri,
+                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+      scanWasPerformedForFolder = folderUri;
+    }
+
+    await useProvidedFolderOrPickManuallyAndScan(undefined, [], null, scan);
+    expect(scanWasPerformedForFolder).to.be.null;
+
+    await useProvidedFolderOrPickManuallyAndScan(undefined, undefined, null, scan);
+    expect(scanWasPerformedForFolder).to.be.null;
+  });
+
+  test('should let to choose form quick pick list if no folder uri provided and more than one workspace folder opened', async () => {
+    let scanWasPerformedForFolder: vscode.Uri = null;
+    const scan : (folderUri: vscode.Uri,
+                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+      scanWasPerformedForFolder = folderUri;
+    }
+    const workspaceFolders = [];
+    const workspaceFolder1 = {
+      uri: {
+        path: '/path1',
+      },
+      name: 'Name1',
+      index: 0
+    };
+    const workspaceFolder2 = {
+      uri: {
+        path: '/path2',
+      },
+      name: 'Name2',
+      index: 1
+    };
+    workspaceFolders.push(workspaceFolder1, workspaceFolder2);
+    useProvidedFolderOrPickManuallyAndScan(undefined, workspaceFolders, null, scan);
+    await vscode.commands.executeCommand('workbench.action.quickOpenNavigateNext');
+    await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+    expect(scanWasPerformedForFolder.path).to.equal(workspaceFolder2.uri.path);
   });
 
   suite('diagnosticSeverity', () => {

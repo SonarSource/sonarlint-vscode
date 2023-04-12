@@ -33,11 +33,6 @@
     "Code Analysis"
   ],
   "activationEvents": [
-    "onCommand:SonarLint.UpdateAllBindings",
-    "onCommand:SonarLint.ShowSonarLintOutput",
-    "onCommand:SonarLint.ConfigureCompilationDatabase",
-    "onCommand:SonarLint.ConnectToSonarQube",
-    "onCommand:SonarLint.EditSonarQubeConnection",
     "onStartupFinished"
   ],
   "contributes": {
@@ -401,6 +396,16 @@
         "enablement": "view == SonarLint.AllRules"
       },
       {
+        "command": "SonarLint.ScanForHotspotsInFolder",
+        "title": "In Whole Folder",
+        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'OpenFiles'"
+      },
+      {
+        "command": "SonarLint.ShowHotspotsInOpenFiles",
+        "title": "In Open Files",
+        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'Folder'"
+      },
+      {
         "command": "SonarLint.FindRuleByKey",
         "title": "Find Rule By Key",
         "enablement": "view == SonarLint.AllRules"
@@ -552,6 +557,16 @@
         {
           "command": "SonarLint.ShowInactiveRules",
           "when": "view == SonarLint.AllRules",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ScanForHotspotsInFolder",
+          "when": "view == SonarLint.SecurityHotspots",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ShowHotspotsInOpenFiles",
+          "when": "view == SonarLint.SecurityHotspots",
           "group": "navigation"
         },
         {

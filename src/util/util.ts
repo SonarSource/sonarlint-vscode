@@ -10,6 +10,9 @@ import * as child_process from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as process from 'process';
+import { AnalysisFile } from '../lsp/protocol';
+import { TextDecoder } from 'util';
+import { code2ProtocolConverter } from './uri';
 
 export function startedInDebugMode(process: NodeJS.Process): boolean {
   const args = process.execArgv;
@@ -93,4 +96,60 @@ export function sleep(ms: number) {
 
 export function formatIssueMessage(message: string, ruleKey: string) {
   return new vscode.MarkdownString(`$(warning) ${message} \`sonarlint(${ruleKey})\``, true);
+}
+
+export async function findFilesInFolder(uri: vscode.Uri): Promise<vscode.Uri[]> {
+  const filesInFolder = await vscode.workspace.fs.readDirectory(uri);
+  let myFiles = [];
+  for (const [name, type] of filesInFolder) {
+    const fileUri = vscode.Uri.joinPath(uri, name);
+    if (type === vscode.FileType.Directory) {
+      const childFiles = await findFilesInFolder(fileUri);
+      myFiles = myFiles.concat(childFiles);
+    } else if (type === vscode.FileType.File) {
+      myFiles.push(fileUri);
+    }
+  }
+  return myFiles;
+}
+
+export async function createAnalysisFilesFromFileUris(
+  fileUris: vscode.Uri[], openDocuments: vscode.TextDocument[]): Promise<AnalysisFile[]> {
+  const openedFileUrisToDocuments = new Map<string, vscode.TextDocument>();
+  openDocuments.forEach(d => openedFileUrisToDocuments.set(d.uri.path, d));
+
+  const filesRes: AnalysisFile[] = [];
+  for (const fileUri of fileUris) {
+    let fileContent;
+    let version;
+    const filePath = fileUri.path;
+    if (openedFileUrisToDocuments.has(filePath)) {
+      const openedDocument = openedFileUrisToDocuments.get(filePath);
+      fileContent = openedDocument.getText();
+      version = openedDocument.version;
+    } else {
+      const contentArray = await vscode.workspace.fs.readFile(fileUri);
+      fileContent = new TextDecoder().decode(contentArray);
+      version = 1;
+    }
+    filesRes.push({
+      uri: code2ProtocolConverter(fileUri),
+      languageId: '[unknown]',
+      version,
+      text: fileContent
+    });
+  }
+  return filesRes;
+}
+
+export function getQuickPickListItemsForWorkspaceFolders(
+  workspaceFolders: readonly vscode.WorkspaceFolder[]): vscode.QuickPickItem[] {
+  const quickPickItems: vscode.QuickPickItem[] = [];
+  for (const workspaceFolder of workspaceFolders) {
+    quickPickItems.push({
+      label: workspaceFolder.name,
+      description: workspaceFolder.uri.path
+    });
+  }
+  return quickPickItems;
 }

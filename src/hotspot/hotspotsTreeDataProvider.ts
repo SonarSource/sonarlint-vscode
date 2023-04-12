@@ -1,9 +1,13 @@
 import * as VSCode from 'vscode';
-import { ProviderResult, ThemeColor, ThemeIcon } from 'vscode';
+import { ProviderResult, TextDocument, ThemeColor, ThemeIcon } from 'vscode';
 import { Diagnostic, PublishHotspotsForFileParams } from '../lsp/protocol';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
-import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
+import {
+  getFileNameFromFullPath,
+  getRelativePathFromFullPath,
+  protocol2CodeConverter
+} from '../util/uri';
 import { OPEN_HOTSPOT_IN_IDE_SOURCE } from './hotspots';
 
 const SONARLINT_SOURCE = 'sonarlint';
@@ -83,19 +87,39 @@ export class HotspotNode extends VSCode.TreeItem {
 
 export type HotspotTreeViewItem = HotspotNode | HotspotGroup | FileGroup;
 
+type ShowMode = 'Folder' | 'OpenFiles';
+
 export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<HotspotTreeViewItem> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<HotspotTreeViewItem | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<HotspotTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   public fileHotspotsCache = new Map<string, Diagnostic[]>();
-  private filesWithHotspots = new Map<string, FileGroup>();
+  private readonly filesWithHotspots = new Map<string, FileGroup>();
+  private showMode: ShowMode;
 
   constructor(private readonly connectionSettingsService: ConnectionSettingsService) {
-    // NOP
+    this.updateContextShowMode('OpenFiles');
+  }
+
+  async showHotspotsInFolder() {
+    await this.updateContextShowMode('Folder');
+  }
+
+  async showHotspotsInOpenFiles() {
+    await this.updateContextShowMode('OpenFiles');
+  }
+
+  private async updateContextShowMode(showMode: ShowMode) {
+    this.showMode = showMode;
+    await VSCode.commands.executeCommand('setContext', 'SonarLint.Hotspots.ShowMode', showMode);
   }
 
   async refresh(hotspotsPerFile?: PublishHotspotsForFileParams) {
-    if (hotspotsPerFile && hotspotsPerFile.uri && hotspotsPerFile.diagnostics.length > 0) {
-      this.fileHotspotsCache.set(hotspotsPerFile.uri, hotspotsPerFile.diagnostics);
+    if (hotspotsPerFile && hotspotsPerFile.uri) {
+      if (hotspotsPerFile.diagnostics.length > 0) {
+        this.fileHotspotsCache.set(hotspotsPerFile.uri, hotspotsPerFile.diagnostics);
+      } else {
+        this.fileHotspotsCache.delete(hotspotsPerFile.uri);
+      }
     }
     await this.cleanupHotspotsCache();
     this._onDidChangeTreeData.fire(null);
@@ -173,14 +197,31 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       .sort((h1, h2) => h1.vulnerabilityProbability - h2.vulnerabilityProbability);
   }
 
-  getFiles() {
-    const arr = [];
+  getFiles(openDocuments = VSCode.window.visibleTextEditors.map(e => e.document)) {
+    const arr:FileGroup[] = [];
     this.fileHotspotsCache.forEach((_v, fileName) => {
-      const fileGroup = new FileGroup(fileName.toString());
-      arr.push(fileGroup);
-      this.filesWithHotspots.set(`${fileGroup.description}${fileGroup.label}`, fileGroup);
+      if (this.showMode === 'OpenFiles') {
+        const isFileOpen = this.isFileOpen(openDocuments, fileName);
+        if (isFileOpen) {
+          this.updateCacheForFile(fileName, arr);
+        }
+      } else {
+        this.updateCacheForFile(fileName, arr);
+      }
     });
     return arr;
+  }
+
+  private isFileOpen(openDocuments: TextDocument[], fileName: string) {
+    const fileUri = protocol2CodeConverter(fileName);
+    const fileIndex = openDocuments.findIndex(d => d.uri.path === fileUri.path);
+    return fileIndex > -1;
+  }
+
+  private updateCacheForFile(fileName: string, arr: FileGroup[]) {
+    const fileGroup = new FileGroup(fileName.toString());
+    arr.push(fileGroup);
+    this.filesWithHotspots.set(`${fileGroup.description}${fileGroup.label}`, fileGroup);
   }
 
   getHotspotItemContextValue(hotspot, hotspotGroupContextValue) {
