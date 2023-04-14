@@ -8,7 +8,7 @@
 
 import {
   createAnalysisFilesFromFileUris,
-  findFilesExceptInIgnoredFolders, getQuickPickListItemsForWorkspaceFolders,
+  findFilesExceptInIgnoredFolders, findSubFoldersInFolder, getQuickPickListItemsForWorkspaceFolders,
   isRunningAutoBuild,
   startedInDebugMode
 } from '../../src/util/util';
@@ -58,15 +58,19 @@ suite('util', () => {
   test('should find all files in folder', async () => {
 
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
-
-    const files = await findFilesExceptInIgnoredFolders(folderUri);
+    const allSubFolders = await findSubFoldersInFolder(folderUri, new Set<vscode.Uri>());
+    const notIgnoredSubFolderPaths = Array.from(allSubFolders).map(uri => uri.path);
+    const files = await findFilesExceptInIgnoredFolders(folderUri, new Set(notIgnoredSubFolderPaths));
 
     expect(files.length).to.equal(6);
   });
 
   test('should create analysis files from file uris', async () => {
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
-    const fileUris = await findFilesExceptInIgnoredFolders(folderUri);
+    const allSubFolders = await findSubFoldersInFolder(folderUri, new Set<vscode.Uri>());
+    const notIgnoredSubFolderPaths = Array.from(allSubFolders).map(uri => uri.path);
+
+    const fileUris = await findFilesExceptInIgnoredFolders(folderUri, new Set(notIgnoredSubFolderPaths));
     // @ts-ignore
     const openDocuments: vscode.TextDocument[] = [{
       uri: fileUris[1],

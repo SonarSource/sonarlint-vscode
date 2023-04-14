@@ -99,15 +99,32 @@ export function formatIssueMessage(message: string, ruleKey: string) {
   return new vscode.MarkdownString(`$(warning) ${message} \`sonarlint(${ruleKey})\``, true);
 }
 
-export async function findFilesExceptInIgnoredFolders(uri: vscode.Uri): Promise<vscode.Uri[]> {
-  const filesInFolder = await vscode.workspace.fs.readDirectory(uri);
+export async function findSubFoldersInFolder(
+  folderUri: vscode.Uri, subFolders: Set<vscode.Uri>): Promise<Set<vscode.Uri>> {
+  const filesInFolder = await vscode.workspace.fs.readDirectory(folderUri);
+  for (const [name, type] of filesInFolder) {
+    const fileUri = vscode.Uri.joinPath(folderUri, name);
+    if (type === vscode.FileType.Directory) {
+      subFolders.add(fileUri);
+      const childFiles = await findSubFoldersInFolder(fileUri, subFolders);
+      for (const childFile of childFiles) {
+        subFolders.add(childFile);
+      }
+    }
+  }
+  return subFolders;
+}
+
+export async function findFilesExceptInIgnoredFolders(
+  folderUri: vscode.Uri, notIgnoredSubFolders: Set<string>): Promise<vscode.Uri[]> {
+  const filesInFolder = await vscode.workspace.fs.readDirectory(folderUri);
   let myFiles = [];
   for (const [name, type] of filesInFolder) {
-    const fileUri = vscode.Uri.joinPath(uri, name);
+    const fileUri = vscode.Uri.joinPath(folderUri, name);
     if (type === vscode.FileType.Directory) {
-      let isIgnored = await isIgnoredByScm(fileUri.path);
-      if (!isIgnored) {
-        const childFiles = await findFilesExceptInIgnoredFolders(fileUri);
+      const notIgnored = notIgnoredSubFolders.has(fileUri.path);
+      if (notIgnored) {
+        const childFiles = await findFilesExceptInIgnoredFolders(fileUri, notIgnoredSubFolders);
         myFiles = myFiles.concat(childFiles);
       }
     } else if (type === vscode.FileType.File) {
@@ -132,7 +149,11 @@ export async function createAnalysisFilesFromFileUris(
       fileContent = openedDocument.getText();
       version = openedDocument.version;
     } else {
+      // TODO check if it's a text file
       const contentArray = await vscode.workspace.fs.readFile(fileUri);
+      if( contentArray.length > 1000000) {
+
+      }
       fileContent = new TextDecoder().decode(contentArray);
       version = 1;
     }

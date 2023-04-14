@@ -185,7 +185,7 @@ export async function filterOutScmIgnoredFiles(
     const gitArgs = ['check-ignore', '-v', '-z', '--stdin'];
     return await scmCheck(gitPath, gitArgs, repo.rootUri.fsPath, fileUris);
   } catch (e) {
-    logToSonarLintOutput(`Error requesting ignored status, consider all files not ignored: \n ${e}`,);
+    logToSonarLintOutput(`Error requesting ignored status, consider all files not ignored: \n ${e.stderr}`,);
     return Promise.resolve(fileUris);
   }
 }

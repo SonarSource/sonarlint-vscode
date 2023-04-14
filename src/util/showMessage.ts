@@ -21,3 +21,8 @@ export async function noWorkspaceFolderToScanMessage() {
     vscode.commands.executeCommand('vscode.openFolder');
   }
 }
+
+export async function projectIsTooBigToScanForHotspots() {
+  const action = await vscode.window.showWarningMessage(
+    'Project contains more than 1000 files and hotspots analysis will not be performed.');
+}

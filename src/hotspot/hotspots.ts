@@ -15,7 +15,7 @@ import {
   createAnalysisFilesFromFileUris,
   resolveExtensionFile,
   getQuickPickListItemsForWorkspaceFolders,
-  findFilesExceptInIgnoredFolders
+  findFilesExceptInIgnoredFolders, findSubFoldersInFolder
 } from '../util/util';
 import {
   AllHotspotsTreeDataProvider,
@@ -26,8 +26,9 @@ import {
 import { code2ProtocolConverter, getUriFromRelativePath } from '../util/uri';
 import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { noWorkspaceFolderToScanMessage } from '../util/showMessage';
+import { noWorkspaceFolderToScanMessage, projectIsTooBigToScanForHotspots } from '../util/showMessage';
 import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
+import { performance } from 'perf_hooks';
 
 export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
 
@@ -181,6 +182,7 @@ export const highlightLocation = async editor => {
 export async function getFilesForHotspotsAndLaunchScan(folderUri: vscode.Uri,
                                                 languageClient: SonarLintExtendedLanguageClient): Promise<void> {
   const files = await getFilesForHotspotsScan(folderUri);
+
   launchScanForHotspots(languageClient, folderUri, files);
 }
 
@@ -229,10 +231,16 @@ function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
 }
 
 export async function getFilesForHotspotsScan(folderUri: vscode.Uri): Promise<AnalysisFile[]> {
-  const allFilesExceptIgnoredFolders = await findFilesExceptInIgnoredFolders(folderUri);
+  const subFolders = await findSubFoldersInFolder(folderUri, new Set<vscode.Uri>());
+  const notIgnoredSubFolderUris = await filterOutScmIgnoredFiles(Array.from(subFolders), filterIgnored);
+  const notIgnoredSubFolderPaths = notIgnoredSubFolderUris.map(uri => uri.path);
+  const allFilesExceptIgnoredFolders = await findFilesExceptInIgnoredFolders(
+    folderUri, new Set(notIgnoredSubFolderPaths));
   const notIgnoredFiles = await filterOutScmIgnoredFiles(allFilesExceptIgnoredFolders, filterIgnored);
+  if (notIgnoredFiles.length > 1000 ) {
+    projectIsTooBigToScanForHotspots();
+    return [];
+  }
   const openDocuments = vscode.window.visibleTextEditors.map(e => e.document);
   return await createAnalysisFilesFromFileUris(notIgnoredFiles, openDocuments);
 }
-
-
