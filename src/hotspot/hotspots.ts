@@ -13,9 +13,9 @@ import { AnalysisFile, Diagnostic, HotspotProbability, RemoteHotspot } from '../
 import { logToSonarLintOutput } from '../util/logging';
 import {
   createAnalysisFilesFromFileUris,
-  findFilesInFolder,
   resolveExtensionFile,
-  getQuickPickListItemsForWorkspaceFolders
+  getQuickPickListItemsForWorkspaceFolders,
+  findFilesExceptInIgnoredFolders
 } from '../util/util';
 import {
   AllHotspotsTreeDataProvider,
@@ -229,8 +229,8 @@ function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
 }
 
 export async function getFilesForHotspotsScan(folderUri: vscode.Uri): Promise<AnalysisFile[]> {
-  const allFiles = await findFilesInFolder(folderUri);
-  const notIgnoredFiles = await filterOutScmIgnoredFiles(allFiles, filterIgnored);
+  const allFilesExceptIgnoredFolders = await findFilesExceptInIgnoredFolders(folderUri);
+  const notIgnoredFiles = await filterOutScmIgnoredFiles(allFilesExceptIgnoredFolders, filterIgnored);
   const openDocuments = vscode.window.visibleTextEditors.map(e => e.document);
   return await createAnalysisFilesFromFileUris(notIgnoredFiles, openDocuments);
 }

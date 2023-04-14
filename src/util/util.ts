@@ -13,6 +13,7 @@ import * as process from 'process';
 import { AnalysisFile } from '../lsp/protocol';
 import { TextDecoder } from 'util';
 import { code2ProtocolConverter } from './uri';
+import { isIgnoredByScm } from '../scm/scm';
 
 export function startedInDebugMode(process: NodeJS.Process): boolean {
   const args = process.execArgv;
@@ -98,14 +99,17 @@ export function formatIssueMessage(message: string, ruleKey: string) {
   return new vscode.MarkdownString(`$(warning) ${message} \`sonarlint(${ruleKey})\``, true);
 }
 
-export async function findFilesInFolder(uri: vscode.Uri): Promise<vscode.Uri[]> {
+export async function findFilesExceptInIgnoredFolders(uri: vscode.Uri): Promise<vscode.Uri[]> {
   const filesInFolder = await vscode.workspace.fs.readDirectory(uri);
   let myFiles = [];
   for (const [name, type] of filesInFolder) {
     const fileUri = vscode.Uri.joinPath(uri, name);
     if (type === vscode.FileType.Directory) {
-      const childFiles = await findFilesInFolder(fileUri);
-      myFiles = myFiles.concat(childFiles);
+      let isIgnored = await isIgnoredByScm(fileUri.path);
+      if (!isIgnored) {
+        const childFiles = await findFilesExceptInIgnoredFolders(fileUri);
+        myFiles = myFiles.concat(childFiles);
+      }
     } else if (type === vscode.FileType.File) {
       myFiles.push(fileUri);
     }

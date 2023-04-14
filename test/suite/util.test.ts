@@ -8,14 +8,13 @@
 
 import {
   createAnalysisFilesFromFileUris,
-  findFilesInFolder, getQuickPickListItemsForWorkspaceFolders,
+  findFilesExceptInIgnoredFolders, getQuickPickListItemsForWorkspaceFolders,
   isRunningAutoBuild,
   startedInDebugMode
 } from '../../src/util/util';
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Range, Uri } from 'vscode';
 
 
 const sampleFolderLocation = '../../../test/samples/';
@@ -60,14 +59,14 @@ suite('util', () => {
 
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
 
-    const files = await findFilesInFolder(folderUri);
+    const files = await findFilesExceptInIgnoredFolders(folderUri);
 
     expect(files.length).to.equal(6);
   });
 
   test('should create analysis files from file uris', async () => {
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
-    const fileUris = await findFilesInFolder(folderUri);
+    const fileUris = await findFilesExceptInIgnoredFolders(folderUri);
     // @ts-ignore
     const openDocuments: vscode.TextDocument[] = [{
       uri: fileUris[1],
