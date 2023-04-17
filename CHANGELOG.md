@@ -5,8 +5,9 @@
 * Support analysis of Kubernetes
 * Support analysis of Terraform
 * Update JS/TS/CSS analyzer 10.0.1 -> [10.1.0](https://github.com/SonarSource/SonarJS/releases/tag/10.1.0.21143), New rules available; ESLint upgraded to 8.36.0; Existing rules improved
-* Update Java analyzer 7.17.0 -> [7.18.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/14047/tab/release-report-all-issues), New rules available; bugfixes
+* Update Java analyzer 7.17.0 -> [7.18.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/14047/tab/release-report-all-issues), New rules available; bug fixes
 * Update Python analyzer 4.1 -> [4.2](https://sonarsource.atlassian.net/projects/SONARPY/versions/14081/tab/release-report-all-issues), New rules and quickfixes available
+* Update CFamily analyzer 6.43 -> [6.44](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D14067%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), Bug fixes and improvements
 
 
 ## 3.16
