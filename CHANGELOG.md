@@ -6,6 +6,7 @@
 * Support analysis of Terraform
 * Update JS/TS/CSS analyzer 10.0.1 -> [10.1.0](https://github.com/SonarSource/SonarJS/releases/tag/10.1.0.21143), New rules available; ESLint upgraded to 8.36.0; Existing rules improved
 * Update Java analyzer 7.17.0 -> [7.18.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/14047/tab/release-report-all-issues), New rules available; bugfixes
+* Update Python analyzer 4.1 -> [4.2](https://sonarsource.atlassian.net/projects/SONARPY/versions/14081/tab/release-report-all-issues), New rules and quickfixes available
 
 
 ## 3.16
