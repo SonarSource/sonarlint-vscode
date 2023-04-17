@@ -74,19 +74,19 @@ export function computeHotspotContextPanelContent(hotspot: RemoteHotspot, webvie
 
     <main class="tabs">
       <input type="radio" name="tabs" id="tabone" checked="checked">
-      <label for="tabone">What's the risk?</label>
+      <label for="tabone" class="tabLabel">What's the risk?</label>
       <section class="tab">
       ${hotspot.rule.riskDescription}
       </section>
 
       <input type="radio" name="tabs" id="tabtwo">
-      <label for="tabtwo">Are you at risk?</label>
+      <label for="tabtwo" class="tabLabel">Are you at risk?</label>
       <section class="tab">
       ${hotspot.rule.vulnerabilityDescription}
       </section>
 
       <input type="radio" name="tabs" id="tabthree">
-      <label for="tabthree">How can you fix it?</label>
+      <label for="tabthree" class="tabLabel">How can you fix it?</label>
       <section class="tab">
       ${hotspot.rule.fixRecommendations}
       </section>
