@@ -4,6 +4,8 @@
 * Support analysis of Docker
 * Support analysis of Kubernetes
 * Support analysis of Terraform
+* Update JS/TS/CSS analyzer 10.0.1 -> [10.1.0](https://github.com/SonarSource/SonarJS/releases/tag/10.1.0.21143), Add 8 new rules; Upgrade ESLint to 8.36.0; Improve existing rules
+
 
 ## 3.16
 
