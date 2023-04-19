@@ -2,7 +2,7 @@
   "name": "sonarlint-vscode",
   "displayName": "SonarLint",
   "description": "SonarLint is an IDE extension that helps you detect and fix quality issues as you write code in C, C++, Java, JavaScript, PHP, Python, HTML and TypeScript.",
-  "version": "3.17.0-SNAPSHOT",
+  "version": "3.17.0",
   "icon": "images/sonarlint_wave_128px.png",
   "publisher": "SonarSource",
   "homepage": "https://www.sonarsource.com/products/sonarlint/",
