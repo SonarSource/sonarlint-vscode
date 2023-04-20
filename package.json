@@ -759,7 +759,9 @@
     "path-exists": "4.0.0",
     "properties": "1.2.1",
     "underscore": "^1.13.6",
-    "vscode-languageclient": "^8.0.2"
+    "vscode-languageclient": "^8.0.2",
+    "diff": "^5.1.0",
+    "node-html-parser": "^6.1.5"
   },
   "devDependencies": {
     "@cyclonedx/bom": "^3.8.0",
