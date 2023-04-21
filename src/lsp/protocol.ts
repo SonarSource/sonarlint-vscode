@@ -82,6 +82,7 @@ export interface ShowRuleDescriptionParams {
   }>;
   type: string;
   severity: string;
+  languageKey: string;
   isTaint: boolean;
   parameters?: Array<{
     name: string;

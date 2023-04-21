@@ -25,6 +25,7 @@ suite('rulepanel', () => {
         name: '',
         severity: '',
         type: '',
+        languageKey: '',
         htmlDescription: 'monolithicDescription'
       })
     ).to.equal('<div class="rule-desc">monolithicDescription</div>');
@@ -56,6 +57,7 @@ suite('rulepanel', () => {
       key: '',
       name: '',
       severity: '',
+      languageKey: '',
       type: '',
       htmlDescription: 'contextualDescription'
     });
@@ -90,6 +92,7 @@ suite('rulepanel', () => {
         key: '',
         name: '',
         severity: '',
+        languageKey: '',
         type: '',
         htmlDescription: ''
       })
@@ -102,6 +105,7 @@ suite('rulepanel', () => {
         name: '',
         severity: '',
         type: '',
+        languageKey: '',
         htmlDescription: '',
         parameters: []
       })
@@ -117,6 +121,7 @@ suite('rulepanel', () => {
         name: '',
         severity: '',
         type: '',
+        languageKey: '',
         htmlDescription: '',
         parameters: [
           {
@@ -139,6 +144,7 @@ suite('rulepanel', () => {
           name: '',
           severity: '',
           type: 'NOT A HOTSPOT',
+          languageKey: '',
           htmlDescription: ''
         },
         ''
@@ -155,6 +161,7 @@ suite('rulepanel', () => {
           key: '',
           name: '',
           severity: '',
+          languageKey: '',
           type: 'SECURITY_HOTSPOT',
           htmlDescription: ''
         },
@@ -172,6 +179,7 @@ suite('rulepanel', () => {
           key: '',
           name: '',
           severity: '',
+          languageKey: '',
           type: '',
           htmlDescription: ''
         },
@@ -189,6 +197,7 @@ suite('rulepanel', () => {
           key: '',
           name: '',
           severity: '',
+          languageKey: '',
           type: '',
           htmlDescription: ''
         },

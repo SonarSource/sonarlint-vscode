@@ -11,6 +11,7 @@ import { ShowRuleDescriptionParams } from '../lsp/protocol';
 import * as util from '../util/util';
 import { clean, escapeHtml, ResourceResolver } from '../util/webview';
 
+const hljs = require('highlight.js');
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 
 export function showRuleDescription(context: VSCode.ExtensionContext) {
@@ -49,6 +50,7 @@ function computeRuleDescPanelContent(
 ) {
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'rule.css');
+  const hljsSrc = resolver.resolve('styles', 'vs.css');
   const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
   const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severity.toLowerCase()}.png`);
   const typeImgSrc = resolver.resolve('images', 'type', `${rule.type.toLowerCase()}.png`);
@@ -68,6 +70,7 @@ function computeRuleDescPanelContent(
       content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}"/>
     <link rel="stylesheet" type="text/css" href="${styleSrc}" />
     <link rel="stylesheet" type="text/css" href="${hotspotSrc}" />
+    <link rel="stylesheet" type="text/css" href="${hljsSrc}" />
     </head>
     <body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
     <div>
@@ -111,9 +114,20 @@ export function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc:
            </div>`;
 }
 
+function getFirstCodeExample(htmlContent: string): string {
+  const startPattern = "<pre>"
+  const start = htmlContent.search(startPattern);
+  const end = htmlContent.search("</pre>")
+  return htmlContent.substring(start + startPattern.length, end);
+}
+
 export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
+  let firstCodeExample = getFirstCodeExample(rule.htmlDescription);
+  let languageKey = rule.languageKey;
+  let highlightedCode = hljs.highlight(firstCodeExample, {language: languageKey, ignoreIllegals: true})
+  let highlightedCodeValue = '<pre>' + highlightedCode.value + '</pre>'
   if (rule.htmlDescriptionTabs.length === 0) {
-    return `<div class="rule-desc">${rule.htmlDescription}</div>`;
+    return `<div class="rule-desc">${highlightedCodeValue}</div>`;
   } else {
     const tabsContent = rule.htmlDescriptionTabs
       .map((tab, index) => {
