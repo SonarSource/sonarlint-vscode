@@ -12,10 +12,10 @@ import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import { AnalysisFile, Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
 import { logToSonarLintOutput } from '../util/logging';
 import {
-  createAnalysisFilesFromFileUris,
+  createAnalysisFilesFromFileUris, filterFilesBySuffixes,
   findFilesInFolder,
-  resolveExtensionFile,
-  getQuickPickListItemsForWorkspaceFolders
+  getQuickPickListItemsForWorkspaceFolders,
+  resolveExtensionFile
 } from '../util/util';
 import {
   AllHotspotsTreeDataProvider,
@@ -180,7 +180,8 @@ export const highlightLocation = async editor => {
 
 export async function getFilesForHotspotsAndLaunchScan(folderUri: vscode.Uri,
                                                 languageClient: SonarLintExtendedLanguageClient): Promise<void> {
-  const files = await getFilesForHotspotsScan(folderUri);
+  const response = await languageClient.getFilePatternsForAnalysis(folderUri.path);
+  const files = await getFilesForHotspotsScan(folderUri, response.patterns);
   launchScanForHotspots(languageClient, folderUri, files);
 }
 
@@ -228,11 +229,10 @@ function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
   );
 }
 
-export async function getFilesForHotspotsScan(folderUri: vscode.Uri): Promise<AnalysisFile[]> {
+export async function getFilesForHotspotsScan(folderUri: vscode.Uri, globPatterns: string[]): Promise<AnalysisFile[]> {
   const allFiles = await findFilesInFolder(folderUri);
-  const notIgnoredFiles = await filterOutScmIgnoredFiles(allFiles, filterIgnored);
+  const filesWithKnownSuffixes = filterFilesBySuffixes(globPatterns, allFiles);
+  const notIgnoredFiles = await filterOutScmIgnoredFiles(filesWithKnownSuffixes, filterIgnored);
   const openDocuments = vscode.window.visibleTextEditors.map(e => e.document);
   return await createAnalysisFilesFromFileUris(notIgnoredFiles, openDocuments);
 }
-
-

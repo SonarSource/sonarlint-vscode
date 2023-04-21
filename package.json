@@ -396,6 +396,16 @@
         "enablement": "view == SonarLint.AllRules"
       },
       {
+        "command": "SonarLint.ScanForHotspotsInFolder",
+        "title": "In Whole Folder",
+        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'OpenFiles'"
+      },
+      {
+        "command": "SonarLint.ShowHotspotsInOpenFiles",
+        "title": "In Open Files",
+        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'Folder'"
+      },
+      {
         "command": "SonarLint.FindRuleByKey",
         "title": "Find Rule By Key",
         "enablement": "view == SonarLint.AllRules"
@@ -547,6 +557,16 @@
         {
           "command": "SonarLint.ShowInactiveRules",
           "when": "view == SonarLint.AllRules",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ScanForHotspotsInFolder",
+          "when": "view == SonarLint.SecurityHotspots",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ShowHotspotsInOpenFiles",
+          "when": "view == SonarLint.SecurityHotspots",
           "group": "navigation"
         },
         {
@@ -748,6 +768,7 @@
     "@types/mocha": "10.0.0",
     "@types/node": "^10.17.17",
     "@types/vscode": "^1.73.1",
+    "@vscode/test-electron": "^2.3.0",
     "chai": "^4.2.0",
     "crypto": "^0.0.3",
     "dateformat": "^2.0.0",
@@ -781,7 +802,6 @@
     "typescript": "^4.9.5",
     "vinyl": "^2.2.1",
     "vsce": "2.15.0",
-    "vscode-test": "^1.6.1",
     "webpack": "5.76.0",
     "webpack-cli": "4.10.0"
   },

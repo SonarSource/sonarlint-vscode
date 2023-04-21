@@ -7,15 +7,14 @@
 'use strict';
 
 import {
-  createAnalysisFilesFromFileUris,
-  findFilesInFolder, getQuickPickListItemsForWorkspaceFolders,
+  createAnalysisFilesFromFileUris, filterFilesBySuffixes,
+  findFilesInFolder, getMasterRegex, getQuickPickListItemsForWorkspaceFolders, globPatternToRegex,
   isRunningAutoBuild,
   startedInDebugMode
 } from '../../src/util/util';
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Range, Uri } from 'vscode';
 
 
 const sampleFolderLocation = '../../../test/samples/';
@@ -103,6 +102,35 @@ suite('util', () => {
     expect(quickPickListItems.length).to.equal(1);
     expect(quickPickListItems[0].label).to.equal(workspaceFolder.name);
     expect(quickPickListItems[0].description).to.equal(folderUri.path);
+  });
+
+  test('should convert glob pattern to regex', async () => {
+    expect(globPatternToRegex('**/*.java').source).to.equal('\\.java$')
+    expect(globPatternToRegex('**/*.c++').source).to.equal('^([^/]*)\\/([^/]*)\\.c\\+\\+$')
+    expect(globPatternToRegex('**/**/*.c++').source).to.equal('^([^/]*)\\/((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$')
+    expect(globPatternToRegex('/**').source).to.equal('^\\/([^/]*)$')
+  });
+
+  test('should build master regex pattern from array of glob patterns', async () => {
+    const masterRegex = getMasterRegex(['**/*.java', '**/*.php', '**/*.c++']);
+    expect(masterRegex.source).to.equal('\\.java$|\\.php$|^([^/]*)\\/([^/]*)\\.c\\+\\+$');
+  });
+
+  test('should filter files by suffixes', async () => {
+    const files:vscode.Uri[] = [];
+    // @ts-ignore
+    files.push({
+      path: '/hello/foo.bar'
+    });
+    // @ts-ignore
+    files.push({
+      path: '/hello/foo.baz'
+    });
+
+    const filteredFiles = filterFilesBySuffixes(['**/*.bar'], files);
+
+    expect(filteredFiles.length).to.equal(1);
+    expect(filteredFiles[0].path).to.equal('/hello/foo.bar');
   });
 
 });

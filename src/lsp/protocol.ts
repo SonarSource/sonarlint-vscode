@@ -409,4 +409,18 @@ export namespace ForgetFolderHotspots {
   export const type = new lsp.NotificationType('sonarlint/forgetFolderHotspots');
 }
 
+export interface GetFilePatternsForAnalysisParams {
+  folderUri: string;
+}
+
+export interface GetFilePatternsForAnalysisResponse {
+  patterns: string[];
+}
+
+export namespace GetFilePatternsForAnalysis {
+  export const type = new lsp.RequestType<
+    GetFilePatternsForAnalysisParams,
+    GetFilePatternsForAnalysisResponse, null>('sonarlint/listSupportedFilePatterns');
+}
+
 //#endregion

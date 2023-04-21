@@ -73,4 +73,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   forgetFolderHotspots() {
     this.sendNotification(protocol.ForgetFolderHotspots.type);
   }
+
+  getFilePatternsForAnalysis(folderUri: string): Promise<protocol.GetFilePatternsForAnalysisResponse> {
+    return this.sendRequest(protocol.GetFilePatternsForAnalysis.type, { folderUri });
+  }
 }
