@@ -183,7 +183,6 @@ export function getQuickPickListItemsForWorkspaceFolders(
   return quickPickItems;
 }
 
-
 export function globPatternToRegex(globPattern: string): RegExp {
   const commonSuffixGlobFormat = /^\*\*\/\*\.[a-z0-9]{1,6}$/;
   if (commonSuffixGlobFormat.test(globPattern)) {
@@ -192,20 +191,21 @@ export function globPatternToRegex(globPattern: string): RegExp {
     const regexStr = `\\.${suffix}$`;
     return new RegExp(regexStr);
   }
+  const str = String(globPattern);
   let regex = '';
-  const charsToEscape = new Set(['.', '+', '/']);
-  for (let i = 0; i < globPattern.length; i++) {
-    const c = globPattern.charAt(i);
+  const charsToEscape = new Set(['.', '+', '/', '|', '$', '^', '(', ')', '=', '!', ',']);
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
     if (charsToEscape.has(c)) {
       regex += '\\' + c;
     } else if (c === '*') {
-      const prev = globPattern.charAt(i - 1);
+      const prev = str[i - 1];
       let asteriskCount = 1;
-      while (globPattern.charAt(i + 1) === '*') {
+      while (str[i + 1] === '*') {
         asteriskCount++;
         i++;
       }
-      const next = globPattern.charAt(i + 1);
+      const next = str[i + 1];
       const dirMatcher = isDirMatcher(asteriskCount, prev, next);
       if (dirMatcher) {
         regex += '((?:[^/]*(?:/|$))*)';
@@ -221,9 +221,14 @@ export function globPatternToRegex(globPattern: string): RegExp {
   return new RegExp(regex);
 }
 
-export function filterFilesBySuffixes(globPatterns: string[], allFiles: vscode.Uri[]) : vscode.Uri[] {
+export function getFilesMatchedGlobPatterns(allFiles: vscode.Uri[], globPatterns: string[]): vscode.Uri[] {
   const masterRegex = getMasterRegex(globPatterns);
   return allFiles.filter(f => masterRegex.test(f.path));
+}
+
+export function getFilesNotMatchedGlobPatterns(allFiles: vscode.Uri[], globPatterns: string[]): vscode.Uri[] {
+  const masterRegex = getMasterRegex(globPatterns);
+  return allFiles.filter(f => !masterRegex.test(f.path));
 }
 
 function isDirMatcher(asteriskCount: number, prev: string, next: string): boolean {
@@ -232,5 +237,16 @@ function isDirMatcher(asteriskCount: number, prev: string, next: string): boolea
 
 export function getMasterRegex(globPatterns: string[]) {
   const regexes = globPatterns.map(p => globPatternToRegex(p).source);
-  return new RegExp(regexes.join('|'), 'gi');
+  return new RegExp(regexes.join('|'), 'i');
+}
+
+export function getIdeFileExclusions(excludes): string[] {
+  const excludedPatterns: string[] = [];
+  for (const pattern in excludes) {
+    const isExcluded = excludes[pattern];
+    if (isExcluded) {
+      excludedPatterns.push(pattern);
+    }
+  }
+  return excludedPatterns;
 }

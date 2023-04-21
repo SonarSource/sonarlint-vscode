@@ -16,10 +16,10 @@ import { logToSonarLintOutput } from '../util/logging';
 import { noWorkspaceFolderToScanMessage } from '../util/showMessage';
 import { code2ProtocolConverter, getUriFromRelativePath } from '../util/uri';
 import {
-  createAnalysisFilesFromFileUris, filterFilesBySuffixes,
-  findFilesInFolder,
+  createAnalysisFilesFromFileUris, getFilesMatchedGlobPatterns,
+  findFilesInFolder, getIdeFileExclusions,
   getQuickPickListItemsForWorkspaceFolders,
-  resolveExtensionFile
+  resolveExtensionFile, getFilesNotMatchedGlobPatterns
 } from '../util/util';
 import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import {
@@ -249,11 +249,15 @@ export async function getFilesForHotspotsScan(
   }>,
   cancelToken: vscode.CancellationToken
 ): Promise<AnalysisFile[]> {
+  const workspaceFolderConfig = vscode.workspace.getConfiguration(null, folderUri);
+  const excludes = workspaceFolderConfig.files.exclude;
   const allFiles = await findFilesInFolder(folderUri, cancelToken);
   if (cancelToken.isCancellationRequested) {
     return [];
   }
-  const filesWithKnownSuffixes = filterFilesBySuffixes(globPatterns, allFiles);
+  const excludedInIdeGlobPatterns = getIdeFileExclusions(excludes);
+  const notExcludedFiles = getFilesNotMatchedGlobPatterns(allFiles, excludedInIdeGlobPatterns);
+  const filesWithKnownSuffixes = getFilesMatchedGlobPatterns(notExcludedFiles, globPatterns);
   if (cancelToken.isCancellationRequested) {
     return [];
   }
