@@ -6,18 +6,26 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+import { expect } from 'chai';
+import * as path from 'path';
+import * as vscode from 'vscode';
 import {
-  createAnalysisFilesFromFileUris, filterFilesBySuffixes,
-  findFilesInFolder, getMasterRegex, getQuickPickListItemsForWorkspaceFolders, globPatternToRegex,
+  createAnalysisFilesFromFileUris,
+  filterFilesBySuffixes,
+  findFilesInFolder,
+  getMasterRegex,
+  getQuickPickListItemsForWorkspaceFolders,
+  globPatternToRegex,
   isRunningAutoBuild,
   startedInDebugMode
 } from '../../src/util/util';
-import { expect } from 'chai';
-import * as vscode from 'vscode';
-import * as path from 'path';
-
 
 const sampleFolderLocation = '../../../test/samples/';
+
+const progress: vscode.Progress<any> = {
+  report() { /* NOP */ }
+};
+const cancelToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: null };
 
 suite('util', () => {
   test('should detect --debug', () => {
@@ -59,14 +67,14 @@ suite('util', () => {
 
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
 
-    const files = await findFilesInFolder(folderUri);
+    const files = await findFilesInFolder(folderUri, cancelToken);
 
     expect(files.length).to.equal(7);
   });
 
   test('should create analysis files from file uris', async () => {
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
-    const fileUris = await findFilesInFolder(folderUri);
+    const fileUris = await findFilesInFolder(folderUri, cancelToken);
     // @ts-ignore
     const openDocuments: vscode.TextDocument[] = [{
       uri: fileUris[1],
@@ -76,7 +84,7 @@ suite('util', () => {
       },
       languageId: 'languageFromEditor'
     }];
-    const analysisFiles = await createAnalysisFilesFromFileUris(fileUris, openDocuments);
+    const analysisFiles = await createAnalysisFilesFromFileUris(fileUris, openDocuments, progress, cancelToken);
 
     expect(fileUris.length).to.equal(7);
     expect(analysisFiles.length).to.equal(6);

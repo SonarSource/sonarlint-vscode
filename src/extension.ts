@@ -24,6 +24,7 @@ import {
 } from './connected/connectionsetup';
 import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
 import {
+  HOTSPOTS_VIEW_ID,
   getFilesForHotspotsAndLaunchScan,
   hideSecurityHotspot,
   showHotspotDescription,
@@ -32,7 +33,7 @@ import {
 } from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
-import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
+import { LocationTreeItem, SecondaryLocationsTree, navigateToLocation } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
 import * as protocol from './lsp/protocol';
 import { languageServerCommand } from './lsp/server';
@@ -51,7 +52,7 @@ import {
 import { Commands } from './util/commands';
 import { getLogOutput, initLogOutput, logToSonarLintOutput, showLogOutput } from './util/logging';
 import { getPlatform } from './util/platform';
-import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
+import { JAVA_HOME_CONFIG, installManagedJre, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 
@@ -265,7 +266,7 @@ export function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(allConnectionsView);
 
   hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(ConnectionSettingsService.instance);
-  allHotspotsView = VSCode.window.createTreeView('SonarLint.SecurityHotspots', {
+  allHotspotsView = VSCode.window.createTreeView(HOTSPOTS_VIEW_ID, {
     treeDataProvider: hotspotsTreeDataProvider
   });
 

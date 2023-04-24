@@ -8,10 +8,10 @@
 
 import * as child_process from 'child_process';
 import * as path from 'path';
-import * as vscode from 'vscode';
 import * as process from 'process';
-import { AnalysisFile } from '../lsp/protocol';
 import { TextDecoder } from 'util';
+import * as vscode from 'vscode';
+import { AnalysisFile } from '../lsp/protocol';
 import { code2ProtocolConverter } from './uri';
 import { logToSonarLintOutput } from './logging';
 
@@ -100,13 +100,19 @@ export function formatIssueMessage(message: string, ruleKey: string) {
   return new vscode.MarkdownString(`$(warning) ${message} \`sonarlint(${ruleKey})\``, true);
 }
 
-export async function findFilesInFolder(uri: vscode.Uri): Promise<vscode.Uri[]> {
+export async function findFilesInFolder(
+  uri: vscode.Uri,
+  cancelToken: vscode.CancellationToken
+): Promise<vscode.Uri[]> {
+  if (cancelToken.isCancellationRequested) {
+    return [];
+  }
   const filesInFolder = await vscode.workspace.fs.readDirectory(uri);
   let myFiles = [];
   for (const [name, type] of filesInFolder) {
     const fileUri = vscode.Uri.joinPath(uri, name);
     if (type === vscode.FileType.Directory) {
-      const childFiles = await findFilesInFolder(fileUri);
+      const childFiles = await findFilesInFolder(fileUri, cancelToken);
       myFiles = myFiles.concat(childFiles);
     } else if (type === vscode.FileType.File) {
       myFiles.push(fileUri);
@@ -116,11 +122,28 @@ export async function findFilesInFolder(uri: vscode.Uri): Promise<vscode.Uri[]> 
 }
 
 export async function createAnalysisFilesFromFileUris(
-  fileUris: vscode.Uri[], openDocuments: vscode.TextDocument[]): Promise<AnalysisFile[]> {
+  fileUris: vscode.Uri[],
+  openDocuments: vscode.TextDocument[],
+  progress: vscode.Progress<{
+    message?: string;
+    increment?: number;
+  }>,
+  cancelToken: vscode.CancellationToken
+): Promise<AnalysisFile[]> {
+  if (cancelToken.isCancellationRequested) {
+    return [];
+  }
   const openedFileUrisToDocuments = new Map<string, vscode.TextDocument>();
   openDocuments.forEach(d => openedFileUrisToDocuments.set(d.uri.path, d));
   const filesRes: AnalysisFile[] = [];
+  const totalFiles = fileUris.length;
+  let currentFile = 0;
   for (const fileUri of fileUris) {
+    if (cancelToken.isCancellationRequested) {
+      return [];
+    }
+    currentFile += 1;
+    progress.report({increment: 50.0 * currentFile / totalFiles});
     const fileStat = await vscode.workspace.fs.stat(fileUri);
     if (fileStat.size > HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT_BYTES) {
       logToSonarLintOutput(`File will not be analysed because it's too large: ${fileUri.path}`);
