@@ -6,12 +6,10 @@ pre code.hljs {
 code.hljs {
   padding: 3px 5px;
 }
-.hljs {
-  background: #fff;
-  color: #000;
-}
 .hljs-comment,
-.hljs-quote,
+.hljs-quote {
+  color: var(--vscode-issues-open);
+}
 .hljs-variable {
   color: var(--vscode-symbolIcon-variableForeground);
 }
@@ -20,7 +18,7 @@ code.hljs {
 .hljs-name,
 .hljs-selector-tag,
 .hljs-tag {
-  color: #00f;
+  color: var(--vscode-terminal-ansiBlue);
 }
 .hljs-addition,
 .hljs-attribute,
@@ -31,24 +29,24 @@ code.hljs {
 .hljs-template-variable,
 .hljs-title,
 .hljs-type {
-  color: #a31515;
+  color: var(--vscode-gitDecoration-stageDeletedResourceForeground);
 }
 .hljs-deletion,
 .hljs-meta,
 .hljs-selector-attr,
 .hljs-selector-pseudo {
-  color: #2b91af;
+  color: var(--vscode-terminal-ansiCyan);
 }
 .hljs-doctag {
-  color: grey;
+  color: var(--vscode-terminal-ansiBrightWhite);
 }
 .hljs-attr {
-  color: red;
+  color: var(--vscode-terminal-ansiBrightRed);
 }
 .hljs-bullet,
 .hljs-link,
 .hljs-symbol {
-  color: #00b0e8;
+  color: var(--vscode-tab-activeModifiedBorder);
 }
 .hljs-emphasis {
   font-style: italic;
