@@ -153,3 +153,55 @@ export function getQuickPickListItemsForWorkspaceFolders(
   }
   return quickPickItems;
 }
+
+
+export function globPatternToRegex(globPattern: string): RegExp {
+  const commonSuffixGlobFormat = /^\*\*\/\*\.[a-z0-9]{1,6}$/;
+  if (commonSuffixGlobFormat.test(globPattern)) {
+    const offsetForCommonGlobFormat = 5;
+    const suffix = globPattern.substring(offsetForCommonGlobFormat);
+    const regexStr = `\\.${suffix}$`;
+    return new RegExp(regexStr);
+  }
+  let regex = '';
+  const charsToEscape = new Set(['.', '+', '/']);
+  for (let i = 0; i < globPattern.length; i++) {
+    const c = globPattern.charAt(i);
+    if (charsToEscape.has(c)) {
+      regex += '\\' + c;
+    } else if (c === '*') {
+      const prev = globPattern.charAt(i - 1);
+      let asteriskCount = 1;
+      while (globPattern.charAt(i + 1) === '*') {
+        asteriskCount++;
+        i++;
+      }
+      const next = globPattern.charAt(i + 1);
+      const dirMatcher = isDirMatcher(asteriskCount, prev, next);
+      if (dirMatcher) {
+        regex += '((?:[^/]*(?:/|$))*)';
+        i++;
+      } else {
+        regex += '([^/]*)';
+      }
+    } else {
+      regex += c;
+    }
+  }
+  regex = `^${regex}$`;
+  return new RegExp(regex);
+}
+
+export function filterFilesBySuffixes(globPatterns: string[], allFiles: vscode.Uri[]) : vscode.Uri[] {
+  const masterRegex = getMasterRegex(globPatterns);
+  return allFiles.filter(f => masterRegex.test(f.path));
+}
+
+function isDirMatcher(asteriskCount: number, prev: string, next: string): boolean {
+  return asteriskCount > 1 && (prev === '/' || prev === undefined) && (next === '/' || next === undefined);
+}
+
+export function getMasterRegex(globPatterns: string[]) {
+  const regexes = globPatterns.map(p => globPatternToRegex(p).source);
+  return new RegExp(regexes.join('|'), 'gi');
+}

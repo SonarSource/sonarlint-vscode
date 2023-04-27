@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 import * as fs from 'fs';
 import * as path from 'path';
-import { runTests } from 'vscode-test';
+import { runTests } from '@vscode/test-electron';
 import { instrument } from './coverage';
 
 const XVFB_DISPLAY = ':10';
