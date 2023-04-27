@@ -757,6 +757,7 @@
     "luxon": "^3.2.1",
     "path-exists": "4.0.0",
     "properties": "1.2.1",
+    "underscore": "^1.13.6",
     "vscode-languageclient": "^8.0.2"
   },
   "devDependencies": {

@@ -8,6 +8,8 @@
 
 import * as ChildProcess from 'child_process';
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as _ from 'underscore';
 import { API, GitErrorCodes, GitExtension, Repository } from './git';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { isVerboseEnabled } from '../settings/settings';
@@ -55,9 +57,9 @@ class GitScm implements Scm {
   private readonly referenceBranchByFolderUri: Map<string, string>;
 
   constructor(
-      private readonly gitApi: API,
-      private readonly client: SonarLintExtendedLanguageClient,
-      private readonly referenceBranchStatusItem: vscode.StatusBarItem) {
+    private readonly gitApi: API,
+    private readonly client: SonarLintExtendedLanguageClient,
+    private readonly referenceBranchStatusItem: vscode.StatusBarItem) {
     this.listeners = [
       gitApi.onDidOpenRepository(r => {
         this.subscribeToRepositoryChanges(r);
@@ -69,7 +71,7 @@ class GitScm implements Scm {
       this.subscribeToAllRepositoryChanges();
     } else {
       gitApi.onDidChangeState(state => {
-        if(state === 'initialized') {
+        if (state === 'initialized') {
           this.subscribeToAllRepositoryChanges();
         }
       });
@@ -144,7 +146,7 @@ export function initScm(client: SonarLintExtendedLanguageClient, referenceBranch
   try {
     const gitApi = vscode.extensions.getExtension<GitExtension>(GIT_EXTENSION_ID).exports?.getAPI(GIT_API_VERSION);
     return new GitScm(gitApi, client, referenceBranchStatusItem);
-  } catch(e) {
+  } catch (e) {
     logToSonarLintOutput(`Exception occurred while initializing the Git API: ${e}`);
     return new NoopScm();
   }
@@ -173,6 +175,7 @@ export async function filterOutScmIgnoredFiles(
     return Promise.resolve(fileUris);
   }
   try {
+    let notIgnoredFiles = [];
     const gitApi = gitExtension.getAPI(1);
     const gitPath = gitApi.git.path;
     // assume all files are from the same git repo
@@ -182,29 +185,89 @@ export async function filterOutScmIgnoredFiles(
       logToSonarLintOutput(`There is no git repository, consider all files as not ignored`);
       return Promise.resolve(fileUris);
     }
-    const gitArgs = ['check-ignore', '-v', '-z', '--stdin'];
-    return await scmCheck(gitPath, gitArgs, repo.rootUri.fsPath, fileUris);
+    const repoFsPath = repo.rootUri.fsPath;
+    let filesInsideSubmodules = [];
+    let filesOutsideSubmodules = fileUris;
+
+    const submodulesPaths = await getSubmodulesPaths(gitPath, repoFsPath);
+    if (submodulesPaths) {
+      const fileGroups = _.groupBy(fileUris, function(fileUri: vscode.Uri) {
+        return submodulesPaths.some(submodulePath => fileUri.path.includes(submodulePath));
+      });
+      filesInsideSubmodules = fileGroups.true;
+      filesOutsideSubmodules = fileGroups.false;
+      notIgnoredFiles =
+        await notIgnoredFilesFromSubmodules(submodulesPaths, filesInsideSubmodules, repoFsPath, scmCheck, gitPath);
+    }
+    const checkIgnoreArgs = ['check-ignore', '-v', '-z', '--stdin'];
+    const notIgnoredFilesOutsideSubmodules =
+      await scmCheck(gitPath, checkIgnoreArgs, repoFsPath, filesOutsideSubmodules);
+    notIgnoredFiles = notIgnoredFiles.concat(notIgnoredFilesOutsideSubmodules);
+    return notIgnoredFiles;
   } catch (e) {
-    logToSonarLintOutput(`Error requesting ignored status, consider all files not ignored: \n ${e}`,);
+    logToSonarLintOutput(`Error requesting ignored status, consider all files not ignored: \n ${e}`);
     return Promise.resolve(fileUris);
   }
 }
 
-export async function filterIgnored(
-  gitPath: string, gitArgs: string[], workspaceFolderPath: string,
-  fileUris: vscode.Uri[]): Promise<vscode.Uri[]> {
-  const { sout, serr } = await new Promise<{ sout: string; serr: string }>(
+export async function notIgnoredFilesFromSubmodules(
+  submodulesPaths: string[], filesInsideSubmodules: vscode.Uri[], repoFsPath: string,
+  scmCheck: (gitPath: string, gitArgs: string[], workspaceFolderPath: string,
+             fileUris: vscode.Uri[]) => Promise<vscode.Uri[]>,
+  gitPath: string): Promise<vscode.Uri[]> {
+  let notIgnoredFiles = [];
+  const checkIgnoreArgs = ['check-ignore', '-v', '-z', '--stdin'];
+
+  for (const submodulePath of submodulesPaths) {
+    const filesInSubmodule = filesInsideSubmodules.filter(fileUri => fileUri.path.includes(submodulePath));
+    const submoduleRepoPath = getSubmoduleRepoPath(repoFsPath, submodulePath);
+    const notIgnoredFilesInSubmodule = await scmCheck(gitPath, checkIgnoreArgs, submoduleRepoPath, filesInSubmodule);
+    notIgnoredFiles = notIgnoredFiles.concat(notIgnoredFilesInSubmodule);
+  }
+  return notIgnoredFiles;
+}
+export function getSubmoduleRepoPath(repoFsPath: string, submodulePath: string) {
+  return `${repoFsPath}${path.sep}${submodulePath}`;
+}
+
+export async function getSubmodulesPaths(gitPath: string, repoPath: string): Promise<string[]> {
+  const gitArgs = ['config', '--file', '.gitmodules', '--get-regexp', 'path'];
+
+  try {
+    const result = await executeGitCommand(gitPath, gitArgs, repoPath, '\0');
+
+    if (result.serr) {
+      return Promise.resolve([]);
+    }
+
+    const raw = result.sout;
+    return raw.split('\n').map(value => value.split(/\s/g)[1]).filter(value => value);
+  } catch (e) {
+    if (isVerboseEnabled()) {
+      logToSonarLintOutput(`No submodules found in '${repoPath}' repository. Error: ${e}`);
+    }
+    return Promise.resolve([]);
+  }
+}
+
+interface GitResponse {
+  sout: string;
+  serr: string;
+}
+
+async function executeGitCommand(
+  gitPath: string,
+  gitArgs: string[],
+  workspaceFolderPath: string, stdIn): Promise<GitResponse> {
+  return await new Promise<GitResponse>(
     (resolve, reject) => {
       const child = ChildProcess.spawn(
         gitPath,
         gitArgs,
-        {cwd: workspaceFolderPath }
+        { cwd: workspaceFolderPath }
       );
       const onExit = (exitCode: number) => {
         if (exitCode === 1) {
-          if (isVerboseEnabled()) {
-            logToSonarLintOutput(`Error on git command "${gitArgs}": ${stderr}`);
-          }
           reject(stderr);
         } else if (exitCode === 0) {
           resolve({ sout: data, serr: stderr });
@@ -224,7 +287,7 @@ export async function filterIgnored(
       child.stdout.setEncoding('utf8');
       child.stdout.on('data', onStdoutData);
 
-      child.stdin.end(fileUris.map(it => it.fsPath).join('\0'), 'utf8');
+      child.stdin.end(stdIn, 'utf8');
       let stderr = '';
       child.stderr.setEncoding('utf8');
       child.stderr.on('data', raw => stderr += raw);
@@ -232,15 +295,28 @@ export async function filterIgnored(
       child.on('error', reject);
       child.on('exit', onExit);
     });
+}
 
-  if (serr) {
+export async function filterIgnored(
+  gitPath: string, gitArgs: string[], workspaceFolderPath: string,
+  fileUris: vscode.Uri[]): Promise<vscode.Uri[]> {
+  try {
+    const stdIn = fileUris.map(it => it.fsPath).join('\0');
+    const result = await executeGitCommand(gitPath, gitArgs, workspaceFolderPath, stdIn);
+    if (result.serr) {
+      return Promise.resolve(fileUris);
+    }
+
+    const ignoredFiles = parseIgnoreCheck(result.sout);
+    const notIgnoredFiles = fileUris
+      .filter(it => !ignoredFiles.has(it.fsPath));
+    return Promise.resolve(notIgnoredFiles);
+  } catch (e) {
+    if (isVerboseEnabled()) {
+      logToSonarLintOutput(`Error when detecting ignored files: ${e}`);
+    }
     return Promise.resolve(fileUris);
   }
-
-  const ignoredFiles = parseIgnoreCheck(sout);
-  const notIgnoredFiles = fileUris
-    .filter(it => !ignoredFiles.has(it.fsPath));
-  return Promise.resolve(notIgnoredFiles);
 }
 
 export function parseIgnoreCheck(raw: string): Set<string> {

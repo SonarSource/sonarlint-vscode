@@ -75,7 +75,6 @@ suite('util', () => {
       languageId: 'languageFromEditor'
   }];
     const analysisFiles = await createAnalysisFilesFromFileUris(fileUris, openDocuments);
-    analysisFiles.forEach(f => console.log(JSON.stringify(f)));
     expect(analysisFiles.length).to.equal(6);
     let inlineAnalysisResult = analysisFiles[0].text.replace(/(\r\n|\n|\r)/gm, "");
     expect(inlineAnalysisResult).to.equal('{    "sonarlint.testFilePattern": "**/test/samples/**/test/**",' +
