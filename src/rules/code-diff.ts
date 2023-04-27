@@ -17,14 +17,13 @@ function replaceInDom(current: HTMLElement, code: string) {
   current.replaceWith(markedCode);
 }
 
-function differentiateCode(compliant: string, nonCompliant: string) {
+export function differentiateCode(compliant: string, nonCompliant: string) {
   const hunks = diffLines(compliant, nonCompliant);
 
   let nonCompliantCode = '';
   let compliantCode = '';
 
   hunks.forEach(hunk => {
-    // const value = sanitizeString(hunk.value);
     if (!hunk.added && !hunk.removed) {
       nonCompliantCode += `<div>${hunk.value}</div>`;
       compliantCode += `<div>${hunk.value}</div>`;
@@ -41,7 +40,7 @@ function differentiateCode(compliant: string, nonCompliant: string) {
   return [nonCompliantCode, compliantCode];
 }
 
-function getExamplesFromDom(document) {
+export function getExamplesFromDom(document) {
   const pres = document.querySelectorAll(`pre[data-diff-id]`);
 
   return (

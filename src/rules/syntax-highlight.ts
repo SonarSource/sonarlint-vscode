@@ -16,7 +16,7 @@ function getDiffedCodeSnippetsToHighlight(doc) {
   return doc.querySelectorAll(`pre.code-difference-scrollable`);
 }
 
-function sonarToHighlightJsLanguageKeyMapping(sonarLanguageKey: string): string {
+export function sonarToHighlightJsLanguageKeyMapping(sonarLanguageKey: string): string {
   switch (sonarLanguageKey) {
     case 'web':
       return 'html';
