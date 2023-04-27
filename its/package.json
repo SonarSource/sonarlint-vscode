@@ -12,7 +12,7 @@
   "activationEvents": [
     "onCommand:extension.helloWorld"
   ],
-  "main": "./dist/extension.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
