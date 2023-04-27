@@ -12,7 +12,7 @@
   "activationEvents": [
     "onCommand:extension.helloWorld"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -53,3 +53,4 @@
     "bracketSpacing": true
   }
 }
+
