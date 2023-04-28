@@ -61,7 +61,7 @@ suite('util', () => {
 
     const files = await findFilesInFolder(folderUri);
 
-    expect(files.length).to.equal(6);
+    expect(files.length).to.equal(7);
   });
 
   test('should create analysis files from file uris', async () => {
@@ -71,12 +71,16 @@ suite('util', () => {
     const openDocuments: vscode.TextDocument[] = [{
       uri: fileUris[1],
       version: 11,
-      getText(): string { return 'text in editor' },
+      getText(): string {
+        return 'text in editor';
+      },
       languageId: 'languageFromEditor'
-  }];
+    }];
     const analysisFiles = await createAnalysisFilesFromFileUris(fileUris, openDocuments);
+
+    expect(fileUris.length).to.equal(7);
     expect(analysisFiles.length).to.equal(6);
-    let inlineAnalysisResult = analysisFiles[0].text.replace(/(\r\n|\n|\r)/gm, "");
+    let inlineAnalysisResult = analysisFiles[0].text.replace(/(\r\n|\n|\r)/gm, '');
     expect(inlineAnalysisResult).to.equal('{    "sonarlint.testFilePattern": "**/test/samples/**/test/**",' +
       '    "telemetry.enableTelemetry": false}');
     expect(analysisFiles[0].uri.endsWith('settings.json')).to.be.true;

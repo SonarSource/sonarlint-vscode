@@ -13,6 +13,7 @@ import * as process from 'process';
 import { AnalysisFile } from '../lsp/protocol';
 import { TextDecoder } from 'util';
 import { code2ProtocolConverter } from './uri';
+import { logToSonarLintOutput } from './logging';
 
 export function startedInDebugMode(process: NodeJS.Process): boolean {
   const args = process.execArgv;
@@ -24,6 +25,7 @@ export function startedInDebugMode(process: NodeJS.Process): boolean {
 
 export const extension = vscode.extensions.getExtension('SonarSource.sonarlint-vscode');
 export const packageJson = extension.packageJSON;
+export const HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT = 500000;
 
 export let extensionPath: string;
 export let extensionContext: vscode.ExtensionContext;
@@ -117,9 +119,13 @@ export async function createAnalysisFilesFromFileUris(
   fileUris: vscode.Uri[], openDocuments: vscode.TextDocument[]): Promise<AnalysisFile[]> {
   const openedFileUrisToDocuments = new Map<string, vscode.TextDocument>();
   openDocuments.forEach(d => openedFileUrisToDocuments.set(d.uri.path, d));
-
   const filesRes: AnalysisFile[] = [];
   for (const fileUri of fileUris) {
+    const fileStat = await vscode.workspace.fs.stat(fileUri);
+    if (fileStat.size > HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT) {
+      logToSonarLintOutput(`File will not be analysed because it's too large: ${fileUri.path}`);
+      continue;
+    }
     let fileContent;
     let version;
     const filePath = fileUri.path;
