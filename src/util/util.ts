@@ -25,7 +25,7 @@ export function startedInDebugMode(process: NodeJS.Process): boolean {
 
 export const extension = vscode.extensions.getExtension('SonarSource.sonarlint-vscode');
 export const packageJson = extension.packageJSON;
-export const HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT = 500000;
+export const HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT_BYTES = 500_000;
 
 export let extensionPath: string;
 export let extensionContext: vscode.ExtensionContext;
