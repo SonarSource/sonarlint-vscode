@@ -122,7 +122,7 @@ export async function createAnalysisFilesFromFileUris(
   const filesRes: AnalysisFile[] = [];
   for (const fileUri of fileUris) {
     const fileStat = await vscode.workspace.fs.stat(fileUri);
-    if (fileStat.size > HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT) {
+    if (fileStat.size > HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT_BYTES) {
       logToSonarLintOutput(`File will not be analysed because it's too large: ${fileUri.path}`);
       continue;
     }
