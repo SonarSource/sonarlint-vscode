@@ -72,7 +72,6 @@ function computeRuleDescPanelContent(
     <link rel="stylesheet" type="text/css" href="${styleSrc}" />
     <link rel="stylesheet" type="text/css" href="${hotspotSrc}" />
     <link rel="stylesheet" type="text/css" href="${hljsSrc}" />
-    <script type="text/javascript" src="/path/to/terraform.js"></script>
     </head>
     <body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
     <div>

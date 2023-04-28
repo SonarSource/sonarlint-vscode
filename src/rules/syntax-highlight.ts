@@ -23,11 +23,10 @@ export function sonarToHighlightJsLanguageKeyMapping(sonarLanguageKey: string): 
     case 'secrets':
       return 'markdown';
     case 'cloudformation':
+    case 'kubernetes':
       return 'yaml';
     case 'ipynb':
       return 'python';
-    case 'kubernetes':
-      return 'yaml';
     default:
       return sonarLanguageKey;
   }

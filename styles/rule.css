@@ -125,21 +125,19 @@ pre {
   padding-right:5px;
 }
 
-
-.code-difference-scrollable .code-removed {
-  background-color: var(--vscode-diffEditor-removedLineBackground);
+.code-diff {
   padding-left: 1.5rem;
   margin-left: -1.5rem;
   margin-right: -1.5rem;
   border-radius: 0px;
 }
 
+.code-difference-scrollable .code-removed {
+  background-color: var(--vscode-diffEditor-removedLineBackground);
+}
+
 .code-difference-scrollable .code-added {
   background-color: var(--vscode-diffEditor-insertedLineBackground);
-  padding-left: 1.5rem;
-  margin-left: -1.5rem;
-  margin-right: -1.5rem;
-  border-radius: 0px;
 }
 
 .code-difference-scrollable {

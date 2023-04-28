@@ -15,6 +15,7 @@ const PARENT_PRE_TAG_CLASS = 'code-difference-scrollable';
 const CODE_DIFF_CONTAINER_CLASS = 'code-difference-container';
 const CODE_ADDED_CLASS = 'code-added';
 const CODE_REMOVED_CLASS = 'code-removed';
+const CODE_DIFF_GENERAL_CLASS = 'code-diff';
 
 function replaceInDom(current: HTMLElement, code: string) {
   const markedCode = new HTMLElement('pre', { class: PARENT_PRE_TAG_CLASS }, '', current, null);
@@ -37,11 +38,11 @@ export function differentiateCode(compliant: string, nonCompliant: string) {
     }
 
     if (hunk.added) {
-      compliantCode += `<div class='${CODE_ADDED_CLASS}'>${hunk.value}</div>`;
+      compliantCode += `<div class='${CODE_DIFF_GENERAL_CLASS} ${CODE_ADDED_CLASS}'>${hunk.value}</div>`;
     }
 
     if (hunk.removed) {
-      nonCompliantCode += `<div class='${CODE_REMOVED_CLASS}'>${hunk.value}</div>`;
+      nonCompliantCode += `<div class='${CODE_DIFF_GENERAL_CLASS} ${CODE_REMOVED_CLASS}'>${hunk.value}</div>`;
     }
   });
   return [nonCompliantCode, compliantCode];

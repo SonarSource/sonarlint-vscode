@@ -112,8 +112,8 @@ suite('Code diff', () => {
 
       const diffResult = differentiateCode(compliant, noncompliant);
       const expectedResult = [
-        "<div>aaa\n</div><div class='code-removed'>bbb\n</div><div>ccc\n</div>",
-        "<div>aaa\n</div><div class='code-added'>ddd\n</div><div>ccc\n</div>"
+        "<div>aaa\n</div><div class='code-diff code-removed'>bbb\n</div><div>ccc\n</div>",
+        "<div>aaa\n</div><div class='code-diff code-added'>ddd\n</div><div>ccc\n</div>"
       ];
 
       expect(diffResult[0]).to.equal(expectedResult[0]);
@@ -156,13 +156,13 @@ suite('Code diff', () => {
       '<pre class="code-difference-scrollable"><div class="code-difference-container"><div>\n' +
       'aaa\n' +
       'bbb\n' +
-      "</div><div class='code-removed'>ddd\n" +
+      "</div><div class='code-diff code-removed'>ddd\n" +
       '</div></div></pre>\n' +
       '<h4>Compliant solution</h4>\n' +
       '<pre class="code-difference-scrollable"><div class="code-difference-container"><div>\n' +
       'aaa\n' +
       'bbb\n' +
-      "</div><div class='code-added'>ccc</div></div></pre>\n" +
+      "</div><div class='code-diff code-added'>ccc</div></div></pre>\n" +
       '<h3>How does this work?</h3>\n' +
       '<p>Untrusted data, suc session cookie to untrusted data.</p>\n' +
       '<p>Session .<br> Often</p>';
