@@ -40,10 +40,15 @@ a {
   border-radius: 3px;
   white-space: nowrap;
 }
-.rule-desc pre {
+
+pre {
   padding: 10px;
-  border-top: 1px solid rgba(230, 230, 230, 0.1);
-  border-bottom: 1px solid rgba(230, 230, 230, 0.1);
+  background-color: var(--vscode-sideBar-background);
+  border-radius: 8px;
+  border: 1px solid var(--vscode-editor-lineHighlightBorder);
+}
+
+.rule-desc pre {
   line-height: 18px;
   overflow: auto;
 }
@@ -118,4 +123,29 @@ a {
   content: "\2717";
   color: var(--vscode-testing-iconFailed);
   padding-right:5px;
+}
+
+.code-diff {
+  padding-left: 1.5rem;
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
+  border-radius: 0px;
+}
+
+.code-difference-scrollable .code-removed {
+  background-color: var(--vscode-diffEditor-removedLineBackground);
+}
+
+.code-difference-scrollable .code-added {
+  background-color: var(--vscode-diffEditor-insertedLineBackground);
+}
+
+.code-difference-scrollable {
+  background-color: var(--vscode-sideBar-background);
+  border-radius: 8px;
+  border: 1px solid var(--vscode-editor-lineHighlightBorder);
+  padding: 16px;
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow-x: auto;
 }

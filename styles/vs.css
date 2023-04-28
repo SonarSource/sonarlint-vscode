@@ -1,0 +1,56 @@
+pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 1em;
+}
+code.hljs {
+  padding: 3px 5px;
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--vscode-issues-open);
+}
+.hljs-variable {
+  color: var(--vscode-symbolIcon-variableForeground);
+}
+.hljs-built_in,
+.hljs-keyword,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-tag {
+  color: var(--vscode-terminal-ansiBlue);
+}
+.hljs-addition,
+.hljs-attribute,
+.hljs-literal,
+.hljs-section,
+.hljs-string,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-title,
+.hljs-type {
+  color: var(--vscode-gitDecoration-stageDeletedResourceForeground);
+}
+.hljs-deletion,
+.hljs-meta,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: var(--vscode-terminal-ansiCyan);
+}
+.hljs-doctag {
+  color: var(--vscode-terminal-ansiBrightWhite);
+}
+.hljs-attr {
+  color: var(--vscode-terminal-ansiBrightRed);
+}
+.hljs-bullet,
+.hljs-link,
+.hljs-symbol {
+  color: var(--vscode-tab-activeModifiedBorder);
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 700;
+}

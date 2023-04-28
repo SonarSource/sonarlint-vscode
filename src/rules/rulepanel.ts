@@ -10,6 +10,8 @@ import * as VSCode from 'vscode';
 import { ShowRuleDescriptionParams } from '../lsp/protocol';
 import * as util from '../util/util';
 import { clean, escapeHtml, ResourceResolver } from '../util/webview';
+import { decorateContextualHtmlContentWithDiff } from './code-diff';
+import { highlightAllCodeSnippetsInDesc } from './syntax-highlight';
 
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 
@@ -49,6 +51,7 @@ function computeRuleDescPanelContent(
 ) {
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'rule.css');
+  const hljsSrc = resolver.resolve('styles', 'vs.css');
   const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
   const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severity.toLowerCase()}.png`);
   const typeImgSrc = resolver.resolve('images', 'type', `${rule.type.toLowerCase()}.png`);
@@ -68,6 +71,7 @@ function computeRuleDescPanelContent(
       content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}"/>
     <link rel="stylesheet" type="text/css" href="${styleSrc}" />
     <link rel="stylesheet" type="text/css" href="${hotspotSrc}" />
+    <link rel="stylesheet" type="text/css" href="${hljsSrc}" />
     </head>
     <body><h1><big>${escapeHtml(rule.name)}</big> (${rule.key})</h1>
     <div>
@@ -113,15 +117,20 @@ export function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc:
 
 export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
   if (rule.htmlDescriptionTabs.length === 0) {
-    return `<div class="rule-desc">${rule.htmlDescription}</div>`;
+    const newDesc = highlightAllCodeSnippetsInDesc(rule.htmlDescription, rule.languageKey, false);
+    return `<div class="rule-desc">${newDesc}</div>`;
   } else {
     const tabsContent = rule.htmlDescriptionTabs
       .map((tab, index) => {
         let content;
         if (tab.hasContextualInformation) {
-          content = computeTabContextualDescription(tab);
+          content = computeTabContextualDescription(tab, rule.languageKey);
         } else {
-          content = tab.ruleDescriptionTabNonContextual.htmlContent;
+          content = highlightAllCodeSnippetsInDesc(
+            decorateContextualHtmlContentWithDiff(tab.ruleDescriptionTabNonContextual.htmlContent),
+            rule.languageKey,
+            true
+          );
         }
         return `<input type="radio" name="tabs" id="tab-${index}" ${index === 0 ? 'checked="checked"' : ''}>
         <label for="tab-${index}" class="tabLabel">${tab.title}</label>
@@ -134,23 +143,28 @@ export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
   }
 }
 
-function computeTabContextualDescription(tab) {
+function computeTabContextualDescription(tab, languageKey) {
   const defaultContextKey = tab.defaultContextKey ? tab.defaultContextKey : 'others';
   const contextRadioButtons = tab.ruleDescriptionTabContextual.map((contextualDescription, contextIndex) => {
     const checked = isChecked(contextualDescription, defaultContextKey);
+    const newContent = highlightAllCodeSnippetsInDesc(
+      decorateContextualHtmlContentWithDiff(contextualDescription.htmlContent),
+      languageKey,
+      true
+    );
     return `<input type="radio" name="contextualTabs" id="context-${contextIndex}"
                         class="contextualTab" ${checked}>
               <label for="context-${contextIndex}" class="contextLabel">${contextualDescription.displayName}</label>
               <section class="tab">
               <h4>${computeHeading(tab, contextualDescription)}</h4>
-              ${contextualDescription.htmlContent}
+              ${newContent}
               </section>`;
   });
   return contextRadioButtons.join('');
 }
 
 function isChecked(contextualDescription, defaultContextKey) {
-  if(`${contextualDescription.contextKey}` === defaultContextKey) {
+  if (`${contextualDescription.contextKey}` === defaultContextKey) {
     return 'checked="checked"';
   }
   return '';
