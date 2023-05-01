@@ -259,18 +259,20 @@ async function executeGitCommand(
   gitPath: string,
   gitArgs: string[],
   workspaceFolderPath: string, stdIn): Promise<GitResponse> {
+  let stderr = '';
+  let stdout = '';
   return new Promise<GitResponse>(
     (resolve, reject) => {
       const onExit = (exitCode: number) => {
         if (exitCode === 1) {
           reject(stderr);
         } else if (exitCode === 0) {
-          resolve({ sout: data, serr: stderr });
+          resolve({ sout: stdout, serr: stderr });
         } else {
           if (/ is in submodule /.test(stderr)) {
-            reject({ stdout: data, stderr, exitCode, gitErrorCode: GitErrorCodes.IsInSubmodule });
+            reject({ stdout, stderr, exitCode, gitErrorCode: GitErrorCodes.IsInSubmodule });
           } else {
-            reject({ stdout: data, stderr, exitCode });
+            reject({ stdout, stderr, exitCode });
           }
         }
       };
@@ -280,20 +282,18 @@ async function executeGitCommand(
         { cwd: workspaceFolderPath }
       );
 
-      let data = '';
+      child.on('error', reject);
+      child.on('exit', onExit);
+
       const onStdoutData = (raw: string) => {
-        data += raw;
+        stdout += raw;
       };
 
       child.stdout.setEncoding('utf8');
       child.stdout.on('data', onStdoutData);
 
-      let stderr = '';
       child.stderr.setEncoding('utf8');
       child.stderr.on('data', raw => stderr += raw);
-      child.on('error', reject);
-
-      child.on('exit', onExit);
 
       child.stdin.end(stdIn, 'utf8');
     });

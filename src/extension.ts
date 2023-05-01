@@ -214,7 +214,8 @@ export async function activate(context: VSCode.ExtensionContext) {
   ConnectionSettingsService.init(context, languageClient);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
-  migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance);
+  migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance)
+    .catch(e => { /* ignored */ });
 
   installCustomRequestHandlers(context);
 
