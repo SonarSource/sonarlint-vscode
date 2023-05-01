@@ -32,6 +32,11 @@ export function run(): Promise<void> {
         return e(err);
       }
 
+      // Make sure that extension.test.ts is the first to run
+      const mainExtensionIndex = files.indexOf('suite/extension.test.js');
+      files.splice(mainExtensionIndex, 1);
+      files.unshift('suite/extension.test.js');
+
       // Add files to the test suite
       files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
 

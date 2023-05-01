@@ -259,13 +259,8 @@ async function executeGitCommand(
   gitPath: string,
   gitArgs: string[],
   workspaceFolderPath: string, stdIn): Promise<GitResponse> {
-  return await new Promise<GitResponse>(
+  return new Promise<GitResponse>(
     (resolve, reject) => {
-      const child = ChildProcess.spawn(
-        gitPath,
-        gitArgs,
-        { cwd: workspaceFolderPath }
-      );
       const onExit = (exitCode: number) => {
         if (exitCode === 1) {
           reject(stderr);
@@ -279,6 +274,12 @@ async function executeGitCommand(
           }
         }
       };
+      const child = ChildProcess.spawn(
+        gitPath,
+        gitArgs,
+        { cwd: workspaceFolderPath }
+      );
+
       let data = '';
       const onStdoutData = (raw: string) => {
         data += raw;
@@ -287,13 +288,14 @@ async function executeGitCommand(
       child.stdout.setEncoding('utf8');
       child.stdout.on('data', onStdoutData);
 
-      child.stdin.end(stdIn, 'utf8');
       let stderr = '';
       child.stderr.setEncoding('utf8');
       child.stderr.on('data', raw => stderr += raw);
-
       child.on('error', reject);
+
       child.on('exit', onExit);
+
+      child.stdin.end(stdIn, 'utf8');
     });
 }
 
