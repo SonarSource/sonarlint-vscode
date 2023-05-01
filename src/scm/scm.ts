@@ -12,8 +12,12 @@ import * as path from 'path';
 import * as _ from 'underscore';
 import { API, GitErrorCodes, GitExtension, Repository } from './git';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { isVerboseEnabled } from '../settings/settings';
-import { logToSonarLintOutput } from '../util/logging';
+import {
+  logGitCheckIgnoredError,
+  logNoSubmodulesFound,
+  logToSonarLintOutput,
+  verboseLogToSonarLintOutput
+} from '../util/logging';
 
 const GIT_EXTENSION_ID = 'vscode.git';
 const GIT_API_VERSION = 1;
@@ -88,7 +92,7 @@ class GitScm implements Scm {
     this.gitApi.repositories.forEach(this.subscribeToRepositoryChanges, this);
     vscode.workspace.workspaceFolders?.forEach(folder => {
       const branchName = this.gitApi.getRepository(folder.uri)?.state.HEAD?.name;
-      logToSonarLintOutput(`Initializing ${folder.uri} on branch ${branchName}`);
+      verboseLogToSonarLintOutput(`Initializing ${folder.uri} on branch ${branchName}`);
       this.localBranchByFolderUri.set(folder.uri.toString(), branchName);
       this.client.didLocalBranchNameChange(folder.uri, branchName);
     });
@@ -101,7 +105,7 @@ class GitScm implements Scm {
         if (folderUriAsString.startsWith(repository.rootUri.toString())) {
           const branchName = repository.state.HEAD?.name;
           if (this.localBranchByFolderUri.get(folderUriAsString) !== branchName) {
-            logToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
+            verboseLogToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
             this.client.didLocalBranchNameChange(folder.uri, branchName);
           }
         }
@@ -184,7 +188,7 @@ export async function filterOutScmIgnoredFiles(
     const firstFileUri = fileUris[0];
     const repo = gitApi.getRepository(firstFileUri);
     if (!repo) {
-      logToSonarLintOutput(`There is no git repository, consider all files as not ignored`);
+      verboseLogToSonarLintOutput(`There is no git repository, consider all files as not ignored`);
       return fileUris;
     }
     const repoFsPath = repo.rootUri.fsPath;
@@ -207,7 +211,7 @@ export async function filterOutScmIgnoredFiles(
     notIgnoredFiles.push(...notIgnoredFilesOutsideSubmodules);
     return notIgnoredFiles;
   } catch (e) {
-    logToSonarLintOutput(`Error requesting ignored status, consider all files not ignored: \n ${e}`);
+    verboseLogToSonarLintOutput(`Error requesting ignored status, consider all files not ignored: \n ${e}`);
     return fileUris;
   }
 }
@@ -239,15 +243,14 @@ export async function getSubmodulesPaths(gitPath: string, repoPath: string): Pro
     const result = await executeGitCommand(gitPath, gitArgs, repoPath, '\0');
 
     if (result.stderr) {
+      logNoSubmodulesFound(repoPath, result.stderr);
       return Promise.resolve([]);
     }
 
     const raw = result.stdout;
     return raw.split('\n').map(value => value.split(/\s/g)[1]).filter(value => value);
   } catch (e) {
-    if (isVerboseEnabled()) {
-      logToSonarLintOutput(`No submodules found in '${repoPath}' repository. Error: ${e}`);
-    }
+    logNoSubmodulesFound(repoPath, e);
     return Promise.resolve([]);
   }
 }
@@ -321,15 +324,14 @@ export async function filterIgnored(
     const stdIn = fileUris.map(it => it.fsPath).join('\0');
     const result = await executeGitCommand(gitPath, gitArgs, workspaceFolderPath, stdIn);
     if (result.stderr) {
+      logGitCheckIgnoredError(result.stderr);
       return fileUris;
     }
 
     const ignoredFiles = parseIgnoreCheck(result.stdout);
     return fileUris.filter(it => !ignoredFiles.has(it.fsPath));
   } catch (e) {
-    if (isVerboseEnabled()) {
-      logToSonarLintOutput(`Error when detecting ignored files: ${e}`);
-    }
+    logGitCheckIgnoredError(e);
     return fileUris;
   }
 }
