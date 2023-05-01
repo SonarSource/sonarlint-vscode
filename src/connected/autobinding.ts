@@ -67,7 +67,7 @@ export class AutoBindingService {
     const foldersNotToAutoBound = this.getFoldersThatShouldNotBeAutoBound();
     Object.keys(bindingSuggestions).forEach((folderUri) => {
       const workspaceFolder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(folderUri));
-      if (!foldersNotToAutoBound.includes(workspaceFolder.uri.toString())) {
+      if (workspaceFolder && !foldersNotToAutoBound.includes(workspaceFolder.uri.toString())) {
         this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
       }
     });
