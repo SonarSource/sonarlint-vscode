@@ -228,7 +228,8 @@ export async function notIgnoredFilesFromSubmodules(
   return notIgnoredFiles;
 }
 export function getSubmoduleRepoPath(repoFsPath: string, submodulePath: string) {
-  return path.join(repoFsPath, submodulePath);
+  // Cannot use path.join due to Git internals
+  return `${repoFsPath}${path.sep}${submodulePath}`;
 }
 
 export async function getSubmodulesPaths(gitPath: string, repoPath: string): Promise<string[]> {
