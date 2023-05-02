@@ -141,9 +141,9 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
 
   triggerRefresh() {
     this.refreshTimeout = null;
-    this.cleanupHotspotsCache().then(() => {
-      this._onDidChangeTreeData.fire(null);
-    });
+    this.cleanupHotspotsCache()
+      .then(() => this._onDidChangeTreeData.fire(null))
+      .catch(() => this._onDidChangeTreeData.fire(null));
   }
 
   countAllHotspots() {
