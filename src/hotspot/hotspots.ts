@@ -7,9 +7,10 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
+import { SINGLE_LOCATION_DECORATION, isValidRange } from '../location/locations';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { AnalysisFile, Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
+import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 import { Commands } from '../util/commands';
 import { verboseLogToSonarLintOutput } from '../util/logging';
 import {
@@ -34,7 +35,6 @@ import {
   HotspotReviewPriority,
   HotspotTreeViewItem
 } from './hotspotsTreeDataProvider';
-import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
@@ -289,6 +289,9 @@ export async function getFilesForHotspotsScan(
   const shouldAnalyze = await filesCountCheck(notIgnoredFiles.length, tooManyFilesConfirmation);
   if (!shouldAnalyze) {
     return Promise.resolve([]);
+  }
+  if (cancelToken.isCancellationRequested) {
+    return [];
   }
   const openDocuments = vscode.window.visibleTextEditors.map(e => e.document);
   if (cancelToken.isCancellationRequested) {

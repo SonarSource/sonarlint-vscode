@@ -8,7 +8,6 @@
 
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { Position, Selection } from 'vscode';
 import { Commands } from '../../src/util/commands';
 import {
   diagnosticSeverity,
@@ -23,6 +22,7 @@ import {
   HotspotReviewPriority,
   HotspotTreeViewItem
 } from '../../src/hotspot/hotspotsTreeDataProvider';
+import { Position, Selection } from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { expect } from 'chai';
 import * as path from 'path';
