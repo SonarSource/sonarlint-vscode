@@ -33,12 +33,12 @@ export async function waitForSonarLintDiagnostics(fileUri: vscode.Uri, options?:
 }
 
 export function dumpLogOutput() {
-  vscode.workspace.textDocuments.forEach(t => {
-    if (t.languageId === 'Log') {
+  vscode.workspace.textDocuments
+    .filter(t => t.languageId === 'Log')
+    .forEach(t => {
       console.log(t.fileName);
       console.log(t.getText());
-    }
-  });
+    });
 }
 
 function getSonarLintDiagnostics(fileUri: vscode.Uri) {

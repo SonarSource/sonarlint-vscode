@@ -17,6 +17,11 @@ import { sampleFolderLocation } from './commons';
 
 suite('Extension Test Suite', () => {
 
+  suiteSetup('wait for extension activation', async function() {
+    this.timeout(60_000);
+    await util.extension.activate();
+  });
+
   setup(async () => {
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     await vscode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT);
@@ -24,14 +29,6 @@ suite('Extension Test Suite', () => {
 
   test('Extension should be present', () => {
     assert.ok(util.extension);
-  });
-
-  test('should activate', function() {
-    this.timeout(60 * 1000);
-    return util.extension.activate()
-      .then(() => {
-        assert.ok(true);
-      });
   });
 
   test('should report issue on single js file', async function() {

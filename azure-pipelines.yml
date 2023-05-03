@@ -139,6 +139,7 @@ stages:
             customCommand: run test-cov
           env:
             NODE_ENV : 'continuous-integration'
+            JAVA_HOME : $(JAVA_HOME_17_X64)
         - task: PublishTestResults@2
           condition: succeededOrFailed()
           inputs:

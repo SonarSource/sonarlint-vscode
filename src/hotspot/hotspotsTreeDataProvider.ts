@@ -1,3 +1,12 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2023 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+'use strict';
+
+import Timeout = NodeJS.Timeout;
 import * as VSCode from 'vscode';
 import { ProviderResult, TextDocument, ThemeColor, ThemeIcon } from 'vscode';
 import { Diagnostic, PublishHotspotsForFileParams } from '../lsp/protocol';
@@ -13,6 +22,8 @@ import { OPEN_HOTSPOT_IN_IDE_SOURCE } from './hotspots';
 const SONARLINT_SOURCE = 'sonarlint';
 const SONARQUBE_SOURCE = 'sonarqube';
 const SONARCLOUD_SOURCE = 'sonarcloud';
+
+const REFRESH_DELAY_MS = 500;
 
 export enum HotspotReviewPriority {
   High = 1,
@@ -95,8 +106,10 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   public fileHotspotsCache = new Map<string, Diagnostic[]>();
   private readonly filesWithHotspots = new Map<string, FileGroup>();
   private showMode: ShowMode;
+  private refreshTimeout: Timeout;
 
   constructor(private readonly connectionSettingsService: ConnectionSettingsService) {
+    this.refreshTimeout = null;
     this.updateContextShowMode('OpenFiles');
   }
 
@@ -121,8 +134,16 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
         this.fileHotspotsCache.delete(hotspotsPerFile.uri);
       }
     }
-    await this.cleanupHotspotsCache();
-    this._onDidChangeTreeData.fire(null);
+    if (this.refreshTimeout === null) {
+      this.refreshTimeout = setTimeout(() => this.triggerRefresh(), REFRESH_DELAY_MS);
+    }
+  }
+
+  triggerRefresh() {
+    this.refreshTimeout = null;
+    this.cleanupHotspotsCache()
+      .then(() => this._onDidChangeTreeData.fire(null))
+      .catch(() => this._onDidChangeTreeData.fire(null));
   }
 
   countAllHotspots() {

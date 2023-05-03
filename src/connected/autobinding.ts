@@ -67,7 +67,7 @@ export class AutoBindingService {
     const foldersNotToAutoBound = this.getFoldersThatShouldNotBeAutoBound();
     Object.keys(bindingSuggestions).forEach((folderUri) => {
       const workspaceFolder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(folderUri));
-      if (!foldersNotToAutoBound.includes(workspaceFolder.uri.toString())) {
+      if (workspaceFolder && !foldersNotToAutoBound.includes(workspaceFolder.uri.toString())) {
         this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
       }
     });
@@ -82,7 +82,7 @@ export class AutoBindingService {
   async findFileByNameInFolderRequest(params: FindFileByNamesInFolderParams) {
     const folderUri = VSCode.Uri.parse(params.folderUri);
     const foundFiles = await Promise.all(
-      params.filenames.map(fileName => AutoBindingService.instance.findFileInFolder(fileName, folderUri))
+      params.filenames.map(fileName => this.findFileInFolder(fileName, folderUri))
     );
 
     return { foundFiles: foundFiles.filter(r => r !== null) };

@@ -7,27 +7,29 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Commands } from '../util/commands';
-import { computeHotspotContextPanelContent } from './hotspotContextPanel';
+import { SINGLE_LOCATION_DECORATION, isValidRange } from '../location/locations';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { AnalysisFile, Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
+import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
+import { Commands } from '../util/commands';
 import { logToSonarLintOutput } from '../util/logging';
+import { noWorkspaceFolderToScanMessage } from '../util/showMessage';
+import { code2ProtocolConverter, getUriFromRelativePath } from '../util/uri';
 import {
   createAnalysisFilesFromFileUris, filterFilesBySuffixes,
   findFilesInFolder,
   getQuickPickListItemsForWorkspaceFolders,
   resolveExtensionFile
 } from '../util/util';
+import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import {
   AllHotspotsTreeDataProvider,
   HotspotNode,
   HotspotReviewPriority,
   HotspotTreeViewItem
 } from './hotspotsTreeDataProvider';
-import { code2ProtocolConverter, getUriFromRelativePath } from '../util/uri';
-import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
-import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { noWorkspaceFolderToScanMessage } from '../util/showMessage';
-import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
+
+export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
 export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
 
@@ -181,8 +183,17 @@ export const highlightLocation = async editor => {
 export async function getFilesForHotspotsAndLaunchScan(folderUri: vscode.Uri,
                                                 languageClient: SonarLintExtendedLanguageClient): Promise<void> {
   const response = await languageClient.getFilePatternsForAnalysis(folderUri.path);
-  const files = await getFilesForHotspotsScan(folderUri, response.patterns);
-  launchScanForHotspots(languageClient, folderUri, files);
+  return vscode.window.withProgress(
+    { title: 'Preparing Files to Scan', location: { viewId: HOTSPOTS_VIEW_ID }, cancellable: true },
+      async (progress, cancelToken) => {
+        const files = await getFilesForHotspotsScan(folderUri, response.patterns, progress, cancelToken);
+        if (cancelToken.isCancellationRequested) {
+          return;
+        }
+        launchScanForHotspots(languageClient, folderUri, files);
+        progress.report({increment: 100});
+      }
+    );
 }
 
 export async function useProvidedFolderOrPickManuallyAndScan(
@@ -229,10 +240,30 @@ function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
   );
 }
 
-export async function getFilesForHotspotsScan(folderUri: vscode.Uri, globPatterns: string[]): Promise<AnalysisFile[]> {
-  const allFiles = await findFilesInFolder(folderUri);
+export async function getFilesForHotspotsScan(
+  folderUri: vscode.Uri,
+  globPatterns: string[],
+  progress: vscode.Progress<{
+    message?: string;
+    increment?: number;
+  }>,
+  cancelToken: vscode.CancellationToken
+): Promise<AnalysisFile[]> {
+  const allFiles = await findFilesInFolder(folderUri, cancelToken);
+  if (cancelToken.isCancellationRequested) {
+    return [];
+  }
   const filesWithKnownSuffixes = filterFilesBySuffixes(globPatterns, allFiles);
+  if (cancelToken.isCancellationRequested) {
+    return [];
+  }
   const notIgnoredFiles = await filterOutScmIgnoredFiles(filesWithKnownSuffixes, filterIgnored);
+  if (cancelToken.isCancellationRequested) {
+    return [];
+  }
   const openDocuments = vscode.window.visibleTextEditors.map(e => e.document);
-  return await createAnalysisFilesFromFileUris(notIgnoredFiles, openDocuments);
+  if (cancelToken.isCancellationRequested) {
+    return [];
+  }
+  return await createAnalysisFilesFromFileUris(notIgnoredFiles, openDocuments, progress, cancelToken);
 }

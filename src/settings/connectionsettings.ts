@@ -158,7 +158,7 @@ export class ConnectionSettingsService {
       delete connectionToUpdate.disableNotifications;
     }
     await this.storeConnectionToken(connection, connection.token);
-    this.client.onTokenUpdate();
+    await this.client.onTokenUpdate();
     delete connectionToUpdate.token;
     VSCode.workspace
       .getConfiguration()
@@ -210,7 +210,7 @@ export class ConnectionSettingsService {
       delete connectionToUpdate.disableNotifications;
     }
     await this.storeConnectionToken(connection, connection.token);
-    this.client.onTokenUpdate();
+    await this.client.onTokenUpdate();
     delete connectionToUpdate.token;
     VSCode.workspace
       .getConfiguration()
