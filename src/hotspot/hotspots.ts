@@ -288,7 +288,7 @@ export async function getFilesForHotspotsScan(
   }
   const shouldAnalyze = await filesCountCheck(notIgnoredFiles.length, tooManyFilesConfirmation);
   if (!shouldAnalyze) {
-    return Promise.resolve([]);
+    return [];
   }
   if (cancelToken.isCancellationRequested) {
     return [];
