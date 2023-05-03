@@ -18,6 +18,8 @@ import {
   protocol2CodeConverter
 } from '../util/uri';
 import { OPEN_HOTSPOT_IN_IDE_SOURCE } from './hotspots';
+import { logToSonarLintOutput } from '../util/logging';
+import { isVerboseEnabled } from '../settings/settings';
 
 const SONARLINT_SOURCE = 'sonarlint';
 const SONARQUBE_SOURCE = 'sonarqube';
@@ -143,7 +145,10 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     this.refreshTimeout = null;
     this.cleanupHotspotsCache()
       .then(() => this._onDidChangeTreeData.fire(null))
-      .catch(() => this._onDidChangeTreeData.fire(null));
+      .catch(e => {
+        logToSonarLintOutput(`Error refreshing hotspots: ${e}`);
+        this._onDidChangeTreeData.fire(null);
+      });
   }
 
   countAllHotspots() {
@@ -191,6 +196,9 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   }
 
   getHotspotsForFile(fileUri: string, contextValue: string): HotspotNode[] {
+    if (!this.fileHotspotsCache.has(fileUri)) {
+      return [];
+    }
     return this.fileHotspotsCache
       .get(fileUri)
       .filter(h => {
@@ -310,17 +318,21 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
 
   private async cleanupHotspotsCache() {
     for (const fullFileUri of this.fileHotspotsCache.keys()) {
+      const vscodeUri = VSCode.Uri.parse(fullFileUri);
       const fileName = getFileNameFromFullPath(fullFileUri);
       const relativeFilePath = getRelativePathFromFullPath(
         fullFileUri,
-        VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(fullFileUri)),
+        VSCode.workspace.getWorkspaceFolder(vscodeUri),
         false
       );
-      const foundFileUris = await VSCode.workspace.findFiles(`**/${fileName}`);
-      const vscodeUri = VSCode.Uri.parse(fullFileUri);
+      const fullPathInfolder = `${relativeFilePath}${fileName}`;
+      const foundFileUris = await VSCode.workspace.findFiles(fullPathInfolder);
       if (!foundFileUris.some(file => file.path === vscodeUri.path)) {
+        if (isVerboseEnabled()) {
+          logToSonarLintOutput(`Removing unknown file ${fullPathInfolder} from hotspot cache`);
+        }
         this.fileHotspotsCache.delete(fullFileUri);
-        this.filesWithHotspots.delete(`${relativeFilePath}${fileName}`);
+        this.filesWithHotspots.delete(fullPathInfolder);
       }
     }
   }
