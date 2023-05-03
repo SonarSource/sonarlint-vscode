@@ -11,8 +11,8 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import {
   createAnalysisFilesFromFileUris,
-  filterFilesBySuffixes,
   findFilesInFolder,
+  getFilesMatchedGlobPatterns, getFilesNotMatchedGlobPatterns, getIdeFileExclusions,
   getMasterRegex,
   getQuickPickListItemsForWorkspaceFolders,
   globPatternToRegex,
@@ -117,17 +117,17 @@ suite('util', () => {
 
   test('should convert glob pattern to regex', async () => {
     expect(globPatternToRegex('**/*.java').source).to.equal('\\.java$')
-    expect(globPatternToRegex('**/*.c++').source).to.equal('^([^/]*)\\/([^/]*)\\.c\\+\\+$')
-    expect(globPatternToRegex('**/**/*.c++').source).to.equal('^([^/]*)\\/((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$')
-    expect(globPatternToRegex('/**').source).to.equal('^\\/([^/]*)$')
+    expect(globPatternToRegex('**/*.c++').source).to.equal('^((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$')
+    expect(globPatternToRegex('**/**/*.c++').source).to.equal('^((?:[^/]*(?:\\/|$))*)((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$')
+    expect(globPatternToRegex('/**').source).to.equal('^\\/((?:[^/]*(?:\\/|$))*)$')
   });
 
   test('should build master regex pattern from array of glob patterns', async () => {
     const masterRegex = getMasterRegex(['**/*.java', '**/*.php', '**/*.c++']);
-    expect(masterRegex.source).to.equal('\\.java$|\\.php$|^([^/]*)\\/([^/]*)\\.c\\+\\+$');
+    expect(masterRegex.source).to.equal('\\.java$|\\.php$|^((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$');
   });
 
-  test('should filter files by suffixes', async () => {
+  test('should filter files by glob patterns', async () => {
     const files:vscode.Uri[] = [];
     // @ts-ignore
     files.push({
@@ -138,10 +138,27 @@ suite('util', () => {
       path: '/hello/foo.baz'
     });
 
-    const filteredFiles = filterFilesBySuffixes(['**/*.bar'], files);
+    const matchedFiles = getFilesMatchedGlobPatterns(files, ['**/*.bar']);
+    const notMatchedFiles = getFilesNotMatchedGlobPatterns(files, ['**/*.bar']);
 
-    expect(filteredFiles.length).to.equal(1);
-    expect(filteredFiles[0].path).to.equal('/hello/foo.bar');
+    expect(matchedFiles.length).to.equal(1);
+    expect(matchedFiles[0].path).to.equal('/hello/foo.bar');
+    expect(notMatchedFiles.length).to.equal(1);
+    expect(notMatchedFiles[0].path).to.equal('/hello/foo.baz');
+  });
+
+  test('should filter files by ide exclusions', async () => {
+    const excludes = {
+      '**/*.foo': true,
+      '**/*.bar': true,
+      '**/*.baz': false
+    };
+
+    const excludedPatterns = getIdeFileExclusions(excludes);
+
+    expect(excludedPatterns.length).to.equal(2);
+    expect(excludedPatterns[0]).to.equal('**/*.foo');
+    expect(excludedPatterns[1]).to.equal('**/*.bar');
   });
 
 });
