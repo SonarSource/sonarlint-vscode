@@ -12,14 +12,21 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { AnalysisFile, Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
 import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 import { Commands } from '../util/commands';
-import { logToSonarLintOutput } from '../util/logging';
-import { noWorkspaceFolderToScanMessage } from '../util/showMessage';
+import { verboseLogToSonarLintOutput } from '../util/logging';
+import {
+  HotspotAnalysisConfirmation,
+  noWorkspaceFolderToScanMessage,
+  tooManyFilesConfirmation
+} from '../util/showMessage';
 import { code2ProtocolConverter, getUriFromRelativePath } from '../util/uri';
 import {
-  createAnalysisFilesFromFileUris, getFilesMatchedGlobPatterns,
-  findFilesInFolder, getIdeFileExclusions,
+  createAnalysisFilesFromFileUris,
+  findFilesInFolder,
+  getFilesMatchedGlobPatterns,
+  getFilesNotMatchedGlobPatterns,
+  getIdeFileExclusions,
   getQuickPickListItemsForWorkspaceFolders,
-  resolveExtensionFile, getFilesNotMatchedGlobPatterns
+  resolveExtensionFile
 } from '../util/util';
 import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import {
@@ -31,8 +38,10 @@ import {
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
+
 export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
 
+const FILE_COUNT_LIMIT_FOR_FULL_PROJECT_ANALYSIS = 1000;
 let activeHotspot: RemoteHotspot;
 let hotspotDescriptionPanel: vscode.WebviewPanel;
 
@@ -48,7 +57,8 @@ export const showSecurityHotspot = async (
   } else {
     const documentUri = foundUris[0];
     if (foundUris.length > 1) {
-      logToSonarLintOutput(`Multiple candidates found for '${hotspot.filePath}', using first match '${documentUri}'`);
+      verboseLogToSonarLintOutput(
+        `Multiple candidates found for '${hotspot.filePath}', using first match '${documentUri}'`);
     }
     const editor = await vscode.window.showTextDocument(documentUri);
     if (hotspot instanceof HotspotNode) {
@@ -181,19 +191,19 @@ export const highlightLocation = async editor => {
 };
 
 export async function getFilesForHotspotsAndLaunchScan(folderUri: vscode.Uri,
-                                                languageClient: SonarLintExtendedLanguageClient): Promise<void> {
+                                                       languageClient: SonarLintExtendedLanguageClient): Promise<void> {
   const response = await languageClient.getFilePatternsForAnalysis(folderUri.path);
   return vscode.window.withProgress(
     { title: 'Preparing Files to Scan', location: { viewId: HOTSPOTS_VIEW_ID }, cancellable: true },
-      async (progress, cancelToken) => {
-        const files = await getFilesForHotspotsScan(folderUri, response.patterns, progress, cancelToken);
-        if (cancelToken.isCancellationRequested) {
-          return;
-        }
-        launchScanForHotspots(languageClient, folderUri, files);
-        progress.report({increment: 100});
+    async (progress, cancelToken) => {
+      const files = await getFilesForHotspotsScan(folderUri, response.patterns, progress, cancelToken);
+      if (cancelToken.isCancellationRequested) {
+        return;
       }
-    );
+      launchScanForHotspots(languageClient, folderUri, files);
+      progress.report({ increment: 100 });
+    }
+  );
 }
 
 export async function useProvidedFolderOrPickManuallyAndScan(
@@ -229,7 +239,6 @@ export async function useProvidedFolderOrPickManuallyAndScan(
   }
 }
 
-
 function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
                                folderUri: vscode.Uri, filesForHotspotsAnalysis: AnalysisFile[]) {
   languageClient.scanFolderForHotspots(
@@ -238,6 +247,18 @@ function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
       documents: filesForHotspotsAnalysis
     }
   );
+}
+
+export async function filesCountCheck(
+  filesCount: number,
+  confirmation: (filesCount: number) => Promise<HotspotAnalysisConfirmation>): Promise<boolean> {
+  if (filesCount > FILE_COUNT_LIMIT_FOR_FULL_PROJECT_ANALYSIS) {
+    const action = await confirmation(filesCount);
+    if (action === HotspotAnalysisConfirmation.DONT_ANALYZE) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export async function getFilesForHotspotsScan(
@@ -262,6 +283,13 @@ export async function getFilesForHotspotsScan(
     return [];
   }
   const notIgnoredFiles = await filterOutScmIgnoredFiles(filesWithKnownSuffixes, filterIgnored);
+  if (cancelToken.isCancellationRequested) {
+    return [];
+  }
+  const shouldAnalyze = await filesCountCheck(notIgnoredFiles.length, tooManyFilesConfirmation);
+  if (!shouldAnalyze) {
+    return [];
+  }
   if (cancelToken.isCancellationRequested) {
     return [];
   }

@@ -11,6 +11,7 @@ import * as vscode from 'vscode';
 import { Commands } from '../../src/util/commands';
 import {
   diagnosticSeverity,
+  filesCountCheck,
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan
 } from '../../src/hotspot/hotspots';
@@ -24,9 +25,8 @@ import {
 import { Position, Selection } from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { expect } from 'chai';
-import { sampleFolderLocation } from './commons';
 import * as path from 'path';
-import { sleep } from '../testutil';
+import { HotspotAnalysisConfirmation } from '../../src/util/showMessage';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',
@@ -238,6 +238,39 @@ suite('Hotspots Test Suite', async () => {
     await vscode.commands.executeCommand('workbench.action.quickOpenNavigateNext');
     await vscode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
     expect(scanWasPerformedForFolder.path).to.equal(workspaceFolder2.uri.path);
+  });
+
+  test('should not ask for confirmation if less files than threshold', async () => {
+    let confirmationAsked = false;
+    const shouldAnalyse = await filesCountCheck(1, () => {
+      confirmationAsked = true;
+      return Promise.resolve(HotspotAnalysisConfirmation.DONT_ANALYZE);
+    });
+
+    expect(confirmationAsked).to.be.false;
+    expect(shouldAnalyse).to.be.true;
+  });
+
+  test('should ask for confirmation if more files than threshold - reject', async () => {
+    let confirmationAsked = false;
+    const shouldAnalyse = await filesCountCheck(1001, () => {
+      confirmationAsked = true;
+      return Promise.resolve(HotspotAnalysisConfirmation.DONT_ANALYZE);
+    });
+
+    expect(confirmationAsked).to.be.true;
+    expect(shouldAnalyse).to.be.false;
+  });
+
+  test('should ask for confirmation if more files than threshold - confirm', async () => {
+    let confirmationAsked = false;
+    const shouldAnalyse = await filesCountCheck(1001, () => {
+      confirmationAsked = true;
+      return Promise.resolve(HotspotAnalysisConfirmation.RUN_ANALYSIS);
+    });
+
+    expect(confirmationAsked).to.be.true;
+    expect(shouldAnalyse).to.be.true;
   });
 
   suite('diagnosticSeverity', () => {

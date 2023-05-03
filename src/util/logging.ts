@@ -7,6 +7,7 @@
 'use strict';
 
 import * as VSCode from 'vscode';
+import { isVerboseEnabled } from '../settings/settings';
 
 let sonarlintOutput: VSCode.OutputChannel;
 
@@ -27,4 +28,18 @@ export function logToSonarLintOutput(message) {
 
 export function showLogOutput() {
   getLogOutput()?.show();
+}
+
+export function verboseLogToSonarLintOutput(message: string) {
+  if (isVerboseEnabled()) {
+    logToSonarLintOutput(message);
+  }
+}
+
+export function logNoSubmodulesFound(repo: string, error: string) {
+  verboseLogToSonarLintOutput(`No submodules found in '${repo}' repository. Error: ${error}`);
+}
+
+export function logGitCheckIgnoredError(error: string) {
+  verboseLogToSonarLintOutput(`Error when detecting ignored files: ${error}`);
 }
