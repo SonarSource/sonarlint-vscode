@@ -214,8 +214,9 @@ export async function activate(context: VSCode.ExtensionContext) {
   ConnectionSettingsService.init(context, languageClient);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
-  migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance)
-    .catch(e => { /* ignored */ });
+  migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
+    /* ignored */
+  });
 
   installCustomRequestHandlers(context);
 
@@ -369,11 +370,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.FIND_RULE_BY_KEY, async () => {
-      const key = await VSCode.window
-        .showInputBox({
-          prompt: 'Rule Key',
-          validateInput: value => allRulesTreeDataProvider.checkRuleExists(value)
-        });
+      const key = await VSCode.window.showInputBox({
+        prompt: 'Rule Key',
+        validateInput: value => allRulesTreeDataProvider.checkRuleExists(value)
+      });
       await VSCode.commands.executeCommand(Commands.OPEN_RULE_BY_KEY, key);
     })
   );
@@ -444,24 +444,30 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER,
-      async (folder) => {
-        await hotspotsTreeDataProvider.showHotspotsInFolder();
-        await scanFolderForHotspotsCommandHandler(folder);
-      }));
-  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_HOTSPOTS_IN_OPEN_FILES,
-    async () => {
+    VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER, async folder => {
+      await hotspotsTreeDataProvider.showHotspotsInFolder();
+      await scanFolderForHotspotsCommandHandler(folder);
+    })
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_HOTSPOTS_IN_OPEN_FILES, async () => {
       await hotspotsTreeDataProvider.showHotspotsInOpenFiles();
       languageClient.forgetFolderHotspots();
-    }));
+    })
+  );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.FORGET_FOLDER_HOTSPOTS, () => languageClient.forgetFolderHotspots()));
+    VSCode.commands.registerCommand(Commands.FORGET_FOLDER_HOTSPOTS, () => languageClient.forgetFolderHotspots())
+  );
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
-  await useProvidedFolderOrPickManuallyAndScan(folderUri,
-    VSCode.workspace.workspaceFolders, languageClient, getFilesForHotspotsAndLaunchScan);
+  await useProvidedFolderOrPickManuallyAndScan(
+    folderUri,
+    VSCode.workspace.workspaceFolders,
+    languageClient,
+    getFilesForHotspotsAndLaunchScan
+  );
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
@@ -504,7 +510,6 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
-  languageClient.onNotification(protocol.SubmitTokenNotification.type, token => handleTokenReceivedNotification(token));
   languageClient.onNotification(protocol.PublishHotspotsForFile.type, hotspotsPerFile => {
     hotspotsTreeDataProvider.refresh(hotspotsPerFile);
     updateSonarLintViewContainerBadge();

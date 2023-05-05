@@ -38,8 +38,10 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
     };
     const serverProductName = 'SonarQube';
     lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html =
-        renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'create', initialState });
+    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
+      mode: 'create',
+      initialState
+    });
     finishSetupAndRevealPanel(serverProductName);
   };
 }
@@ -53,32 +55,38 @@ export function connectToSonarCloud(context: vscode.ExtensionContext) {
     };
     const serverProductName = 'SonarCloud';
     lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html =
-      renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'create', initialState });
+    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
+      mode: 'create',
+      initialState
+    });
     finishSetupAndRevealPanel(serverProductName);
   };
 }
 
 export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
-    const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
+    const connectionId = typeof connection === 'string' ? connection : (await connection).id;
     const initialState = await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId);
     const serverProductName = 'SonarQube';
     lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html =
-        renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
+    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
+      mode: 'update',
+      initialState
+    });
     finishSetupAndRevealPanel(serverProductName);
   };
 }
 
 export function editSonarCloudConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
-    const connectionId = typeof(connection) === 'string' ? connection : (await connection).id;
+    const connectionId = typeof connection === 'string' ? connection : (await connection).id;
     const initialState = await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
     const serverProductName = 'SonarCloud';
     lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html =
-      renderConnectionSetupPanel(context, connectionSetupPanel.webview, { mode: 'update', initialState });
+    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
+      mode: 'update',
+      initialState
+    });
     finishSetupAndRevealPanel(serverProductName);
   };
 }
@@ -100,7 +108,9 @@ export async function reportConnectionCheckResult(result: ConnectionCheckResult)
     } else {
       const editConnectionAction = 'Edit Connection';
       const reply = await vscode.window.showErrorMessage(
-          `Connection with '${result.connectionId}' failed. Please check your settings.`, editConnectionAction);
+        `Connection with '${result.connectionId}' failed. Please check your settings.`,
+        editConnectionAction
+      );
       if (reply === editConnectionAction) {
         vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, result.connectionId);
       }
@@ -184,7 +194,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
         </vscode-checkbox>
-        <input type="hidden" id="enableNotifications-initial" value="${!(initialState.disableNotifications)}" />
+        <input type="hidden" id="enableNotifications-initial" value="${!initialState.disableNotifications}" />
         <p>
           You will receive
           <vscode-link target="_blank" href="${serverDocUrl}">notifications</vscode-link>
@@ -219,7 +229,7 @@ function renderServerUrlField(connection) {
 }
 
 function renderGenerateTokenButton(connection, serverProductName) {
-  const buttonDisabled = (isSonarQubeConnection(connection) && connection.serverUrl === '') ? 'disabled' : '';
+  const buttonDisabled = isSonarQubeConnection(connection) && connection.serverUrl === '' ? 'disabled' : '';
   return `<div id="tokenGeneration" class="formRowWithStatus">
       <vscode-button id="generateToken" ${buttonDisabled}>
         Generate Token
@@ -251,7 +261,7 @@ function renderOrganizationKeyField(connection) {
  * Exported for unit tests
  */
 export async function handleMessage(message) {
-  switch(message.command) {
+  switch (message.command) {
     case OPEN_TOKEN_GENERATION_PAGE_COMMAND:
       await openTokenGenerationPage(message);
       break;
@@ -285,14 +295,19 @@ export function getDefaultConnectionId(message): string {
 async function openTokenGenerationPage(message) {
   const { serverUrl } = message;
   const cleanedUrl = cleanServerUrl(serverUrl);
-  try {
-    const accountSecurityUrl = await ConnectionSettingsService.instance.getTokenGenerationUrl(cleanedUrl);
-    await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen' });
-    await vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(accountSecurityUrl));
-  } catch(error) {
-    await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen',
-      errorMessage: 'Incorrect URL or server is not available' });
-  }
+  ConnectionSettingsService.instance
+    .generateToken(cleanedUrl)
+    .then(async token => {
+      await handleTokenReceivedNotification(token);
+    })
+    .catch(
+      async _error =>
+        await connectionSetupPanel.webview.postMessage({
+          command: 'tokenGenerationPageIsOpen',
+          errorMessage: 'Incorrect URL or server is not available'
+        })
+    );
+  await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen' });
 }
 
 async function saveConnection(connection: SonarQubeConnection | SonarCloudConnection) {
@@ -321,14 +336,14 @@ function cleanServerUrl(serverUrl: string) {
 
 function removeTrailingSlashes(url: string) {
   let cleanedUrl = url;
-  while(cleanedUrl.endsWith('/')) {
+  while (cleanedUrl.endsWith('/')) {
     cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length - 1);
   }
   return cleanedUrl;
 }
 
 export async function handleTokenReceivedNotification(token: string) {
-  if(connectionSetupPanel && connectionSetupPanel.active) {
+  if (connectionSetupPanel && connectionSetupPanel.active && token) {
     await connectionSetupPanel.webview.postMessage({ command: TOKEN_RECEIVED_COMMAND, token });
   }
 }
