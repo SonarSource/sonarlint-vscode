@@ -8,8 +8,9 @@
 
 import * as vscode from 'vscode';
 import { HotspotProbability, HotspotStatus, RemoteHotspot } from '../lsp/protocol';
+import { renderRuleDescription } from '../rules/rulepanel';
 import * as util from '../util/util';
-import { ResourceResolver } from '../util/webview';
+import { escapeHtml, ResourceResolver } from '../util/webview';
 
 function formatProbability(vulnerabilityProbability: HotspotProbability) {
   const probabilityName = HotspotProbability[vulnerabilityProbability];
@@ -48,23 +49,29 @@ const categoryShortToLong = {
 export function computeHotspotContextPanelContent(hotspot: RemoteHotspot, webview: vscode.Webview) {
 
   const resolver = new ResourceResolver(util.extensionContext, webview);
-  const styleSrc = resolver.resolve('styles', 'hotspot.css');
+  const styleSrc = resolver.resolve('styles', 'rule.css');
+  const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
+  const hljsSrc = resolver.resolve('styles', 'vs.css');
 
   const category = categoryShortToLong[hotspot.rule.securityCategory];
   const priority = formatProbability(hotspot.rule.vulnerabilityProbability);
   const author = hotspot.author;
   const status = formatStatus(hotspot.status);
 
-  return `<!doctype html><html>
+  const ruleDescription = renderRuleDescription(hotspotRuleToDescriptionParams(hotspot));
+
+  return `<!doctype html><html lang="en">
   <head>
+    <title>${escapeHtml(hotspot.message)}</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <meta http-equiv="Encoding" content="utf-8" />
     <meta http-equiv="Content-Security-Policy"
       content="default-src 'none'; style-src ${webview.cspSource}"/>
     <link rel="stylesheet" type="text/css" href="${styleSrc}" />
+    <link rel="stylesheet" type="text/css" href="${hotspotSrc}" />
+    <link rel="stylesheet" type="text/css" href="${hljsSrc}" />
   </head>
   <body>
-    <h1><big>${hotspot.message}</big> (${hotspot.rule.key})</h1>
+    <h1><big>${escapeHtml(hotspot.message)}</big> (${hotspot.rule.key})</h1>
     <dl class="hotspot-header">
       <dd>Category</dd><dt>${category}</dt>
       <dd>Review priority</dd><dt>${priority}</dt>
@@ -72,25 +79,46 @@ export function computeHotspotContextPanelContent(hotspot: RemoteHotspot, webvie
       <dd>Status</dd><dt>${status}</dt>
     </dl>
 
-    <main class="tabs">
-      <input type="radio" name="tabs" id="tabone" checked="checked">
-      <label for="tabone" class="tabLabel">What's the risk?</label>
-      <section class="tab">
-      ${hotspot.rule.riskDescription}
-      </section>
+    ${ruleDescription}
 
-      <input type="radio" name="tabs" id="tabtwo">
-      <label for="tabtwo" class="tabLabel">Are you at risk?</label>
-      <section class="tab">
-      ${hotspot.rule.vulnerabilityDescription}
-      </section>
-
-      <input type="radio" name="tabs" id="tabthree">
-      <label for="tabthree" class="tabLabel">How can you fix it?</label>
-      <section class="tab">
-      ${hotspot.rule.fixRecommendations}
-      </section>
-    </main>
     </body>
 </html>`;
+}
+
+function hotspotRuleToDescriptionParams(hotspot: RemoteHotspot) {
+  const { key, name, riskDescription, vulnerabilityDescription, fixRecommendations } = hotspot.rule;
+  return {
+    key,
+    name,
+    htmlDescription: '',
+    htmlDescriptionTabs: [
+      {
+        title: `What's the risk?`,
+        hasContextualInformation: false,
+        ruleDescriptionTabNonContextual: {
+          htmlContent: riskDescription
+        }
+      },
+      {
+        title: `Assess the risk`,
+        hasContextualInformation: false,
+        ruleDescriptionTabNonContextual: {
+          htmlContent: vulnerabilityDescription
+        }
+      },
+      {
+        title: `How can I fix it?`,
+        hasContextualInformation: false,
+        ruleDescriptionTabNonContextual: {
+          htmlContent: fixRecommendations
+        }
+      }
+    ],
+    type: 'SECURITY_HOTSPOT',
+    severity: '',
+    isTaint: false,
+    // XXX Find a way to pass language for syntax highlighting?
+    languageKey: '',
+    parameters: []
+  };
 }

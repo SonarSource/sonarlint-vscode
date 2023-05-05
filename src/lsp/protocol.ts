@@ -72,13 +72,13 @@ export interface ShowRuleDescriptionParams {
     ruleDescriptionTabNonContextual?:{
       htmlContent: string;
     },
-    ruleDescriptionTabContextual:Array<{
+    ruleDescriptionTabContextual?:Array<{
       htmlContent: string;
       contextKey: string;
       displayName: string;
     }>,
     hasContextualInformation: boolean
-    defaultContextKey: string;
+    defaultContextKey?: string;
   }>;
   type: string;
   severity: string;
