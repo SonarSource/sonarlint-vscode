@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { Commands } from '../util/commands';
 import { Connection } from './connections';
-import { ConnectionCheckResult } from '../lsp/protocol';
+import { AssistCreatingConnectionParams, ConnectionCheckResult } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -28,11 +28,20 @@ const sonarCloudNotificationsDocUrl = 'https://docs.sonarcloud.io/advanced-setup
 const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
 const OPEN_TOKEN_GENERATION_PAGE_COMMAND = 'openTokenGenerationPage';
 const SAVE_CONNECTION_COMMAND = 'saveConnection';
+const CONNECTION_SAVED_COMMAND = 'connectionSaved';
+
+export function assistCreatingConnection(context: vscode.ExtensionContext) {
+  return assistCreatingConnectionParams => {
+    assistCreatingConnectionParams.isSonarCloud
+      ? connectToSonarCloud(context)
+      : connectToSonarQube(context)(assistCreatingConnectionParams.serverUrl);
+  };
+}
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
-  return () => {
+  return serverUrl => {
     const initialState = {
-      serverUrl: '',
+      serverUrl: serverUrl ? serverUrl : '',
       token: '',
       connectionId: ''
     };
@@ -46,10 +55,10 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
   };
 }
 
-export function connectToSonarCloud(context: vscode.ExtensionContext) {
+export function connectToSonarCloud(context: vscode.ExtensionContext, organizationKey?: string) {
   return () => {
     const initialState = {
-      organizationKey: '',
+      organizationKey: organizationKey ? organizationKey : '',
       token: '',
       connectionId: ''
     };

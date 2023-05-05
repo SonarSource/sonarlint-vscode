@@ -137,9 +137,9 @@ export enum HotspotResolution {
 }
 
 export enum HotspotProbability {
-  High,
-  Medium,
-  Low
+  high,
+  medium,
+  low
 }
 
 export enum HotspotStatus {
@@ -440,4 +440,17 @@ export namespace GetSuggestedBinding {
     'sonarlint/getBindingSuggestion'
   );
 }
+export interface AssistCreatingConnectionParams {
+  isSonarCloud: boolean;
+  serverUrl: string;
+}
+
+export interface AssistCreatingConnectionResponse {
+  newConnectionId: string;
+}
+
+export namespace AssistCreatingConnection {
+  export const type = new lsp.NotificationType<AssistCreatingConnectionParams>('sonarlint/assistCreatingConnection');
+}
+
 //#endregion

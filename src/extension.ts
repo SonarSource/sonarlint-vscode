@@ -15,11 +15,11 @@ import { AutoBindingService } from './connected/autobinding';
 import { BindingService } from './connected/binding';
 import { AllConnectionsTreeDataProvider } from './connected/connections';
 import {
+  assistCreatingConnection,
   connectToSonarCloud,
   connectToSonarQube,
   editSonarCloudConnection,
   editSonarQubeConnection,
-  handleTokenReceivedNotification,
   reportConnectionCheckResult
 } from './connected/connectionsetup';
 import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
@@ -55,6 +55,8 @@ import { getPlatform } from './util/platform';
 import { JAVA_HOME_CONFIG, installManagedJre, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
+import { RequestType } from 'vscode-languageclient';
+import { AssistCreatingConnectionParams, AssistCreatingConnectionResponse } from './lsp/protocol';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -514,6 +516,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     hotspotsTreeDataProvider.refresh(hotspotsPerFile);
     updateSonarLintViewContainerBadge();
   });
+  languageClient.onNotification(protocol.AssistCreatingConnection.type, assistCreatingConnection(context));
 }
 
 function updateSonarLintViewContainerBadge() {

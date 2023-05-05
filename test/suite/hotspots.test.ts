@@ -43,7 +43,7 @@ const templateHotspot: RemoteHotspot = {
     key: 'java:S4242',
     name: 'Life, The Universe and Everything',
     securityCategory: 'dos',
-    vulnerabilityProbability: HotspotProbability.High,
+    vulnerabilityProbability: HotspotProbability.high,
     riskDescription: 'Answering to this question might require building a huge planet-sized computer',
     vulnerabilityDescription: 'If it is built on the path of a galactic highway, you might never get the answer',
     fixRecommendations: 'Build it somewhere else'
@@ -55,7 +55,7 @@ const templateHotspotRange = new Selection(
   new Position(templateHotspot.textRange.endLine - 1, templateHotspot.textRange.endLineOffset)
 );
 
-function buildHotspot(filePath: string, vulnerabilityProbability: HotspotProbability = HotspotProbability.Medium) {
+function buildHotspot(filePath: string, vulnerabilityProbability: HotspotProbability = HotspotProbability.medium) {
   const newHotspot = Object.assign({}, templateHotspot);
   newHotspot.filePath = filePath;
   newHotspot.rule.vulnerabilityProbability = vulnerabilityProbability;
@@ -161,10 +161,12 @@ suite('Hotspots Test Suite', async () => {
   test('should use folder if provided', async () => {
     const sampleFolderUri = vscode.Uri.file(path.join(__dirname, '../../../test/samples'));
     let scanWasPerformedForFolder: vscode.Uri = null;
-    const scan : (folderUri: vscode.Uri,
-                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+    const scan: (folderUri: vscode.Uri, languageClient: SonarLintExtendedLanguageClient) => Promise<void> = async (
+      folderUri,
+      _
+    ) => {
       scanWasPerformedForFolder = folderUri;
-    }
+    };
     const wf = {
       uri: sampleFolderUri,
       name: 'Name',
@@ -178,10 +180,12 @@ suite('Hotspots Test Suite', async () => {
   test('should use only opened folder if not provided', async () => {
     const sampleFolderUri = vscode.Uri.file(path.join(__dirname, '../../../test/samples'));
     let scanWasPerformedForFolder: vscode.Uri = null;
-    const scan : (folderUri: vscode.Uri,
-                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+    const scan: (folderUri: vscode.Uri, languageClient: SonarLintExtendedLanguageClient) => Promise<void> = async (
+      folderUri,
+      _
+    ) => {
       scanWasPerformedForFolder = folderUri;
-    }
+    };
     const wf = {
       uri: sampleFolderUri,
       name: 'Name',
@@ -200,10 +204,12 @@ suite('Hotspots Test Suite', async () => {
 
   test('should scan nothing if no folder uri provided and no workspace folders opened', async () => {
     let scanWasPerformedForFolder: vscode.Uri = null;
-    const scan : (folderUri: vscode.Uri,
-                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+    const scan: (folderUri: vscode.Uri, languageClient: SonarLintExtendedLanguageClient) => Promise<void> = async (
+      folderUri,
+      _
+    ) => {
       scanWasPerformedForFolder = folderUri;
-    }
+    };
 
     await useProvidedFolderOrPickManuallyAndScan(undefined, [], null, scan);
     expect(scanWasPerformedForFolder).to.be.null;
@@ -214,21 +220,23 @@ suite('Hotspots Test Suite', async () => {
 
   test('should let to choose form quick pick list if no folder uri provided and more than one workspace folder opened', async () => {
     let scanWasPerformedForFolder: vscode.Uri = null;
-    const scan : (folderUri: vscode.Uri,
-                  languageClient: SonarLintExtendedLanguageClient) => Promise<void>  = async (folderUri, _) => {
+    const scan: (folderUri: vscode.Uri, languageClient: SonarLintExtendedLanguageClient) => Promise<void> = async (
+      folderUri,
+      _
+    ) => {
       scanWasPerformedForFolder = folderUri;
-    }
+    };
     const workspaceFolders = [];
     const workspaceFolder1 = {
       uri: {
-        path: '/path1',
+        path: '/path1'
       },
       name: 'Name1',
       index: 0
     };
     const workspaceFolder2 = {
       uri: {
-        path: '/path2',
+        path: '/path2'
       },
       name: 'Name2',
       index: 1
@@ -275,18 +283,18 @@ suite('Hotspots Test Suite', async () => {
 
   suite('diagnosticSeverity', () => {
     test('High probability maps to Error severity', () => {
-      assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.High)), HotspotReviewPriority.High);
+      assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.high)), HotspotReviewPriority.High);
     });
 
     test('Medium probability maps to Warning severity', () => {
       assert.strictEqual(
-        diagnosticSeverity(buildHotspot('file', HotspotProbability.Medium)),
+        diagnosticSeverity(buildHotspot('file', HotspotProbability.medium)),
         HotspotReviewPriority.Medium
       );
     });
 
     test('Low probability maps to Info severity', () => {
-      assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.Low)), HotspotReviewPriority.Low);
+      assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.low)), HotspotReviewPriority.Low);
     });
   });
 });
