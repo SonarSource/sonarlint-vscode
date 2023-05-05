@@ -38,7 +38,6 @@ import {
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
-
 export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
 
 const FILE_COUNT_LIMIT_FOR_FULL_PROJECT_ANALYSIS = 1000;
@@ -58,7 +57,8 @@ export const showSecurityHotspot = async (
     const documentUri = foundUris[0];
     if (foundUris.length > 1) {
       verboseLogToSonarLintOutput(
-        `Multiple candidates found for '${hotspot.filePath}', using first match '${documentUri}'`);
+        `Multiple candidates found for '${hotspot.filePath}', using first match '${documentUri}'`
+      );
     }
     const editor = await vscode.window.showTextDocument(documentUri);
     if (hotspot instanceof HotspotNode) {
@@ -144,9 +144,9 @@ function revealHotspotInTreeView(
 
 export function diagnosticSeverity(hotspot: RemoteHotspot) {
   switch (hotspot.rule.vulnerabilityProbability) {
-    case HotspotProbability.High:
+    case HotspotProbability.high:
       return HotspotReviewPriority.High;
-    case HotspotProbability.Low:
+    case HotspotProbability.low:
       return HotspotReviewPriority.Low;
     default:
       return HotspotReviewPriority.Medium;
@@ -167,8 +167,10 @@ export const showHotspotDescription = () => {
       hotspotDescriptionPanel = undefined;
     }, null);
   }
-  hotspotDescriptionPanel.webview.html =
-    computeHotspotContextPanelContent(activeHotspot, hotspotDescriptionPanel.webview);
+  hotspotDescriptionPanel.webview.html = computeHotspotContextPanelContent(
+    activeHotspot,
+    hotspotDescriptionPanel.webview
+  );
   hotspotDescriptionPanel.iconPath = {
     light: resolveExtensionFile('images/sonarqube.svg'),
     dark: resolveExtensionFile('images/sonarqube.svg')
@@ -190,8 +192,10 @@ export const highlightLocation = async editor => {
   }
 };
 
-export async function getFilesForHotspotsAndLaunchScan(folderUri: vscode.Uri,
-                                                       languageClient: SonarLintExtendedLanguageClient): Promise<void> {
+export async function getFilesForHotspotsAndLaunchScan(
+  folderUri: vscode.Uri,
+  languageClient: SonarLintExtendedLanguageClient
+): Promise<void> {
   const response = await languageClient.getFilePatternsForAnalysis(folderUri.path);
   return vscode.window.withProgress(
     { title: 'Preparing Files to Scan', location: { viewId: HOTSPOTS_VIEW_ID }, cancellable: true },
@@ -216,8 +220,8 @@ export async function useProvidedFolderOrPickManuallyAndScan(
   folderUri: vscode.Uri,
   workspaceFolders: readonly vscode.WorkspaceFolder[],
   languageClient: SonarLintExtendedLanguageClient,
-  scan: (folderUri: vscode.Uri,
-         languageClient: SonarLintExtendedLanguageClient) => Promise<void>) {
+  scan: (folderUri: vscode.Uri, languageClient: SonarLintExtendedLanguageClient) => Promise<void>
+) {
   if (!folderUri || !folderUri.path) {
     if (!workspaceFolders || workspaceFolders.length === 0) {
       noWorkspaceFolderToScanMessage();
@@ -245,19 +249,21 @@ export async function useProvidedFolderOrPickManuallyAndScan(
   }
 }
 
-function launchScanForHotspots(languageClient: SonarLintExtendedLanguageClient,
-                               folderUri: vscode.Uri, filesForHotspotsAnalysis: AnalysisFile[]) {
-  languageClient.scanFolderForHotspots(
-    {
-      folderUri: code2ProtocolConverter(folderUri),
-      documents: filesForHotspotsAnalysis
-    }
-  );
+function launchScanForHotspots(
+  languageClient: SonarLintExtendedLanguageClient,
+  folderUri: vscode.Uri,
+  filesForHotspotsAnalysis: AnalysisFile[]
+) {
+  languageClient.scanFolderForHotspots({
+    folderUri: code2ProtocolConverter(folderUri),
+    documents: filesForHotspotsAnalysis
+  });
 }
 
 export async function filesCountCheck(
   filesCount: number,
-  confirmation: (filesCount: number) => Promise<HotspotAnalysisConfirmation>): Promise<boolean> {
+  confirmation: (filesCount: number) => Promise<HotspotAnalysisConfirmation>
+): Promise<boolean> {
   if (filesCount > FILE_COUNT_LIMIT_FOR_FULL_PROJECT_ANALYSIS) {
     const action = await confirmation(filesCount);
     if (action === HotspotAnalysisConfirmation.DONT_ANALYZE) {

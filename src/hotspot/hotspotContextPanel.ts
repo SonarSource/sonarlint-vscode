@@ -12,8 +12,10 @@ import { renderRuleDescription } from '../rules/rulepanel';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
 
-function formatProbability(vulnerabilityProbability: HotspotProbability) {
-  const probabilityName = HotspotProbability[vulnerabilityProbability];
+function formatProbability(vulnerabilityProbability: string) {
+  const enumValues = Object.keys(HotspotProbability).filter((v) => isNaN(Number(v)));;
+  const enumIndex = enumValues.indexOf(vulnerabilityProbability.toLowerCase());
+  const probabilityName = HotspotProbability[enumIndex];
   return `<span class="hotspot-probability hotspot-probability-${probabilityName}">${probabilityName}</span>`;
 }
 
@@ -24,7 +26,7 @@ function formatStatus(status: HotspotStatus) {
 const categoryShortToLong = {
   'buffer-overflow': 'Buffer Overflow',
   'sql-injection': 'SQL Injection',
-  'rce': 'Code Injection (RCE)',
+  rce: 'Code Injection (RCE)',
   'object-injection': 'Object Injection',
   'command-injection': 'Command Injection',
   'path-traversal-injection': 'Path Traversal Injection',
@@ -32,29 +34,28 @@ const categoryShortToLong = {
   'xpath-injection': 'XPath Injection',
   'expression-lang-injection': 'Expression Language Injection',
   'log-injection': 'Log Injection',
-  'xxe': 'XML External Entity (XXE)',
-  'xss': 'Cross-Site Scripting (XSS)',
-  'dos': 'Denial of Service (DoS)',
-  'ssrf': 'Server-Side Request Forgery (SSRF)',
-  'csrf': 'Cross-Site Request Forgery (CSRF)',
+  xxe: 'XML External Entity (XXE)',
+  xss: 'Cross-Site Scripting (XSS)',
+  dos: 'Denial of Service (DoS)',
+  ssrf: 'Server-Side Request Forgery (SSRF)',
+  csrf: 'Cross-Site Request Forgery (CSRF)',
   'http-response-splitting': 'HTTP Response Splitting',
   'open-redirect': 'Open Redirect',
   'weak-cryptography': 'Weak Cryptography',
-  'auth': 'Authentication',
+  auth: 'Authentication',
   'insecure-conf': 'Insecure Configuration',
   'file-manipulation': 'File Manipulation',
-  'others': 'Others'
+  others: 'Others'
 };
 
 export function computeHotspotContextPanelContent(hotspot: RemoteHotspot, webview: vscode.Webview) {
-
   const resolver = new ResourceResolver(util.extensionContext, webview);
   const styleSrc = resolver.resolve('styles', 'rule.css');
   const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
   const hljsSrc = resolver.resolve('styles', 'vs.css');
 
   const category = categoryShortToLong[hotspot.rule.securityCategory];
-  const priority = formatProbability(hotspot.rule.vulnerabilityProbability);
+  const priority = formatProbability(hotspot.rule.vulnerabilityProbability.toString());
   const author = hotspot.author;
   const status = formatStatus(hotspot.status);
 

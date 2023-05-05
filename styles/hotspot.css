@@ -63,13 +63,13 @@ pre {
   font-weight: 700;
   border-radius: 2px;
 }
-.hotspot-probability-High {
+.hotspot-probability-high {
   background-color: #d4333f;
 }
-.hotspot-probability-Medium {
+.hotspot-probability-medium {
   background-color: #ed7d20;
 }
-.hotspot-probability-Low {
+.hotspot-probability-low {
   background-color: #eabe06;
 }
 
