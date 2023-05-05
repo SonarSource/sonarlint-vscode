@@ -77,4 +77,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   getFilePatternsForAnalysis(folderUri: string): Promise<protocol.GetFilePatternsForAnalysisResponse> {
     return this.sendRequest(protocol.GetFilePatternsForAnalysis.type, { folderUri });
   }
+
+  getSuggestedBinding(configScopeId:string, connectionId: string): Promise<protocol.GetSuggestedBindingResponse>{
+    return this.sendRequest(protocol.GetSuggestedBinding.type, {configScopeId, connectionId});
+  }
 }

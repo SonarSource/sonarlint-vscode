@@ -424,4 +424,20 @@ export namespace GetFilePatternsForAnalysis {
     GetFilePatternsForAnalysisResponse, null>('sonarlint/listSupportedFilePatterns');
 }
 
+export interface GetSuggestedBindingParams {
+  configScopeId: string;
+  connectionId: string;
+}
+
+export interface GetSuggestedBindingResponse {
+  suggestions: {
+    [folderUri: string]: Array<BindingSuggestion>;
+  };
+}
+
+export namespace GetSuggestedBinding {
+  export const type = new lsp.RequestType<
+    GetSuggestedBindingParams,
+    GetSuggestedBindingResponse, null>('sonarlint/getBindingSuggestion');
+}
 //#endregion
