@@ -69,15 +69,15 @@ export interface ShowRuleDescriptionParams {
   htmlDescription: string;
   htmlDescriptionTabs: Array<{
     title: string;
-    ruleDescriptionTabNonContextual?:{
+    ruleDescriptionTabNonContextual?: {
       htmlContent: string;
-    },
-    ruleDescriptionTabContextual?:Array<{
+    };
+    ruleDescriptionTabContextual?: Array<{
       htmlContent: string;
       contextKey: string;
       displayName: string;
-    }>,
-    hasContextualInformation: boolean
+    }>;
+    hasContextualInformation: boolean;
     defaultContextKey?: string;
   }>;
   type: string;
@@ -169,10 +169,6 @@ export namespace ShowHotspotNotification {
   export const type = new lsp.NotificationType<RemoteHotspot>('sonarlint/showHotspot');
 }
 
-export namespace SubmitTokenNotification {
-  export const type = new lsp.NotificationType<string>('sonarlint/submitToken');
-}
-
 export interface TextRange {
   startLine: number;
   endLine?: number;
@@ -262,10 +258,9 @@ export interface CheckLocalDetectionSupportedResponse {
 }
 
 export namespace CheckLocalDetectionSupported {
-
-  export const type = new lsp.RequestType<
-    FolderUriParams,
-    CheckLocalDetectionSupportedResponse, null>('sonarlint/checkLocalDetectionSupported');
+  export const type = new lsp.RequestType<FolderUriParams, CheckLocalDetectionSupportedResponse, null>(
+    'sonarlint/checkLocalDetectionSupported'
+  );
 }
 
 //#endregion
@@ -343,19 +338,16 @@ export namespace GetRemoteProjectNames {
   );
 }
 
-export interface ServerPathParams {
+export interface GenerateTokenParams {
   baseServerUrl: string;
 }
 
-export interface ServerPathResponse {
-  serverUrl?: string;
-  errorMessage?: string;
+export interface GenerateTokenResponse {
+  token?: string;
 }
 
-export namespace GetServerPathForTokenGeneration {
-  export const type = new lsp.RequestType<ServerPathParams, ServerPathResponse, null>(
-    'sonarlint/getServerPathForTokenGeneration'
-  );
+export namespace GenerateToken {
+  export const type = new lsp.RequestType<GenerateTokenParams, GenerateTokenResponse, null>('sonarlint/generateToken');
 }
 
 export interface Range {
@@ -427,9 +419,9 @@ export interface GetFilePatternsForAnalysisResponse {
 }
 
 export namespace GetFilePatternsForAnalysis {
-  export const type = new lsp.RequestType<
-    FolderUriParams,
-    GetFilePatternsForAnalysisResponse, null>('sonarlint/listSupportedFilePatterns');
+  export const type = new lsp.RequestType<FolderUriParams, GetFilePatternsForAnalysisResponse, null>(
+    'sonarlint/listSupportedFilePatterns'
+  );
 }
 
 export interface GetSuggestedBindingParams {
@@ -444,8 +436,8 @@ export interface GetSuggestedBindingResponse {
 }
 
 export namespace GetSuggestedBinding {
-  export const type = new lsp.RequestType<
-    GetSuggestedBindingParams,
-    GetSuggestedBindingResponse, null>('sonarlint/getBindingSuggestion');
+  export const type = new lsp.RequestType<GetSuggestedBindingParams, GetSuggestedBindingResponse, null>(
+    'sonarlint/getBindingSuggestion'
+  );
 }
 //#endregion

@@ -294,13 +294,12 @@ export class ConnectionSettingsService {
     return true;
   }
 
-  async getTokenGenerationUrl(baseServerUrl: string) {
-    const { serverUrl, errorMessage } = await this.client.getServerPathForTokenGeneration(baseServerUrl);
-    if (errorMessage) {
-      logToSonarLintOutput(`Could not get token generation params: ${errorMessage}`);
-      throw new Error(errorMessage);
+  async generateToken(baseServerUrl: string) {
+    const { token } = await this.client.generateToken(baseServerUrl);
+    if (!token) {
+      logToSonarLintOutput(`Could not automatically generate server token for generation params: ${baseServerUrl}`);
     }
-    return serverUrl;
+    return token;
   }
 }
 
