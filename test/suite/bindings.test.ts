@@ -17,6 +17,7 @@ import {
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { Connection, WorkspaceFolderItem } from '../../src/connected/connections';
+import * as protocol from '../../src/lsp/protocol';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -48,6 +49,9 @@ const mockClient = {
   },
   async checkConnection(connectionId: string) {
     return Promise.resolve({ connectionId, success: true });
+  },
+  async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<protocol.SuggestBindingParams> {
+    return Promise.resolve({suggestions:{}});
   }
 } as SonarLintExtendedLanguageClient;
 

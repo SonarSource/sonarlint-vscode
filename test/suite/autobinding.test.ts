@@ -57,18 +57,7 @@ const mockSettingsService = {
 } as ConnectionSettingsService;
 
 const mockBindingService = {
-  async getConnectionToServerProjects(
-    _scConnections: SonarCloudConnection[],
-    _sqConnections: SonarQubeConnection[]
-  ): Promise<Map<BaseConnection, ServerProject[]>> {
-    const projects = new Map<BaseConnection, ServerProject[]>();
-    projects.set({ connectionId: 'connectionId' }, [
-      { key: 'projectkey1', name: 'projectName1' },
-      { key: 'projectkey2', name: 'projectName2' },
-      { key: 'sample', name: 'Sample' }
-    ]);
-    return projects;
-  }
+  // nothing to mock for current tests
 } as BindingService;
 
 const mockWorkspaceState = {
