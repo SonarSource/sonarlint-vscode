@@ -14,7 +14,7 @@ import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 import { Commands } from '../util/commands';
 import { verboseLogToSonarLintOutput } from '../util/logging';
 import {
-  HotspotAnalysisConfirmation,
+  HotspotAnalysisConfirmation, notCompatibleServerWarning,
   noWorkspaceFolderToScanMessage,
   tooManyFilesConfirmation
 } from '../util/showMessage';
@@ -196,6 +196,11 @@ export async function getFilesForHotspotsAndLaunchScan(folderUri: vscode.Uri,
   return vscode.window.withProgress(
     { title: 'Preparing Files to Scan', location: { viewId: HOTSPOTS_VIEW_ID }, cancellable: true },
     async (progress, cancelToken) => {
+      const checkLocalDetectionResponse = await languageClient.checkLocalDetectionSupported(folderUri.path);
+      if (!checkLocalDetectionResponse.isSupported) {
+        notCompatibleServerWarning(folderUri.path, checkLocalDetectionResponse.reason);
+        return;
+      }
       const files = await getFilesForHotspotsScan(folderUri, response.patterns, progress, cancelToken);
       if (cancelToken.isCancellationRequested) {
         return;
@@ -229,8 +234,8 @@ export async function useProvidedFolderOrPickManuallyAndScan(
       workspaceFoldersQuickPick.ignoreFocusOut = true;
       workspaceFoldersQuickPick.onDidChangeSelection(async selection => {
         folderUri = vscode.Uri.parse(selection[0].description);
-        await scan(folderUri, languageClient);
         workspaceFoldersQuickPick.dispose();
+        await scan(folderUri, languageClient);
       });
       workspaceFoldersQuickPick.show();
     }

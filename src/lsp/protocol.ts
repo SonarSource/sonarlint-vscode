@@ -256,6 +256,18 @@ export interface AnalysisFile {
   text: string;
 }
 
+export interface CheckLocalDetectionSupportedResponse {
+  isSupported: boolean;
+  reason?: string;
+}
+
+export namespace CheckLocalDetectionSupported {
+
+  export const type = new lsp.RequestType<
+    FolderUriParams,
+    CheckLocalDetectionSupportedResponse, null>('sonarlint/checkLocalDetectionSupported');
+}
+
 //#endregion
 
 //#region Server side extensions to LSP
@@ -312,10 +324,6 @@ export namespace OnTokenUpdate {
 
 export interface GetRemoteProjectsForConnectionParams {
   connectionId: string;
-}
-
-export interface RemoteProject {
-  [projectKey: string]: string;
 }
 
 export namespace GetRemoteProjectsForConnection {
@@ -410,7 +418,7 @@ export namespace ForgetFolderHotspots {
   export const type = new lsp.NotificationType('sonarlint/forgetFolderHotspots');
 }
 
-export interface GetFilePatternsForAnalysisParams {
+export interface FolderUriParams {
   folderUri: string;
 }
 
@@ -420,7 +428,7 @@ export interface GetFilePatternsForAnalysisResponse {
 
 export namespace GetFilePatternsForAnalysis {
   export const type = new lsp.RequestType<
-    GetFilePatternsForAnalysisParams,
+    FolderUriParams,
     GetFilePatternsForAnalysisResponse, null>('sonarlint/listSupportedFilePatterns');
 }
 
