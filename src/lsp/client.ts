@@ -82,7 +82,7 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetSuggestedBinding.type, {configScopeId, connectionId});
   }
 
-  checkLocalDetectionSupported(folderUri: string): Promise<protocol.CheckLocalDetectionSupportedResponse> {
+  checkLocalHotspotsDetectionSupported(folderUri: string): Promise<protocol.CheckLocalDetectionSupportedResponse> {
     return this.sendRequest(protocol.CheckLocalDetectionSupported.type, { folderUri });
   }
 }
