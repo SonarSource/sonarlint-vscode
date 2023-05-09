@@ -9,7 +9,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
-import { handleMessage } from '../../src/connected/connectionsetup';
+import { getDefaultConnectionId, handleMessage } from '../../src/connected/connectionsetup';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 
 const FIVE_SECONDS = 5000;
@@ -54,7 +54,31 @@ suite('Connection Setup', () => {
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarQubeConnections();
-    assert.deepStrictEqual(connectionsAfter, [{ serverUrl }]);
+    assert.deepStrictEqual(connectionsAfter, [{ connectionId: serverUrl, serverUrl }]);
+  }).timeout(FIVE_SECONDS);
+
+  test('Should provide default connectionId', async () => {
+    const sleepTime = 1000;
+    const connectionsBefore = getSonarQubeConnections();
+    assert.deepStrictEqual(connectionsBefore, []);
+
+    await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
+    await sleep(sleepTime);
+
+    const serverUrl = 'https://sonarqube.example';
+    const message = {
+      command: 'saveConnection',
+      serverUrl: serverUrl,
+      token: 'myToken',
+      disableNotifications: false
+    };
+    await handleMessage(message);
+    await sleep(sleepTime);
+    // @ts-ignore
+    assert.ok(message.connectionId);
+    // @ts-ignore
+    assert.deepStrictEqual(message.connectionId, serverUrl);
+
   }).timeout(FIVE_SECONDS);
 
   test('should show SonarCloud creation webview when command is called', async () => {
@@ -78,7 +102,7 @@ suite('Connection Setup', () => {
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarCloudConnections();
-    assert.deepStrictEqual(connectionsAfter, [{ organizationKey }]);
+    assert.deepStrictEqual(connectionsAfter, [{ connectionId:organizationKey, organizationKey }]);
   }).timeout(FIVE_SECONDS);
 
   test('should edit default connection when command is called', async () => {
@@ -88,29 +112,31 @@ suite('Connection Setup', () => {
 
     const serverUrl = 'https://notsonarqube.example';
     const token = 'XXX SUPER SECRET TOKEN XXX';
-
-    await ConnectionSettingsService.instance.addSonarQubeConnection({
-      serverUrl,
-      token
-    });
-
-    await sleep(sleepTime);
-
-    await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, Promise.resolve({ id: undefined }));
-    await sleep(sleepTime);
-
     const disableNotifications = true;
-
-    await handleMessage({
+    const message = {
       command: 'saveConnection',
       serverUrl,
       token,
       disableNotifications
+    };
+
+    const connectionId = getDefaultConnectionId(message)
+
+    await ConnectionSettingsService.instance.addSonarQubeConnection({
+      serverUrl,
+      connectionId,
+      token
     });
     await sleep(sleepTime);
 
+    await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, Promise.resolve({ id: connectionId }));
+
+    await sleep(sleepTime);
+    await handleMessage(message)
+    await sleep(sleepTime);
+
     const connectionsAfter = getSonarQubeConnections();
-    assert.deepStrictEqual(connectionsAfter, [{ serverUrl, disableNotifications }]);
+    assert.deepStrictEqual(connectionsAfter, [{connectionId, serverUrl, disableNotifications }]);
   }).timeout(FIVE_SECONDS);
 
   test('should edit identified SonarQube connection when command is called', async () => {
