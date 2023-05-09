@@ -15,6 +15,7 @@ import { Connection, ServerType, WorkspaceFolderItem } from './connections';
 import { buildBaseServerUrl, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
+import { AssistBindingParams } from '../lsp/protocol';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -105,6 +106,24 @@ export class BindingService {
       }
     }
     return bindingsPerConnectionId;
+  }
+
+  async assistBinding(params: AssistBindingParams) {
+    const workspaceFolders = VSCode.workspace.workspaceFolders;
+    const selectedWorkspaceFolderName = await this.showFolderSelectionQuickPickOrReturnDefaultSelection(
+      workspaceFolders
+    );
+    const workspaceFolder = workspaceFolders.find(f => f.name === selectedWorkspaceFolderName);
+
+    const existingSettings = VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
+      .get<ProjectBinding>(BINDING_SETTINGS);
+    if (existingSettings.projectKey === undefined) {
+      await VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
+        .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
+    }
+    VSCode.commands.executeCommand('workbench.action.openFolderSettingsFile');
   }
 
   async createOrEditBinding(
@@ -287,7 +306,6 @@ export class BindingService {
     const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
     return !!binding.projectKey;
   }
-
 }
 
 export interface ProjectBinding {

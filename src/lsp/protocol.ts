@@ -440,17 +440,22 @@ export namespace GetSuggestedBinding {
     'sonarlint/getBindingSuggestion'
   );
 }
+
 export interface AssistCreatingConnectionParams {
   isSonarCloud: boolean;
   serverUrl: string;
-}
-
-export interface AssistCreatingConnectionResponse {
-  newConnectionId: string;
 }
 
 export namespace AssistCreatingConnection {
   export const type = new lsp.NotificationType<AssistCreatingConnectionParams>('sonarlint/assistCreatingConnection');
 }
 
+export interface AssistBindingParams {
+  connectionId: string;
+  projectKey: string;
+}
+
+export namespace AssistBinding {
+  export const type = new lsp.NotificationType<AssistBindingParams>('sonarlint/assistBinding');
+}
 //#endregion

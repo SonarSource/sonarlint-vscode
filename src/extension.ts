@@ -55,8 +55,6 @@ import { getPlatform } from './util/platform';
 import { JAVA_HOME_CONFIG, installManagedJre, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
-import { RequestType } from 'vscode-languageclient';
-import { AssistCreatingConnectionParams, AssistCreatingConnectionResponse } from './lsp/protocol';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -517,6 +515,10 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     updateSonarLintViewContainerBadge();
   });
   languageClient.onNotification(protocol.AssistCreatingConnection.type, assistCreatingConnection(context));
+  languageClient.onNotification(
+    protocol.AssistBinding.type,
+    async params => await BindingService.instance.assistBinding(params)
+  );
 }
 
 function updateSonarLintViewContainerBadge() {

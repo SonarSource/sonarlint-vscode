@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { Commands } from '../util/commands';
 import { Connection } from './connections';
-import { AssistCreatingConnectionParams, ConnectionCheckResult } from '../lsp/protocol';
+import { ConnectionCheckResult } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -28,7 +28,6 @@ const sonarCloudNotificationsDocUrl = 'https://docs.sonarcloud.io/advanced-setup
 const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
 const OPEN_TOKEN_GENERATION_PAGE_COMMAND = 'openTokenGenerationPage';
 const SAVE_CONNECTION_COMMAND = 'saveConnection';
-const CONNECTION_SAVED_COMMAND = 'connectionSaved';
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
   return assistCreatingConnectionParams => {
@@ -41,7 +40,7 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
 export function connectToSonarQube(context: vscode.ExtensionContext) {
   return serverUrl => {
     const initialState = {
-      serverUrl: serverUrl ? serverUrl : '',
+      serverUrl: serverUrl && typeof serverUrl === 'string' ? serverUrl : '',
       token: '',
       connectionId: ''
     };
@@ -55,10 +54,10 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
   };
 }
 
-export function connectToSonarCloud(context: vscode.ExtensionContext, organizationKey?: string) {
+export function connectToSonarCloud(context: vscode.ExtensionContext) {
   return () => {
     const initialState = {
-      organizationKey: organizationKey ? organizationKey : '',
+      organizationKey: '',
       token: '',
       connectionId: ''
     };
@@ -352,7 +351,7 @@ function removeTrailingSlashes(url: string) {
 }
 
 export async function handleTokenReceivedNotification(token: string) {
-  if (connectionSetupPanel && connectionSetupPanel.active && token) {
+  if (connectionSetupPanel?.active && token) {
     await connectionSetupPanel.webview.postMessage({ command: TOKEN_RECEIVED_COMMAND, token });
   }
 }
