@@ -271,9 +271,9 @@ export async function handleMessage(message) {
 }
 
 export function getDefaultConnectionId(message): string {
-  let defaultConnectionId = "default_connection_id";
+  let defaultConnectionId = 'default_connection_id';
   if (message.serverUrl) {
-    defaultConnectionId = cleanServerUrl(message.serverUrl)
+    defaultConnectionId = cleanServerUrl(message.serverUrl);
   }
   if(message.organizationKey) {
     defaultConnectionId =  message.organizationKey;
