@@ -196,7 +196,8 @@ export async function getFilesForHotspotsAndLaunchScan(folderUri: vscode.Uri,
   return vscode.window.withProgress(
     { title: 'Preparing Files to Scan', location: { viewId: HOTSPOTS_VIEW_ID }, cancellable: true },
     async (progress, cancelToken) => {
-      const checkLocalDetectionResponse = await languageClient.checkLocalHotspotsDetectionSupported(folderUri.path);
+      const checkLocalDetectionResponse = await languageClient
+        .checkLocalHotspotsDetectionSupported(code2ProtocolConverter(folderUri));
       if (!checkLocalDetectionResponse.isSupported) {
         notCompatibleServerWarning(folderUri.path, checkLocalDetectionResponse.reason);
         return;
