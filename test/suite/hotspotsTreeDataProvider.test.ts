@@ -8,13 +8,14 @@ import { assert } from 'chai';
 import * as vscode from 'vscode';
 import { ThemeIcon } from 'vscode';
 import { protocol2CodeConverter } from '../../src/util/uri';
+import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 
 const mockSettingsServiceWithConnections = {
   getSonarQubeConnections(): SonarQubeConnection[] {
     return [{ serverUrl: 'https://next.sonarqube.com/sonarqube', connectionId: 'connectionId' }];
   },
   getSonarCloudConnections(): SonarCloudConnection[] {
-    return [{ organizationKey: 'myOrg', connectionId: '<default>' }];
+    return [{ organizationKey: 'myOrg', connectionId: DEFAULT_CONNECTION_ID }];
   },
   async loadSonarCloudConnection(connectionId: string): Promise<SonarCloudConnection> {
     return { organizationKey: 'orgKey', connectionId: connectionId };

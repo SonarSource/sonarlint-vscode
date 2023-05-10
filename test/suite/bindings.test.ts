@@ -18,6 +18,7 @@ import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { Connection, WorkspaceFolderItem } from '../../src/connected/connections';
 import * as protocol from '../../src/lsp/protocol';
+import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -199,13 +200,13 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, '<default>', workspaceFolder);
+      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, DEFAULT_CONNECTION_ID, workspaceFolder);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(binding).to.deep.equal({
-        connectionId: '<default>',
+        connectionId: DEFAULT_CONNECTION_ID,
         projectKey: 'test.project.key'
       });
 
@@ -213,8 +214,34 @@ suite('Bindings Test Suite', () => {
         new Connection(undefined, TEST_SONARQUBE_CONNECTION.connectionId, 'sonarqubeConnection', 'ok')
       );
 
-      const defaultConnectionBindings = await underTest.getAllBindings().get('<default>');
+      const defaultConnectionBindings = await underTest.getAllBindings().get(DEFAULT_CONNECTION_ID);
       expect(defaultConnectionBindings).to.be.equal(undefined);
+    });
+
+    test('If connectionId not provided, it should default to <default>', async () => {
+      await VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY)
+        .update(
+          CONNECTED_MODE_SETTINGS_SONARQUBE,
+          [DEFAULT_TEST_SONARQUBE_CONNECTION],
+          VSCode.ConfigurationTarget.Global
+        );
+      await resetBindings();
+
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+
+      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, undefined, workspaceFolder);
+
+      binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(binding).to.deep.equal({
+        connectionId: DEFAULT_CONNECTION_ID,
+        projectKey: 'test.project.key'
+      });
     });
 
     test('Create Or Edit Binding', async () => {

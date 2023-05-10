@@ -19,6 +19,7 @@ import {
 } from '../settings/connectionsettings';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
+import { DEFAULT_CONNECTION_ID } from '../commons';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -173,7 +174,8 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         </div>
         ${renderOrganizationKeyField(initialState)}
         <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Connection" size="40"
-          title="Optionally, please give this connection a memorable name" value="${initialConnectionId}"
+          title="Optionally, please give this connection a memorable name. If no name is provided, Sonar will generate one." 
+          value="${initialConnectionId}"
           ${options.mode === 'update' ? 'readonly' : ''}>
           Connection Name
         </vscode-text-field>
@@ -259,7 +261,7 @@ export async function handleMessage(message) {
         delete message.disableNotifications;
       }
       if (!message.connectionId) {
-        delete message.connectionId;
+        message.connectionId = getDefaultConnectionId(message);
       }
       if (message.serverUrl) {
         message.serverUrl = cleanServerUrl(message.serverUrl);
@@ -267,6 +269,17 @@ export async function handleMessage(message) {
       await saveConnection(message);
       break;
   }
+}
+
+export function getDefaultConnectionId(message): string {
+  let defaultConnectionId = DEFAULT_CONNECTION_ID;
+  if (message.serverUrl) {
+    defaultConnectionId = cleanServerUrl(message.serverUrl);
+  }
+  if(message.organizationKey) {
+    defaultConnectionId =  message.organizationKey;
+  }
+  return defaultConnectionId;
 }
 
 async function openTokenGenerationPage(message) {

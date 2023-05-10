@@ -11,10 +11,9 @@ import { BindingService } from './binding';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionCheckResult } from '../lsp/protocol';
 import { BaseConnection, ConnectionSettingsService } from '../settings/connectionsettings';
+import { DEFAULT_CONNECTION_ID } from '../commons';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
-
-const DEFAULT_CONNECTION_ID = '<default>';
 
 export class WorkspaceFolderItem extends VSCode.TreeItem {
   constructor(

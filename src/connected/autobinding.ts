@@ -11,6 +11,7 @@ import * as VSCode from 'vscode';
 import { BindingService } from './binding';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { BindingSuggestion, FindFileByNamesInFolderParams, FoundFileDto, SuggestBindingParams } from '../lsp/protocol';
+import { DEFAULT_CONNECTION_ID } from '../commons';
 
 const AUTOBINDING_THRESHOLD = 5;
 const BIND_ACTION = 'Configure Binding';
@@ -18,7 +19,6 @@ const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindingForWorkspace';
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
-const DEFAULT_CONNECTION_ID = '<default>';
 const LEARN_MORE_DOCS_LINK = 'https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode';
 const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
       Do you want to configure binding?
