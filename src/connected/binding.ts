@@ -227,6 +227,7 @@ export class BindingService {
   async saveBinding(projectKey: string, connectionId?: string, workspaceFolder?: VSCode.WorkspaceFolder) {
     VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/'
                       has been bound with project '${projectKey}'`);
+    connectionId = connectionId || DEFAULT_CONNECTION_ID;
     return VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId, projectKey });

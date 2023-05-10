@@ -218,6 +218,32 @@ suite('Bindings Test Suite', () => {
       expect(defaultConnectionBindings).to.be.equal(undefined);
     });
 
+    test('If connectionId not provided, it should default to <default>', async () => {
+      await VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY)
+        .update(
+          CONNECTED_MODE_SETTINGS_SONARQUBE,
+          [DEFAULT_TEST_SONARQUBE_CONNECTION],
+          VSCode.ConfigurationTarget.Global
+        );
+      await resetBindings();
+
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+
+      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, undefined, workspaceFolder);
+
+      binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(binding).to.deep.equal({
+        connectionId: DEFAULT_CONNECTION_ID,
+        projectKey: 'test.project.key'
+      });
+    });
+
     test('Create Or Edit Binding', async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
 
