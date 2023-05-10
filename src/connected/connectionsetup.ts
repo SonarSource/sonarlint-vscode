@@ -19,6 +19,7 @@ import {
 } from '../settings/connectionsettings';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
+import { DEFAULT_CONNECTION_ID } from '../commons';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -271,7 +272,7 @@ export async function handleMessage(message) {
 }
 
 export function getDefaultConnectionId(message): string {
-  let defaultConnectionId = 'default_connection_id';
+  let defaultConnectionId = DEFAULT_CONNECTION_ID;
   if (message.serverUrl) {
     defaultConnectionId = cleanServerUrl(message.serverUrl);
   }

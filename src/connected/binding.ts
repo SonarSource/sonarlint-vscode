@@ -14,10 +14,10 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
 import { buildBaseServerUrl, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 import { code2ProtocolConverter } from '../util/uri';
+import { DEFAULT_CONNECTION_ID } from '../commons';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
-const DEFAULT_CONNECTION_ID = '<default>';
 const OPEN_FOLDER_ACTION = 'Open Folder';
 const BIND_MANUALLY_ACTION = 'Bind Manually';
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
@@ -203,6 +203,7 @@ export class BindingService {
     serverType: ServerType
   ): Promise<VSCode.QuickPickItem[]> {
     const configScopeId = code2ProtocolConverter(workspaceFolder.uri);
+    connectionId = connectionId || DEFAULT_CONNECTION_ID;
     const suggestedBinding = await this.languageClient.getSuggestedBinding(configScopeId, connectionId);
 
     if (suggestedBinding?.suggestions?.[configScopeId]) {
