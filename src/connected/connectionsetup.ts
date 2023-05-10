@@ -174,7 +174,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         </div>
         ${renderOrganizationKeyField(initialState)}
         <vscode-text-field id="connectionId" type="text" placeholder="My ${serverProductName} Connection" size="40"
-          title="Optionally, please give this connection a memorable name. If no name is provided, Sonar will autmatically generate one." 
+          title="Optionally, please give this connection a memorable name. If no name is provided, Sonar will generate one." 
           value="${initialConnectionId}"
           ${options.mode === 'update' ? 'readonly' : ''}>
           Connection Name
