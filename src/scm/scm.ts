@@ -106,6 +106,7 @@ class GitScm implements Scm {
           const branchName = repository.state.HEAD?.name;
           if (this.localBranchByFolderUri.get(folderUriAsString) !== branchName) {
             verboseLogToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
+            this.localBranchByFolderUri.set(folder.uri.toString(), branchName);
             this.client.didLocalBranchNameChange(folder.uri, branchName);
           }
         }
