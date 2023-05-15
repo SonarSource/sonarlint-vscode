@@ -2,6 +2,7 @@
 
 * Enable analysis of all security hotspots in a workspace folder
 * Make code in rule descriptions easier to understand with syntax and diff highlighting
+* Update JS/TS/CSS analyzer 10.1.0 -> [10.2.0](https://github.com/SonarSource/SonarJS/releases/tag/10.2.0.21568), 17 new rules for JS and TS
 
 ## 3.17
 
