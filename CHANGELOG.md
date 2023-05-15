@@ -1,6 +1,7 @@
 ## 3.18
 
 * Enable analysis of all security hotspots in a workspace folder
+* Make code in rule descriptions easier to understand with syntax and diff highlighting
 
 ## 3.17
 
