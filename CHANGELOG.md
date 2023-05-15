@@ -7,6 +7,7 @@
 * Update PHP analyzer 3.28 -> [3.29](https://sonarsource.atlassian.net/projects/SONARPHP/versions/14065/tab/release-report-all-issues), 2 new rules and precision improvements
 * Update Python analyzer 4.2 -> [4.3](https://sonarsource.atlassian.net/projects/SONARPY/versions/14102/tab/release-report-all-issues), 6 new rules for the Django framework
 * Update IaC analyzer 1.16 -> [1.17](https://github.com/SonarSource/sonar-iac/releases/tag/1.17.0.3976), precision improvements and bug fixes
+* Update text and secrets analyzer 2.0.1 -> [2.0.2](https://github.com/SonarSource/sonar-text/releases/tag/2.0.2.1090) -> [2.1.0](https://github.com/SonarSource/sonar-text/releases/tag/2.1.0.1163), new rule descriptions
 
 ## 3.17
 
