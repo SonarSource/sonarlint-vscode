@@ -6,6 +6,7 @@
 * Update Java analyzer 7.18.0 -> [7.19.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/14108/tab/release-report-all-issues), improve support for analysis of Java 19; support for Java 19+ preview features needs to be enabled by setting `sonar.java.enablePreview` to `true` in `sonarlint.analyzerProperties`
 * Update PHP analyzer 3.28 -> [3.29](https://sonarsource.atlassian.net/projects/SONARPHP/versions/14065/tab/release-report-all-issues), 2 new rules and precision improvements
 * Update Python analyzer 4.2 -> [4.3](https://sonarsource.atlassian.net/projects/SONARPY/versions/14102/tab/release-report-all-issues), 6 new rules for the Django framework
+* Update IaC analyzer 1.16 -> [1.17](https://github.com/SonarSource/sonar-iac/releases/tag/1.17.0.3976), precision improvements and bug fixes
 
 ## 3.17
 
