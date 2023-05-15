@@ -3,6 +3,7 @@
 * Enable analysis of all security hotspots in a workspace folder
 * Make code in rule descriptions easier to understand with syntax and diff highlighting
 * Update JS/TS/CSS analyzer 10.1.0 -> [10.2.0](https://github.com/SonarSource/SonarJS/releases/tag/10.2.0.21568), 17 new rules for JS and TS
+* Update Java analyzer 7.18.0 -> [7.19.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/14108/tab/release-report-all-issues), improve support for analysis of Java 19; support for Java 19+ preview features needs to be enabled by setting `sonar.java.enablePreview` to `true` in `sonarlint.analyzerProperties`
 
 ## 3.17
 
