@@ -1,3 +1,7 @@
+## 3.18
+
+* Enable analysis of all security hotspots in a workspace folder
+
 ## 3.17
 
 * Support analysis of CloudFormation
