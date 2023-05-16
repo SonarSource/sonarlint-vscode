@@ -7,14 +7,15 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { SINGLE_LOCATION_DECORATION, isValidRange } from '../location/locations';
+import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { AnalysisFile, Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
 import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 import { Commands } from '../util/commands';
 import { verboseLogToSonarLintOutput } from '../util/logging';
 import {
-  HotspotAnalysisConfirmation, notCompatibleServerWarning,
+  HotspotAnalysisConfirmation,
+  notCompatibleServerWarning,
   noWorkspaceFolderToScanMessage,
   tooManyFilesConfirmation
 } from '../util/showMessage';
@@ -200,8 +201,9 @@ export async function getFilesForHotspotsAndLaunchScan(
   return vscode.window.withProgress(
     { title: 'Preparing Files to Scan', location: { viewId: HOTSPOTS_VIEW_ID }, cancellable: true },
     async (progress, cancelToken) => {
-      const checkLocalDetectionResponse = await languageClient
-        .checkLocalHotspotsDetectionSupported(code2ProtocolConverter(folderUri));
+      const checkLocalDetectionResponse = await languageClient.checkLocalHotspotsDetectionSupported(
+        code2ProtocolConverter(folderUri)
+      );
       if (!checkLocalDetectionResponse.isSupported) {
         notCompatibleServerWarning(folderUri.path, checkLocalDetectionResponse.reason);
         return;
@@ -305,9 +307,8 @@ export async function getFilesForHotspotsScan(
   if (cancelToken.isCancellationRequested) {
     return [];
   }
-  const openDocuments = vscode.window.visibleTextEditors.map(e => e.document);
   if (cancelToken.isCancellationRequested) {
     return [];
   }
-  return await createAnalysisFilesFromFileUris(notIgnoredFiles, openDocuments, progress, cancelToken);
+  return await createAnalysisFilesFromFileUris(notIgnoredFiles, vscode.workspace.textDocuments, progress, cancelToken);
 }

@@ -12,18 +12,13 @@ import { ProviderResult, TextDocument, ThemeColor, ThemeIcon } from 'vscode';
 import { Diagnostic, PublishHotspotsForFileParams } from '../lsp/protocol';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
-import {
-  getFileNameFromFullPath,
-  getRelativePathFromFullPath,
-  protocol2CodeConverter
-} from '../util/uri';
+import { getFileNameFromFullPath, getRelativePathFromFullPath, protocol2CodeConverter } from '../util/uri';
 import { OPEN_HOTSPOT_IN_IDE_SOURCE } from './hotspots';
 import { logToSonarLintOutput } from '../util/logging';
 import { isVerboseEnabled } from '../settings/settings';
 
 const SONARLINT_SOURCE = 'sonarlint';
-const SONARQUBE_SOURCE = 'sonarqube';
-const SONARCLOUD_SOURCE = 'sonarcloud';
+const REMOTE_SOURCE = 'remote';
 
 const REFRESH_DELAY_MS = 500;
 
@@ -152,6 +147,12 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   }
 
   countAllHotspots() {
+    const openDocuments = VSCode.workspace.textDocuments;
+    if (this.showMode === 'OpenFiles') {
+      return [...this.fileHotspotsCache]
+        .map((entry, index) => (this.isFileOpen(openDocuments, entry[0]) ? entry[1].length : 0))
+        .reduce((a, b) => a + b, 0);
+    }
     return [...this.fileHotspotsCache.values()].map(diags => diags.length).reduce((a, b) => a + b, 0);
   }
 
@@ -205,9 +206,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
         if (contextValue === 'newHotspotsGroup') {
           return h.source === SONARLINT_SOURCE;
         } else if (contextValue === 'knownHotspotsGroup') {
-          return (
-            h.source === SONARQUBE_SOURCE || h.source === SONARCLOUD_SOURCE || h.source === OPEN_HOTSPOT_IN_IDE_SOURCE
-          );
+          return h.source === REMOTE_SOURCE || h.source === OPEN_HOTSPOT_IN_IDE_SOURCE;
         }
         return false;
       })
@@ -226,8 +225,8 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       .sort((h1, h2) => h1.vulnerabilityProbability - h2.vulnerabilityProbability);
   }
 
-  getFiles(openDocuments = VSCode.window.visibleTextEditors.map(e => e.document)) {
-    const arr:FileGroup[] = [];
+  getFiles(openDocuments = VSCode.workspace.textDocuments.map(e => e)) {
+    const arr: FileGroup[] = [];
     this.fileHotspotsCache.forEach((_v, fileName) => {
       if (this.showMode === 'OpenFiles') {
         const isFileOpen = this.isFileOpen(openDocuments, fileName);
@@ -241,7 +240,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     return arr;
   }
 
-  private isFileOpen(openDocuments: TextDocument[], fileName: string) {
+  private isFileOpen(openDocuments: readonly TextDocument[], fileName: string) {
     const fileUri = protocol2CodeConverter(fileName);
     const fileIndex = openDocuments.findIndex(d => d.uri.path === fileUri.path);
     return fileIndex > -1;
@@ -270,9 +269,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       [...this.fileHotspotsCache.values()] // at least one of the hotspots in cache is in the view already
         .map(diags =>
           diags.some(diag => {
-            return (
-              diag.source === SONARLINT_SOURCE || diag.source === SONARQUBE_SOURCE || diag.source === SONARCLOUD_SOURCE
-            );
+            return diag.source === SONARLINT_SOURCE || diag.source === REMOTE_SOURCE;
           })
         )
         .some(v => {
@@ -303,9 +300,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   fileHasTrackedHotspots(fileUri: string): boolean {
     return (
       this.fileHotspotsCache.get(fileUri).length > 0 &&
-      this.fileHotspotsCache
-        .get(fileUri)
-        .some(diag => diag.source === SONARQUBE_SOURCE || diag.source === SONARCLOUD_SOURCE)
+      this.fileHotspotsCache.get(fileUri).some(diag => diag.source === REMOTE_SOURCE)
     );
   }
 

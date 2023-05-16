@@ -123,7 +123,7 @@ export async function findFilesInFolder(
 
 export async function createAnalysisFilesFromFileUris(
   fileUris: vscode.Uri[],
-  openDocuments: vscode.TextDocument[],
+  openDocuments: readonly vscode.TextDocument[],
   progress: vscode.Progress<{
     message?: string;
     increment?: number;
