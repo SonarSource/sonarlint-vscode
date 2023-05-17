@@ -146,8 +146,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       });
   }
 
-  countAllHotspots() {
-    const openDocuments = VSCode.workspace.textDocuments;
+  countAllHotspots(openDocuments = VSCode.workspace.textDocuments) {
     if (this.showMode === 'OpenFiles') {
       return [...this.fileHotspotsCache]
         .map((entry, index) => (this.isFileOpen(openDocuments, entry[0]) ? entry[1].length : 0))
@@ -225,7 +224,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       .sort((h1, h2) => h1.vulnerabilityProbability - h2.vulnerabilityProbability);
   }
 
-  getFiles(openDocuments = VSCode.workspace.textDocuments.map(e => e)) {
+  getFiles(openDocuments = VSCode.workspace.textDocuments) {
     const arr: FileGroup[] = [];
     this.fileHotspotsCache.forEach((_v, fileName) => {
       if (this.showMode === 'OpenFiles') {
@@ -242,7 +241,9 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
 
   private isFileOpen(openDocuments: readonly TextDocument[], fileName: string) {
     const fileUri = protocol2CodeConverter(fileName);
-    const fileIndex = openDocuments.findIndex(d => d.uri.path === fileUri.path);
+    const fileIndex = openDocuments.findIndex(d => {
+      return d.uri.path === fileUri.path;
+    });
     return fileIndex > -1;
   }
 

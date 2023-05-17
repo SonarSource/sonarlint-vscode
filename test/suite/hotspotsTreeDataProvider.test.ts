@@ -6,7 +6,7 @@ import {
 import { AllHotspotsTreeDataProvider, HotspotNode } from '../../src/hotspot/hotspotsTreeDataProvider';
 import { assert } from 'chai';
 import * as vscode from 'vscode';
-import { ThemeIcon } from 'vscode';
+import { TextDocument, ThemeIcon } from 'vscode';
 import { protocol2CodeConverter } from '../../src/util/uri';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 
@@ -46,6 +46,7 @@ let underTestWithValidInitData: AllHotspotsTreeDataProvider;
 let fullFile1Uri;
 let fullFile2Uri;
 let diagnostic6;
+let openDocuments: TextDocument[];
 
 suite('Hotspots tree view test suite', () => {
   setup(() => {
@@ -60,13 +61,13 @@ suite('Hotspots tree view test suite', () => {
       flows: [],
       range: { start: { line: 2, character: 1 }, end: { line: 4, character: 1 } },
       message: 'hotspot 2',
-      source: 'sonarqube'
+      source: 'remote'
     };
     const diagnostic3 = {
       flows: [],
       range: { start: { line: 3, character: 1 }, end: { line: 5, character: 1 } },
       message: 'hotspot 3',
-      source: 'sonarqube'
+      source: 'remote'
     };
     const diagnostic4 = {
       flows: [],
@@ -91,7 +92,7 @@ suite('Hotspots tree view test suite', () => {
       flows: [],
       range: { start: { line: 2, character: 1 }, end: { line: 4, character: 1 } },
       message: 'hotspot 2',
-      source: 'sonarqube',
+      source: 'remote',
       data: 'hotspotKey2'
     };
 
@@ -100,11 +101,14 @@ suite('Hotspots tree view test suite', () => {
 
     underTestWithValidInitData.fileHotspotsCache.set(fullFile1Uri, [diagnostic5]);
     underTestWithValidInitData.fileHotspotsCache.set(fullFile2Uri, [diagnostic6]);
+
+    openDocuments = [createOpenTextDocument(fullFile1Uri), createOpenTextDocument(fullFile2Uri)];
   });
 
   suite('countAllHotspots()', () => {
-    test('countAllHotspots should count all hotspots', () => {
-      assert.equal(underTestWithDummyInitData.countAllHotspots(), 4);
+    test('countAllHotspots should count all hotspots in open files', () => {
+      underTestWithValidInitData.showHotspotsInOpenFiles();
+      assert.equal(underTestWithValidInitData.countAllHotspots(openDocuments), 2);
     });
     test('countAllHotspots should return 0 when there are no hotspots', () => {
       const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithConnections);
@@ -223,13 +227,13 @@ suite('Hotspots tree view test suite', () => {
         flows: [],
         range: { start: { line: 3, character: 1 }, end: { line: 5, character: 1 } },
         message: 'hotspot 1',
-        source: 'sonarqube'
+        source: 'remote'
       };
       const diagnostic2 = {
         flows: [],
         range: { start: { line: 4, character: 1 }, end: { line: 5, character: 1 } },
         message: 'hotspot 4',
-        source: 'sonarqube'
+        source: 'remote'
       };
 
       underTest.fileHotspotsCache.set('file1', [diagnostic1, diagnostic2]);
@@ -262,11 +266,6 @@ suite('Hotspots tree view test suite', () => {
       assert.equal(children.length, 0);
     });
 
-    const openDocuments: vscode.TextDocument[] = [
-      createOpenTextDocument(`${vscode.workspace.workspaceFolders[0].uri}/sample-js/main.js`),
-      createOpenTextDocument(`${vscode.workspace.workspaceFolders[0].uri}/sample-multi-js/folder1/sample.js`)
-    ];
-
     test('should return list with file groups when cache is not empty', () => {
       const children = underTestWithValidInitData.getFiles(openDocuments);
 
@@ -291,21 +290,21 @@ suite('Hotspots tree view test suite', () => {
       assert.isTrue((hotspots[0].label as string).includes('hotspot'));
       assert.equal((hotspots[0] as HotspotNode).key, 'hotspotKey2');
     });
-
-    function createOpenTextDocument(uri: string): vscode.TextDocument {
-      const uriPath = protocol2CodeConverter(uri).path;
-      return {
-        // @ts-ignore
-        uri: {
-          path: uriPath
-        },
-        version: 11,
-        getText(): string {
-          return 'text in editor';
-        },
-        languageId: 'languageFromEditor',
-        fileName: 'sample.js'
-      };
-    }
   });
+  function createOpenTextDocument(uri: string): vscode.TextDocument {
+    console.log(`uri ${uri}`);
+    const uriPath = protocol2CodeConverter(uri).path;
+    return {
+      // @ts-ignore
+      uri: {
+        path: uriPath
+      },
+      version: 11,
+      getText(): string {
+        return 'text in editor';
+      },
+      languageId: 'languageFromEditor',
+      fileName: 'sample.js'
+    };
+  }
 });
