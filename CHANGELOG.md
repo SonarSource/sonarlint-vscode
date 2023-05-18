@@ -1,6 +1,8 @@
 ## 3.19
 
 * Support analysis of COBOL in connected mode with SonarCloud or SonarQube Enterprise Edition
+* Allow marking known issues and taint vulnerabilities as resolved in Connected Mode
+* Allow changing status of known security hotspots in Connected Mode
 
 ## 3.18
 

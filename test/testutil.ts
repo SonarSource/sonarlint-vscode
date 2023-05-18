@@ -18,3 +18,13 @@ export function skipTestOnWindowsVm(testContext: Context, reason: string) {
     testContext.skip();
   }
 }
+
+export function getWorkspaceFolder() {
+  return {
+    uri: {
+      path: '/path1'
+    },
+    name: 'Name1',
+    index: 0
+  };
+}

@@ -497,6 +497,12 @@
         "title": "Hide Security Hotspot",
         "category": "SonarLint",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
+      },
+      {
+        "command": "SonarLint.ChangeHotspotStatus",
+        "title": "Change status",
+        "category": "SonarLint",
+        "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
       }
     ],
     "viewsContainers": {
@@ -666,6 +672,11 @@
           "command": "SonarLint.ShowHotspotDetails",
           "title": "Show Hotspot Details",
           "when": "view == SonarLint.SecurityHotspots && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
+        },
+        {
+          "command": "SonarLint.ChangeHotspotStatus",
+          "title": "Set status",
+          "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
         },
         {
           "command": "SonarLint.OpenHotspotOnServer",

@@ -25,6 +25,7 @@ import {
   HotspotAnalysisConfirmation,
   notCompatibleServerWarning,
   noWorkspaceFolderToScanMessage,
+  showChangeStatusConfirmationDialog,
   tooManyFilesConfirmation
 } from '../util/showMessage';
 import { code2ProtocolConverter, getUriFromRelativePath } from '../util/uri';
@@ -368,4 +369,43 @@ export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, ho
   };
 
   hotspotDetailsPanel.reveal();
+}
+
+export async function changeHotspotStatus(hotspotServerKey: string, fileUriAsSting: string,
+                                                  languageClient: SonarLintExtendedLanguageClient) {
+  const fileUri = vscode.Uri.parse(fileUriAsSting);
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+  return doChangeHotspotStatus(hotspotServerKey, fileUriAsSting, workspaceFolder, languageClient);
+}
+
+// visible for testing
+export async function doChangeHotspotStatus(hotspotServerKey: string, fileUriAsSting: string,
+                                            workspaceFolder:vscode.WorkspaceFolder,
+                                            languageClient: SonarLintExtendedLanguageClient) {
+  const allowedHotspotStatuses =
+    await languageClient.getAllowedHotspotStatuses(hotspotServerKey, workspaceFolder.uri.toString(), fileUriAsSting);
+  if (allowedHotspotStatuses == null) {
+    return Promise.resolve();
+  }
+  if (!allowedHotspotStatuses.permitted) {
+    vscode.window.showWarningMessage(
+      `Not permitted to change hotspot status. Reason: ${allowedHotspotStatuses.notPermittedReason}`);
+    return Promise.resolve();
+  }
+  if (allowedHotspotStatuses.allowedStatuses.length === 0) {
+    vscode.window.showInformationMessage(
+      `There are no allowed statuses to set for this hotspot`);
+    return Promise.resolve();
+  }
+  const statusQuickPickItems = allowedHotspotStatuses.allowedStatuses;
+  const chosenStatus = await vscode.window.showQuickPick(statusQuickPickItems, {
+    title: 'Change hotspot status',
+    placeHolder: 'Choose a status for the hotspot'
+  });
+  return showChangeStatusConfirmationDialog('hotspot').then(async answer => {
+    if (answer === 'Yes') {
+      return languageClient.changeHotspotStatus(hotspotServerKey, chosenStatus, fileUriAsSting);
+    }
+  });
+
 }

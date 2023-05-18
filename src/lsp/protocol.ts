@@ -133,7 +133,8 @@ export namespace OpenConnectionSettingsNotification {
 
 export enum HotspotResolution {
   Fixed,
-  Safe
+  Safe,
+  Acknowledged
 }
 
 export enum HotspotProbability {
@@ -506,5 +507,35 @@ interface ShowHotspotDetailsParams {
 
 export namespace ShowHotspotDetails {
   export const type = new lsp.NotificationType<ShowHotspotDetailsParams>('sonarlint/showHotspotDetails');
+}
+
+export interface GetAllowedHotspotStatusesResponse {
+  permitted: boolean;
+  notPermittedReason: string;
+  allowedStatuses: string[];
+}
+
+export interface GetAllowedHotspotStatusesParams {
+  fileUri: string;
+  folderUri: string;
+  hotspotKey: string;
+}
+
+export namespace GetAllowedHotspotStatuses {
+  export const type = new lsp.RequestType<GetAllowedHotspotStatusesParams, GetAllowedHotspotStatusesResponse, null>(
+    'sonarlint/getAllowedHotspotStatuses'
+  );
+}
+
+export interface SetHotspotStatusParams {
+  hotspotKey: string;
+  newStatus: string;
+  fileUri: string;
+}
+
+export namespace SetHotspotStatus {
+  export const type = new lsp.NotificationType<SetHotspotStatusParams>(
+    'sonarlint/changeHotspotStatus'
+  );
 }
 //#endregion
