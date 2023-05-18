@@ -56,6 +56,8 @@ import { getPlatform } from './util/platform';
 import { JAVA_HOME_CONFIG, installManagedJre, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
+import { muteIssueMultiStepInput } from './issue/muteIssue';
+import { IssueService } from './issue/issue';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -214,6 +216,7 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   ConnectionSettingsService.init(context, languageClient);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
+  IssueService.init(languageClient);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
@@ -419,6 +422,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.ADD_PROJECT_BINDING, connection =>
       BindingService.instance.createOrEditBinding(connection.id, connection.contextValue)
     )
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.MUTE_ISSUE,
+      (workspaceUri:string, issueKey: string, fileUri: string, isTaintIssue: boolean) =>
+      muteIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue))
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {

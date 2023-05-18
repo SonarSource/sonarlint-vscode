@@ -1,3 +1,4 @@
+
 ```json
 {
   "days_since_installation": 27,
@@ -41,7 +42,11 @@
     "quick_fix_applied": ["java:S1656", "java:S1872"]
   },
   "hotspot": {
-    "open_in_browser_count": 5
+    "open_in_browser_count": 5,
+    "status_changed_count": 3
+  },
+  "issue": {
+    "status_changed_count": 2
   },
   "help_and_feedback": {
     "count_by_link": {
