@@ -112,7 +112,7 @@ More information about security-related rules is available in the [SonarQube](ht
 
 ### Security Hotspots in SonarLint
 ​
-In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) is enabled if you are using [Connected Mode](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode) with SonarQube 9.7 or above.
+In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) is enabled if you are using [Connected Mode](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode) with SonarQube 9.7 or above. From version 3.18+, Security Hotspots are also found when bound to a project in SonarCloud.
 
 Please see the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Security-hotspots) for more details. 
 
