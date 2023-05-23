@@ -2,7 +2,7 @@
   "name": "sonarlint-vscode",
   "displayName": "SonarLint",
   "description": "Detects and helps fix issues in your JS/TS, Python, PHP, Java, C, C++, Go and IaC code locally in your IDE. Use with SonarQube & SonarCloud for optimal team performance.",
-  "version": "3.18.0-SNAPSHOT",
+  "version": "3.18.0",
   "icon": "images/sonarlint_wave_128px.png",
   "publisher": "SonarSource",
   "homepage": "https://www.sonarsource.com/products/sonarlint/",
