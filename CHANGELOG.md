@@ -9,6 +9,8 @@
 * Update Python analyzer 4.2 -> [4.3](https://sonarsource.atlassian.net/projects/SONARPY/versions/14102/tab/release-report-all-issues), 6 new rules for the Django framework
 * Update IaC analyzer 1.16 -> [1.17](https://github.com/SonarSource/sonar-iac/releases/tag/1.17.0.3976), precision improvements and bug fixes
 * Update text and secrets analyzer 2.0.1 -> [2.0.2](https://github.com/SonarSource/sonar-text/releases/tag/2.0.2.1090) -> [2.1.0](https://github.com/SonarSource/sonar-text/releases/tag/2.1.0.1163), new rule descriptions
+* Update CFamily analyzer 6.44 -> [6.45](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D14104%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), Bug fixes and improvements
+
 
 ## 3.17
 
