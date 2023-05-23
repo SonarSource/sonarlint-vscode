@@ -1,6 +1,7 @@
 # SonarLint for Visual Studio Code
 
-SonarLint is a free IDE extension that lets you fix coding issues before they exist! Like a spell checker, SonarLint highlights Bugs and Security Vulnerabilities as you write code, with clear remediation guidance so you can fix them before the code is even committed. SonarLint in VS Code supports analysis of C, C++, HTML, Java, JavaScript, PHP, Python and TypeScript, and you can install it directly from the VS Code Marketplace!
+SonarLint is a free IDE extension that empowers you to fix coding issues before they exist. More than a linter, SonarLint highlights issues that may result in Bugs and Security Vulnerabilities as you create your code, offering clear remediation guidance and educational help so you can fix them before the code is committed.
+SonarLint in VS Code supports analysis of JS/TS, Python, PHP, Java, C, C++, Go, and IaC code locally in your IDE. Use with SonarQube & SonarCloud for optimal team performance, and additional benefits.
 
 ## How it works
 
@@ -172,7 +173,7 @@ From v3.10, SonarLint for VSCode tries to automatically detect a remote SonarQub
 
 If no remote match is found, you will be prompted to configure binding manually.
 
-To manually configure a project binding, navigate to the **SONARLINT CONNECTED MODE** view in the VSCode Explorer and select **Add Project Binding** to add the desired connection.
+To manually configure a project binding, open the **CONNECTED MODE** view and select **Add Project Binding** for the desired connection.
 
 <img src='images/connected_mode/add-binding.png' alt='Add Project Binding' width='500'/>
 
