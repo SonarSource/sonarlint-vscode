@@ -141,9 +141,9 @@ Connected Mode will also unlock your analysis of these languages:
 When configuring Connected Mode, follow the [Connection Setup instructions](#connection-setup) below.
 
 ## Connection Setup
-In SonarLint v3.6 and above for VSCode, to set up SonarQube/SonarCloud connections, open a **SONARLINT CONNECTED MODE** view in VSCode.
+In v3.8 and above of SonarLint for VSCode, to set up SonarQube/SonarCloud connections, navigate to the **SONARLINT** > **CONNECTED MODE** view container in the VS Code Activity Bar.
 
-<img src='images/connected_mode_treeview.png' alt='Empty Connected Mode View' width='350'/>
+<img src='images/connected_mode/connected_mode_treeview.png' alt='Empty Connected Mode View' width='350'/>
 
 Select either **Add SonarQube Connection** or **Add SonarCloud Connection**, and complete the fields.
 
@@ -174,7 +174,7 @@ If no remote match is found, you will be prompted to configure binding manually.
 
 To manually configure a project binding, navigate to the **SONARLINT CONNECTED MODE** view in the VSCode Explorer and select **Add Project Binding** to add the desired connection.
 
-<img src='images/3.8_addBinding.png' alt='Add Project Binding' width='500'/>
+<img src='images/connected_mode/add-binding.png' alt='Add Project Binding' width='500'/>
 
 
 If your open workspace contains multiple folders, you will be prompted to choose a specific folder.
@@ -187,9 +187,9 @@ After selecting the folder, choose the remote SonarQube/SonarCloud project you w
 <img src='images/3.8_selectProject.png' alt='Select Project' width='500'/>
 
 
-Select the desired project and enjoy Connected Mode!
-You can also edit/delete bindings from the **SONARLINT CONNECTED MODE** view.
+Select the desired project and enjoy Connected Mode! You can also edit or delete bindings from the **CONNECTED MODE** view.
 
+<img src='images/connected_mode/edit-binding.png' alt='Edit Binding' width='500'/>
 <img src='images/3.8_editBinding.png' alt='Edit Binding' width='500'/>
 
 Action buttons in the UI used to edit/delete existing, or create additional bindings will be revealed when hovering over each connection.
