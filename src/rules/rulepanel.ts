@@ -135,7 +135,9 @@ export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
         return `<input type="radio" name="tabs" id="tab-${index}" ${index === 0 ? 'checked="checked"' : ''}>
         <label for="tab-${index}" class="tabLabel">${tab.title}</label>
         <section class="tab${tab.hasContextualInformation ? ' contextualTabContainer' : ''}">
-        ${content}
+          <div class="rule-desc">
+          ${content}
+          <div class="rule-desc">
         </section>`;
       })
       .join('');
@@ -157,7 +159,9 @@ function computeTabContextualDescription(tab, languageKey) {
               <label for="context-${contextIndex}" class="contextLabel">${contextualDescription.displayName}</label>
               <section class="tab">
               <h4>${computeHeading(tab, contextualDescription)}</h4>
-              ${newContent}
+                <div class="rule-desc">
+                ${newContent}
+                </div>
               </section>`;
   });
   return contextRadioButtons.join('');
