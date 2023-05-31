@@ -10,6 +10,7 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
+import { ShowRuleDescriptionParams } from './protocol';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<protocol.RulesResponse> {
@@ -78,11 +79,15 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetFilePatternsForAnalysis.type, { folderUri });
   }
 
-  getSuggestedBinding(configScopeId:string, connectionId: string): Promise<protocol.GetSuggestedBindingResponse>{
-    return this.sendRequest(protocol.GetSuggestedBinding.type, {configScopeId, connectionId});
+  getSuggestedBinding(configScopeId: string, connectionId: string): Promise<protocol.GetSuggestedBindingResponse> {
+    return this.sendRequest(protocol.GetSuggestedBinding.type, { configScopeId, connectionId });
   }
 
   checkLocalHotspotsDetectionSupported(folderUri: string): Promise<protocol.CheckLocalDetectionSupportedResponse> {
     return this.sendRequest(protocol.CheckLocalDetectionSupported.type, { folderUri });
+  }
+
+  getHotspotDetails(ruleKey, hotspotId, fileUri): Promise<ShowRuleDescriptionParams> {
+    return this.sendRequest(protocol.GetHotspotDetails.type, { ruleKey, hotspotId, fileUri });
   }
 }

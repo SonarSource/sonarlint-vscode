@@ -52,10 +52,10 @@ export namespace Commands {
   export const ADD_PROJECT_BINDING = 'SonarLint.AddProjectBinding';
   export const EDIT_PROJECT_BINDING = 'SonarLint.EditProjectBinding';
   export const REMOVE_PROJECT_BINDING = 'SonarLint.RemoveProjectBinding';
-  export const AUTO_BIND_WORKSPACE_FOLDERS = 'SonarLint.AutoBindWorkspaceFolders';
 
   export const SHOW_HOTSPOT_LOCATION = 'SonarLint.ShowHotspotLocation';
   export const SHOW_HOTSPOT_RULE_DESCRIPTION = 'SonarLint.ShowHotspotRuleDescription';
+  export const SHOW_HOTSPOT_DETAILS = 'SonarLint.ShowHotspotDetails';
   export const OPEN_HOTSPOT_ON_SERVER = 'SonarLint.OpenHotspotOnServer';
   export const HIGHLIGHT_REMOTE_HOTSPOT_LOCATION = 'SonarLint.HighlightRemoteHotspotLocation';
   export const CLEAR_HOTSPOT_HIGHLIGHTING = 'SonarLint.ClearHotspotLocations';

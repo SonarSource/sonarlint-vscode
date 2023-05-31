@@ -9,7 +9,14 @@
 import * as vscode from 'vscode';
 import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { AnalysisFile, Diagnostic, HotspotProbability, RemoteHotspot } from '../lsp/protocol';
+import {
+  AnalysisFile,
+  Diagnostic,
+  ExtendedHotspotStatus,
+  HotspotProbability,
+  RemoteHotspot,
+  ShowRuleDescriptionParams
+} from '../lsp/protocol';
 import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 import { Commands } from '../util/commands';
 import { verboseLogToSonarLintOutput } from '../util/logging';
@@ -29,13 +36,16 @@ import {
   getQuickPickListItemsForWorkspaceFolders,
   resolveExtensionFile
 } from '../util/util';
-import { computeHotspotContextPanelContent } from './hotspotContextPanel';
+import { computeHotspotContextPanelContent, formatProbability } from './hotspotContextPanel';
 import {
   AllHotspotsTreeDataProvider,
   HotspotNode,
   HotspotReviewPriority,
   HotspotTreeViewItem
 } from './hotspotsTreeDataProvider';
+import { escapeHtml, ResourceResolver } from '../util/webview';
+import * as util from '../util/util';
+import { renderRuleDescription } from '../rules/rulepanel';
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
@@ -44,6 +54,7 @@ export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
 const FILE_COUNT_LIMIT_FOR_FULL_PROJECT_ANALYSIS = 1000;
 let activeHotspot: RemoteHotspot;
 let hotspotDescriptionPanel: vscode.WebviewPanel;
+let hotspotDetailsPanel: vscode.WebviewPanel;
 
 export const showSecurityHotspot = async (
   allHotspotsView: vscode.TreeView<HotspotTreeViewItem>,
@@ -311,4 +322,62 @@ export async function getFilesForHotspotsScan(
     return [];
   }
   return await createAnalysisFilesFromFileUris(notIgnoredFiles, vscode.workspace.textDocuments, progress, cancelToken);
+}
+
+function formatStatus(statusIndex: number) {
+  console.log(statusIndex);
+  return statusIndex === ExtendedHotspotStatus.ToReview ? 'To review' : ExtendedHotspotStatus[statusIndex].toString();
+}
+
+export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, hotspot: HotspotNode) {
+  console.log(hotspot);
+  if (!hotspotDetailsPanel) {
+    hotspotDetailsPanel = vscode.window.createWebviewPanel(
+      'sonarlint.DiagContext',
+      'Security Hotspot Details',
+      vscode.ViewColumn.Two,
+      {
+        enableScripts: false
+      }
+    );
+    hotspotDetailsPanel.onDidDispose(() => {
+      hotspotDetailsPanel = undefined;
+    }, null);
+  }
+
+  const resolver = new ResourceResolver(util.extensionContext, hotspotDetailsPanel.webview);
+  const styleSrc = resolver.resolve('styles', 'rule.css');
+  const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
+  const hljsSrc = resolver.resolve('styles', 'vs.css');
+
+  const priority = formatProbability(HotspotReviewPriority[hotspot.vulnerabilityProbability]);
+  const status = formatStatus(hotspot.status);
+
+  const ruleDescription = renderRuleDescription(hotspotDetails);
+
+  hotspotDetailsPanel.webview.html = `<!doctype html>
+  <html lang='en'>
+    <head>
+      <title>${escapeHtml(hotspot.message)}</title>
+      <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+      <meta http-equiv='Content-Security-Policy'
+        content="default-src 'none'; style-src ${hotspotDetailsPanel.webview.cspSource}"/>
+      <link rel='stylesheet' type='text/css' href='${styleSrc}' />
+      <link rel='stylesheet' type='text/css' href='${hotspotSrc}' />
+      <link rel='stylesheet' type='text/css' href='${hljsSrc}' />
+    </head>
+    <body>
+      <h1><big>${escapeHtml(hotspot.message)}</big> (${hotspot.ruleKey})</h1>
+      <dl class='hotspot-header'>
+        <dd>Review priority</dd><dt>${priority}</dt>
+        <dd>Status</dd><dt>${status}</dt>
+      </dl>
+      ${ruleDescription}
+      </body>
+  </html>`;
+  hotspotDetailsPanel.iconPath = {
+    light: resolveExtensionFile('images/sonarlint.svg'),
+    dark: resolveExtensionFile('images/sonarlint.svg')
+  };
+  hotspotDetailsPanel.reveal();
 }

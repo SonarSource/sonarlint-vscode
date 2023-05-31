@@ -29,7 +29,8 @@ import {
   hideSecurityHotspot,
   showHotspotDescription,
   showSecurityHotspot,
-  useProvidedFolderOrPickManuallyAndScan
+  useProvidedFolderOrPickManuallyAndScan,
+  showHotspotDetails
 } from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
@@ -328,6 +329,13 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_RULE_DESCRIPTION, hotspot =>
       languageClient.showHotspotRuleDescription(hotspot.ruleKey, hotspot.key, hotspot.fileUri)
     )
+  );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DETAILS, async hotspot => {
+      const hotspotDetails = await languageClient.getHotspotDetails(hotspot.ruleKey, hotspot.key, hotspot.fileUri);
+      showHotspotDetails(hotspotDetails, hotspot);
+    })
   );
 
   context.subscriptions.push(
