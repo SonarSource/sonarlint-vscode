@@ -86,14 +86,18 @@ suite('Hotspots tree view test suite', () => {
       range: { start: { line: 1, character: 1 }, end: { line: 2, character: 1 } },
       message: 'hotspot 1',
       source: 'sonarlint',
-      data: 'hotspotKey2'
+      data: {
+        serverIssueKey: 'hotspotKey2'
+      }
     };
     diagnostic6 = {
       flows: [],
       range: { start: { line: 2, character: 1 }, end: { line: 4, character: 1 } },
       message: 'hotspot 2',
       source: 'remote',
-      data: 'hotspotKey2'
+      data: {
+        serverIssueKey: 'hotspotKey2'
+      }
     };
 
     fullFile1Uri = `${vscode.workspace.workspaceFolders[0].uri}/sample-js/main.js`;

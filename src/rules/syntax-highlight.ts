@@ -72,7 +72,7 @@ export function highlightAllCodeSnippetsInDesc(htmlDescription, ruleLanguageKey,
     }
   } catch (e) {
     logToSonarLintOutput(
-      `Error occured when rendering rule description. Rendering without syntax highlighting. \n ${e.message}`
+      `Error occurred when rendering rule description. Rendering without syntax highlighting. \n ${e.message}`
     );
   }
 

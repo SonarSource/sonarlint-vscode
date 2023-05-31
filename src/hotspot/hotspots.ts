@@ -324,13 +324,11 @@ export async function getFilesForHotspotsScan(
   return await createAnalysisFilesFromFileUris(notIgnoredFiles, vscode.workspace.textDocuments, progress, cancelToken);
 }
 
-function formatStatus(statusIndex: number) {
-  console.log(statusIndex);
+export function formatStatus(statusIndex: number) {
   return statusIndex === ExtendedHotspotStatus.ToReview ? 'To review' : ExtendedHotspotStatus[statusIndex].toString();
 }
 
 export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, hotspot: HotspotNode) {
-  console.log(hotspot);
   if (!hotspotDetailsPanel) {
     hotspotDetailsPanel = vscode.window.createWebviewPanel(
       'sonarlint.DiagContext',
