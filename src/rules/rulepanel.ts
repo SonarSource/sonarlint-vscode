@@ -131,13 +131,12 @@ export function renderRuleDescription(rule: ShowRuleDescriptionParams) {
             rule.languageKey,
             true
           );
+          content = `<div class='rule-desc'>${content}</div>`;
         }
         return `<input type="radio" name="tabs" id="tab-${index}" ${index === 0 ? 'checked="checked"' : ''}>
         <label for="tab-${index}" class="tabLabel">${tab.title}</label>
         <section class="tab${tab.hasContextualInformation ? ' contextualTabContainer' : ''}">
-          <div class="rule-desc">
           ${content}
-          <div class="rule-desc">
         </section>`;
       })
       .join('');
