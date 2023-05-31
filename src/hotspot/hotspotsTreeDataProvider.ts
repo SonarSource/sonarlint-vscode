@@ -25,7 +25,8 @@ const REFRESH_DELAY_MS = 500;
 export enum HotspotReviewPriority {
   High = 1,
   Medium = 2,
-  Low = 3
+  Low = 3,
+  Hint = 4
 }
 
 export class HotspotGroup extends VSCode.TreeItem {
@@ -75,7 +76,8 @@ export class HotspotNode extends VSCode.TreeItem {
     public readonly source: string,
     public readonly message: string,
     public readonly ruleKey: string,
-    public readonly fileUri: string
+    public readonly fileUri: string,
+    public readonly status: number
   ) {
     super(message, VSCode.TreeItemCollapsibleState.None);
     this.id = key;
@@ -210,7 +212,8 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
         return false;
       })
       .map(h => {
-        const hotspotKey = h.data as string;
+        const hotspotKey = h.data.serverIssueKey as string;
+        const status = h.data.status as number;
         return new HotspotNode(
           hotspotKey,
           this.getHotspotItemContextValue(h, contextValue),
@@ -218,7 +221,8 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
           h.source,
           h.message,
           h.code as string,
-          fileUri
+          fileUri,
+          status
         );
       })
       .sort((h1, h2) => h1.vulnerabilityProbability - h2.vulnerabilityProbability);

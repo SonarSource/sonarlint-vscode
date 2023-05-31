@@ -147,6 +147,13 @@ export enum HotspotStatus {
   Reviewed
 }
 
+export enum ExtendedHotspotStatus {
+  ToReview,
+  Safe,
+  Fixed,
+  Acknowledged
+}
+
 export interface RemoteHotspot {
   message: string;
   filePath: string;
@@ -261,6 +268,14 @@ export namespace CheckLocalDetectionSupported {
   export const type = new lsp.RequestType<FolderUriParams, CheckLocalDetectionSupportedResponse, null>(
     'sonarlint/checkLocalDetectionSupported'
   );
+}
+
+export namespace GetHotspotDetails {
+  export const type = new lsp.RequestType<
+    ShowHotspotRuleDescriptionNotificationParams,
+    ShowRuleDescriptionParams,
+    null
+  >('sonarlint/getHotspotDetails');
 }
 
 //#endregion
@@ -457,5 +472,13 @@ export interface AssistBindingParams {
 
 export namespace AssistBinding {
   export const type = new lsp.NotificationType<AssistBindingParams>('sonarlint/assistBinding');
+}
+
+interface ShowHotspotDetailsParams {
+  hotspotKey: string;
+}
+
+export namespace ShowHotspotDetails {
+  export const type = new lsp.NotificationType<ShowHotspotDetailsParams>('sonarlint/showHotspotDetails');
 }
 //#endregion
