@@ -7,7 +7,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { HotspotProbability, HotspotStatus, RemoteHotspot } from '../lsp/protocol';
+import { HotspotProbability } from '../lsp/protocol';
 import { renderRuleDescription } from '../rules/rulepanel';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
@@ -17,10 +17,6 @@ export function formatProbability(vulnerabilityProbability: string) {
   const enumIndex = enumValues.indexOf(vulnerabilityProbability.toLowerCase());
   const probabilityName = HotspotProbability[enumIndex];
   return `<span class="hotspot-probability hotspot-probability-${probabilityName}">${probabilityName}</span>`;
-}
-
-function formatStatus(status: HotspotStatus) {
-  return status === HotspotStatus.ToReview ? 'To review' : 'Reviewed';
 }
 
 const categoryShortToLong = {
@@ -45,25 +41,38 @@ const categoryShortToLong = {
   auth: 'Authentication',
   'insecure-conf': 'Insecure Configuration',
   'file-manipulation': 'File Manipulation',
+  'encrypt-data': 'Encryption of Sensitive Data',
+  traceability: 'Traceability',
+  permission: 'Permission',
   others: 'Others'
 };
 
-export function computeHotspotContextPanelContent(hotspot: RemoteHotspot, webview: vscode.Webview) {
+export function computeHotspotContextPanelContent(
+  securityCategory,
+  vulnerabilityProbability,
+  author,
+  status,
+  message,
+  ruleDetails,
+  isLocallyDetectedHotspot,
+  webview: vscode.Webview
+) {
   const resolver = new ResourceResolver(util.extensionContext, webview);
   const styleSrc = resolver.resolve('styles', 'rule.css');
   const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
   const hljsSrc = resolver.resolve('styles', 'vs.css');
 
-  const category = categoryShortToLong[hotspot.rule.securityCategory];
-  const priority = formatProbability(hotspot.rule.vulnerabilityProbability.toString());
-  const author = hotspot.author;
-  const status = formatStatus(hotspot.status);
+  const category = categoryShortToLong[securityCategory] ? categoryShortToLong[securityCategory] : '';
+  const priority = formatProbability(vulnerabilityProbability.toString());
 
-  const ruleDescription = renderRuleDescription(hotspotRuleToDescriptionParams(hotspot));
+  const renderRuleDescriptionParams = isLocallyDetectedHotspot
+    ? ruleDetails
+    : hotspotRuleToDescriptionParams(ruleDetails);
+  const ruleDescription = renderRuleDescription(renderRuleDescriptionParams);
 
   return `<!doctype html><html lang="en">
   <head>
-    <title>${escapeHtml(hotspot.message)}</title>
+    <title>${escapeHtml(message)}</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <meta http-equiv="Content-Security-Policy"
       content="default-src 'none'; style-src ${webview.cspSource}"/>
@@ -72,7 +81,7 @@ export function computeHotspotContextPanelContent(hotspot: RemoteHotspot, webvie
     <link rel="stylesheet" type="text/css" href="${hljsSrc}" />
   </head>
   <body>
-    <h1><big>${escapeHtml(hotspot.message)}</big> (${hotspot.rule.key})</h1>
+    <h1><big>${escapeHtml(message)}</big> (${ruleDetails.key})</h1>
     <dl class="hotspot-header">
       <dd>Category</dd><dt>${category}</dt>
       <dd>Review priority</dd><dt>${priority}</dt>
@@ -86,8 +95,7 @@ export function computeHotspotContextPanelContent(hotspot: RemoteHotspot, webvie
 </html>`;
 }
 
-function hotspotRuleToDescriptionParams(hotspot: RemoteHotspot) {
-  const { key, name, riskDescription, vulnerabilityDescription, fixRecommendations } = hotspot.rule;
+function hotspotRuleToDescriptionParams({ key, name, riskDescription, vulnerabilityDescription, fixRecommendations }) {
   return {
     key,
     name,

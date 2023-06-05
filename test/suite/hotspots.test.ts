@@ -12,7 +12,7 @@ import { Commands } from '../../src/util/commands';
 import {
   diagnosticSeverity,
   filesCountCheck,
-  formatStatus,
+  formatDetectedHotspotStatus,
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan
 } from '../../src/hotspot/hotspots';
@@ -301,10 +301,10 @@ suite('Hotspots Test Suite', async () => {
 
   suite('formatStatus', () => {
     test('Should correctly format status', () => {
-      assert.strictEqual(formatStatus(0), 'To review');
-      assert.strictEqual(formatStatus(1), 'Safe');
-      assert.strictEqual(formatStatus(2), 'Fixed');
-      assert.strictEqual(formatStatus(3), 'Acknowledged');
+      assert.strictEqual(formatDetectedHotspotStatus(0), 'To review');
+      assert.strictEqual(formatDetectedHotspotStatus(1), 'Safe');
+      assert.strictEqual(formatDetectedHotspotStatus(2), 'Fixed');
+      assert.strictEqual(formatDetectedHotspotStatus(3), 'Acknowledged');
     });
   });
 });

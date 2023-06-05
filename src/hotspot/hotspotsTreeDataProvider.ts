@@ -25,8 +25,7 @@ const REFRESH_DELAY_MS = 500;
 export enum HotspotReviewPriority {
   High = 1,
   Medium = 2,
-  Low = 3,
-  Hint = 4
+  Low = 3
 }
 
 export class HotspotGroup extends VSCode.TreeItem {
