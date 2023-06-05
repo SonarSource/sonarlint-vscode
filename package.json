@@ -490,7 +490,7 @@
         "command": "SonarLint.ShowHotspotDetails",
         "title": "Show Hotspot Details",
         "category": "SonarLint",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
+        "enablement": "view == SonarLint.SecurityHotspots && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
       },
       {
         "command": "SonarLint.HideHotspot",
@@ -665,7 +665,7 @@
         {
           "command": "SonarLint.ShowHotspotDetails",
           "title": "Show Hotspot Details",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
+          "when": "view == SonarLint.SecurityHotspots && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
         },
         {
           "command": "SonarLint.OpenHotspotOnServer",

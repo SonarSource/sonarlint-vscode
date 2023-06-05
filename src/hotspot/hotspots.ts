@@ -14,6 +14,7 @@ import {
   Diagnostic,
   ExtendedHotspotStatus,
   HotspotProbability,
+  HotspotStatus,
   RemoteHotspot,
   ShowRuleDescriptionParams
 } from '../lsp/protocol';
@@ -36,16 +37,13 @@ import {
   getQuickPickListItemsForWorkspaceFolders,
   resolveExtensionFile
 } from '../util/util';
-import { computeHotspotContextPanelContent, formatProbability } from './hotspotContextPanel';
+import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import {
   AllHotspotsTreeDataProvider,
   HotspotNode,
   HotspotReviewPriority,
   HotspotTreeViewItem
 } from './hotspotsTreeDataProvider';
-import { escapeHtml, ResourceResolver } from '../util/webview';
-import * as util from '../util/util';
-import { renderRuleDescription } from '../rules/rulepanel';
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
@@ -165,6 +163,10 @@ export function diagnosticSeverity(hotspot: RemoteHotspot) {
   }
 }
 
+function formatRemoteHotspotStatus(status: HotspotStatus) {
+  return status === HotspotStatus.ToReview ? 'To review' : 'Reviewed';
+}
+
 export const showHotspotDescription = () => {
   if (!hotspotDescriptionPanel) {
     hotspotDescriptionPanel = vscode.window.createWebviewPanel(
@@ -180,7 +182,13 @@ export const showHotspotDescription = () => {
     }, null);
   }
   hotspotDescriptionPanel.webview.html = computeHotspotContextPanelContent(
-    activeHotspot,
+    activeHotspot.rule.securityCategory,
+    activeHotspot.rule.vulnerabilityProbability,
+    activeHotspot.author,
+    formatRemoteHotspotStatus(activeHotspot.status),
+    activeHotspot.message,
+    activeHotspot.rule,
+    false,
     hotspotDescriptionPanel.webview
   );
   hotspotDescriptionPanel.iconPath = {
@@ -324,7 +332,7 @@ export async function getFilesForHotspotsScan(
   return await createAnalysisFilesFromFileUris(notIgnoredFiles, vscode.workspace.textDocuments, progress, cancelToken);
 }
 
-export function formatStatus(statusIndex: number) {
+export function formatDetectedHotspotStatus(statusIndex: number) {
   return statusIndex === ExtendedHotspotStatus.ToReview ? 'To review' : ExtendedHotspotStatus[statusIndex].toString();
 }
 
@@ -343,39 +351,21 @@ export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, ho
     }, null);
   }
 
-  const resolver = new ResourceResolver(util.extensionContext, hotspotDetailsPanel.webview);
-  const styleSrc = resolver.resolve('styles', 'rule.css');
-  const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
-  const hljsSrc = resolver.resolve('styles', 'vs.css');
+  hotspotDetailsPanel.webview.html = computeHotspotContextPanelContent(
+    '',
+    HotspotReviewPriority[hotspot.vulnerabilityProbability],
+    '',
+    formatDetectedHotspotStatus(hotspot.status),
+    hotspot.message,
+    hotspotDetails,
+    true,
+    hotspotDetailsPanel.webview
+  );
 
-  const priority = formatProbability(HotspotReviewPriority[hotspot.vulnerabilityProbability]);
-  const status = formatStatus(hotspot.status);
-
-  const ruleDescription = renderRuleDescription(hotspotDetails);
-
-  hotspotDetailsPanel.webview.html = `<!doctype html>
-  <html lang='en'>
-    <head>
-      <title>${escapeHtml(hotspot.message)}</title>
-      <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-      <meta http-equiv='Content-Security-Policy'
-        content="default-src 'none'; style-src ${hotspotDetailsPanel.webview.cspSource}"/>
-      <link rel='stylesheet' type='text/css' href='${styleSrc}' />
-      <link rel='stylesheet' type='text/css' href='${hotspotSrc}' />
-      <link rel='stylesheet' type='text/css' href='${hljsSrc}' />
-    </head>
-    <body>
-      <h1><big>${escapeHtml(hotspot.message)}</big> (${hotspot.ruleKey})</h1>
-      <dl class='hotspot-header'>
-        <dd>Review priority</dd><dt>${priority}</dt>
-        <dd>Status</dd><dt>${status}</dt>
-      </dl>
-      ${ruleDescription}
-      </body>
-  </html>`;
   hotspotDetailsPanel.iconPath = {
     light: resolveExtensionFile('images/sonarlint.svg'),
     dark: resolveExtensionFile('images/sonarlint.svg')
   };
+
   hotspotDetailsPanel.reveal();
 }
