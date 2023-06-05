@@ -481,13 +481,6 @@
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
       },
       {
-        "command": "SonarLint.ChangeHotspotStatus",
-        "title": "Set status",
-        "category": "SonarLint",
-        "icon": "$(pencil)",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
-      },
-      {
         "command": "SonarLint.ShowHotspotRuleDescription",
         "title": "Show Rule Description",
         "category": "SonarLint",
@@ -677,11 +670,6 @@
         {
           "command": "SonarLint.OpenHotspotOnServer",
           "title": "Review on Server",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
-        },
-        {
-          "command": "SonarLint.ChangeHotspotStatus",
-          "title": "Set status",
           "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
         },
         {
