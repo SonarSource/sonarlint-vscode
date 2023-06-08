@@ -159,6 +159,13 @@ function toggleRule(level: protocol.ConfigLevel) {
 }
 
 export async function activate(context: VSCode.ExtensionContext) {
+  const installTimeKey = 'install.time';
+  context.globalState.setKeysForSync([installTimeKey]);
+  let installTime = context.globalState.get(installTimeKey);
+  if (!installTime) {
+    installTime = new Date().toISOString()
+    context.globalState.update(installTimeKey, installTime);
+  }
   loadInitialSettings();
   util.setExtensionContext(context);
   initLogOutput(context);
@@ -194,7 +201,10 @@ export async function activate(context: VSCode.ExtensionContext) {
         additionalAttributes: {
           vscode: {
             remoteName: cleanRemoteName(VSCode.env.remoteName),
-            uiKind: VSCode.UIKind[VSCode.env.uiKind]
+            uiKind: VSCode.UIKind[VSCode.env.uiKind],
+            installTime: installTime,
+            isTelemetryEnabled: VSCode.env.isTelemetryEnabled,
+            ...VSCode.env.isTelemetryEnabled && { machineId: VSCode.env.machineId }
           }
         },
         enableNotebooks: true
