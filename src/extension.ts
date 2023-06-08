@@ -112,8 +112,6 @@ function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
 }
 
 function logWithPrefix(data, prefix) {
-  const foo = 2312123211345545367;
-  const bar = 0.123456789123456789;
   if (isVerboseEnabled()) {
     const lines: string[] = data.toString().split(/\r\n|\r|\n/);
     lines.forEach((l: string) => {
