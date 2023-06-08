@@ -56,7 +56,7 @@ import { getPlatform } from './util/platform';
 import { JAVA_HOME_CONFIG, installManagedJre, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
-import { muteIssueMultiStepInput } from './issue/muteIssue';
+import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 
 const DOCUMENT_SELECTOR = [
@@ -424,9 +424,9 @@ function registerCommands(context: VSCode.ExtensionContext) {
     )
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.MUTE_ISSUE,
+    VSCode.commands.registerCommand(Commands.RESOLVE_ISSUE,
       (workspaceUri:string, issueKey: string, fileUri: string, isTaintIssue: boolean) =>
-      muteIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue))
+      resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue))
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {

@@ -63,6 +63,6 @@ export namespace Commands {
   export const SCAN_FOR_HOTSPOTS_IN_FOLDER = 'SonarLint.ScanForHotspotsInFolder';
   export const FORGET_FOLDER_HOTSPOTS = 'SonarLint.ForgetFolderHotspots';
 
-  export const MUTE_ISSUE = 'SonarLint.MuteIssue';
+  export const RESOLVE_ISSUE = 'SonarLint.ResolveIssue';
   export const TRIGGER_HELP_AND_FEEDBACK_LINK = 'SonarLint.HelpAndFeedbackLinkClicked';
 }

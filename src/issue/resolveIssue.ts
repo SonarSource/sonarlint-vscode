@@ -14,10 +14,10 @@ import { IssueService } from './issue';
 
 const WONT_FIX_STATUS = 'Won\'t fix';
 const FALSE_POSITIVE_STATUS = 'False positive';
-export const MUTE_TRANSITION_STATES: QuickPickItem[] = [WONT_FIX_STATUS, FALSE_POSITIVE_STATUS]
+export const RESOLVE_TRANSITION_STATES: QuickPickItem[] = [WONT_FIX_STATUS, FALSE_POSITIVE_STATUS]
   .map(label => ({ label }));
 
-export async function muteIssueMultiStepInput(
+export async function resolveIssueMultiStepInput(
   workspaceUri: string,
   issueKey: string,
   fileUri: string,
@@ -31,10 +31,10 @@ export async function muteIssueMultiStepInput(
     comment: string;
   }
 
-  const title = 'Mute Issue';
+  const title = 'Resolve Issue';
 
-  async function muteIssue(input: MultiStepInput, state: Partial<State>) {
-    const pickedIssueStatus = await pickIssueStatus(input, title, MUTE_TRANSITION_STATES);
+  async function resolveIssue(input: MultiStepInput, state: Partial<State>) {
+    const pickedIssueStatus = await pickIssueStatus(input, title, RESOLVE_TRANSITION_STATES);
     if (pickedIssueStatus) {
       const comment = await inputComment(input, state);
       window.showInformationMessage('Do you want to do this?', {
@@ -70,18 +70,18 @@ export async function muteIssueMultiStepInput(
 
   async function pickIssueStatus(input: MultiStepInput,
                                  title: string,
-                                 muteTransitions: QuickPickItem[]): Promise<QuickPickItem> {
+                                 resolveTransitions: QuickPickItem[]): Promise<QuickPickItem> {
     return await input.showQuickPick({
       title,
       step: 1,
       totalSteps: 2,
       placeholder: 'Choose a resolution status for the issue',
-      items: muteTransitions
+      items: resolveTransitions
     });
   }
 
   const state = {} as Partial<State>;
-  await MultiStepInput.run(input => muteIssue(input, state));
+  await MultiStepInput.run(input => resolveIssue(input, state));
 }
 
 export function translateQuickPickToIssueStatus(item: QuickPickItem) {
