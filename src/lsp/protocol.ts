@@ -456,6 +456,32 @@ export namespace GetSuggestedBinding {
   );
 }
 
+export namespace AddIssueComment {
+  export const type = new lsp.NotificationType<AddIssueCommentParams>(
+    'sonarlint/addIssueComment'
+  );
+}
+
+export interface AddIssueCommentParams {
+  configurationScopeId: string;
+  issueKey: string;
+  text: string;
+}
+
+export namespace SetIssueStatus {
+  export const type = new lsp.NotificationType<SetIssueStatusParams>(
+    'sonarlint/changeIssueStatus'
+  );
+}
+
+export interface SetIssueStatusParams {
+  configurationScopeId: string;
+  issueKey: string;
+  newStatus: string;
+  fileUri: string;
+  isTaintIssue: boolean;
+}
+
 export interface AssistCreatingConnectionParams {
   isSonarCloud: boolean;
   serverUrl: string;
