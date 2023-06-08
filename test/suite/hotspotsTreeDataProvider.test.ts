@@ -87,7 +87,7 @@ suite('Hotspots tree view test suite', () => {
       message: 'hotspot 1',
       source: 'sonarlint',
       data: {
-        serverIssueKey: 'hotspotKey2'
+        entryKey: 'hotspotKey2'
       }
     };
     diagnostic6 = {
@@ -96,7 +96,7 @@ suite('Hotspots tree view test suite', () => {
       message: 'hotspot 2',
       source: 'remote',
       data: {
-        serverIssueKey: 'hotspotKey2'
+        entryKey: 'hotspotKey2'
       }
     };
 

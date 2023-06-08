@@ -211,7 +211,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
         return false;
       })
       .map(h => {
-        const hotspotKey = h.data.serverIssueKey as string;
+        const hotspotKey = h.data.entryKey as string;
         const status = h.data.status as number;
         return new HotspotNode(
           hotspotKey,

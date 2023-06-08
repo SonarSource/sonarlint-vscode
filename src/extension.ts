@@ -424,9 +424,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
     )
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.RESOLVE_ISSUE,
-      (workspaceUri:string, issueKey: string, fileUri: string, isTaintIssue: boolean) =>
-      resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue))
+    VSCode.commands.registerCommand(
+      Commands.RESOLVE_ISSUE,
+      (workspaceUri: string, issueKey: string, fileUri: string, isTaintIssue: boolean) =>
+        resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue)
+    )
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
