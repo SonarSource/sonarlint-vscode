@@ -1,3 +1,7 @@
+## 3.19
+
+* Support analysis of COBOL in connected mode with SonarCloud or SonarQube Enterprise Edition
+
 ## 3.18
 
 * Enable analysis of all security hotspots in a workspace folder

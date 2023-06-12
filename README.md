@@ -99,7 +99,12 @@ The support for Apex analysis is only available together with SonarQube Enterpri
 
 The support for PL/SQL analysis is only available together with SonarQube Developer Edition or SonarCloud (see Connected Mode below). You also need the [Oracle Developer Tools for VS Code](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
 
+### COBOL analysis specific requirements
+
+The support for COBOL analysis is only available together with SonarQube Enterprise Edition or SonarCloud (see Connected Mode below). You also need an extension that declares the COBOL language; SonarLint has been tested with the [IBM Z Open Editor](https://marketplace.visualstudio.com/items?itemName=IBM.zopeneditor) and [Micro Focus COBOL](https://marketplace.visualstudio.com/items?itemName=Micro-Focus-AMC.mfcobol) extensions.
+
 ### Jupyter notebooks
+
 SonarLint for VS Code v3.16+ supports analysis of Python code inside Jupyter notebooks. See the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Jupyter-notebooks) page for details.
 
 ### Injection vulnerabilities specific requirements
@@ -130,6 +135,7 @@ When running in Connected Mode with SonarQube 8.6 and above, and browsing a [sec
 Connected Mode will also unlock your analysis of these languages:
 
 - [Apex rules](https://rules.sonarsource.com/apex)
+- [COBOL rules](https://rules.sonarsource.com/cobol)
 - [PL/SQL rules](https://rules.sonarsource.com/plsql)
 
 When configuring Connected Mode, follow the [Connection Setup instructions](#connection-setup) below.
