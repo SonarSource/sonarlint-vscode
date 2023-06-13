@@ -375,7 +375,7 @@ export async function changeHotspotStatus(hotspotServerKey: string, fileUriAsSti
                                                   languageClient: SonarLintExtendedLanguageClient) {
   const fileUri = vscode.Uri.parse(fileUriAsSting);
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
-  return doChangeHotspotStatus(hotspotServerKey, fileUriAsSting, workspaceFolder, languageClient);
+  doChangeHotspotStatus(hotspotServerKey, fileUriAsSting, workspaceFolder, languageClient);
 }
 
 // visible for testing
@@ -385,27 +385,28 @@ export async function doChangeHotspotStatus(hotspotServerKey: string, fileUriAsS
   const allowedHotspotStatuses =
     await languageClient.getAllowedHotspotStatuses(hotspotServerKey, workspaceFolder.uri.toString(), fileUriAsSting);
   if (allowedHotspotStatuses == null) {
-    return Promise.resolve();
+    return;
   }
   if (!allowedHotspotStatuses.permitted) {
     vscode.window.showWarningMessage(
       `Not permitted to change hotspot status. Reason: ${allowedHotspotStatuses.notPermittedReason}`);
-    return Promise.resolve();
+    return;
   }
   if (allowedHotspotStatuses.allowedStatuses.length === 0) {
     vscode.window.showInformationMessage(
       `There are no allowed statuses to set for this hotspot`);
-    return Promise.resolve();
+    return;
   }
   const statusQuickPickItems = allowedHotspotStatuses.allowedStatuses;
   const chosenStatus = await vscode.window.showQuickPick(statusQuickPickItems, {
     title: 'Change hotspot status',
     placeHolder: 'Choose a status for the hotspot'
   });
-  return showChangeStatusConfirmationDialog('hotspot').then(async answer => {
-    if (answer === 'Yes') {
-      return languageClient.changeHotspotStatus(hotspotServerKey, chosenStatus, fileUriAsSting);
-    }
-  });
-
+  if (chosenStatus) {
+    showChangeStatusConfirmationDialog('hotspot').then(async answer => {
+      if (answer === 'Yes') {
+        languageClient.changeHotspotStatus(hotspotServerKey, chosenStatus, fileUriAsSting);
+      }
+    });
+  }
 }
