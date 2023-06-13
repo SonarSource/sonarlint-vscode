@@ -500,7 +500,7 @@
       },
       {
         "command": "SonarLint.ChangeHotspotStatus",
-        "title": "Change status",
+        "title": "Change Status",
         "category": "SonarLint",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
       }
@@ -675,7 +675,7 @@
         },
         {
           "command": "SonarLint.ChangeHotspotStatus",
-          "title": "Set status",
+          "title": "Change Status",
           "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
         },
         {
