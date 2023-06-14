@@ -3,6 +3,8 @@
 * Support analysis of COBOL in connected mode with SonarCloud or SonarQube Enterprise Edition
 * Allow marking known issues and taint vulnerabilities as resolved in Connected Mode
 * Allow changing status of known security hotspots in Connected Mode
+* Update XML analyzer 2.7.0 -> [2.8.1](https://sonarsource.atlassian.net/projects/SONARXML/versions/14173/tab/release-report-all-issues), Update rule descriptions to education format; Update documentation for rule S140.
+
 
 ## 3.18
 
