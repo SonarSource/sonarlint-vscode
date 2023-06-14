@@ -4,6 +4,7 @@
 * Allow marking known issues and taint vulnerabilities as resolved in Connected Mode
 * Allow changing status of known security hotspots in Connected Mode
 * Update XML analyzer 2.7.0 -> [2.8.1](https://sonarsource.atlassian.net/projects/SONARXML/versions/14173/tab/release-report-all-issues), Update rule descriptions to education format; Update documentation for rule S140.
+* Update Go analyzer 1.12.0 -> [1.13.0](https://sonarsource.atlassian.net/projects/SONARSLANG/versions/14080/tab/release-report-all-issues), Update rule descriptions to education format
 
 
 ## 3.18
