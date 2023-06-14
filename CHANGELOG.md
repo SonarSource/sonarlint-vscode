@@ -7,6 +7,7 @@
 * Update Go analyzer 1.12.0 -> [1.13.0](https://sonarsource.atlassian.net/projects/SONARSLANG/versions/14080/tab/release-report-all-issues), Update rule descriptions to new educational format
 * Update Java analyzer 7.19.0 -> [7.20.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/14125/tab/release-report-all-issues), SE engine works with incomplete semantics; FP and FN fixes, bugfixes
 * Update PHP analyzer 3.29 -> [3.30](https://sonarsource.atlassian.net/projects/SONARPHP/versions/14128/tab/release-report-all-issues), Update rule metadata to new educational format
+* Update JS/TS/CSS analyzer 10.2.0 -> [10.3.0](https://github.com/SonarSource/SonarJS/releases/tag/10.3.0.21893) -> [10.3.1](https://github.com/SonarSource/SonarJS/releases/tag/10.3.1.21905), Add rules from ESLint core; Support Typescript 5; FP and FN fixes, bugfixes
 
 
 ## 3.18
