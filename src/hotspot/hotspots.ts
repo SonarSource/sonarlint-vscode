@@ -22,6 +22,7 @@ import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 import { Commands } from '../util/commands';
 import { verboseLogToSonarLintOutput } from '../util/logging';
 import {
+  ChangeStatusType,
   HotspotAnalysisConfirmation,
   notCompatibleServerWarning,
   noWorkspaceFolderToScanMessage,
@@ -403,7 +404,7 @@ export async function doChangeHotspotStatus(hotspotServerKey: string, fileUriAsS
     placeHolder: 'Choose a status for the hotspot'
   });
   if (chosenStatus) {
-    showChangeStatusConfirmationDialog('hotspot').then(async answer => {
+    showChangeStatusConfirmationDialog(ChangeStatusType.HOTSPOT).then(async answer => {
       if (answer === 'Yes') {
         languageClient.changeHotspotStatus(hotspotServerKey, chosenStatus, fileUriAsSting);
       }

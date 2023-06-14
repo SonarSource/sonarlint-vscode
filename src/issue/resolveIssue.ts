@@ -10,7 +10,7 @@
 import { QuickPickItem} from 'vscode';
 import { MultiStepInput } from '../util/multiStepInput';
 import { IssueService } from './issue';
-import { showChangeStatusConfirmationDialog } from '../util/showMessage';
+import { ChangeStatusType, showChangeStatusConfirmationDialog } from '../util/showMessage';
 
 
 const WONT_FIX_STATUS = 'Won\'t fix';
@@ -38,7 +38,7 @@ export async function resolveIssueMultiStepInput(
     const pickedIssueStatus = await pickIssueStatus(input, title, RESOLVE_TRANSITION_STATES);
     if (pickedIssueStatus) {
       const comment = await inputComment(input, state);
-      showChangeStatusConfirmationDialog('issue').then(async answer => {
+      showChangeStatusConfirmationDialog(ChangeStatusType.ISSUE).then(async answer => {
         if (answer === 'Yes') {
           const newIssueStatus = translateQuickPickToIssueStatus(pickedIssueStatus);
           IssueService.instance.changeIssueStatus(workspaceUri, issueKey, newIssueStatus, fileUri, isTaintIssue)

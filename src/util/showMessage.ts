@@ -18,6 +18,11 @@ export enum HotspotAnalysisConfirmation {
   DONT_ANALYZE = 'Don\'t analyze'
 }
 
+export enum ChangeStatusType {
+  HOTSPOT,
+  ISSUE
+}
+
 export async function noWorkspaceFolderToScanMessage(): Promise<void> {
   const action = await vscode.window.showWarningMessage(
     'No workspace folder to scan, please open a workspace or folder first',
@@ -44,11 +49,16 @@ export function notCompatibleServerWarning(folder: string, reason: string) {
   );
 }
 
-export function showChangeStatusConfirmationDialog(issueType: string) {
+export function showChangeStatusConfirmationDialog(changeStatusType: ChangeStatusType) {
+  const type = changeStatusType === ChangeStatusType.HOTSPOT ? 'hotspot' : 'issue';
+  let message = `This action will change the status of the ${type} on the connected server.`;
+  const noteAboutQualityGate = changeStatusType === ChangeStatusType.HOTSPOT
+    ? ''
+    : ` A resolved ${type} will be ignored when assessing the Quality Gate.`;
+  message = message + noteAboutQualityGate;
   return window.showInformationMessage('Do you want to do this?', {
       modal: true,
-      detail: `This action will change the status of the ${issueType} on the `
-        + `connected server and will impact the Quality Gate`
+      detail: message
     },
     'Yes');
 }
