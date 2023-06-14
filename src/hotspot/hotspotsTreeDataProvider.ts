@@ -70,6 +70,7 @@ const vulnerabilityProbabilityToIcon = new Map([
 export class HotspotNode extends VSCode.TreeItem {
   constructor(
     public readonly key: string,
+    public readonly serverIssueKey: string,
     public readonly contextValue: 'newHotspotItem' | 'knownHotspotItem' | 'remoteHotspotItem',
     public readonly vulnerabilityProbability: HotspotReviewPriority,
     public readonly source: string,
@@ -212,9 +213,11 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
       })
       .map(h => {
         const hotspotKey = h.data.entryKey as string;
+        const serverIssueKey = h.data.serverIssueKey;
         const status = h.data.status as number;
         return new HotspotNode(
           hotspotKey,
+          serverIssueKey,
           this.getHotspotItemContextValue(h, contextValue),
           h.severity,
           h.source,

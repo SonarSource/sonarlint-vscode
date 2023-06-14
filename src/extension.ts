@@ -30,7 +30,8 @@ import {
   showHotspotDescription,
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan,
-  showHotspotDetails
+  showHotspotDetails,
+  changeHotspotStatus
 } from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
@@ -320,6 +321,8 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
 
+
+
 function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_LOCATIONS, clearLocations));
@@ -369,6 +372,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_INACTIVE_RULES, () => allRulesTreeDataProvider.filter('off'))
+  );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.CHANGE_HOTSPOT_STATUS,
+      (hotspot) => changeHotspotStatus(hotspot.serverIssueKey, hotspot.fileUri, languageClient))
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.OPEN_RULE_BY_KEY, async (ruleKey: string) => {

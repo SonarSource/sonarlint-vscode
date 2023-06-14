@@ -9,6 +9,7 @@
 
 
 import * as vscode from 'vscode';
+import { window } from 'vscode';
 
 const OPEN_FOLDER_ACTION = 'Open Folder';
 
@@ -41,4 +42,13 @@ export function notCompatibleServerWarning(folder: string, reason: string) {
     `Folder ${folder} can't be scanned for security hotspots.\n
     ${reason}`
   );
+}
+
+export function showChangeStatusConfirmationDialog(issueType: string) {
+  return window.showInformationMessage('Do you want to do this?', {
+      modal: true,
+      detail: `This action will change the status of the ${issueType} on the `
+        + `connected server and will impact the Quality Gate`
+    },
+    'Yes');
 }

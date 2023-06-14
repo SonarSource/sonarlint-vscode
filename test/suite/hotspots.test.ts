@@ -10,6 +10,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { Commands } from '../../src/util/commands';
 import {
+  doChangeHotspotStatus,
   diagnosticSeverity,
   filesCountCheck,
   formatDetectedHotspotStatus,
@@ -28,6 +29,8 @@ import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { expect } from 'chai';
 import * as path from 'path';
 import { HotspotAnalysisConfirmation } from '../../src/util/showMessage';
+import * as protocol from '../../src/lsp/protocol';
+import { getWorkspaceFolder } from '../testutil';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',
@@ -296,6 +299,80 @@ suite('Hotspots Test Suite', async () => {
 
     test('Low probability maps to Info severity', () => {
       assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.low)), HotspotReviewPriority.Low);
+    });
+
+    test('should not change hotspot status when not permitted', ()=>{
+      const workspaceFolder = getWorkspaceFolder();
+      let changeHotspotStatusBeenCalled = false;
+      const fakeLanguageClient = {
+        getAllowedHotspotStatuses(hotspotKey: string, folderUri: string,
+                                  fileUri: string): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+          return Promise.resolve({
+            permitted: false,
+            notPermittedReason: '',
+            allowedStatuses: []
+          });
+        },
+        changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {
+          changeHotspotStatusBeenCalled = true;
+          return null;
+        }
+      } as SonarLintExtendedLanguageClient;
+
+      doChangeHotspotStatus('serverKey',
+        '/file/path',
+        // @ts-ignore
+        workspaceFolder, fakeLanguageClient);
+
+      assert.strictEqual(changeHotspotStatusBeenCalled, false);
+    });
+
+    test('should not change hotspot status when server is down', ()=>{
+      const workspaceFolder = getWorkspaceFolder();
+      let changeHotspotStatusBeenCalled = false;
+      const fakeLanguageClient = {
+        getAllowedHotspotStatuses(hotspotKey: string, folderUri: string,
+                                  fileUri: string): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+          return null;
+        },
+        changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {
+          changeHotspotStatusBeenCalled = true;
+          return null;
+        }
+      } as SonarLintExtendedLanguageClient;
+
+      doChangeHotspotStatus('serverKey',
+        '/file/path',
+        // @ts-ignore
+        workspaceFolder, fakeLanguageClient);
+
+      assert.strictEqual(changeHotspotStatusBeenCalled, false);
+    });
+
+    test('should not change hotspot status when no allowed statuses', ()=>{
+      const workspaceFolder = getWorkspaceFolder();
+      let changeHotspotStatusBeenCalled = false;
+      const fakeLanguageClient = {
+        getAllowedHotspotStatuses(hotspotKey: string, folderUri: string,
+                                  fileUri: string): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+          return Promise.resolve({
+            permitted: true,
+            notPermittedReason: '',
+            allowedStatuses: []
+          });
+        },
+        changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {
+          changeHotspotStatusBeenCalled = true;
+          return null;
+        }
+      } as SonarLintExtendedLanguageClient;
+
+      doChangeHotspotStatus('serverKey',
+        '/file/path',
+        // @ts-ignore
+        workspaceFolder, fakeLanguageClient);
+
+      assert.strictEqual(changeHotspotStatusBeenCalled, false);
     });
   });
 

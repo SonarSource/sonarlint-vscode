@@ -7,9 +7,10 @@
 
 'use strict';
 
-import { QuickPickItem, window } from 'vscode';
+import { QuickPickItem} from 'vscode';
 import { MultiStepInput } from '../util/multiStepInput';
 import { IssueService } from './issue';
+import { showChangeStatusConfirmationDialog } from '../util/showMessage';
 
 
 const WONT_FIX_STATUS = 'Won\'t fix';
@@ -37,23 +38,17 @@ export async function resolveIssueMultiStepInput(
     const pickedIssueStatus = await pickIssueStatus(input, title, RESOLVE_TRANSITION_STATES);
     if (pickedIssueStatus) {
       const comment = await inputComment(input, state);
-      window.showInformationMessage('Do you want to do this?', {
-          modal: true,
-          detail: 'This action will change the status of the issue on the SonarQube/SonarCloud ' +
-            'instance and will impact the Quality Gate'
-        },
-        'Yes')
-        .then(async answer => {
-          if (answer === 'Yes') {
-            const newIssueStatus = translateQuickPickToIssueStatus(pickedIssueStatus);
-            IssueService.instance.changeIssueStatus(workspaceUri, issueKey, newIssueStatus, fileUri, isTaintIssue)
-              .then(()=>{
-                if (comment) {
-                  IssueService.instance.addComment(workspaceUri, issueKey, comment);
-                }
-              });
-          }
-        });
+      showChangeStatusConfirmationDialog('issue').then(async answer => {
+        if (answer === 'Yes') {
+          const newIssueStatus = translateQuickPickToIssueStatus(pickedIssueStatus);
+          IssueService.instance.changeIssueStatus(workspaceUri, issueKey, newIssueStatus, fileUri, isTaintIssue)
+            .then(() => {
+              if (comment) {
+                IssueService.instance.addComment(workspaceUri, issueKey, comment);
+              }
+            });
+        }
+      });
     }
   }
 

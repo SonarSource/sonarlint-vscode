@@ -10,7 +10,6 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
-import { ShowRuleDescriptionParams } from './protocol';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<protocol.RulesResponse> {
@@ -79,6 +78,11 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetFilePatternsForAnalysis.type, { folderUri });
   }
 
+  getAllowedHotspotStatuses(hotspotKey: string, folderUri: string,
+                            fileUri: string): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+    return this.sendRequest(protocol.GetAllowedHotspotStatuses.type, { hotspotKey, folderUri, fileUri });
+  }
+
   getSuggestedBinding(configScopeId: string, connectionId: string): Promise<protocol.GetSuggestedBindingResponse> {
     return this.sendRequest(protocol.GetSuggestedBinding.type, { configScopeId, connectionId });
   }
@@ -93,11 +97,15 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendNotification(protocol.AddIssueComment.type, {configurationScopeId, issueKey, text});
   }
 
+  changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {
+    return this.sendNotification(protocol.SetHotspotStatus.type, { hotspotKey, newStatus, fileUri });
+  }
+
   checkLocalHotspotsDetectionSupported(folderUri: string): Promise<protocol.CheckLocalDetectionSupportedResponse> {
     return this.sendRequest(protocol.CheckLocalDetectionSupported.type, { folderUri });
   }
 
-  getHotspotDetails(ruleKey, hotspotId, fileUri): Promise<ShowRuleDescriptionParams> {
+  getHotspotDetails(ruleKey, hotspotId, fileUri): Promise<protocol.ShowRuleDescriptionParams> {
     return this.sendRequest(protocol.GetHotspotDetails.type, { ruleKey, hotspotId, fileUri });
   }
 }
