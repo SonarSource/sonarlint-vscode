@@ -55,7 +55,7 @@ export const helpAndFeedbackViewItems: HelpAndFeedbackItem[] = [
   }
 ];
 
-function getHelpAndFeedbackItemById(id: string): HelpAndFeedbackItem {
+export function getHelpAndFeedbackItemById(id: string): HelpAndFeedbackItem {
   return helpAndFeedbackViewItems.find(i => i.id === id);
 }
 

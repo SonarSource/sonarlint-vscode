@@ -503,6 +503,11 @@
         "title": "Change Status",
         "category": "SonarLint",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+      },
+      {
+        "command": "SonarLint.HelpAndFeedbackLinkClicked",
+        "title": "Share feedback",
+        "category": "SonarLint"
       }
     ],
     "viewsContainers": {
