@@ -38,7 +38,7 @@ export async function resolveIssueMultiStepInput(
     const pickedIssueStatus = await pickIssueStatus(input, title, RESOLVE_TRANSITION_STATES);
     if (pickedIssueStatus) {
       const comment = await inputComment(input, state);
-      showChangeStatusConfirmationDialog(ChangeStatusType.ISSUE).then(async answer => {
+      showChangeStatusConfirmationDialog('issue').then(async answer => {
         if (answer === 'Yes') {
           const newIssueStatus = translateQuickPickToIssueStatus(pickedIssueStatus);
           IssueService.instance.changeIssueStatus(workspaceUri, issueKey, newIssueStatus, fileUri, isTaintIssue)

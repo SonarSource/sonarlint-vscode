@@ -404,7 +404,7 @@ export async function doChangeHotspotStatus(hotspotServerKey: string, fileUriAsS
     placeHolder: 'Choose a status for the hotspot'
   });
   if (chosenStatus) {
-    showChangeStatusConfirmationDialog(ChangeStatusType.HOTSPOT).then(async answer => {
+    showChangeStatusConfirmationDialog('hotspot').then(async answer => {
       if (answer === 'Yes') {
         languageClient.changeHotspotStatus(hotspotServerKey, chosenStatus, fileUriAsSting);
       }
