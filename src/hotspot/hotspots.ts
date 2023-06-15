@@ -22,7 +22,6 @@ import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 import { Commands } from '../util/commands';
 import { verboseLogToSonarLintOutput } from '../util/logging';
 import {
-  ChangeStatusType,
   HotspotAnalysisConfirmation,
   notCompatibleServerWarning,
   noWorkspaceFolderToScanMessage,

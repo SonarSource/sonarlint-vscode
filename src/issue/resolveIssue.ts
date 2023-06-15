@@ -10,7 +10,7 @@
 import { QuickPickItem} from 'vscode';
 import { MultiStepInput } from '../util/multiStepInput';
 import { IssueService } from './issue';
-import { ChangeStatusType, showChangeStatusConfirmationDialog } from '../util/showMessage';
+import { showChangeStatusConfirmationDialog } from '../util/showMessage';
 
 
 const WONT_FIX_STATUS = 'Won\'t fix';
