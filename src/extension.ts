@@ -463,12 +463,12 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItem => {
       if (!helpAndFeedbackItem) {
-        helpAndFeedbackItem = { 
+        helpAndFeedbackItem = {
           id: 'getHelp',
           label: 'Get Help | Report Issue',
           url: 'https://community.sonarsource.com/c/sl/vs-code/36',
-          icon: 'comment-discussion' 
-        }; 
+          icon: 'comment-discussion'
+        };
       }
       languageClient.helpAndFeedbackLinkClicked(helpAndFeedbackItem.id);
       VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
