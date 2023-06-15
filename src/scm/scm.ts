@@ -149,9 +149,14 @@ class GitScm implements Scm {
   }
 }
 
-export function initScm(client: SonarLintExtendedLanguageClient, referenceBranchStatusItem: vscode.StatusBarItem) {
+export async function initScm(client: SonarLintExtendedLanguageClient, referenceBranchStatusItem: vscode.StatusBarItem) {
   try {
-    const gitApi = vscode.extensions.getExtension<GitExtension>(GIT_EXTENSION_ID).exports?.getAPI(GIT_API_VERSION);
+    const gitExtension = vscode.extensions.getExtension<GitExtension>(GIT_EXTENSION_ID);
+    if (!gitExtension) {
+      logToSonarLintOutput(`Extension with ID '${GIT_EXTENSION_ID}' was not found, branch synchronization is disabled`);
+      return new NoopScm();
+    }
+    const gitApi = (await gitExtension.activate()).getAPI(GIT_API_VERSION);
     return new GitScm(gitApi, client, referenceBranchStatusItem);
   } catch (e) {
     logToSonarLintOutput(`Exception occurred while initializing the Git API: ${e}`);

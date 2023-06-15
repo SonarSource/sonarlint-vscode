@@ -226,7 +226,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   installCustomRequestHandlers(context);
 
   const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
-  const scm = initScm(languageClient, referenceBranchStatusItem);
+  const scm = await initScm(languageClient, referenceBranchStatusItem);
   context.subscriptions.push(scm);
   context.subscriptions.push(
     languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type, folderUri => {
