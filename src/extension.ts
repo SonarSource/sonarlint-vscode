@@ -321,8 +321,6 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
 
-
-
 function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_LOCATIONS, clearLocations));
@@ -374,8 +372,9 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.SHOW_INACTIVE_RULES, () => allRulesTreeDataProvider.filter('off'))
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.CHANGE_HOTSPOT_STATUS,
-      (hotspot) => changeHotspotStatus(hotspot.serverIssueKey, hotspot.fileUri, languageClient))
+    VSCode.commands.registerCommand(Commands.CHANGE_HOTSPOT_STATUS, hotspot =>
+      changeHotspotStatus(hotspot.serverIssueKey, hotspot.fileUri, languageClient)
+    )
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.OPEN_RULE_BY_KEY, async (ruleKey: string) => {
@@ -463,6 +462,14 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItem => {
+      if (!helpAndFeedbackItem) {
+        helpAndFeedbackItem = { 
+          id: 'getHelp',
+          label: 'Get Help | Report Issue',
+          url: 'https://community.sonarsource.com/c/sl/vs-code/36',
+          icon: 'comment-discussion' 
+        }; 
+      }
       languageClient.helpAndFeedbackLinkClicked(helpAndFeedbackItem.id);
       VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
     })
