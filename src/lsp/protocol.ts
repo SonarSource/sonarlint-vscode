@@ -103,6 +103,10 @@ export namespace ShowNotificationForFirstSecretsIssueNotification {
   export const type = new lsp.NotificationType('sonarlint/showNotificationForFirstSecretsIssue');
 }
 
+export namespace ShowNotificationForFirstCobolIssueNotification {
+  export const type = new lsp.NotificationType('sonarlint/showNotificationForFirstCobolIssue');
+}
+
 export interface GetJavaConfigResponse {
   projectRoot: string;
   sourceLevel: string;
@@ -458,9 +462,7 @@ export namespace GetSuggestedBinding {
 }
 
 export namespace AddIssueComment {
-  export const type = new lsp.NotificationType<AddIssueCommentParams>(
-    'sonarlint/addIssueComment'
-  );
+  export const type = new lsp.NotificationType<AddIssueCommentParams>('sonarlint/addIssueComment');
 }
 
 export interface AddIssueCommentParams {
@@ -470,9 +472,7 @@ export interface AddIssueCommentParams {
 }
 
 export namespace SetIssueStatus {
-  export const type = new lsp.NotificationType<SetIssueStatusParams>(
-    'sonarlint/changeIssueStatus'
-  );
+  export const type = new lsp.NotificationType<SetIssueStatusParams>('sonarlint/changeIssueStatus');
 }
 
 export interface SetIssueStatusParams {
@@ -534,8 +534,6 @@ export interface SetHotspotStatusParams {
 }
 
 export namespace SetHotspotStatus {
-  export const type = new lsp.NotificationType<SetHotspotStatusParams>(
-    'sonarlint/changeHotspotStatus'
-  );
+  export const type = new lsp.NotificationType<SetHotspotStatusParams>('sonarlint/changeHotspotStatus');
 }
 //#endregion

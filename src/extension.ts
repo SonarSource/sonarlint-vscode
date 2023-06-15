@@ -22,7 +22,11 @@ import {
   editSonarQubeConnection,
   reportConnectionCheckResult
 } from './connected/connectionsetup';
-import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
+import {
+  getHelpAndFeedbackItemById,
+  HelpAndFeedbackLink,
+  HelpAndFeedbackTreeDataProvider
+} from './help/helpAndFeedbackTreeDataProvider';
 import {
   HOTSPOTS_VIEW_ID,
   getFilesForHotspotsAndLaunchScan,
@@ -59,6 +63,7 @@ import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
+import { isFirstCobolIssueDetected, showNotificationForFirstCobolIssue } from './util/cobolUtils';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -195,6 +200,7 @@ export async function activate(context: VSCode.ExtensionContext) {
         productVersion: util.packageJson.version,
         workspaceName: VSCode.workspace.name,
         firstSecretDetected: isFirstSecretDetected(context),
+        firstCobolIssueDetected: isFirstCobolIssueDetected(context),
         showVerboseLogs: VSCode.workspace.getConfiguration().get('sonarlint.output.showVerboseLogs', false),
         platform: getPlatform(),
         architecture: process.arch,
@@ -331,8 +337,6 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
 
-
-
 function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_LOCATIONS, clearLocations));
@@ -384,8 +388,9 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.SHOW_INACTIVE_RULES, () => allRulesTreeDataProvider.filter('off'))
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.CHANGE_HOTSPOT_STATUS,
-      (hotspot) => changeHotspotStatus(hotspot.serverIssueKey, hotspot.fileUri, languageClient))
+    VSCode.commands.registerCommand(Commands.CHANGE_HOTSPOT_STATUS, hotspot =>
+      changeHotspotStatus(hotspot.serverIssueKey, hotspot.fileUri, languageClient)
+    )
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.OPEN_RULE_BY_KEY, async (ruleKey: string) => {
@@ -473,6 +478,9 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItem => {
+      if (!helpAndFeedbackItem) {
+        helpAndFeedbackItem = getHelpAndFeedbackItemById('getHelp');
+      }
       languageClient.helpAndFeedbackLinkClicked(helpAndFeedbackItem.id);
       VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
     })
@@ -522,6 +530,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
+  );
+  languageClient.onNotification(protocol.ShowNotificationForFirstCobolIssueNotification.type, () =>
+    showNotificationForFirstCobolIssue(context)
   );
   languageClient.onNotification(protocol.ShowSonarLintOutputNotification.type, () =>
     VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
