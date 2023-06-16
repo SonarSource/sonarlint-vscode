@@ -56,7 +56,10 @@
   },
   "vscode": {
     "uiKind": "Web",
-    "remoteName": "codespaces"
+    "remoteName": "codespaces",
+    "installTime": "2018-02-01T16:30:49.124+01:00",
+    "isTelemetryEnabled": "true",
+    "machineId": "123456"
   }
 }
 ```
