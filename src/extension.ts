@@ -163,7 +163,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   context.globalState.setKeysForSync([installTimeKey]);
   let installTime = context.globalState.get(installTimeKey);
   if (!installTime) {
-    installTime = new Date().toISOString()
+    installTime = new Date().toISOString();
     context.globalState.update(installTimeKey, installTime);
   }
   loadInitialSettings();
@@ -202,7 +202,7 @@ export async function activate(context: VSCode.ExtensionContext) {
           vscode: {
             remoteName: cleanRemoteName(VSCode.env.remoteName),
             uiKind: VSCode.UIKind[VSCode.env.uiKind],
-            installTime: installTime,
+            installTime,
             isTelemetryEnabled: VSCode.env.isTelemetryEnabled,
             ...VSCode.env.isTelemetryEnabled && { machineId: VSCode.env.machineId }
           }
