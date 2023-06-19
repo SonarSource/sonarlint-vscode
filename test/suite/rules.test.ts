@@ -17,7 +17,7 @@ suite('SonarLint Rules view', () => {
 
   test('should show the whole list of rules grouped by language', async function() {
     skipTestOnWindowsVm(this,
-      "Skipping test which 'Cannot find command SonarLint.OpenStandaloneRuleDesc' on azure pipelines windows vm");
+      "Skipping test which 'Cannot find command SonarLint.OpenStandaloneRuleDesc' on cirrus-ci pipelines windows vm");
 
     const secretsAwsRuleKey = 'secrets:S6290';
 

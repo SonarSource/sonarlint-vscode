@@ -32,13 +32,13 @@ suite('Extension Test Suite', () => {
   });
 
   test('should report issue on single js file', async function() {
-    skipTestOnWindowsVm(this, "Skipping test which is timing out on azure pipelines windows vm")
+    skipTestOnWindowsVm(this, "Skipping test which is timing out on cirrus-ci pipelines windows vm")
     const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
     await checkSonarLintDiagnostics(fileUri);
   }).timeout(60 * 1000);
 
   test('should report issue on js file with URI-encoded characters', async function() {
-    skipTestOnWindowsVm(this, "Skipping test which is timing out on azure pipelines windows vm")
+    skipTestOnWindowsVm(this, "Skipping test which is timing out on cirrus-ci pipelines windows vm")
     const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', '# {}', 'main.js'));
     await checkSonarLintDiagnostics(fileUri)
   }).timeout(60 * 1000);

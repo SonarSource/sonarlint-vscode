@@ -50,7 +50,7 @@ async function main() {
     const runTestSuite = async (suiteDir: string, workspaceDir?: string) => {
       const launchArgs = [
         `--user-data-dir=${userDataDir}`,
-        `--extensions-dir=${extensionsDir}`,
+        `--extensions-dir=${extensionsDir}`
       ];
       if (workspaceDir) {
         launchArgs.unshift(path.resolve(__dirname, `../../samples/${workspaceDir}`));
