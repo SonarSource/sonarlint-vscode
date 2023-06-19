@@ -11,6 +11,8 @@ env:
   ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
   ARTIFACTORY_PRIVATE_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
 
+auto_cancellation: $CIRRUS_BRANCH != 'master'
+
 eks_container: &CONTAINER_DEFINITION
   dockerfile: .cirrus/Dockerfile
   docker_arguments:
