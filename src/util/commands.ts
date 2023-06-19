@@ -66,4 +66,5 @@ export namespace Commands {
   export const RESOLVE_ISSUE = 'SonarLint.ResolveIssue';
   export const TRIGGER_HELP_AND_FEEDBACK_LINK = 'SonarLint.HelpAndFeedbackLinkClicked';
   export const CHANGE_HOTSPOT_STATUS = 'SonarLint.ChangeHotspotStatus';
+  export const ENABLE_VERBOSE_LOGS = 'SonarLint.EnableVerboseLogs';
 }

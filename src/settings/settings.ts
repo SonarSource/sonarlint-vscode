@@ -12,13 +12,19 @@ import { ConnectionSettingsService, migrateConnectedModeSettings } from './conne
 let currentConfig: vscode.WorkspaceConfiguration;
 
 export const SONARLINT_CATEGORY = 'sonarlint';
+export const VERBOSE_LOGS = 'output.showVerboseLogs';
 
 export function getSonarLintConfiguration(): vscode.WorkspaceConfiguration {
   return vscode.workspace.getConfiguration(SONARLINT_CATEGORY);
 }
 
 export function isVerboseEnabled(): boolean {
-  return getCurrentConfiguration()?.get('output.showVerboseLogs', false);
+  return getCurrentConfiguration()?.get(VERBOSE_LOGS, false);
+}
+
+export function enableVerboseLogs() {
+  getCurrentConfiguration()?.update(VERBOSE_LOGS, true, vscode.ConfigurationTarget.Global);
+  vscode.window.showInformationMessage('Verbose logging enabled.');
 }
 
 export function loadInitialSettings() {

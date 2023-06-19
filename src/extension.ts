@@ -49,6 +49,7 @@ import { initScm, isIgnoredByScm } from './scm/scm';
 import { isFirstSecretDetected, showNotificationForFirstSecretsIssue } from './secrets/secrets';
 import { ConnectionSettingsService, migrateConnectedModeSettings } from './settings/connectionsettings';
 import {
+  enableVerboseLogs,
   getCurrentConfiguration,
   getSonarLintConfiguration,
   isVerboseEnabled,
@@ -211,7 +212,7 @@ export async function activate(context: VSCode.ExtensionContext) {
             uiKind: VSCode.UIKind[VSCode.env.uiKind],
             installTime,
             isTelemetryEnabled: VSCode.env.isTelemetryEnabled,
-            ...VSCode.env.isTelemetryEnabled && { machineId: VSCode.env.machineId }
+            ...(VSCode.env.isTelemetryEnabled && { machineId: VSCode.env.machineId })
           }
         },
         enableNotebooks: true
@@ -339,6 +340,11 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
 }
 
 function registerCommands(context: VSCode.ExtensionContext) {
+  context.subscriptions.push(VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
+    const sampleFileUri = VSCode.Uri.joinPath(context.extensionUri, 'walkthrough', 'sample.py');
+    const sampleDocument = await VSCode.workspace.openTextDocument(sampleFileUri);
+    await VSCode.window.showTextDocument(sampleDocument, VSCode.ViewColumn.Beside);
+  }));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_LOCATIONS, clearLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.NAVIGATE_TO_LOCATION, navigateToLocation));
@@ -503,6 +509,8 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.FORGET_FOLDER_HOTSPOTS, () => languageClient.forgetFolderHotspots())
   );
+
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()));
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {

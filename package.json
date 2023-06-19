@@ -508,6 +508,11 @@
         "command": "SonarLint.HelpAndFeedbackLinkClicked",
         "title": "Share feedback",
         "category": "SonarLint"
+      },
+      {
+        "command": "SonarLint.EnableVerboseLogs",
+        "title": "Enable Verbose Logging",
+        "category": "SonarLint"
       }
     ],
     "viewsContainers": {
@@ -557,6 +562,51 @@
       {
         "view": "SonarLint.SecurityHotspots",
         "contents": "Please ensure a connection to SonarQube 9.7+ or SonarCloud is set up. Detected Security Hotspots will be displayed here. [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "SonarLint.walkthrough",
+        "title": "Welcome to SonarLint!",
+        "description": "Your Clean Code journey starts here.",
+        "steps": [
+          {
+            "id": "SonarLint.inAction",
+            "title": "$(rocket) New to SonarLint? See it in action",
+            "description": "SonarLint for VSCode supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, and more. SonarLint detects issues in all files **open** in the editor.\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
+            "media": {
+              "markdown": "walkthrough/empty.md"
+            },
+            "completionEvents": [
+              "onView:workbench.panel.markers.view"
+            ]
+          },
+          {
+            "id": "SonarLint.learnMoreAboutIssues",
+            "title": "$(book) Learn more about issues",
+            "description": "Check the [Problems view](command:workbench.panel.markers.view.focus): SonarLint has found something $(warning).\nRight-click on the issue found by SonarLint.\nOpen the rule description: SonarLint clearly explains why this is an issue.\nFor certain rules and issues, SonarLint will suggest available Quick Fixes.",
+            "media": {
+              "markdown": "walkthrough/empty.md"
+            },
+            "completionEvents": [
+              "onCommand:SonarLint.OpenStandaloneRuleDesc"
+            ]
+          },
+          {
+            "id": "SonarLint.connectedModeIntro",
+            "title": "$(link) Connect with your team",
+            "description": "Use the same Clean Code standards as your team by using SonarLint in Connected Mode with [SonarQube](https://www.sonarsource.com/products/sonarqube/) or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/).\n**Already using SonarQube or SonarCloud?** Check out the Connected Mode view to set up the connection.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)",
+            "media": { "markdown": "walkthrough/empty.md"},
+            "completionEvents": ["onView:SonarLint.ConnectedMode"]
+          },
+          {
+            "id": "SonarLint.reachOut",
+            "title": "$(comment-discussion) Share feedback or ask for help",
+            "description": "You suspect your code has issues but don't see any problems detected by SonarLint? [Enable verbose logging](command:SonarLint.EnableVerboseLogs) and check the output in the SonarLint Output window\n[Check Output](command:SonarLint.ShowSonarLintOutput)\n\nYou'd like to learn more about SonarLint, or give us feedback? Check out the [Help and Feedback view](command:SonarLint.HelpAndFeedback.focus)\n\n",
+            "media": {"markdown":  "walkthrough/empty.md"},
+            "completionEvents": ["onView:SonarLint.HelpAndFeedback"]
+          }
+        ]
       }
     ],
     "menus": {
