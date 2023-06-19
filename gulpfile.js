@@ -320,7 +320,7 @@ gulp.task('sign', () => {
     .pipe(
       getSignature({
         keyPath: process.env.GPG_SIGNING_KEY,
-        passphrase: process.env.PGP_PASSPHRASE
+        passphrase: process.env.GPG_SIGNING_PASSPHRASE
       })
     )
     .pipe(gulp.dest('./'));
