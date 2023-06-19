@@ -53,7 +53,7 @@ suite('util', () => {
     expect(startedInDebugMode(process)).to.be.false;
   });
 
-  test('should recognize build running on azure pipelines', () => {
+  test('should recognize build running on cirrus-ci pipelines', () => {
     process.env.NODE_ENV = 'continuous-integration';
     expect(isRunningAutoBuild()).to.be.true;
   });

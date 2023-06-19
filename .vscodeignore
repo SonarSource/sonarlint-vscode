@@ -16,7 +16,8 @@ coverage/
 its/
 dogfood/
 scripts/
-.azure-pipelines
-azure-pipelines.yml
 .github/
 .idea/
+.cirrus/
+.cirrus.star
+.cirrus.yml

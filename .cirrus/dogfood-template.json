@@ -1,0 +1,4 @@
+{
+  "version": "${PROJECT_VERSION}",
+  "url": "${ARTIFACTORY_URL}/sonarsource/org/sonarsource/sonarlint/vscode/sonarlint-vscode/${PROJECT_VERSION}/sonarlint-vscode-${PROJECT_VERSION}.vsix"
+}

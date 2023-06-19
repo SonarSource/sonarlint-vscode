@@ -62,7 +62,7 @@ gulp.task('cycloneDx', function (cb) {
 });
 
 gulp.task('update-version', function () {
-  const buildNumber = process.env.BUILD_BUILDID;
+  const buildNumber = process.env.BUILD_NUMBER;
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   if (version.endsWith('-SNAPSHOT') && buildNumber) {
@@ -119,9 +119,9 @@ gulp.task('deploy-vsix', function () {
     ARTIFACTORY_DEPLOY_USERNAME,
     ARTIFACTORY_DEPLOY_PASSWORD,
     BUILD_SOURCEVERSION,
-    BUILD_SOURCEBRANCH,
-    BUILD_BUILDID,
-    SYSTEM_PULLREQUEST_TARGETBRANCH
+    GITHUB_BRANCH,
+    BUILD_NUMBER,
+    CIRRUS_BASE_BRANCH
   } = process.env;
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
@@ -140,9 +140,9 @@ gulp.task('deploy-vsix', function () {
             password: ARTIFACTORY_DEPLOY_PASSWORD,
             properties: {
               'vcs.revision': BUILD_SOURCEVERSION,
-              'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+              'vcs.branch': CIRRUS_BASE_BRANCH || GITHUB_BRANCH,
               'build.name': name,
-              'build.number': BUILD_BUILDID
+              'build.number': BUILD_NUMBER
             },
             request: {
               headers: {
@@ -268,7 +268,7 @@ async function downloadJre(targetPlatform, javaVersion, done) {
 gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
-  const buildNumber = process.env.BUILD_BUILDID;
+  const buildNumber = process.env.BUILD_ID;
   const json = buildInfo(name, version, buildNumber);
   return request
     .put(
@@ -319,8 +319,8 @@ gulp.task('sign', () => {
     .src(path.join('*{.vsix,-cyclonedx.json}'))
     .pipe(
       getSignature({
-        keyPath: process.env.SIGN_KEY,
-        passphrase: process.env.PGP_PASSPHRASE
+        privateKeyArmored: process.env.GPG_SIGNING_KEY,
+        passphrase: process.env.GPG_SIGNING_PASSPHRASE
       })
     )
     .pipe(gulp.dest('./'));
@@ -342,12 +342,12 @@ gulp.task(
 
 function buildInfo(name, version, buildNumber) {
   const {
-    SYSTEM_TEAMPROJECTID,
-    BUILD_BUILDID,
+    CIRRUS_BUILD_ID,
+    BUILD_ID,
     BUILD_REPOSITORY_NAME,
     BUILD_SOURCEVERSION,
-    SYSTEM_PULLREQUEST_TARGETBRANCH,
-    BUILD_SOURCEBRANCH
+    CIRRUS_BASE_BRANCH,
+    GITHUB_BRANCH
   } = process.env;
 
   const dependencies = jarDependencies.map(dep => {
@@ -361,7 +361,8 @@ function buildInfo(name, version, buildNumber) {
     };
   });
 
-  const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
+  const fixedBranch = (CIRRUS_BASE_BRANCH || GITHUB_BRANCH).replace('refs/heads/', '');
+
   const vsixPaths = globby.sync(path.join('*.vsix'));
   const additionalPaths = globby.sync(path.join('*{-cyclonedx.json,.asc}'));
 
@@ -370,7 +371,7 @@ function buildInfo(name, version, buildNumber) {
     name,
     number: buildNumber,
     started: dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
-    url: `https://dev.azure.com/sonarsource/${SYSTEM_TEAMPROJECTID}/_build/results?buildId=${BUILD_BUILDID}&view=logs`,
+    url: `https://cirrus-ci.com/build/${CIRRUS_BUILD_ID}`,
     vcsRevision: BUILD_SOURCEVERSION,
     vcsUrl: `https://github.com/${BUILD_REPOSITORY_NAME}.git`,
     modules: [
@@ -395,7 +396,7 @@ function buildInfo(name, version, buildNumber) {
       'java.specification.version': '1.8', // Workaround for https://jira.sonarsource.com/browse/RA-115
       'buildInfo.env.PROJECT_VERSION': version,
       'buildInfo.env.ARTIFACTORY_DEPLOY_REPO': 'sonarsource-public-qa',
-      'buildInfo.env.BUILD_BUILDID': BUILD_BUILDID,
+      'buildInfo.env.BUILD_BUILDID': BUILD_ID,
       'buildInfo.env.BUILD_SOURCEVERSION': BUILD_SOURCEVERSION,
       'buildInfo.env.GITHUB_BRANCH': fixedBranch,
       'buildInfo.env.GIT_SHA1': BUILD_SOURCEVERSION
