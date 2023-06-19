@@ -45,10 +45,11 @@ function tryRelativizeToWorkspaceFolder(filePath: string): [string, vscode.Works
   return [filePath, undefined];
 }
 
-export async function configureCompilationDatabase() {
-  const paths = (await vscode.workspace.findFiles(`**/compile_commands.json`)).filter(path =>
-    fs.existsSync(path.fsPath)
-  );
+export async function configureCompilationDatabase(uri?: vscode.Uri) {
+  const paths =
+    uri instanceof vscode.Uri
+      ? [uri]
+      : (await vscode.workspace.findFiles(`**/compile_commands.json`)).filter(path => fs.existsSync(path.fsPath));
   if (paths.length === 0) {
     vscode.window.showWarningMessage(`No compilation databases were found in the workspace\n 
 [How to generate compile commands](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis)`);
