@@ -1,0 +1,52 @@
+env:
+  CIRRUS_CLONE_DEPTH: "20"
+  # Use bash (instead of sh on linux or cmd.exe on Windows)
+  CIRRUS_SHELL: bash
+  # burgr notification
+  BURGR_URL: VAULT[development/kv/data/burgr data.url]
+  BURGR_USERNAME: VAULT[development/kv/data/burgr data.cirrus_username]
+  BURGR_PASSWORD: VAULT[development/kv/data/burgr data.cirrus_password]
+  # repox
+  ARTIFACTORY_URL: VAULT[development/kv/data/repox data.url]
+  ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
+  ARTIFACTORY_PRIVATE_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+
+eks_container: &CONTAINER_DEFINITION
+  dockerfile: .cirrus/Dockerfile
+  docker_arguments:
+    CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
+  region: eu-central-1
+  cluster_name: ${CIRRUS_CLUSTER_NAME}
+  builder_role: cirrus-builder
+  builder_image: docker-builder-v*
+  builder_instance_type: t2.small
+  builder_subnet_id: ${CIRRUS_AWS_SUBNET}
+  namespace: default
+
+only_sonarsource_qa: &ONLY_SONARSOURCE_QA
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
+
+
+build_task:
+  name: Build, Run UTs (linux), Analyze and Stage to repox
+  alias: build
+  <<: *ONLY_SONARSOURCE_QA
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 4G
+  env:
+    SONAR_TOKEN: VAULT[development/kv/data/next data.token]
+    SONAR_HOST_URL: VAULT[development/kv/data/next data.url]
+    GPG_SIGNING_KEY: VAULT[development/kv/data/sign data.key]
+    GPG_SIGNING_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
+  node_modules_cache:
+    folder: node_modules
+  install_script:
+    - npm install
+  init_script:
+    - source cirrus-env BUILD
+  deploy_universal_VSIX_script:
+    - node_modules/.bin/gulp deploy
+  deploy_all_VSIX_files_script:
+    - node_modules/.bin/gulp deploy-all
