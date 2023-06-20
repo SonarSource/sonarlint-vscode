@@ -268,7 +268,7 @@ async function downloadJre(targetPlatform, javaVersion, done) {
 gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
-  const buildNumber = process.env.BUILD_BUILDID;
+  const buildNumber = process.env.BUILD_NUMBER;
   const json = buildInfo(name, version, buildNumber);
   return request
     .put(
