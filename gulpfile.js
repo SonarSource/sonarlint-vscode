@@ -319,7 +319,7 @@ gulp.task('sign', () => {
     .src(path.join('*{.vsix,-cyclonedx.json}'))
     .pipe(
       getSignature({
-        keyPath: process.env.GPG_SIGNING_KEY,
+        privateKeyArmored: process.env.GPG_SIGNING_KEY,
         passphrase: process.env.GPG_SIGNING_PASSPHRASE
       })
     )
@@ -370,7 +370,7 @@ function buildInfo(name, version, buildNumber) {
     name,
     number: buildNumber,
     started: dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
-    url: `https://dev.azure.com/sonarsource/${SYSTEM_TEAMPROJECTID}/_build/results?buildId=${BUILD_BUILDID}&view=logs`,
+    url: `https://dev.azure.com/sonarsource/${SYSTEM_TEAMPROJECTID}/_build/results?buildId=${BUILD_BUILDID}&view=logs`, // TODO: find a replacement
     vcsRevision: BUILD_SOURCEVERSION,
     vcsUrl: `https://github.com/${BUILD_REPOSITORY_NAME}.git`,
     modules: [
