@@ -119,9 +119,9 @@ gulp.task('deploy-vsix', function () {
     ARTIFACTORY_DEPLOY_USERNAME,
     ARTIFACTORY_DEPLOY_PASSWORD,
     BUILD_SOURCEVERSION,
-    BUILD_SOURCEBRANCH,
+    GITHUB_BRANCH,
     BUILD_BUILDID,
-    SYSTEM_PULLREQUEST_TARGETBRANCH
+    CIRRUS_BASE_BRANCH
   } = process.env;
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
@@ -140,7 +140,7 @@ gulp.task('deploy-vsix', function () {
             password: ARTIFACTORY_DEPLOY_PASSWORD,
             properties: {
               'vcs.revision': BUILD_SOURCEVERSION,
-              'vcs.branch': SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH,
+              'vcs.branch': CIRRUS_BASE_BRANCH || GITHUB_BRANCH,
               'build.name': name,
               'build.number': BUILD_BUILDID
             },
@@ -346,8 +346,8 @@ function buildInfo(name, version, buildNumber) {
     BUILD_ID,
     BUILD_REPOSITORY_NAME,
     BUILD_SOURCEVERSION,
-    SYSTEM_PULLREQUEST_TARGETBRANCH,
-    BUILD_SOURCEBRANCH
+    CIRRUS_BASE_BRANCH,
+    GITHUB_BRANCH
   } = process.env;
 
   const dependencies = jarDependencies.map(dep => {
@@ -361,10 +361,10 @@ function buildInfo(name, version, buildNumber) {
     };
   });
 
-  log.info("======= b", SYSTEM_PULLREQUEST_TARGETBRANCH);
-  log.info("======= b", BUILD_SOURCEBRANCH);
+  log.info("======= target branch", CIRRUS_BASE_BRANCH);
+  log.info("======= source branch", GITHUB_BRANCH);
 
-  const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
+  const fixedBranch = (CIRRUS_BASE_BRANCH || GITHUB_BRANCH).replace('refs/heads/', '');
 
   log.info("======= c")
 
