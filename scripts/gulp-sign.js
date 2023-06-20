@@ -35,7 +35,7 @@ function getTransform(opts, keep) {
             stream = file;
         }
 
-        sign(stream, opts.keyPath, opts.passphrase).then(signature => {
+        sign(stream, opts.privateKeyArmored, opts.passphrase).then(signature => {
             this.push(new Vinyl({
                 cwd: file.cwd,
                 base: file.base,
