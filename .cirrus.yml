@@ -64,9 +64,7 @@ build_task:
     cpu: 2
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
-  install_script:
-    - npm install
-  init_script:
+  setup_script:
     - source cirrus-env BUILD # Generates a build number
     - echo $BUILD_NUMBER
 
@@ -74,7 +72,7 @@ deploy_universal_vsix_task:
   name: Deploy universal VSIX
   alias: deploy_universal_vsix
   depends_on: setup
-#  <<: *ONLY_NOT_MASTER_NOR_ALLVSIX_BRANCH
+  <<: *ONLY_NOT_MASTER_NOR_ALLVSIX_BRANCH
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
@@ -87,7 +85,7 @@ deploy_universal_vsix_task:
 deploy_all_vsix_files_task:
   name: Deploy all VSIX files
   alias: deploy_all_vsix_files
-#  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
+  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
   depends_on: setup
   eks_container:
     <<: *CONTAINER_DEFINITION
