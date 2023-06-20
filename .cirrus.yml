@@ -55,7 +55,9 @@ build_task:
     - source cirrus-env BUILD
     - echo $BUILD_NUMBER
   deploy_universal_VSIX_script:
+    - source cirrus-env QA
     - echo $BUILD_NUMBER
     - node_modules/.bin/gulp deploy
   deploy_all_VSIX_files_script:
+    - source cirrus-env QA
     - node_modules/.bin/gulp deploy-all
