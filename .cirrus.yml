@@ -45,6 +45,8 @@ build_task:
     SONAR_HOST_URL: VAULT[development/kv/data/next data.url]
     GPG_SIGNING_KEY: VAULT[development/kv/data/sign data.key]
     GPG_SIGNING_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
+    ARTIFACTORY_PRIVATE_READER_USERNAME: $ARTIFACTORY_PRIVATE_USERNAME
+    ARTIFACTORY_PRIVATE_READER_PASSWORD: $ARTIFACTORY_PRIVATE_PASSWORD
   node_modules_cache:
     folder: node_modules
   install_script:
