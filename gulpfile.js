@@ -268,7 +268,7 @@ async function downloadJre(targetPlatform, javaVersion, done) {
 gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
-  const buildNumber = process.env.BUILD_NUMBER;
+  const buildNumber = process.env.BUILD_ID;
   log.info('===== buildnumber:', buildNumber);
   log.info('===== version:', version);
   log.info('===== name:', name);
@@ -346,7 +346,7 @@ gulp.task(
 function buildInfo(name, version, buildNumber) {
   const {
     CIRRUS_BUILD_ID,
-    BUILD_BUILDID,
+    BUILD_ID,
     BUILD_REPOSITORY_NAME,
     BUILD_SOURCEVERSION,
     SYSTEM_PULLREQUEST_TARGETBRANCH,
@@ -398,7 +398,7 @@ function buildInfo(name, version, buildNumber) {
       'java.specification.version': '1.8', // Workaround for https://jira.sonarsource.com/browse/RA-115
       'buildInfo.env.PROJECT_VERSION': version,
       'buildInfo.env.ARTIFACTORY_DEPLOY_REPO': 'sonarsource-public-qa',
-      'buildInfo.env.BUILD_BUILDID': BUILD_BUILDID,
+      'buildInfo.env.BUILD_BUILDID': BUILD_ID,
       'buildInfo.env.BUILD_SOURCEVERSION': BUILD_SOURCEVERSION,
       'buildInfo.env.GITHUB_BRANCH': fixedBranch,
       'buildInfo.env.GIT_SHA1': BUILD_SOURCEVERSION
