@@ -269,9 +269,6 @@ gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_ID;
-  log.info('===== buildnumber:', buildNumber);
-  log.info('===== version:', version);
-  log.info('===== name:', name);
   const json = buildInfo(name, version, buildNumber);
   return request
     .put(
@@ -353,6 +350,8 @@ function buildInfo(name, version, buildNumber) {
     BUILD_SOURCEBRANCH
   } = process.env;
 
+  log.info("======= a");
+
   const dependencies = jarDependencies.map(dep => {
     const id = `${dep.groupId}:${dep.artifactId}:${dep.version}`;
     const { md5, sha1 } = computeDependencyHashes(dep.output);
@@ -364,7 +363,12 @@ function buildInfo(name, version, buildNumber) {
     };
   });
 
+  log.info("======= b");
+
   const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
+
+  log.info("======= c")
+
   const vsixPaths = globby.sync(path.join('*.vsix'));
   const additionalPaths = globby.sync(path.join('*{-cyclonedx.json,.asc}'));
 
