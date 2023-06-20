@@ -269,6 +269,9 @@ gulp.task('deploy-buildinfo', function (done) {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_NUMBER;
+  log.info('===== buildnumber:', buildNumber);
+  log.info('===== version:', version);
+  log.info('===== name:', name);
   const json = buildInfo(name, version, buildNumber);
   return request
     .put(
