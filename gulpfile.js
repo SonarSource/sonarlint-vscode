@@ -350,8 +350,6 @@ function buildInfo(name, version, buildNumber) {
     BUILD_SOURCEBRANCH
   } = process.env;
 
-  log.info("======= a");
-
   const dependencies = jarDependencies.map(dep => {
     const id = `${dep.groupId}:${dep.artifactId}:${dep.version}`;
     const { md5, sha1 } = computeDependencyHashes(dep.output);
@@ -363,7 +361,8 @@ function buildInfo(name, version, buildNumber) {
     };
   });
 
-  log.info("======= b");
+  log.info("======= b", SYSTEM_PULLREQUEST_TARGETBRANCH);
+  log.info("======= b", BUILD_SOURCEBRANCH);
 
   const fixedBranch = (SYSTEM_PULLREQUEST_TARGETBRANCH || BUILD_SOURCEBRANCH).replace('refs/heads/', '');
 
