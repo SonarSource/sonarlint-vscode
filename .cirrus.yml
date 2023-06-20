@@ -47,8 +47,13 @@ only_not_master_nor_allvsix_branch: &ONLY_NOT_MASTER_NOR_ALLVSIX_BRANCH
 
 node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
   node_modules_cache:
-    folders:
-      - "node_modules"
+    folder: "node_modules"
+    reupload_on_changes: false # since there is a fingerprint script
+    fingerprint_script:
+      - echo $CIRRUS_OS
+      - node --version
+      - cat package-lock.json
+    populate_script: npm install
 
 build_task:
   name: Setup
