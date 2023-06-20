@@ -43,7 +43,7 @@ only_master_or_allvsix_branch: &ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH == "master" || ($CIRRUS_PR != "" && $CIRRUS_BRANCH =~ ".*allvsix"))
 
 only_not_master_nor_allvsix_branch: &ONLY_NOT_MASTER_NOR_ALLVSIX_BRANCH
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_BRANCH != "master" && ($CIRRUS_PR != "" && $CIRRUS_BRANCH !=~ ".*allvsix"))
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_BRANCH != "master" && !($CIRRUS_PR != "" && $CIRRUS_BRANCH =~ ".*allvsix")
 
 node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
   node_modules_cache:
