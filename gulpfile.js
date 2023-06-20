@@ -361,12 +361,7 @@ function buildInfo(name, version, buildNumber) {
     };
   });
 
-  log.info("======= target branch", CIRRUS_BASE_BRANCH);
-  log.info("======= source branch", GITHUB_BRANCH);
-
   const fixedBranch = (CIRRUS_BASE_BRANCH || GITHUB_BRANCH).replace('refs/heads/', '');
-
-  log.info("======= c")
 
   const vsixPaths = globby.sync(path.join('*.vsix'));
   const additionalPaths = globby.sync(path.join('*{-cyclonedx.json,.asc}'));
