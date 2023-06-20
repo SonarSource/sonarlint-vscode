@@ -342,7 +342,7 @@ gulp.task(
 
 function buildInfo(name, version, buildNumber) {
   const {
-    SYSTEM_TEAMPROJECTID,
+    CIRRUS_BUILD_ID,
     BUILD_BUILDID,
     BUILD_REPOSITORY_NAME,
     BUILD_SOURCEVERSION,
@@ -370,7 +370,7 @@ function buildInfo(name, version, buildNumber) {
     name,
     number: buildNumber,
     started: dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
-    url: `https://dev.azure.com/sonarsource/${SYSTEM_TEAMPROJECTID}/_build/results?buildId=${BUILD_BUILDID}&view=logs`, // TODO: find a replacement
+    url: `https://cirrus-ci.com/build/${CIRRUS_BUILD_ID}`,
     vcsRevision: BUILD_SOURCEVERSION,
     vcsUrl: `https://github.com/${BUILD_REPOSITORY_NAME}.git`,
     modules: [
