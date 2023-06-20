@@ -14,6 +14,14 @@ env:
   ARTIFACTORY_DEPLOY_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
   ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
 
+  ARTIFACTORY_PRIVATE_READER_USERNAME: $ARTIFACTORY_PRIVATE_USERNAME
+  ARTIFACTORY_PRIVATE_READER_PASSWORD: $ARTIFACTORY_PRIVATE_PASSWORD
+  GPG_SIGNING_KEY: VAULT[development/kv/data/sign data.key]
+  GPG_SIGNING_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
+
+  SONAR_TOKEN: VAULT[development/kv/data/next data.token]
+  SONAR_HOST_URL: VAULT[development/kv/data/next data.url]
+
 auto_cancellation: $CIRRUS_BRANCH != 'master'
 
 eks_container: &CONTAINER_DEFINITION
@@ -31,33 +39,56 @@ eks_container: &CONTAINER_DEFINITION
 only_sonarsource_qa: &ONLY_SONARSOURCE_QA
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
 
+only_master_or_allvsix_branch: &ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH == "master" || ($CIRRUS_PR != "" && $CIRRUS_BRANCH =~ ".*allvsix"))
+
+only_not_master_nor_allvsix_branch: &ONLY_NOT_MASTER_NOR_ALLVSIX_BRANCH
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_BRANCH != "master" && !($CIRRUS_PR != "" && $CIRRUS_BRANCH =~ ".*allvsix"))
+
+node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
+  node_modules_cache:
+    folders:
+      - "node_modules"
 
 build_task:
-  name: Build, Run UTs (linux), Analyze and Stage to repox
-  alias: build
+  name: Setup
+  alias: setup
   <<: *ONLY_SONARSOURCE_QA
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
-    memory: 4G
-  env:
-    SONAR_TOKEN: VAULT[development/kv/data/next data.token]
-    SONAR_HOST_URL: VAULT[development/kv/data/next data.url]
-    GPG_SIGNING_KEY: VAULT[development/kv/data/sign data.key]
-    GPG_SIGNING_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
-    ARTIFACTORY_PRIVATE_READER_USERNAME: $ARTIFACTORY_PRIVATE_USERNAME
-    ARTIFACTORY_PRIVATE_READER_PASSWORD: $ARTIFACTORY_PRIVATE_PASSWORD
-  node_modules_cache:
-    folder: node_modules
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
   install_script:
     - npm install
   init_script:
-    - source cirrus-env BUILD
+    - source cirrus-env BUILD # Generates a build number
     - echo $BUILD_NUMBER
-  deploy_universal_VSIX_script:
-    - source cirrus-env QA
-    - echo $BUILD_NUMBER
+
+deploy_universal_vsix_task:
+  name: Deploy universal VSIX
+  alias: deploy_universal_vsix
+  depends_on: setup
+#  <<: *ONLY_NOT_MASTER_NOR_ALLVSIX_BRANCH
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  deploy_script:
+    - source cirrus-env QA # Retrieve build number
     - node_modules/.bin/gulp deploy
-  deploy_all_VSIX_files_script:
-    - source cirrus-env QA
+
+deploy_all_vsix_files_task:
+  name: Deploy all VSIX files
+  alias: deploy_all_vsix_files
+#  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
+  depends_on: setup
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  deploy_script:
+    - source cirrus-env QA # Retrieve build number
     - node_modules/.bin/gulp deploy-all
