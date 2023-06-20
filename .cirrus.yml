@@ -79,6 +79,7 @@ deploy_universal_vsix_task:
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
   deploy_script:
+    - echo $CIRRUS_BRANCH
     - source cirrus-env QA # Retrieve build number
     - node_modules/.bin/gulp deploy
 
@@ -92,6 +93,6 @@ deploy_all_vsix_files_task:
     cpu: 2
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
-  deploy_script:
+  deploy_all_script:
     - source cirrus-env QA # Retrieve build number
     - node_modules/.bin/gulp deploy-all
