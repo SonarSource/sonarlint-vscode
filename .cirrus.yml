@@ -53,7 +53,9 @@ build_task:
     - npm install
   init_script:
     - source cirrus-env BUILD
+    - echo $BUILD_NUMBER
   deploy_universal_VSIX_script:
+    - echo $BUILD_NUMBER
     - node_modules/.bin/gulp deploy
   deploy_all_VSIX_files_script:
     - node_modules/.bin/gulp deploy-all
