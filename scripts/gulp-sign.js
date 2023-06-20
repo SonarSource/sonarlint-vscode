@@ -50,9 +50,9 @@ function getTransform(opts, keep) {
     };
 }
 
-async function sign(content, keyPath, passphrase) {
+async function sign(content, privateKeyArmored, passphrase) {
     const privateKey = await openpgp.decryptKey({
-        privateKey: await openpgp.readPrivateKey({ armoredKey: getKey(keyPath) }),
+        privateKey: await openpgp.readPrivateKey({ armoredKey: privateKeyArmored }),
         passphrase
     });
     const message = await openpgp.createMessage({ binary: content });
@@ -61,12 +61,4 @@ async function sign(content, keyPath, passphrase) {
         signingKeys: privateKey,
         detached: true
     });
-}
-
-function getKey(keyPath) {
-  try{
-    return fs.readFileSync(keyPath, 'utf8');
-  } catch (err) {
-    throw new Error(`Unable to get sign key ${keyPath}`);
-  }
 }
