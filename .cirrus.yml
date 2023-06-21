@@ -161,7 +161,12 @@ test_linux_task:
     DISPLAY: ":10"
   script:
     - source cirrus-env QA
-    - ./runits.sh
+    - echo $DISPLAY
+    - npm i
+    - node_modules/.bin/gulp package
+    - cd its
+    - npm i
+    - npm test
   always:
     unit_tests_artifacts:
       path: '**/*tests.xml'
