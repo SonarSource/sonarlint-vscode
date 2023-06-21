@@ -157,6 +157,8 @@ test_linux_task:
     cpu: 4
     memory: 4G
   <<: *NODE_MODULES_CACHE_TEMPLATE
+  env:
+    DISPLAY: ":10"
   script:
     - source cirrus-env QA
     - ./runits.sh
