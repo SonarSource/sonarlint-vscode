@@ -36,6 +36,19 @@ eks_container: &CONTAINER_DEFINITION
   builder_subnet_id: ${CIRRUS_AWS_SUBNET}
   namespace: default
 
+eks_xvfb_container: &XVFB_CONTAINER_DEFINITION
+  dockerfile: .cirrus/XVFB_Dockerfile
+  docker_arguments:
+    CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
+    JDK_VERSION: 11
+  region: eu-central-1
+  cluster_name: ${CIRRUS_CLUSTER_NAME}
+  builder_role: cirrus-builder
+  builder_image: docker-builder-v*
+  builder_instance_type: t2.small
+  builder_subnet_id: ${CIRRUS_AWS_SUBNET}
+  namespace: default
+
 ec2_instance: &WINVM_DEFINITION
   experimental: true
   image: base-windows-jdk17-v*
@@ -127,7 +140,6 @@ test_windows_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   script:
     - source cirrus-env QA
-    - echo npm --version
     - npm run compile
     - npm run prepare
     - npm run test-cov
@@ -135,4 +147,23 @@ test_windows_task:
     unit_tests_artifacts:
       path: '**/alltests.xml'
       format: junit
+
+test_linux_task:
+  name: Run tests, SonarQube analysis on Linux
+  alias: test_linux
+  depends_on: validate
+  eks_container:
+    <<: *XVFB_CONTAINER_DEFINITION
+    cpu: 4
+    memory: 4G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  script:
+    - source cirrus-env QA
+    - cd its
+    - npm run test
+  always:
+    unit_tests_artifacts:
+      path: '**/*tests.xml'
+      format: junit
+
 #mend_task:
