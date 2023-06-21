@@ -159,8 +159,7 @@ test_linux_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   script:
     - source cirrus-env QA
-    - cd its
-    - npm run test
+    - runits.sh
   always:
     unit_tests_artifacts:
       path: '**/*tests.xml'
