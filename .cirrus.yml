@@ -160,7 +160,7 @@ test_linux_task:
   env:
     DISPLAY: ":10"
   start_xvfb_background_script:
-    - .cirrus/run_xvfb.sh
+    - xvfb-daemon-run
   script:
     - source cirrus-env QA
     - echo $DISPLAY
@@ -169,6 +169,8 @@ test_linux_task:
     - cd its
     - npm i
     - npm test
+  stop_xvfb_service_script:
+    - /etc/init.d/xvfb stop
   always:
     unit_tests_artifacts:
       path: '**/*tests.xml'
