@@ -160,7 +160,7 @@ test_linux_task:
   env:
     DISPLAY: ":10"
   start_xvfb_background_script:
-    - xvfb-daemon-run
+    - xvfb_daemon_run
   script:
     - source cirrus-env QA
     - echo $DISPLAY
