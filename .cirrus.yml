@@ -126,6 +126,8 @@ validate_task:
     cpu: 2
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
+  background_script:
+    - /etc/init.d/xvfb start
   script:
     - echo "Validate"
 #    - ci
