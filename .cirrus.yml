@@ -126,8 +126,6 @@ validate_task:
     cpu: 2
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
-  start_xvfb_background_script:
-    - /etc/init.d/xvfb start
   script:
     - echo "Validate"
 #    - ci
@@ -161,6 +159,8 @@ test_linux_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   env:
     DISPLAY: ":10"
+  start_xvfb_background_script:
+    - .cirrus/run_xvfb.sh
   script:
     - source cirrus-env QA
     - echo $DISPLAY
