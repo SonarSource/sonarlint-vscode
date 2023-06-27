@@ -51,6 +51,7 @@ async function main() {
       const launchArgs = [
         `--user-data-dir=${userDataDir}`,
         `--extensions-dir=${extensionsDir}`,
+        `--disable-gpu`,
       ];
       if (workspaceDir) {
         launchArgs.unshift(path.resolve(__dirname, `../../samples/${workspaceDir}`));

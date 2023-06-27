@@ -162,13 +162,14 @@ test_linux_task:
   start_xvfb_background_script:
     - xvfb_daemon_start
   script:
+    - sleep 3 # give xvfb some time to start
     - source cirrus-env QA
     - echo $DISPLAY
     - npm i
     - node_modules/.bin/gulp package
     - cd its
     - npm i
-    - npm test --disable-gpu
+    - npm test
   stop_xvfb_service_script:
     - xvfb_daemon_stop
   always:
