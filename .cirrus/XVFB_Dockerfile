@@ -15,4 +15,4 @@ RUN chmod a+x /usr/bin/xvfb_daemon_run
 
 
 # TODO: readd this (it is to attempt to workaround the var/pid file perm issue
-#USER sonarsource
+USER sonarsource
