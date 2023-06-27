@@ -13,7 +13,8 @@ ADD .cirrus/xvfb_init /etc/init.d/xvfb
 RUN chmod a+x /etc/init.d/xvfb
 ADD .cirrus/xvfb_daemon_start /usr/bin/xvfb_daemon_start
 RUN chmod a+x /usr/bin/xvfb_daemon_start
-
+ADD .cirrus/xvfb_daemon_stop /usr/bin/xvfb_daemon_stop
+RUN chmod a+x /usr/bin/xvfb_daemon_stop
 
 # TODO: readd this (it is to attempt to workaround the var/pid file perm issue
 USER sonarsource
