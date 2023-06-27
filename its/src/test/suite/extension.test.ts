@@ -22,6 +22,10 @@ suite('Extension Test Suite', () => {
     assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));
   });
 
+  test('Dummy failing test to verify xvfb is working as expected', () => {
+    assert.ok(vscode.extensions.getExtension('some-thing-wrong-here'));
+  });
+
   test('should report issue on single js file', async function () {
     const ext = vscode.extensions.getExtension('sonarsource.sonarlint-vscode')!;
     await ext.activate();
