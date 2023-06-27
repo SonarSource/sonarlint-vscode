@@ -8,9 +8,9 @@ ENV NODE_VERSION=16
 RUN apt-get update && apt-get install -y xvfb && apt-get install -y nodejs=${NODE_VERSION}.*
 RUN apt-get install -y libglib2.0-0 && apt-get install -y libnss3 && apt-get install -y libatk1.0-0 && apt-get install -y libatk-bridge2.0-0 && apt-get install -y	libgtk-3-0 && apt-get install -y libgbm1 && apt-get install -y libasound2 && apt-get install -y ffmpeg
 
-ADD xvfb_init /etc/init.d/xvfb
+ADD .cirrus/xvfb_init /etc/init.d/xvfb
 RUN chmod a+x /etc/init.d/xvfb
-ADD xvfb_daemon_run /usr/bin/xvfb_daemon_run
+ADD .cirrus/xvfb_daemon_run /usr/bin/xvfb_daemon_run
 RUN chmod a+x /usr/bin/xvfb_daemon_un
 
 
