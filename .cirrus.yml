@@ -161,8 +161,10 @@ test_linux_task:
     DISPLAY: ":10"
   start_xvfb_background_script:
     - xvfb_daemon_start
-  script:
+  record_screen_start_script:
     - sleep 3 # give xvfb some time to start
+    - ffmpeg -loglevel warning -f x11grab -video_size 1280x960 -framerate 10 -i ${DISPLAY} -q:v 0 ${CIRRUS_WORKING_DIR}/recording_${IDEA_VERSION}.mp4 &
+  script:
     - source cirrus-env QA
     - echo $DISPLAY
     - npm i
@@ -176,5 +178,6 @@ test_linux_task:
     unit_tests_artifacts:
       path: '**/*tests.xml'
       format: junit
-
+    test_recording_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/recording_${IDEA_VERSION}.mp4"
 #mend_task:
