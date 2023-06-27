@@ -10,8 +10,8 @@ RUN apt-get install -y libglib2.0-0 && apt-get install -y libnss3 && apt-get ins
 
 ADD xvfb_init /etc/init.d/xvfb
 RUN chmod a+x /etc/init.d/xvfb
-ADD xvfb_daemon_run /usr/bin/xvfb-daemon-run
-RUN chmod a+x /usr/bin/xvfb-daemon-run
+ADD xvfb_daemon_run /usr/bin/xvfb_daemon_run
+RUN chmod a+x /usr/bin/xvfb_daemon_un
 
 
 USER sonarsource
