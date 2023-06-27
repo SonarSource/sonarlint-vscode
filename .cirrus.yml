@@ -168,7 +168,7 @@ test_linux_task:
     - node_modules/.bin/gulp package
     - cd its
     - npm i
-    - npm test
+    - npm test --disable-gpu
   stop_xvfb_service_script:
     - xvfb_daemon_stop
   always:
