@@ -162,7 +162,7 @@ test_linux_task:
   start_xvfb_background_script:
     - /usr/bin/Xvfb ${DISPLAY} -ac -screen 0 1280x960x24 >> ${CIRRUS_WORKING_DIR}/Xvfb.out 2>&1
   start_screen_recording_background_script: |
-    ffmpeg -loglevel warning -f x11grab -video_size 1280x960 -framerate 10 -i ${DISPLAY} -q:v 0 ${CIRRUS_WORKING_DIR}/recording.mp4 &
+    ffmpeg -video_size 1280x960 -f x11grab -i ${DISPLAY} -c:v libx264 -framerate 10 ${CIRRUS_WORKING_DIR}/recording.mp4 &
     echo "RECORDING_PID=$!" >> $CIRRUS_ENV
     fg
   script:
