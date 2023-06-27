@@ -40,6 +40,7 @@ The full list of available rules is visible in the **SONARLINT RULES** view in t
 The SonarLint language server needs a Java Runtime (JRE) 11+.
 
 On the following platforms, SonarLint comes with its own Java runtime:
+
 - Windows x86-64
 - Linux x86-64
 - macOS x86-64 (Intel Macs) and arm-64 (Apple Silicon Macs)
@@ -48,9 +49,12 @@ On other platforms and if a Java runtime is already installed on your computer, 
 
 1. the `sonarlint.ls.javaHome` variable in VS Code settings if set. For instance:
 
-    {
-        "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre-11.0.11"
-    }
+   ```json
+   {
+     "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre-11.0.11"
+   }
+   ```
+
 2. embedded JRE for platform-specific installations
 3. the value of the `JDK_HOME` environment variable if set
 4. the value of the `JAVA_HOME` environment variable if set
@@ -69,9 +73,9 @@ If a suitable JRE cannot be found at those places, SonarLint will ask for your p
 To analyze JavaScript and TypeScript code, SonarLint requires Node.js executable. The minimal supported version is `14.17.0` for standalone analysis or Connected Mode with SonarCloud. For Connected Mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate node, or you can force the location using:
 
 ```json
-    {
-        "sonarlint.pathToNodeExecutable": "/home/yourname/.nvm/versions/node/v14.17.0/bin/node"
-    }
+{
+  "sonarlint.pathToNodeExecutable": "/home/yourname/.nvm/versions/node/v14.17.0/bin/node"
+}
 ```
 
 Analysis of TypeScript in Connected Mode with SonarQube requires the server to use version 8.1 or above.
@@ -81,9 +85,9 @@ Analysis of TypeScript in Connected Mode with SonarQube requires the server to u
 To analyze C and C++ code, SonarLint requires [compile commands json file](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis):
 
 ```json
-    {
-        "sonarlint.pathToCompileCommands": "/home/yourname/repos/proj/compile_commands.json"
-    }
+{
+  "sonarlint.pathToCompileCommands": "/home/yourname/repos/proj/compile_commands.json"
+}
 ```
 
 Note: if you are using Microsoft compiler, the environment should be ready to build the code. For example, by launching VS Code from your Visual Studio Command Prompt
@@ -117,17 +121,18 @@ To browse injection vulnerabilities in SonarLint for VSCode, establish [Connecte
 More information about security-related rules is available in the [SonarQube](https://docs.sonarqube.org/latest/user-guide/security-rules/) or [SonarCloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/) documentation.
 
 ### Security Hotspots in SonarLint
-​
+
 In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) is enabled if you are using [Connected Mode](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode) with SonarQube 9.7 or above. From version 3.18+, Security Hotspots are also found when bound to a project in SonarCloud.
 
-Please see the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Security-hotspots) for more details. 
+Please see the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Security-hotspots) for more details.
 
 ### Secrets detection
+
 Secrets are pieces of user-specific or system-level credentials that should be protected and accessible to legitimate users only. SonarLint detects exposed Secrets in your source code and language-agnostic config files. When running in Connected Mode, the SonarQube or SonarCloud Quality Profiles are applied to locally detected Secrets.
 
 ## Connected Mode
 
-You can connect SonarLint to SonarQube 7.9+/SonarCloud by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder. 
+You can connect SonarLint to SonarQube 7.9+/SonarCloud by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder.
 
 While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings. For editing notifications in previous versions, please see [SonarLint Versions 3.5.4 and Lower](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#sonarlint-versions-354-and-lower). Note that Connected Mode notifications are not available in the SonarQube Community Editions 8.6 and earlier.
 
@@ -142,9 +147,10 @@ Connected Mode will also unlock your analysis of these languages:
 When configuring Connected Mode, follow the [Connection Setup instructions](#connection-setup) below.
 
 ## Connection Setup
+
 In v3.8 and above of SonarLint for VSCode, to set up SonarQube/SonarCloud connections, navigate to the **SONARLINT** > **CONNECTED MODE** view container in the VS Code Activity Bar.
 
-<img src='images/connected_mode/connected_mode_treeview.png' alt='Empty Connected Mode View' width='350'/>
+<img src='images/connected_mode_treeview.png' alt='Empty Connected Mode View' width='350'/>
 
 Select either **Add SonarQube Connection** or **Add SonarCloud Connection**, and complete the fields.
 
@@ -153,8 +159,9 @@ Select either **Add SonarQube Connection** or **Add SonarCloud Connection**, and
 For SonarQube connections, provide your SonarQube **Server URL** and **User Token**. For SonarCloud connections, provide your **Organization Key** and **User Token**. User Tokens should be generated on the SonarQube/SonarCloud side and pasted in the **User Token** field.
 
 User Token can be generated using these pages:
-* SonarQube - `https://<your-sonarqube-url>/account/security/`
-* SonarCloud - `https://sonarcloud.io/account/security/`
+
+- SonarQube - `https://<your-sonarqube-url>/account/security/`
+- SonarCloud - `https://sonarcloud.io/account/security/`
 
 **Connection Name** is a friendly name for your connections. In the case of multiple connections, it also acts as a `connectionId`.
 
@@ -165,6 +172,7 @@ Select **Save Connection** and verify that the new connection was set up success
 To set up a Connected Mode for SonarLint v3.5.4 and lower, please see the relevant wiki for [Connection Setup](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup).
 
 ### Project Binding
+
 SonarLint keeps server-side data in a local storage. If you change something on the server such as the Quality Profile, SonarLint will automatically attempt to synchronize with configured servers at startup & once every hour, and will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness). Additionally, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). 
 
 ### Project Binding Setup
@@ -175,23 +183,20 @@ If no remote match is found, you will be prompted to configure binding manually.
 
 To manually configure a project binding, open the **CONNECTED MODE** view and select **Add Project Binding** for the desired connection.
 
-<img src='images/connected_mode/add-binding.png' alt='Add Project Binding' width='500'/>
-
+<img src='images/add-binding.png' alt='Add Project Binding' width='500'/>
 
 If your open workspace contains multiple folders, you will be prompted to choose a specific folder.
 
 <img src='images/3.8_selectFolder.png' alt='Select Folder' width='500'/>
 
-
 After selecting the folder, choose the remote SonarQube/SonarCloud project you would like to bind.
 
 <img src='images/3.8_selectProject.png' alt='Select Project' width='500'/>
 
-
 Select the desired project and enjoy Connected Mode! You can also edit or delete bindings from the **CONNECTED MODE** view.
 
-<img src='images/connected_mode/edit-binding.png' alt='Edit Binding' width='500'/>
-<img src='images/3.8_editBinding.png' alt='Edit Binding' width='500'/>
+<img src='images/edit-binding.png' alt='Edit Binding' width='500'/>
+<img src='images/3.8_selectProject.png' alt='Edit Binding' width='500'/>
 
 Action buttons in the UI used to edit/delete existing, or create additional bindings will be revealed when hovering over each connection.
 
@@ -199,18 +204,17 @@ Action buttons in the UI used to edit/delete existing, or create additional bind
 
 For earlier versions, please see the relevant wiki to configure your [Connection Setup](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup).
 
-
 ## Other settings
 
 It is possible to specify extra analyzer properties that will be used for analysis. Example:
 
-```json
-    // In project/.vscode/settings.json
-    {
-        "sonarlint.analyzerProperties": {
-            "sonar.javascript.node.maxspace": "4096"
-        }
-    }
+```jsonc
+// In project/.vscode/settings.json
+{
+  "sonarlint.analyzerProperties": {
+    "sonar.javascript.node.maxspace": "4096"
+  }
+}
 ```
 
 ## Contributions
@@ -240,4 +244,3 @@ Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.g
 ## Data and telemetry
 
 This extension collects anonymous usage data and sends it to SonarSource to help improve SonarLint functionality.  No source code nor IP address is collected, and SonarSource does not share the data with anyone else. Collection of telemetry is controlled via the setting: `sonarlint.disableTelemetry`. Click [here](telemetry-sample.md) to see a sample of the data that are collected.
-
