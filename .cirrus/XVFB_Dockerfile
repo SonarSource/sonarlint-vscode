@@ -10,8 +10,8 @@ RUN apt-get install -y libglib2.0-0 && apt-get install -y libnss3 && apt-get ins
 
 ADD .cirrus/xvfb_init /etc/init.d/xvfb
 RUN chmod a+x /etc/init.d/xvfb
-ADD .cirrus/xvfb_daemon_run /usr/bin/xvfb_daemon_run
-RUN chmod a+x /usr/bin/xvfb_daemon_run
+ADD .cirrus/xvfb_daemon_start /usr/bin/xvfb_daemon_start
+RUN chmod a+x /usr/bin/xvfb_daemon_start
 
 
 # TODO: readd this (it is to attempt to workaround the var/pid file perm issue

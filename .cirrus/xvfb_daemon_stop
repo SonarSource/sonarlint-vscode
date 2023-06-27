@@ -1,0 +1,3 @@
+#!/bin/bash
+export DISPLAY=:10
+/etc/init.d/xvfb stop
