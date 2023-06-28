@@ -118,8 +118,7 @@ build_task:
 #    - node_modules/.bin/gulp deploy-all
 
 validate_task:
-  name: Run tests, SonarQube analysis
-  alias: validate
+  # Run tests, SonarQube analysis
   depends_on: setup
   eks_container:
     <<: *CONTAINER_DEFINITION
@@ -148,18 +147,27 @@ test_windows_task:
       path: '**/alltests.xml'
       format: junit
 
-test_linux_task:
-  name: Run tests, SonarQube analysis on Linux
-  alias: test_linux
+qa_task:
+#  name: Run ITs
   depends_on: validate
   eks_container:
     <<: *XVFB_CONTAINER_DEFINITION
     cpu: 4
     memory: 4G
   <<: *NODE_MODULES_CACHE_TEMPLATE
+  matrix:
+    - env:
+        QA_CATEGORY: oldest_supported
+        VSCODE_VERSION: '1.73.0'
+    - env:
+        QA_GROUP: stable
+        VSCODE_VERSION: 'stable'
+    - env:
+        QA_GROUP: insiders
+        VSCODE_VERSION: 'insiders'
   env:
     DISPLAY: ":10"
-    RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record_${BUILD_NUMBER}.mp4"
+    RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record.mp4"
   prepare_tests_script:
     - source cirrus-env QA
     - npm i
