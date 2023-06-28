@@ -168,7 +168,7 @@ test_linux_task:
   start_screen_recording_background_script:
     - xvfb_daemon_start
     - sleep 5 # give xvfb some time to start
-    - ffmpeg -f x11grab -video_size 1024x768 -i ${DISPLAY} -codec:v libx264 -r 12 -vf "drawtext=text='%{localtime\:%T}':x=100:y=50:fontcolor=white:fontsize=30" ${CIRRUS_WORKING_DIR}/record.mp4
+    - ffmpeg -f x11grab -video_size 1024x768 -i ${DISPLAY} -codec:v libx264 -r 12 -vf "drawtext=text='UTC %{localtime\:%T}':x=100:y=900:fontcolor=white:fontsize=30" ${CIRRUS_WORKING_DIR}/record.mp4
   test_script:
     - source cirrus-env QA
     - npm test
