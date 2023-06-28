@@ -82,16 +82,13 @@ only_main_branches: &ONLY_MAIN_BRANCHES
 node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
   node_modules_cache:
     folder: "node_modules"
-    reupload_on_changes: false # since there is a fingerprint script
     fingerprint_script:
-      - echo $CIRRUS_OS
+#      - echo $CIRRUS_OS #TODO: needed ?
       - node --version
       - cat package-lock.json
     populate_script: npm install
 
 build_task:
-  name: Setup
-  alias: setup
   <<: *ONLY_SONARSOURCE_QA
   eks_container:
     <<: *CONTAINER_DEFINITION
@@ -105,7 +102,7 @@ build_task:
 #deploy_universal_vsix_task:
 #  name: Deploy universal VSIX
 #  alias: deploy_universal_vsix
-#  depends_on: setup
+#  depends_on: build
 #  <<: *SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
 #  eks_container:
 #    <<: *CONTAINER_DEFINITION
@@ -120,7 +117,7 @@ build_task:
 #  name: Deploy all VSIX files
 #  alias: deploy_all_vsix_files
 #  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
-#  depends_on: setup
+#  depends_on: build
 #  eks_container:
 #    <<: *CONTAINER_DEFINITION
 #    cpu: 2
@@ -132,7 +129,7 @@ build_task:
 
 validate_task:
   # Run tests, SonarQube analysis
-  depends_on: setup
+  depends_on: build
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
