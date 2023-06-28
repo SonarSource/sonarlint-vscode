@@ -153,8 +153,13 @@ test_linux_task:
     <<: *XVFB_CONTAINER_DEFINITION
     cpu: 4
     memory: 4G
+  env:
+    DISPLAY: ":10"
   <<: *NODE_MODULES_CACHE_TEMPLATE
+  start_screen_recording_background_script:
+    - xvfb_daemon_start
   script:
+    - sleep 5
     - source cirrus-env QA
     - npm run compile
     - npm run prepare
