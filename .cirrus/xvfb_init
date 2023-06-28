@@ -1,5 +1,5 @@
 XVFB=/usr/bin/Xvfb
-XVFBARGS="$DISPLAY -listen tcp -ac -screen 0 1024x768x16"
+XVFBARGS="$DISPLAY -listen tcp -ac -screen 0 1024x768x24"
 PIDFILE=~/xvfb_${DISPLAY:1}.pid
 case "$1" in
   start)
