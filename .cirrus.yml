@@ -159,6 +159,7 @@ test_linux_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   env:
     DISPLAY: ":10"
+    RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record_${BUILD_NUMBER}.mp4"
   prepare_tests_script:
     - source cirrus-env QA
     - npm i
@@ -168,7 +169,7 @@ test_linux_task:
   start_screen_recording_background_script:
     - xvfb_daemon_start
     - sleep 10 # give xvfb some time to start
-    - ffmpeg -f x11grab -video_size 1024x768 -i ${DISPLAY} -codec:v libx264 -r 12 -vf "drawtext=text='%{localtime\:%T} UTC':x=w-tw-10:y=5:fontcolor=black:fontsize=20" ${CIRRUS_WORKING_DIR}/record.mp4
+    - ffmpeg -f x11grab -video_size 1024x768 -i ${DISPLAY} -codec:v libx264 -r 12 -vf "drawtext=text='%{localtime\:%T} UTC':x=w-tw-10:y=5:fontcolor=black:fontsize=20" ${RECORD_FILENAME}
   test_script:
     - source cirrus-env QA
     - npm test
@@ -181,5 +182,5 @@ test_linux_task:
       path: '**/*tests.xml'
       format: junit
     test_recording_artifacts:
-      path: "${CIRRUS_WORKING_DIR}/record.mp4"
+      path: ${RECORD_FILENAME}
 #mend_task:
