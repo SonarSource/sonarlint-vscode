@@ -150,7 +150,9 @@ test_linux_task:
 #  name: Run tests on Linux
   depends_on: validate
   eks_container:
-    <<: *CONTAINER_DEFINITION
+    <<: *XVFB_CONTAINER_DEFINITION
+    cpu: 4
+    memory: 4G
   <<: *NODE_MODULES_CACHE_TEMPLATE
   script:
     - source cirrus-env QA
