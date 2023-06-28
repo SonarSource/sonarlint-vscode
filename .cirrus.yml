@@ -160,10 +160,10 @@ qa_task:
         QA_CATEGORY: oldest_supported
         VSCODE_VERSION: '1.73.0'
     - env:
-        QA_GROUP: stable
+        QA_CATEGORY: stable
         VSCODE_VERSION: 'stable'
     - env:
-        QA_GROUP: insiders
+        QA_CATEGORY: insiders
         VSCODE_VERSION: 'insiders'
   env:
     DISPLAY: ":10"
