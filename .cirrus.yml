@@ -131,8 +131,7 @@ validate_task:
 #    - npm run compile
 
 test_windows_task:
-  name: Run tests on Windows
-  alias: test_windows
+#  name: Run tests on Windows
   depends_on: validate
   ec2_instance:
     <<: *WINVM_DEFINITION
@@ -146,6 +145,23 @@ test_windows_task:
     unit_tests_artifacts:
       path: '**/alltests.xml'
       format: junit
+
+test_linux_task:
+#  name: Run tests on Linux
+  depends_on: validate
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  script:
+    - source cirrus-env QA
+    - npm run compile
+    - npm run prepare
+    - npm run test-cov
+  always:
+    unit_tests_artifacts:
+      path: '**/alltests.xml'
+      format: junit
+
 
 qa_task:
 #  name: Run ITs
@@ -167,7 +183,7 @@ qa_task:
         VSCODE_VERSION: 'insiders'
   env:
     DISPLAY: ":10"
-    RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record.mp4"
+    RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record_vscode_${QA_CATEGORY}.mp4"
   prepare_tests_script:
     - source cirrus-env QA
     - npm i
