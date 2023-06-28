@@ -159,11 +159,11 @@ test_linux_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   env:
     DISPLAY: ":10"
-  start_xvfb_background_script:
-    - /usr/bin/Xvfb ${DISPLAY} -ac -screen 0 1280x960x24 >> ${CIRRUS_WORKING_DIR}/Xvfb.out & echo "RECORDING_PID=$!" >> $CIRRUS_ENV
+#  start_xvfb_background_script:
+#    - /usr/bin/Xvfb ${DISPLAY} -ac -screen 0 1280x960x24 >> ${CIRRUS_WORKING_DIR}/Xvfb.out & echo "RECORDING_PID=$!" >> $CIRRUS_ENV
   start_screen_recording_background_script:
-    - echo "RECORDING_PID: $RECORDING_PID"
-    - ffmpeg -nostdin -y -video_size 1280x960 -framerate 8 -f x11grab -i :42.0 -codec:v libx264rgb -vf "drawtext=text='%{localtime\:%T}':x=100:y=50:fontcolor=white:fontsize=30" -preset ultrafast ${CIRRUS_WORKING_DIR}/recording.mp4 > ffmpeg.log 2>&1 &
+    - ffmpeg -f x11grab -video_size 1024x768 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/record.mp4
+    - echo "RECORDING_PID: $!"
   script:
     - sleep 5 # give xvfb some time to start
     - source cirrus-env QA
@@ -183,5 +183,5 @@ test_linux_task:
       path: '**/*tests.xml'
       format: junit
     test_recording_artifacts:
-      path: "${CIRRUS_WORKING_DIR}/recording.mp4"
+      path: "${CIRRUS_WORKING_DIR}/record.mp4"
 #mend_task:
