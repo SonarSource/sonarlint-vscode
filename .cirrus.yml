@@ -174,7 +174,7 @@ test_linux_task:
     - npm i
     - npm test
   stop_recording_script:
-    - killall -SIGINT ffmpeg
+    - pkill -f ffmpeg -SIGINT
     - sleep 5
   stop_xvfb_service_script:
     - xvfb_daemon_stop
