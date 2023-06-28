@@ -159,10 +159,11 @@ test_linux_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   env:
     DISPLAY: ":10"
-#  start_xvfb_background_script:
-#    - /usr/bin/Xvfb ${DISPLAY} -ac -screen 0 1280x960x24 >> ${CIRRUS_WORKING_DIR}/Xvfb.out & echo "RECORDING_PID=$!" >> $CIRRUS_ENV
+  start_xvfb_background_script:
+    - /usr/bin/Xvfb ${DISPLAY} -ac -screen 0 1280x960x24
   start_screen_recording_background_script:
-    - ffmpeg -f x11grab -video_size 1024x768 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/record.mp4
+    - sleep 5
+    - ffmpeg -f x11grab -video_size 1280x960 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/record.mp4
     - echo "RECORDING_PID: $!"
   script:
     - sleep 5 # give xvfb some time to start
