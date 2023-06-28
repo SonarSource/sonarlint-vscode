@@ -66,6 +66,19 @@ skip_master_branch_and_allvsix_branch: &SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
 only_master_or_allvsix_branch: &ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH == "master" || ($CIRRUS_PR != "" && $CIRRUS_BRANCH =~ ".*allvsix"))
 
+
+only_if_base: &ONLY_IF
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
+
+only_if_with_nightly: &ONLY_IF_WITH_NIGHTLY
+  only_if: ($CIRRUS_USER_COLLABORATOR == 'true' || $CIRRUS_CRON == 'nightly-mend-scan') && $CIRRUS_TAG == ""
+
+only_pr_and_maintained_branches: &ONLY_PR_AND_MAINTAINED_BRANCHES
+  only_if: $CIRRUS_PR != "" || $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*"
+
+only_main_branches: &ONLY_MAIN_BRANCHES
+  only_if: $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*"
+
 node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
   node_modules_cache:
     folder: "node_modules"
@@ -156,7 +169,7 @@ test_linux_task:
   env:
     DISPLAY: ":10"
   <<: *NODE_MODULES_CACHE_TEMPLATE
-  start_screen_recording_background_script:
+  start_virtual_screen_background_script:
     - xvfb_daemon_start
   script:
     - sleep 5
@@ -169,6 +182,16 @@ test_linux_task:
       path: '**/alltests.xml'
       format: junit
 
+mend_scan_task:
+  depends_on:
+    - test_linux
+  <<: *ONLY_IF_WITH_NIGHTLY
+  <<: *ONLY_MAIN_BRANCHES
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+  env:
+    WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
+    WS_PRODUCTNAME: SonarLint/VSCode
 
 qa_task:
 #  name: Run ITs
@@ -214,4 +237,10 @@ qa_task:
       format: junit
     test_recording_artifacts:
       path: ${RECORD_FILENAME}
-#mend_task:
+
+dogfood_task:
+  depends_on:
+    - validate
+    - qa
+  script:
+    - echo TODO - Implement it # TODO: implement this
