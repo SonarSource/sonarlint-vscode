@@ -160,11 +160,10 @@ test_linux_task:
   env:
     DISPLAY: ":10"
   start_xvfb_background_script:
-    - /usr/bin/Xvfb ${DISPLAY} -ac -screen 0 1280x960x24 >> ${CIRRUS_WORKING_DIR}/Xvfb.out 2>&1
-  start_screen_recording_background_script: |
-    ffmpeg -video_size 1280x960 -f x11grab -i ${DISPLAY} -c:v libx264 -framerate 10 ${CIRRUS_WORKING_DIR}/recording.mp4 &
-    echo "RECORDING_PID=$!" >> $CIRRUS_ENV
-    fg
+    - /usr/bin/Xvfb ${DISPLAY} -ac -screen 0 1280x960x24 >> ${CIRRUS_WORKING_DIR}/Xvfb.out & echo "RECORDING_PID=$!" >> $CIRRUS_ENV
+  start_screen_recording_background_script:
+    - echo "RECORDING_PID: $RECORDING_PID"
+    - ffmpeg -nostdin -y -video_size 1280x960 -framerate 8 -f x11grab -i :42.0 -codec:v libx264rgb -vf "drawtext=text='%{localtime\:%T}':x=100:y=50:fontcolor=white:fontsize=30" -preset ultrafast ${CIRRUS_WORKING_DIR}/recording.mp4 > ffmpeg.log 2>&1 &
   script:
     - sleep 5 # give xvfb some time to start
     - source cirrus-env QA
@@ -175,8 +174,8 @@ test_linux_task:
     - npm i
     - npm test
   stop_recording_script:
-    - echo "RECORDING_PID: $RECORDING_PID"
-    - kill -2 $RECORDING_PID || true
+    - killall -SIGINT ffmpeg
+    - sleep 5
   stop_xvfb_service_script:
     - xvfb_daemon_stop
   always:
