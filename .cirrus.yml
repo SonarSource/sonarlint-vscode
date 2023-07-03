@@ -97,7 +97,6 @@ build_task:
   setup_script:
     - source cirrus-env BUILD # Generates a build number
     - echo $BUILD_NUMBER
-  extract_package_version_script:
     - export PACKAGE_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
     - fail_now
