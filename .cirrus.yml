@@ -182,7 +182,6 @@ test_linux_task:
       -Dsonar.projectName="SonarLint for VSCode" \
       -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
       -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
-      -Dsonar.branch.name="$GITHUB_BRANCH" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
       -Dsonar.analysis.repository="$GITHUB_REPO"
