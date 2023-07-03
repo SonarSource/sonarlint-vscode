@@ -83,7 +83,6 @@ node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
   node_modules_cache:
     folder: "node_modules"
     fingerprint_script:
-#      - echo $CIRRUS_OS #TODO: needed ?
       - node --version
       - cat package-lock.json
     populate_script: npm install
@@ -98,7 +97,9 @@ build_task:
   setup_script:
     - source cirrus-env BUILD # Generates a build number
     - echo $BUILD_NUMBER
-
+  extract_package_version_script:
+    - export PACKAGE_VERSION = $(npm pkg get version)
+    - echo PACKAGE_VERSION=${PACKAGE_VERSION}
 #deploy_universal_vsix_task:
 #  name: Deploy universal VSIX
 #  alias: deploy_universal_vsix
@@ -137,8 +138,6 @@ validate_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   script:
     - echo "Validate"
-#    - ci
-#    - npm run compile
 
 test_windows_task:
 #  name: Run tests on Windows
@@ -165,6 +164,8 @@ test_linux_task:
     memory: 4G
   env:
     DISPLAY: ":10"
+    SONARQUBE_NEXT_TOKEN: VAULT[development/kv/data/next data.token]
+    SONARQUBE_NEXT_URL: VAULT[development/kv/data/next data.url]
   <<: *NODE_MODULES_CACHE_TEMPLATE
   start_virtual_screen_background_script:
     - xvfb_daemon_start
@@ -174,6 +175,18 @@ test_linux_task:
     - npm run compile
     - npm run prepare
     - npm run test-cov
+  sonarqube_analysis_script: |
+    node_modules/sonarqube-scanner/src/bin/sonar-scanner \
+      -Dsonar.projectKey=org.sonarsource.sonarlint.vscode:sonarlint-vscode \
+      -Dsonar.organization=sonarsource \
+      -Dsonar.projectName=SonarLint for VSCode \
+      -Dsonar.host.url=$SONARQUBE_NEXT_URL \
+      -Dsonar.token=$SONARQUBE_NEXT_TOKEN \
+      -Dsonar.branch.name="$GITHUB_BRANCH" \
+      -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
+      -Dsonar.analysis.sha1="$GIT_SHA1"  \
+      -Dsonar.analysis.repository="$GITHUB_REPO"
+
   always:
     unit_tests_artifacts:
       path: '**/alltests.xml'
@@ -186,9 +199,23 @@ mend_scan_task:
   <<: *ONLY_MAIN_BRANCHES
   eks_container:
     <<: *CONTAINER_DEFINITION
+#  <<: *MAVEN_CACHE_DEFINITION
   env:
     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
     WS_PRODUCTNAME: SonarLint/VSCode
+    JDK_VERSION: "11"
+  prepare_scripts:
+    - export MEND_PROJECT_VERSION=${PACKAGE_VERSION}.replace('-SNAPSHOT', '')
+  whitesource_script:
+    # TODO: adapt for NPM
+#    - source set_maven_build_version $BUILD_NUMBER
+#    - mvn clean install -DskipTests
+    - source ws_scan.sh
+#  cleanup_before_cache_script: cleanup_maven_repository
+  allow_failures: "true"
+  always:
+    ws_artifacts:
+      path: "whitesource/**/*"
 
 qa_task:
 #  name: Run ITs
