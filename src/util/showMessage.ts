@@ -10,6 +10,7 @@
 
 import * as vscode from 'vscode';
 import { window } from 'vscode';
+import { SslCertificateConfirmationParams } from '../lsp/protocol';
 
 const OPEN_FOLDER_ACTION = 'Open Folder';
 
@@ -57,4 +58,26 @@ export function showChangeStatusConfirmationDialog(changeStatusType: ChangeStatu
       detail: message
     },
     'Yes');
+}
+
+export async function showSslCertificateConfirmationDialog(cert: SslCertificateConfirmationParams) {
+  const trust = 'Trust';
+  const dontTrust = 'Don\'t trust';
+  const fingerprints = cert.sha256Fingerprint === '' ? '' :
+    `FINGERPRINTS\n
+    SHA-256:\n ${cert.sha256Fingerprint}\n
+    SHA-1:\n ${cert.sha1Fingerprint}\n`;
+  const dialogResponse = await vscode.window.showErrorMessage(`
+    SonarLint found untrusted server's certificate\n
+    Issued to:\n ${cert.issuedTo}\n
+    Issued by:\n ${cert.issuedBy}\n
+    VALIDITY PERIOD\n
+    Valid from: ${cert.validFrom}\n
+    Valid to: ${cert.validTo}\n
+    ${fingerprints}
+    If you trust the certificate, it will be saved in truststore ${cert.truststorePath}\n
+    Default password: changeit\n
+    Consider removing connection if you don't trust the certificate\n`,
+    { modal: true }, dontTrust, trust);
+  return dialogResponse === trust;
 }

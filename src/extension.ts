@@ -64,6 +64,7 @@ import * as util from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { isFirstCobolIssueDetected, showNotificationForFirstCobolIssue } from './util/cobolUtils';
+import { showSslCertificateConfirmationDialog } from './util/showMessage';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -565,6 +566,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     protocol.AssistBinding.type,
     async params => await BindingService.instance.assistBinding(params)
   );
+  languageClient.onRequest(protocol.SslCertificateConfirmation.type, cert => showSslCertificateConfirmationDialog(cert))
 }
 
 function updateSonarLintViewContainerBadge() {
