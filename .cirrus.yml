@@ -186,7 +186,10 @@ test_linux_task:
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
       -Dsonar.analysis.repository="$GITHUB_REPO"
       -Dsonar.sources="src"
-      -Dsonar.tests="test"
+      -Dsonar.tests="test,its/src"
+      -Dsonar.exclusions=test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**, **/its/**, **/dogfood/**
+      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+      -Donar.coverage.exclusions=gulpfile.js, webpack.config.js, scripts/**
 
   always:
     unit_tests_artifacts:
