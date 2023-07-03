@@ -177,11 +177,11 @@ test_linux_task:
     - npm run test-cov
   sonarqube_analysis_script: |
     node_modules/sonarqube-scanner/src/bin/sonar-scanner \
-      -Dsonar.projectKey=org.sonarsource.sonarlint.vscode:sonarlint-vscode \
-      -Dsonar.organization=sonarsource \
-      -Dsonar.projectName=SonarLint for VSCode \
-      -Dsonar.host.url=$SONARQUBE_NEXT_URL \
-      -Dsonar.token=$SONARQUBE_NEXT_TOKEN \
+      -Dsonar.projectKey="org.sonarsource.sonarlint.vscode:sonarlint-vscode" \
+      -Dsonar.organization="sonarsource" \
+      -Dsonar.projectName="SonarLint for VSCode" \
+      -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
+      -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
       -Dsonar.branch.name="$GITHUB_BRANCH" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
