@@ -185,6 +185,8 @@ test_linux_task:
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
       -Dsonar.analysis.repository="$GITHUB_REPO"
+      -Dsonar.sources="src"
+      -Dsonar.tests="test"
 
   always:
     unit_tests_artifacts:
