@@ -99,7 +99,7 @@ build_task:
     - echo $BUILD_NUMBER
     - export PACKAGE_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
-    - fail_now
+
 #deploy_universal_vsix_task:
 #  name: Deploy universal VSIX
 #  alias: deploy_universal_vsix
@@ -207,8 +207,10 @@ mend_scan_task:
   prepare_scripts:
     - export MEND_PROJECT_VERSION=${PACKAGE_VERSION}.replace('-SNAPSHOT', '')
   whitesource_script:
+    - source cirrus-env QA # read build number
+    - export PACKAGE_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+
     # TODO: adapt for NPM
-#    - source set_maven_build_version $BUILD_NUMBER
 #    - mvn clean install -DskipTests
     - source ws_scan.sh
 #  cleanup_before_cache_script: cleanup_maven_repository
