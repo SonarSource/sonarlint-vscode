@@ -61,10 +61,10 @@ only_sonarsource_qa: &ONLY_SONARSOURCE_QA
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
 
 skip_master_branch_and_allvsix_branch: &SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH != "master"  && ($CIRRUS_PR != "" && $CIRRUS_BRANCH !=~ ".*allvsix"))
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH != "master" && $CIRRUS_BRANCH !=~ ".*allvsix")
 
 only_master_or_allvsix_branch: &ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH == "master" || ($CIRRUS_PR != "" && $CIRRUS_BRANCH =~ ".*allvsix"))
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ ".*allvsix")
 
 
 only_if_base: &ONLY_IF
@@ -100,33 +100,29 @@ build_task:
     - export PACKAGE_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
 
-#deploy_universal_vsix_task:
-#  name: Deploy universal VSIX
-#  alias: deploy_universal_vsix
-#  depends_on: build
-#  <<: *SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
-#  eks_container:
-#    <<: *CONTAINER_DEFINITION
-#    cpu: 2
-#    memory: 2G
-#  <<: *NODE_MODULES_CACHE_TEMPLATE
-#  deploy_script:
-#    - source cirrus-env QA # Retrieve build number
-#    - node_modules/.bin/gulp deploy
-#
-#deploy_all_vsix_files_task:
-#  name: Deploy all VSIX files
-#  alias: deploy_all_vsix_files
-#  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
-#  depends_on: build
-#  eks_container:
-#    <<: *CONTAINER_DEFINITION
-#    cpu: 2
-#    memory: 2G
-#  <<: *NODE_MODULES_CACHE_TEMPLATE
-#  deploy_all_script:
-#    - source cirrus-env QA # Retrieve build number
-#    - node_modules/.bin/gulp deploy-all
+deploy_universal_vsix_task:
+  depends_on: build
+  <<: *SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  deploy_script:
+    - source cirrus-env QA # Retrieve build number
+    - node_modules/.bin/gulp deploy
+
+deploy_all_vsix_files_task:
+  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
+  depends_on: build
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  deploy_all_script:
+    - source cirrus-env QA # Retrieve build number
+    - node_modules/.bin/gulp deploy-all
 
 validate_task:
   # Run tests, SonarQube analysis
