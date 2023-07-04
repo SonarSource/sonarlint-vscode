@@ -175,21 +175,7 @@ test_linux_task:
     - npm run compile
     - npm run prepare
     - npm run test-cov
-  sonarqube_analysis_script: |
-    node_modules/sonarqube-scanner/src/bin/sonar-scanner \
-      -Dsonar.projectKey="org.sonarsource.sonarlint.vscode:sonarlint-vscode" \
-      -Dsonar.organization="sonarsource" \
-      -Dsonar.projectName="SonarLint for VSCode" \
-      -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
-      -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
-      -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
-      -Dsonar.analysis.sha1="$GIT_SHA1"  \
-      -Dsonar.analysis.repository="$GITHUB_REPO" \
-      -Dsonar.sources="src" \
-      -Dsonar.tests="test,its/src" \
-      -Dsonar.exclusions="test/**, build/**, out/**, out-cov/**, coverage/**, node_modules/**, **/node_modules/**, **/its/**, **/dogfood/**" \
-      -Dsonar.javascript.lcov.reportPaths="coverage/lcov.info" \
-      -Dsonar.coverage.exclusions="gulpfile.js, webpack.config.js, scripts/**"
+    - scripts/sonar-analysis.sh
 
   always:
     unit_tests_artifacts:
