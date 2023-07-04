@@ -297,7 +297,7 @@ promote_task:
 #    - echo PACKAGE_VERSION=${PACKAGE_VERSION}
 
 dogfood_task:
-  <<: *ONLY_MASTER
+#  <<: *ONLY_MASTER
   eks_container:
     <<: *PYTHON_CONTAINER_DEFINITION
     cpu: 2
