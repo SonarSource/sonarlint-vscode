@@ -62,7 +62,7 @@ gulp.task('cycloneDx', function (cb) {
 });
 
 gulp.task('update-version', function () {
-  const buildNumber = process.env.BUILD_BUILDID;
+  const buildNumber = process.env.BUILD_NUMBER;
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   if (version.endsWith('-SNAPSHOT') && buildNumber) {
@@ -120,7 +120,7 @@ gulp.task('deploy-vsix', function () {
     ARTIFACTORY_DEPLOY_PASSWORD,
     BUILD_SOURCEVERSION,
     GITHUB_BRANCH,
-    BUILD_BUILDID,
+    BUILD_NUMBER,
     CIRRUS_BASE_BRANCH
   } = process.env;
   const packageJSON = getPackageJSON();
@@ -142,7 +142,7 @@ gulp.task('deploy-vsix', function () {
               'vcs.revision': BUILD_SOURCEVERSION,
               'vcs.branch': CIRRUS_BASE_BRANCH || GITHUB_BRANCH,
               'build.name': name,
-              'build.number': BUILD_BUILDID
+              'build.number': BUILD_NUMBER
             },
             request: {
               headers: {
