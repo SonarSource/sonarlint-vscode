@@ -22,7 +22,7 @@ env:
   SONAR_TOKEN: VAULT[development/kv/data/next data.token]
   SONAR_HOST_URL: VAULT[development/kv/data/next data.url]
 
-auto_cancellation: $CIRRUS_BRANCH != 'master'
+auto_cancellation: $CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH
 
 eks_container: &CONTAINER_DEFINITION
   dockerfile: .cirrus/Dockerfile
@@ -69,30 +69,31 @@ ec2_instance: &WINVM_DEFINITION
   subnet_id: ${CIRRUS_AWS_SUBNET}
   type: t3.xlarge
 
-only_sonarsource_qa: &ONLY_SONARSOURCE_QA
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
-
 skip_master_branch_and_allvsix_branch: &SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH != "master" && $CIRRUS_BRANCH !=~ ".*allvsix")
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
+    && $CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH && $CIRRUS_BRANCH !=~ ".*allvsix"
 
 only_master_or_allvsix_branch: &ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && ($CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ ".*allvsix")
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" 
+    && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ ".*allvsix")
 
-
-only_if_base: &ONLY_IF
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
 
 only_if_with_nightly: &ONLY_IF_WITH_NIGHTLY
-  only_if: ($CIRRUS_USER_COLLABORATOR == 'true' || $CIRRUS_CRON == 'nightly-mend-scan') && $CIRRUS_TAG == ""
+  skip: "changesIncludeOnly('docs/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
+
+only_if_except_nightly: &ONLY_IF_EXCEPT_NIGHTLY
+  skip: "changesIncludeOnly('docs/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BUILD_SOURCE != "cron"
 
 only_pr_and_maintained_branches: &ONLY_PR_AND_MAINTAINED_BRANCHES
-  only_if: $CIRRUS_PR != "" || $CIRRUS_BRANCH == 'master' || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*"
+  skip: "changesIncludeOnly('docs/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BUILD_SOURCE != "cron"
+    && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
 
 only_main_branches: &ONLY_MAIN_BRANCHES
-  only_if: $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*"
-
-only_master: &ONLY_MASTER
-  only_if: $CIRRUS_BRANCH == "master"
+  skip: "changesIncludeOnly('docs/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*")
 
 node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
   node_modules_cache:
@@ -103,7 +104,7 @@ node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
     populate_script: npm ci
 
 build_task:
-  <<: *ONLY_SONARSOURCE_QA
+  <<: *ONLY_IF_WITH_NIGHTLY
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
@@ -142,6 +143,7 @@ deploy_all_vsix_files_task:
 validate_task:
   # Run tests, SonarQube analysis
   depends_on: build
+  <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
@@ -153,6 +155,7 @@ validate_task:
 test_windows_task:
   # name: Run tests on Windows
   depends_on: validate
+  <<: *ONLY_IF_EXCEPT_NIGHTLY
   ec2_instance:
     <<: *WINVM_DEFINITION
   <<: *NODE_MODULES_CACHE_TEMPLATE
@@ -172,6 +175,7 @@ test_windows_task:
 test_linux_task:
   #  name: Run tests, Sonarqube analysis on Linux
   depends_on: validate
+  <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *XVFB_CONTAINER_DEFINITION
     cpu: 4
@@ -200,11 +204,10 @@ test_linux_task:
 mend_scan_task:
   depends_on:
     - test_linux
-  <<: *ONLY_IF_WITH_NIGHTLY
   <<: *ONLY_MAIN_BRANCHES
   eks_container:
     <<: *CONTAINER_DEFINITION
-  <<: *NODE_MODULES_CACHE_TEMPLATE
+    <<: *NODE_MODULES_CACHE_TEMPLATE
   env:
     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
     JDK_VERSION: "11"
@@ -219,20 +222,22 @@ mend_scan_task:
     #        FULL_PROJECT_NAME="${{ parameters.projectName }} ${{ parameters.releaseVersion }}"
     #      fi
     # and then called like that via java -jar mend-scanner -project "$FULL_PROJECT_NAME" -projectversion ${{ parameters.releaseVersion }}df
-#    - mvn clean install -DskipTests
+    #    - mvn clean install -DskipTests
 #    - source ws_scan.sh
+
   allow_failures: "true"
   always:
     ws_artifacts:
       path: "whitesource/**/*"
 
 qa_task:
-#  name: Run ITs
+  #  name: Run ITs
   depends_on:
     - validate
     - test_windows
     - test_linux
     # should also depends on deploy_universal_vsix OR deploy_all_vsix :/ TODO:
+  <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *XVFB_CONTAINER_DEFINITION
     cpu: 4
@@ -281,31 +286,29 @@ qa_task:
 
 promote_task:
   skip: true # TODO: re enable when only if is correctly set and task correctly implemented
-#  <<: *ONLY_SONARSOURCE_QA
+  depends_on:
+    - validate
+    - qa
+  <<: *ONLY_PR_AND_MAINTAINED_BRANCHES
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
-  depends_on:
-    - validate
-    - qa
-  script:
+  promote_script:
     - source cirrus-env PROMOTE
     - echo TODO - Implement it # TODO: implement this
-#    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
-#    - echo PACKAGE_VERSION=${PACKAGE_VERSION}
+    #    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    #    - echo PACKAGE_VERSION=${PACKAGE_VERSION}
 
 dogfood_task:
-#  <<: *ONLY_MASTER
+  depends_on:
+    - promote
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH
   eks_container:
     <<: *PYTHON_CONTAINER_DEFINITION
     cpu: 2
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
-  depends_on:
-    - validate
-    - qa
-    - promote
-  script:
+  dogfood_script:
     - py3 scripts/dogfood.py
