@@ -74,7 +74,7 @@ skip_master_branch_and_allvsix_branch: &SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
     && $CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH && $CIRRUS_BRANCH !=~ ".*allvsix"
 
 only_master_or_allvsix_branch: &ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" 
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
     && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ ".*allvsix")
 
 
@@ -285,21 +285,31 @@ qa_task:
       path: ${RECORD_FILENAME}
 
 promote_task:
-  skip: true # TODO: re enable when only if is correctly set and task correctly implemented
   depends_on:
     - validate
     - qa
   <<: *ONLY_PR_AND_MAINTAINED_BRANCHES
   eks_container:
     <<: *CONTAINER_DEFINITION
-    cpu: 2
-    memory: 2G
-  <<: *NODE_MODULES_CACHE_TEMPLATE
-  promote_script:
-    - source cirrus-env PROMOTE
-    - echo TODO - Implement it # TODO: implement this
-    #    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
-    #    - echo PACKAGE_VERSION=${PACKAGE_VERSION}
+    cpu: 1
+    memory: 1G
+  env:
+    ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
+    PROMOTE_URL: VAULT[development/kv/data/promote data.url]
+    ARTIFACTS: "org.sonarsource.sonarlint.vscode:sonarlint-vscode:vsix"
+    # burgr notification
+    BURGR_URL: VAULT[development/kv/data/burgr data.url]
+    BURGR_USERNAME: VAULT[development/kv/data/burgr data.cirrus_username]
+    BURGR_PASSWORD: VAULT[development/kv/data/burgr data.cirrus_password]
+  promote_script: |
+    source cirrus-env PROMOTE
+    jfrog rt bpr \
+      --url "${ARTIFACTORY_URL}" \
+      --access-token "${ARTIFACTORY_ACCESS_TOKEN}" \
+      --status it-passed-pr \
+      "${CIRRUS_REPO_NAME}" "${BUILD_NUMBER}" sonarsource-public-dev
+    export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    burgr-notify-promotion
 
 dogfood_task:
   depends_on:
