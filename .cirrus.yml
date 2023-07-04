@@ -238,21 +238,34 @@ qa_task:
     RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record_vscode_${QA_CATEGORY}.mp4"
   prepare_tests_script:
     - source cirrus-env QA
-    - npm i
-    - node_modules/.bin/gulp package
+    - export PROJECT_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - echo "Download staged vsix"
+    - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings ~/.m2/settings.xml -Denable-repo=qa -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$(PROJECT_VERSION):vsix -DoutputDirectory=$CIRRUS_WORKING_DIR
     - cd its
-    - npm i
+    - npm ci
+#    - node_modules/.bin/gulp package #TODO: whats that
+
   start_screen_recording_background_script:
     - xvfb_daemon_start
     - sleep 10 # give xvfb some time to start
     - ffmpeg -f x11grab -video_size 1024x768 -i ${DISPLAY} -codec:v libx264 -r 12 -vf "drawtext=text='%{localtime\:%T} UTC':x=w-tw-10:y=5:fontcolor=black:fontsize=20" ${RECORD_FILENAME}
   test_script:
     - source cirrus-env QA
+    - cd its
     - npm test
   stop_screen_recording_script:
     - pkill -SIGINT -f ffmpeg
     - sleep 5
     - xvfb_daemon_stop
+  dump_code_logs_script: |
+    echo " " \
+    echo " >>>>> SonarLint console" \
+    echo " " \
+    find its/userdir -name '*SonarLint.log' -exec cat {} \; \
+    echo " " \
+    echo " >>>>> Extension host log" \
+    echo " " \
+    find its/userdir -name 'exthost.log' -exec cat {} \;
   always:
     unit_tests_artifacts:
       path: '**/*tests.xml'
