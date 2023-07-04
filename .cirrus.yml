@@ -147,10 +147,9 @@ test_windows_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   env:
     NODE_ENV: 'continuous-integration'
-#    JAVA_HOME: $(JAVA_HOME_17_X64)
   script:
-    - echo $JAVA_HOME
     - source cirrus-env QA
+    - export packageVersion=$(npm pkg get version)
     - npm run compile
     - npm run prepare
     - npm run test-cov
