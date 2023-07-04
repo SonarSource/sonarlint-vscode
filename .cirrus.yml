@@ -213,7 +213,11 @@ mend_scan_task:
 
 qa_task:
 #  name: Run ITs
-  depends_on: validate
+  depends_on:
+    - validate
+    - test_windows
+    - test_linux
+    # should also depends on deploy_universal_vsix OR deploy_all_vsix :/ TODO:
   eks_container:
     <<: *XVFB_CONTAINER_DEFINITION
     cpu: 4
