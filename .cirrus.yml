@@ -159,7 +159,7 @@ test_windows_task:
       format: junit
 
 test_linux_task:
-#  name: Run tests on Linux
+  #  name: Run tests, Sonarqube analysis on Linux
   depends_on: validate
   eks_container:
     <<: *XVFB_CONTAINER_DEFINITION
@@ -175,6 +175,7 @@ test_linux_task:
   script:
     - sleep 5
     - source cirrus-env QA
+    - export packageVersion=$(npm pkg get version)
     - npm run compile
     - npm run prepare
     - npm run test-cov
@@ -192,21 +193,23 @@ mend_scan_task:
   <<: *ONLY_MAIN_BRANCHES
   eks_container:
     <<: *CONTAINER_DEFINITION
-#  <<: *MAVEN_CACHE_DEFINITION
+  <<: *NODE_MODULES_CACHE_TEMPLATE
   env:
     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
-    WS_PRODUCTNAME: SonarLint/VSCode
     JDK_VERSION: "11"
-  prepare_scripts:
-    - export MEND_PROJECT_VERSION=${PACKAGE_VERSION}.replace('-SNAPSHOT', '')
   whitesource_script:
     - source cirrus-env QA # read build number
-    - export PACKAGE_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
-
-    # TODO: adapt for NPM
+    - export MEND_PROJECT_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT||g")
+    # TODO: adapt for NPM do we have to run the tests again ?
+    # TODO: this mend_project_version was then injected in projectVersion which was then used:
+    #       if [ -z "${{ parameters.projectName }}" ]; then
+    #        FULL_PROJECT_NAME="$BUILD_REPOSITORY_NAME ${{ parameters.releaseVersion }}"
+    #      else
+    #        FULL_PROJECT_NAME="${{ parameters.projectName }} ${{ parameters.releaseVersion }}"
+    #      fi
+    # and then called like that via java -jar mend-scanner -project "$FULL_PROJECT_NAME" -projectversion ${{ parameters.releaseVersion }}df
 #    - mvn clean install -DskipTests
-    - source ws_scan.sh
-#  cleanup_before_cache_script: cleanup_maven_repository
+#    - source ws_scan.sh
   allow_failures: "true"
   always:
     ws_artifacts:
