@@ -573,7 +573,7 @@
           {
             "id": "SonarLint.inAction",
             "title": "$(rocket) New to SonarLint? See it in action",
-            "description": "SonarLint for VSCode supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, and more. SonarLint detects issues in all files **open** in the editor.\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
+            "description": "SonarLint for VSCode supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, and [more](https://github.com/SonarSource/sonarlint-vscode/wiki/Languages-and-rules). SonarLint detects issues in all files **open** in the editor.\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
@@ -596,15 +596,23 @@
             "id": "SonarLint.connectedModeIntro",
             "title": "$(link) Connect with your team",
             "description": "Use the same Clean Code standards as your team by using SonarLint in Connected Mode with [SonarQube](https://www.sonarsource.com/products/sonarqube/) or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/).\n**Already using SonarQube or SonarCloud?** Check out the Connected Mode view to set up the connection.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)",
-            "media": { "markdown": "walkthrough/empty.md"},
-            "completionEvents": ["onView:SonarLint.ConnectedMode"]
+            "media": {
+              "markdown": "walkthrough/empty.md"
+            },
+            "completionEvents": [
+              "onView:SonarLint.ConnectedMode"
+            ]
           },
           {
             "id": "SonarLint.reachOut",
             "title": "$(comment-discussion) Share feedback or ask for help",
             "description": "You suspect your code has issues but don't see any problems detected by SonarLint? [Enable verbose logging](command:SonarLint.EnableVerboseLogs) and check the output in the SonarLint Output window\n[Check Output](command:SonarLint.ShowSonarLintOutput)\n\nYou'd like to learn more about SonarLint, or give us feedback? Check out the [Help and Feedback view](command:SonarLint.HelpAndFeedback.focus)\n\n",
-            "media": {"markdown":  "walkthrough/empty.md"},
-            "completionEvents": ["onView:SonarLint.HelpAndFeedback"]
+            "media": {
+              "markdown": "walkthrough/empty.md"
+            },
+            "completionEvents": [
+              "onView:SonarLint.HelpAndFeedback"
+            ]
           }
         ]
       }
