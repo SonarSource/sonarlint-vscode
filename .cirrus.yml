@@ -243,8 +243,6 @@ qa_task:
     - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings ~/.m2/settings.xml -Denable-repo=qa -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$PROJECT_VERSION:vsix -DoutputDirectory=$CIRRUS_WORKING_DIR
     - cd its
     - npm ci
-#    - node_modules/.bin/gulp package #TODO: whats that
-
   start_screen_recording_background_script:
     - xvfb_daemon_start
     - sleep 10 # give xvfb some time to start
@@ -260,10 +258,10 @@ qa_task:
   dump_code_logs_script:
     - scripts/dump_code_logs.sh
   always:
-    unit_tests_artifacts:
+    its_tests_artifacts:
       path: '**/*tests.xml'
       format: junit
-    test_recording_artifacts:
+    its_test_recording_artifacts:
       path: ${RECORD_FILENAME}
 
 dogfood_task:
