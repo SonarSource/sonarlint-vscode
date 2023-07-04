@@ -145,7 +145,11 @@ test_windows_task:
   ec2_instance:
     <<: *WINVM_DEFINITION
   <<: *NODE_MODULES_CACHE_TEMPLATE
+  env:
+    NODE_ENV: 'continuous-integration'
+    JAVA_HOME: $(JAVA_HOME_17_X64)
   script:
+    - echo $JAVA_HOME
     - source cirrus-env QA
     - npm run compile
     - npm run prepare
