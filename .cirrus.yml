@@ -36,6 +36,18 @@ eks_container: &CONTAINER_DEFINITION
   builder_subnet_id: ${CIRRUS_AWS_SUBNET}
   namespace: default
 
+eks_python_container: &PYTHON_CONTAINER_DEFINITION
+  dockerfile: .cirrus/Python_Dockerfile
+  docker_arguments:
+    CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
+  region: eu-central-1
+  cluster_name: ${CIRRUS_CLUSTER_NAME}
+  builder_role: cirrus-builder
+  builder_image: docker-builder-v*
+  builder_instance_type: t2.small
+  builder_subnet_id: ${CIRRUS_AWS_SUBNET}
+  namespace: default
+
 eks_xvfb_container: &XVFB_CONTAINER_DEFINITION
   dockerfile: .cirrus/XVFB_Dockerfile
   docker_arguments:
@@ -78,6 +90,9 @@ only_pr_and_maintained_branches: &ONLY_PR_AND_MAINTAINED_BRANCHES
 
 only_main_branches: &ONLY_MAIN_BRANCHES
   only_if: $CIRRUS_BRANCH == "master" || $CIRRUS_BRANCH =~ "branch-.*"
+
+only_master: &ONLY_MASTER
+  only_if: $CIRRUS_BRANCH == "master"
 
 node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
   node_modules_cache:
@@ -264,9 +279,32 @@ qa_task:
     its_test_recording_artifacts:
       path: ${RECORD_FILENAME}
 
-dogfood_task:
+promote_task:
+  <<: *ONLY_SONARSOURCE_QA
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
   depends_on:
     - validate
     - qa
   script:
+    - source cirrus-env PROMOTE
     - echo TODO - Implement it # TODO: implement this
+#    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+#    - echo PACKAGE_VERSION=${PACKAGE_VERSION}
+
+dogfood_task:
+  <<: *ONLY_MASTER
+  eks_container:
+    <<: *PYTHON_CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  depends_on:
+    - validate
+    - qa
+    - promote
+  script:
+    - py3 scripts/dogfood.py
