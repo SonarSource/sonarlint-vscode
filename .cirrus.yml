@@ -85,7 +85,7 @@ node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
     fingerprint_script:
       - node --version
       - cat package-lock.json
-    populate_script: npm install
+    populate_script: npm ci
 
 build_task:
   <<: *ONLY_SONARSOURCE_QA
@@ -140,7 +140,7 @@ validate_task:
     - echo "Validate"
 
 test_windows_task:
-#  name: Run tests on Windows
+  # name: Run tests on Windows
   depends_on: validate
   ec2_instance:
     <<: *WINVM_DEFINITION
