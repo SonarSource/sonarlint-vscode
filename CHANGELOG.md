@@ -1,3 +1,7 @@
+## 3.19.1
+
+* Fix synchronization of taint vulnerabilities in connected mode with SonarCloud
+
 ## 3.19
 
 * Allow marking known issues and taint vulnerabilities as resolved in Connected Mode
