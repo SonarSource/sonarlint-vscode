@@ -97,7 +97,7 @@ build_task:
   setup_script:
     - source cirrus-env BUILD # Generates a build number
     - echo $BUILD_NUMBER
-    - export PACKAGE_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
 
 deploy_universal_vsix_task:
@@ -145,7 +145,7 @@ test_windows_task:
     NODE_ENV: 'continuous-integration'
   script:
     - source cirrus-env QA
-    - export packageVersion=$(npm pkg get version)
+    - export packageVersion=$(npm pkg get version | tr -d \")
     - npm run compile
     - npm run prepare
     - npm run test-cov
@@ -171,7 +171,7 @@ test_linux_task:
   script:
     - sleep 5
     - source cirrus-env QA
-    - export packageVersion=$(npm pkg get version)
+    - export packageVersion=$(npm pkg get version | tr -d \")
     - npm run compile
     - npm run prepare
     - npm run test-cov
@@ -195,7 +195,7 @@ mend_scan_task:
     JDK_VERSION: "11"
   whitesource_script:
     - source cirrus-env QA # read build number
-    - export MEND_PROJECT_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT||g")
+    - export MEND_PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
     # TODO: adapt for NPM do we have to run the tests again ?
     # TODO: this mend_project_version was then injected in projectVersion which was then used:
     #       if [ -z "${{ parameters.projectName }}" ]; then
@@ -238,7 +238,7 @@ qa_task:
     RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record_vscode_${QA_CATEGORY}.mp4"
   prepare_tests_script:
     - source cirrus-env QA
-    - export PROJECT_VERSION=$(npm pkg get version | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo "Download staged vsix for ${PROJECT_VERSION}"
     - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings ~/.m2/settings.xml -Denable-repo=qa -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$PROJECT_VERSION:vsix -DoutputDirectory=$CIRRUS_WORKING_DIR
     - cd its
