@@ -257,15 +257,8 @@ qa_task:
     - pkill -SIGINT -f ffmpeg
     - sleep 5
     - xvfb_daemon_stop
-  dump_code_logs_script: |
-    echo " " \
-    echo " >>>>> SonarLint console" \
-    echo " " \
-    find its/userdir -name '*SonarLint.log' -exec cat {} \; \
-    echo " " \
-    echo " >>>>> Extension host log" \
-    echo " " \
-    find its/userdir -name 'exthost.log' -exec cat {} \;
+  dump_code_logs_script:
+    - scripts/dump_code_logs.sh
   always:
     unit_tests_artifacts:
       path: '**/*tests.xml'
