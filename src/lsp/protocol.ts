@@ -536,4 +536,20 @@ export interface SetHotspotStatusParams {
 export namespace SetHotspotStatus {
   export const type = new lsp.NotificationType<SetHotspotStatusParams>('sonarlint/changeHotspotStatus');
 }
+
+export interface SslCertificateConfirmationParams {
+  issuedTo: string;
+  issuedBy: string;
+  validFrom: string;
+  validTo: string;
+  sha1Fingerprint: string;
+  sha256Fingerprint: string;
+  truststorePath: string;
+}
+
+export namespace SslCertificateConfirmation {
+  export const type = new lsp.RequestType<SslCertificateConfirmationParams, boolean, void>(
+    'sonarlint/askSslCertificateConfirmation');
+}
+
 //#endregion
