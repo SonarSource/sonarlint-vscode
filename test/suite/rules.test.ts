@@ -8,7 +8,6 @@
 
 import { expect } from 'chai';
 import * as vscode from 'vscode';
-import { skipTestOnWindowsVm } from '../testutil';
 
 suite('SonarLint Rules view', () => {
   suiteSetup('reset rules settings', async () => {
@@ -16,8 +15,6 @@ suite('SonarLint Rules view', () => {
   });
 
   test('should show the whole list of rules grouped by language', async function() {
-    skipTestOnWindowsVm(this,
-      "Skipping test which 'Cannot find command SonarLint.OpenStandaloneRuleDesc' on azure pipelines windows vm");
 
     const secretsAwsRuleKey = 'secrets:S6290';
 
