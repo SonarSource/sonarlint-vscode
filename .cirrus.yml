@@ -33,7 +33,7 @@ eks_container: &CONTAINER_DEFINITION
   cluster_name: ${CIRRUS_CLUSTER_NAME}
   builder_role: cirrus-builder
   builder_image: docker-builder-v*
-  builder_instance_type: t2.small
+  builder_instance_type: t3.xlarge
   builder_subnet_id: ${CIRRUS_AWS_SUBNET}
   namespace: default
 
@@ -164,7 +164,7 @@ test_linux_task:
     - npm run compile
     - npm run prepare
     - npm run test-cov
-    - scripts/sonar-analysis.sh
+    - .cirrus/cirrus_sonar_analysis_npm
 
   always:
     unit_tests_artifacts:
@@ -236,7 +236,7 @@ qa_task:
     - while pgrep ffmpeg >/dev/null; do sleep 1; done
     - /etc/init.d/xvfb stop
   dump_code_logs_script:
-    - scripts/dump_code_logs.sh
+    - .cirrus/dump_code_logs
   always:
     its_tests_artifacts:
       path: '**/*tests.xml'
@@ -258,8 +258,7 @@ promote_task:
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
   promote_script:
-    - source cirrus-env PROMOTE
-    - scripts/promote.sh
+    - .cirrus/cirrus_promote_npm
 
 dogfood_task:
   depends_on:

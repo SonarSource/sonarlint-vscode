@@ -54,7 +54,6 @@ suite('Connection Setup', () => {
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarQubeConnections();
-
     assert.deepStrictEqual(connectionsAfter, [{ connectionId: serverUrl, serverUrl }]);
   }).timeout(FIVE_SECONDS);
 

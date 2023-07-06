@@ -1,3 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+
+source cirrus-env PROMOTE
+
 if [ -z "$CIRRUS_PR" ]; then
   STATUS=it-passed
   TARGET=sonarsource-public-builds
@@ -10,5 +15,7 @@ jfrog rt bpr \
   --url "${ARTIFACTORY_URL}" \
   --access-token "${ARTIFACTORY_ACCESS_TOKEN}" \
   --status "${STATUS}" "${CIRRUS_REPO_NAME}" "${BUILD_NUMBER}" "${TARGET}"
-export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+export PROJECT_VERSION
+
 burgr-notify-promotion
