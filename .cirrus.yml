@@ -19,9 +19,6 @@ env:
   GPG_SIGNING_KEY: VAULT[development/kv/data/sign data.key]
   GPG_SIGNING_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
 
-  SONAR_TOKEN: VAULT[development/kv/data/next data.token]
-  SONAR_HOST_URL: VAULT[development/kv/data/next data.url]
-
 auto_cancellation: $CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH
 
 eks_container: &CONTAINER_DEFINITION
@@ -92,7 +89,7 @@ build_task:
     - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
 
-deploy_universal_vsix_task:
+universal_vsix_task:
   depends_on: build
   <<: *SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
   eks_container:
@@ -104,7 +101,7 @@ deploy_universal_vsix_task:
     - source cirrus-env QA # Retrieve build number
     - node_modules/.bin/gulp deploy
 
-deploy_all_vsix_files_task:
+all_vsix_task:
   <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
   depends_on: build
   eks_container:
@@ -120,8 +117,6 @@ test_windows_task:
   # name: Run tests on Windows
   depends_on:
     - build
-    - deploy_all_vsix_files
-    - deploy_universal_vsix
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   ec2_instance:
     <<: *WINVM_DEFINITION
@@ -143,8 +138,6 @@ test_linux_task:
   #  name: Run tests, Sonarqube analysis on Linux
   depends_on:
     - build
-    - deploy_all_vsix_files
-    - deploy_universal_vsix
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *CONTAINER_DEFINITION
@@ -154,6 +147,7 @@ test_linux_task:
     DISPLAY: ":10"
     SONARQUBE_NEXT_TOKEN: VAULT[development/kv/data/next data.token]
     SONARQUBE_NEXT_URL: VAULT[development/kv/data/next data.url]
+
   <<: *NODE_MODULES_CACHE_TEMPLATE
   start_xvfb_background_script:
     - /etc/init.d/xvfb start
@@ -193,9 +187,8 @@ mend_scan_task:
 qa_task:
   #  name: Run ITs
   depends_on:
-    - test_linux
-    - test_windows
-    - mend_scan
+    - universal_vsix
+    - all_vsix
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *CONTAINER_DEFINITION
@@ -204,7 +197,7 @@ qa_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   matrix:
     - env:
-        QA_CATEGORY: oldest_supported
+        QA_CATEGORY: oldest
         VSCODE_VERSION: '1.73.0'
     - env:
         QA_CATEGORY: stable
@@ -251,6 +244,8 @@ promote_task:
     ARTIFACTS: "org.sonarsource.sonarlint.vscode:sonarlint-vscode:vsix"
   depends_on:
     - qa
+    - test_windows
+    - test_linux
   <<: *ONLY_PR_AND_MAINTAINED_BRANCHES
   eks_container:
     <<: *CONTAINER_DEFINITION
