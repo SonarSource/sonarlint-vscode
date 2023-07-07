@@ -269,5 +269,4 @@ dogfood_task:
     cpu: 2
     memory: 2G
   dogfood_script:
-    - source cirrus-env QA
-    - python3 scripts/dogfood.py
+    - .cirrus/cirrus_dogfood_npm

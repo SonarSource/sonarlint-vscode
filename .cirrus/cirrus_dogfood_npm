@@ -1,0 +1,9 @@
+#!/bin/bash
+set -euo pipefail
+
+source cirrus-env QA
+PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+
+envsubst '$ARTIFACTORY_URL,$PROJECT_VERSION' <.cirrus/dogfood-template.json > dogfood.json
+jfrog rt u dogfood.json sonarsource-public-builds/org/sonarsource/sonarlint/vscode/sonarlint-vscode/ \
+      --url "${ARTIFACTORY_URL}" --access-token "${ARTIFACTORY_API_KEY}" --build-name "$CIRRUS_REPO_NAME" --build-number "$BUILD_NUMBER"

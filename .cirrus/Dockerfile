@@ -5,9 +5,8 @@ FROM ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j${JDK_VERSIO
 USER root
 
 ENV NODE_VERSION=18
-RUN apt-get update && apt-get install -y nodejs=${NODE_VERSION}.* xvfb ffmpeg python3 python3-pip \
+RUN apt-get update && apt-get install -y nodejs=${NODE_VERSION}.* xvfb ffmpeg gettext-base \
   dbus libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libgtk-3-0 libgbm1 libasound2
-RUN pip3 install requests
 
 COPY --chmod=755 .cirrus/xvfb /etc/init.d/
 
