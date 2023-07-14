@@ -141,7 +141,7 @@ test_linux_task:
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *CONTAINER_DEFINITION
-    cpu: 4
+    cpu: 5
     memory: 4G
   env:
     DISPLAY: ":10"
