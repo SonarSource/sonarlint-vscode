@@ -26,11 +26,12 @@ if [ "$PULL_REQUEST" != "false" ]; then
       -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
-      -Dsonar.analysis.sha1="$GIT_SHA1"  \
+      -Dsonar.analysis.sha1="$CIRRUS_BASE_SHA"  \
       -Dsonar.analysis.repository="$GITHUB_REPO" \
+      -Dsonar.analysis.prNumber="$PULL_REQUEST" \
       -Dsonar.pullrequest.branch="$GITHUB_BRANCH" \
       -Dsonar.pullrequest.base="$GITHUB_BASE_BRANCH" \
-      -Dsonar.pullrequest.key="$PULL_REQUEST"
+      -Dsonar.pullrequest.key="$CIRRUS_PR"
 else
   echo "======= Analyze branch ${GITHUB_BRANCH}"
 
