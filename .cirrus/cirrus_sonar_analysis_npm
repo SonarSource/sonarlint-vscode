@@ -31,7 +31,8 @@ if [ "$PULL_REQUEST" != "false" ]; then
       -Dsonar.analysis.prNumber=$PULL_REQUEST \
       -Dsonar.pullrequest.branch=$GITHUB_BRANCH \
       -Dsonar.pullrequest.base=$GITHUB_BASE_BRANCH \
-      -Dsonar.pullrequest.key=$PULL_REQUEST
+      -Dsonar.pullrequest.key=$PULL_REQUEST \
+      -X
 else
   echo "======= Analyze branch ${GITHUB_BRANCH}"
 
