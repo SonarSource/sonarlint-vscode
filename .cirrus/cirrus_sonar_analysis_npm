@@ -18,6 +18,21 @@ fi
 
 if [ "$PULL_REQUEST" != "false" ]; then
   echo "======= Analyze PR $PULL_REQUEST"
+  echo "npx sonar-scanner \
+              -Dsonar.projectKey="org.sonarsource.sonarlint.vscode:sonarlint-vscode" \
+              -Dsonar.organization="sonarsource" \
+              -Dsonar.projectName="SonarLint for VSCode" \
+              -Dsonar.host.url=******* \
+              -Dsonar.token=****** \
+              -Dsonar.analysis.buildNumber=$BUILD_NUMBER \
+              -Dsonar.analysis.pipeline=$CIRRUS_BUILD_ID \
+              -Dsonar.analysis.sha1=$CIRRUS_BASE_SHA  \
+              -Dsonar.analysis.repository=$GITHUB_REPO \
+              -Dsonar.analysis.prNumber=$PULL_REQUEST \
+              -Dsonar.pullrequest.branch=$GITHUB_BRANCH \
+              -Dsonar.pullrequest.base=$GITHUB_BASE_BRANCH \
+              -Dsonar.pullrequest.key=$PULL_REQUEST \
+              -X"
   npx sonar-scanner \
       -Dsonar.projectKey="org.sonarsource.sonarlint.vscode:sonarlint-vscode" \
       -Dsonar.organization="sonarsource" \
