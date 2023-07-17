@@ -35,6 +35,9 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "capabilities": {
+    "virtualWorkspaces": false
+  },
   "contributes": {
     "configuration": {
       "type": "object",
