@@ -106,7 +106,7 @@ all_vsix_task:
   depends_on: build
   eks_container:
     <<: *CONTAINER_DEFINITION
-    cpu: 2
+    cpu: 4
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
   deploy_all_script:
