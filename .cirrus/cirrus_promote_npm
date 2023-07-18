@@ -3,7 +3,7 @@ set -euo pipefail
 
 source cirrus-env PROMOTE
 
-if [ -z "$CIRRUS_PR" ]; then
+if [ "$PULL_REQUEST" == "false" ]; then
   STATUS=it-passed
   TARGET=sonarsource-public-builds
 else
