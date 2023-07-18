@@ -107,7 +107,7 @@ all_vsix_task:
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
-    memory: 2G
+    memory: 4G
   <<: *NODE_MODULES_CACHE_TEMPLATE
   deploy_all_script:
     - source cirrus-env QA # Retrieve build number
