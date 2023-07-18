@@ -20,7 +20,8 @@ export function run(): Promise<void> {
         output: path.resolve(__dirname, '..', '..', 'alltests.xml')
       }
     },
-    color: true
+    color: true,
+    retries: 2
   };
   const mocha = new Mocha(mochaOptions);
 

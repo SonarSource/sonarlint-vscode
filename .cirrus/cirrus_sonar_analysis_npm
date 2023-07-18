@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# Fetch all commit history so that SonarQube has exact blame information
+# for issue auto-assignment
+# This command can fail with "fatal: --unshallow on a complete repository does not make sense"
+# if there are not enough commits in the Git repository
+# For this reason errors are ignored with "|| true"
+git fetch --unshallow || true
+
+# fetch references from github for PR analysis
+if [ -n "${GITHUB_BASE_BRANCH}" ]; then
+	git fetch origin "${GITHUB_BASE_BRANCH}"
+fi
+
+if [ "$PULL_REQUEST" != "false" ]; then
+  echo "======= Analyze PR $PULL_REQUEST"
+
+  npx sonar-scanner \
+      -Dsonar.projectKey="org.sonarsource.sonarlint.vscode:sonarlint-vscode" \
+      -Dsonar.organization="sonarsource" \
+      -Dsonar.projectName="SonarLint for VSCode" \
+      -Dsonar.host.url=$SONARQUBE_NEXT_URL \
+      -Dsonar.token=$SONARQUBE_NEXT_TOKEN \
+      -Dsonar.analysis.buildNumber=$BUILD_NUMBER \
+      -Dsonar.analysis.pipeline=$CIRRUS_BUILD_ID \
+      -Dsonar.analysis.sha1=$GIT_SHA1  \
+      -Dsonar.analysis.repository=$GITHUB_REPO \
+      -Dsonar.analysis.prNumber=$PULL_REQUEST
+else
+  echo "======= Analyze branch ${GITHUB_BRANCH}"
+
+  git fetch origin "${GITHUB_BRANCH}"
+
+  npx sonar-scanner \
+      -Dsonar.projectKey="org.sonarsource.sonarlint.vscode:sonarlint-vscode" \
+      -Dsonar.organization="sonarsource" \
+      -Dsonar.projectName="SonarLint for VSCode" \
+      -Dsonar.host.url=$SONARQUBE_NEXT_URL \
+      -Dsonar.token=$SONARQUBE_NEXT_TOKEN \
+      -Dsonar.analysis.buildNumber=$BUILD_NUMBER \
+      -Dsonar.analysis.pipeline=$CIRRUS_BUILD_ID \
+      -Dsonar.analysis.sha1=$GIT_SHA1  \
+      -Dsonar.analysis.repository=$GITHUB_REPO
+
+fi

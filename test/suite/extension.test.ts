@@ -9,7 +9,7 @@ import * as FS from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as vscode from 'vscode';
-import { skipTestOnWindowsVm, sleep } from '../testutil';
+import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
 import * as util from '../../src/util/util';
 import { isFileIgnoredByScm } from '../../src/scm/scm';
@@ -32,13 +32,11 @@ suite('Extension Test Suite', () => {
   });
 
   test('should report issue on single js file', async function() {
-    skipTestOnWindowsVm(this, "Skipping test which is timing out on azure pipelines windows vm")
     const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
     await checkSonarLintDiagnostics(fileUri);
   }).timeout(60 * 1000);
 
   test('should report issue on js file with URI-encoded characters', async function() {
-    skipTestOnWindowsVm(this, "Skipping test which is timing out on azure pipelines windows vm")
     const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', '# {}', 'main.js'));
     await checkSonarLintDiagnostics(fileUri)
   }).timeout(60 * 1000);

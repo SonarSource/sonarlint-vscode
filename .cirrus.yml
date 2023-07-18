@@ -1,0 +1,267 @@
+env:
+  CIRRUS_CLONE_DEPTH: "1"
+  # Use bash (instead of sh on linux or cmd.exe on Windows)
+  CIRRUS_SHELL: bash
+  # burgr notification
+  BURGR_URL: VAULT[development/kv/data/burgr data.url]
+  BURGR_USERNAME: VAULT[development/kv/data/burgr data.cirrus_username]
+  BURGR_PASSWORD: VAULT[development/kv/data/burgr data.cirrus_password]
+  # repox
+  ARTIFACTORY_URL: VAULT[development/kv/data/repox data.url]
+  ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
+  ARTIFACTORY_PRIVATE_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+  ARTIFACTORY_DEPLOY_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer
+  ARTIFACTORY_DEPLOY_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
+  ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
+
+  ARTIFACTORY_PRIVATE_READER_USERNAME: $ARTIFACTORY_PRIVATE_USERNAME
+  ARTIFACTORY_PRIVATE_READER_PASSWORD: $ARTIFACTORY_PRIVATE_PASSWORD
+  GPG_SIGNING_KEY: VAULT[development/kv/data/sign data.key]
+  GPG_SIGNING_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
+
+auto_cancellation: $CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH
+
+eks_container: &CONTAINER_DEFINITION
+  dockerfile: .cirrus/Dockerfile
+  docker_arguments:
+    CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
+    JDK_VERSION: 17
+  region: eu-central-1
+  cluster_name: ${CIRRUS_CLUSTER_NAME}
+  builder_role: cirrus-builder
+  builder_image: docker-builder-v*
+  builder_instance_type: t3.xlarge
+  builder_subnet_id: ${CIRRUS_AWS_SUBNET}
+  namespace: default
+
+ec2_instance: &WINVM_DEFINITION
+  experimental: true
+  image: base-windows-jdk17-v*
+  platform: windows
+  region: eu-central-1
+  subnet_id: ${CIRRUS_AWS_SUBNET}
+  type: t3.xlarge
+
+skip_master_branch_and_allvsix_branch: &SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" 
+    && ($CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH && $CIRRUS_BRANCH !=~ ".*allvsix")
+
+only_master_or_allvsix_branch: &ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" 
+    && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ ".*allvsix")
+
+
+only_if_with_nightly: &ONLY_IF_WITH_NIGHTLY
+  skip: "changesIncludeOnly('docs/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
+
+only_if_except_nightly: &ONLY_IF_EXCEPT_NIGHTLY
+  skip: "changesIncludeOnly('docs/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BUILD_SOURCE != "cron"
+
+only_pr_and_maintained_branches: &ONLY_PR_AND_MAINTAINED_BRANCHES
+  skip: "changesIncludeOnly('docs/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BUILD_SOURCE != "cron"
+    && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
+
+only_main_branches: &ONLY_MAIN_BRANCHES
+  skip: "changesIncludeOnly('docs/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*")
+
+node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
+  node_modules_cache:
+    folder: "node_modules"
+    fingerprint_script:
+      - node --version
+      - cat package-lock.json
+    populate_script: npm ci
+
+build_task:
+  <<: *ONLY_IF_WITH_NIGHTLY
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  setup_script:
+    - source cirrus-env BUILD # Generates a build number
+    - echo $BUILD_NUMBER
+    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - echo PACKAGE_VERSION=${PACKAGE_VERSION}
+
+universal_vsix_task:
+  depends_on: build
+  <<: *SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  deploy_script:
+    - source cirrus-env QA # Retrieve build number
+    - node_modules/.bin/gulp deploy
+
+all_vsix_task:
+  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
+  depends_on: build
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  deploy_all_script:
+    - source cirrus-env QA # Retrieve build number
+    - node_modules/.bin/gulp deploy-all
+
+test_windows_task:
+  # name: Run tests on Windows
+  depends_on:
+    - build
+  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  ec2_instance:
+    <<: *WINVM_DEFINITION
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  env:
+    NODE_ENV: 'continuous-integration'
+  script:
+    - source cirrus-env QA
+    - export packageVersion=$(npm pkg get version | tr -d \")
+    - npm run compile
+    - npm run prepare
+    - npm run test-cov
+  always:
+    unit_tests_artifacts:
+      path: '**/alltests.xml'
+      format: junit
+
+test_linux_task:
+  #  name: Run tests, Sonarqube analysis on Linux
+  depends_on:
+    - build
+  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 4
+    memory: 4G
+  env:
+    DISPLAY: ":10"
+    SONARQUBE_NEXT_TOKEN: VAULT[development/kv/data/next data.token]
+    SONARQUBE_NEXT_URL: VAULT[development/kv/data/next data.url]
+
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  start_xvfb_background_script:
+    - /etc/init.d/xvfb start
+  script:
+    - sleep 5
+    - source cirrus-env QA
+    - export packageVersion=$(npm pkg get version | tr -d \")
+    - npm run compile
+    - npm run prepare
+    - npm run test-cov
+    - .cirrus/cirrus_sonar_analysis_npm
+
+  always:
+    unit_tests_artifacts:
+      path: '**/alltests.xml'
+      format: junit
+
+mend_scan_task:
+  depends_on:
+    - test_linux
+  <<: *ONLY_MAIN_BRANCHES
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  env:
+    WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
+    JDK_VERSION: "11"
+  whitesource_script:
+    - source cirrus-env QA # read build number
+    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
+    - source ws_scan.sh
+  allow_failures: "true"
+  always:
+    ws_artifacts:
+      path: "whitesource/**/*"
+
+qa_task:
+  #  name: Run ITs
+  depends_on:
+    - universal_vsix
+    - all_vsix
+  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 4
+    memory: 4G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  matrix:
+    - env:
+        QA_CATEGORY: oldest
+        VSCODE_VERSION: '1.73.0'
+    - env:
+        QA_CATEGORY: stable
+        VSCODE_VERSION: 'stable'
+    - env:
+        QA_CATEGORY: insiders
+        VSCODE_VERSION: 'insiders'
+  env:
+    DISPLAY: ":10"
+    RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record_vscode_${QA_CATEGORY}.mp4"
+  start_xvfb_background_script:
+    - /etc/init.d/xvfb start
+  prepare_tests_script:
+    - sleep 5 # ensure xvfb is up
+    - source cirrus-env QA
+    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - echo "Download staged vsix for ${PROJECT_VERSION}"
+    - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings ~/.m2/settings.xml -Denable-repo=qa -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$PROJECT_VERSION:vsix -DoutputDirectory=$CIRRUS_WORKING_DIR
+    - cd its
+    - npm ci
+  start_screen_recording_background_script:
+    - ffmpeg -f x11grab -video_size 1280x960 -i ${DISPLAY} -codec:v libx264 -r 12 ${RECORD_FILENAME}
+  test_script:
+    - source cirrus-env QA
+    - cd its
+    - npm test
+  stop_screen_recording_script:
+    - pkill -SIGINT -f ffmpeg
+    - while pgrep ffmpeg >/dev/null; do sleep 1; done
+    - /etc/init.d/xvfb stop
+  dump_code_logs_script:
+    - .cirrus/dump_code_logs
+  always:
+    its_tests_artifacts:
+      path: '**/*tests.xml'
+      format: junit
+    its_test_recording_artifacts:
+      path: ${RECORD_FILENAME}
+
+promote_task:
+  env:
+    ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
+    PROMOTE_URL: VAULT[development/kv/data/promote data.url]
+    ARTIFACTS: "org.sonarsource.sonarlint.vscode:sonarlint-vscode:vsix"
+  depends_on:
+    - qa
+    - test_windows
+    - test_linux
+  <<: *ONLY_PR_AND_MAINTAINED_BRANCHES
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  <<: *NODE_MODULES_CACHE_TEMPLATE
+  promote_script:
+    - .cirrus/cirrus_promote_npm
+
+dogfood_task:
+  depends_on:
+      - promote
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 2
+    memory: 2G
+  dogfood_script:
+    - .cirrus/cirrus_dogfood_npm
