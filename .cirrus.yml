@@ -265,6 +265,6 @@ dogfood_task:
     memory: 2G
   env:
     ARTIFACTORY_API_USER: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter
-    ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter
+    ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
   dogfood_script:
     - .cirrus/cirrus_dogfood_npm
