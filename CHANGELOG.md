@@ -1,3 +1,8 @@
+## 3.20
+
+* Update Java analyzer 7.20.0 -> [7.21.0](https://github.com/SonarSource/sonar-java/releases/tag/7.21.0.31796), Update 86 rule descriptions to new educational format; fir 4 FPs
+
+
 ## 3.19.2
 
 * Fix synchronization of taint vulnerabilities in connected mode with SonarCloud
