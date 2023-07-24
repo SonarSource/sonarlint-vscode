@@ -1,6 +1,7 @@
 ## 3.20
 
-* Update Java analyzer 7.20.0 -> [7.21.0](https://github.com/SonarSource/sonar-java/releases/tag/7.21.0.31796), Update 86 rule descriptions to new educational format; fir 4 FPs
+* Update Java analyzer 7.20.0 -> [7.21.0](https://github.com/SonarSource/sonar-java/releases/tag/7.21.0.31796), Update 86 rule descriptions to new educational format; Fix 4 FPs
+* Update IaC analyzer 1.17 -> [1.18](https://github.com/SonarSource/sonar-iac/releases/tag/1.18.0.4757), Update rule descriptions to new educational format; Bug fixes
 
 
 ## 3.19.2
