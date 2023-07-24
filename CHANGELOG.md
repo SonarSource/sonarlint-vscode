@@ -3,6 +3,7 @@
 * Update Java analyzer 7.20.0 -> [7.21.0](https://github.com/SonarSource/sonar-java/releases/tag/7.21.0.31796), Update 86 rule descriptions to new educational format; Fix 4 FPs
 * Update IaC analyzer 1.17 -> [1.18](https://github.com/SonarSource/sonar-iac/releases/tag/1.18.0.4757), Update rule descriptions to new educational format; Bug fixes
 * Update Python analyzer 4.3 -> [4.4](https://sonarsource.atlassian.net/projects/SONARPY/versions/14133/tab/release-report-all-issues) -> [4.5](https://sonarsource.atlassian.net/projects/SONARPY/versions/14193/tab/release-report-all-issues), Migrate 37 rule descriptions to the education format; Improve analysis precision; Fixing FPs and FNs
+* Update XML analyzer 2.8.1 -> [2.9.0](https://github.com/SonarSource/sonar-xml/releases/tag/2.9.0.4055), Update rules metadata; SonarXML increases by 2% the TPR on C# SAST Benchmarks; Fixing FNs
 
 
 ## 3.19.2
