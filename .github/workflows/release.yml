@@ -22,7 +22,7 @@ jobs:
   deploy_to_microsoft_marketplace:
     runs-on: ubuntu-latest
     name: Deploy to Visual Studio marketplace
-    needs: sonar_release
+    needs: release
     strategy:
       # Deployment jobs are executed sequentially to make sure that the universal package is the last one deployed
       max-parallel: 1
@@ -84,7 +84,7 @@ jobs:
   deploy_to_openvsx:
     runs-on: ubuntu-latest
     name: Deploy to OpenVSX
-    needs: sonar_release
+    needs: release
     steps:
       - name: Checkout custom actions
         uses: actions/checkout@v3
