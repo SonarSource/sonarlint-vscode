@@ -167,7 +167,7 @@ test_linux_task:
 
 mend_scan_task:
   depends_on:
-    - test_linux
+    - build
   <<: *ONLY_MAIN_BRANCHES
   eks_container:
     <<: *CONTAINER_DEFINITION
@@ -257,7 +257,7 @@ promote_task:
 
 dogfood_task:
   depends_on:
-      - promote
+    - build
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH
   eks_container:
     <<: *CONTAINER_DEFINITION
