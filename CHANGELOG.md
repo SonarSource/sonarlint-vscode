@@ -1,12 +1,14 @@
 ## 3.20
 
+* Contribute a walkthrough feature for new users who install SonarLint
+* Clean up diagnostics on file close
+* Improve UX for untrusted SSL certificates
 * Update Java analyzer 7.20.0 -> [7.21.0](https://github.com/SonarSource/sonar-java/releases/tag/7.21.0.31796), Update 86 rule descriptions to new educational format; Fix 4 FPs
 * Update IaC analyzer 1.17 -> [1.18](https://github.com/SonarSource/sonar-iac/releases/tag/1.18.0.4757), Update rule descriptions to new educational format; Bug fixes
 * Update Python analyzer 4.3 -> [4.4](https://sonarsource.atlassian.net/projects/SONARPY/versions/14133/tab/release-report-all-issues) -> [4.5](https://sonarsource.atlassian.net/projects/SONARPY/versions/14193/tab/release-report-all-issues), Migrate 37 rule descriptions to the education format; Improve analysis precision; Fixing FPs and FNs
 * Update XML analyzer 2.8.1 -> [2.9.0](https://github.com/SonarSource/sonar-xml/releases/tag/2.9.0.4055), Update rules metadata; SonarXML increases by 2% the TPR on C# SAST Benchmarks; Fixing FNs
 * Update JS/TS/CSS analyzer 10.3.1 -> [10.3.2](https://github.com/SonarSource/SonarJS/releases/tag/10.3.2.22047), A bugfix for performance regression
 * Update CFamily analyzer 6.45 -> [6.46](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D14141%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC) -> [6.47](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D%206.47%20%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), 2 new C++ rules, 43 new Misra 2023 rules; Bug fixes and improvements
-
 
 ## 3.19.2
 
