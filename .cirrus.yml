@@ -1,5 +1,5 @@
 env:
-  CIRRUS_CLONE_DEPTH: "1"
+  CIRRUS_CLONE_DEPTH: "50"
   # Use bash (instead of sh on linux or cmd.exe on Windows)
   CIRRUS_SHELL: bash
   # burgr notification
