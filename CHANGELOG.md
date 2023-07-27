@@ -1,4 +1,4 @@
-## 3.20.1
+## 3.20.2
 
 * Contribute a walkthrough feature for new users who install SonarLint
 * Clean up diagnostics on file close
