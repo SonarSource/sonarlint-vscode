@@ -178,6 +178,7 @@ mend_scan_task:
   whitesource_script:
     - source cirrus-env QA # read build number
     - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
+    - export WS_PROJECTNAME="${CIRRUS_REPO_FULL_NAME} ${PROJECT_VERSION}"
     - source ws_scan.sh
   allow_failures: "true"
   always:
