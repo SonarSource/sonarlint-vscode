@@ -37,6 +37,7 @@ else
       -Dsonar.projectKey="org.sonarsource.sonarlint.vscode:sonarlint-vscode" \
       -Dsonar.organization="sonarsource" \
       -Dsonar.projectName="SonarLint for VSCode" \
+      -Dsonar.projectVersion=$packageVersion \
       -Dsonar.host.url=$SONARQUBE_NEXT_URL \
       -Dsonar.token=$SONARQUBE_NEXT_TOKEN \
       -Dsonar.analysis.buildNumber=$BUILD_NUMBER \
