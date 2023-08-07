@@ -51,7 +51,6 @@ elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; t
 
   git fetch origin "${GITHUB_BRANCH}"
 
-  # get current version from pom
   if [[ $PROJECT_VERSION =~ "-SNAPSHOT" ]]; then
     echo "======= Found SNAPSHOT version ======="
     PROJECT_VERSION=$(echo "$PROJECT_VERSION" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
