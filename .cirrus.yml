@@ -154,7 +154,6 @@ test_linux_task:
   script:
     - sleep 5
     - source cirrus-env QA
-    - export packageVersion=$(npm pkg get version | tr -d \")
     - npm run compile
     - npm run prepare
     - npm run test-cov
