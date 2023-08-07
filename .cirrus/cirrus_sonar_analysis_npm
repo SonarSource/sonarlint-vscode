@@ -1,4 +1,6 @@
 #!/bin/bash
+#TODO DO NOT MERGE
+PULL_REQUEST="false"
 
 set -euo pipefail
 # Fetch all commit history so that SonarQube has exact blame information
