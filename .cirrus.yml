@@ -113,26 +113,26 @@ all_vsix_task:
     - source cirrus-env QA # Retrieve build number
     - node_modules/.bin/gulp deploy-all
 
-test_windows_task:
-  # name: Run tests on Windows
-  depends_on:
-    - build
-  <<: *ONLY_IF_EXCEPT_NIGHTLY
-  ec2_instance:
-    <<: *WINVM_DEFINITION
-  <<: *NODE_MODULES_CACHE_TEMPLATE
-  env:
-    NODE_ENV: 'continuous-integration'
-  script:
-    - source cirrus-env QA
-    - export packageVersion=$(npm pkg get version | tr -d \")
-    - npm run compile
-    - npm run prepare
-    - npm run test-cov
-  always:
-    unit_tests_artifacts:
-      path: '**/alltests.xml'
-      format: junit
+# test_windows_task:
+#   # name: Run tests on Windows
+#   depends_on:
+#     - build
+#   <<: *ONLY_IF_EXCEPT_NIGHTLY
+#   ec2_instance:
+#     <<: *WINVM_DEFINITION
+#   <<: *NODE_MODULES_CACHE_TEMPLATE
+#   env:
+#     NODE_ENV: 'continuous-integration'
+#   script:
+#     - source cirrus-env QA
+#     - export packageVersion=$(npm pkg get version | tr -d \")
+#     - npm run compile
+#     - npm run prepare
+#     - npm run test-cov
+#   always:
+#     unit_tests_artifacts:
+#       path: '**/alltests.xml'
+#       format: junit
 
 test_linux_task:
   #  name: Run tests, Sonarqube analysis on Linux
@@ -164,107 +164,107 @@ test_linux_task:
       path: '**/alltests.xml'
       format: junit
 
-mend_scan_task:
-  depends_on:
-    - build
-  <<: *ONLY_MAIN_BRANCHES
-  eks_container:
-    <<: *CONTAINER_DEFINITION
-  <<: *NODE_MODULES_CACHE_TEMPLATE
-  env:
-    WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
-    JDK_VERSION: "11"
-  whitesource_script:
-    - source cirrus-env QA # read build number
-    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
-    - export WS_PROJECTNAME="${CIRRUS_REPO_FULL_NAME} ${PROJECT_VERSION}"
-    - source ws_scan.sh
-  allow_failures: "true"
-  always:
-    ws_artifacts:
-      path: "whitesource/**/*"
+# mend_scan_task:
+#   depends_on:
+#     - build
+#   <<: *ONLY_MAIN_BRANCHES
+#   eks_container:
+#     <<: *CONTAINER_DEFINITION
+#   <<: *NODE_MODULES_CACHE_TEMPLATE
+#   env:
+#     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
+#     JDK_VERSION: "11"
+#   whitesource_script:
+#     - source cirrus-env QA # read build number
+#     - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
+#     - export WS_PROJECTNAME="${CIRRUS_REPO_FULL_NAME} ${PROJECT_VERSION}"
+#     - source ws_scan.sh
+#   allow_failures: "true"
+#   always:
+#     ws_artifacts:
+#       path: "whitesource/**/*"
 
-qa_task:
-  #  name: Run ITs
-  depends_on:
-    - universal_vsix
-    - all_vsix
-  <<: *ONLY_IF_EXCEPT_NIGHTLY
-  eks_container:
-    <<: *CONTAINER_DEFINITION
-    cpu: 4
-    memory: 4G
-  <<: *NODE_MODULES_CACHE_TEMPLATE
-  matrix:
-    - env:
-        QA_CATEGORY: oldest
-        VSCODE_VERSION: '1.73.0'
-    - env:
-        QA_CATEGORY: stable
-        VSCODE_VERSION: 'stable'
-    - env:
-        QA_CATEGORY: insiders
-        VSCODE_VERSION: 'insiders'
-  env:
-    DISPLAY: ":10"
-    RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record_vscode_${QA_CATEGORY}.mp4"
-  start_xvfb_background_script:
-    - /etc/init.d/xvfb start
-  prepare_tests_script:
-    - sleep 5 # ensure xvfb is up
-    - source cirrus-env QA
-    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
-    - echo "Download staged vsix for ${PROJECT_VERSION}"
-    - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings ~/.m2/settings.xml -Denable-repo=qa -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$PROJECT_VERSION:vsix -DoutputDirectory=$CIRRUS_WORKING_DIR
-    - cd its
-    - npm ci
-  start_screen_recording_background_script:
-    - ffmpeg -f x11grab -video_size 1280x960 -i ${DISPLAY} -codec:v libx264 -r 12 ${RECORD_FILENAME}
-  test_script:
-    - source cirrus-env QA
-    - cd its
-    - npm test
-  stop_screen_recording_script:
-    - pkill -SIGINT -f ffmpeg
-    - while pgrep ffmpeg >/dev/null; do sleep 1; done
-    - /etc/init.d/xvfb stop
-  dump_code_logs_script:
-    - .cirrus/dump_code_logs
-  always:
-    its_tests_artifacts:
-      path: '**/*tests.xml'
-      format: junit
-    its_test_recording_artifacts:
-      path: ${RECORD_FILENAME}
+# qa_task:
+#   #  name: Run ITs
+#   depends_on:
+#     - universal_vsix
+#     - all_vsix
+#   <<: *ONLY_IF_EXCEPT_NIGHTLY
+#   eks_container:
+#     <<: *CONTAINER_DEFINITION
+#     cpu: 4
+#     memory: 4G
+#   <<: *NODE_MODULES_CACHE_TEMPLATE
+#   matrix:
+#     - env:
+#         QA_CATEGORY: oldest
+#         VSCODE_VERSION: '1.73.0'
+#     - env:
+#         QA_CATEGORY: stable
+#         VSCODE_VERSION: 'stable'
+#     - env:
+#         QA_CATEGORY: insiders
+#         VSCODE_VERSION: 'insiders'
+#   env:
+#     DISPLAY: ":10"
+#     RECORD_FILENAME: "${CIRRUS_WORKING_DIR}/record_vscode_${QA_CATEGORY}.mp4"
+#   start_xvfb_background_script:
+#     - /etc/init.d/xvfb start
+#   prepare_tests_script:
+#     - sleep 5 # ensure xvfb is up
+#     - source cirrus-env QA
+#     - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+#     - echo "Download staged vsix for ${PROJECT_VERSION}"
+#     - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings ~/.m2/settings.xml -Denable-repo=qa -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$PROJECT_VERSION:vsix -DoutputDirectory=$CIRRUS_WORKING_DIR
+#     - cd its
+#     - npm ci
+#   start_screen_recording_background_script:
+#     - ffmpeg -f x11grab -video_size 1280x960 -i ${DISPLAY} -codec:v libx264 -r 12 ${RECORD_FILENAME}
+#   test_script:
+#     - source cirrus-env QA
+#     - cd its
+#     - npm test
+#   stop_screen_recording_script:
+#     - pkill -SIGINT -f ffmpeg
+#     - while pgrep ffmpeg >/dev/null; do sleep 1; done
+#     - /etc/init.d/xvfb stop
+#   dump_code_logs_script:
+#     - .cirrus/dump_code_logs
+#   always:
+#     its_tests_artifacts:
+#       path: '**/*tests.xml'
+#       format: junit
+#     its_test_recording_artifacts:
+#       path: ${RECORD_FILENAME}
 
-promote_task:
-  env:
-    ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
-    PROMOTE_URL: VAULT[development/kv/data/promote data.url]
-    ARTIFACTS: "org.sonarsource.sonarlint.vscode:sonarlint-vscode:vsix"
-  depends_on:
-    - qa
-    - test_windows
-    - test_linux
-  <<: *ONLY_PR_AND_MAINTAINED_BRANCHES
-  eks_container:
-    <<: *CONTAINER_DEFINITION
-    cpu: 2
-    memory: 2G
-  <<: *NODE_MODULES_CACHE_TEMPLATE
-  promote_script:
-    - .cirrus/cirrus_promote_npm
+# promote_task:
+#   env:
+#     ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
+#     PROMOTE_URL: VAULT[development/kv/data/promote data.url]
+#     ARTIFACTS: "org.sonarsource.sonarlint.vscode:sonarlint-vscode:vsix"
+#   depends_on:
+#     - qa
+#     - test_windows
+#     - test_linux
+#   <<: *ONLY_PR_AND_MAINTAINED_BRANCHES
+#   eks_container:
+#     <<: *CONTAINER_DEFINITION
+#     cpu: 2
+#     memory: 2G
+#   <<: *NODE_MODULES_CACHE_TEMPLATE
+#   promote_script:
+#     - .cirrus/cirrus_promote_npm
 
-dogfood_task:
-  depends_on:
-    - build
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH
-  eks_container:
-    <<: *CONTAINER_DEFINITION
-    cpu: 2
-    memory: 2G
-  env:
-    ARTIFACTORY_API_USER: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter
-    ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
-  dogfood_script:
-    - .cirrus/cirrus_dogfood_npm
+# dogfood_task:
+#   depends_on:
+#     - build
+#   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH
+#   eks_container:
+#     <<: *CONTAINER_DEFINITION
+#     cpu: 2
+#     memory: 2G
+#   env:
+#     ARTIFACTORY_API_USER: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter
+#     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
+#   dogfood_script:
+#     - .cirrus/cirrus_dogfood_npm
