@@ -89,29 +89,29 @@ build_task:
     - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
 
-universal_vsix_task:
-  depends_on: build
-  <<: *SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
-  eks_container:
-    <<: *CONTAINER_DEFINITION
-    cpu: 2
-    memory: 2G
-  <<: *NODE_MODULES_CACHE_TEMPLATE
-  deploy_script:
-    - source cirrus-env QA # Retrieve build number
-    - node_modules/.bin/gulp deploy
+#universal_vsix_task:
+#  depends_on: build
+#  <<: *SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
+#  eks_container:
+#    <<: *CONTAINER_DEFINITION
+#    cpu: 2
+#    memory: 2G
+#  <<: *NODE_MODULES_CACHE_TEMPLATE
+#  deploy_script:
+#    - source cirrus-env QA # Retrieve build number
+#    - node_modules/.bin/gulp deploy
 
-all_vsix_task:
-  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
-  depends_on: build
-  eks_container:
-    <<: *CONTAINER_DEFINITION
-    cpu: 4
-    memory: 4G
-  <<: *NODE_MODULES_CACHE_TEMPLATE
-  deploy_all_script:
-    - source cirrus-env QA # Retrieve build number
-    - node_modules/.bin/gulp deploy-all
+#all_vsix_task:
+#  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
+#  depends_on: build
+#  eks_container:
+#    <<: *CONTAINER_DEFINITION
+#    cpu: 4
+#    memory: 4G
+#  <<: *NODE_MODULES_CACHE_TEMPLATE
+#  deploy_all_script:
+#    - source cirrus-env QA # Retrieve build number
+#    - node_modules/.bin/gulp deploy-all
 
 # test_windows_task:
 #   # name: Run tests on Windows
