@@ -51,18 +51,10 @@ elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; t
 
   git fetch origin "${GITHUB_BRANCH}"
 
-  if [[ $PROJECT_VERSION =~ "-SNAPSHOT" ]]; then
-    echo "======= Found SNAPSHOT version ======="
-    PROJECT_VERSION=$(echo "$PROJECT_VERSION" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
-  else
-    echo "======= Found RELEASE version ======="
-  fi
-
   npx sonar-scanner \
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
-      -Dsonar.projectVersion="$PROJECT_VERSION" \
       -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
       -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
@@ -74,14 +66,10 @@ elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; t
 elif [ "$PULL_REQUEST" != "false" ]; then
   echo '======= Analyze pull request'
 
-  # Do not analyze a SNAPSHOT version but the version related to this build and PR (includes build number)
-  PROJECT_VERSION=$(echo "$PROJECT_VERSION" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
-
   npx sonar-scanner \
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
-      -Dsonar.projectVersion="$PROJECT_VERSION" \
       -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
       -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
@@ -97,7 +85,6 @@ elif [[ "$GITHUB_BRANCH" == "feature/long/"* ]] && [ "$PULL_REQUEST" == "false" 
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
-      -Dsonar.projectVersion="$PROJECT_VERSION" \
       -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
       -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
