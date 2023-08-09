@@ -257,8 +257,9 @@ promote_task:
 
 dogfood_task:
   depends_on:
-    - build
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH
+    - promote
+  # Dogfood task is only executed after successful promotion of a non-cron build from master
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH && $CIRRUS_BUILD_SOURCE != "cron"
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
