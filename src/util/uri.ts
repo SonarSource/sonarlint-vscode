@@ -40,15 +40,19 @@ export function getFileNameFromFullPath(fullPath: string): string {
   return fullPath.substring(fullPath.lastIndexOf('/') + 1);
 }
 
+export function getRelativePathWithFileNameFromFullPath(fullPath: string, workspaceFolder: vscode.WorkspaceFolder,): string {
+  const fullFsPath = vscode.Uri.parse(fullPath).fsPath; // /Users/user/sonarlint-vscode/samples/main.js
+  const workspaceFolderFsPath = workspaceFolder.uri.fsPath; // /Users/user/sonarlint-vscode/
+  return fullFsPath.replace(`${workspaceFolderFsPath}${path.sep}`, ''); // samples/main.js
+}
+
 export function getRelativePathFromFullPath(
   fullPath: string,
   workspaceFolder: vscode.WorkspaceFolder,
   specifyWorkspaceFolderName: boolean
 ): string {
-  const fullFsPath = vscode.Uri.parse(fullPath).fsPath; // /Users/user/sonarlint-vscode/samples/main.js
+  const relativePathWithFileName = getRelativePathWithFileNameFromFullPath(fullPath, workspaceFolder)
   const fileName = getFileNameFromFullPath(fullPath); // main.js
-  const workspaceFolderFsPath = workspaceFolder.uri.fsPath; // /Users/user/sonarlint-vscode/
-  const relativePathWithFileName = fullFsPath.replace(`${workspaceFolderFsPath}${path.sep}`, ''); // samples/main.js
   const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, ''); // samples/
   if (specifyWorkspaceFolderName) {
     return relativePathWithoutFileName

@@ -28,18 +28,18 @@ import {
   HelpAndFeedbackTreeDataProvider
 } from './help/helpAndFeedbackTreeDataProvider';
 import {
-  HOTSPOTS_VIEW_ID,
+  changeHotspotStatus,
   getFilesForHotspotsAndLaunchScan,
   hideSecurityHotspot,
+  HOTSPOTS_VIEW_ID,
   showHotspotDescription,
-  showSecurityHotspot,
-  useProvidedFolderOrPickManuallyAndScan,
   showHotspotDetails,
-  changeHotspotStatus
+  showSecurityHotspot,
+  useProvidedFolderOrPickManuallyAndScan
 } from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
-import { LocationTreeItem, SecondaryLocationsTree, navigateToLocation } from './location/locations';
+import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
 import * as protocol from './lsp/protocol';
 import { languageServerCommand } from './lsp/server';
@@ -59,7 +59,7 @@ import {
 import { Commands } from './util/commands';
 import { getLogOutput, initLogOutput, logToSonarLintOutput, showLogOutput } from './util/logging';
 import { getPlatform } from './util/platform';
-import { JAVA_HOME_CONFIG, installManagedJre, resolveRequirements } from './util/requirements';
+import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
@@ -460,6 +460,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
     )
   );
   context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () => {
+      IssueService.instance.reopenLocalIssues();
+    })
+  );
+  context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
       const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
       if (connectionDeleted) {
@@ -574,7 +579,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     protocol.AssistBinding.type,
     async params => await BindingService.instance.assistBinding(params)
   );
-  languageClient.onRequest(protocol.SslCertificateConfirmation.type, cert => showSslCertificateConfirmationDialog(cert))
+  languageClient.onRequest(protocol.SslCertificateConfirmation.type, cert =>
+    showSslCertificateConfirmationDialog(cert)
+  );
 }
 
 function updateSonarLintViewContainerBadge() {
