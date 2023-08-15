@@ -60,7 +60,7 @@ import { Commands } from './util/commands';
 import { getLogOutput, initLogOutput, logToSonarLintOutput, showLogOutput } from './util/logging';
 import { getPlatform } from './util/platform';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
-import { code2ProtocolConverter, getRelativePathWithFileNameFromFullPath, protocol2CodeConverter } from './util/uri';
+import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
