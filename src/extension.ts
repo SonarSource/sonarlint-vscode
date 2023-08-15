@@ -339,16 +339,6 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
 
-function reopenLocalIssues() {
-  const currentlyOpenFileUri = VSCode.window.activeTextEditor.document.uri;
-  const workspaceFolder = VSCode.workspace.getWorkspaceFolder(currentlyOpenFileUri);
-  const fileRelativePath = getRelativePathWithFileNameFromFullPath(currentlyOpenFileUri.toString(), workspaceFolder);
-  const unixStyleRelativePath = fileRelativePath.replace(/\\/g, '/');
-  IssueService.instance.reopenLocalIssues(code2ProtocolConverter(workspaceFolder.uri),
-    unixStyleRelativePath,
-    code2ProtocolConverter(currentlyOpenFileUri));
-}
-
 function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
     const sampleFileUri = VSCode.Uri.joinPath(context.extensionUri, 'walkthrough', 'sample.py');
@@ -471,7 +461,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () => {
-      reopenLocalIssues();
+      IssueService.instance.reopenLocalIssues();
     })
   );
   context.subscriptions.push(

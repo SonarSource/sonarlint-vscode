@@ -8,6 +8,8 @@
 'use strict';
 
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import * as VSCode from 'vscode';
+import { code2ProtocolConverter, getRelativePathWithFileNameFromFullPath } from '../util/uri';
 
 export class IssueService {
   private static _instance: IssueService;
@@ -33,7 +35,14 @@ export class IssueService {
     return this.languageClient.changeIssueStatus(configScopeId, issueKey, newStatus, fileUri, comment, isTaintIssue);
   }
 
-  reopenLocalIssues(configurationScopeId: string, relativePath: string, fileUri: string): Promise<void> {
-    return this.languageClient.reopenResolvedLocalIssues(configurationScopeId, relativePath, fileUri);
+  reopenLocalIssues() {
+    const currentlyOpenFileUri = VSCode.window.activeTextEditor.document.uri;
+    const workspaceFolder = VSCode.workspace.getWorkspaceFolder(currentlyOpenFileUri);
+    const fileRelativePath = getRelativePathWithFileNameFromFullPath(currentlyOpenFileUri.toString(), workspaceFolder);
+    const unixStyleRelativePath = fileRelativePath.replace(/\\/g, '/');
+    return this.languageClient.reopenResolvedLocalIssues(code2ProtocolConverter(workspaceFolder.uri),
+      unixStyleRelativePath,
+      code2ProtocolConverter(currentlyOpenFileUri));
   }
+
 }
