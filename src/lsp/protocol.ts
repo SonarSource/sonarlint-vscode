@@ -82,6 +82,9 @@ export interface ShowRuleDescriptionParams {
   }>;
   type: string;
   severity: string;
+  cleanCodeAttribute?: string;
+  cleanCodeAttributeCategory?: string;
+  impacts?: { [softwareQuality: string]: string};
   languageKey: string;
   isTaint: boolean;
   parameters?: Array<{

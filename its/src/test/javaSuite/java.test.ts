@@ -56,7 +56,7 @@ suite('Java Test Suite', () => {
     const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2 });
     assert.deepEqual(diags.map(d => [ d.code, d.message ]), [
       [ 'java:S1130', 'Remove the declaration of thrown exception \'edu.marcelo.App$MyException\', as it cannot be thrown from method\'s body.' ],
-      [ 'java:S106', 'Replace this use of System.out or System.err by a logger.' ]
+      [ 'java:S106', 'Replace this use of System.out by a logger.' ]
     ]);
 
     // Check that the exception-related diagnostic has 3 code actions
