@@ -27,6 +27,54 @@ a {
   transition: all 0.2s ease;
 }
 
+.taxonomy {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 1em;
+}
+
+.clean-code-attribute {
+  display: inline-flex;
+  flex-direction: row;
+}
+
+.attribute-category {
+  font-weight: 500;
+  display: inline-block;
+  margin-right: 0.5em;
+  padding-right: 0.5em;
+  border-right: 1px solid currentColor;
+}
+
+.impact {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  border-radius: 1em;
+  padding: 0.2em 0.2em 0.2em 0.5em;
+  margin-left: 0.6em;
+}
+
+.impact-high {
+  background-color: rgb(180, 35, 24, 0.2);
+}
+
+.impact-medium {
+  background-color: rgb(174, 122, 41, 0.2);
+}
+
+.impact-low {
+  background-color: rgb(49, 108, 146, 0.2);
+}
+
+.impact img {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-left: 0.3em;
+}
+
 .rule-desc {
   line-height: 1.5;
 }
@@ -129,7 +177,7 @@ pre {
   padding-left: 1.5rem;
   margin-left: -1.5rem;
   margin-right: -1.5rem;
-  border-radius: 0px;
+  border-radius: 0;
 }
 
 .code-difference-scrollable .code-removed {
