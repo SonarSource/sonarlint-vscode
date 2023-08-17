@@ -256,6 +256,13 @@
           "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files. Example: `{**/test/**,**/*test*,**/*Test*}`",
           "scope": "resource"
         },
+        "sonarlint.analysisExcludesStandalone": {
+          "order": 13,
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) will not be processed by analyzers. When SonarLint is connected to SonarQube or SonarCloud this property will be ignored and all files will be analysed. No rules are evaluated on excluded files. Example: `{**/lib/**,**/*generated*}`",
+          "scope": "resource"
+        },
         "sonarlint.ls.javaHome": {
           "order": 20,
           "type": "string",
