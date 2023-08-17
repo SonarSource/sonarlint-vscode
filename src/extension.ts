@@ -65,6 +65,8 @@ import * as util from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { showSslCertificateConfirmationDialog } from './util/showMessage';
+import { getFilesNotMatchedGlobPatterns, shouldAnalyseFile } from './util/util';
+import { FileUris } from './lsp/protocol';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -525,6 +527,17 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
   );
 }
 
+function filterOutFilesIgnoredForAnalysis(fileUris: string[]): FileUris {
+  // assuming non-empty and all files from the same workspace
+  const workspaceFolder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(fileUris[0]));
+  const workspaceFolderConfig = VSCode.workspace.getConfiguration(null, workspaceFolder.uri);
+  const excludes: string = workspaceFolderConfig.get('sonarlint.analysisExcludesStandalone');
+  const excludesArray = excludes.split(',').map(it => it.trim());
+  const filteredFiles = getFilesNotMatchedGlobPatterns(fileUris.map(it => VSCode.Uri.parse(it)), excludesArray)
+    .map(it => it.toString());
+  return { fileUris: filteredFiles };
+}
+
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
@@ -535,7 +548,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
-  languageClient.onRequest(protocol.EditorOpenCheck.type, fileUri => isOpenInEditor(fileUri));
+  languageClient.onRequest(protocol.ShouldAnalyseFileCheck.type, params => shouldAnalyseFile(params.uri));
+  languageClient.onRequest(protocol.FilterOutExcludedFiles.type, params => filterOutFilesIgnoredForAnalysis(params.fileUris));
   languageClient.onNotification(protocol.ReportConnectionCheckResult.type, async checkResult => {
     await reportConnectionCheckResult(checkResult);
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
@@ -594,12 +608,6 @@ async function getTokenForServer(serverId: string): Promise<string> {
   return ConnectionSettingsService.instance.getServerToken(serverId);
 }
 
-function isOpenInEditor(fileUri: string) {
-  const codeFileUri = VSCode.Uri.parse(fileUri).toString(false);
-  const textDocumentIsOpen = VSCode.workspace.textDocuments.some(d => d.uri.toString(false) === codeFileUri);
-  const notebookDocumentIsOpen = VSCode.workspace.notebookDocuments.some(d => d.uri.toString(false) === codeFileUri);
-  return textDocumentIsOpen || notebookDocumentIsOpen;
-}
 
 async function showAllLocations(issue: protocol.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);

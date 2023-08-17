@@ -11,9 +11,10 @@ import * as path from 'path';
 import * as process from 'process';
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
-import { AnalysisFile } from '../lsp/protocol';
+import { AnalysisFile, ShouldAnalyseFileCheckResult } from '../lsp/protocol';
 import { code2ProtocolConverter } from './uri';
 import { verboseLogToSonarLintOutput } from './logging';
+import { BindingService } from '../connected/binding';
 
 export function startedInDebugMode(process: NodeJS.Process): boolean {
   const args = process.execArgv;
@@ -249,4 +250,30 @@ export function getIdeFileExclusions(excludes): string[] {
     }
   }
   return excludedPatterns;
+}
+
+export function shouldAnalyseFile(fileUriStr: string): ShouldAnalyseFileCheckResult {
+  const isOpen = isOpenInEditor(fileUriStr);
+  if (!isOpen) {
+    return { shouldBeAnalysed: false, reason: 'Skipping analysis for the file preview: ' };
+  }
+  const fileUri = vscode.Uri.parse(fileUriStr);
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+  const isBound = BindingService.instance.isBound(workspaceFolder);
+  if (isBound) {
+    return { shouldBeAnalysed: true };
+  }
+  const workspaceFolderConfig = vscode.workspace.getConfiguration(null, workspaceFolder.uri);
+  const excludes: string = workspaceFolderConfig.get('sonarlint.analysisExcludesStandalone');
+  const excludesArray = excludes.split(',').map(it => it.trim());
+  const filteredFile = getFilesNotMatchedGlobPatterns([fileUri], excludesArray);
+  return { shouldBeAnalysed: filteredFile.length === 1, reason: 'Skipping analysis for the excluded file: ' };
+}
+
+function isOpenInEditor(fileUri: string) {
+  const url = vscode.Uri.parse(fileUri);
+  const codeFileUri = url.toString(false);
+  const textDocumentIsOpen = vscode.workspace.textDocuments.some(d => d.uri.toString(false) === codeFileUri);
+  const notebookDocumentIsOpen = vscode.workspace.notebookDocuments.some(d => d.uri.toString(false) === codeFileUri);
+  return textDocumentIsOpen || notebookDocumentIsOpen;
 }
