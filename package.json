@@ -105,7 +105,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other analysis settings. Please find the documentation [here](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode)",
+          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other analysis settings. Please find the documentation [here](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/)",
           "items": {
             "type": "object",
             "properties": {
@@ -147,7 +147,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other analysis settings. Please find the documentation [here](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode)",
+          "markdownDescription": "In connected mode, SonarLint applies the SonarQube quality profile to the local analysis and synchronizes the issue status and other analysis settings. Please find the documentation [here](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/)",
           "items": {
             "type": "object",
             "properties": {
@@ -569,7 +569,7 @@
       },
       {
         "view": "SonarLint.SecurityHotspots",
-        "contents": "Please ensure a connection to SonarQube 9.7+ or SonarCloud is set up. Detected Security Hotspots will be displayed here. [Learn More](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
+        "contents": "Please ensure a connection to SonarQube 9.7+ or SonarCloud is set up. Detected Security Hotspots will be displayed here. [Learn More](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
       }
     ],
     "walkthroughs": [
@@ -581,7 +581,7 @@
           {
             "id": "SonarLint.inAction",
             "title": "$(rocket) New to SonarLint? See it in action",
-            "description": "SonarLint for VSCode supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, and [more](https://github.com/SonarSource/sonarlint-vscode/wiki/Languages-and-rules). SonarLint detects issues in all files **open** in the editor.\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
+            "description": "SonarLint for VSCode supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, and [more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/rules). SonarLint detects issues in all files **open** in the editor.\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
