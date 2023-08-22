@@ -73,7 +73,7 @@
 
 ## 3.14
 
-* Local detection of [Security Hotspots](https://github.com/SonarSource/sonarlint-vscode/wiki/security-hotspots)
+* Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/)
 * Update PHP analyzer 3.25.0 -> [3.26.0](https://github.com/SonarSource/sonar-php/releases/tag/3.26.0.9313) -> [3.27.0](https://github.com/SonarSource/sonar-php/releases/tag/3.27.0.9339) -> [3.27.1](https://github.com/SonarSource/sonar-php/releases/tag/3.27.1.9352), Fix parsing error on namespaces with reserved words
 * Update CFamily analyzer 6.40.0 -> [6.41.0](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013953%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), 13 new rules on C++20's "std::format"
 * Update Java analyzer 7.15.0 -> [7.16.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/13922/tab/release-report-all-issues), FP fixes, bugfixes, FN fixes
