@@ -8,6 +8,7 @@
 
 import * as vscode from 'vscode';
 import { Commands } from './commands';
+import { SonarLintDocumentation } from '../commons';
 
 const FIRST_COBOL_ISSUE_DETECTED_KEY = 'FIRST_COBOL_ISSUE_DETECTED_KEY';
 
@@ -17,7 +18,7 @@ export async function showNotificationForFirstCobolIssue(context: vscode.Extensi
     .showInformationMessage(
       'SonarLint analysis for COBOL is currently in Beta. \n' +
         'We welcome feedback to make improvements. ' +
-        '[Learn more](https://github.com/SonarSource/sonarlint-vscode/wiki/Languages-and-rules#cobol-analysis)',
+        `[Learn more](${SonarLintDocumentation.COBOL_ANALYSIS})`,
       shareFeedbackActionTitle
     )
     .then(action => {
