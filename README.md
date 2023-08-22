@@ -124,7 +124,7 @@ More information about security-related rules is available in the [SonarQube](ht
 
 ### Security Hotspots in SonarLint
 
-In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with SonarQube 9.7 or above. From version 3.18+, Security Hotspots are also found when bound to a project in SonarCloud.
+In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with SonarQube 9.7 or above. From version 3.18+, Security Hotspots are also found when bound to a project in SonarCloud.
 
 Please see the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) for more details.
 
@@ -138,7 +138,7 @@ You can connect SonarLint to SonarQube 7.9+/SonarCloud by binding your VSCode wo
 
 While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings. For editing notifications in previous versions, please see [SonarLint Versions 3.5.4 and Lower](https://docs.sonarsource.com/sonarlint/vs-code/previous-versions/#sonarlint-v354-and-lower). Note that Connected Mode notifications are not available in the SonarQube Community Editions 8.6 and earlier.
 
-When running in Connected Mode with SonarQube 8.6 and above, and browsing a [security hotspot](https://docs.sonarqube.org/latest/user-guide/security-hotspots/), a button will be available offering to open the hotspot in SonarLint (with SonarLint already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in some remote environments such as GitPod, or GitHub CodeSpaces.
+When running in Connected Mode with SonarQube 8.6 and above, and browsing a [security hotspot](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/), a button will be available offering to open the hotspot in SonarLint (with SonarLint already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in some remote environments such as GitPod, or GitHub CodeSpaces.
 
 Connected Mode will also unlock your analysis of these languages:
 
