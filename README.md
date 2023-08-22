@@ -3,6 +3,8 @@
 SonarLint is a free IDE extension that empowers you to fix coding issues before they exist. More than a linter, SonarLint highlights issues that may result in Bugs and Security Vulnerabilities as you create your code, offering clear remediation guidance and educational help so you can fix them before the code is committed.
 SonarLint in VS Code supports analysis of JS/TS, Python, PHP, Java, C, C++, Go, and IaC code locally in your IDE. Use with SonarQube & SonarCloud for optimal team performance, and additional benefits.
 
+Check the [SonarLint for VS Code documentation](https://docs.sonarsource.com/sonarlint/vs-code/) for the most up-to-date requirements, installation instructions, and feature details.
+
 ## How it works
 
 Simply open any source file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
