@@ -1,3 +1,9 @@
+## 3.21
+
+* Highlight clean code attributes and impacts on software qualities in rule descriptions
+* In connected mode with SonarQube 10.2+, add the ability to silence an issue before the analysis
+* Update Java analyzer 7.22 -> [7.23](https://github.com/SonarSource/sonar-java/releases/tag/7.23.0.32023) -> [7.24](https://github.com/SonarSource/sonar-java/releases/tag/7.24.0.32100), improvements and bug fixes
+
 ## 3.20.2
 
 * Contribute a walkthrough feature for new users who install SonarLint
