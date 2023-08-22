@@ -84,7 +84,7 @@ Analysis of TypeScript in Connected Mode with SonarQube requires the server to u
 
 ### C and C++ analysis specific requirements
 
-To analyze C and C++ code, SonarLint requires [compile commands json file](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis):
+To analyze C and C++ code, SonarLint requires [compile commands json file](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/running-an-analysis/#analyze-c-and-cpp-code):
 
 ```json
 {
@@ -112,7 +112,7 @@ The support for COBOL analysis is only available together with SonarQube Enterpr
 
 ### Jupyter notebooks
 
-SonarLint for VS Code v3.16+ supports analysis of Python code inside Jupyter notebooks. See the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Jupyter-notebooks) page for details.
+SonarLint for VS Code v3.16+ supports analysis of Python code inside Jupyter notebooks. See the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/scan-my-project/#jupyter-notebooks) page for details.
 
 ### Injection vulnerabilities specific requirements
 
@@ -124,9 +124,9 @@ More information about security-related rules is available in the [SonarQube](ht
 
 ### Security Hotspots in SonarLint
 
-In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) is enabled if you are using [Connected Mode](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode) with SonarQube 9.7 or above. From version 3.18+, Security Hotspots are also found when bound to a project in SonarCloud.
+In SonarLint for VS Code 3.14 and above, local detection of [Security Hotspots](https://docs.sonarqube.org/latest/user-guide/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with SonarQube 9.7 or above. From version 3.18+, Security Hotspots are also found when bound to a project in SonarCloud.
 
-Please see the [documentation](https://github.com/SonarSource/sonarlint-vscode/wiki/Security-hotspots) for more details.
+Please see the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) for more details.
 
 ### Secrets detection
 
@@ -136,7 +136,7 @@ Secrets are pieces of user-specific or system-level credentials that should be p
 
 You can connect SonarLint to SonarQube 7.9+/SonarCloud by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder.
 
-While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings. For editing notifications in previous versions, please see [SonarLint Versions 3.5.4 and Lower](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#sonarlint-versions-354-and-lower). Note that Connected Mode notifications are not available in the SonarQube Community Editions 8.6 and earlier.
+While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings. For editing notifications in previous versions, please see [SonarLint Versions 3.5.4 and Lower](https://docs.sonarsource.com/sonarlint/vs-code/previous-versions/#sonarlint-v354-and-lower). Note that Connected Mode notifications are not available in the SonarQube Community Editions 8.6 and earlier.
 
 When running in Connected Mode with SonarQube 8.6 and above, and browsing a [security hotspot](https://docs.sonarqube.org/latest/user-guide/security-hotspots/), a button will be available offering to open the hotspot in SonarLint (with SonarLint already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in some remote environments such as GitPod, or GitHub CodeSpaces.
 
@@ -171,11 +171,11 @@ In SonarLint for VSCode v3.6 and above, notifications can be enabled or disabled
 
 Select **Save Connection** and verify that the new connection was set up successfully in the Connected Mode view.
 
-To set up a Connected Mode for SonarLint v3.5.4 and lower, please see the relevant wiki for [Connection Setup](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup).
+To set up a Connected Mode for SonarLint v3.5.4 and lower, please see the relevant wiki for [Connection Setup](https://docs.sonarsource.com/sonarlint/vs-code/previous-versions/#legacy-connected-mode).
 
 ### Project Binding
 
-SonarLint keeps server-side data in a local storage. If you change something on the server such as the Quality Profile, SonarLint will automatically attempt to synchronize with configured servers at startup & once every hour, and will do its best to [synchronize with the most appropriate branch from the server](https://github.com/SonarSource/sonarlint-vscode/wiki/Branches-awareness). Additionally, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). 
+SonarLint keeps server-side data in a local storage. If you change something on the server such as the Quality Profile, SonarLint will automatically attempt to synchronize with configured servers at startup & once every hour, and will do its best to [synchronize with the most appropriate branch from the server](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/#branch-awareness). Additionally, you can trigger an update of the local storage using the "SonarLint: Update all project bindings to SonarQube/SonarCloud" command on the command palette (search for "sonarlint"). 
 
 ### Project Binding Setup
 
@@ -204,7 +204,7 @@ Action buttons in the UI used to edit/delete existing, or create additional bind
 
 ### Connected Mode and Bindings in SonarLint Version 3.7 or earlier
 
-For earlier versions, please see the relevant wiki to configure your [Connection Setup](https://github.com/SonarSource/sonarlint-vscode/wiki/Connected-Mode#connection-setup).
+For earlier versions, please see the relevant wiki to configure your [Connection Setup](https://docs.sonarsource.com/sonarlint/vs-code/previous-versions/#legacy-connected-mode).
 
 ## Other settings
 
