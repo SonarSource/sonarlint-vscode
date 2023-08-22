@@ -14,6 +14,8 @@ import { clean, escapeHtml, ResourceResolver } from '../util/webview';
 import { decorateContextualHtmlContentWithDiff } from './code-diff';
 import { highlightAllCodeSnippetsInDesc } from './syntax-highlight';
 
+const CLEAN_CODE_CONCEPTS_URL = "https://sonar-documentations-preview.netlify.app/sonarlint/vs-code/concepts/clean-code/";
+
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 
 export function showRuleDescription(context: VSCode.ExtensionContext) {
@@ -82,30 +84,32 @@ function computeRuleDescPanelContent(
     </body></html>`;
 }
 
-export function renderCleanCodeAttribute(rule: ShowRuleDescriptionParams) {
+function renderCleanCodeAttribute(rule: ShowRuleDescriptionParams) {
   const categoryLabel = escapeHtml(rule.cleanCodeAttributeCategory);
   const attributeLabel = escapeHtml(rule.cleanCodeAttribute);
-  return `<div class="clean-code-attribute">
+  return `<div class="clean-code-attribute" title="Clean Code attributes are characteristics your code needs to have to be considered Clean Code">
   <span class="attribute-category">${categoryLabel} issue</span>
   <span class="attribute">${attributeLabel}</span>
 </div>`;
 }
 
-export function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceResolver) {
+function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceResolver) {
   if (rule.impacts && Object.keys(rule.impacts).length > 0) {
     // Clean Code taxonomy
     const renderedImpacts = Object.entries(rule.impacts).map(([softwareQuality, severity]) => {
       const impactSeverityLowerCase = severity.toLocaleLowerCase('en-us');
       const impactSeverityImgSrc = resolver.resolve('images', 'impact', `${impactSeverityLowerCase}.svg`);
-      return `<div class="impact impact-${impactSeverityLowerCase}" title="${capitalize(severity)} impact on ${capitalize(softwareQuality)}">
-  ${capitalize(softwareQuality)}
-  <img alt="${capitalize(severity)}" src="${impactSeverityImgSrc}" />
+      return `<div class="impact impact-${impactSeverityLowerCase}">
+  <span title="This Software Quality is impacted because your code lacks one or more attributes">${capitalize(softwareQuality)}</span>
+  <img title="The severity of an issue is determined based on its impact on the software qualities" alt="${capitalize(severity)}" src="${impactSeverityImgSrc}" />
 </div>`;
     });
     return `<div class="taxonomy">
   ${renderCleanCodeAttribute(rule)}
   &nbsp;
   ${renderedImpacts.join('&nbsp;')}
+  &nbsp;
+  <a href="${CLEAN_CODE_CONCEPTS_URL}" title="Check out the Clean Code concepts in the SonarLint documentation" rel="external glossary" target="_blank" referrerpolicy="no-referrer">Learn more</a>
 </div>`;
   } else {
     // Old type + severity taxonomy

@@ -37,6 +37,7 @@ a {
 .clean-code-attribute {
   display: inline-flex;
   flex-direction: row;
+  cursor: pointer;
 }
 
 .attribute-category {
@@ -54,6 +55,7 @@ a {
   border-radius: 1em;
   padding: 0.2em 0.2em 0.2em 0.5em;
   margin-left: 0.6em;
+  cursor: pointer;
 }
 
 .impact-high {
