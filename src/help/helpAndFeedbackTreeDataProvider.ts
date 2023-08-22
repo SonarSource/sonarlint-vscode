@@ -8,6 +8,7 @@
 
 import * as VSCode from 'vscode';
 import { Commands } from '../util/commands';
+import { SonarLintDocumentation } from '../commons';
 
 export interface HelpAndFeedbackItem {
   id: string;
@@ -20,7 +21,7 @@ export const helpAndFeedbackViewItems: HelpAndFeedbackItem[] = [
   {
     id: 'docs',
     label: 'Read Documentation',
-    url: 'https://github.com/SonarSource/sonarlint-vscode/wiki',
+    url: SonarLintDocumentation.BASE_DOCS_URL,
     icon: 'book'
   },
   {
@@ -32,7 +33,7 @@ export const helpAndFeedbackViewItems: HelpAndFeedbackItem[] = [
   {
     id: 'supportedRules',
     label: 'See Languages & Rules',
-    url: 'https://github.com/SonarSource/sonarlint-vscode/wiki/Languages-and-rules',
+    url: SonarLintDocumentation.LANGUAGES_AND_RULES,
     icon: 'checklist'
   },
   {

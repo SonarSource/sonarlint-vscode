@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { SONARLINT_CATEGORY } from '../settings/settings';
+import { SonarLintDocumentation } from '../commons';
 
 const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
 const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
@@ -51,7 +52,7 @@ export async function configureCompilationDatabase() {
   );
   if (paths.length === 0) {
     vscode.window.showWarningMessage(`No compilation databases were found in the workspace\n 
-[How to generate compile commands](https://github.com/SonarSource/sonarlint-vscode/wiki/C-and-CPP-Analysis)`);
+[How to generate compile commands](${SonarLintDocumentation.C_CPP_ANALYSIS})`);
     vscode.workspace
       .getConfiguration()
       .update(FULL_PATH_TO_COMPILE_COMMANDS, undefined, vscode.ConfigurationTarget.Workspace);
