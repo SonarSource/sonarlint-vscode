@@ -113,7 +113,7 @@ pre {
   z-index: 50;
   order: 99;
   flex-grow: 1;
-  width: 90%;
+  width: 100%;
   display: none;
   padding: 1rem;
   background-color: var(--vscode-editor-background);
