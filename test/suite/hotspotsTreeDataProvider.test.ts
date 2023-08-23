@@ -296,7 +296,6 @@ suite('Hotspots tree view test suite', () => {
     });
   });
   function createOpenTextDocument(uri: string): vscode.TextDocument {
-    console.log(`uri ${uri}`);
     const uriPath = protocol2CodeConverter(uri).path;
     return {
       // @ts-ignore

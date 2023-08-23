@@ -106,10 +106,6 @@ export namespace ShowNotificationForFirstSecretsIssueNotification {
   export const type = new lsp.NotificationType('sonarlint/showNotificationForFirstSecretsIssue');
 }
 
-export namespace ShowNotificationForFirstCobolIssueNotification {
-  export const type = new lsp.NotificationType('sonarlint/showNotificationForFirstCobolIssue');
-}
-
 export interface GetJavaConfigResponse {
   projectRoot: string;
   sourceLevel: string;
