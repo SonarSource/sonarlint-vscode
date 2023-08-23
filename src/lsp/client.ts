@@ -38,8 +38,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetRemoteProjectNames.type, { connectionId, projectKeys });
   }
 
-  onTokenUpdate() {
-    return this.sendNotification(protocol.OnTokenUpdate.type);
+  onTokenUpdate(connectionId: string) {
+    return this.sendNotification(protocol.OnTokenUpdate.type, { connectionId });
   }
 
   getRemoteProjectsForConnection(connectionId: string) {
@@ -109,7 +109,11 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   reopenResolvedLocalIssues(configurationScopeId: string, relativePath: string, fileUri: string): Promise<void> {
-    return this.sendNotification(protocol.ReopenResolvedLocalIssues.type, { configurationScopeId, relativePath, fileUri });
+    return this.sendNotification(protocol.ReopenResolvedLocalIssues.type, {
+      configurationScopeId,
+      relativePath,
+      fileUri
+    });
   }
 
   changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {

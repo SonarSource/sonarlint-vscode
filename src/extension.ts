@@ -64,7 +64,6 @@ import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
-import { isFirstCobolIssueDetected, showNotificationForFirstCobolIssue } from './util/cobolUtils';
 import { showSslCertificateConfirmationDialog } from './util/showMessage';
 
 const DOCUMENT_SELECTOR = [
@@ -202,7 +201,6 @@ export async function activate(context: VSCode.ExtensionContext) {
         productVersion: util.packageJson.version,
         workspaceName: VSCode.workspace.name,
         firstSecretDetected: isFirstSecretDetected(context),
-        firstCobolIssueDetected: isFirstCobolIssueDetected(context),
         showVerboseLogs: VSCode.workspace.getConfiguration().get('sonarlint.output.showVerboseLogs', false),
         platform: getPlatform(),
         architecture: process.arch,
@@ -544,9 +542,6 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
-  );
-  languageClient.onNotification(protocol.ShowNotificationForFirstCobolIssueNotification.type, () =>
-    showNotificationForFirstCobolIssue(context)
   );
   languageClient.onNotification(protocol.ShowSonarLintOutputNotification.type, () =>
     VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
