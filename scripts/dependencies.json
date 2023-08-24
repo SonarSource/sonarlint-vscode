@@ -44,7 +44,7 @@
   {
     "groupId": "org.sonarsource.xml",
     "artifactId": "sonar-xml-plugin",
-    "version": "2.9.0.4055",
+    "version": "2.10.0.4108",
     "output": "analyzers/sonarxml.jar"
   },
   {
