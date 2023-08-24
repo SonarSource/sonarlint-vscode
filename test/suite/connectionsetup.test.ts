@@ -9,8 +9,12 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
-import { getDefaultConnectionId, handleMessage } from '../../src/connected/connectionsetup';
+import {
+  getDefaultConnectionId,
+  handleMessageWithConnectionSettingsService
+} from '../../src/connected/connectionsetup';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
+import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 
 const FIVE_SECONDS = 5000;
 
@@ -21,7 +25,28 @@ async function deleteConnectedModeSettings() {
     .update('connectedMode.connections.sonarcloud', undefined, vscode.ConfigurationTarget.Global);
 }
 
+const mockClient = {
+  async checkConnection(connectionId: string) {
+    return Promise.resolve({ connectionId, success: true });
+  },
+  async checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean) {
+    return Promise.resolve({ connectionId: serverOrOrganization, success: true });
+  }
+} as SonarLintExtendedLanguageClient;
+
+const mockSecretStorage = {
+  store(a, b) {
+    //nothing to do
+  },
+  get(a) {
+    //nothing to do
+  }
+} as vscode.SecretStorage;
+
 suite('Connection Setup', () => {
+
+  const mockedConnectionSettingsService = new ConnectionSettingsService(mockSecretStorage, mockClient);
+  const sleepTime = 1000;
 
   setup(async () => {
     await deleteConnectedModeSettings();
@@ -34,7 +59,6 @@ suite('Connection Setup', () => {
   });
 
   test('should show SonarQube creation webview when command is called', async () => {
-    const sleepTime = 1000;
     const connectionsBefore = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsBefore, []);
 
@@ -45,12 +69,12 @@ suite('Connection Setup', () => {
     const token = 'definitely not a valid token';
     const disableNotifications = false;
 
-    await handleMessage({
+    await handleMessageWithConnectionSettingsService({
       command: 'saveConnection',
       serverUrl,
       token,
       disableNotifications
-    });
+    }, mockedConnectionSettingsService);
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarQubeConnections();
@@ -58,7 +82,6 @@ suite('Connection Setup', () => {
   }).timeout(FIVE_SECONDS);
 
   test('Should provide default connectionId', async () => {
-    const sleepTime = 1000;
     const connectionsBefore = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsBefore, []);
 
@@ -72,7 +95,7 @@ suite('Connection Setup', () => {
       token: 'myToken',
       disableNotifications: false
     };
-    await handleMessage(message);
+    await handleMessageWithConnectionSettingsService(message, mockedConnectionSettingsService);
     await sleep(sleepTime);
     // @ts-ignore
     assert.ok(message.connectionId);
@@ -82,7 +105,6 @@ suite('Connection Setup', () => {
   }).timeout(FIVE_SECONDS);
 
   test('should show SonarCloud creation webview when command is called', async () => {
-    const sleepTime = 1000;
     const connectionsBefore = getSonarCloudConnections();
     assert.deepStrictEqual(connectionsBefore, []);
 
@@ -93,12 +115,12 @@ suite('Connection Setup', () => {
     const organizationKey = 'my-organization';
     const disableNotifications = false;
 
-    await handleMessage({
+    await handleMessageWithConnectionSettingsService({
       command: 'saveConnection',
       organizationKey,
       token,
       disableNotifications
-    });
+    }, mockedConnectionSettingsService);
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarCloudConnections();
@@ -106,7 +128,6 @@ suite('Connection Setup', () => {
   }).timeout(FIVE_SECONDS);
 
   test('should edit default connection when command is called', async () => {
-    const sleepTime = 1000;
     const connectionsBefore = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsBefore, []);
 
@@ -132,7 +153,7 @@ suite('Connection Setup', () => {
     await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, Promise.resolve({ id: connectionId }));
 
     await sleep(sleepTime);
-    await handleMessage(message)
+    await handleMessageWithConnectionSettingsService(message, mockedConnectionSettingsService)
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarQubeConnections();
@@ -140,7 +161,6 @@ suite('Connection Setup', () => {
   }).timeout(FIVE_SECONDS);
 
   test('should edit identified SonarQube connection when command is called', async () => {
-    const sleepTime = 1000;
     const connectionsBefore = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsBefore, []);
 
@@ -163,13 +183,13 @@ suite('Connection Setup', () => {
 
     const disableNotifications = true;
 
-    await handleMessage({
+    await handleMessageWithConnectionSettingsService({
       command: 'saveConnection',
       connectionId,
       serverUrl,
       token,
       disableNotifications
-    });
+    }, mockedConnectionSettingsService);
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarQubeConnections();
@@ -177,7 +197,6 @@ suite('Connection Setup', () => {
   }).timeout(FIVE_SECONDS);
 
   test('should edit identified SonarCloud connection when command is called', async () => {
-    const sleepTime = 1000;
     const connectionsBefore = getSonarCloudConnections();
     assert.deepStrictEqual(connectionsBefore, []);
 
@@ -200,17 +219,55 @@ suite('Connection Setup', () => {
 
     const disableNotifications = true;
 
-    await handleMessage({
+    await handleMessageWithConnectionSettingsService({
       command: 'saveConnection',
       connectionId,
       organizationKey,
       token,
       disableNotifications
-    });
+    }, mockedConnectionSettingsService);
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarCloudConnections();
     assert.deepStrictEqual(connectionsAfter, [{ connectionId, organizationKey, disableNotifications }]);
+  }).timeout(FIVE_SECONDS);
+
+  test('should NOT edit connection for which status check failed', async () => {
+    const mockClient = {
+      async checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean) {
+        return Promise.resolve({ connectionId: serverOrOrganization, success: false });
+      }
+    } as SonarLintExtendedLanguageClient;
+
+    const failingConnectionSettingsService = new ConnectionSettingsService(mockSecretStorage,mockClient);
+    const connectionsBefore = getSonarQubeConnections();
+    assert.deepStrictEqual(connectionsBefore, []);
+
+    const serverUrl = 'https://stillnotsonarqube.example';
+    const token = 'XXX SUPER SECRET TOKEN XXX';
+    const connectionId = 'My Little SonarQube';
+
+    await ConnectionSettingsService.instance.addSonarQubeConnection({
+        connectionId,
+        serverUrl,
+        token
+      }
+    );
+
+    await sleep(sleepTime);
+    await vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, connectionId);
+    await sleep(sleepTime);
+
+    await handleMessageWithConnectionSettingsService({
+      command: 'saveConnection',
+      connectionId,
+      serverUrl,
+      token,
+      disableNotifications: true
+    }, failingConnectionSettingsService);
+    await sleep(sleepTime);
+
+    assert.deepStrictEqual(getSonarQubeConnections(), [{ serverUrl, connectionId }]);
   }).timeout(FIVE_SECONDS);
 });
 

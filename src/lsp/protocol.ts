@@ -243,7 +243,10 @@ export interface ConnectionCheckResult {
 }
 
 export interface ConnectionCheckParams {
-  connectionId: string;
+  connectionId?: string;
+  token?: string;
+  organization?: string;
+  serverUrl?: string;
 }
 
 export namespace ReportConnectionCheckResult {

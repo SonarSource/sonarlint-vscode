@@ -265,10 +265,15 @@ function renderOrganizationKeyField(connection) {
     <input type="hidden" id="organizationKey-initial" value="${organizationKey}" />`;
 }
 
+
+async function handleMessage(message) {
+  handleMessageWithConnectionSettingsService(message, ConnectionSettingsService.instance );
+}
+
 /*
  * Exported for unit tests
  */
-export async function handleMessage(message) {
+export async function handleMessageWithConnectionSettingsService(message, connectionSettingsService: ConnectionSettingsService ) {
   switch (message.command) {
     case OPEN_TOKEN_GENERATION_PAGE_COMMAND:
       await openTokenGenerationPage(message);
@@ -284,7 +289,7 @@ export async function handleMessage(message) {
       if (message.serverUrl) {
         message.serverUrl = cleanServerUrl(message.serverUrl);
       }
-      await saveConnection(message);
+      await saveConnection(message, connectionSettingsService);
       break;
   }
 }
@@ -318,9 +323,16 @@ async function openTokenGenerationPage(message) {
   await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen' });
 }
 
-async function saveConnection(connection: SonarQubeConnection | SonarCloudConnection) {
-  if (isSonarQubeConnection(connection)) {
-    const foundConnection = await ConnectionSettingsService.instance.loadSonarQubeConnection(connection.connectionId);
+async function saveConnection(connection: SonarQubeConnection | SonarCloudConnection, connectionSettingsService: ConnectionSettingsService) {
+  const isSQConnection = isSonarQubeConnection(connection);
+  const serverOrOrganization = isSQConnection ? connection.serverUrl : connection.organizationKey;
+  const connectionCheckResult = await connectionSettingsService.checkNewConnection(connection.token, serverOrOrganization, isSQConnection)
+  if (!connectionCheckResult.success) {
+    reportConnectionCheckResult(connectionCheckResult)
+    return;
+  }
+  if (isSQConnection) {
+    const foundConnection = await connectionSettingsService.loadSonarQubeConnection(connection.connectionId);
     await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
     if (foundConnection) {
       await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
@@ -328,7 +340,7 @@ async function saveConnection(connection: SonarQubeConnection | SonarCloudConnec
       await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
     }
   } else {
-    const foundConnection = await ConnectionSettingsService.instance.loadSonarCloudConnection(connection.connectionId);
+    const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId);
     await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
     if (foundConnection) {
       await ConnectionSettingsService.instance.updateSonarCloudConnection(connection);
