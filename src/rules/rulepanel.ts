@@ -108,7 +108,7 @@ function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceR
   &nbsp;
   ${renderedImpacts.join('&nbsp;')}
   &nbsp;
-  <a href="${SonarLintDocumentation.CLEAN_CODE_CONCEPTS}"
+  <a href="${SonarLintDocumentation.CLEAN_CODE_CONCEPTS}" class="capsule"
     title="Check out the Clean Code concepts in the SonarLint documentation"
     rel="external glossary" target="_blank" referrerpolicy="no-referrer">Learn more</a>
 </div>`;
