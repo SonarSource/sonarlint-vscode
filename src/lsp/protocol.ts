@@ -84,7 +84,7 @@ export interface ShowRuleDescriptionParams {
   severity: string;
   cleanCodeAttribute?: string;
   cleanCodeAttributeCategory?: string;
-  impacts?: { [softwareQuality: string]: string};
+  impacts?: { [softwareQuality: string]: string };
   languageKey: string;
   isTaint: boolean;
   parameters?: Array<{
@@ -332,8 +332,12 @@ export namespace GetTokenForServer {
   export const type = new lsp.RequestType<string, string, void>('sonarlint/getTokenForServer');
 }
 
+export interface TokenUpdateNotificationParams {
+  connectionId: string;
+}
+
 export namespace OnTokenUpdate {
-  export const type = new lsp.NotificationType<void>('sonarlint/onTokenUpdate');
+  export const type = new lsp.NotificationType<TokenUpdateNotificationParams>('sonarlint/onTokenUpdate');
 }
 
 export interface GetRemoteProjectsForConnectionParams {
@@ -461,7 +465,7 @@ export namespace GetSuggestedBinding {
 }
 
 export namespace ReopenResolvedLocalIssues {
-  export const type = new lsp.NotificationType<ReopenAllIssuesForFileParams>('sonarlint/reopenResolvedLocalIssues')
+  export const type = new lsp.NotificationType<ReopenAllIssuesForFileParams>('sonarlint/reopenResolvedLocalIssues');
 }
 
 export interface ReopenAllIssuesForFileParams {
@@ -549,7 +553,8 @@ export interface SslCertificateConfirmationParams {
 
 export namespace SslCertificateConfirmation {
   export const type = new lsp.RequestType<SslCertificateConfirmationParams, boolean, void>(
-    'sonarlint/askSslCertificateConfirmation');
+    'sonarlint/askSslCertificateConfirmation'
+  );
 }
 
 //#endregion
