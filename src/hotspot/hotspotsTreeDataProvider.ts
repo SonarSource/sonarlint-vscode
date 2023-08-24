@@ -16,6 +16,7 @@ import { getFileNameFromFullPath, getRelativePathFromFullPath, protocol2CodeConv
 import { OPEN_HOTSPOT_IN_IDE_SOURCE } from './hotspots';
 import { logToSonarLintOutput } from '../util/logging';
 import { isVerboseEnabled } from '../settings/settings';
+import { SINGLE_LOCATION_DECORATION } from '../location/locations';
 
 const SONARLINT_SOURCE = 'sonarlint';
 const REMOTE_SOURCE = 'remote';
@@ -141,11 +142,17 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   triggerRefresh() {
     this.refreshTimeout = null;
     this.cleanupHotspotsCache()
-      .then(() => this._onDidChangeTreeData.fire(null))
       .catch(e => {
         logToSonarLintOutput(`Error refreshing hotspots: ${e}`);
+      })
+      .finally(() => {
         this._onDidChangeTreeData.fire(null);
+        this.cleanEditorDecorations();
       });
+  }
+
+  cleanEditorDecorations() {
+    VSCode.window.visibleTextEditors.forEach(editor => editor.setDecorations(SINGLE_LOCATION_DECORATION, []));
   }
 
   countAllHotspots(openDocuments = VSCode.workspace.textDocuments) {
