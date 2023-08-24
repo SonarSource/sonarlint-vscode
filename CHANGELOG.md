@@ -11,6 +11,7 @@
 * Update Go analyzer 1.13 -> [1.14](https://sonarsource.atlassian.net/projects/SONARSLANG/versions/14154/tab/release-report-all-issues), support Clean Code attributes and software qualities
 * Update PHP analyzer 3.30 -> [3.31](https://github.com/SonarSource/sonar-php/releases/tag/3.31.0.9993), support PHP 8.3, 4 FP fixes, support Clean Code attributes and software qualities
 * Update Python analyzer 4.5 -> [4.6](https://sonarsource.atlassian.net/projects/SONARPY/versions/14215/tab/release-report-all-issues) -> [4.7](https://sonarsource.atlassian.net/projects/SONARPY/versions/14230/tab/release-report-all-issues), support Clean Code attributes and software qualities, 9 new rules, FP fixes
+* Update HTML analyzer 3.7.1 -> [3.8](https://github.com/SonarSource/sonar-html/releases/tag/3.8.0.3510) -> [3.9](https://github.com/SonarSource/sonar-html/releases/tag/3.9.0.3600), support Clean Code attributes and software qualities, new rule description format
 
 ## 3.20.2
 
