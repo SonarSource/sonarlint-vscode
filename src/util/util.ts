@@ -11,10 +11,12 @@ import * as path from 'path';
 import * as process from 'process';
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
-import { AnalysisFile, ShouldAnalyseFileCheckResult } from '../lsp/protocol';
+import { AnalysisFile, FileUris, ShouldAnalyseFileCheckResult } from '../lsp/protocol';
 import { code2ProtocolConverter } from './uri';
 import { verboseLogToSonarLintOutput } from './logging';
 import { BindingService } from '../connected/binding';
+
+const ANALYSIS_EXCLUDES = 'sonarlint.analysisExcludesStandalone';
 
 export function startedInDebugMode(process: NodeJS.Process): boolean {
   const args = process.execArgv;
@@ -259,15 +261,34 @@ export function shouldAnalyseFile(fileUriStr: string): ShouldAnalyseFileCheckRes
   }
   const fileUri = vscode.Uri.parse(fileUriStr);
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
-  const isBound = BindingService.instance.isBound(workspaceFolder);
-  if (isBound) {
-    return { shouldBeAnalysed: true };
+  let scope = null;
+  if (workspaceFolder !== undefined) {
+    scope = workspaceFolder.uri;
+    const isBound = BindingService.instance.isBound(workspaceFolder);
+    if (isBound) {
+      return { shouldBeAnalysed: true };
+    }
   }
-  const workspaceFolderConfig = vscode.workspace.getConfiguration(null, workspaceFolder.uri);
-  const excludes: string = workspaceFolderConfig.get('sonarlint.analysisExcludesStandalone');
+  const workspaceFolderConfig = vscode.workspace.getConfiguration(null, scope);
+  const excludes: string = workspaceFolderConfig.get(ANALYSIS_EXCLUDES);
   const excludesArray = excludes.split(',').map(it => it.trim());
   const filteredFile = getFilesNotMatchedGlobPatterns([fileUri], excludesArray);
   return { shouldBeAnalysed: filteredFile.length === 1, reason: 'Skipping analysis for the excluded file: ' };
+}
+
+export function filterOutFilesIgnoredForAnalysis(fileUris: string[]): FileUris {
+  // assuming non-empty and all files from the same workspace
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(fileUris[0]));
+  let scope = null;
+  if (workspaceFolder !== undefined) {
+    scope = workspaceFolder.uri;
+  }
+  const workspaceFolderConfig = vscode.workspace.getConfiguration(null, scope);
+  const excludes: string = workspaceFolderConfig.get(ANALYSIS_EXCLUDES);
+  const excludesArray = excludes.split(',').map(it => it.trim());
+  const filteredFiles = getFilesNotMatchedGlobPatterns(fileUris.map(it => vscode.Uri.parse(it)), excludesArray)
+    .map(it => it.toString());
+  return { fileUris: filteredFiles };
 }
 
 function isOpenInEditor(fileUri: string) {

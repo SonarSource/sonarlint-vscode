@@ -65,8 +65,7 @@ import * as util from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { showSslCertificateConfirmationDialog } from './util/showMessage';
-import { getFilesNotMatchedGlobPatterns, shouldAnalyseFile } from './util/util';
-import { FileUris } from './lsp/protocol';
+import { filterOutFilesIgnoredForAnalysis, shouldAnalyseFile } from './util/util';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -527,17 +526,6 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
     languageClient,
     getFilesForHotspotsAndLaunchScan
   );
-}
-
-function filterOutFilesIgnoredForAnalysis(fileUris: string[]): FileUris {
-  // assuming non-empty and all files from the same workspace
-  const workspaceFolder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(fileUris[0]));
-  const workspaceFolderConfig = VSCode.workspace.getConfiguration(null, workspaceFolder.uri);
-  const excludes: string = workspaceFolderConfig.get('sonarlint.analysisExcludesStandalone');
-  const excludesArray = excludes.split(',').map(it => it.trim());
-  const filteredFiles = getFilesNotMatchedGlobPatterns(fileUris.map(it => VSCode.Uri.parse(it)), excludesArray)
-    .map(it => it.toString());
-  return { fileUris: filteredFiles };
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
