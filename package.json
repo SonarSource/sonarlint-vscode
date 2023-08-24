@@ -369,6 +369,11 @@
         "category": "SonarLint"
       },
       {
+        "command": "SonarLint.AnalyseOpenFile",
+        "title": "Analyse current file ignoring excludes",
+        "category": "SonarLint"
+      },
+      {
         "command": "SonarLint.ConfigureCompilationDatabase",
         "title": "Configure the compilation database for C and C++ analysis",
         "category": "SonarLint"
@@ -831,7 +836,7 @@
       }
     }
   },
-  "main": "./dist/extension",
+  "main": "out/src/extension",
   "files": [
     "server/sonarlint-ls.jar",
     "analyzers"

@@ -10,6 +10,7 @@
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as VSCode from 'vscode';
 import { code2ProtocolConverter, getRelativePathWithFileNameFromFullPath } from '../util/uri';
+import { showNoActiveFileOpenWarning } from '../util/showMessage';
 
 export class IssueService {
   private static _instance: IssueService;
@@ -45,4 +46,18 @@ export class IssueService {
       code2ProtocolConverter(currentlyOpenFileUri));
   }
 
+  analyseOpenFileIgnoringExcludes() {
+    const editor = VSCode.window.activeTextEditor;
+    if (editor === undefined) {
+      showNoActiveFileOpenWarning();
+      return;
+    }
+    const document = editor.document;
+    return this.languageClient.analyseOpenFileIgnoringExcludes({
+      uri: code2ProtocolConverter(document.uri),
+      languageId: document.languageId,
+      text: document.getText(),
+      version: document.version
+    });
+  }
 }

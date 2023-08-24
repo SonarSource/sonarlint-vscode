@@ -339,6 +339,7 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
 
+
 function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
     const sampleFileUri = VSCode.Uri.joinPath(context.extensionUri, 'walkthrough', 'sample.py');
@@ -516,6 +517,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () => IssueService.instance.analyseOpenFileIgnoringExcludes()));
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {

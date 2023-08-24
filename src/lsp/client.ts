@@ -10,6 +10,7 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
+import { AnalysisFile } from './protocol';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<protocol.RulesResponse> {
@@ -119,6 +120,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
       relativePath,
       fileUri
     });
+  }
+
+  analyseOpenFileIgnoringExcludes(document: AnalysisFile): Promise<void> {
+    return this.sendNotification(protocol.AnalyseOpenFileIgnoringExcludes.type, { document });
   }
 
   changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {

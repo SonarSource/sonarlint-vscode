@@ -574,4 +574,12 @@ export namespace SslCertificateConfirmation {
   );
 }
 
+export interface AnalyseOpenFileIgnoringExcludesParams {
+  document: AnalysisFile;
+}
+
+export namespace AnalyseOpenFileIgnoringExcludes {
+  export const type = new lsp.NotificationType<AnalyseOpenFileIgnoringExcludesParams>('sonarlint/analyseOpenFileIgnoringExcludes')
+}
+
 //#endregion
