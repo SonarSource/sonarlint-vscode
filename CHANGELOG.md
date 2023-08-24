@@ -7,6 +7,7 @@
 * Update JS/TS/CSS analyzer 10.3.2 -> [10.4](https://github.com/SonarSource/SonarJS/releases/tag/10.4.0.22160) -> [10.5.1](https://github.com/SonarSource/SonarJS/releases/tag/10.5.1.22382), FP fixes, new JS/TS rules, support Clean Code attributes and software qualities
 * Update text and secrets analyzer 2.1 -> [2.2](https://github.com/SonarSource/sonar-text/releases/tag/2.2.0.1571) -> [2.3](https://github.com/SonarSource/sonar-text/releases/tag/2.3.0.1632), detection of top 50 cloud app secrets, 22 new secret types, reduced FP rate
 * Update XML analyzer 2.9 -> [2.10](https://github.com/SonarSource/sonar-xml/releases/tag/2.10.0.4108),  support Clean Code attributes and software qualities
+* Update IaC analyzer 1.18 -> [1.19](https://github.com/SonarSource/sonar-iac/releases/tag/1.19.0.5623) -> [1.20](https://github.com/SonarSource/sonar-iac/releases/tag/1.20.0.5654), support Clean Code attributes and software qualities, bugfixes
 
 ## 3.20.2
 
