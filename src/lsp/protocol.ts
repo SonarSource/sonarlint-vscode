@@ -7,7 +7,6 @@
 'use strict';
 
 import * as lsp from 'vscode-languageserver-protocol';
-import { string } from 'vscode-languageclient/lib/common/utils/is';
 
 //#region Client side extensions to LSP
 

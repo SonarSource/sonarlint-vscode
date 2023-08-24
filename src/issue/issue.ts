@@ -50,7 +50,7 @@ export class IssueService {
     const editor = VSCode.window.activeTextEditor;
     if (editor === undefined) {
       showNoActiveFileOpenWarning();
-      return;
+      return Promise.resolve();
     }
     const document = editor.document;
     return this.languageClient.analyseOpenFileIgnoringExcludes({
