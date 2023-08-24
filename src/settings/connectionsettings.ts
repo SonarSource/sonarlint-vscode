@@ -311,6 +311,10 @@ export class ConnectionSettingsService {
     }
     return token;
   }
+
+  async checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean) {
+    return this.client.checkNewConnection(token, serverOrOrganization, isSonarQube);
+  }
 }
 
 function showSaveSettingsWarning() {
