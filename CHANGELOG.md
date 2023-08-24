@@ -9,6 +9,7 @@
 * Update XML analyzer 2.9 -> [2.10](https://github.com/SonarSource/sonar-xml/releases/tag/2.10.0.4108),  support Clean Code attributes and software qualities
 * Update IaC analyzer 1.18 -> [1.19](https://github.com/SonarSource/sonar-iac/releases/tag/1.19.0.5623) -> [1.20](https://github.com/SonarSource/sonar-iac/releases/tag/1.20.0.5654), support Clean Code attributes and software qualities, bugfixes
 * Update Go analyzer 1.13 -> [1.14](https://sonarsource.atlassian.net/projects/SONARSLANG/versions/14154/tab/release-report-all-issues), support Clean Code attributes and software qualities
+* Update PHP analyzer 3.30 -> [3.31](https://github.com/SonarSource/sonar-php/releases/tag/3.31.0.9993), support PHP 8.3, 4 FP fixes, support Clean Code attributes and software qualities
 
 ## 3.20.2
 
