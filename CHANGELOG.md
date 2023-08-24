@@ -4,6 +4,7 @@
 * In connected mode with SonarQube 10.2+, add the ability to silence an issue before the analysis
 * Analysis of COBOL in connected mode with SonarCloud or SonarQube Enterprise Edition is now considered stable
 * Update Java analyzer 7.22 -> [7.23](https://github.com/SonarSource/sonar-java/releases/tag/7.23.0.32023) -> [7.24](https://github.com/SonarSource/sonar-java/releases/tag/7.24.0.32100), improvements and bug fixes
+* Update JS/TS/CSS analyzer 10.3.2 -> [10.4](https://github.com/SonarSource/SonarJS/releases/tag/10.4.0.22160) -> [10.5.1](https://github.com/SonarSource/SonarJS/releases/tag/10.5.1.22382), FP fixes, new JS/TS rules, support clean code attributes and software qualities
 
 ## 3.20.2
 
