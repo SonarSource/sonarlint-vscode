@@ -73,8 +73,14 @@ export class ConnectionSettingsService {
     return ConnectionSettingsService._instance;
   }
 
-  async storeConnectionToken(connection: SonarQubeConnection | SonarCloudConnection, token: string) {
-    await this.storeServerToken(getTokenStorageKey(connection), token);
+  async storeUpdatedConnectionToken(connection: SonarQubeConnection | SonarCloudConnection, token: string) {
+    const tokenStorageKey = getTokenStorageKey(connection);
+    const existingToken = await this.secretStorage.get(tokenStorageKey);
+    if (!existingToken || existingToken !== token) {
+      await this.storeServerToken(tokenStorageKey, token);
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -138,7 +144,7 @@ export class ConnectionSettingsService {
     if (connection.disableNotifications) {
       newConnection.disableNotifications = true;
     }
-    await this.storeConnectionToken(connection, connection.token);
+    await this.storeUpdatedConnectionToken(connection, connection.token);
     connections.push(newConnection);
     VSCode.workspace
       .getConfiguration()
@@ -157,8 +163,10 @@ export class ConnectionSettingsService {
     } else {
       delete connectionToUpdate.disableNotifications;
     }
-    await this.storeConnectionToken(connection, connection.token);
-    await this.client.onTokenUpdate();
+    const didUpdateToken = await this.storeUpdatedConnectionToken(connection, connection.token);
+    if (didUpdateToken) {
+      await this.client.onTokenUpdate(connection.connectionId);
+    }
     delete connectionToUpdate.token;
     VSCode.workspace
       .getConfiguration()
@@ -190,7 +198,7 @@ export class ConnectionSettingsService {
     if (connection.disableNotifications) {
       newConnection.disableNotifications = true;
     }
-    await this.storeConnectionToken(connection, connection.token);
+    await this.storeUpdatedConnectionToken(connection, connection.token);
     connections.push(newConnection);
     VSCode.workspace
       .getConfiguration()
@@ -209,8 +217,10 @@ export class ConnectionSettingsService {
     } else {
       delete connectionToUpdate.disableNotifications;
     }
-    await this.storeConnectionToken(connection, connection.token);
-    await this.client.onTokenUpdate();
+    const didUpdateToken = await this.storeUpdatedConnectionToken(connection, connection.token);
+    if (didUpdateToken) {
+      await this.client.onTokenUpdate(connection.connectionId);
+    }
     delete connectionToUpdate.token;
     VSCode.workspace
       .getConfiguration()
@@ -224,7 +234,7 @@ export class ConnectionSettingsService {
     await Promise.all(
       [...sqConnections, ...scConnections].map(async c => {
         if (c.token !== undefined && !(await this.hasTokenForConnection(c))) {
-          await this.storeConnectionToken(c, c.token);
+          await this.storeUpdatedConnectionToken(c, c.token);
           c.token = undefined;
         }
       })
