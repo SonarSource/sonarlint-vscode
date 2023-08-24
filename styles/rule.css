@@ -31,16 +31,18 @@ a {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  margin-bottom: 1em;
+  flex-wrap: wrap;
 }
 
 .capsule {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
+  white-space: nowrap;
   border: none;
   border-radius: 1em;
   padding: 0.2em 0.5em;
+  margin-bottom: 1em;
   cursor: pointer;
 }
 
