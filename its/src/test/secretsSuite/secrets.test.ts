@@ -18,7 +18,7 @@ import * as vscode from 'vscode';
 import { waitForSonarLintDiagnostics } from '../common/util';
 
 const secretsFolderLocation = '../../../samples/sample-secrets';
-const secretIssueMessage = 'Make sure this AWS Secret Access Key is not disclosed.';
+const secretIssueMessage = 'Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.';
 
 suite('Secrets Test Suite', () => {
   vscode.window.showInformationMessage('Starting Secrets tests.');
@@ -69,7 +69,10 @@ suite('Secrets Test Suite', () => {
 
   test('should not find secrets in SCM ignored files', async function () {
     const fileUri = vscode.Uri.file(path.join(__dirname, secretsFolderLocation, 'ignored_file.yml'));
-    await vscode.workspace.fs.writeFile(fileUri, new TextEncoder().encode('AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw'));
+    await vscode.workspace.fs.writeFile(
+      fileUri,
+      new TextEncoder().encode('AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw')
+    );
     await vscode.window.showTextDocument(fileUri);
 
     const diags = await waitForSonarLintDiagnostics(fileUri, { timeoutMillis: 5000 });
@@ -82,8 +85,10 @@ suite('Secrets Test Suite', () => {
     const tmpDirPath = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tmp-'));
     const tmpFileUri = vscode.Uri.file(path.join(tmpDirPath, fileName));
     const tmpFileUrl = url.pathToFileURL(path.join(tmpDirPath, fileName));
-      await fs.promises.writeFile(tmpFileUrl, new TextEncoder()
-        .encode('AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw'));
+    await fs.promises.writeFile(
+      tmpFileUrl,
+      new TextEncoder().encode('AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw')
+    );
     await vscode.window.showTextDocument(tmpFileUri);
 
     const diags = await waitForSonarLintDiagnostics(tmpFileUri, { timeoutMillis: 5000 });
@@ -91,5 +96,4 @@ suite('Secrets Test Suite', () => {
     assert.deepStrictEqual(diags.length, 1);
     assert.strictEqual(diags[0].message, secretIssueMessage);
   }).timeout(60 * 1000);
-
 });
