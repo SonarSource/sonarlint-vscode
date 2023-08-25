@@ -86,7 +86,7 @@ function computeRuleDescPanelContent(
 function renderCleanCodeAttribute(rule: ShowRuleDescriptionParams) {
   const categoryLabel = escapeHtml(rule.cleanCodeAttributeCategory);
   const attributeLabel = escapeHtml(rule.cleanCodeAttribute);
-  return `<div class="clean-code-attribute capsule" title="Clean Code attributes are characteristics your code needs to have to be considered Clean Code">
+  return `<div class="clean-code-attribute capsule" title="Clean Code attributes are characteristics code needs to have to be considered clean.">
   <span class="attribute-category">${categoryLabel} issue</span>
   <span class="attribute">${attributeLabel}</span>
 </div>`;
@@ -96,7 +96,7 @@ function renderImpact(softwareQuality: string, severity: string, resolver: Resou
   const softwareQualityLowerCase = softwareQuality.toLocaleLowerCase('en-us');
   const impactSeverityLowerCase = severity.toLocaleLowerCase('en-us');
   const impactSeverityImgSrc = resolver.resolve('images', 'impact', `${impactSeverityLowerCase}.svg`);
-  const formattedImpact = `Issues found for this rule will have a ${impactSeverityLowerCase} impact on the ${softwareQualityLowerCase} of your software`;
+  const formattedImpact = `Issues found for this rule will have a ${impactSeverityLowerCase} impact on the ${softwareQualityLowerCase} of your software.`;
     return `<div class="impact impact-${impactSeverityLowerCase} capsule" title="${formattedImpact}">
   <span>${capitalize(softwareQualityLowerCase)}</span>
   <img alt="${capitalize(impactSeverityLowerCase)}" src="${impactSeverityImgSrc}" />
