@@ -92,17 +92,21 @@ function renderCleanCodeAttribute(rule: ShowRuleDescriptionParams) {
 </div>`;
 }
 
+function renderImpact(softwareQuality: string, severity: string, resolver: ResourceResolver) {
+  const softwareQualityLowerCase = softwareQuality.toLocaleLowerCase('en-us');
+  const impactSeverityLowerCase = severity.toLocaleLowerCase('en-us');
+  const impactSeverityImgSrc = resolver.resolve('images', 'impact', `${impactSeverityLowerCase}.svg`);
+  const formattedImpact = `Issues found for this rule will have a ${impactSeverityLowerCase} impact on the ${softwareQualityLowerCase} of your software`;
+    return `<div class="impact impact-${impactSeverityLowerCase} capsule" title="${formattedImpact}">
+  <span>${capitalize(softwareQualityLowerCase)}</span>
+  <img alt="${capitalize(impactSeverityLowerCase)}" src="${impactSeverityImgSrc}" />
+</div>`;
+}
+
 function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceResolver) {
   if (rule.impacts && Object.keys(rule.impacts).length > 0) {
     // Clean Code taxonomy
-    const renderedImpacts = Object.entries(rule.impacts).map(([softwareQuality, severity]) => {
-      const impactSeverityLowerCase = severity.toLocaleLowerCase('en-us');
-      const impactSeverityImgSrc = resolver.resolve('images', 'impact', `${impactSeverityLowerCase}.svg`);
-      return `<div class="impact impact-${impactSeverityLowerCase} capsule">
-  <span title="This Software Quality is impacted because your code lacks one or more attributes">${capitalize(softwareQuality)}</span>
-  <img title="The severity of an issue is determined based on its impact on the software qualities" alt="${capitalize(severity)}" src="${impactSeverityImgSrc}" />
-</div>`;
-    });
+    const renderedImpacts = Object.entries(rule.impacts).map(([softwareQuality, severity]) => renderImpact(softwareQuality, severity, resolver));
     return `<div class="taxonomy">
   ${renderCleanCodeAttribute(rule)}
   &nbsp;
