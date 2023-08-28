@@ -5,27 +5,16 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-const del = require('del');
 const vsce = require('vsce');
 const log = require('fancy-log');
 const fs = require('fs');
 const https = require('https');
 const crypto = require('crypto');
-const through = require('through2');
 const request = require('request');
 const fse = require('fs-extra');
-const argv = require('minimist')(process.argv.slice(2));
 const path = require('path');
 const url = require('url');
-const decompress = require('decompress');
-const decompressTar = require('decompress-tar');
-const dateformat = require('dateformat');
-const jarDependencies = require('./scripts/dependencies.json');
 const exec = require('child_process').exec;
-const { getSignature } = require('./scripts/gulp-sign.js');
-const globby = require('globby');
-const mergeStream = require('merge-stream');
-
 
 const UNIVERSAL_MODE = '--universal';
 const ALL_TARGETS_MODE = '--all';
@@ -38,8 +27,8 @@ const allPlatforms = {};
   allPlatforms[platform] = {
     fileName: '',
     hashes: {
-      'md5': '',
-      'sha1': ''
+      md5: '',
+      sha1: ''
     }
   };
 });
@@ -79,14 +68,8 @@ async function buildForPlatform(platform) {
   await vsce.createVSIX({ target: platform });
 }
 
-function cleanJreDir() {
-  if (fse.existsSync('./jre')) {
-    fse.removeSync('./jre');
-  }
-}
-
 function downloadFile(endpoint, fileName) {
-  https.get(endpoint, (res) => {
+  https.get(endpoint, res => {
     const writeStream = fs.createWriteStream(fileName);
     res.pipe(writeStream);
     writeStream.on('end', function () {
@@ -111,8 +94,10 @@ async function downloadJre(targetPlatform, javaVersion) {
   };
 
   if (!targetPlatform || !Object.keys(platformMapping).includes(targetPlatform)) {
-    console.log('[Error] download_jre failed, please specify a valid target platform via --target argument. ' +
-      'Here are the supported platform list:');
+    console.log(
+      '[Error] download_jre failed, please specify a valid target platform via --target argument. ' +
+        'Here are the supported platform list:'
+    );
     for (const platform of Object.keys(platformMapping)) {
       console.log(platform);
     }
@@ -149,9 +134,10 @@ async function downloadJre(targetPlatform, javaVersion) {
    */
   const javaPlatform = platformMapping[targetPlatform];
   const list = manifest.split(/\r?\n/);
-  const jreIdentifier = list.find((value) => {
-    return value.indexOf('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') >= 0
-      && value.indexOf(javaPlatform) >= 0;
+  const jreIdentifier = list.find(value => {
+    return (
+      value.indexOf('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') >= 0 && value.indexOf(javaPlatform) >= 0
+    );
   });
 
   if (!jreIdentifier) {
@@ -163,20 +149,13 @@ async function downloadJre(targetPlatform, javaVersion) {
 
   const jreDownloadUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/${jreIdentifier}`;
   const parsedDownloadUrl = url.parse(jreDownloadUrl);
-  const jreFileName = path.basename(parsedDownloadUrl.pathname)
-    .replace(/\.(?:7z|bz2|gz|rar|tar|zip|xz)*$/, '');
+  const jreFileName = path.basename(parsedDownloadUrl.pathname).replace(/\.(?:7z|bz2|gz|rar|tar|zip|xz)*$/, '');
   const idx = jreFileName.indexOf('-');
   const jreVersionLabel = idx >= 0 ? jreFileName.substring(idx + 1) : jreFileName;
   // Download justj JRE.
 
   await downloadFile(jreDownloadUrl, `./jre/${jreFileName}`);
   // TODO decompress .tar file with JRE
-
-}
-
-
-function clean() {
-  del(['*.vsix', 'server', 'out', 'out-cov']);
 }
 
 function getPackageJSON() {
@@ -201,9 +180,9 @@ function commonPreTasks() {
 
 function commonPostTasks() {
   computeUniversalVsixHashes();
-    sign();
-    deployBuildInfo();
-    deployVsix();
+  sign();
+  deployBuildInfo();
+  deployVsix();
 }
 
 function computeUniversalVsixHashes() {
@@ -211,17 +190,11 @@ function computeUniversalVsixHashes() {
   doForFiles('.vsix', () => hashsum(UNIVERSAL_PLATFORM, version));
 }
 
-function sign() {
+function sign() {}
 
-}
+function deployBuildInfo() {}
 
-function deployBuildInfo() {
-
-}
-
-function deployVsix() {
-
-}
+function deployVsix() {}
 
 function updateVersion() {
   const buildNumber = process.env.BUILD_BUILDID;
@@ -238,9 +211,10 @@ function updateVersion() {
 }
 
 function hashsum(platform, version) {
-  allPlatforms[platform].fileName = platform === UNIVERSAL_PLATFORM ?
-    `sonarlint-vscode-${version}.vsix` :
-    `sonarlint-vscode-${platform}-${version}.vsix`;
+  allPlatforms[platform].fileName =
+    platform === UNIVERSAL_PLATFORM
+      ? `sonarlint-vscode-${version}.vsix`
+      : `sonarlint-vscode-${platform}-${version}.vsix`;
 
   updateHashes(platform, allPlatforms[platform].fileName);
 }
@@ -294,7 +268,6 @@ function updateBinaryHashes(binaryContent, hashesObject) {
     }
   }
 }
-
 
 function getMode() {
   if (process.argv.indexOf(ALL_TARGETS_MODE) >= 0) {

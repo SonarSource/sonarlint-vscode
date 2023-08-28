@@ -38,6 +38,7 @@
   "capabilities": {
     "virtualWorkspaces": false
   },
+  "type": "module",
   "contributes": {
     "configuration": {
       "type": "object",
