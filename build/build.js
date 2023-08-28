@@ -14,6 +14,8 @@ const request = require('request');
 const fse = require('fs-extra');
 const path = require('path');
 const url = require('url');
+const { clean, cleanJreDir, getPackageJSON } = require('./fsUtils.js');
+const { updateVersion } = require('./updateVersion.js');
 const exec = require('child_process').exec;
 
 const UNIVERSAL_MODE = '--universal';
@@ -158,10 +160,6 @@ async function downloadJre(targetPlatform, javaVersion) {
   // TODO decompress .tar file with JRE
 }
 
-function getPackageJSON() {
-  return JSON.parse(fs.readFileSync('package.json').toString());
-}
-
 function cyclonedx() {
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
@@ -195,20 +193,6 @@ function sign() {}
 function deployBuildInfo() {}
 
 function deployVsix() {}
-
-function updateVersion() {
-  const buildNumber = process.env.BUILD_BUILDID;
-  const packageJSON = getPackageJSON();
-  const version = packageJSON.version;
-  if (version.endsWith('-SNAPSHOT') && buildNumber) {
-    packageJSON.version = version.replace('-SNAPSHOT', `+${buildNumber}`);
-    fs.writeFileSync('./package.json', JSON.stringify(packageJSON));
-  } else {
-    packageJSON.version = version.replace('-SNAPSHOT', `+${3228}`);
-    fs.writeFileSync('./package.json', JSON.stringify(packageJSON));
-    log.info(`Not modifying version ${version} with build number ${buildNumber}`);
-  }
-}
 
 function hashsum(platform, version) {
   allPlatforms[platform].fileName =
