@@ -838,7 +838,8 @@
     "test-cov": "node out/test/runTest.js --coverage",
     "prepare": "node scripts/prepare.mjs",
     "cyclonedx-run": "cyclonedx-node",
-    "cyclonedx": "gulp cycloneDx"
+    "cyclonedx": "gulp cycloneDx",
+    "build": "node build.js"
   },
   "dependencies": {
     "@vscode/webview-ui-toolkit": "1.0.0",
