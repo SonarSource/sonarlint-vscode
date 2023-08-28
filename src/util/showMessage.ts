@@ -83,5 +83,5 @@ export async function showSslCertificateConfirmationDialog(cert: SslCertificateC
 }
 
 export function showNoActiveFileOpenWarning() {
-  return window.showWarningMessage('At least one file need to be open to use this command');
+  return window.showWarningMessage('At least one file needs to be open to use this command');
 }

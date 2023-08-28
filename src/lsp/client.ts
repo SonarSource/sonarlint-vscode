@@ -122,8 +122,14 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     });
   }
 
-  analyseOpenFileIgnoringExcludes(document: AnalysisFile): Promise<void> {
-    return this.sendNotification(protocol.AnalyseOpenFileIgnoringExcludes.type, { document });
+  analyseOpenFileIgnoringExcludes(textDocument?: AnalysisFile, notebookDocument?: VSCode.NotebookDocument, notebookCells?: AnalysisFile[]): Promise<void> {
+    return this.sendNotification(protocol.AnalyseOpenFileIgnoringExcludes.type,
+      {
+        textDocument,
+        notebookUri: notebookDocument ? notebookDocument.uri.toString() : null,
+        notebookVersion: notebookDocument ? notebookDocument.version : null,
+        notebookCells
+      });
   }
 
   changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {

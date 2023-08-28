@@ -574,7 +574,10 @@ export namespace SslCertificateConfirmation {
 }
 
 export interface AnalyseOpenFileIgnoringExcludesParams {
-  document: AnalysisFile;
+  textDocument?: AnalysisFile;
+  notebookUri?: string;
+  notebookVersion?: number;
+  notebookCells?: AnalysisFile[];
 }
 
 export namespace AnalyseOpenFileIgnoringExcludes {
