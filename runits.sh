@@ -1,5 +1,5 @@
 npm i
-node_modules/.bin/gulp package
+npm run package
 cd its
 npm i
 npm test
