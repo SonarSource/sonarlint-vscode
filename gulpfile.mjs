@@ -5,30 +5,31 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-const gulp = require('gulp');
-const artifactoryUpload = require('gulp-artifactory-upload');
-const del = require('del');
-const vsce = require('vsce');
-const log = require('fancy-log');
-const fs = require('fs');
-const crypto = require('crypto');
-const through = require('through2');
-const request = require('request');
-const bump = require('gulp-bump');
-const decompress = require('gulp-decompress');
-const download = require('gulp-download');
-const fse = require('fs-extra');
-const argv = require('minimist')(process.argv.slice(2));
-const path = require('path');
-const url = require('url');
-const dateformat = require('dateformat');
-const jarDependencies = require('./scripts/dependencies.json');
-const exec = require('child_process').exec;
-const { getSignature } = require('./scripts/gulp-sign.js');
-const globby = require('globby');
-const mergeStream = require('merge-stream');
+import gulp from 'gulp';
+import artifactoryUpload from 'gulp-artifactory-upload';
+import del from 'del';
+import vsce from 'vsce';
+import log from 'fancy-log';
+import fs from 'fs';
+import crypto from 'crypto';
+import through from 'through2';
+import request from 'request';
+import bump from 'gulp-bump';
+import decompress from 'gulp-decompress';
+import download from 'gulp-download';
+import fse from 'fs-extra';
+import minimist from 'minimist';
+import path from 'path';
+import url from 'url';
+import dateformat from 'dateformat';
+import jarDependencies from './scripts/dependencies.json' assert { type: 'json' };
+import { exec } from 'child_process';
+import { getSignature } from './scripts/gulp-sign.js';
+import globby from 'globby';
+import mergeStream from 'merge-stream';
 //...
 
+const argv = minimist(process.argv.slice(2));
 const LATEST_JRE = 17;
 const UNIVERSAL_PLATFORM = 'universal';
 const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
@@ -404,7 +405,7 @@ function buildInfo(name, version, buildNumber) {
   };
 }
 
-function fileHashsum(filePath) {
+export function fileHashsum(filePath) {
   const fileContent = fs.readFileSync(filePath);
   return ['sha1', 'md5'].map(algo => {
     const hash = crypto.createHash(algo).update(fileContent, 'binary').digest('hex');
@@ -412,7 +413,6 @@ function fileHashsum(filePath) {
     return hash;
   });
 }
-exports.fileHashsum = fileHashsum;
 
 function hashsum(platform, version) {
   function processFile(file, _encoding, callback) {

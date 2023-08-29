@@ -5,23 +5,22 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-const vsce = require('vsce');
-const log = require('fancy-log');
-const fs = require('fs');
-const https = require('https');
-const crypto = require('crypto');
-const path = require('path');
-const { clean, cleanJreDir, getPackageJSON } = require('./fsUtils.js');
-const { updateVersion } = require('./updateVersion.js');
-const { downloadJre } = require('./jreDownload.js');
-const exec = require('child_process').exec;
+import vsce from 'vsce';
+import log from 'fancy-log';
+import fs from 'fs';
+import crypto from 'crypto';
+import path from 'path';
+import { clean, cleanJreDir, getPackageJSON } from './fsUtils.js';
+import { updateVersion } from './updateVersion.js';
+import { downloadJre } from './jreDownload.js';
+import { cycloneDx } from './sbomGeneration.js';
 
 const UNIVERSAL_MODE = '--universal';
 const ALL_TARGETS_MODE = '--all';
 const LATEST_JRE = 17;
 const UNIVERSAL_PLATFORM = 'universal';
-const TARGETED_PLATFORMS = ['win32-x64'];
-// const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
+// const TARGETED_PLATFORMS = ['win32-x64'];
+const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
 const allPlatforms = {};
 [...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {
   allPlatforms[platform] = {
@@ -39,11 +38,7 @@ build();
 // node build.js --universal
 // node build.js --all
 async function build() {
-  const mode = getMode();
-
-  if (mode === UNIVERSAL_MODE) {
-    await buildUniversal();
-  }
+  await buildUniversal();
   await buildAll();
 }
 
@@ -59,7 +54,6 @@ async function buildAll() {
     await buildForPlatform(platform);
   }
   cleanJreDir();
-  await vsce.createVSIX();
   commonPostTasks();
 }
 
@@ -68,19 +62,9 @@ async function buildForPlatform(platform) {
   await vsce.createVSIX({ target: platform });
 }
 
-function cyclonedx() {
-  const packageJSON = getPackageJSON();
-  const version = packageJSON.version;
-  const cycloneDxCommand = `npm run cyclonedx-run -- -d --output sonarlint-vscode-${version}.sbom-cyclonedx.json`;
-  exec(cycloneDxCommand, (err, stdout, stderr) => {
-    console.log(stdout);
-    console.log(stderr);
-  });
-}
-
 function commonPreTasks() {
   clean();
-  cyclonedx();
+  cycloneDx();
   updateVersion();
 }
 
@@ -141,8 +125,6 @@ function updateHashes(platform, file) {
   const hashesObject = allPlatforms[platform].hashes;
   const binaryContent = fs.readFileSync(file, 'binary');
   console.log(`Hashes object: ` + JSON.stringify(hashesObject));
-  console.log(`Binary content: `);
-  console.log(`Binary content: ` + JSON.stringify(binaryContent));
   for (const algo in hashesObject) {
     if (hashesObject.hasOwnProperty(algo)) {
       hashesObject[algo] = crypto.createHash(algo).update(binaryContent, 'binary').digest('hex');
@@ -159,11 +141,4 @@ function updateBinaryHashes(binaryContent, hashesObject) {
       log.info(`Computed ${algo}: ${hashesObject[algo]}`);
     }
   }
-}
-
-function getMode() {
-  if (process.argv.indexOf(ALL_TARGETS_MODE) >= 0) {
-    return ALL_TARGETS_MODE;
-  }
-  return UNIVERSAL_MODE;
 }

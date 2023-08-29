@@ -114,5 +114,3 @@ async function downloadFile(fileUrl, destPath) {
     });
   });
 }
-
-downloadJre('linux-arm64', 17);
