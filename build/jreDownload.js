@@ -4,13 +4,13 @@ import request from 'request';
 import url from 'url';
 import path from 'path';
 import log from 'fancy-log';
-import https from 'https';
+import fetch from 'node-fetch';
 import fs from 'fs';
 import tar from 'tar';
 import zlib from 'node:zlib';
 
 export async function downloadJre(targetPlatform, javaVersion) {
-  // cleanJreDir();
+  cleanJreDir();
   fse.ensureDir('./jre', err => {
     log.error(err);
   });
@@ -86,7 +86,7 @@ export async function downloadJre(targetPlatform, javaVersion) {
 
   await downloadFile(jreDownloadUrl, `./jre/${jreFileName}`);
 
-  if (fs.existsSync()) const inputFilePath = `./jre/${jreFileName}`;
+  const inputFilePath = `./jre/${jreFileName}`;
   const outputFolderPath = './jre/' + jreVersionLabel;
   if (!fs.existsSync(outputFolderPath)) {
     fs.mkdirSync(outputFolderPath);
@@ -98,32 +98,21 @@ export async function downloadJre(targetPlatform, javaVersion) {
     cwd: outputFolderPath // Set the current working directory for extraction
   });
   compressedReadStream.pipe(decompressionStream).pipe(extractionStream);
-  extractionStream.on('finish', () => {
-    log.info('Extraction complete.');
-  });
-  compressedReadStream.on('error', err => {
-    log.info('Error reading compressed file:', err);
-  });
-  decompressionStream.on('error', err => {
-    log.error('Error decompressing:', err);
-  });
-  extractionStream.on('error', err => {
-    log.error('Error extracting:', err);
-  });
+  extractionStream.on('finish', () => log.info('Extraction complete.'));
+  compressedReadStream.on('error', err => log.error('Error reading compressed file:', err));
+  decompressionStream.on('error', err => log.error('Error decompressing:', err));
+  extractionStream.on('error', err => log.error('Error extracting:', err));
 }
 
-async function downloadFile(endpoint, fileName) {
-  return new Promise(resolve => {
-    https.get(endpoint, res => {
-      const writeStream = fs.createWriteStream(fileName);
-      res.pipe(writeStream);
-      writeStream.on('end', () => {
-        writeStream.close();
-        log.info(`The ${fileName} download is Complete`);
-        resolve();
-      });
+async function downloadFile(fileUrl, destPath) {
+  return new Promise(function (resolve, reject) {
+    fetch(fileUrl).then(function (res) {
+      const fileStream = fs.createWriteStream(destPath);
+      res.body.on('error', reject);
+      fileStream.on('finish', resolve);
+      res.body.pipe(fileStream);
     });
   });
 }
 
-downloadJre('win32-x64', 17);
+downloadJre('linux-arm64', 17);
