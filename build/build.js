@@ -10,12 +10,10 @@ const log = require('fancy-log');
 const fs = require('fs');
 const https = require('https');
 const crypto = require('crypto');
-const request = require('request');
-const fse = require('fs-extra');
 const path = require('path');
-const url = require('url');
 const { clean, cleanJreDir, getPackageJSON } = require('./fsUtils.js');
 const { updateVersion } = require('./updateVersion.js');
+const { downloadJre } = require('./jreDownload.js');
 const exec = require('child_process').exec;
 
 const UNIVERSAL_MODE = '--universal';
@@ -68,96 +66,6 @@ async function buildAll() {
 async function buildForPlatform(platform) {
   await downloadJre(platform, LATEST_JRE);
   await vsce.createVSIX({ target: platform });
-}
-
-function downloadFile(endpoint, fileName) {
-  https.get(endpoint, res => {
-    const writeStream = fs.createWriteStream(fileName);
-    res.pipe(writeStream);
-    writeStream.on('end', function () {
-      writeStream.close();
-      console.log('The download is Completed');
-    });
-  });
-}
-
-async function downloadJre(targetPlatform, javaVersion) {
-  cleanJreDir();
-  fse.ensureDir('./jre', err => {
-    console.log(err);
-  });
-
-  const platformMapping = {
-    'linux-arm64': 'linux-aarch64',
-    'linux-x64': 'linux-x86_64',
-    'darwin-arm64': 'macosx-aarch64',
-    'darwin-x64': 'macosx-x86_64',
-    'win32-x64': 'win32-x86_64'
-  };
-
-  if (!targetPlatform || !Object.keys(platformMapping).includes(targetPlatform)) {
-    console.log(
-      '[Error] download_jre failed, please specify a valid target platform via --target argument. ' +
-        'Here are the supported platform list:'
-    );
-    for (const platform of Object.keys(platformMapping)) {
-      console.log(platform);
-    }
-    return;
-  }
-
-  console.log(`Downloading justj JRE ${javaVersion} for the platform ${targetPlatform} ...`);
-
-  const manifestUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/justj.manifest`;
-  // Download justj.manifest file
-  const manifest = await new Promise(function (resolve, reject) {
-    request.get(manifestUrl, function (err, response, body) {
-      if (err || response.statusCode >= 400) {
-        reject(err || `${response.statusCode} returned from ${manifestUrl}`);
-      } else {
-        resolve(String(body));
-      }
-    });
-  });
-
-  if (!manifest) {
-    // TODO log error
-    // done(new Error(`Failed to download justj.manifest, please check if the link ${manifestUrl} is valid.`));
-    return;
-  }
-
-  /**
-   * Here are the contents for a sample justj.manifest file:
-   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-linux-aarch64.tar.gz
-   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-linux-x86_64.tar.gz
-   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-macosx-aarch64.tar.gz
-   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-macosx-x86_64.tar.gz
-   * ../20211012_0921/org.eclipse.justj.openjdk.hotspot.jre.full.stripped-17-win32-x86_64.tar.gz
-   */
-  const javaPlatform = platformMapping[targetPlatform];
-  const list = manifest.split(/\r?\n/);
-  const jreIdentifier = list.find(value => {
-    return (
-      value.indexOf('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') >= 0 && value.indexOf(javaPlatform) >= 0
-    );
-  });
-
-  if (!jreIdentifier) {
-    // TODO log error
-    // done(new Error(`justj doesn't support the jre ${javaVersion} for the platform ${javaPlatform}
-    //   (${targetPlatform}), please refer to the link ${manifestUrl} for the supported platforms.`));
-    return;
-  }
-
-  const jreDownloadUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/${jreIdentifier}`;
-  const parsedDownloadUrl = url.parse(jreDownloadUrl);
-  const jreFileName = path.basename(parsedDownloadUrl.pathname).replace(/\.(?:7z|bz2|gz|rar|tar|zip|xz)*$/, '');
-  const idx = jreFileName.indexOf('-');
-  const jreVersionLabel = idx >= 0 ? jreFileName.substring(idx + 1) : jreFileName;
-  // Download justj JRE.
-
-  await downloadFile(jreDownloadUrl, `./jre/${jreFileName}`);
-  // TODO decompress .tar file with JRE
 }
 
 function cyclonedx() {
