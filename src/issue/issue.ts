@@ -78,5 +78,6 @@ export class IssueService {
         version: textDocument.version
       });
     }
+    return Promise.resolve();
   }
 }
