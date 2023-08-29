@@ -114,7 +114,7 @@ function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceR
   &nbsp;
   <a href="${SonarLintDocumentation.CLEAN_CODE_CONCEPTS}" class="capsule"
     title="Check out the Clean Code concepts in the SonarLint documentation"
-    rel="external glossary" target="_blank" referrerpolicy="no-referrer">Learn more</a>
+    rel="external glossary" target="_blank" referrerpolicy="no-referrer">What is clean code?</a>
 </div>`;
   } else {
     // Old type + severity taxonomy
