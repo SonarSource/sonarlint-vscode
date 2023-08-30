@@ -15,3 +15,7 @@ export function cleanJreDir() {
 export function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json').toString());
 }
+
+export function deleteFile(filePath) {
+  fs.unlinkSync(filePath);
+}

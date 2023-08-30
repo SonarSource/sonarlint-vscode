@@ -1,4 +1,4 @@
-import { cleanJreDir } from './fsUtils.js';
+import { cleanJreDir, deleteFile } from './fsUtils.js';
 import fse from 'fs-extra';
 import request from 'request';
 import url from 'url';
@@ -98,7 +98,10 @@ export async function downloadJre(targetPlatform, javaVersion) {
     cwd: outputFolderPath // Set the current working directory for extraction
   });
   compressedReadStream.pipe(decompressionStream).pipe(extractionStream);
-  extractionStream.on('finish', () => log.info('Extraction complete.'));
+  extractionStream.on('finish', () => {
+    log.info('Extraction complete.');
+    deleteFile(inputFilePath);
+  });
   compressedReadStream.on('error', err => log.error('Error reading compressed file:', err));
   decompressionStream.on('error', err => log.error('Error decompressing:', err));
   extractionStream.on('error', err => log.error('Error extracting:', err));
@@ -114,3 +117,5 @@ async function downloadFile(fileUrl, destPath) {
     });
   });
 }
+
+downloadJre('win32-x64', 17);
