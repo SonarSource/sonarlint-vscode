@@ -39,6 +39,7 @@ export async function downloadJre(targetPlatform, javaVersion) {
   const manifestUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/justj.manifest`;
   // Download justj.manifest file
   const manifest = await new Promise(function (resolve, reject) {
+    // TODO replace with node-fetch
     request.get(manifestUrl, function (err, response, body) {
       if (err || response.statusCode >= 400) {
         reject(err || `${response.statusCode} returned from ${manifestUrl}`);

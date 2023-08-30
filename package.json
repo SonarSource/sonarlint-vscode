@@ -850,6 +850,7 @@
     "expand-home-dir": "0.0.3",
     "find-java-home": "1.2.2",
     "follow-redirects": "1.15.1",
+    "globby": "^13.2.2",
     "highlight.js": "^11.7.0",
     "inly": "4.0.8",
     "luxon": "^3.2.1",

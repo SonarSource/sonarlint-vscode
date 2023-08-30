@@ -6,7 +6,6 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import vsce from 'vsce';
-import log from 'fancy-log';
 import fs from 'fs';
 import path from 'path';
 import { clean, cleanJreDir } from './fsUtils.js';
@@ -14,6 +13,7 @@ import { updateVersion } from './updateVersion.js';
 import { downloadJre } from './jreDownload.js';
 import { cycloneDx } from './sbomGeneration.js';
 import { computeUniversalVsixHashes } from './hashes.js';
+import { deployBuildInfo, deployVsix } from './deploy.js';
 
 const UNIVERSAL_MODE = '--universal';
 const ALL_TARGETS_MODE = '--all';
@@ -76,10 +76,6 @@ function commonPostTasks() {
 }
 
 function sign() {}
-
-function deployBuildInfo() {}
-
-function deployVsix() {}
 
 export function doForFiles(extensions, callback) {
   fs.readdir('./', function (err, files) {
