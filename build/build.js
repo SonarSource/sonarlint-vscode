@@ -8,20 +8,20 @@
 import vsce from 'vsce';
 import log from 'fancy-log';
 import fs from 'fs';
-import crypto from 'crypto';
 import path from 'path';
-import { clean, cleanJreDir, getPackageJSON } from './fsUtils.js';
+import { clean, cleanJreDir } from './fsUtils.js';
 import { updateVersion } from './updateVersion.js';
 import { downloadJre } from './jreDownload.js';
 import { cycloneDx } from './sbomGeneration.js';
+import { computeUniversalVsixHashes } from './hashes.js';
 
 const UNIVERSAL_MODE = '--universal';
 const ALL_TARGETS_MODE = '--all';
 const LATEST_JRE = 17;
-const UNIVERSAL_PLATFORM = 'universal';
+export const UNIVERSAL_PLATFORM = 'universal';
 // const TARGETED_PLATFORMS = ['win32-x64'];
-const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
-const allPlatforms = {};
+export const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
+export const allPlatforms = {};
 [...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {
   allPlatforms[platform] = {
     fileName: '',
@@ -75,27 +75,13 @@ function commonPostTasks() {
   deployVsix();
 }
 
-function computeUniversalVsixHashes() {
-  const version = getPackageJSON().version;
-  doForFiles('.vsix', () => hashsum(UNIVERSAL_PLATFORM, version));
-}
-
 function sign() {}
 
 function deployBuildInfo() {}
 
 function deployVsix() {}
 
-function hashsum(platform, version) {
-  allPlatforms[platform].fileName =
-    platform === UNIVERSAL_PLATFORM
-      ? `sonarlint-vscode-${version}.vsix`
-      : `sonarlint-vscode-${platform}-${version}.vsix`;
-
-  updateHashes(platform, allPlatforms[platform].fileName);
-}
-
-function doForFiles(extensions, callback) {
+export function doForFiles(extensions, callback) {
   fs.readdir('./', function (err, files) {
     if (err) {
       console.log('Unable to scan directory: ' + err);
@@ -116,29 +102,4 @@ function fileHasExtension(file, extensions) {
     return fileExtension === extensions;
   }
   return extensions.includes(fileExtension);
-}
-
-function updateHashes(platform, file) {
-  if (!fs.existsSync(file)) {
-    return;
-  }
-  const hashesObject = allPlatforms[platform].hashes;
-  const binaryContent = fs.readFileSync(file, 'binary');
-  console.log(`Hashes object: ` + JSON.stringify(hashesObject));
-  for (const algo in hashesObject) {
-    if (hashesObject.hasOwnProperty(algo)) {
-      hashesObject[algo] = crypto.createHash(algo).update(binaryContent, 'binary').digest('hex');
-      log.info(`Computed ${algo}: ${hashesObject[algo]}`);
-    }
-  }
-  //updateBinaryHashes(fs.readFileSync(file, 'binary'), allPlatforms[platform].hashes);
-}
-
-function updateBinaryHashes(binaryContent, hashesObject) {
-  for (const algo in hashesObject) {
-    if (hashesObject.hasOwnProperty(algo)) {
-      hashesObject[algo] = crypto.createHash(algo).update(binaryContent, 'binary').digest('hex');
-      log.info(`Computed ${algo}: ${hashesObject[algo]}`);
-    }
-  }
 }
