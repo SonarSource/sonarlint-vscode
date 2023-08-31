@@ -65,6 +65,7 @@ import * as util from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { showSslCertificateConfirmationDialog } from './util/showMessage';
+import { filterOutFilesIgnoredForAnalysis, shouldAnalyseFile } from './util/util';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -337,6 +338,7 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
 
+
 function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
     const sampleFileUri = VSCode.Uri.joinPath(context.extensionUri, 'walkthrough', 'sample.py');
@@ -514,6 +516,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () => IssueService.instance.analyseOpenFileIgnoringExcludes()));
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
@@ -535,7 +538,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
-  languageClient.onRequest(protocol.EditorOpenCheck.type, fileUri => isOpenInEditor(fileUri));
+  languageClient.onRequest(protocol.ShouldAnalyseFileCheck.type, params => shouldAnalyseFile(params.uri));
+  languageClient.onRequest(protocol.FilterOutExcludedFiles.type, params => filterOutFilesIgnoredForAnalysis(params.fileUris));
   languageClient.onNotification(protocol.ReportConnectionCheckResult.type, async checkResult => {
     await reportConnectionCheckResult(checkResult);
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
@@ -594,12 +598,6 @@ async function getTokenForServer(serverId: string): Promise<string> {
   return ConnectionSettingsService.instance.getServerToken(serverId);
 }
 
-function isOpenInEditor(fileUri: string) {
-  const codeFileUri = VSCode.Uri.parse(fileUri).toString(false);
-  const textDocumentIsOpen = VSCode.workspace.textDocuments.some(d => d.uri.toString(false) === codeFileUri);
-  const notebookDocumentIsOpen = VSCode.workspace.notebookDocuments.some(d => d.uri.toString(false) === codeFileUri);
-  return textDocumentIsOpen || notebookDocumentIsOpen;
-}
 
 async function showAllLocations(issue: protocol.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);

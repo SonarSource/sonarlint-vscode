@@ -68,4 +68,5 @@ export namespace Commands {
   export const TRIGGER_HELP_AND_FEEDBACK_LINK = 'SonarLint.HelpAndFeedbackLinkClicked';
   export const CHANGE_HOTSPOT_STATUS = 'SonarLint.ChangeHotspotStatus';
   export const ENABLE_VERBOSE_LOGS = 'SonarLint.EnableVerboseLogs';
+  export const ANALYSE_OPEN_FILE = 'SonarLint.AnalyseOpenFile';
 }

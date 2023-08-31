@@ -232,8 +232,21 @@ export namespace NeedCompilationDatabaseRequest {
   export const type = new lsp.NotificationType('sonarlint/needCompilationDatabase');
 }
 
-export namespace EditorOpenCheck {
-  export const type = new lsp.RequestType<string, boolean, void>('sonarlint/isOpenInEditor');
+export interface ShouldAnalyseFileCheckResult {
+  shouldBeAnalysed: boolean;
+  reason?: string;
+}
+
+export namespace ShouldAnalyseFileCheck {
+  export const type = new lsp.RequestType<UriParams, ShouldAnalyseFileCheckResult, void>('sonarlint/shouldAnalyseFile');
+}
+
+export interface FileUris {
+  fileUris: string[];
+}
+
+export namespace FilterOutExcludedFiles {
+  export const type = new lsp.RequestType<FileUris, FileUris, void>('sonarlint/filterOutExcludedFiles');
 }
 
 export interface ConnectionCheckResult {
@@ -558,6 +571,17 @@ export namespace SslCertificateConfirmation {
   export const type = new lsp.RequestType<SslCertificateConfirmationParams, boolean, void>(
     'sonarlint/askSslCertificateConfirmation'
   );
+}
+
+export interface AnalyseOpenFileIgnoringExcludesParams {
+  textDocument?: AnalysisFile;
+  notebookUri?: string;
+  notebookVersion?: number;
+  notebookCells?: AnalysisFile[];
+}
+
+export namespace AnalyseOpenFileIgnoringExcludes {
+  export const type = new lsp.NotificationType<AnalyseOpenFileIgnoringExcludesParams>('sonarlint/analyseOpenFileIgnoringExcludes')
 }
 
 //#endregion
