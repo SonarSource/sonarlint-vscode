@@ -26,10 +26,21 @@ module.exports = async function signVsix(opts = {}) {
     log.info(`past fileReadStream`);
     const signature = await sign(passThroughStream, opts.privateKeyArmored, opts.passphrase);
     log.info(`past signature`);
-    const signatureString = await streamToString(signature);
-    log.info(`past streamToString`);
-    fs.writeFileSync(`./${file}.asc`, signatureString);
-    log.info(`past writeFileSync`);
+    const writeStream = fs.createWriteStream(`./${file}.asc`);
+    writeStream.write(signature);
+    writeStream.on('finish', () => {
+      console.log('Write complete');
+    });
+
+  // Handle errors
+    writeStream.on('error', (error) => {
+      console.error('Error writing to file:', error);
+    });
+    // const signatureString = await streamToString(signature);
+    // log.info(`past streamToString`);
+
+    // fs.writeFileSync(`./${file}.asc`, signatureString);
+    // log.info(`past writeFileSync`);
     log.info(`Signature for ${file} generated`);
   }
 };
