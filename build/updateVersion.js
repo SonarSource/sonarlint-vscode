@@ -1,6 +1,6 @@
-import fs from 'fs';
-import log from 'fancy-log';
-import { getPackageJSON } from './fsUtils.js';
+const fs = require('fs');
+const log = require('fancy-log');
+const getPackageJSON = require('./fsUtils.js').getPackageJSON;
 
 module.exports = function updateVersion() {
   const buildNumber = process.env.BUILD_NUMBER;
