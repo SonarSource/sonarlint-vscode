@@ -68,7 +68,7 @@ function commonPostTasks() {
   deployVsix();
 }
 
-export function doForFiles(extensions, callback) {
+function doForFiles(extensions, callback) {
   fs.readdir('./', function (err, files) {
     if (err) {
       console.log('Unable to scan directory: ' + err);
@@ -96,5 +96,6 @@ module.exports = {
   buildUniversal,
   UNIVERSAL_PLATFORM,
   TARGETED_PLATFORMS,
-  allPlatforms
+  allPlatforms,
+  doForFiles
 }
