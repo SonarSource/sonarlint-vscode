@@ -19,11 +19,17 @@ module.exports = async function signVsix(opts = {}) {
   for (const file of files) {
     log.info(`Starting 'sign' for ${file}`);
     const passThroughStream = new Stream.PassThrough();
+    log.info(`past passThroughStream`);
     const fileReadStream = fs.createReadStream(`./${file}`);
+    log.info(`past fileReadStream`);
     fileReadStream.pipe(passThroughStream);
+    log.info(`past fileReadStream`);
     const signature = await sign(passThroughStream, opts.privateKeyArmored, opts.passphrase);
+    log.info(`past signature`);
     const signatureString = await streamToString(signature);
+    log.info(`past streamToString`);
     fs.writeFileSync(`./${file}.asc`, signatureString);
+    log.info(`past writeFileSync`);
     log.info(`Signature for ${file} generated`);
   }
 };
@@ -37,11 +43,17 @@ async function streamToString(stream) {
 }
 
 async function sign(content, privateKeyArmored, passphrase) {
+  log.info(`before decrypting private key`);
+  log.info(`content ${content}`);
+  log.info(`privateKeyArmored ${privateKeyArmored}`);
+  log.info(`passphrase ${passphrase}`);
   const privateKey = await openpgp.decryptKey({
     privateKey: await openpgp.readPrivateKey({ armoredKey: privateKeyArmored }),
     passphrase
   });
+  log.info(`after decrypting private key`);
   const message = await openpgp.createMessage({ binary: content });
+  log.info(`before calling penpgp.sign()`);
   return openpgp.sign({
     message,
     signingKeys: privateKey,
