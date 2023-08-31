@@ -22,17 +22,16 @@ async function deployBuildInfo() {
   headers.append('Content-Type', 'application/json');
   headers.append('Authorization',
     'Basic ' + Buffer.from(`${process.env.ARTIFACTORY_DEPLOY_USERNAME}:${process.env.ARTIFACTORY_DEPLOY_PASSWORD}`).toString('base64'));
-  return fetch(`${process.env.ARTIFACTORY_URL}/api/build`, {
-    method: 'PUT', body: {}, headers: headers
-  }).then(response => {
-    if (!response.ok) {
-      log.error(`Error ${JSON.stringify(response)}`);
-      log.error(`Error ${response.status}`);
-      log.error(`Error ${response.text()}`);
-    }
-
-    return response.json();
+  const response = await fetch(`${process.env.ARTIFACTORY_URL}/api/build`, {
+    method: 'PUT', body: JSON.stringify(json), headers: headers
   });
+  if (!response.ok) {
+    log.error(`Error ${JSON.stringify(response)}`);
+    log.error(`Error ${response.status}`);
+    log.error(`Error ${response.text()}`);
+  }
+  return response.json();
+
 }
 
 async function deployVsix() {
