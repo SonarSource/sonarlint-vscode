@@ -18,9 +18,9 @@ const deployVsix = require('./deploy.js').deployVsix;
 const signVsix = require('./sign.js');
 
 const LATEST_JRE = 17;
-export const UNIVERSAL_PLATFORM = 'universal';
-export const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
-export const allPlatforms = {};
+const UNIVERSAL_PLATFORM = 'universal';
+const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
+const allPlatforms = {};
 [...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {
   allPlatforms[platform] = {
     fileName: '',
@@ -93,5 +93,8 @@ function fileHasExtension(file, extensions) {
 
 module.exports = {
   buildAll,
-  buildUniversal
+  buildUniversal,
+  UNIVERSAL_PLATFORM,
+  TARGETED_PLATFORMS,
+  allPlatforms
 }
