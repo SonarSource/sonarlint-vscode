@@ -118,4 +118,4 @@ async function downloadFile(fileUrl, destPath) {
   });
 }
 
-downloadJre('win32-x64', 17);
+// downloadJre('win32-x64', 17);

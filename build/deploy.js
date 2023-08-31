@@ -1,11 +1,11 @@
 import log from 'fancy-log';
-import { getPackageJSON } from 'fsUtils.js';
+import { getPackageJSON } from './fsUtils.js';
 import path from 'path';
 import dateformat from 'dateformat';
 import { computeDependencyHashes, fileHashsum } from './hashes.js';
 import jarDependencies from '../scripts/dependencies.json' assert { type: 'json' };
-import globby from 'globby';
-import fetch from 'node-fetch';
+import * as globby from 'globby';
+import  fetch, { Headers } from 'node-fetch';
 
 export function deployBuildInfo() {
   const packageJSON = getPackageJSON();
@@ -26,8 +26,49 @@ export function deployBuildInfo() {
   });
 }
 
-export function deployVsix() {
-}
+// export function deployVsix() {
+//   const {
+//     ARTIFACTORY_URL,
+//     ARTIFACTORY_DEPLOY_REPO,
+//     ARTIFACTORY_DEPLOY_USERNAME,
+//     ARTIFACTORY_DEPLOY_PASSWORD,
+//     BUILD_SOURCEVERSION,
+//     GITHUB_BRANCH,
+//     BUILD_NUMBER,
+//     CIRRUS_BASE_BRANCH
+//   } = process.env;
+//   const packageJSON = getPackageJSON();
+//   const { version, name } = packageJSON;
+//   const packagePath = 'org/sonarsource/sonarlint/vscode';
+//   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
+//   log.info(`Artifactory target URL: ${artifactoryTargetUrl}`);
+//   globby.sync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
+//     const [sha1, md5] = fileHashsum(filePath);
+//     const fileReadStream = fs.createReadStream(inputFilePath);
+//     fileReadStream.pipe(
+//       atrifactoryUpload(artifactoryTargetUrl, {
+//         username: ARTIFACTORY_DEPLOY_USERNAME,
+//         password: ARTIFACTORY_DEPLOY_PASSWORD,
+//         properties: {
+//           'vcs.revision': BUILD_SOURCEVERSION,
+//           'vcs.branch': CIRRUS_BASE_BRANCH || GITHUB_BRANCH,
+//           'build.name': name,
+//           'build.number': BUILD_NUMBER
+//         },
+//         request: {
+//           headers: {
+//             'X-Checksum-MD5': md5,
+//             'X-Checksum-Sha1': sha1
+//           }
+//         }
+//       })
+//     )
+//   });
+// }
+//
+// function atrifactoryUpload(url, options) {
+//   const destinationUrl = `${url}/${options.}`
+// }
 
 function buildInfo(name, version, buildNumber) {
   const {
@@ -44,8 +85,8 @@ function buildInfo(name, version, buildNumber) {
 
   const fixedBranch = (CIRRUS_BASE_BRANCH || GITHUB_BRANCH).replace('refs/heads/', '');
 
-  const vsixPaths = globby.sync(path.join('*.vsix'));
-  const additionalPaths = globby.sync(path.join('*{-cyclonedx.json,.asc}'));
+  const vsixPaths = globby.globbySync(path.join('*.vsix'));
+  const additionalPaths = globby.globbySync(path.join('*{-cyclonedx.json,.asc}'));
 
   return {
     version: '1.0.1',
@@ -76,3 +117,5 @@ function buildInfo(name, version, buildNumber) {
     }
   };
 }
+
+deployBuildInfo();

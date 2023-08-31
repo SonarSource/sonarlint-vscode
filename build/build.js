@@ -13,14 +13,15 @@ import { updateVersion } from './updateVersion.js';
 import { downloadJre } from './jreDownload.js';
 import { cycloneDx } from './sbomGeneration.js';
 import { computeUniversalVsixHashes } from './hashes.js';
-import { deployBuildInfo, deployVsix } from './deploy.js';
+import { deployBuildInfo } from './deploy.js';
+import { signVsix } from './sign.js';
 
 const UNIVERSAL_MODE = '--universal';
 const ALL_TARGETS_MODE = '--all';
 const LATEST_JRE = 17;
 export const UNIVERSAL_PLATFORM = 'universal';
-// const TARGETED_PLATFORMS = ['win32-x64'];
-export const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
+const TARGETED_PLATFORMS = ['win32-x64'];
+// export const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
 export const allPlatforms = {};
 [...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {
   allPlatforms[platform] = {
@@ -70,12 +71,13 @@ function commonPreTasks() {
 
 function commonPostTasks() {
   computeUniversalVsixHashes();
-  sign();
+  signVsix({
+    privateKeyArmored: process.env.GPG_SIGNING_KEY,
+    passphrase: process.env.GPG_SIGNING_PASSPHRASE
+  });
   deployBuildInfo();
   deployVsix();
 }
-
-function sign() {}
 
 export function doForFiles(extensions, callback) {
   fs.readdir('./', function (err, files) {

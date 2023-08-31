@@ -10,7 +10,6 @@ import openpgp from 'openpgp';
 import through from 'through2';
 import Vinyl from 'vinyl';
 import Stream from 'stream';
-import fs from 'fs';
 
 export function getSignature(opts = {}) {
   return through.obj(getTransform(opts, false));

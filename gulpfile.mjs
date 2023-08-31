@@ -25,14 +25,15 @@ import dateformat from 'dateformat';
 import jarDependencies from './scripts/dependencies.json' assert { type: 'json' };
 import { exec } from 'child_process';
 import { getSignature } from './scripts/gulp-sign.js';
-import globby from 'globby';
+import * as globby from 'globby';
 import mergeStream from 'merge-stream';
 //...
 
 const argv = minimist(process.argv.slice(2));
 const LATEST_JRE = 17;
 const UNIVERSAL_PLATFORM = 'universal';
-const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
+// const TARGETED_PLATFORMS = ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'];
+const TARGETED_PLATFORMS = ['win32-x64'];
 const allPlatforms = {};
 [...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {
   allPlatforms[platform] = {
@@ -130,7 +131,7 @@ gulp.task('deploy-vsix', function () {
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
   console.log(`Artifactory target URL: ${artifactoryTargetUrl}`);
   return mergeStream(
-    globby.sync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
+    globby.globbySync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
       const [sha1, md5] = fileHashsum(filePath);
       return gulp
         .src(filePath)
@@ -364,8 +365,8 @@ function buildInfo(name, version, buildNumber) {
 
   const fixedBranch = (CIRRUS_BASE_BRANCH || GITHUB_BRANCH).replace('refs/heads/', '');
 
-  const vsixPaths = globby.sync(path.join('*.vsix'));
-  const additionalPaths = globby.sync(path.join('*{-cyclonedx.json,.asc}'));
+  const vsixPaths = globby.globbySync(path.join('*.vsix'));
+  const additionalPaths = globby.globbySync(path.join('*{-cyclonedx.json,.asc}'));
 
   return {
     version: '1.0.1',
