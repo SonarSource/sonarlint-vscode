@@ -23,7 +23,7 @@ export async function signVsix(opts = {}) {
     fileReadStream.pipe(passThroughStream);
     sign(passThroughStream, opts.privateKeyArmored, opts.passphrase).then(async signature => {
       const signatureString = await streamToString(signature);
-      fs.writeFileSync(`./${file}mine.asc`, signatureString);
+      fs.writeFileSync(`./${file}.asc`, signatureString);
       log.info(`Signature for ${file} generated`);
     });
   }

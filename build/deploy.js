@@ -5,7 +5,8 @@ import dateformat from 'dateformat';
 import { computeDependencyHashes, fileHashsum } from './hashes.js';
 import jarDependencies from '../scripts/dependencies.json' assert { type: 'json' };
 import * as globby from 'globby';
-import  fetch, { Headers } from 'node-fetch';
+import fs from 'fs';
+import fetch, { Headers } from 'node-fetch';
 
 export function deployBuildInfo() {
   const packageJSON = getPackageJSON();
@@ -15,7 +16,7 @@ export function deployBuildInfo() {
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   headers.append('Authorization',
-    'Basic ' + Buffer.from(process.env.ARTIFACTORY_DEPLOY_USERNAME + ':' + process.env.ARTIFACTORY_DEPLOY_PASSWORD).toString('base64'));
+    'Basic ' + Buffer.from(`${process.env.ARTIFACTORY_DEPLOY_USERNAME}:${process.env.ARTIFACTORY_DEPLOY_PASSWORD}`).toString('base64'));
   return fetch(`${process.env.ARTIFACTORY_URL}/api/build`, {
     method: 'PUT', body: json, headers: headers
   }).then(response => {
@@ -26,49 +27,63 @@ export function deployBuildInfo() {
   });
 }
 
-// export function deployVsix() {
-//   const {
-//     ARTIFACTORY_URL,
-//     ARTIFACTORY_DEPLOY_REPO,
-//     ARTIFACTORY_DEPLOY_USERNAME,
-//     ARTIFACTORY_DEPLOY_PASSWORD,
-//     BUILD_SOURCEVERSION,
-//     GITHUB_BRANCH,
-//     BUILD_NUMBER,
-//     CIRRUS_BASE_BRANCH
-//   } = process.env;
-//   const packageJSON = getPackageJSON();
-//   const { version, name } = packageJSON;
-//   const packagePath = 'org/sonarsource/sonarlint/vscode';
-//   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
-//   log.info(`Artifactory target URL: ${artifactoryTargetUrl}`);
-//   globby.sync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(filePath => {
-//     const [sha1, md5] = fileHashsum(filePath);
-//     const fileReadStream = fs.createReadStream(inputFilePath);
-//     fileReadStream.pipe(
-//       atrifactoryUpload(artifactoryTargetUrl, {
-//         username: ARTIFACTORY_DEPLOY_USERNAME,
-//         password: ARTIFACTORY_DEPLOY_PASSWORD,
-//         properties: {
-//           'vcs.revision': BUILD_SOURCEVERSION,
-//           'vcs.branch': CIRRUS_BASE_BRANCH || GITHUB_BRANCH,
-//           'build.name': name,
-//           'build.number': BUILD_NUMBER
-//         },
-//         request: {
-//           headers: {
-//             'X-Checksum-MD5': md5,
-//             'X-Checksum-Sha1': sha1
-//           }
-//         }
-//       })
-//     )
-//   });
-// }
-//
-// function atrifactoryUpload(url, options) {
-//   const destinationUrl = `${url}/${options.}`
-// }
+export function deployVsix() {
+  const {
+    ARTIFACTORY_URL,
+    ARTIFACTORY_DEPLOY_REPO,
+    ARTIFACTORY_DEPLOY_USERNAME,
+    ARTIFACTORY_DEPLOY_PASSWORD,
+    BUILD_SOURCEVERSION,
+    GITHUB_BRANCH,
+    BUILD_NUMBER,
+    CIRRUS_BASE_BRANCH
+  } = process.env;
+  const packageJSON = getPackageJSON();
+  const { version, name } = packageJSON;
+  const packagePath = 'org/sonarsource/sonarlint/vscode';
+  const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
+  log.info(`Artifactory target URL: ${artifactoryTargetUrl}`);
+  // TODO do we need to use merge-stream here?
+  globby.globbySync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(fileName => {
+    const [sha1, md5] = fileHashsum(fileName);
+    const fileReadStream = fs.createReadStream(fileName);
+    atrifactoryUpload(fileReadStream, artifactoryTargetUrl, fileName, {
+      username: ARTIFACTORY_DEPLOY_USERNAME,
+      password: ARTIFACTORY_DEPLOY_PASSWORD,
+      properties: {
+        'vcs.revision': BUILD_SOURCEVERSION,
+        'vcs.branch': CIRRUS_BASE_BRANCH || GITHUB_BRANCH,
+        'build.name': name,
+        'build.number': BUILD_NUMBER
+      },
+      request: {
+        headers: {
+          'X-Checksum-MD5': md5,
+          'X-Checksum-Sha1': sha1
+        }
+      }
+    });
+  });
+}
+
+function atrifactoryUpload(readStream, url, fileName, options) {
+  // TODO verify that the options.properties are not needed in the URL
+  const destinationUrl = `${url}/${fileName}`;
+
+  fetch(destinationUrl, {
+    headers: {
+      ...options.request.headers,
+      'Authorization':
+        'Basic ' + Buffer.from(`${options.username}:${options.password}`).toString('base64')
+    },
+    method: 'PUT',
+    body: readStream
+  }).then(res => {
+    if (!res.ok) {
+      log.error(`Failed to upload ${fileName} to ${destinationUrl}, ${res.status}`);
+    }
+  }).catch(err => log.error(`Failed to upload ${fileName} to ${destinationUrl}, ${err}`));
+}
 
 function buildInfo(name, version, buildNumber) {
   const {
@@ -118,4 +133,3 @@ function buildInfo(name, version, buildNumber) {
   };
 }
 
-deployBuildInfo();
