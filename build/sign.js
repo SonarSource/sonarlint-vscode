@@ -26,31 +26,22 @@ module.exports = async function signVsix(opts = {}) {
     log.info(`past fileReadStream`);
     const signature = await sign(passThroughStream, opts.privateKeyArmored, opts.passphrase);
     log.info(`past signature`);
-    const writeStream = fs.createWriteStream(`./${file}.asc`);
-    writeStream.write(signature);
-    writeStream.on('finish', () => {
-      console.log('Write complete');
-    });
-
-  // Handle errors
-    writeStream.on('error', (error) => {
-      console.error('Error writing to file:', error);
-    });
-    // const signatureString = await streamToString(signature);
-    // log.info(`past streamToString`);
-
-    // fs.writeFileSync(`./${file}.asc`, signatureString);
-    // log.info(`past writeFileSync`);
+    const signatureString = await streamToString(signature);
+    log.info(`past streamToString`);
+    fs.writeFileSync(`./${file}.asc`, signatureString);
     log.info(`Signature for ${file} generated`);
   }
 };
 
 async function streamToString(stream) {
-  const chunks = [];
-  for await (const chunk of stream) {
-    chunks.push(Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks).toString('utf-8');
+  return new Promise(function (resolve) {
+    log.info(`before  chunks.push(Buffer.from(chunk))`);
+    const chunks = [];
+    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+    log.info(`before  Buffer.concat(chunks).toString('utf-8')`);
+    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    log.info(`after  Buffer.concat(chunks).toString('utf-8')`);
+  });
 }
 
 async function sign(content, privateKeyArmored, passphrase) {
