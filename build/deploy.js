@@ -5,16 +5,15 @@ const dateformat = require('dateformat');
 const computeDependencyHashes = require('./hashes.js').computeDependencyHashes;
 const fileHashsum = require('./hashes.js').fileHashsum;
 const jarDependencies = require('../scripts/dependencies.json');
-const globby = require('globby');
 const fs = require('fs');
 const fetch = require('node-fetch');
 const Headers = require('node-fetch').Headers;
 
-function deployBuildInfo() {
+async function deployBuildInfo() {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_ID;
-  const json = buildInfo(name, version, buildNumber);
+  const json = await buildInfo(name, version, buildNumber);
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   headers.append('Authorization',
@@ -29,7 +28,7 @@ function deployBuildInfo() {
   });
 }
 
-function deployVsix() {
+async function deployVsix() {
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -46,7 +45,8 @@ function deployVsix() {
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
   log.info(`Artifactory target URL: ${artifactoryTargetUrl}`);
   // TODO do we need to use merge-stream here?
-  globby.globbySync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(fileName => {
+  const { globbySync } = await import('globby');
+  globbySync(path.join('*{.vsix,-cyclonedx.json,.asc}')).map(fileName => {
     const [sha1, md5] = fileHashsum(fileName);
     const fileReadStream = fs.createReadStream(fileName);
     atrifactoryUpload(fileReadStream, artifactoryTargetUrl, fileName, {
@@ -87,7 +87,7 @@ function atrifactoryUpload(readStream, url, fileName, options) {
   }).catch(err => log.error(`Failed to upload ${fileName} to ${destinationUrl}, ${err}`));
 }
 
-function buildInfo(name, version, buildNumber) {
+async function buildInfo(name, version, buildNumber) {
   const {
     CIRRUS_BUILD_ID, BUILD_ID, BUILD_REPOSITORY_NAME, BUILD_SOURCEVERSION, CIRRUS_BASE_BRANCH, GITHUB_BRANCH
   } = process.env;
@@ -102,8 +102,9 @@ function buildInfo(name, version, buildNumber) {
 
   const fixedBranch = (CIRRUS_BASE_BRANCH || GITHUB_BRANCH).replace('refs/heads/', '');
 
-  const vsixPaths = globby.globbySync(path.join('*.vsix'));
-  const additionalPaths = globby.globbySync(path.join('*{-cyclonedx.json,.asc}'));
+  const { globbySync } = await import('globby');
+  const vsixPaths = globbySync(path.join('*.vsix'));
+  const additionalPaths = globbySync(path.join('*{-cyclonedx.json,.asc}'));
 
   return {
     version: '1.0.1',

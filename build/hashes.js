@@ -1,11 +1,21 @@
 const getPackageJSON = require('./fsUtils.js').getPackageJSON;
-const doForFiles = require('./build.js').doForFiles;
-const UNIVERSAL_PLATFORM = require('./common.js').UNIVERSAL_PLATFORM;
-const allPlatforms = require('./common.js').allPlatforms;
+const UNIVERSAL_PLATFORM = require('./constants.js').UNIVERSAL_PLATFORM;
+const TARGETED_PLATFORMS = require('./constants.js').TARGETED_PLATFORMS;
 const fs = require('fs');
 const crypto = require('crypto');
 const log = require('fancy-log');
 const path = require('path');
+
+const allPlatforms = {};
+[...TARGETED_PLATFORMS, UNIVERSAL_PLATFORM].forEach(platform => {
+  allPlatforms[platform] = {
+    fileName: '',
+    hashes: {
+      md5: '',
+      sha1: ''
+    }
+  };
+});
 
 function computeUniversalVsixHashes() {
   const version = getPackageJSON().version;
@@ -59,6 +69,29 @@ function updateBinaryHashes(binaryContent, hashesObject) {
       log.info(`Computed ${algo}: ${hashesObject[algo]}`);
     }
   }
+}
+
+function doForFiles(extensions, callback) {
+  fs.readdir('./', function (err, files) {
+    if (err) {
+      console.log('Unable to scan directory: ' + err);
+      return;
+    }
+
+    files.forEach(function (file) {
+      if (fileHasExtension(file, extensions)) {
+        callback(file);
+      }
+    });
+  });
+}
+
+function fileHasExtension(file, extensions) {
+  const fileExtension = path.extname(file);
+  if (typeof extensions === 'string') {
+    return fileExtension === extensions;
+  }
+  return extensions.includes(fileExtension);
 }
 
 module.exports = {

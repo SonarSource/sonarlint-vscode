@@ -1,7 +1,7 @@
 const getPackageJSON = require('./fsUtils.js').getPackageJSON;
 const exec = require('child_process').exec;
 
-module.exports = function cycloneDx() {
+function cycloneDx() {
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   const cycloneDxCommand = `npm run cyclonedx-run -- -d --output sonarlint-vscode-${version}.sbom-cyclonedx.json`;
@@ -12,3 +12,5 @@ module.exports = function cycloneDx() {
 }
 
 cycloneDx();
+
+module.exports = cycloneDx;

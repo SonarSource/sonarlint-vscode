@@ -10,11 +10,11 @@ const openpgp = require('openpgp');
 const Stream = require('stream');
 const fs = require('fs');
 const path = require('path');
-const globby = require('globby');
 const log = require('fancy-log');
 
 module.exports = async function signVsix(opts = {}) {
-  const files = globby.globbySync(path.join('*{.vsix,-cyclonedx.json}'));
+  const { globbySync } = await import('globby');
+  const files = globbySync(path.join('*{.vsix,-cyclonedx.json}'));
 
   for (const file of files) {
     log.info(`Starting 'sign' for ${file}`);
