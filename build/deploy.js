@@ -13,19 +13,24 @@ async function deployBuildInfo() {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_ID;
+  log.info(`${process.env.ARTIFACTORY_URL}/api/build`)
+  log.info("Started with buildInfo");
   const json = await buildInfo(name, version, buildNumber);
+  log.info("Finished with buildInfo");
+  log.info(json);
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   headers.append('Authorization',
     'Basic ' + Buffer.from(`${process.env.ARTIFACTORY_DEPLOY_USERNAME}:${process.env.ARTIFACTORY_DEPLOY_PASSWORD}`).toString('base64'));
   return fetch(`${process.env.ARTIFACTORY_URL}/api/build`, {
-    method: 'PUT', body: json, headers: headers
+    method: 'PUT', body: {}, headers: headers
   }).then(response => {
     if (!response.ok) {
       log.error(`Error ${JSON.stringify(response)}`);
       log.error(`Error ${response.status}`);
       log.error(`Error ${response.text()}`);
     }
+
     return response.json();
   });
 }
