@@ -22,8 +22,9 @@ async function deployBuildInfo() {
     method: 'PUT', body: json, headers: headers
   }).then(response => {
     if (!response.ok) {
+      log.error(`Error ${JSON.stringify(response)}`);
       log.error(`Error ${response.status}`);
-      log.error(`Error ${response.error()}`);
+      log.error(`Error ${response.text()}`);
     }
     return response.json();
   });
