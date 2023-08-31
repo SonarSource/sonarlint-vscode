@@ -23,6 +23,7 @@ async function deployBuildInfo() {
   }).then(response => {
     if (!response.ok) {
       log.error(`Error ${response.status}`);
+      log.error(`Error ${response.error()}`);
     }
     return response.json();
   });
