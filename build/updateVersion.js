@@ -2,7 +2,7 @@ import fs from 'fs';
 import log from 'fancy-log';
 import { getPackageJSON } from './fsUtils.js';
 
-export function updateVersion() {
+module.exports = function updateVersion() {
   const buildNumber = process.env.BUILD_NUMBER;
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
@@ -14,4 +14,3 @@ export function updateVersion() {
   }
 }
 
-updateVersion();

@@ -99,7 +99,7 @@ universal_vsix_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   deploy_script:
     - source cirrus-env QA # Retrieve build number
-    - node_modules/.bin/gulp deploy
+    - npm run build-universal
 
 all_vsix_task:
   <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
@@ -111,7 +111,7 @@ all_vsix_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   deploy_all_script:
     - source cirrus-env QA # Retrieve build number
-    - node_modules/.bin/gulp deploy-all
+    - npm run build-all
 
 test_windows_task:
   # name: Run tests on Windows

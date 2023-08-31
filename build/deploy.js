@@ -1,14 +1,16 @@
-import log from 'fancy-log';
-import { getPackageJSON } from './fsUtils.js';
-import path from 'path';
-import dateformat from 'dateformat';
-import { computeDependencyHashes, fileHashsum } from './hashes.js';
-import jarDependencies from '../scripts/dependencies.json' assert { type: 'json' };
-import * as globby from 'globby';
-import fs from 'fs';
-import fetch, { Headers } from 'node-fetch';
+const log = require('fancy-log');
+const getPackageJSON = require('./fsUtils.js').getPackageJSON;
+const path = require('path');
+const dateformat = require('dateformat');
+const computeDependencyHashes = require('./hashes.js').computeDependencyHashes;
+const fileHashsum = require('./hashes.js').fileHashsum;
+const jarDependencies = require('../scripts/dependencies.json');
+const globby = require('globby');
+const fs = require('fs');
+const fetch = require('node-fetch');
+const Headers = require('node-fetch').Headers;
 
-export function deployBuildInfo() {
+function deployBuildInfo() {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_ID;
@@ -27,7 +29,7 @@ export function deployBuildInfo() {
   });
 }
 
-export function deployVsix() {
+function deployVsix() {
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -133,3 +135,7 @@ function buildInfo(name, version, buildNumber) {
   };
 }
 
+module.exports = {
+  deployBuildInfo,
+  deployVsix
+}

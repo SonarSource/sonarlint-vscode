@@ -1,21 +1,28 @@
-import del from 'del';
-import fse from 'fs-extra';
-import fs from 'fs';
+const del = require('del');
+const fse = require('fs-extra');
+const fs = require('fs');
 
-export function clean() {
+function clean() {
   del(['*.vsix', 'server', 'out', 'out-cov']);
 }
 
-export function cleanJreDir() {
+function cleanJreDir() {
   if (fse.existsSync('./jre')) {
     fse.removeSync('./jre');
   }
 }
 
-export function getPackageJSON() {
+function getPackageJSON() {
   return JSON.parse(fs.readFileSync('package.json').toString());
 }
 
-export function deleteFile(filePath) {
+function deleteFile(filePath) {
   fs.unlinkSync(filePath);
+}
+
+module.exports = {
+  clean,
+  cleanJreDir,
+  getPackageJSON,
+  deleteFile
 }

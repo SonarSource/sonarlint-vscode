@@ -1,15 +1,15 @@
-import { cleanJreDir, deleteFile } from './fsUtils.js';
-import fse from 'fs-extra';
-import request from 'request';
-import url from 'url';
-import path from 'path';
-import log from 'fancy-log';
-import fetch from 'node-fetch';
-import fs from 'fs';
-import tar from 'tar';
-import zlib from 'node:zlib';
+const cleanJreDir = require('./fsUtils.js').cleanJreDir;
+const deleteFile = require('./fsUtils.js').deleteFile;
+const fse = require('fs-extra');
+const url = require('url');
+const path = require('path');
+const log = require('fancy-log');
+const fetch = require('node-fetch');
+const fs = require('fs');
+const tar = require('tar');
+const zlib = require('node:zlib');
 
-export async function downloadJre(targetPlatform, javaVersion) {
+async function downloadJre(targetPlatform, javaVersion) {
   cleanJreDir();
   fse.ensureDir('./jre', err => {
     log.error(err);
@@ -118,4 +118,6 @@ async function downloadFile(fileUrl, destPath) {
   });
 }
 
-// downloadJre('win32-x64', 17);
+downloadJre('win32-x64', 17)
+
+module.exports = downloadJre

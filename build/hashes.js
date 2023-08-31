@@ -1,11 +1,13 @@
-import { getPackageJSON } from './fsUtils.js';
-import { doForFiles, UNIVERSAL_PLATFORM, allPlatforms } from './build.js';
-import fs from 'fs';
-import crypto from 'crypto';
-import log from 'fancy-log';
-import path from 'path';
+const getPackageJSON = require('./fsUtils.js').getPackageJSON;
+const doForFiles = require('./build.js').doForFiles;
+const UNIVERSAL_PLATFORM = require('./common.js').UNIVERSAL_PLATFORM;
+const allPlatforms = require('./common.js').allPlatforms;
+const fs = require('fs');
+const crypto = require('crypto');
+const log = require('fancy-log');
+const path = require('path');
 
-export function computeUniversalVsixHashes() {
+function computeUniversalVsixHashes() {
   const version = getPackageJSON().version;
   doForFiles('.vsix', () => hashsum(UNIVERSAL_PLATFORM, version));
 }
@@ -34,7 +36,7 @@ function updateHashes(platform, file) {
   }
 }
 
-export function fileHashsum(filePath) {
+function fileHashsum(filePath) {
   const fileContent = fs.readFileSync(filePath);
   return ['sha1', 'md5'].map(algo => {
     const hash = crypto.createHash(algo).update(fileContent, 'binary').digest('hex');
@@ -43,7 +45,7 @@ export function fileHashsum(filePath) {
   });
 }
 
-export function computeDependencyHashes(dependencyLocation) {
+function computeDependencyHashes(dependencyLocation) {
   const dependencyContents = fs.readFileSync(dependencyLocation);
   const dependencyHashes = { md5: '', sha1: '' };
   updateBinaryHashes(dependencyContents, dependencyHashes);
@@ -57,4 +59,10 @@ function updateBinaryHashes(binaryContent, hashesObject) {
       log.info(`Computed ${algo}: ${hashesObject[algo]}`);
     }
   }
+}
+
+module.exports = {
+  computeDependencyHashes,
+  fileHashsum,
+  computeUniversalVsixHashes
 }

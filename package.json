@@ -38,7 +38,6 @@
   "capabilities": {
     "virtualWorkspaces": false
   },
-  "type": "module",
   "contributes": {
     "configuration": {
       "type": "object",
@@ -839,8 +838,9 @@
     "test-cov": "node out/test/runTest.js --coverage",
     "prepare": "node scripts/prepare.mjs",
     "cyclonedx-run": "cyclonedx-node",
-    "cyclonedx": "gulp cycloneDx",
-    "build": "node build.js"
+    "cyclonedx": "node build/sbomGeneration.js",
+    "build-all": "node build/build-all.js",
+    "build-universal": "node build/build-universal.js"
   },
   "dependencies": {
     "@vscode/webview-ui-toolkit": "1.0.0",
@@ -854,7 +854,7 @@
     "highlight.js": "^11.7.0",
     "inly": "4.0.8",
     "luxon": "^3.2.1",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "node-html-parser": "^6.1.5",
     "path-exists": "4.0.0",
     "properties": "1.2.1",

@@ -6,14 +6,14 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import openpgp from 'openpgp';
-import Stream from 'stream';
-import fs from 'fs';
-import path from 'path';
-import * as globby from 'globby';
-import log from 'fancy-log';
+const openpgp = require('openpgp');
+const Stream = require('stream');
+const fs = require('fs');
+const path = require('path');
+const globby = require('globby');
+const log = require('fancy-log');
 
-export async function signVsix(opts = {}) {
+module.exports = async function signVsix(opts = {}) {
   const files = globby.globbySync(path.join('*{.vsix,-cyclonedx.json}'));
 
   for (const file of files) {

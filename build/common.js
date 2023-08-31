@@ -5,16 +5,17 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import vsce from 'vsce';
-import fs from 'fs';
-import path from 'path';
-import { clean, cleanJreDir } from './fsUtils.js';
-import { updateVersion } from './updateVersion.js';
-import { downloadJre } from './jreDownload.js';
-import { cycloneDx } from './sbomGeneration.js';
-import { computeUniversalVsixHashes } from './hashes.js';
-import { deployBuildInfo, deployVsix } from './deploy.js';
-import { signVsix } from './sign.js';
+const vsce = require('vsce');
+const fs = require('fs');
+const path = require('path');
+const clean = require('./fsUtils.js').clean;
+const updateVersion = require('./updateVersion.js');
+const downloadJre = require('./jreDownload.js');
+const cycloneDx = require('./sbomGeneration.js');
+const computeUniversalVsixHashes = require('./hashes.js').computeUniversalVsixHashes;
+const deployBuildInfo = require('./deploy.js').deployBuildInfo;
+const deployVsix = require('./deploy.js').deployVsix;
+const signVsix = require('./sign.js');
 
 const LATEST_JRE = 17;
 export const UNIVERSAL_PLATFORM = 'universal';
@@ -30,28 +31,19 @@ export const allPlatforms = {};
   };
 });
 
-build();
-
-// usage examples:
-// node build.js --universal
-// node build.js --all
-async function build() {
-  await buildUniversal();
-  await buildAll();
-}
-
+// gulp deploy
 async function buildUniversal() {
   commonPreTasks();
   await vsce.createVSIX();
   commonPostTasks();
 }
 
+// gulp deploy-all
 async function buildAll() {
   commonPreTasks();
   for (const platform of TARGETED_PLATFORMS) {
     await buildForPlatform(platform);
   }
-  cleanJreDir();
   commonPostTasks();
 }
 
@@ -97,4 +89,9 @@ function fileHasExtension(file, extensions) {
     return fileExtension === extensions;
   }
   return extensions.includes(fileExtension);
+}
+
+module.exports = {
+  buildAll,
+  buildUniversal
 }
