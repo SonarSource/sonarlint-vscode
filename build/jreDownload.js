@@ -118,6 +118,4 @@ async function downloadFile(fileUrl, destPath) {
   });
 }
 
-downloadJre('win32-x64', 17)
-
 module.exports = downloadJre
