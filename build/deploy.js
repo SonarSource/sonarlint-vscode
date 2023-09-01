@@ -82,28 +82,37 @@ function atrifactoryUpload(readStream, url, fileName, options) {
   fetch(destinationUrl, {
     headers: {
       ...options.request.headers,
-      'Authorization':
-        'Basic ' + Buffer.from(`${options.username}:${options.password}`).toString('base64')
+      Authorization: 'Basic ' + Buffer.from(`${options.username}:${options.password}`).toString('base64')
     },
     method: 'PUT',
     body: readStream
-  }).then(res => {
-    if (!res.ok) {
-      log.error(`Failed to upload ${fileName} to ${destinationUrl}, ${res.status}`);
-    }
-  }).catch(err => log.error(`Failed to upload ${fileName} to ${destinationUrl}, ${err}`));
+  })
+    .then(res => {
+      if (!res.ok) {
+        log.error(`Failed to upload ${fileName} to ${destinationUrl}, ${res.status}`);
+      }
+    })
+    .catch(err => log.error(`Failed to upload ${fileName} to ${destinationUrl}, ${err}`));
 }
 
 async function buildInfo(name, version, buildNumber) {
   const {
-    CIRRUS_BUILD_ID, BUILD_ID, BUILD_REPOSITORY_NAME, BUILD_SOURCEVERSION, CIRRUS_BASE_BRANCH, GITHUB_BRANCH
+    CIRRUS_BUILD_ID,
+    BUILD_ID,
+    BUILD_REPOSITORY_NAME,
+    BUILD_SOURCEVERSION,
+    CIRRUS_BASE_BRANCH,
+    GITHUB_BRANCH
   } = process.env;
 
   const dependencies = jarDependencies.map(dep => {
     const id = `${dep.groupId}:${dep.artifactId}:${dep.version}`;
     const { md5, sha1 } = computeDependencyHashes(dep.output);
     return {
-      type: 'jar', id, md5, sha1
+      type: 'jar',
+      id,
+      md5,
+      sha1
     };
   });
 
@@ -117,20 +126,28 @@ async function buildInfo(name, version, buildNumber) {
     version: '1.0.1',
     name,
     number: buildNumber,
-    started: dateformat(new Date(), 'yyyy-mm-dd\'T\'HH:MM:ss.lo'),
+    started: dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
     url: `https://cirrus-ci.com/build/${CIRRUS_BUILD_ID}`,
     vcsRevision: BUILD_SOURCEVERSION,
     vcsUrl: `https://github.com/${BUILD_REPOSITORY_NAME}.git`,
-    modules: [{
-      id: `org.sonarsource.sonarlint.vscode:${name}:${version}`, properties: {
-        artifactsToDownload: `org.sonarsource.sonarlint.vscode:${name}:vsix`
-      }, artifacts: [...vsixPaths, ...additionalPaths].map(filePath => {
-        const [sha1, md5] = fileHashsum(filePath);
-        return {
-          type: path.extname(filePath).slice(1), sha1, md5, name: path.basename(filePath)
-        };
-      }), dependencies
-    }],
+    modules: [
+      {
+        id: `org.sonarsource.sonarlint.vscode:${name}:${version}`,
+        properties: {
+          artifactsToDownload: `org.sonarsource.sonarlint.vscode:${name}:vsix`
+        },
+        artifacts: [...vsixPaths, ...additionalPaths].map(filePath => {
+          const [sha1, md5] = fileHashsum(filePath);
+          return {
+            type: path.extname(filePath).slice(1),
+            sha1,
+            md5,
+            name: path.basename(filePath)
+          };
+        }),
+        dependencies
+      }
+    ],
     properties: {
       'java.specification.version': '1.8', // Workaround for https://jira.sonarsource.com/browse/RA-115
       'buildInfo.env.PROJECT_VERSION': version,
@@ -146,4 +163,4 @@ async function buildInfo(name, version, buildNumber) {
 module.exports = {
   deployBuildInfo,
   deployVsix
-}
+};

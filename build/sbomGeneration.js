@@ -11,6 +11,4 @@ function cycloneDx() {
   });
 }
 
-cycloneDx();
-
 module.exports = cycloneDx;
