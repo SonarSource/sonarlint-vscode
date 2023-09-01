@@ -41,7 +41,7 @@ async function deployBuildInfo() {
     log.error(`Error ${response.text()}`);
   } else {
     log.info('after uploading buildinfo');
-    log.info(response.json());
+    log.info(response.text());
   }
 }
 
