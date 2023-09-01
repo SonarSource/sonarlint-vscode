@@ -40,8 +40,8 @@ async function buildForPlatform(platform) {
 
 function commonPreTasks() {
   clean();
-  cycloneDx();
   updateVersion();
+  cycloneDx();
 }
 
 async function commonPostTasks() {
