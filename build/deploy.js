@@ -13,25 +13,35 @@ async function deployBuildInfo() {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const buildNumber = process.env.BUILD_ID;
-  log.info(`${process.env.ARTIFACTORY_URL}/api/build`)
-  log.info("Started with buildInfo");
+  log.info(`${process.env.ARTIFACTORY_URL}/api/build`);
+  log.info('Started with buildInfo');
   const json = await buildInfo(name, version, buildNumber);
-  log.info("Finished with buildInfo");
+  log.info('Finished with buildInfo');
   log.info(json);
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
-  headers.append('Authorization',
-    'Basic ' + Buffer.from(`${process.env.ARTIFACTORY_DEPLOY_USERNAME}:${process.env.ARTIFACTORY_DEPLOY_PASSWORD}`).toString('base64'));
+  headers.append(
+    'Authorization',
+    'Basic ' +
+      Buffer.from(`${process.env.ARTIFACTORY_DEPLOY_USERNAME}:${process.env.ARTIFACTORY_DEPLOY_PASSWORD}`).toString(
+        'base64'
+      )
+  );
   const body = JSON.stringify(json);
-  log.info("stringified build info coming")
-  log.info(body)
+  log.info('stringified build info coming');
+  log.info(body);
   const response = await fetch(`${process.env.ARTIFACTORY_URL}/api/build`, {
-    method: 'PUT', body: body, headers: headers
+    method: 'PUT',
+    body: body,
+    headers: headers
   });
   if (!response.ok) {
     log.error(`Error ${JSON.stringify(response)}`);
     log.error(`Error ${response.status}`);
     log.error(`Error ${response.text()}`);
+  } else {
+    log.info('after uploading buildinfo');
+    log.info(response.json());
   }
 }
 
