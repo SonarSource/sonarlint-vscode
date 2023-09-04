@@ -87,7 +87,10 @@ async function deployVsix() {
 
 function atrifactoryUpload(readStream, url, fileName, options) {
   // TODO verify that the options.properties are not needed in the URL
-  const destinationUrl = `${url}/${fileName}`;
+  let destinationUrl = `${url}/${fileName}`;
+  destinationUrl += Object.keys(options.properties).reduce(function (str, key) {
+    return `${str};${key}=${options.properties[key]}`;
+  }, '');
 
   fetch(destinationUrl, {
     headers: {
