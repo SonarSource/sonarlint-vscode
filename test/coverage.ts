@@ -44,7 +44,7 @@ export function instrument() {
   }
 }
 
-export function createReport(): void {
+export async function createReport(): Promise<void> {
   const iLibCoverage = require('istanbul-lib-coverage');
   const iLibSourceMaps = require('istanbul-lib-source-maps');
   const iLibReport = require('istanbul-lib-report');
@@ -52,14 +52,16 @@ export function createReport(): void {
 
   const global = new Function('return this')();
 
-  const mapStore = iLibSourceMaps.createSourceMapStore();
+  const mapStore = iLibSourceMaps.createSourceMapStore({});
   const coverageMap = iLibCoverage.createCoverageMap(global.__coverage__);
-  const transformed = mapStore.transformCoverage(coverageMap);
+  const transformed = await mapStore.transformCoverage(coverageMap);
 
-  const tree = iLibReport.summarizers.flat(transformed.map);
   const context = iLibReport.createContext({
-    dir: path.resolve(REPO_ROOT, `coverage`)
+    dir: path.resolve(REPO_ROOT, `coverage`),
+    coverageMap: transformed,
+    defaultSummarizer: 'flat'
   });
+  const tree = context.getTree('flat');
 
   const reports = [iReports.create('lcov')];
   reports.forEach(report => tree.visit(report, context));
