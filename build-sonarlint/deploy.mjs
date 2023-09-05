@@ -5,7 +5,7 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import { deployUniversal, executeWithDurationLog } from './common';
+import { deployUniversal, executeWithDurationLog } from './common.mjs';
 
 (async () => {
   await executeWithDurationLog(

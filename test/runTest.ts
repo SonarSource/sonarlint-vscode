@@ -30,15 +30,16 @@ function main() {
     path.resolve(extensionRootPath, 'test/samples'),
     '--disable-extensions',
     '--disable-workspace-trust',
-    `--user-data-dir=${userDataDir}`
+    `--user-data-dir=${userDataDir}`,
+    '--password-store=basic'
   ];
 
   const packageJsonPath = path.resolve(extensionRootPath, 'package.json');
   const package_json = fs.readFileSync(packageJsonPath, 'utf8');
-  var content = JSON.parse(package_json);
+  const content = JSON.parse(package_json);
 
   const extensionDevelopmentPath = extensionRootPath;
-  var outPath;
+  let outPath;
   if (process.argv.indexOf('--coverage') >= 0) {
     // Override main file path
     content.main = 'out-cov/src/extension';

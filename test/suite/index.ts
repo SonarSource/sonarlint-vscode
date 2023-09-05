@@ -52,10 +52,10 @@ export function run(): Promise<void> {
         e(error);
       }
     });
-  }).then(() => {
+  }).then(async () => {
     // Tests have finished executing, check if we should generate a coverage report
     if (process.env['GENERATE_COVERAGE']) {
-      createReport();
+      await createReport();
     }
   });
 }
