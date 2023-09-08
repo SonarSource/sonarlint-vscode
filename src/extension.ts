@@ -582,7 +582,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     showSslCertificateConfirmationDialog(cert)
   );
   languageClient.onNotification(protocol.ShowSoonUnsupportedVersionMessage.type,
-    async params => await showSoonUnsupportedVersionMessage(params, context.workspaceState)
+    params => showSoonUnsupportedVersionMessage(params, context.workspaceState)
   );
 }
 

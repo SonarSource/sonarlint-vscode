@@ -310,10 +310,10 @@ export class BindingService {
   }
 }
 
-export async function showSoonUnsupportedVersionMessage(params: ShowSoonUnsupportedVersionMessageParams, workspaceState: Memento){
+export function showSoonUnsupportedVersionMessage(params: ShowSoonUnsupportedVersionMessageParams, workspaceState: Memento){
   const hasBeenShown = workspaceState.get<boolean>(params.doNotShowAgainId, false);
   if (!hasBeenShown) {
-    await VSCode.window.showWarningMessage(params.text, DONT_ASK_AGAIN_ACTION).then(async action => {
+    VSCode.window.showWarningMessage(params.text, DONT_ASK_AGAIN_ACTION).then(async action => {
       if (action === DONT_ASK_AGAIN_ACTION) {
         workspaceState.update(params.doNotShowAgainId, true);
       }
