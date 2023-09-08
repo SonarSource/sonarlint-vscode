@@ -13,6 +13,7 @@ import { window } from 'vscode';
 import { SslCertificateConfirmationParams } from '../lsp/protocol';
 
 const OPEN_FOLDER_ACTION = 'Open Folder';
+export const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 
 export enum HotspotAnalysisConfirmation {
   RUN_ANALYSIS = 'Run analysis',

@@ -584,4 +584,13 @@ export namespace AnalyseOpenFileIgnoringExcludes {
   export const type = new lsp.NotificationType<AnalyseOpenFileIgnoringExcludesParams>('sonarlint/analyseOpenFileIgnoringExcludes')
 }
 
+export interface ShowSoonUnsupportedVersionMessageParams {
+  doNotShowAgainId: string;
+  text: string;
+}
+
+export namespace ShowSoonUnsupportedVersionMessage {
+  export const type = new lsp.NotificationType<ShowSoonUnsupportedVersionMessageParams>('sonarlint/showSoonUnsupportedVersionMessage')
+}
+
 //#endregion

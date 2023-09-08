@@ -12,7 +12,7 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
-import { BindingService } from './connected/binding';
+import { BindingService, showSoonUnsupportedVersionMessage } from './connected/binding';
 import { AllConnectionsTreeDataProvider } from './connected/connections';
 import {
   assistCreatingConnection,
@@ -580,6 +580,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   );
   languageClient.onRequest(protocol.SslCertificateConfirmation.type, cert =>
     showSslCertificateConfirmationDialog(cert)
+  );
+  languageClient.onNotification(protocol.ShowSoonUnsupportedVersionMessage.type,
+    params => showSoonUnsupportedVersionMessage(params, context.workspaceState)
   );
 }
 

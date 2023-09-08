@@ -8,6 +8,7 @@
 'use strict';
 
 import * as VSCode from 'vscode';
+import { Memento } from 'vscode';
 import { Commands } from '../util/commands';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
@@ -15,7 +16,8 @@ import { Connection, ServerType, WorkspaceFolderItem } from './connections';
 import { buildBaseServerUrl, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import { AssistBindingParams } from '../lsp/protocol';
+import { AssistBindingParams, ShowSoonUnsupportedVersionMessageParams } from '../lsp/protocol';
+import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -305,6 +307,17 @@ export class BindingService {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
     const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
     return !!binding.projectKey;
+  }
+}
+
+export function showSoonUnsupportedVersionMessage(params: ShowSoonUnsupportedVersionMessageParams, workspaceState: Memento){
+  const hasBeenShown = workspaceState.get<boolean>(params.doNotShowAgainId, false);
+  if (!hasBeenShown) {
+    VSCode.window.showWarningMessage(params.text, DONT_ASK_AGAIN_ACTION).then(async action => {
+      if (action === DONT_ASK_AGAIN_ACTION) {
+        workspaceState.update(params.doNotShowAgainId, true);
+      }
+    });
   }
 }
 

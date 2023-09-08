@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { SONARLINT_CATEGORY } from '../settings/settings';
 import { SonarLintDocumentation } from '../commons';
+import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
 
 const PATH_TO_COMPILE_COMMANDS = 'pathToCompileCommands';
 const FULL_PATH_TO_COMPILE_COMMANDS = `${SONARLINT_CATEGORY}.${PATH_TO_COMPILE_COMMANDS}`;
@@ -66,16 +67,15 @@ export function notifyMissingCompileCommands(context: vscode.ExtensionContext) {
     if ((await doNotAskAboutCompileCommandsFlag(context)) || remindMeLaterAboutCompileCommandsFlag) {
       return;
     }
-    const doNotAskAgainAction = `Don't ask again`;
     const remindMeLaterAction = 'Ask me later';
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarLint is unable to analyze C and C++ file(s) because there is no configured compilation 
       database.`;
     vscode.window
-      .showWarningMessage(message, configureCompileCommandsAction, remindMeLaterAction, doNotAskAgainAction)
+      .showWarningMessage(message, configureCompileCommandsAction, remindMeLaterAction, DONT_ASK_AGAIN_ACTION)
       .then(selection => {
         switch (selection) {
-          case doNotAskAgainAction:
+          case DONT_ASK_AGAIN_ACTION:
             context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
             break;
           case configureCompileCommandsAction:
