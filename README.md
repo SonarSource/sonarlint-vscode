@@ -5,9 +5,11 @@ SonarLint in VS Code supports analysis of JS/TS, Python, PHP, Java, C, C++, Go, 
 
 Check the [SonarLint for VS Code documentation](https://docs.sonarsource.com/sonarlint/vs-code/) for the most up-to-date requirements, installation instructions, and feature details.
 
+Sonar's [Clean Code solutions](https://www.sonarsource.com/solutions/clean-code/) help developers deliver high-quality, efficient code standards that benefit the entire team or organization. 
+
 ## How it works
 
-Simply open any source file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code, and also listed in the 'Problems' panel.
+Simply open any source file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code and also listed in the 'Problems' panel.
 
 ![sonarlint on-the-fly](images/sonarlint-vscode.gif)
 
@@ -72,7 +74,7 @@ If a suitable JRE cannot be found at those places, SonarLint will ask for your p
 
 ### JS/TS analysis specific requirements
 
-To analyze JavaScript and TypeScript code, SonarLint requires Node.js executable. The minimal supported version is `14.17.0` for standalone analysis or Connected Mode with SonarCloud. For Connected Mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate node, or you can force the location using:
+To analyze JavaScript and TypeScript code, SonarLint requires a Node.js executable. The minimal supported version is `14.17.0` for standalone analysis or Connected Mode with SonarCloud. For Connected Mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate Node, or you can force the location using:
 
 ```json
 {
@@ -245,4 +247,4 @@ Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.g
 
 ## Data and telemetry
 
-This extension collects anonymous usage data and sends it to SonarSource to help improve SonarLint functionality.  No source code nor IP address is collected, and SonarSource does not share the data with anyone else. Collection of telemetry is controlled via the setting: `sonarlint.disableTelemetry`. Click [here](telemetry-sample.md) to see a sample of the data that are collected.
+This extension collects anonymous usage data and sends it to SonarSource to help improve SonarLint functionality.  No source code or IP address is collected, and SonarSource does not share the data with anyone else. Collection of telemetry is controlled via the setting: `sonarlint.disableTelemetry`. Click [here](telemetry-sample.md) to see a sample of the data that are collected.
