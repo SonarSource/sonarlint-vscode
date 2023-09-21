@@ -593,4 +593,16 @@ export namespace ShowSoonUnsupportedVersionMessage {
   export const type = new lsp.NotificationType<ShowSoonUnsupportedVersionMessageParams>('sonarlint/showSoonUnsupportedVersionMessage')
 }
 
+export interface SubmitNewCodeDefinitionParams {
+  folderUri: string;
+  newCodeDefinitionOrMessage: string;
+  isSupported: boolean;
+}
+
+export namespace SubmitNewCodeDefinition {
+  export const type = new lsp.NotificationType<SubmitNewCodeDefinitionParams>(
+    'sonarlint/submitNewCodeDefinition'
+  );
+}
+
 //#endregion

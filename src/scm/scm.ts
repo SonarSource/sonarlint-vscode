@@ -128,8 +128,8 @@ class GitScm implements Scm {
     }
   }
 
-  updateReferenceBranchStatusItem(event?: vscode.TextEditor) {
-    const referenceBranchName = this.getReferenceBranchNameForFile(event?.document?.uri);
+  updateReferenceBranchStatusItem(textEditor?: vscode.TextEditor) {
+    const referenceBranchName = this.getReferenceBranchNameForFile(textEditor?.document?.uri);
     if (referenceBranchName) {
       this.referenceBranchStatusItem.text = `SonarLint branch: ${referenceBranchName}`;
       this.referenceBranchStatusItem.show();

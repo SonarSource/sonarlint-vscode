@@ -9,6 +9,7 @@ import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
+import { StatusBarAlignment } from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
@@ -62,10 +63,11 @@ import { getPlatform } from './util/platform';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
+import { filterOutFilesIgnoredForAnalysis, shouldAnalyseFile } from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { showSslCertificateConfirmationDialog } from './util/showMessage';
-import { filterOutFilesIgnoredForAnalysis, shouldAnalyseFile } from './util/util';
+import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -236,13 +238,14 @@ export async function activate(context: VSCode.ExtensionContext) {
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
   IssueService.init(languageClient);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
+  NewCodeDefinitionService.init(context);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
   });
 
   installCustomRequestHandlers(context);
 
-  const referenceBranchStatusItem = VSCode.window.createStatusBarItem();
+  const referenceBranchStatusItem = VSCode.window.createStatusBarItem(StatusBarAlignment.Left, 1);
   const scm = await initScm(languageClient, referenceBranchStatusItem);
   context.subscriptions.push(scm);
   context.subscriptions.push(
@@ -256,7 +259,10 @@ export async function activate(context: VSCode.ExtensionContext) {
     })
   );
   context.subscriptions.push(referenceBranchStatusItem);
-  VSCode.window.onDidChangeActiveTextEditor(e => scm.updateReferenceBranchStatusItem(e));
+  VSCode.window.onDidChangeActiveTextEditor(e => {
+    scm.updateReferenceBranchStatusItem(e)
+    NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(e);
+  });
 
   allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
   allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
@@ -276,6 +282,9 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint.connectedMode')) {
       allConnectionsTreeDataProvider.refresh();
+    }
+    if (event.affectsConfiguration('sonarlint.cleanAsYouCode')) {
+      NewCodeDefinitionService.instance.updateCleanAsYouCodeState()
     }
   });
 
@@ -584,6 +593,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowSoonUnsupportedVersionMessage.type,
     params => showSoonUnsupportedVersionMessage(params, context.workspaceState)
   );
+  languageClient.onNotification(protocol.SubmitNewCodeDefinition.type, newCodeDefinitionForFolderUri => {
+    NewCodeDefinitionService.instance.updateNewCodeDefinitionForFolderUri(newCodeDefinitionForFolderUri);
+  });
 }
 
 function updateSonarLintViewContainerBadge() {
