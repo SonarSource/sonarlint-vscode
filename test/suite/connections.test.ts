@@ -12,6 +12,8 @@ import { AllConnectionsTreeDataProvider, ConnectionGroup } from '../../src/conne
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import * as path from 'path';
 import { sampleFolderLocation } from './commons';
+import { ThemeIcon } from 'vscode';
+import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 
 const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
@@ -102,12 +104,18 @@ suite('Connected Mode Test Suite', () => {
         .update('connectedMode.project', { projectKey: 'projectKey1' }, vscode.ConfigurationTarget.WorkspaceFolder);
 
       const underTest = new AllConnectionsTreeDataProvider(mockClient);
+      ConnectionSettingsService.instance.reportConnectionCheckResult({
+        connectionId: '<default>',
+        success: false,
+        reason: 'unknown'
+      });
 
       const sonarQubeChildren = await underTest.getChildren(SQGroup);
 
       expect(sonarQubeChildren.length).to.equal(1);
       const connectionNode = sonarQubeChildren[0];
       expect(connectionNode.label).to.equal(testSQConfig[0].serverUrl);
+      expect((connectionNode.iconPath as ThemeIcon).id).to.equal('circle-large-outline');
 
       const connectionChildren = await underTest.getChildren(connectionNode);
       expect(connectionChildren.length).to.equal(1);
@@ -137,6 +145,36 @@ suite('Connected Mode Test Suite', () => {
       expect(sonarCloudChildren.length).to.equal(2);
       expect(sonarCloudChildren[0].label).to.equal(testSCConfig[0].organizationKey);
       expect(sonarCloudChildren[1].label).to.equal(testSCConfig[1].organizationKey);
+    });
+
+    test('should return two element list with proper icons when expanding SC and two connections exist', async () => {
+      const testSCConfig = [
+        { connectionId: 'one', organizationKey: 'myOrg1', token: 'ggggg' },
+        { connectionId: 'two', organizationKey: 'myOrg2', token: 'ddddd' }
+      ];
+      await vscode.workspace
+        .getConfiguration('sonarlint')
+        .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, testSCConfig, vscode.ConfigurationTarget.Global);
+
+      const underTest = new AllConnectionsTreeDataProvider(mockClient);
+
+      const sonarCloudChildren = await underTest.getChildren(SCGroup);
+      ConnectionSettingsService.instance.reportConnectionCheckResult({
+        connectionId: 'one',
+        success: true,
+        reason: null
+      });
+      ConnectionSettingsService.instance.reportConnectionCheckResult({
+        connectionId: 'two',
+        success: false,
+        reason: 'Authentication failed'
+      });
+
+      expect(sonarCloudChildren.length).to.equal(2);
+      expect(sonarCloudChildren[0].label).to.equal(testSCConfig[0].connectionId);
+      expect((sonarCloudChildren[0].iconPath as ThemeIcon).id).to.equal('pass');
+      expect(sonarCloudChildren[1].label).to.equal(testSCConfig[1].connectionId);
+      expect((sonarCloudChildren[1].iconPath as ThemeIcon).id).to.equal('error');
     });
   });
 });

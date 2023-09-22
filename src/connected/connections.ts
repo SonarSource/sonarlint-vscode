@@ -104,10 +104,10 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         let status: ConnectionStatus = 'loading';
         const connectionId: string = c.connectionId ? c.connectionId : DEFAULT_CONNECTION_ID;
         try {
-          const connectionCheckResult = await this.checkConnection(connectionId);
-          if (connectionCheckResult.success) {
+          const connectionCheckResult = ConnectionSettingsService.instance.getStatusForConnection(connectionId);
+          if (connectionCheckResult?.success) {
             status = 'ok';
-          } else if (!/unknown/.test(connectionCheckResult.reason)) {
+          } else if (connectionCheckResult && !/unknown/.test(connectionCheckResult.reason)) {
             status = 'notok';
           }
         } catch (e) {

@@ -265,15 +265,17 @@ function renderOrganizationKeyField(connection) {
     <input type="hidden" id="organizationKey-initial" value="${organizationKey}" />`;
 }
 
-
 async function handleMessage(message) {
-  handleMessageWithConnectionSettingsService(message, ConnectionSettingsService.instance );
+  handleMessageWithConnectionSettingsService(message, ConnectionSettingsService.instance);
 }
 
 /*
  * Exported for unit tests
  */
-export async function handleMessageWithConnectionSettingsService(message, connectionSettingsService: ConnectionSettingsService ) {
+export async function handleMessageWithConnectionSettingsService(
+  message,
+  connectionSettingsService: ConnectionSettingsService
+) {
   switch (message.command) {
     case OPEN_TOKEN_GENERATION_PAGE_COMMAND:
       await openTokenGenerationPage(message);
@@ -299,8 +301,8 @@ export function getDefaultConnectionId(message): string {
   if (message.serverUrl) {
     defaultConnectionId = cleanServerUrl(message.serverUrl);
   }
-  if(message.organizationKey) {
-    defaultConnectionId =  message.organizationKey;
+  if (message.organizationKey) {
+    defaultConnectionId = message.organizationKey;
   }
   return defaultConnectionId;
 }
@@ -323,12 +325,19 @@ async function openTokenGenerationPage(message) {
   await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen' });
 }
 
-async function saveConnection(connection: SonarQubeConnection | SonarCloudConnection, connectionSettingsService: ConnectionSettingsService) {
+async function saveConnection(
+  connection: SonarQubeConnection | SonarCloudConnection,
+  connectionSettingsService: ConnectionSettingsService
+) {
   const isSQConnection = isSonarQubeConnection(connection);
   const serverOrOrganization = isSQConnection ? connection.serverUrl : connection.organizationKey;
-  const connectionCheckResult = await connectionSettingsService.checkNewConnection(connection.token, serverOrOrganization, isSQConnection)
+  const connectionCheckResult = await connectionSettingsService.checkNewConnection(
+    connection.token,
+    serverOrOrganization,
+    isSQConnection
+  );
   if (!connectionCheckResult.success) {
-    reportConnectionCheckResult(connectionCheckResult)
+    await reportConnectionCheckResult(connectionCheckResult);
     return;
   }
   if (isSQConnection) {
@@ -348,6 +357,7 @@ async function saveConnection(connection: SonarQubeConnection | SonarCloudConnec
       await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
     }
   }
+  await reportConnectionCheckResult(connectionCheckResult);
 }
 
 function cleanServerUrl(serverUrl: string) {

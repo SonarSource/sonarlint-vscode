@@ -350,6 +350,7 @@ export namespace GetTokenForServer {
 
 export interface TokenUpdateNotificationParams {
   connectionId: string;
+  token: string;
 }
 
 export namespace OnTokenUpdate {
@@ -581,7 +582,9 @@ export interface AnalyseOpenFileIgnoringExcludesParams {
 }
 
 export namespace AnalyseOpenFileIgnoringExcludes {
-  export const type = new lsp.NotificationType<AnalyseOpenFileIgnoringExcludesParams>('sonarlint/analyseOpenFileIgnoringExcludes')
+  export const type = new lsp.NotificationType<AnalyseOpenFileIgnoringExcludesParams>(
+    'sonarlint/analyseOpenFileIgnoringExcludes'
+  );
 }
 
 export interface ShowSoonUnsupportedVersionMessageParams {
@@ -590,7 +593,9 @@ export interface ShowSoonUnsupportedVersionMessageParams {
 }
 
 export namespace ShowSoonUnsupportedVersionMessage {
-  export const type = new lsp.NotificationType<ShowSoonUnsupportedVersionMessageParams>('sonarlint/showSoonUnsupportedVersionMessage')
+  export const type = new lsp.NotificationType<ShowSoonUnsupportedVersionMessageParams>(
+    'sonarlint/showSoonUnsupportedVersionMessage'
+  );
 }
 
 export interface SubmitNewCodeDefinitionParams {
