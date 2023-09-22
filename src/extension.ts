@@ -338,13 +338,14 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
 
-
 function registerCommands(context: VSCode.ExtensionContext) {
-  context.subscriptions.push(VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
-    const sampleFileUri = VSCode.Uri.joinPath(context.extensionUri, 'walkthrough', 'sample.py');
-    const sampleDocument = await VSCode.workspace.openTextDocument(sampleFileUri);
-    await VSCode.window.showTextDocument(sampleDocument, VSCode.ViewColumn.Beside);
-  }));
+  context.subscriptions.push(
+    VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
+      const sampleFileUri = VSCode.Uri.joinPath(context.extensionUri, 'walkthrough', 'sample.py');
+      const sampleDocument = await VSCode.workspace.openTextDocument(sampleFileUri);
+      await VSCode.window.showTextDocument(sampleDocument, VSCode.ViewColumn.Beside);
+    })
+  );
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, showAllLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.CLEAR_LOCATIONS, clearLocations));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.NAVIGATE_TO_LOCATION, navigateToLocation));
@@ -516,7 +517,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()));
-  context.subscriptions.push(VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () => IssueService.instance.analyseOpenFileIgnoringExcludes()));
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () =>
+      IssueService.instance.analyseOpenFileIgnoringExcludes()
+    )
+  );
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
@@ -539,9 +544,11 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
   languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
   languageClient.onRequest(protocol.ShouldAnalyseFileCheck.type, params => shouldAnalyseFile(params.uri));
-  languageClient.onRequest(protocol.FilterOutExcludedFiles.type, params => filterOutFilesIgnoredForAnalysis(params.fileUris));
-  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, async checkResult => {
-    await reportConnectionCheckResult(checkResult);
+  languageClient.onRequest(protocol.FilterOutExcludedFiles.type, params =>
+    filterOutFilesIgnoredForAnalysis(params.fileUris)
+  );
+  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, checkResult => {
+    ConnectionSettingsService.instance.reportConnectionCheckResult(checkResult);
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
   });
   languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
@@ -581,8 +588,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.SslCertificateConfirmation.type, cert =>
     showSslCertificateConfirmationDialog(cert)
   );
-  languageClient.onNotification(protocol.ShowSoonUnsupportedVersionMessage.type,
-    params => showSoonUnsupportedVersionMessage(params, context.workspaceState)
+  languageClient.onNotification(protocol.ShowSoonUnsupportedVersionMessage.type, params =>
+    showSoonUnsupportedVersionMessage(params, context.workspaceState)
   );
 }
 
@@ -600,7 +607,6 @@ function updateSonarLintViewContainerBadge() {
 async function getTokenForServer(serverId: string): Promise<string> {
   return ConnectionSettingsService.instance.getServerToken(serverId);
 }
-
 
 async function showAllLocations(issue: protocol.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);

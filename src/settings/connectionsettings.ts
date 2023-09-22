@@ -10,6 +10,7 @@ import * as VSCode from 'vscode';
 import { Connection } from '../connected/connections';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { logToSonarLintOutput } from '../util/logging';
+import { ConnectionCheckResult } from '../lsp/protocol';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const CONNECTIONS_SECTION = 'connectedMode.connections';
@@ -59,11 +60,14 @@ async function suggestMigrationToSecureStorage(
 
 export class ConnectionSettingsService {
   private static _instance: ConnectionSettingsService;
+  private readonly connectionCheckResults: Map<string, ConnectionCheckResult>;
 
   constructor(
     private readonly secretStorage: VSCode.SecretStorage,
     private readonly client: SonarLintExtendedLanguageClient
-  ) {}
+  ) {
+    this.connectionCheckResults = new Map<string, ConnectionCheckResult>();
+  }
 
   static init(context: VSCode.ExtensionContext, client: SonarLintExtendedLanguageClient): void {
     ConnectionSettingsService._instance = new ConnectionSettingsService(context.secrets, client);
@@ -90,7 +94,7 @@ export class ConnectionSettingsService {
    */
   async storeServerToken(serverUrlOrOrganizationKey: string, token: string): Promise<void> {
     if (token) {
-      this.secretStorage.store(serverUrlOrOrganizationKey, token);
+      await this.secretStorage.store(serverUrlOrOrganizationKey, token);
     }
   }
 
@@ -131,10 +135,6 @@ export class ConnectionSettingsService {
       .update(SONARQUBE_CONNECTIONS_CATEGORY, sqConnections, VSCode.ConfigurationTarget.Global);
   }
 
-  getSonarQubeConnectionForUrl(serverUrl: string): SonarQubeConnection | undefined {
-    return this.getSonarQubeConnections().find(c => c.serverUrl === serverUrl);
-  }
-
   async addSonarQubeConnection(connection: SonarQubeConnection) {
     const connections = this.getSonarQubeConnections();
     const newConnection: SonarQubeConnection = { serverUrl: connection.serverUrl };
@@ -165,7 +165,7 @@ export class ConnectionSettingsService {
     }
     const didUpdateToken = await this.storeUpdatedConnectionToken(connection, connection.token);
     if (didUpdateToken) {
-      await this.client.onTokenUpdate(connection.connectionId);
+      await this.client.onTokenUpdate(connection.connectionId, connection.token);
     }
     delete connectionToUpdate.token;
     VSCode.workspace
@@ -177,10 +177,6 @@ export class ConnectionSettingsService {
     return VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
       .get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`);
-  }
-
-  getSonarCloudConnectionForOrganization(organization: string): SonarCloudConnection | undefined {
-    return this.getSonarCloudConnections().find(c => c.organizationKey === organization);
   }
 
   setSonarCloudConnections(scConnections: SonarCloudConnection[]) {
@@ -219,7 +215,7 @@ export class ConnectionSettingsService {
     }
     const didUpdateToken = await this.storeUpdatedConnectionToken(connection, connection.token);
     if (didUpdateToken) {
-      await this.client.onTokenUpdate(connection.connectionId);
+      await this.client.onTokenUpdate(connection.connectionId, connection.token);
     }
     delete connectionToUpdate.token;
     VSCode.workspace
@@ -301,6 +297,7 @@ export class ConnectionSettingsService {
       scConnections.splice(matchingConnectionIndex, 1);
       this.setSonarCloudConnections(scConnections);
     }
+    this.connectionCheckResults.delete(connection.id);
     return true;
   }
 
@@ -315,6 +312,14 @@ export class ConnectionSettingsService {
   async checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean) {
     return this.client.checkNewConnection(token, serverOrOrganization, isSonarQube);
   }
+
+  reportConnectionCheckResult(connectionCheckResult: ConnectionCheckResult) {
+    this.connectionCheckResults.set(connectionCheckResult.connectionId, connectionCheckResult);
+  }
+
+  getStatusForConnection(connectionId: string) {
+    return this.connectionCheckResults.get(connectionId);
+  }
 }
 
 function showSaveSettingsWarning() {
@@ -328,6 +333,7 @@ export interface BaseConnection {
   token?: string;
   connectionId?: string;
   disableNotifications?: boolean;
+  connectionCheckResult?: Promise<ConnectionCheckResult>;
 }
 
 export interface SonarQubeConnection extends BaseConnection {

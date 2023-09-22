@@ -36,7 +36,9 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean) {
-    const params = isSonarQube ? { token,  serverUrl: serverOrOrganization} : {token, organization: serverOrOrganization}
+    const params = isSonarQube
+      ? { token, serverUrl: serverOrOrganization }
+      : { token, organization: serverOrOrganization };
     return this.sendRequest(protocol.CheckConnection.type, params);
   }
 
@@ -44,8 +46,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetRemoteProjectNames.type, { connectionId, projectKeys });
   }
 
-  onTokenUpdate(connectionId: string) {
-    return this.sendNotification(protocol.OnTokenUpdate.type, { connectionId });
+  onTokenUpdate(connectionId: string, token: string) {
+    return this.sendNotification(protocol.OnTokenUpdate.type, { connectionId, token });
   }
 
   getRemoteProjectsForConnection(connectionId: string) {
@@ -122,14 +124,17 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     });
   }
 
-  analyseOpenFileIgnoringExcludes(textDocument?: AnalysisFile, notebookDocument?: VSCode.NotebookDocument, notebookCells?: AnalysisFile[]): Promise<void> {
-    return this.sendNotification(protocol.AnalyseOpenFileIgnoringExcludes.type,
-      {
-        textDocument,
-        notebookUri: notebookDocument ? notebookDocument.uri.toString() : null,
-        notebookVersion: notebookDocument ? notebookDocument.version : null,
-        notebookCells
-      });
+  analyseOpenFileIgnoringExcludes(
+    textDocument?: AnalysisFile,
+    notebookDocument?: VSCode.NotebookDocument,
+    notebookCells?: AnalysisFile[]
+  ): Promise<void> {
+    return this.sendNotification(protocol.AnalyseOpenFileIgnoringExcludes.type, {
+      textDocument,
+      notebookUri: notebookDocument ? notebookDocument.uri.toString() : null,
+      notebookVersion: notebookDocument ? notebookDocument.version : null,
+      notebookCells
+    });
   }
 
   changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {
