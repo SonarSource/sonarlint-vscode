@@ -1,3 +1,7 @@
+## 3.22
+
+* Update JS/TS/CSS analyzer 10.5.1 -> [10.6.0](https://github.com/SonarSource/SonarJS/releases/tag/10.6.0.22520), FP fixes, QuickFix for S6326, remove S2814 for TypeScript, recommendation to use Node.js 20
+
 ## 3.21
 
 * Highlight clean code attributes and impacts on software qualities in rule descriptions
