@@ -3,6 +3,7 @@
 * Add possibility to exclude files from analysis when ***not*** in Connected Mode. [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/file-exclusions)
 * Update JS/TS/CSS analyzer 10.5.1 -> [10.6.0](https://github.com/SonarSource/SonarJS/releases/tag/10.6.0.22520), FP fixes, QuickFix for S6326, remove S2814 for TypeScript, recommendation to use Node.js 20
 * Update CFamily analyzer 6.48 -> [6.49](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2014261%20ORDER%20BY%20created%20ASC), 2 new C++ MISRA 2023 rules
+* Update text and secrets analyzer 2.3.0 -> [2.4.0](https://github.com/SonarSource/sonar-text/releases/tag/2.4.0.2120), 42 new cloud app secrets
 
 
 ## 3.21
