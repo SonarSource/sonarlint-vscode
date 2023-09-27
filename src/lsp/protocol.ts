@@ -180,6 +180,10 @@ export namespace ShowHotspotNotification {
   export const type = new lsp.NotificationType<RemoteHotspot>('sonarlint/showHotspot');
 }
 
+export namespace ShowIssueNotification {
+  export const type = new lsp.NotificationType<Issue>('sonarlint/showIssue');
+}
+
 export interface TextRange {
   startLine: number;
   endLine?: number;
@@ -203,7 +207,6 @@ export interface Flow {
 export interface Issue {
   fileUri: string;
   message: string;
-  severity: string;
   ruleKey: string;
   connectionId?: string;
   creationDate?: string;
@@ -388,11 +391,6 @@ export interface GenerateTokenResponse {
 
 export namespace GenerateToken {
   export const type = new lsp.RequestType<GenerateTokenParams, GenerateTokenResponse, null>('sonarlint/generateToken');
-}
-
-export interface Range {
-  line: number;
-  character: number;
 }
 
 export interface Diagnostic extends lsp.Diagnostic {
@@ -605,9 +603,7 @@ export interface SubmitNewCodeDefinitionParams {
 }
 
 export namespace SubmitNewCodeDefinition {
-  export const type = new lsp.NotificationType<SubmitNewCodeDefinitionParams>(
-    'sonarlint/submitNewCodeDefinition'
-  );
+  export const type = new lsp.NotificationType<SubmitNewCodeDefinitionParams>('sonarlint/submitNewCodeDefinition');
 }
 
 //#endregion
