@@ -59,11 +59,6 @@ export class IssueItem extends vscode.TreeItem {
       : vscode.TreeItemCollapsibleState.Expanded;
     super(issueOrHotspot.message, collapsibleState);
     this.description = `(${issueOrHotspot.ruleKey})`;
-    const severityIcon = resolveExtensionFile('images', 'severity', `${issueOrHotspot.severity.toLowerCase()}.png`);
-    this.iconPath = {
-      light: severityIcon,
-      dark: severityIcon
-    };
     if (highlightOnly) {
       // "Highlight only" locations, no node appended
       this.children = [];

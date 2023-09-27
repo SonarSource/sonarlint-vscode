@@ -20,8 +20,7 @@ import {
   connectToSonarCloud,
   connectToSonarQube,
   editSonarCloudConnection,
-  editSonarQubeConnection,
-  reportConnectionCheckResult
+  editSonarQubeConnection
 } from './connected/connectionsetup';
 import {
   getHelpAndFeedbackItemById,
@@ -236,7 +235,7 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   ConnectionSettingsService.init(context, languageClient);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
-  IssueService.init(languageClient);
+  IssueService.init(languageClient, secondaryLocationsTree, issueLocationsView);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
   NewCodeDefinitionService.init(context);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {

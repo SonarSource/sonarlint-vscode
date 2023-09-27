@@ -366,6 +366,11 @@
         "category": "SonarLint"
       },
       {
+        "command": "SonarLint.OpenRuleDescCodeAction",
+        "title": "Show SonarLint rule description",
+        "category": "SonarLint"
+      },
+      {
         "command": "SonarLint.ShowSonarLintOutput",
         "title": "Show SonarLint Output",
         "category": "SonarLint"
