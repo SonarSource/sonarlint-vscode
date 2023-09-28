@@ -83,12 +83,21 @@ export class NewCodeDefinitionService {
     }
     const newCodeDefinition = this.getNewCodeDefinition(code2ProtocolConverter(workspaceFolder.uri));
     if (newCodeDefinition && this.cleanAsYouCode) {
+      const message = newCodeDefinition.newCodeDefinitionOrMessage;
       if (newCodeDefinition.isSupported) {
-        this.newCodeStatusBarItem.tooltip = `Showing issues on new code\n${newCodeDefinition.newCodeDefinitionOrMessage}`;
+        this.newCodeStatusBarItem.tooltip = `Showing issues on new code\n${message}`;
+      } else {
+        this.newCodeStatusBarItem.tooltip = `Showing all issues\n${message}`;
       }
       isSupportedForFile = newCodeDefinition.isSupported;
     } else {
-      this.newCodeStatusBarItem.tooltip = 'Showing all issues';
+      let reason = '';
+      if (!this.cleanAsYouCode) {
+        reason = '\nClean as You Code is disabled in settings';
+      } else if (!newCodeDefinition) {
+        reason = '\nThere is no new code definition for the project';
+      }
+      this.newCodeStatusBarItem.tooltip = `Showing all issues${reason}`;
     }
     this.updateStatusBarText(isSupportedForFile);
     this.newCodeStatusBarItem.show();
