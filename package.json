@@ -349,11 +349,11 @@
           "markdownDescription": "Disable sending anonymous usage statistics to SonarSource. Click [here](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md) to see a sample of the data that are collected.",
           "scope": "window"
         },
-        "sonarlint.cleanAsYouCode": {
+        "sonarlint.focusOnNewCode": {
           "order": 100,
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Enable SonarLint Clean as You Code mode. [Learn more](https://docs.sonarsource.com/sonarqube/latest/user-guide/clean-as-you-code/) about Clean as You Code.",
+          "markdownDescription": "Set SonarLint focus to new code. [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#clean-as-you-code-mode) about Clean as You Code.",
           "scope": "window"
         }
       }
