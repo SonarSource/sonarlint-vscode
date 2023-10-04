@@ -95,7 +95,7 @@ export class NewCodeDefinitionService {
         tooltipTitle = `Showing issues on new code`;
       }
     } else if (!this.focusOnNewCode) {
-      tooltipMessage = 'Focus on New Code is disabled in settings';
+      tooltipMessage = 'Focus on new code is disabled in settings';
     } else if (!newCodeDefinition) {
       tooltipMessage = 'There is no new code definition for the project';
     }
@@ -113,7 +113,7 @@ export class NewCodeDefinitionService {
   }
 
   updateStatusBarText(isSupportedForFile: boolean) {
-    const enabledText = this.focusOnNewCode && isSupportedForFile ? 'New Code' : 'Overall Code';
+    const enabledText = this.focusOnNewCode && isSupportedForFile ? 'new code' : 'overall code';
     this.newCodeStatusBarItem.text = `SonarLint focus: ${enabledText}`;
   }
 
