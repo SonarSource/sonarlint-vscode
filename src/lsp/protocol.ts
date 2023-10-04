@@ -212,6 +212,7 @@ export interface Issue {
   creationDate?: string;
   flows: Flow[];
   textRange: TextRange;
+  codeMatches?: boolean;
 }
 
 export namespace ShowIssueOrHotspotNotification {
