@@ -9,10 +9,9 @@
 
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as VSCode from 'vscode';
-import { code2ProtocolConverter, getFileNameFromFullPath, getRelativePathWithFileNameFromFullPath } from '../util/uri';
+import { code2ProtocolConverter, getFileNameFromFullPath, getRelativePathWithFileNameFromFullPath, protocol2CodeConverter } from '../util/uri';
 import { showNoActiveFileOpenWarning } from '../util/showMessage';
 import { AnalysisFile } from '../lsp/protocol';
-import { logToSonarLintOutput } from '../util/logging';
 import { Commands } from '../util/commands';
 import { isValidRange, LocationTreeItem, SecondaryLocationsTree } from '../location/locations';
 import * as protocol from '../lsp/protocol';
@@ -99,8 +98,8 @@ export class IssueService {
   }
 
   static async showIssue(issue: protocol.Issue) {
-    const foundUris = await VSCode.workspace.findFiles(`**/${issue.fileUri}`);
-    if (foundUris.length === 0) {
+    const documentUri = protocol2CodeConverter(issue.fileUri);
+    if (documentUri == null) {
       VSCode.window
         .showErrorMessage(
           `Could not find file '${issue.fileUri}' in the current workspace.
@@ -114,18 +113,14 @@ Please make sure that the right folder is open and bound to the right project on
           }
         });
     } else {
-      const documentUri = foundUris[0];
-      if (foundUris.length > 1) {
-        logToSonarLintOutput(`Multiple candidates found for '${issue.fileUri}', using first match '${documentUri}'`);
-      }
       const editor = await VSCode.window.showTextDocument(documentUri);
 
       const diagnostic = createDiagnosticFromIssue(issue);
 
-      if (!isValidRange(diagnostic.range, editor.document)) {
+      if (!isValidRange(diagnostic.range, editor.document) || !issue.codeMatches) {
         VSCode.window.showWarningMessage(
           `SonarLint failed to open a SonarQube issue in '${getFileNameFromFullPath(issue.fileUri)}'.
-           Local code does not match remote. `
+           Local code does not match remote. Please make sure that the right branch is checked out.`
         );
         return;
       }

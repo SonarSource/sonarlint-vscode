@@ -8,7 +8,6 @@
 'use strict';
 import { Flow, Issue } from '../lsp/protocol';
 import * as vscode from 'vscode';
-import { code2ProtocolConverter } from './uri';
 import * as protocol from '../lsp/protocol';
 import { DiagnosticSeverity } from 'vscode';
 
@@ -24,12 +23,7 @@ export async function adaptFlows(issue: Issue) {
 export async function adaptLocations(flow: Flow) {
   return Promise.all(
     flow.locations.map(async location => {
-      const foundUris = await vscode.workspace.findFiles(`**/${location.filePath}`);
-      const fileUri = foundUris[0];
-      location.filePath = code2ProtocolConverter(fileUri);
-      location.codeMatches = true;
-      location.exists = true;
-      location.uri = location.filePath;
+      location.filePath = location.uri;
       return location;
     })
   );
