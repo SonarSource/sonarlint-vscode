@@ -55,7 +55,7 @@ export class NewCodeDefinitionService {
               .update('focusOnNewCode', !this.focusOnNewCode, VSCode.ConfigurationTarget.Global);
           }
           if (item.label === `Learn more about 'Clean as You Code'`) {
-            VSCode.env.openExternal(VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#clean-as-you-code-mode'));
+            VSCode.env.openExternal(VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code'));
           }
         });
     }));
@@ -105,7 +105,7 @@ export class NewCodeDefinitionService {
     this.newCodeStatusBarItem.tooltip = `${tooltipTitle}${tooltipMessage}`;
   }
 
-  isSupportedForFile(newCodeDefinition:NewCodeDefinition) {
+  isSupportedForFile(newCodeDefinition: NewCodeDefinition) {
     if (newCodeDefinition && this.focusOnNewCode) {
       return newCodeDefinition.isSupported;
     }
