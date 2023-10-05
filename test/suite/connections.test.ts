@@ -158,7 +158,6 @@ suite('Connected Mode Test Suite', () => {
 
       const underTest = new AllConnectionsTreeDataProvider(mockClient);
 
-      const sonarCloudChildren = await underTest.getChildren(SCGroup);
       ConnectionSettingsService.instance.reportConnectionCheckResult({
         connectionId: 'one',
         success: true,
@@ -169,6 +168,7 @@ suite('Connected Mode Test Suite', () => {
         success: false,
         reason: 'Authentication failed'
       });
+      const sonarCloudChildren = await underTest.getChildren(SCGroup);
 
       expect(sonarCloudChildren.length).to.equal(2);
       expect(sonarCloudChildren[0].label).to.equal(testSCConfig[0].connectionId);
