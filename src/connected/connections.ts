@@ -105,6 +105,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         const connectionId: string = c.connectionId ? c.connectionId : DEFAULT_CONNECTION_ID;
         try {
           const connectionCheckResult = ConnectionSettingsService.instance.getStatusForConnection(connectionId);
+          console.log(`Connection check result:\n${JSON.stringify(connectionCheckResult)}`)
           if (connectionCheckResult?.success) {
             status = 'ok';
           } else if (connectionCheckResult && !/unknown/.test(connectionCheckResult.reason)) {
@@ -143,7 +144,9 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     } else if (element.contextValue === 'sonarQubeGroup') {
       return this.getConnections('sonarqube');
     } else if (element.contextValue === 'sonarCloudGroup') {
-      return this.getConnections('sonarcloud');
+      const connections = this.getConnections('sonarcloud');
+      console.log(`SonarCloud connections:\n${JSON.stringify(connections)}`);
+      return connections;
     } else if (element.contextValue === 'sonarqubeConnection' || element.contextValue === 'sonarcloudConnection') {
       const connection = element as Connection;
       const serverType = element.contextValue === 'sonarqubeConnection' ? 'SonarQube' : 'SonarCloud';

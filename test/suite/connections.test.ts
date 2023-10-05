@@ -172,7 +172,7 @@ suite('Connected Mode Test Suite', () => {
 
       expect(sonarCloudChildren.length).to.equal(2);
       expect(sonarCloudChildren[0].label).to.equal(testSCConfig[0].connectionId);
-      console.log(JSON.stringify(sonarCloudChildren));
+      console.log(`SonarCloud children\n${JSON.stringify(sonarCloudChildren)}`);
       expect((sonarCloudChildren[0].iconPath as ThemeIcon).id).to.equal('pass');
       expect(sonarCloudChildren[1].label).to.equal(testSCConfig[1].connectionId);
       expect((sonarCloudChildren[1].iconPath as ThemeIcon).id).to.equal('error');
