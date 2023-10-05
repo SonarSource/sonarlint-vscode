@@ -18,10 +18,10 @@ export class NewCodeDefinitionService {
   private static _instance: NewCodeDefinitionService;
   private readonly newCodeDefinitionByFolderUriCache = new Map<string, NewCodeDefinition>();
   private newCodeStatusBarItem: VSCode.StatusBarItem;
-  private cleanAsYouCode: boolean;
+  private focusOnNewCode: boolean;
 
   constructor() {
-    this.cleanAsYouCode = this.getCleanAsYouCodeFromConfiguration();
+    this.focusOnNewCode = this.getFocusOnNewCodeFromConfiguration();
   }
 
   static init(context: VSCode.ExtensionContext): void {
@@ -48,18 +48,19 @@ export class NewCodeDefinitionService {
 
   createNewCodeDefinitionStatusBarItem(context: VSCode.ExtensionContext) {
     context.subscriptions.push(VSCode.commands.registerCommand(Commands.NEW_CODE_DEFINITION, () => {
-      VSCode.window.showQuickPick([{ label: `Toggle 'Clean as You Code'` }, { label: `Learn more about 'Clean as You Code'` }])
+      const toggleLabel = `Focus on ${this.focusOnNewCode ? 'overall code' : 'new code'}'`;
+      VSCode.window.showQuickPick([{ label: toggleLabel }, { label: `Learn how to deliver clean code with Clean as You Code` }])
         .then(async item => {
-          if (item.label === `Toggle 'Clean as You Code'`) {
+          if (item.label === toggleLabel) {
             await VSCode.workspace.getConfiguration('sonarlint')
-              .update('cleanAsYouCode', !this.cleanAsYouCode, VSCode.ConfigurationTarget.Global);
+              .update('focusOnNewCode', !this.focusOnNewCode, VSCode.ConfigurationTarget.Global);
           }
-          if (item.label === `Learn more about 'Clean as You Code'`) {
+          if (item.label === `Learn how to deliver clean code with Clean as You Code`) {
             VSCode.env.openExternal(VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code'));
           }
         });
     }));
-    this.cleanAsYouCode = VSCode.workspace.getConfiguration().get('sonarlint.cleanAsYouCode', false);
+    this.focusOnNewCode = VSCode.workspace.getConfiguration().get('sonarlint.focusOnNewCode', false);
     this.newCodeStatusBarItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 0);
 
     this.newCodeStatusBarItem.command = Commands.NEW_CODE_DEFINITION;
@@ -73,7 +74,6 @@ export class NewCodeDefinitionService {
       this.newCodeStatusBarItem.hide();
       return;
     }
-    let isSupportedForFile = false;
     const textDocument = textEditor.document;
     const uri = textDocument.uri;
     const workspaceFolder = VSCode.workspace.getWorkspaceFolder(uri);
@@ -82,30 +82,46 @@ export class NewCodeDefinitionService {
       return;
     }
     const newCodeDefinition = this.getNewCodeDefinition(code2ProtocolConverter(workspaceFolder.uri));
-    if (newCodeDefinition && this.cleanAsYouCode) {
-      if (newCodeDefinition.isSupported) {
-        this.newCodeStatusBarItem.tooltip = `Showing issues on new code\n${newCodeDefinition.newCodeDefinitionOrMessage}`;
-      }
-      isSupportedForFile = newCodeDefinition.isSupported;
-    } else {
-      this.newCodeStatusBarItem.tooltip = 'Showing all issues';
-    }
-    this.updateStatusBarText(isSupportedForFile);
+    this.updateStatusBarTooltip(newCodeDefinition);
+    this.updateStatusBarText(this.isSupportedForFile(newCodeDefinition));
     this.newCodeStatusBarItem.show();
   }
 
-  updateStatusBarText(isSupportedForFile: boolean) {
-    const enabledText = this.cleanAsYouCode && isSupportedForFile ? 'on' : 'off';
-    this.newCodeStatusBarItem.text = `Clean as You Code: ${enabledText}`;
+  private updateStatusBarTooltip(newCodeDefinition: NewCodeDefinition) {
+    const genericMessage = 'SonarLint focus helps you to deliver clean code by focusing on code that was recently modified';
+    let newCodeDefinitionMessage = '';
+    if (newCodeDefinition && this.focusOnNewCode) {
+      newCodeDefinitionMessage = newCodeDefinition.newCodeDefinitionOrMessage;
+    } else if (!this.focusOnNewCode) {
+      newCodeDefinitionMessage = 'The SonarLint focus setting is disabled';
+    } else if (!newCodeDefinition) {
+      newCodeDefinitionMessage = 'There is no new code definition for the project';
+    }
+    if (newCodeDefinitionMessage.length > 0) {
+      newCodeDefinitionMessage = `\n\nIssues shown: ${newCodeDefinitionMessage}`;
+    }
+    this.newCodeStatusBarItem.tooltip = `${genericMessage}${newCodeDefinitionMessage}`;
   }
 
-  updateCleanAsYouCodeState() {
-    this.cleanAsYouCode = this.getCleanAsYouCodeFromConfiguration();
+  isSupportedForFile(newCodeDefinition: NewCodeDefinition) {
+    if (newCodeDefinition && this.focusOnNewCode) {
+      return newCodeDefinition.isSupported;
+    }
+    return false;
+  }
+
+  updateStatusBarText(isSupportedForFile: boolean) {
+    const enabledText = this.focusOnNewCode && isSupportedForFile ? 'new code' : 'overall code';
+    this.newCodeStatusBarItem.text = `SonarLint focus: ${enabledText}`;
+  }
+
+  updateFocusOnNewCodeState() {
+    this.focusOnNewCode = this.getFocusOnNewCodeFromConfiguration();
     this.updateNewCodeStatusBarItem(VSCode.window.activeTextEditor);
   }
 
-  private getCleanAsYouCodeFromConfiguration() {
-    return VSCode.workspace.getConfiguration('sonarlint').get('cleanAsYouCode', false);
+  private getFocusOnNewCodeFromConfiguration() {
+    return VSCode.workspace.getConfiguration('sonarlint').get('focusOnNewCode', false);
   }
 }
 

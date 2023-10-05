@@ -283,8 +283,8 @@ export async function activate(context: VSCode.ExtensionContext) {
     if (event.affectsConfiguration('sonarlint.connectedMode')) {
       allConnectionsTreeDataProvider.refresh();
     }
-    if (event.affectsConfiguration('sonarlint.cleanAsYouCode')) {
-      NewCodeDefinitionService.instance.updateCleanAsYouCodeState()
+    if (event.affectsConfiguration('sonarlint.focusOnNewCode')) {
+      NewCodeDefinitionService.instance.updateFocusOnNewCodeState()
     }
   });
 
