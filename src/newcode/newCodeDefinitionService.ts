@@ -48,13 +48,14 @@ export class NewCodeDefinitionService {
 
   createNewCodeDefinitionStatusBarItem(context: VSCode.ExtensionContext) {
     context.subscriptions.push(VSCode.commands.registerCommand(Commands.NEW_CODE_DEFINITION, () => {
-      VSCode.window.showQuickPick([{ label: `Toggle 'SonarLint focus'` }, { label: `Learn more about 'Clean as You Code'` }])
+      const toggleLabel = `Toggle 'SonarLint focus ${this.focusOnNewCode ? 'overall code' : 'new code'}'`;
+      VSCode.window.showQuickPick([{ label: toggleLabel }, { label: `Learn how to deliver clean code with Clean as You Code` }])
         .then(async item => {
-          if (item.label === `Toggle 'SonarLint focus'`) {
+          if (item.label === toggleLabel) {
             await VSCode.workspace.getConfiguration('sonarlint')
               .update('focusOnNewCode', !this.focusOnNewCode, VSCode.ConfigurationTarget.Global);
           }
-          if (item.label === `Learn more about 'Clean as You Code'`) {
+          if (item.label === `Learn how to deliver clean code with Clean as You Code`) {
             VSCode.env.openExternal(VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code'));
           }
         });
@@ -87,22 +88,19 @@ export class NewCodeDefinitionService {
   }
 
   private updateStatusBarTooltip(newCodeDefinition: NewCodeDefinition) {
-    let tooltipTitle = 'Showing all issues';
-    let tooltipMessage = '';
+    let genericMessage = 'SonarLint focus helps you to deliver clean code by focusing the analysis on code that was recently modified';
+    let newCodeDefinitionMessage = '';
     if (newCodeDefinition && this.focusOnNewCode) {
-      tooltipMessage = newCodeDefinition.newCodeDefinitionOrMessage;
-      if (newCodeDefinition.isSupported) {
-        tooltipTitle = `Showing issues on new code`;
-      }
+      newCodeDefinitionMessage = newCodeDefinition.newCodeDefinitionOrMessage;
     } else if (!this.focusOnNewCode) {
-      tooltipMessage = 'Focus on new code is disabled in settings';
+      newCodeDefinitionMessage = 'The SonarLint focus setting is disabled';
     } else if (!newCodeDefinition) {
-      tooltipMessage = 'There is no new code definition for the project';
+      newCodeDefinitionMessage = 'There is no new code definition for the project';
     }
-    if (tooltipMessage.length > 0) {
-      tooltipMessage = `\n${tooltipMessage}`;
+    if (newCodeDefinitionMessage.length > 0) {
+      newCodeDefinitionMessage = `\n\nIssues shown: ${newCodeDefinitionMessage}`;
     }
-    this.newCodeStatusBarItem.tooltip = `${tooltipTitle}${tooltipMessage}`;
+    this.newCodeStatusBarItem.tooltip = `${genericMessage}${newCodeDefinitionMessage}`;
   }
 
   isSupportedForFile(newCodeDefinition: NewCodeDefinition) {

@@ -353,7 +353,7 @@
           "order": 100,
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Set SonarLint focus to new code. [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#clean-as-you-code-mode) about Clean as You Code.",
+          "markdownDescription": "Set SonarLint focus to new code. [Learn how](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code) to deliver clean code with Clean as You Code.",
           "scope": "window"
         }
       }
