@@ -48,7 +48,7 @@ export class NewCodeDefinitionService {
 
   createNewCodeDefinitionStatusBarItem(context: VSCode.ExtensionContext) {
     context.subscriptions.push(VSCode.commands.registerCommand(Commands.NEW_CODE_DEFINITION, () => {
-      const toggleLabel = `Toggle 'SonarLint focus ${this.focusOnNewCode ? 'overall code' : 'new code'}'`;
+      const toggleLabel = `Focus on ${this.focusOnNewCode ? 'overall code' : 'new code'}'`;
       VSCode.window.showQuickPick([{ label: toggleLabel }, { label: `Learn how to deliver clean code with Clean as You Code` }])
         .then(async item => {
           if (item.label === toggleLabel) {
@@ -88,7 +88,7 @@ export class NewCodeDefinitionService {
   }
 
   private updateStatusBarTooltip(newCodeDefinition: NewCodeDefinition) {
-    let genericMessage = 'SonarLint focus helps you to deliver clean code by focusing the analysis on code that was recently modified';
+    const genericMessage = 'SonarLint focus helps you to deliver clean code by focusing on code that was recently modified';
     let newCodeDefinitionMessage = '';
     if (newCodeDefinition && this.focusOnNewCode) {
       newCodeDefinitionMessage = newCodeDefinition.newCodeDefinitionOrMessage;
