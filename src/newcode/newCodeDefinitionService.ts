@@ -92,7 +92,6 @@ export class NewCodeDefinitionService {
     }
     this.updateStatusBarText(isSupportedForFile);
     this.newCodeStatusBarItem.show();
-
   }
 
   updateStatusBarText(isSupportedForFile: boolean) {
