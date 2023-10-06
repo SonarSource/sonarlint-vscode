@@ -8,7 +8,7 @@
   {
     "groupId": "org.sonarsource.slang",
     "artifactId": "sonar-go-plugin",
-    "version": "1.14.0.4481",
+    "version": "1.15.0.4655",
     "output": "analyzers/sonargo.jar"
   },
   {
