@@ -5,6 +5,7 @@
 * Update CFamily analyzer 6.48 -> [6.49](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2014261%20ORDER%20BY%20created%20ASC), 2 new C++ MISRA 2023 rules
 * Update text and secrets analyzer 2.3.0 -> [2.4.0](https://github.com/SonarSource/sonar-text/releases/tag/2.4.0.2120), 42 new cloud app secrets
 * Update Python analyzer 4.7 -> [4.8](https://sonarsource.atlassian.net/projects/SONARPY/versions/14270/tab/release-report-all-issues), 8 Numpy rules and 3 quick fixes, FN fixes
+* Update IaC analyzer 1.20 -> [1.21](https://github.com/SonarSource/sonar-iac/releases/tag/1.21.0.5999), 16 new rules for Docker analyzer, improved detection of Dockerfiles
 
 ## 3.21
 
