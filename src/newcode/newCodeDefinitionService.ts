@@ -48,7 +48,7 @@ export class NewCodeDefinitionService {
 
   createNewCodeDefinitionStatusBarItem(context: VSCode.ExtensionContext) {
     context.subscriptions.push(VSCode.commands.registerCommand(Commands.NEW_CODE_DEFINITION, () => {
-      const toggleLabel = `Focus on ${this.focusOnNewCode ? 'overall code' : 'new code'}'`;
+      const toggleLabel = `Focus on ${this.focusOnNewCode ? 'overall code' : 'new code'}`;
       VSCode.window.showQuickPick([{ label: toggleLabel }, { label: `Learn how to deliver clean code with Clean as You Code` }])
         .then(async item => {
           if (item.label === toggleLabel) {
