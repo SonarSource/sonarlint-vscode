@@ -7,6 +7,7 @@
 * Update Python analyzer 4.7 -> [4.8](https://sonarsource.atlassian.net/projects/SONARPY/versions/14270/tab/release-report-all-issues), 8 Numpy rules and 3 quick fixes, FN fixes
 * Update IaC analyzer 1.20 -> [1.21](https://github.com/SonarSource/sonar-iac/releases/tag/1.21.0.5999), 16 new rules for Docker analyzer, improved detection of Dockerfiles
 * Update Go analyzer 1.14 -> [1.15](https://sonarsource.atlassian.net/projects/SONARSLANG/versions/14258/tab/release-report-all-issues), enable "NOSONAR" commentary in SonarLint, bug fixes and improvements
+* Update Java analyzer 7.24 -> [7.25](https://github.com/SonarSource/sonar-java/releases/tag/7.25.0.32245), [Custom Rules] CheckRegistrar classes can register check instances, default quality profile and AutoScan
 
 ## 3.21
 
