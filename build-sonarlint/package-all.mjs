@@ -9,7 +9,7 @@ import _default from './constants.mjs';
 const { TARGETED_PLATFORMS, LATEST_JRE, OMNISHARP_VERSION } = _default;
 import downloadJre from './jreDownload.mjs';
 import { cleanJreDir, cleanOmnisharpDir } from './fsUtils.mjs';
-import { createVSIX } from 'vsce';
+import { createVSIX } from '@vscode/vsce';
 import {
   downloadAndExtractOmnisharp,
   downloadOmnisharpAllPlatformDistributions,

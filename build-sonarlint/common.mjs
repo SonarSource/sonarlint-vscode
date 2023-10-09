@@ -5,7 +5,7 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import { createVSIX } from 'vsce';
+  import { createVSIX } from '@vscode/vsce';
 import { clean, cleanOmnisharpDir } from './fsUtils.mjs';
 import { info } from 'fancy-log';
 import updateVersion from './updateVersion.mjs';
