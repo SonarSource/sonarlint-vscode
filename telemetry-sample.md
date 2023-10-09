@@ -54,6 +54,10 @@
       "faq": 4 
     }
   },
+  "new_code_focus": {
+    "enabled": true,
+    "changes": 5
+  },
   "vscode": {
     "uiKind": "Web",
     "remoteName": "codespaces",
