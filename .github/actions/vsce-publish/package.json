@@ -8,6 +8,6 @@
   "license": "SEE LICENSE IN ../../../LICENSE.txt",
   "type": "module",
   "dependencies": {
-    "@vscode/vsce": "2.17.0"
+    "@vscode/vsce": "2.21.1"
   }
 }
