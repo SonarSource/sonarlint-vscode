@@ -15,3 +15,4 @@ test/userdir
 !test/userdir/User/settings.json
 its/extdir*
 .DS_Store
+omnisharp

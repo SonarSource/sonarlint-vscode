@@ -16,7 +16,10 @@ import { waitForSonarLintDiagnostics, dumpLogOutput } from '../common/util';
 const sampleFolderLocation = '../../../samples/';
 
 suite('Extension Test Suite', () => {
-  vscode.window.showInformationMessage('Start all tests.');
+
+  suiteSetup(() => {
+    vscode.window.showInformationMessage('Start all tests.');
+  });
 
   test('Extension should be present', () => {
     assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));

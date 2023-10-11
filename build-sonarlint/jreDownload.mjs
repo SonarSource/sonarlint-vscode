@@ -15,13 +15,20 @@ import { existsSync, mkdirSync, createReadStream, createWriteStream } from 'fs';
 import { extract } from 'tar';
 import { createGunzip } from 'node:zlib';
 
+const HTTP_BAD_REQUEST = 400;
+
 export default async function downloadJre(targetPlatform, javaVersion) {
   cleanJreDir();
-  ensureDir('./jre', err => {
-    if (err) {
-      error(`Error while ensuring existance of ./jre folder.${err}`);
-    }
-  });
+
+  await new Promise((resolve, reject) => {
+    ensureDir('./jre', err => {
+      if (err) {
+        error(`Error while ensuring existance of ./jre folder.${err}`);
+        reject(err);
+      }
+    });
+    resolve();
+  })
 
   const platformMapping = {
     'linux-arm64': 'linux-aarch64',
@@ -32,7 +39,7 @@ export default async function downloadJre(targetPlatform, javaVersion) {
   };
 
   if(!isValidParams(targetPlatform, platformMapping)) {
-    return;
+    throw new Error('Invalid param');
   }
 
   info(`Downloading justj JRE ${javaVersion} for the platform ${targetPlatform} ...`);
@@ -51,8 +58,9 @@ export default async function downloadJre(targetPlatform, javaVersion) {
   });
 
   if (!manifest) {
-    error(`Failed to download justj.manifest, please check if the link ${manifestUrl} is valid.`);
-    return;
+    const message = `Failed to download justj.manifest, please check if the link ${manifestUrl} is valid.`;
+    error(message);
+    throw new Error(message);
   }
 
   /**
@@ -72,11 +80,10 @@ export default async function downloadJre(targetPlatform, javaVersion) {
   });
 
   if (!jreIdentifier) {
-    error(
-      `justj doesn't support the jre ${javaVersion} for the platform ${javaPlatform}
-       (${targetPlatform}), please refer to the link ${manifestUrl} for the supported platforms.`
-    );
-    return;
+    const message = `justj doesn't support the jre ${javaVersion} for the platform ${javaPlatform}
+     (${targetPlatform}), please refer to the link ${manifestUrl} for the supported platforms.`;
+    error(message);
+    throw new Error(message);
   }
 
   const jreDownloadUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/${jreIdentifier}`;
@@ -100,13 +107,26 @@ export default async function downloadJre(targetPlatform, javaVersion) {
     cwd: outputFolderPath // Set the current working directory for extraction
   });
   compressedReadStream.pipe(decompressionStream).pipe(extractionStream);
-  extractionStream.on('finish', () => {
-    info('Extraction complete.');
-    deleteFile(inputFilePath);
+
+  return new Promise((resolve, reject) => {
+    extractionStream.on('finish', () => {
+      info('Extraction complete.');
+      deleteFile(inputFilePath);
+      resolve();
+    });
+    compressedReadStream.on('error', err => {
+      error('Error reading compressed file:', err);
+      reject(err);
+    });
+    decompressionStream.on('error', err => {
+      error('Error decompressing:', err);
+      reject(err);
+    });
+    extractionStream.on('error', err => {
+      error('Error extracting:', err);
+      reject(err);
+    });
   });
-  compressedReadStream.on('error', err => error('Error reading compressed file:', err));
-  decompressionStream.on('error', err => error('Error decompressing:', err));
-  extractionStream.on('error', err => error('Error extracting:', err));
 }
 
 function isValidParams(targetPlatform, platformMapping) {
@@ -123,11 +143,14 @@ function isValidParams(targetPlatform, platformMapping) {
   return true;
 }
 
-async function downloadFile(fileUrl, destPath) {
+export async function downloadFile(fileUrl, destPath) {
   return new Promise(function (resolve, reject) {
     fetch(fileUrl).then(function (res) {
       const fileStream = createWriteStream(destPath);
       res.body.on('error', reject);
+      if (res.statusCode >= HTTP_BAD_REQUEST) {
+        reject(new Error(`Unexpected HTTP status code: ${res.statusCode} - ${res.statusText}`));
+      }
       fileStream.on('finish', resolve);
       res.body.pipe(fileStream);
     });
