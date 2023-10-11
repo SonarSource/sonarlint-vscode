@@ -42,6 +42,7 @@ export function languageServerCommand(
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarcfamily.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonartext.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonariac.jar'));
+  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarlintomnisharp.jar'));
 
   return { command: javaExecutablePath, args: params, transport: TransportKind.stdio };
 }

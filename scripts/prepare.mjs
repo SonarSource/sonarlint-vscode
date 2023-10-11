@@ -7,7 +7,6 @@
 'use strict';
 import { exec } from 'child_process';
 import { createHash } from 'crypto';
-import { error as _error } from 'fancy-log';
 import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 
@@ -29,8 +28,6 @@ const credentialsDefined =
 const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
 
 const jarDependencies = JSON.parse(readFileSync(resolve(dirname(''), 'scripts/dependencies.json')));
-
-const HTTP_OK = 200;
 
 if (!existsSync('server')) {
   mkdirSync('server');

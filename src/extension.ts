@@ -214,7 +214,8 @@ export async function activate(context: VSCode.ExtensionContext) {
             installTime,
             isTelemetryEnabled: VSCode.env.isTelemetryEnabled,
             ...(VSCode.env.isTelemetryEnabled && { machineId: VSCode.env.machineId })
-          }
+          },
+          omnisharpDirectory: Path.resolve(context.extensionPath, 'omnisharp')
         },
         enableNotebooks: true
       };

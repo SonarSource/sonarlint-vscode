@@ -6,5 +6,14 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import { createVSIX } from 'vsce';
+import { downloadOmnisharpAllPlatformDistributions } from './omnisharpDownload.mjs';
+import { cleanOmnisharpDir } from './fsUtils.mjs';
+import _default from './constants.mjs';
 
-(async () => await createVSIX())();
+const { OMNISHARP_VERSION } = _default;
+
+(async () => {
+  await downloadOmnisharpAllPlatformDistributions(OMNISHARP_VERSION);
+  await createVSIX();
+  cleanOmnisharpDir();
+})();

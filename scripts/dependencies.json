@@ -2,7 +2,7 @@
   {
     "groupId": "org.sonarsource.sonarlint.ls",
     "artifactId": "sonarlint-language-server",
-    "version": "2.23.0.74445",
+    "version": "2.23.0.74468",
     "output": "server/sonarlint-ls.jar"
   },
   {
@@ -65,5 +65,11 @@
     "artifactId": "sonar-iac-plugin",
     "version": "1.21.0.5999",
     "output": "analyzers/sonariac.jar"
+  },
+  {
+    "groupId": "org.sonarsource.sonarlint.omnisharp",
+    "artifactId": "sonarlint-omnisharp-plugin",
+    "version": "1.13.0.76953",
+    "output": "analyzers/sonarlintomnisharp.jar"
   }
 ]

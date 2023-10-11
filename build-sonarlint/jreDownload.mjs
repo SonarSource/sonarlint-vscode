@@ -15,6 +15,8 @@ import { existsSync, mkdirSync, createReadStream, createWriteStream } from 'fs';
 import { extract } from 'tar';
 import { createGunzip } from 'node:zlib';
 
+const HTTP_BAD_REQUEST = 400;
+
 export default async function downloadJre(targetPlatform, javaVersion) {
   cleanJreDir();
   ensureDir('./jre', err => {
@@ -123,11 +125,14 @@ function isValidParams(targetPlatform, platformMapping) {
   return true;
 }
 
-async function downloadFile(fileUrl, destPath) {
+export async function downloadFile(fileUrl, destPath) {
   return new Promise(function (resolve, reject) {
     fetch(fileUrl).then(function (res) {
       const fileStream = createWriteStream(destPath);
       res.body.on('error', reject);
+      if (res.statusCode >= HTTP_BAD_REQUEST) {
+        reject(new Error(`Unexpected HTTP status code: ${res.statusCode} - ${res.statusText}`));
+      }
       fileStream.on('finish', resolve);
       res.body.pipe(fileStream);
     });
