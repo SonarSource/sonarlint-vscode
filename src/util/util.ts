@@ -216,6 +216,8 @@ export function globPatternToRegex(globPattern: string): RegExp {
       } else {
         regex += '([^/]*)';
       }
+    } else if (c === '?') {
+      regex += '.';
     } else {
       regex += c;
     }

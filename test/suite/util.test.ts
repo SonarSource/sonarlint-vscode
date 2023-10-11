@@ -59,12 +59,11 @@ suite('util', () => {
   });
 
   test('should recognize build running locallly', () => {
-    delete process.env.NODE_ENV
+    delete process.env.NODE_ENV;
     expect(isRunningAutoBuild()).to.be.false;
   });
 
   test('should find all files in folder', async () => {
-
     const folderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
 
     const files = await findFilesInFolder(folderUri, cancelToken);
@@ -116,10 +115,11 @@ suite('util', () => {
   });
 
   test('should convert glob pattern to regex', async () => {
-    expect(globPatternToRegex('**/*.java').source).to.equal('\\.java$')
-    expect(globPatternToRegex('**/*.c++').source).to.equal('^((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$')
-    expect(globPatternToRegex('**/**/*.c++').source).to.equal('^((?:[^/]*(?:\\/|$))*)((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$')
-    expect(globPatternToRegex('/**').source).to.equal('^\\/((?:[^/]*(?:\\/|$))*)$')
+    expect(globPatternToRegex('**/*.java').source).to.equal('\\.java$');
+    expect(globPatternToRegex('**/*.c++').source).to.equal('^((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$');
+    expect(globPatternToRegex('**/**/*.c++').source).to.equal('^((?:[^/]*(?:\\/|$))*)((?:[^/]*(?:\\/|$))*)([^/]*)\\.c\\+\\+$');
+    expect(globPatternToRegex('/**').source).to.equal('^\\/((?:[^/]*(?:\\/|$))*)$');
+    expect(globPatternToRegex('**/*Bean?.java').source).to.equal('^((?:[^/]*(?:\\/|$))*)([^/]*)Bean.\\.java$');
   });
 
   test('should build master regex pattern from array of glob patterns', async () => {
@@ -128,23 +128,75 @@ suite('util', () => {
   });
 
   test('should filter files by glob patterns', async () => {
-    const files:vscode.Uri[] = [];
+    const files: vscode.Uri[] = [];
     // @ts-ignore
     files.push({
-      path: '/hello/foo.bar'
+      path: 'anyDirectory/anyFile.css'
     });
     // @ts-ignore
     files.push({
-      path: '/hello/foo.baz'
+      path: 'org/sonar.api/MyBean.java'
+    });
+    // @ts-ignore
+    files.push({
+      path: 'org/sonar/util/MyDTO.java'
+    });
+    // @ts-ignore
+    files.push({
+      path: 'org/sonar/util/MyOtherBean1.java'
+    });
+    // @ts-ignore
+    files.push({
+      path: 'org/sonar/util/MyOtherBean.java'
+    });
+    // @ts-ignore
+    files.push({
+      path: 'org/sonar/MyClass.java'
+    });
+    // @ts-ignore
+    files.push({
+      path: 'org/sonar/util/MyClassUtil.java'
+    });
+    // @ts-ignore
+    files.push({
+      path: 'org/radar/MyClass.java'
     });
 
-    const matchedFiles = getFilesMatchedGlobPatterns(files, ['**/*.bar']);
-    const notMatchedFiles = getFilesNotMatchedGlobPatterns(files, ['**/*.bar']);
-
+    let globPatterns = ['**/*.css'];
+    let matchedFiles = getFilesMatchedGlobPatterns(files, globPatterns);
+    let notMatchedFiles = getFilesNotMatchedGlobPatterns(files, globPatterns);
     expect(matchedFiles.length).to.equal(1);
-    expect(matchedFiles[0].path).to.equal('/hello/foo.bar');
-    expect(notMatchedFiles.length).to.equal(1);
-    expect(notMatchedFiles[0].path).to.equal('/hello/foo.baz');
+    expect(matchedFiles[0].path).to.equal('anyDirectory/anyFile.css');
+    expect(notMatchedFiles.length).to.equal(7);
+
+    globPatterns = ['**/*Bean.java'];
+    matchedFiles = getFilesMatchedGlobPatterns(files, globPatterns);
+    notMatchedFiles = getFilesNotMatchedGlobPatterns(files, globPatterns);
+    expect(matchedFiles.length).to.equal(2);
+    expect(matchedFiles).to.eql([{ path: 'org/sonar.api/MyBean.java' }, { path: 'org/sonar/util/MyOtherBean.java' }]);
+    expect(notMatchedFiles.length).to.equal(6);
+
+    globPatterns = ['**/*Bean?.java'];
+    matchedFiles = getFilesMatchedGlobPatterns(files, globPatterns);
+    notMatchedFiles = getFilesNotMatchedGlobPatterns(files, globPatterns);
+    expect(matchedFiles.length).to.equal(1);
+    expect(matchedFiles[0].path).to.equal('org/sonar/util/MyOtherBean1.java');
+    expect(notMatchedFiles.length).to.equal(7);
+
+    globPatterns = ['org/sonar/*'];
+    matchedFiles = getFilesMatchedGlobPatterns(files, globPatterns);
+    notMatchedFiles = getFilesNotMatchedGlobPatterns(files, globPatterns);
+    expect(matchedFiles.length).to.equal(1);
+    expect(matchedFiles[0].path).to.equal('org/sonar/MyClass.java');
+    expect(notMatchedFiles.length).to.equal(7);
+
+    globPatterns = ['org/sonar/**/*'];
+    matchedFiles = getFilesMatchedGlobPatterns(files, globPatterns);
+    notMatchedFiles = getFilesNotMatchedGlobPatterns(files, globPatterns);
+    expect(matchedFiles.length).to.equal(5);
+    expect(matchedFiles).to.eql([{ path: 'org/sonar/util/MyDTO.java' }, { path: 'org/sonar/util/MyOtherBean1.java' },
+      { path: 'org/sonar/util/MyOtherBean.java' }, { path: 'org/sonar/MyClass.java' }, { path: 'org/sonar/util/MyClassUtil.java' }]);
+    expect(notMatchedFiles.length).to.equal(3);
   });
 
   test('should filter files by ide exclusions', async () => {
