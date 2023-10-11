@@ -67,6 +67,7 @@ import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { showSslCertificateConfirmationDialog } from './util/showMessage';
 import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
+import { ShowIssueNotification } from './lsp/protocol';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -235,7 +236,6 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   ConnectionSettingsService.init(context, languageClient);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
-  IssueService.init(languageClient, secondaryLocationsTree, issueLocationsView);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
   NewCodeDefinitionService.init(context);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
@@ -259,7 +259,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   );
   context.subscriptions.push(referenceBranchStatusItem);
   VSCode.window.onDidChangeActiveTextEditor(e => {
-    scm.updateReferenceBranchStatusItem(e)
+    scm.updateReferenceBranchStatusItem(e);
     NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(e);
   });
 
@@ -275,6 +275,10 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(issueLocationsView);
 
+  IssueService.init(languageClient, secondaryLocationsTree, issueLocationsView);
+
+  context.subscriptions.push(languageClient.onNotification(ShowIssueNotification.type, IssueService.showIssue));
+
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
       allRulesTreeDataProvider.refresh();
@@ -283,7 +287,7 @@ export async function activate(context: VSCode.ExtensionContext) {
       allConnectionsTreeDataProvider.refresh();
     }
     if (event.affectsConfiguration('sonarlint.focusOnNewCode')) {
-      NewCodeDefinitionService.instance.updateFocusOnNewCodeState()
+      NewCodeDefinitionService.instance.updateFocusOnNewCodeState();
     }
   });
 
