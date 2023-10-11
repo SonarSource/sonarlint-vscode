@@ -13,6 +13,8 @@ import {describe, after, before, it} from 'mocha';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 
+import { activateAndShowOutput } from '../common/util';
+
 const sampleCFamilyFolderLocation = '../../../samples/sample-cfamily/';
 const firstCompileDbToCreatePath = path.join(__dirname, sampleCFamilyFolderLocation, 'compile_commands.json');
 const firstCompileDbToCreate = vscode.Uri.file(firstCompileDbToCreatePath);
@@ -23,7 +25,10 @@ describe('CFamily Test Suite', () => {
   vscode.window.showInformationMessage('Start cfamily tests.');
 
   before(async function () {
+    this.timeout(30 * 1000);
     await resetPathToCompileCommands();
+
+    await activateAndShowOutput();
   });
 
   it('should detect compilation database correctly', async () => {

@@ -50,3 +50,10 @@ function sleep(ms: number): Promise<void> {
     setTimeout(resolve, ms);
   });
 }
+
+export async function activateAndShowOutput() {
+  const ext = vscode.extensions.getExtension('sonarsource.sonarlint-vscode');
+  await ext?.activate();
+
+  vscode.commands.executeCommand('SonarLint.ShowSonarLintOutput');
+}

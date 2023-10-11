@@ -37,10 +37,7 @@ async function main() {
 
     const vsixes = fs.readdirSync('..').filter(fn => fn.endsWith('.vsix'));
     // Use cp.spawn / cp.exec for custom setup
-    cp.spawnSync(cliPath, [
-      `--extensions-dir=${extensionsDir}`,
-      '--install-extension', '../' + vsixes[0]
-    ], {
+    cp.spawnSync(cliPath, [`--extensions-dir=${extensionsDir}`, '--install-extension', '../' + vsixes[0]], {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
@@ -48,10 +45,7 @@ async function main() {
     const testErrors = [];
 
     const runTestSuite = async (suiteDir: string, workspaceDir?: string) => {
-      const launchArgs = [
-        `--user-data-dir=${userDataDir}`,
-        `--extensions-dir=${extensionsDir}`,
-      ];
+      const launchArgs = [`--user-data-dir=${userDataDir}`, `--extensions-dir=${extensionsDir}`];
       if (workspaceDir) {
         launchArgs.unshift(path.resolve(__dirname, `../../samples/${workspaceDir}`));
       }
@@ -75,15 +69,13 @@ async function main() {
     await runTestSuite('./cfamilySuite', 'workspace-cfamily.code-workspace');
 
     ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
-      cp.spawnSync(cliPath, [
-        `--extensions-dir=${extensionsDir}`,
-        '--install-extension', requiredExtensionId
-      ], {
+      cp.spawnSync(cliPath, [`--extensions-dir=${extensionsDir}`, '--install-extension', requiredExtensionId], {
         encoding: 'utf-8',
         stdio: 'inherit'
       });
     });
     await runTestSuite('./javaSuite', 'workspace-java.code-workspace');
+    await runTestSuite('./csharpsuite', 'workspace-csharp.code-workspace');
 
     if (testErrors.length > 0) {
       throw new Error('At least one test suite failed, please check logs above for actual failure.');
@@ -95,7 +87,7 @@ async function main() {
     if (extensionsDir !== '' && fs.existsSync(extensionsDir)) {
       try {
         fs.rmdirSync(extensionsDir, { recursive: true });
-      } catch(e) {
+      } catch (e) {
         // NOP
       }
     }

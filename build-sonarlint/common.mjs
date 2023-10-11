@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import { createVSIX } from 'vsce';
-import { clean } from './fsUtils.mjs';
+import { clean, cleanOmnisharpDir } from './fsUtils.mjs';
 import { info } from 'fancy-log';
 import updateVersion from './updateVersion.mjs';
 import downloadJre from './jreDownload.mjs';
@@ -15,19 +15,29 @@ import { computeUniversalVsixHashes } from './hashes.mjs';
 import { deployBuildInfo, deployVsix } from './deployUtils.mjs';
 import signVsix from './sign.mjs';
 import _default from './constants.mjs';
-const { TARGETED_PLATFORMS, LATEST_JRE } = _default;
+import {
+  downloadOmnisharpAllPlatformDistributions,
+  downloadAndExtractOmnisharp,
+  omnisharpPlatformMapping
+} from './omnisharpDownload.mjs';
+const { TARGETED_PLATFORMS, LATEST_JRE, OMNISHARP_VERSION } = _default;
 
 export async function deployUniversal() {
   commonPreBuildTasks();
-  await createVSIX();
+  await buildUniversal();
   await commonPostBuildTasks();
 }
 
 export async function deployAll() {
   commonPreBuildTasks();
-  await createVSIX();
+  await buildUniversal();
   await buildTargeted();
   await commonPostBuildTasks();
+}
+
+async function buildUniversal() {
+  await downloadOmnisharpAllPlatformDistributions(OMNISHARP_VERSION);
+  await createVSIX();
 }
 
 async function buildTargeted() {
@@ -40,7 +50,10 @@ async function buildTargeted() {
 
 async function buildForPlatform(platform) {
   await downloadJre(platform, LATEST_JRE);
+  await downloadAndExtractOmnisharp(OMNISHARP_VERSION, omnisharpPlatformMapping[platform]);
+  await downloadAndExtractOmnisharp(OMNISHARP_VERSION, 'net6');
   await createVSIX({ target: platform });
+  cleanOmnisharpDir();
 }
 
 function commonPreBuildTasks() {

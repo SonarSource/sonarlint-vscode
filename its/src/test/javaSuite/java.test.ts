@@ -11,7 +11,7 @@ import * as path from 'path';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 
-import { dumpLogOutput, waitForSonarLintDiagnostics } from '../common/util';
+import { activateAndShowOutput, dumpLogOutput, waitForSonarLintDiagnostics } from '../common/util';
 
 const sampleFolderLocation = '../../../samples/';
 const sampleJavaFolderLocation = '../../../samples/sample-java-maven-multi-module/';
@@ -19,10 +19,8 @@ const sampleJavaFolderLocation = '../../../samples/sample-java-maven-multi-modul
 const JAVA_LS_TIMEOUT_MILLIS = 30000;
 
 suite('Java Test Suite', () => {
-  vscode.window.showInformationMessage('Start java tests.');
-  vscode.commands.executeCommand('workbench.panel.markers.view.focus');
 
-  suiteSetup('Ensure readiness of extension and Java LS', function (done) {
+  suiteSetup('Ensure readiness of extension and Java LS', async function () {
     this.timeout(JAVA_LS_TIMEOUT_MILLIS);
     assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'), 'Extension did not load');
     const javaExtension = vscode.extensions.getExtension('redhat.java');
@@ -30,12 +28,16 @@ suite('Java Test Suite', () => {
     const javaExtensionApi = javaExtension?.exports;
     assert.ok(javaExtensionApi.onDidServerModeChange, 'Java extension does not export required API');
 
-    javaExtensionApi.onDidServerModeChange((mode: string) => {
-      // At this point, we'll wait at most JAVA_LS_TIMEOUT_MILLIS until the Java LS is up in Standard mode
-      if (mode === 'Standard') {
-        done();
-      }
+    const serverModeChangePromise = new Promise<void>((resolve, _) => {
+      javaExtensionApi.onDidServerModeChange((mode: string) => {
+        // At this point, we'll wait at most JAVA_LS_TIMEOUT_MILLIS until the Java LS is up in Standard mode
+        if (mode === 'Standard') {
+          resolve();
+        }
+      });
     });
+
+    await Promise.all([ serverModeChangePromise, activateAndShowOutput() ]);
   });
 
   test('should report issue on java file', async function () {

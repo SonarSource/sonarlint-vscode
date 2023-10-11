@@ -15,13 +15,18 @@ import * as os from 'os';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 
-import { waitForSonarLintDiagnostics } from '../common/util';
+import { activateAndShowOutput, waitForSonarLintDiagnostics } from '../common/util';
 
 const secretsFolderLocation = '../../../samples/sample-secrets';
 const secretIssueMessage = 'Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.';
 
 suite('Secrets Test Suite', () => {
-  vscode.window.showInformationMessage('Starting Secrets tests.');
+  suiteSetup(async function () {
+    this.timeout(30 * 1000);
+    vscode.window.showInformationMessage('Starting Secrets tests.');
+
+    await activateAndShowOutput();
+  });
 
   test('should find secrets in yaml files', async function () {
     const fileUri = vscode.Uri.file(path.join(__dirname, secretsFolderLocation, 'file.yml'));
