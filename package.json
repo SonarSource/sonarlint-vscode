@@ -886,7 +886,7 @@
   },
   "devDependencies": {
     "@cyclonedx/bom": "^4.0.3",
-    "@types/chai": "^4.2.10",
+    "@types/chai": "^4.3.9",
     "@types/follow-redirects": "1.13.1",
     "@types/glob": "8.0.0",
     "@types/lodash": "^4.14.194",
@@ -895,7 +895,7 @@
     "@types/node": "^10.17.17",
     "@types/vscode": "^1.73.1",
     "@vscode/test-electron": "^2.3.4",
-    "chai": "^4.2.0",
+    "chai": "^4.3.10",
     "crypto": "^0.0.3",
     "dateformat": "^2.0.0",
     "del": "^2.2.2",
