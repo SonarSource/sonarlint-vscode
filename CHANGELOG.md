@@ -2,6 +2,7 @@
 
 * Bump minimum required Java runtime version to Java 17.
 * Update Python analyzer 4.8 -> [4.9](https://sonarsource.atlassian.net/projects/SONARPY/versions/14308/tab/release-report-all-issues), 5 new rules for Pandas library
+* Update JS/TS/CSS analyzer 10.6.0 -> [10.7.0](https://github.com/SonarSource/SonarJS/releases/tag/10.7.0.22914) -> [10.8.0](https://github.com/SonarSource/SonarJS/releases/tag/10.8.0.24207), new rules, FP fixes, improved diagnostics for memory issues
 
 ## 3.22
 
