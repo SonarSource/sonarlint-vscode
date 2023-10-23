@@ -856,7 +856,7 @@
     "test": "node out/test/runTest.js",
     "test-cov": "node out/test/runTest.js --coverage",
     "prepare": "node scripts/prepare.mjs",
-    "cyclonedx-run": "cyclonedx-node",
+    "cyclonedx-run": "cyclonedx-npm",
     "cyclonedx": "node build-sonarlint/sbomGeneration.mjs",
     "deploy-all": "node build-sonarlint/deployAll.mjs",
     "deploy-universal": "node build-sonarlint/deploy.mjs",
