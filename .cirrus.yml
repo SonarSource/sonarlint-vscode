@@ -173,7 +173,7 @@ mend_scan_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   env:
     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
-    JDK_VERSION: "11"
+    JDK_VERSION: "17"
   whitesource_script:
     - source cirrus-env QA # read build number
     - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")

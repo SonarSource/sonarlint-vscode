@@ -19,7 +19,7 @@
   "os": "Linux",
   "platform": "linux",
   "architecture": "x64",
-  "jre": "11.0.6",
+  "jre": "17.0.5",
   "nodejs": "11.12.0",
   "server_notifications": {
     "disabled": false,
