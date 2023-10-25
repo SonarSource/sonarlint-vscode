@@ -1,3 +1,7 @@
+## 4.0
+
+* Bump minimum required Java runtime version to Java 17.
+
 ## 3.22
 
 * Add possibility to exclude files from analysis when ***not*** in Connected Mode. [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/file-exclusions)

@@ -41,7 +41,7 @@ The full list of available rules is visible in the **SONARLINT RULES** view in t
 
 ## Requirements
 
-The SonarLint language server needs a Java Runtime (JRE) 11+.
+The SonarLint language server needs a Java Runtime (JRE) 17+.
 
 On the following platforms, SonarLint comes with its own Java runtime:
 
@@ -55,7 +55,7 @@ On other platforms and if a Java runtime is already installed on your computer, 
 
    ```json
    {
-     "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jre-11.0.11"
+     "sonarlint.ls.javaHome": "C:\\Program Files\\Java\\jdk-17"
    }
    ```
 
