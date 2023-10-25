@@ -9,6 +9,7 @@
 * Update text and secrets analyzer 2.5.0 -> [2.6.1](https://sonarsource.atlassian.net/projects/SONARTEXT/versions/15331/tab/release-report-all-issues), FP fixes, improvements
 * Bump minimum required Java runtime version to Java 17.
 * Embed Java 21 LTS in platform-specific packages
+* Allow opening issues from SonarQube into the IDE (starting from SonarQube v10.3)
 
 ## 3.22
 

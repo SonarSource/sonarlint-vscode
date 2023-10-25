@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 'use strict';
-import { Flow, Issue } from '../lsp/protocol';
+import { Flow, Issue, TextRange } from '../lsp/protocol';
 import * as vscode from 'vscode';
 import * as protocol from '../lsp/protocol';
 import { DiagnosticSeverity } from 'vscode';
@@ -31,13 +31,23 @@ export async function adaptLocations(flow: Flow) {
 
 export function createDiagnosticFromIssue(issue: protocol.Issue) {
   const { startLine, startLineOffset, endLine, endLineOffset } = issue.textRange;
-  // vscode line positions are 0-based
-  const startPosition = new vscode.Position(startLine - 1, startLineOffset);
-  const endPosition = new vscode.Position(endLine - 1, endLineOffset);
-  const range = new vscode.Range(startPosition, endPosition);
-
+  let startPosition = new vscode.Position(0, 0);
+  let endPosition = new vscode.Position(0, 0);
+  let range = new vscode.Range(startPosition, endPosition);
+  if (!isFileLevelIssue(issue.textRange)) {
+    // this is NOT a file-level issue
+    // vscode line positions are 0-based
+    startPosition = new vscode.Position(startLine - 1, startLineOffset);
+    endPosition = new vscode.Position(endLine - 1, endLineOffset);
+    range = new vscode.Range(startPosition, endPosition);
+  }
   const issueDiag = new vscode.Diagnostic(range, 'params.message', DiagnosticSeverity.Warning);
   issueDiag.code = issue.ruleKey;
-  issueDiag.source = `sonarlint${issue.ruleKey}`;
+  issueDiag.source = `sonarlint(${issue.ruleKey})`;
+  issueDiag.message = issue.message;
   return issueDiag;
+}
+
+export function isFileLevelIssue(textRange: TextRange) {
+  return textRange.startLine === 0 || textRange.endLine === 0;
 }
