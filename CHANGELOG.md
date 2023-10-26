@@ -1,6 +1,5 @@
 ## 4.0
 
-* Bump minimum required Java runtime version to Java 17.
 * Initial support for C# analysis. More info in [docs](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/requirements/#c-analysis); Please share feedback on our [Community Forum](https://community.sonarsource.com/c/sl/vs-code/36).
 * Update Python analyzer 4.8 -> [4.9](https://sonarsource.atlassian.net/projects/SONARPY/versions/14308/tab/release-report-all-issues), 5 new rules for Pandas library
 * Update JS/TS/CSS analyzer 10.6.0 -> [10.7.0](https://github.com/SonarSource/SonarJS/releases/tag/10.7.0.22914) -> [10.8.0](https://github.com/SonarSource/SonarJS/releases/tag/10.8.0.24207), new rules, FP fixes, improved diagnostics for memory issues
@@ -8,6 +7,8 @@
 * Update PHP analyzer 3.32 -> [3.33](https://github.com/SonarSource/sonar-php/releases/tag/3.33.0.11274), update rule descriptions to include Learn as You Code changes, FP fix.
 * Update IaC analyzer 1.21 -> [1.22](https://github.com/SonarSource/sonar-iac/releases/tag/1.22.0.7057), update rule descriptions to include Learn as You Code changes
 * Update text and secrets analyzer 2.5.0 -> [2.6.1](https://sonarsource.atlassian.net/projects/SONARTEXT/versions/15331/tab/release-report-all-issues), FP fixes, improvements
+* Bump minimum required Java runtime version to Java 17.
+* Embed Java 21 LTS in platform-specific packages
 
 ## 3.22
 
