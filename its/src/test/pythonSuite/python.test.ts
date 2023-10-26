@@ -16,7 +16,8 @@ import { activateAndShowOutput, waitForSonarLintDiagnostics } from '../common/ut
 const samplePythonFolderLocation = '../../../samples/sample-python';
 
 suite('Python Test Suite', () => {
-  suiteSetup(async () => {
+  suiteSetup(async function () {
+    this.timeout(10 * 1000);
     vscode.window.showInformationMessage('Starting Python tests.');
 
     await activateAndShowOutput();
