@@ -4,6 +4,7 @@
 * Update Python analyzer 4.8 -> [4.9](https://sonarsource.atlassian.net/projects/SONARPY/versions/14308/tab/release-report-all-issues), 5 new rules for Pandas library
 * Update JS/TS/CSS analyzer 10.6.0 -> [10.7.0](https://github.com/SonarSource/SonarJS/releases/tag/10.7.0.22914) -> [10.8.0](https://github.com/SonarSource/SonarJS/releases/tag/10.8.0.24207), new rules, FP fixes, improved diagnostics for memory issues
 * Update Java analyzer 7.25 -> [7.26](https://github.com/SonarSource/sonar-java/releases/tag/7.26.0.33315) -> [7.27](https://github.com/SonarSource/sonar-java/releases/tag/7.27.0.33463) -> [7.27.1](https://github.com/SonarSource/sonar-java/releases/tag/7.27.1.33504), Add first part of support in rules for jakarta packages, 6 new Spring rules, bugfix and improvements
+* Update PHP analyzer 3.32 -> [3.33](https://github.com/SonarSource/sonar-php/releases/tag/3.33.0.11274), update rule descriptions to include Learn as You Code changes, FP fix.
 
 ## 3.22
 
