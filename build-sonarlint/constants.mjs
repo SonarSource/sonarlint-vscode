@@ -13,7 +13,7 @@ Object.defineProperty(constants, 'UNIVERSAL_PLATFORM', {
 });
 
 Object.defineProperty(constants, 'LATEST_JRE', {
-  value: 17,
+  value: 21,
   writable: false
 });
 
