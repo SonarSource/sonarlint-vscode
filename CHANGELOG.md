@@ -6,6 +6,7 @@
 * Update Java analyzer 7.25 -> [7.26](https://github.com/SonarSource/sonar-java/releases/tag/7.26.0.33315) -> [7.27](https://github.com/SonarSource/sonar-java/releases/tag/7.27.0.33463) -> [7.27.1](https://github.com/SonarSource/sonar-java/releases/tag/7.27.1.33504), Add first part of support in rules for jakarta packages, 6 new Spring rules, bugfix and improvements
 * Update PHP analyzer 3.32 -> [3.33](https://github.com/SonarSource/sonar-php/releases/tag/3.33.0.11274), update rule descriptions to include Learn as You Code changes, FP fix.
 * Update IaC analyzer 1.21 -> [1.22](https://github.com/SonarSource/sonar-iac/releases/tag/1.22.0.7057), update rule descriptions to include Learn as You Code changes
+* Update text and secrets analyzer 2.5.0 -> [2.6.1](https://sonarsource.atlassian.net/projects/SONARTEXT/versions/15331/tab/release-report-all-issues), FP fixes, improvements
 
 ## 3.22
 
