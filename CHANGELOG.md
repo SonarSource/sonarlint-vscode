@@ -1,6 +1,7 @@
 ## 4.0
 
 * Bump minimum required Java runtime version to Java 17.
+* Embed Java 21LTS in platform-specific packages
 
 ## 3.22
 
