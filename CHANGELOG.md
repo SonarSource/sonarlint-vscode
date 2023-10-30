@@ -7,6 +7,7 @@
 * Update PHP analyzer 3.32 -> [3.33](https://github.com/SonarSource/sonar-php/releases/tag/3.33.0.11274), update rule descriptions to include Learn as You Code changes, FP fix.
 * Update IaC analyzer 1.21 -> [1.22](https://github.com/SonarSource/sonar-iac/releases/tag/1.22.0.7057), update rule descriptions to include Learn as You Code changes
 * Update text and secrets analyzer 2.5.0 -> [2.6.1](https://sonarsource.atlassian.net/projects/SONARTEXT/versions/15331/tab/release-report-all-issues), FP fixes, improvements
+* Update CFamily analyzer 6.49 -> [6.50](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%20CPP%20AND%20fixVersion%20%3D%206.50), 1 new C++ MISRA 2023 rule, hardening
 * Bump minimum required Java runtime version to Java 17.
 * Embed Java 21 LTS in platform-specific packages
 * Allow opening issues from SonarQube into the IDE (starting from SonarQube v10.3)
