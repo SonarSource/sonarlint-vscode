@@ -16,7 +16,7 @@ const ADOPT_OPEN_JDK_API_ROOT = 'https://api.adoptopenjdk.net/v2';
 
 type RequestType = 'info' | 'binary' | 'latestAssets';
 type ReleaseType = 'releases' | 'nightly';
-export type Version = 8 | 9 | 10 | 11 | 12 | 13;
+export type Version = 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21;
 type Implementation = 'hotspot' | 'openj9';
 export type Os = 'windows' | 'linux' | 'mac' | 'solaris' | 'aix';
 export type Architecture = 'x64' | 'x32' | 'ppc64' | 's390x' | 'ppc64le' | 'aarch64' | 'arm';
