@@ -1,4 +1,4 @@
-## 4.0
+## 4.0.1
 
 * Initial support for C# analysis. More info in [docs](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/requirements/#c-analysis); Please share feedback on our [Community Forum](https://community.sonarsource.com/c/sl/vs-code/36).
 * Update Python analyzer 4.8 -> [4.9](https://sonarsource.atlassian.net/projects/SONARPY/versions/14308/tab/release-report-all-issues), 5 new rules for Pandas library
