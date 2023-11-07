@@ -1,6 +1,10 @@
+## 4.0.2
+
+* Allow opening PR and branch issues from SonarQube in the IDE
+
 ## 4.0.1
 
-* Initial support for C# analysis. More info in [docs](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/requirements/#c-analysis); Please share feedback on our [Community Forum](https://community.sonarsource.com/c/sl/vs-code/36).
+* Initial support for C# analysis. More info in [docs](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/requirements/#c-sharp-analysis); Please share feedback on our [Community Forum](https://community.sonarsource.com/c/sl/vs-code/36).
 * Update Python analyzer 4.8 -> [4.9](https://sonarsource.atlassian.net/projects/SONARPY/versions/14308/tab/release-report-all-issues), 5 new rules for Pandas library
 * Update JS/TS/CSS analyzer 10.6.0 -> [10.7.0](https://github.com/SonarSource/SonarJS/releases/tag/10.7.0.22914) -> [10.8.0](https://github.com/SonarSource/SonarJS/releases/tag/10.8.0.24207), new rules, FP fixes, improved diagnostics for memory issues
 * Update Java analyzer 7.25 -> [7.26](https://github.com/SonarSource/sonar-java/releases/tag/7.26.0.33315) -> [7.27](https://github.com/SonarSource/sonar-java/releases/tag/7.27.0.33463) -> [7.27.1](https://github.com/SonarSource/sonar-java/releases/tag/7.27.1.33504), Add first part of support in rules for jakarta packages, 6 new Spring rules, bugfix and improvements
