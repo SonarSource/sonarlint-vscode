@@ -1,3 +1,7 @@
+## 4.1.0
+
+* Support for analysis of Azure Resource Manager templates and Bicep files
+
 ## 4.0.5
 
 * Allow opening PR and branch issues from SonarQube in the IDE

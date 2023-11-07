@@ -21,8 +21,10 @@ You can access the detailed rule description directly from your editor, using th
 
 Out of the box, SonarLint automatically checks your code against the following rules:
 
+- [Azure Resource Manager rules](https://rules.sonarsource.com/azureresourcemanager)
 - [C rules](https://rules.sonarsource.com/c)
 - [C++ rules](https://rules.sonarsource.com/cpp)
+- [C# rules](https://rules.sonarsource.com/csharp/)
 - [CloudFormation rules](https://rules.sonarsource.com/cloudformation)
 - [CSS rules](https://rules.sonarsource.com/css)
 - [Docker rules](https://rules.sonarsource.com/docker)
