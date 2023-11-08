@@ -58,6 +58,9 @@
     "enabled": true,
     "changes": 5
   },
+  "show_issue": {
+    "requests_count": 3
+  },
   "vscode": {
     "uiKind": "Web",
     "remoteName": "codespaces",
