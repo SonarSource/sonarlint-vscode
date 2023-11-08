@@ -1,4 +1,4 @@
-## 4.0.3
+## 4.0.4
 
 * Allow opening PR and branch issues from SonarQube in the IDE
 
