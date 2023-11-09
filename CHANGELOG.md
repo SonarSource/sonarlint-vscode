@@ -1,6 +1,7 @@
 ## 4.1.0
 
-* Support for analysis of Azure Resource Manager templates and Bicep files
+* Support analysis of Azure Resource Manager templates and Bicep files
+* Support analysis of T-SQL files in Connected Mode with SonarCloud or SonarQube Developer edition or higher
 
 ## 4.0.5
 
