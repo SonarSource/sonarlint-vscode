@@ -149,6 +149,7 @@ Connected Mode will also unlock your analysis of these languages:
 - [Apex rules](https://rules.sonarsource.com/apex)
 - [COBOL rules](https://rules.sonarsource.com/cobol)
 - [PL/SQL rules](https://rules.sonarsource.com/plsql)
+- [T-SQL rules](https://rules.sonarsource.com/tsql/)
 
 When configuring Connected Mode, follow the [Connection Setup instructions](#connection-setup) below.
 

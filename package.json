@@ -1,7 +1,7 @@
 {
   "name": "sonarlint-vscode",
   "displayName": "SonarLint",
-  "description": "Linter to detect & fix coding issues locally in JS/TS, Python, PHP, Java, C, C++, Go, IaC. Use with SonarQube & SonarCloud for optimal team performance.",
+  "description": "Linter to detect & fix coding issues locally in JS/TS, Python, PHP, Java, C, C++, C#, Go, IaC. Use with SonarQube & SonarCloud for optimal team performance.",
   "version": "4.1.0-SNAPSHOT",
   "icon": "images/sonarlint_wave_128px.png",
   "publisher": "SonarSource",
