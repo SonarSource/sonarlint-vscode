@@ -10,6 +10,8 @@ suite('Syntax Highlighting', () => {
     expect(sonarToHighlightJsLanguageKeyMapping('ipynb')).to.equal('python');
     expect(sonarToHighlightJsLanguageKeyMapping('kubernetes')).to.equal('yaml');
     expect(sonarToHighlightJsLanguageKeyMapping('terraform')).to.equal('terraform');
+    expect(sonarToHighlightJsLanguageKeyMapping('plsql')).to.equal('sql');
+    expect(sonarToHighlightJsLanguageKeyMapping('tsql')).to.equal('sql');
     expect(sonarToHighlightJsLanguageKeyMapping('java')).to.equal('java');
     expect(sonarToHighlightJsLanguageKeyMapping('foo')).to.equal('foo');
   });

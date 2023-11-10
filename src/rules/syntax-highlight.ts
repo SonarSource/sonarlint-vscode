@@ -27,6 +27,9 @@ export function sonarToHighlightJsLanguageKeyMapping(sonarLanguageKey: string): 
       return 'yaml';
     case 'ipynb':
       return 'python';
+    case 'plsql':
+    case 'tsql':
+      return 'sql';
     default:
       return sonarLanguageKey;
   }
