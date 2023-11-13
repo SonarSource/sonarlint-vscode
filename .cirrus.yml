@@ -240,7 +240,7 @@ qa_task:
 promote_task:
   env:
     ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
-    PROMOTE_URL: VAULT[development/kv/data/promote data.url]
+    ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     ARTIFACTS: "org.sonarsource.sonarlint.vscode:sonarlint-vscode:vsix"
   depends_on:
     - qa
