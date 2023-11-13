@@ -3,6 +3,7 @@
 * Support analysis of Azure Resource Manager templates and Bicep files
 * Support analysis of T-SQL files in Connected Mode with SonarCloud or SonarQube Developer edition or higher
 * Update Java analyzer 7.27.1 -> [7.28](https://github.com/SonarSource/sonar-java/releases/tag/7.28.0.33738), 9 new Sprint Boot rules, 1 FP fix
+* Update Python analyzer 4.9 -> [4.10](https://sonarsource.atlassian.net/projects/SONARPY/versions/15340/tab/release-report-all-issues), Support for Python 3.12 new syntax, implement 5 new rules related to new features of Python 3.12, Fix FPs
 
 ## 4.0.5
 
