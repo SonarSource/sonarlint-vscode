@@ -33,10 +33,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           clean: false
-      - name: Use Node 16
+      - name: Use Node 18
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Install dependencies for vsce-publish
         run: npm install
         working-directory: ./.github/actions/vsce-publish
@@ -88,10 +88,10 @@ jobs:
     steps:
       - name: Checkout custom actions
         uses: actions/checkout@v3
-      - name: Use Node 16
+      - name: Use Node 18
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Install dependencies for ovsx-publish
         run: npm install
         working-directory: ./.github/actions/ovsx-publish
