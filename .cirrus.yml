@@ -239,7 +239,6 @@ qa_task:
 
 promote_task:
   env:
-    ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     ARTIFACTS: "org.sonarsource.sonarlint.vscode:sonarlint-vscode:vsix"
   depends_on:
@@ -253,7 +252,10 @@ promote_task:
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
   promote_script:
-    - .cirrus/cirrus_promote_npm
+    - source cirrus-env PROMOTE
+    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - cirrus_jfrog_promote
+    - burgr-notify-promotion
 
 dogfood_task:
   depends_on:
