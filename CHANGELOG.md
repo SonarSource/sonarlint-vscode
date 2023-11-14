@@ -3,7 +3,7 @@
 * Support analysis of Azure Resource Manager templates and Bicep files
 * Support analysis of T-SQL files in Connected Mode with SonarCloud or SonarQube Developer edition or higher
 * Update Java analyzer 7.27.1 -> [7.28](https://github.com/SonarSource/sonar-java/releases/tag/7.28.0.33738), 9 new Sprint Boot rules, 1 FP fix
-* Update Python analyzer 4.9 -> [4.10](https://sonarsource.atlassian.net/projects/SONARPY/versions/15340/tab/release-report-all-issues), Support for Python 3.12 new syntax, implement 5 new rules related to new features of Python 3.12, Fix FPs
+* Update Python analyzer 4.9 -> [4.10](https://sonarsource.atlassian.net/projects/SONARPY/versions/15340/tab/release-report-all-issues) -> [4.11](https://sonarsource.atlassian.net/projects/SONARPY/versions/15396/tab/release-report-all-issues), Support for Python 3.12 new syntax, implement 5 new rules related to new features of Python 3.12 + 3 new Security Hotspot rules, Fix FPs
 * Update JS/TS/CSS analyzer 10.8.0 -> [10.9.0](https://github.com/SonarSource/SonarJS/releases/tag/10.9.0.24449), FP fixes, improvements, deprecate Node.js 16
 * Update text and secrets analyzer 2.6.1 -> [2.7.0](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.7.0.1366) -> [2.7.1](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.7.1.1388), hardening
 
