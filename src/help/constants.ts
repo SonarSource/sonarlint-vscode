@@ -64,5 +64,19 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     url: 'https://www.sonarsource.com/products/sonarqube/',
     icon: 'n/a',
     viewItem: false
+  },
+  {
+    id: 'connectedModeDocs',
+    label: 'Connected Mode',
+    url: 'https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/',
+    icon: 'n/a',
+    viewItem: false
+  },
+  {
+    id: 'compareServerProducts',
+    label: 'Compare SonarQube and SonarCloud',
+    url: 'https://www.sonarsource.com/open-source-editions/',
+    icon: 'n/a',
+    viewItem: false
   }
 ];
