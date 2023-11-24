@@ -68,6 +68,7 @@ import { IssueService } from './issue/issue';
 import { showSslCertificateConfirmationDialog } from './util/showMessage';
 import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
 import { ShowIssueNotification } from './lsp/protocol';
+import { string } from 'vscode-languageclient/lib/common/utils/is';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -503,12 +504,22 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItem => {
-      if (!helpAndFeedbackItem) {
-        helpAndFeedbackItem = getHelpAndFeedbackItemById('getHelp');
+    VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItemorId => {
+      let itemId: string;
+      let url: string;
+      if (!helpAndFeedbackItemorId) {
+        helpAndFeedbackItemorId = getHelpAndFeedbackItemById('getHelp');
+        itemId = helpAndFeedbackItemorId.id;
+        url = helpAndFeedbackItemorId.url;
+      } else if (typeof helpAndFeedbackItemorId === 'string') {
+        itemId = helpAndFeedbackItemorId;
+        url = getHelpAndFeedbackItemById(itemId).url;
+      } else {
+        itemId = helpAndFeedbackItemorId.id;
+        url = helpAndFeedbackItemorId.url;
       }
-      languageClient.helpAndFeedbackLinkClicked(helpAndFeedbackItem.id);
-      VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(helpAndFeedbackItem.url));
+      languageClient.helpAndFeedbackLinkClicked(itemId);
+      VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(url));
     })
   );
 

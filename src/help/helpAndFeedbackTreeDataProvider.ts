@@ -8,56 +8,10 @@
 
 import * as VSCode from 'vscode';
 import { Commands } from '../util/commands';
-import { SonarLintDocumentation } from '../commons';
-
-export interface HelpAndFeedbackItem {
-  id: string;
-  label: string;
-  url: string;
-  icon: string;
-}
-
-export const helpAndFeedbackViewItems: HelpAndFeedbackItem[] = [
-  {
-    id: 'docs',
-    label: 'Read Documentation',
-    url: SonarLintDocumentation.BASE_DOCS_URL,
-    icon: 'book'
-  },
-  {
-    id: 'getHelp',
-    label: 'Get Help | Report Issue',
-    url: 'https://community.sonarsource.com/c/sl/vs-code/36',
-    icon: 'comment-discussion'
-  },
-  {
-    id: 'supportedRules',
-    label: 'See Languages & Rules',
-    url: SonarLintDocumentation.LANGUAGES_AND_RULES,
-    icon: 'checklist'
-  },
-  {
-    id: 'whatsNew',
-    label: "Check What's New",
-    url: 'https://www.sonarsource.com/products/sonarlint/whats-new/vs-code/',
-    icon: 'megaphone'
-  },
-  {
-    id: 'suggestFeature',
-    label: 'Suggest a Feature',
-    url: 'https://www.sonarsource.com/products/sonarlint/roadmap/',
-    icon: 'extensions'
-  },
-  {
-    id: 'faq',
-    label: 'Review FAQ',
-    url: 'https://community.sonarsource.com/t/frequently-asked-questions/7204',
-    icon: 'question'
-  }
-];
+import { HelpAndFeedbackItem, helpAndFeedbackItems } from './constants';
 
 export function getHelpAndFeedbackItemById(id: string): HelpAndFeedbackItem {
-  return helpAndFeedbackViewItems.find(i => i.id === id);
+  return helpAndFeedbackItems.find(i => i.id === id);
 }
 
 export class HelpAndFeedbackLink extends VSCode.TreeItem {
@@ -82,7 +36,7 @@ export class HelpAndFeedbackTreeDataProvider implements VSCode.TreeDataProvider<
   }
 
   getChildren(element?: HelpAndFeedbackLink): HelpAndFeedbackLink[] {
-    return helpAndFeedbackViewItems.map(item => new HelpAndFeedbackLink(item.id));
+    return helpAndFeedbackItems.map(item => (item.viewItem ? new HelpAndFeedbackLink(item.id) : null));
   }
 
   getTreeItem(element: HelpAndFeedbackLink): VSCode.TreeItem {
