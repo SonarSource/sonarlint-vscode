@@ -600,7 +600,7 @@
           {
             "id": "SonarLint.inAction",
             "title": "$(rocket) New to SonarLint? See it in action",
-            "description": "SonarLint for VSCode supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, and [more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/rules). SonarLint detects issues in all files **open** in the editor.\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
+            "description": "SonarLint for VSCode supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, C#, and [more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/rules). SonarLint detects issues in all files **open** in the editor.\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
@@ -622,7 +622,7 @@
           {
             "id": "SonarLint.connectedModeIntro",
             "title": "$(link) Connect with your team",
-            "description": "Use the same Clean Code standards as your team by using SonarLint in Connected Mode with [SonarQube](https://www.sonarsource.com/products/sonarqube/) or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/).\n**Already using SonarQube or SonarCloud?** Check out the Connected Mode view to set up the connection.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)",
+            "description": "Apply the same Clean Code standards as your team by using SonarLint in Connected Mode with [SonarQube](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) or [SonarCloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n**Already using SonarQube or SonarCloud?** Set up connection in the CONNECTED MODE view.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
