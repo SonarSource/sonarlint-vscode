@@ -33,6 +33,8 @@ function init() {
   byId('token').addEventListener('keyup', onChangeToken);
   byId('enableNotifications').addEventListener('change', onChangeEnableNotifications);
   byId('saveConnection').addEventListener('click', onClickSaveConnection);
+  byId('sonarCloudProductPage')?.addEventListener('click', onClickSonarCloudProductPage);
+  byId('sonarQubeEditionsDownloads')?.addEventListener('click', onClickSonarQubeDownloadsPage);
   tryRestoreState();
 }
 
@@ -84,7 +86,7 @@ function isValidUrl(value) {
   try {
     const parsedUrl = new URL(value);
     return /^https?:$/.test(parsedUrl.protocol);
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
@@ -109,8 +111,6 @@ function onClickGenerateToken() {
     serverUrl
   });
 }
-
-
 
 function onChangeToken() {
   saveState();
@@ -155,6 +155,14 @@ function onClickSaveConnection() {
   vscode.postMessage(saveConnectionMessage);
 }
 
+function onClickSonarCloudProductPage() {
+  vscode.postMessage({ command: 'sonarCloudProductPageLinkClick' });
+}
+
+function onClickSonarQubeDownloadsPage() {
+  vscode.postMessage({ command: 'sonarQubeEditionsDownloadsLinkClick' });
+}
+
 function tryRestoreState() {
   const previousState = vscode.getState();
   if (previousState) {
@@ -196,10 +204,9 @@ function hasUnsavedChanges() {
    * @type {HTMLInputElement}
    */
   const enableNotifications = byId('enableNotifications');
-  const enableNotificationsInitial = (byId('enableNotifications-initial').value === 'true');
-  const enableNotificationsHasChanged = (enableNotifications.checked !== enableNotificationsInitial);
-  return enableNotificationsHasChanged ||
-      ['connectionId', 'organizationKey', 'serverUrl', 'token'].some(hasChanged);
+  const enableNotificationsInitial = byId('enableNotifications-initial').value === 'true';
+  const enableNotificationsHasChanged = enableNotifications.checked !== enableNotificationsInitial;
+  return enableNotificationsHasChanged || ['connectionId', 'organizationKey', 'serverUrl', 'token'].some(hasChanged);
 }
 
 function hasChanged(elementId) {

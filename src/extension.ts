@@ -68,7 +68,6 @@ import { IssueService } from './issue/issue';
 import { showSslCertificateConfirmationDialog } from './util/showMessage';
 import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
 import { ShowIssueNotification } from './lsp/protocol';
-import { string } from 'vscode-languageclient/lib/common/utils/is';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
