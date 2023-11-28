@@ -78,5 +78,12 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     url: 'https://www.sonarsource.com/open-source-editions/',
     icon: 'n/a',
     viewItem: false
+  },
+  {
+    id: 'sonarQubeEditionsDownloads',
+    label: 'SonarQube Downloads',
+    url: 'https://www.sonarsource.com/products/sonarqube/downloads/',
+    icon: 'n/a',
+    viewItem: false
   }
 ];

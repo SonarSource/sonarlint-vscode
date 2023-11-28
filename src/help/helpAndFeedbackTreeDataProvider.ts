@@ -36,7 +36,9 @@ export class HelpAndFeedbackTreeDataProvider implements VSCode.TreeDataProvider<
   }
 
   getChildren(element?: HelpAndFeedbackLink): HelpAndFeedbackLink[] {
-    return helpAndFeedbackItems.map(item => (item.viewItem ? new HelpAndFeedbackLink(item.id) : null));
+    return helpAndFeedbackItems
+      .filter(item => item.viewItem)
+      .map(item => new HelpAndFeedbackLink(item.id));
   }
 
   getTreeItem(element: HelpAndFeedbackLink): VSCode.TreeItem {

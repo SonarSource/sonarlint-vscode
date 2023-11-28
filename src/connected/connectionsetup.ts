@@ -20,6 +20,7 @@ import {
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
 import { DEFAULT_CONNECTION_ID } from '../commons';
+import TRIGGER_HELP_AND_FEEDBACK_LINK = Commands.TRIGGER_HELP_AND_FEEDBACK_LINK;
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -30,17 +31,17 @@ const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
 const OPEN_TOKEN_GENERATION_PAGE_COMMAND = 'openTokenGenerationPage';
 const SAVE_CONNECTION_COMMAND = 'saveConnection';
 const SONARQUBE_DESCRIPTION =
-  "<b>Open-source, self-managed</b> tool that easily integrates into the developers' CI/CD pipeline" +
+  "An <b>open-source, self-managed</b> tool that easily integrates into the developers' CI/CD pipeline" +
   '<br>' +
   'and DevOps platform to systematically help developers and organizations deliver Clean Code.\n' +
   '<br><br>' +
-  'SonarQube offers a free <a href="https://www.sonarsource.com/products/sonarqube/downloads/">Community Edition</a>';
+  'SonarQube offers a free <a id="sonarQubeEditionsDownloads" href="#">Community Edition</a>';
 const SONARCLOUD_DESCRIPTION =
-  '<b>Software-as-a-Service (SaaS)</b> tool that easily integrates into the cloud DevOps platforms' +
+  'A <b>Software-as-a-Service (SaaS)</b> tool that easily integrates into the cloud DevOps platforms' +
   '<br>' +
   'and extends the CI/CD workflow to systematically help developers and organizations deliver Clean Code.\n' +
   '<br><br>' +
-  '<a href="https://www.sonarsource.com/lp/products/sonarcloud/">SonarCloud</a> is entirely free for open-source projects.';
+  '<a id="sonarCloudProductPage" href="#">SonarCloud</a> is entirely free for open-source projects.';
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
   return assistCreatingConnectionParams => {
@@ -59,15 +60,10 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
     };
     const serverProductName = 'SonarQube';
     lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(
-      context,
-      connectionSetupPanel.webview,
-      {
-        mode: 'create',
-        initialState
-      },
-      SONARQUBE_DESCRIPTION
-    );
+    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
+      mode: 'create',
+      initialState
+    });
     finishSetupAndRevealPanel(serverProductName);
   };
 }
@@ -81,15 +77,10 @@ export function connectToSonarCloud(context: vscode.ExtensionContext) {
     };
     const serverProductName = 'SonarCloud';
     lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(
-      context,
-      connectionSetupPanel.webview,
-      {
-        mode: 'create',
-        initialState
-      },
-      SONARCLOUD_DESCRIPTION
-    );
+    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
+      mode: 'create',
+      initialState
+    });
     finishSetupAndRevealPanel(serverProductName);
   };
 }
@@ -100,15 +91,10 @@ export function editSonarQubeConnection(context: vscode.ExtensionContext) {
     const initialState = await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId);
     const serverProductName = 'SonarQube';
     lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(
-      context,
-      connectionSetupPanel.webview,
-      {
-        mode: 'update',
-        initialState
-      },
-      SONARQUBE_DESCRIPTION
-    );
+    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
+      mode: 'update',
+      initialState
+    });
     finishSetupAndRevealPanel(serverProductName);
   };
 }
@@ -119,15 +105,10 @@ export function editSonarCloudConnection(context: vscode.ExtensionContext) {
     const initialState = await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
     const serverProductName = 'SonarCloud';
     lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(
-      context,
-      connectionSetupPanel.webview,
-      {
-        mode: 'update',
-        initialState
-      },
-      SONARCLOUD_DESCRIPTION
-    );
+    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
+      mode: 'update',
+      initialState
+    });
     finishSetupAndRevealPanel(serverProductName);
   };
 }
@@ -184,12 +165,7 @@ interface RenderOptions {
   initialState: SonarQubeConnection | SonarCloudConnection;
 }
 
-function renderConnectionSetupPanel(
-  context: vscode.ExtensionContext,
-  webview: vscode.Webview,
-  options: RenderOptions,
-  serverProductDescription
-) {
+function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: vscode.Webview, options: RenderOptions) {
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'connectionsetup.css');
   const toolkitUri = resolver.resolve('node_modules', '@vscode', 'webview-ui-toolkit', 'dist', 'toolkit.min.js');
@@ -219,7 +195,7 @@ function renderConnectionSetupPanel(
       <h1>${mode === 'create' ? 'New' : 'Edit'} ${serverProductName} Connection</h1>
       <hr>
       <div>
-        ${serverProductDescription}
+        ${isSonarQube ? SONARQUBE_DESCRIPTION : SONARCLOUD_DESCRIPTION}
       </div>
       <hr>
       <form id="connectionForm">
@@ -256,7 +232,7 @@ function renderConnectionSetupPanel(
           <li>the latest analysis of a bound project on ${serverProductName} raises new issues assigned to you</li>
         </ul>
         <br>
-        <a href='https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/#connection-setup'>I need help setting up a connection</a>
+        <a href='https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/#connection-setup'>Need help setting up a connection?</a>
         <div id="connectionCheck" class="formRowWithStatus">
           <vscode-button id="saveConnection" disabled>Save Connection</vscode-button>
           <span id="connectionProgress" class="hidden">
@@ -317,6 +293,9 @@ async function handleMessage(message) {
 /*
  * Exported for unit tests
  */
+const SONARCLOUD_PRODUCT_LINK_COMMAND = 'sonarCloudProductPageLinkClick';
+const SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND = 'sonarQubeEditionsDownloadsLinkClick';
+
 export async function handleMessageWithConnectionSettingsService(
   message,
   connectionSettingsService: ConnectionSettingsService
@@ -338,6 +317,13 @@ export async function handleMessageWithConnectionSettingsService(
       }
       await saveConnection(message, connectionSettingsService);
       break;
+    case SONARCLOUD_PRODUCT_LINK_COMMAND:
+      delete message.command;
+      vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarCloudProductPage');
+      break;
+    case SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND:
+      delete message.command;
+      vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarQubeEditionsDownloads');
   }
 }
 
