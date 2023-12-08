@@ -47,11 +47,11 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
   return assistCreatingConnectionParams => {
     assistCreatingConnectionParams.isSonarCloud
       ? connectToSonarCloud(context)
-      : connectToSonarQube(context)(assistCreatingConnectionParams.serverUrl);
+      : connectToSonarQube(context, true)(assistCreatingConnectionParams.serverUrl);
   };
 }
 
-export function connectToSonarQube(context: vscode.ExtensionContext) {
+export function connectToSonarQube(context: vscode.ExtensionContext, withAssistance) {
   return serverUrl => {
     const initialState = {
       serverUrl: serverUrl && typeof serverUrl === 'string' ? serverUrl : '',
@@ -62,7 +62,8 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
     lazyCreateConnectionSetupPanel(context, serverProductName);
     connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
       mode: 'create',
-      initialState
+      initialState,
+      withAssistance
     });
     finishSetupAndRevealPanel(serverProductName);
   };
@@ -163,15 +164,17 @@ function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, server
 interface RenderOptions {
   mode: 'create' | 'update';
   initialState: SonarQubeConnection | SonarCloudConnection;
+  withAssistance?: boolean;
 }
 
 function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: vscode.Webview, options: RenderOptions) {
   const resolver = new ResourceResolver(context, webview);
   const styleSrc = resolver.resolve('styles', 'connectionsetup.css');
   const toolkitUri = resolver.resolve('node_modules', '@vscode', 'webview-ui-toolkit', 'dist', 'toolkit.min.js');
+  const codiconsUri = resolver.resolve('node_modules', '@vscode/codicons', 'dist', 'codicon.css');
   const webviewMainUri = resolver.resolve('webview-ui', 'connectionsetup.js');
 
-  const { mode, initialState } = options;
+  const { mode, initialState, withAssistance } = options;
   const isSonarQube = isSonarQubeConnection(initialState);
 
   const serverProductName = isSonarQube ? 'SonarQube' : 'SonarCloud';
@@ -188,6 +191,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
       <meta http-equiv="Content-Security-Policy"
         content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource}"/>
       <link rel="stylesheet" type="text/css" href="${styleSrc}" />
+      <link rel="stylesheet" href="${codiconsUri}" />
       <script type="module" src="${toolkitUri}"></script>
       <script type="module" src="${webviewMainUri}"></script>
     </head>
@@ -199,7 +203,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
       </div>
       <hr>
       <form id="connectionForm">
-        ${renderServerUrlField(initialState)}
+        ${renderServerUrlField(initialState, withAssistance)}
         ${renderGenerateTokenButton(initialState, serverProductName)}
         <div class="formRowWithStatus">
           <vscode-text-field id="token" type="password" placeholder="········" required size="40"
@@ -245,14 +249,23 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   </html>`;
 }
 
-function renderServerUrlField(connection) {
+function renderServerUrlField(connection, withAssistance) {
   if (isSonarQubeConnection(connection)) {
     const serverUrl = escapeHtml(connection.serverUrl);
-    return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
-    autofocus value="${serverUrl}">
-      <b>Server URL</b> <vscode-badge class='tooltip'>i<span class='tooltiptext'>The base URL for your SonarQube server</span></vscode-badge>
-    </vscode-text-field>
-    <input type="hidden" id="serverUrl-initial" value="${serverUrl}" />`;
+    if (withAssistance) {
+      return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
+      autofocus value="${serverUrl}">
+        <b class='warningServerUrl'>Server URL</b>
+        <vscode-badge class='warningTooltip'>!<span class='tooltiptext'>Think twice please!</span></vscode-badge>
+      </vscode-text-field>
+      <input type="hidden" id="serverUrl-initial" value="${serverUrl}" />`;
+    } else {
+      return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
+      autofocus value="${serverUrl}">
+        <b>Server URL</b> <vscode-badge class='tooltip'>i<span class='tooltiptext'>The base URL for your SonarQube server</span></vscode-badge>
+      </vscode-text-field>
+      <input type="hidden" id="serverUrl-initial" value="${serverUrl}" />`;
+    }
   }
   return '';
 }
