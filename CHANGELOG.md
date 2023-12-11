@@ -1,3 +1,7 @@
+## 4.2.0
+
+* Update JS/TS/CSS analyzer 10.9.0 -> [10.10.0](https://github.com/SonarSource/SonarJS/releases/tag/10.10.0.24774), 17 new accessibility rules for JSX
+
 ## 4.1.0
 
 * Support analysis of Azure Resource Manager templates and Bicep files
