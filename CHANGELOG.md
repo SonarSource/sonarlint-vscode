@@ -4,6 +4,7 @@
 * Update Java analyzer 7.28 -> [7.29](https://github.com/SonarSource/sonar-java/releases/tag/7.29.0.34131), Update the Java API with methods from JUtils; fix 6 FPs & FNs; Improve rule descriptions and issue messages; 1 new Quick Fix.
 * Update IaC analyzer 1.22 -> [1.23](https://github.com/SonarSource/sonar-iac/releases/tag/1.23.0.7263), S6329 should report only one issue for the same location
 * Update CFamily analyzer 6.50 -> [6.51](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%20CPP%20AND%20fixVersion%20%3D%206.50), 1 new C++ MISRA 2023 rule
+* Update Python analyzer 4.11 -> [4.12](https://sonarsource.atlassian.net/projects/SONARPY/versions/15400/tab/release-report-all-issues) -> [4.13](https://sonarsource.atlassian.net/browse/SONARPY-1010?jql=fixVersion%20%3D%2015416%20ORDER%20BY%20created%20ASC), Added support for FastAPI tooling for 6 rules; Module-level type inference for Python; FP and FN fixes.
 
 ## 4.1.0
 
