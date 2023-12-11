@@ -3,6 +3,7 @@
 * Update JS/TS/CSS analyzer 10.9 -> [10.10](https://github.com/SonarSource/SonarJS/releases/tag/10.10.0.24774), 17 new accessibility rules for JSX
 * Update Java analyzer 7.28 -> [7.29](https://github.com/SonarSource/sonar-java/releases/tag/7.29.0.34131), Update the Java API with methods from JUtils; fix 6 FPs & FNs; Improve rule descriptions and issue messages; 1 new Quick Fix.
 * Update IaC analyzer 1.22 -> [1.23](https://github.com/SonarSource/sonar-iac/releases/tag/1.23.0.7263), S6329 should report only one issue for the same location
+* Update CFamily analyzer 6.50 -> [6.51](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%20CPP%20AND%20fixVersion%20%3D%206.50), 1 new C++ MISRA 2023 rule
 
 ## 4.1.0
 
