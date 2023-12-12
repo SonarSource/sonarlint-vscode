@@ -65,7 +65,7 @@ import * as util from './util/util';
 import { filterOutFilesIgnoredForAnalysis, shouldAnalyseFile } from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
-import { showSslCertificateConfirmationDialog } from './util/showMessage';
+import { CAN_SHOW_MISSING_REQUIREMENT_NOTIF, showSslCertificateConfirmationDialog } from './util/showMessage';
 import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
 import { ShowIssueNotification } from './lsp/protocol';
 
@@ -570,6 +570,12 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.FilterOutExcludedFiles.type, params =>
     filterOutFilesIgnoredForAnalysis(params.fileUris)
   );
+  languageClient.onRequest(protocol.CanShowMissingRequirementNotification.type, () => {
+    return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true);
+  });
+  languageClient.onNotification(protocol.DoNotShowNodeRequirementNotificationAgain.type, () => {
+    context.globalState.update(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, false);
+  })
   languageClient.onNotification(protocol.ReportConnectionCheckResult.type, checkResult => {
     ConnectionSettingsService.instance.reportConnectionCheckResult(checkResult);
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
