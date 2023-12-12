@@ -302,6 +302,14 @@ export namespace GetHotspotDetails {
   >('sonarlint/getHotspotDetails');
 }
 
+export namespace CanShowMissingRequirementNotification {
+  export const type = new lsp.RequestType<string, boolean, void>('sonarlint/canShowMissingRequirementsNotification');
+}
+
+export namespace DoNotShowNodeRequirementNotificationAgain {
+  export const type = new lsp.NotificationType('sonarlint/doNotShowMissingRequirementsMessageAgain');
+}
+
 //#endregion
 
 //#region Server side extensions to LSP
