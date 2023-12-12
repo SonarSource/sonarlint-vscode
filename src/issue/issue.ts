@@ -11,7 +11,7 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as VSCode from 'vscode';
 import { code2ProtocolConverter, getFileNameFromFullPath, getRelativePathWithFileNameFromFullPath, protocol2CodeConverter } from '../util/uri';
 import { showNoActiveFileOpenWarning } from '../util/showMessage';
-import { AnalysisFile } from '../lsp/protocol';
+import { AnalysisFile, CheckIssueStatusChangePermittedResponse } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { isValidRange, LocationTreeItem, SecondaryLocationsTree } from '../location/locations';
 import * as protocol from '../lsp/protocol';
@@ -37,6 +37,10 @@ export class IssueService {
 
   static get instance(): IssueService {
     return IssueService._instance;
+  }
+
+  checkIssueStatusChangePermitted(folderUri: string, issueKey: string): Promise<CheckIssueStatusChangePermittedResponse> {
+    return this.languageClient.checkIssueStatusChangePermitted(folderUri, issueKey);
   }
 
   changeIssueStatus(

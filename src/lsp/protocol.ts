@@ -498,6 +498,22 @@ export interface ReopenAllIssuesForFileParams {
   fileUri: string;
 }
 
+export interface  CheckIssueStatusChangePermittedParams {
+  folderUri: string;
+  issueKey: string;
+}
+
+export interface  CheckIssueStatusChangePermittedResponse {
+  permitted: boolean;
+  notPermittedReason: string;
+  allowedStatuses: string[];
+}
+
+export namespace CheckIssueStatusChangePermitted {
+  export const type = new lsp.RequestType<CheckIssueStatusChangePermittedParams,
+    CheckIssueStatusChangePermittedResponse, null>('sonarlint/checkIssueStatusChangePermitted');
+}
+
 export namespace SetIssueStatus {
   export const type = new lsp.NotificationType<SetIssueStatusParams>('sonarlint/changeIssueStatus');
 }
