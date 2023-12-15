@@ -1,0 +1,267 @@
+#***************************************
+# Descripción: Convierte cada hoja requerida del archivo Excel recibido en AWS S3, a archivos planos en formato CSV
+# Fecha Creación: 2023-07-18
+# Autor: Avvale - Wilver Vega
+# Parámetros: N/A
+# Número del REQUERIMIENTO: 19
+#***************************************
+
+
+import pandas as pd
+
+# Archivos. Excel a Leer & CSV a Escribir
+excel_ruta = "s3://fdn-dwh/ENTRADA/04_RIESGOS/0001_FICHA_SEGUIMIENTO/01_FUENTES/"
+excel_archivo = "BD Empresarial acumulada.xlsx"
+csv_ruta = "s3://fdn-dwh/ENTRADA/04_RIESGOS/0001_FICHA_SEGUIMIENTO/01_FUENTES/TEMPORAL/"
+
+
+# Inicia =========================================
+# Hoja 1. Lee los datos especificos
+excel_hoja = "Espec Datos Generales Financiac"
+excel_encabezado = 14
+excel_columnas = "C:CB"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.1 Espec Datos Generales Financiac.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 2. Lee los datos especificos
+excel_hoja = "Información Proyecto"
+excel_encabezado = 14
+excel_columnas = "C:BX"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.2 Información Proyecto.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 3. Lee los datos especificos
+excel_hoja = "Comité Seguimiento"
+excel_encabezado = 14
+excel_columnas = "C:F,H"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.3 Comité Seguimiento.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 4. Lee los datos especificos
+excel_hoja = "CPs desembolsos"
+excel_encabezado = 14
+excel_columnas = "C:H,J,L:M"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.4 CPs desembolsos.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 5. Lee los datos especificos
+excel_hoja = "Sponsors"
+excel_encabezado = 14
+excel_columnas = "C:N"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.5 Sponsors.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 6. Lee los datos especificos
+excel_hoja = "Plantilla Garantias "
+excel_encabezado = 14
+excel_columnas = "C:R,U"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.6 Plantilla Garantias.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 7. Lee los datos especificos
+excel_hoja = "Riesgo de Crédito"
+excel_encabezado = 14
+excel_columnas = "C:BD"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.7 Riesgo de Crédito.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 8. Lee los datos especificos
+excel_hoja = "Prestamista"
+excel_encabezado = 0
+excel_columnas = "A:G"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.8 Prestamista.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 9. Lee los datos especificos
+excel_hoja = "Bono"
+excel_encabezado = 0
+excel_columnas = "A:D"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.9 Bono.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 10. Lee los datos especificos
+excel_hoja = "Asesores"
+excel_encabezado = 0
+excel_columnas = "A:D"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.10 Asesores.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 11. Lee los datos especificos
+excel_hoja = "UF Consolidado"
+excel_encabezado = 0
+excel_columnas = "A:R"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.11 UF Consolidado.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 12. Lee los datos especificos
+excel_hoja = "UF Detallada"
+excel_encabezado = 0
+excel_columnas = "A:N"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.12 UF Detallada.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 13. Lee los datos especificos
+excel_hoja = "Peajes"
+excel_encabezado = 0
+excel_columnas = "A:D"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.13 Peajes.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 14. Lee los datos especificos
+excel_hoja = "Rating"
+excel_encabezado = 0
+excel_columnas = "A:D"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.14 Rating.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# Hoja 15. Lee los datos especificos
+excel_hoja = "EER"
+excel_encabezado = 0
+excel_columnas = "A:C"
+df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+df.insert(0, 'numero_fila', range(1, len(df) + 1))
+
+# Archivo CSV a Generar
+csv_archivo = "1.15 EER.csv"
+df.to_csv(csv_ruta+csv_archivo, index=False)
+
+# Fin
+
+
+# ================================================
+# Inicia =========================================
+# SAP z_RPF3. Lee los datos especificos
+#excel_archivo = "z_rpf3.xlsx"
+#excel_hoja = "Hoja1"
+#excel_encabezado = 0
+#excel_columnas = "A:AJ"
+#df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+
+# Archivo CSV a Generar
+#csv_archivo = "sap_zrpf3.csv"
+#df.to_csv(csv_ruta+csv_archivo, index=False)
+
+# Inicia =========================================
+# SAP FMN9. Lee los datos especificos
+#excel_archivo = "fmn9.xlsx"
+#excel_hoja = "Hoja1"
+#excel_encabezado = 0
+#excel_columnas = "A:V"
+#df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+
+# Archivo CSV a Generar
+#csv_archivo = "sap_fmn9.csv"
+#df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# SAP FMN8. Lee los datos especificos
+#excel_archivo = "fmn8.xlsx"
+#excel_hoja = "Hoja1"
+#excel_encabezado = 0
+#excel_columnas = "A:V"
+#df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+
+# Archivo CSV a Generar
+#csv_archivo = "sap_fmn8.csv"
+#df.to_csv(csv_ruta+csv_archivo, index=False)
+
+
+# Inicia =========================================
+# SAP ZTLM002. Lee los datos especificos
+#excel_archivo = "ztlm002.xlsx"
+#excel_hoja = "Hoja1"
+#excel_encabezado = 0
+#excel_columnas = "A:AI"
+#df = pd.read_excel(io=excel_ruta+excel_archivo, sheet_name=excel_hoja, header=excel_encabezado, usecols=excel_columnas)
+
+# Archivo CSV a Generar
+#csv_archivo = "sap_ztlm002.csv"
+#df.to_csv(csv_ruta+csv_archivo, index=False)
+# ================================================
+
+# Fin
