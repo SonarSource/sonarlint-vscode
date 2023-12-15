@@ -47,8 +47,22 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
   return assistCreatingConnectionParams => {
     assistCreatingConnectionParams.isSonarCloud
       ? connectToSonarCloud(context)
-      : connectToSonarQube(context)(assistCreatingConnectionParams.serverUrl);
+      : warnAboutUntrustedServer(context)(assistCreatingConnectionParams.serverUrl);
   };
+}
+
+export function warnAboutUntrustedServer(context: vscode.ExtensionContext) {
+  return async serverUrl => {
+    const yesOption = 'Connect to this SonarQube server';
+    const reply = await vscode.window.showWarningMessage(
+      `Do you trust this SonarQube server?`,
+      { modal: true, detail: `The server '${serverUrl}' is attempting to set up a connection with SonarLint. Letting SonarLint connect to an untrusted SonarQube server is potentially dangerous.
+
+If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.` }, yesOption);
+    if (reply === yesOption) {
+      connectToSonarQube(context)(serverUrl);
+    }
+  }
 }
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
