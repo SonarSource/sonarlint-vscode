@@ -98,6 +98,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetSuggestedBinding.type, { configScopeId, connectionId });
   }
 
+  checkIssueStatusChangePermitted(folderUri: string, issueKey: string): Promise<protocol.CheckIssueStatusChangePermittedResponse> {
+    return this.sendRequest(protocol.CheckIssueStatusChangePermitted.type, { folderUri, issueKey });
+  }
+
   changeIssueStatus(
     configurationScopeId: string,
     issueId: string,

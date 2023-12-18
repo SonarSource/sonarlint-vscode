@@ -11,15 +11,11 @@ import { QuickPickItem} from 'vscode';
 import { MultiStepInput } from '../util/multiStepInput';
 import { IssueService } from './issue';
 import { showChangeStatusConfirmationDialog } from '../util/showMessage';
+import { logToSonarLintOutput } from '../util/logging';
 
-
-const WONT_FIX_STATUS = 'Won\'t fix';
-const FALSE_POSITIVE_STATUS = 'False positive';
-export const RESOLVE_TRANSITION_STATES: QuickPickItem[] = [WONT_FIX_STATUS, FALSE_POSITIVE_STATUS]
-  .map(label => ({ label }));
 
 export async function resolveIssueMultiStepInput(
-  workspaceUri: string,
+  workspaceFolderUri: string,
   issueKey: string,
   fileUri: string,
   isTaintIssue: boolean) {
@@ -35,13 +31,17 @@ export async function resolveIssueMultiStepInput(
   const title = 'Resolve Issue';
 
   async function resolveIssue(input: MultiStepInput, state: Partial<State>) {
-    const pickedIssueStatus = await pickIssueStatus(input, title, RESOLVE_TRANSITION_STATES);
+    const response = await IssueService.instance.checkIssueStatusChangePermitted(workspaceFolderUri, issueKey);
+    if (!response.permitted) {
+      logToSonarLintOutput(`Issue status change is not permitted: ${response.notPermittedReason}`);
+    }
+    const allowedStatuses: QuickPickItem[] = response.allowedStatuses.map(label => ({ label }));
+    const pickedIssueStatus = await pickIssueStatus(input, title, allowedStatuses);
     if (pickedIssueStatus) {
       const comment = await inputComment(input, state);
       showChangeStatusConfirmationDialog('issue').then(async answer => {
         if (answer === 'Yes') {
-          const newIssueStatus = translateQuickPickToIssueStatus(pickedIssueStatus);
-          await IssueService.instance.changeIssueStatus(workspaceUri, issueKey, newIssueStatus, fileUri, comment, isTaintIssue);
+          await IssueService.instance.changeIssueStatus(workspaceFolderUri, issueKey, pickedIssueStatus.label, fileUri, comment, isTaintIssue);
         }
       });
     }
@@ -72,18 +72,4 @@ export async function resolveIssueMultiStepInput(
 
   const state = {} as Partial<State>;
   await MultiStepInput.run(input => resolveIssue(input, state));
-}
-
-export function translateQuickPickToIssueStatus(item: QuickPickItem) {
-  switch (item.label) {
-    case WONT_FIX_STATUS: {
-      return 'WONT_FIX';
-    }
-    case FALSE_POSITIVE_STATUS: {
-      return 'FALSE_POSITIVE';
-    }
-    default: {
-      throw new Error(`Could not find issue status '${item.label}'`);
-    }
-  }
 }
