@@ -196,7 +196,7 @@ Issue tracker (read-only): https://jira.sonarsource.com/browse/SLVSCODE
 
 ## License
 
-Copyright 2017-2023 SonarSource.
+Copyright 2017-2024 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
 
