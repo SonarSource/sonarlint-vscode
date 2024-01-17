@@ -125,7 +125,8 @@ export class BindingService {
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
         .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
     }
-    VSCode.commands.executeCommand('workbench.action.openFolderSettingsFile');
+    // TODO make sure it will work with old versions of SQ
+    return { configurationScopeId: workspaceFolder.name };
   }
 
   async createOrEditBinding(

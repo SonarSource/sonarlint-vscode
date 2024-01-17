@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { Commands } from '../util/commands';
 import { Connection } from './connections';
-import { ConnectionCheckResult } from '../lsp/protocol';
+import { AssistCreatingConnectionParams, ConnectionCheckResult } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -44,14 +44,14 @@ const SONARCLOUD_DESCRIPTION =
   '<a id="sonarCloudProductPage" href="#">SonarCloud</a> is entirely free for open-source projects.';
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
-  return assistCreatingConnectionParams => {
-    assistCreatingConnectionParams.isSonarCloud
-      ? connectToSonarCloud(context)
-      : warnAboutUntrustedServer(context)(assistCreatingConnectionParams.serverUrl);
+  return async assistCreatingConnectionParams => {
+    if (assistCreatingConnectionParams.isSonarCloud) {
+      throw new Error('Unsupported operation: assist creating SonarCloud connection');
+    } return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.serverUrl) }
   };
 }
 
-export function warnAboutUntrustedServer(context: vscode.ExtensionContext) {
+export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext) {
   return async serverUrl => {
     const yesOption = 'Connect to this SonarQube server';
     const reply = await vscode.window.showWarningMessage(
@@ -60,7 +60,14 @@ export function warnAboutUntrustedServer(context: vscode.ExtensionContext) {
 
 If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.` }, yesOption);
     if (reply === yesOption) {
-      connectToSonarQube(context)(serverUrl);
+      const connection :SonarQubeConnection = {
+        token: 'squ_11f77491ccdce55f810baa384587c0cfcbee8b6b',
+        connectionId: 'newConnectionId', // TODO generate real ID from server url
+        disableNotifications: false,
+        serverUrl: serverUrl
+      };
+
+      return await autoCreateConnection(connection, ConnectionSettingsService.instance)
     }
   }
 }
@@ -370,6 +377,23 @@ async function openTokenGenerationPage(message) {
   await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen' });
 }
 
+async function autoCreateConnection(
+  connection: SonarQubeConnection,
+  connectionSettingsService: ConnectionSettingsService
+) {
+  const serverOrOrganization = connection.serverUrl;
+  const connectionCheckResult = await connectionSettingsService.checkNewConnection(
+    connection.token,
+    serverOrOrganization,
+    true
+  );
+  if (!connectionCheckResult.success) {
+    await reportConnectionCheckResult(connectionCheckResult);
+    return;
+  }
+  return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+}
+
 async function saveConnection(
   connection: SonarQubeConnection | SonarCloudConnection,
   connectionSettingsService: ConnectionSettingsService
@@ -391,7 +415,7 @@ async function saveConnection(
     if (foundConnection) {
       await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
     } else {
-      await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+      return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
     }
   } else {
     const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId);

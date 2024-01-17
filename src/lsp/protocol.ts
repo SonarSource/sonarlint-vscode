@@ -532,8 +532,13 @@ export interface AssistCreatingConnectionParams {
   serverUrl: string;
 }
 
+export interface AssistCreatingConnectionResponse {
+  newConnectionId: string;
+}
+
 export namespace AssistCreatingConnection {
-  export const type = new lsp.NotificationType<AssistCreatingConnectionParams>('sonarlint/assistCreatingConnection');
+  export const type =
+    new lsp.RequestType<AssistCreatingConnectionParams, AssistCreatingConnectionResponse, null>('sonarlint/assistCreatingConnection');
 }
 
 export interface AssistBindingParams {
@@ -541,8 +546,12 @@ export interface AssistBindingParams {
   projectKey: string;
 }
 
+export interface AssistBindingResponse {
+  configurationScopeId: string;
+}
+
 export namespace AssistBinding {
-  export const type = new lsp.NotificationType<AssistBindingParams>('sonarlint/assistBinding');
+  export const type = new lsp.RequestType<AssistBindingParams, AssistBindingResponse, null>('sonarlint/assistBinding');
 }
 
 interface ShowHotspotDetailsParams {

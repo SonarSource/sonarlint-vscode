@@ -146,9 +146,11 @@ export class ConnectionSettingsService {
     }
     await this.storeUpdatedConnectionToken(connection, connection.token);
     connections.push(newConnection);
-    VSCode.workspace
+    await VSCode.workspace
       .getConfiguration()
       .update(SONARQUBE_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
+
+    return newConnection.connectionId;
   }
 
   async updateSonarQubeConnection(connection: SonarQubeConnection) {
