@@ -5,6 +5,7 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
+import artifactory from './artifactory.mjs';
 import { cleanJreDir, deleteFile } from './fsUtils.mjs';
 import { ensureDir } from 'fs-extra';
 import { parse } from 'url';
@@ -143,9 +144,10 @@ function isValidParams(targetPlatform, platformMapping) {
   return true;
 }
 
-export async function downloadFile(fileUrl, destPath) {
+export async function downloadFile(fileUrl, destPath, useAuthentication=false) {
+  const maybeAuthenticatedFetch = useAuthentication ? artifactory.maybeAuthenticatedFetch : fetch;
   return new Promise(function (resolve, reject) {
-    fetch(fileUrl).then(function (res) {
+    maybeAuthenticatedFetch(fileUrl).then(function (res) {
       const fileStream = createWriteStream(destPath);
       res.body.on('error', reject);
       if (res.statusCode >= HTTP_BAD_REQUEST) {

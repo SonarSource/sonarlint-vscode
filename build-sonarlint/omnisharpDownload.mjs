@@ -5,6 +5,7 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
+import artifactory from './artifactory.mjs';
 import { deleteFile } from './fsUtils.mjs';
 import { ensureDir } from 'fs-extra';
 import { error, info } from 'fancy-log';
@@ -32,11 +33,11 @@ export async function downloadAndExtractOmnisharp(omnisharpVersion, omnisharpDis
 
   info(`Downloading omnisharp ${omnisharpDistribution}`);
 
-  const omnisharpDownloadUrl = `https://repox.jfrog.io/artifactory/sonarsource/org/sonarsource/sonarlint/omnisharp/omnisharp-roslyn/${omnisharpVersion}/omnisharp-roslyn-${omnisharpVersion}-${omnisharpDistribution}.tar.gz`;
+  const omnisharpDownloadUrl = `${artifactory.repoRoot}/org/sonarsource/sonarlint/omnisharp/omnisharp-roslyn/${omnisharpVersion}/omnisharp-roslyn-${omnisharpVersion}-${omnisharpDistribution}.tar.gz`;
   const parsedDownloadUrl = parse(omnisharpDownloadUrl);
   const omnisharpFileName = basename(parsedDownloadUrl.pathname).replace(/\.(?:7z|bz2|gz|rar|tar|zip|xz)*$/, '');
 
-  await downloadFile(omnisharpDownloadUrl, `./omnisharp/${omnisharpFileName}`);
+  await downloadFile(omnisharpDownloadUrl, `./omnisharp/${omnisharpFileName}`, true);
 
   const inputFilePath = `./omnisharp/${omnisharpFileName}`;
   const outputFolderPath = `./omnisharp/${omnisharpDistribution}`;
