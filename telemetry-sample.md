@@ -54,9 +54,11 @@
       "faq": 4 
     }
   },
-  "new_code_focus": {
-    "enabled": true,
-    "changes": 5
+  "cayc": {
+    "new_code_focus": {
+      "enabled": true,
+      "changes": 5
+    }
   },
   "show_issue": {
     "requests_count": 3
