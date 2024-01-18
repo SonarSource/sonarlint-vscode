@@ -25,7 +25,11 @@ const auth = {
 const credentialsDefined =
   ARTIFACTORY_PRIVATE_READER_USERNAME !== undefined && ARTIFACTORY_PRIVATE_READER_PASSWORD !== undefined;
 
-const repoxRoot = 'https://repox.jfrog.io/repox/sonarsource';
+const repoRoot = credentialsDefined ?
+  // When artifactory credentials are defined, use SonarSource internal artifactory
+  'https://repox.jfrog.io/repox/sonarsource' :
+  // Otherwise, fallback to Maven Central (only releases)
+  'https://repo.maven.apache.org/maven2';
 
 const jarDependencies = JSON.parse(readFileSync(resolve(dirname(''), 'scripts/dependencies.json')));
 
@@ -76,7 +80,7 @@ async function artifactUrl(dep) {
       return null;
     }
   }
-  return `${repoxRoot}/${groupIdForArtifactory}/${dep.artifactId}/${dep.version}/${dep.artifactId}-${dep.version}.jar`;
+  return `${repoRoot}/${groupIdForArtifactory}/${dep.artifactId}/${dep.version}/${dep.artifactId}-${dep.version}.jar`;
 }
 
 function downloadIfNeeded(url, dest) {
