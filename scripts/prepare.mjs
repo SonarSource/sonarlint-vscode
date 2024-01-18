@@ -10,26 +10,11 @@ import { createHash } from 'crypto';
 import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 
-import fetch from 'node-fetch';
 import { promisify } from 'util';
 
+import artifactory from '../build-sonarlint/artifactory.mjs';
+
 const execAsync = promisify(exec);
-
-const { ARTIFACTORY_PRIVATE_READER_USERNAME, ARTIFACTORY_PRIVATE_READER_PASSWORD } = process.env;
-
-const auth = {
-  user: ARTIFACTORY_PRIVATE_READER_USERNAME,
-  pass: ARTIFACTORY_PRIVATE_READER_PASSWORD
-};
-
-const credentialsDefined =
-  ARTIFACTORY_PRIVATE_READER_USERNAME !== undefined && ARTIFACTORY_PRIVATE_READER_PASSWORD !== undefined;
-
-const repoRoot = credentialsDefined ?
-  // When artifactory credentials are defined, use SonarSource internal artifactory
-  'https://repox.jfrog.io/repox/sonarsource' :
-  // Otherwise, fallback to Maven Central (only releases)
-  'https://repo.maven.apache.org/maven2';
 
 const jarDependencies = JSON.parse(readFileSync(resolve(dirname(''), 'scripts/dependencies.json')));
 
@@ -42,7 +27,7 @@ if (!existsSync('analyzers')) {
 }
 
 jarDependencies.map(async dep => {
-  if (dep.requiresCredentials && !credentialsDefined) {
+  if (dep.requiresCredentials && !artifactory.credentialsDefined) {
     console.info(`Skipping download of ${dep.artifactId}, no credentials`);
     return;
   }
@@ -80,7 +65,7 @@ async function artifactUrl(dep) {
       return null;
     }
   }
-  return `${repoRoot}/${groupIdForArtifactory}/${dep.artifactId}/${dep.version}/${dep.artifactId}-${dep.version}.jar`;
+  return `${artifactory.repoRoot}/${groupIdForArtifactory}/${dep.artifactId}/${dep.version}/${dep.artifactId}-${dep.version}.jar`;
 }
 
 function downloadIfNeeded(url, dest) {
@@ -96,23 +81,11 @@ function downloadIfNeeded(url, dest) {
         downloadIfChecksumMismatch(await response.text(), url, dest);
       }
     };
-    if (credentialsDefined) {
-      fetch(url + '.sha1', {
-        headers: {
-          Authorization: 'Basic ' + Buffer.from(`${auth.user}:${auth.pass}`).toString('base64')
-        }
-      })
-        .then(callback)
-        .catch(err => {
-            throw new Error(err);
-          });
-    } else {
-      fetch(url + '.sha1')
-        .then(callback)
-        .catch(err => {
-        throw new Error(err);
-      });
-    }
+    artifactory.maybeAuthenticatedFetch(url + '.sha1')
+      .then(callback)
+      .catch(err => {
+          throw new Error(err);
+        });
   }
 }
 
@@ -135,10 +108,10 @@ async function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
 }
 
 function sendRequest(url) {
-  if (credentialsDefined) {
-    return fetch(url, {
+  if (artifactory.credentialsDefined) {
+    return artifactory.maybeAuthenticatedFetch(url, {
       headers: {
-        Authorization: 'Basic ' + Buffer.from(`${auth.user}:${auth.pass}`).toString('base64')
+        Authorization: 'Basic ' + Buffer.from(`${artifactory.auth.user}:${artifactory.auth.pass}`).toString('base64')
       }})
       .then(response => {
         if(!response.ok) {
@@ -151,7 +124,7 @@ function sendRequest(url) {
         throw new Error(err);
       });
   } else {
-    return fetch(url)
+    return artifactory.maybeAuthenticatedFetch(url)
       .then(response => response.body)
       .catch(err => {
         throw new Error(err);
