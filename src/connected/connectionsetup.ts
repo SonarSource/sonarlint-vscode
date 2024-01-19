@@ -54,11 +54,11 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
 export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext) {
   return async (serverUrl, token) => {
     const yesOption = 'Connect to this SonarQube server';
-    const reply = await vscode.window.showWarningMessage(
-      `Do you trust this SonarQube server?`,
-      { modal: true, detail: `The server '${serverUrl}' is attempting to set up a connection with SonarLint. Letting SonarLint connect to an untrusted SonarQube server is potentially dangerous.
-
-If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.` }, yesOption);
+    const reply = await vscode.window.showInformationMessage(
+      `Connect SonarLint with SonarQube`,
+      { modal: true, detail: `The SonarQube server \n'${serverUrl}'\nis attempting to set up a connection with SonarLint.\n
+      Using SonarLint in Connected Mode with SonarQube is required to open and investigate server issues directly in the IDE.
+      It also allows you to apply the same Clean Code standards as your team, and [more](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/).` }, yesOption);
     if (reply === yesOption) {
       const connection :SonarQubeConnection = {
         token: token,
@@ -68,6 +68,9 @@ If you don't trust this server, we recommend canceling this action and manually 
       };
 
       return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+    }
+    else {
+      return null;
     }
   }
 }
