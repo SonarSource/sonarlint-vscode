@@ -47,12 +47,12 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
   return async assistCreatingConnectionParams => {
     if (assistCreatingConnectionParams.isSonarCloud) {
       throw new Error('Unsupported operation: assist creating SonarCloud connection');
-    } return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.serverUrl) }
+    } return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.serverUrl, assistCreatingConnectionParams.token) }
   };
 }
 
 export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext) {
-  return async serverUrl => {
+  return async (serverUrl, token) => {
     const yesOption = 'Connect to this SonarQube server';
     const reply = await vscode.window.showWarningMessage(
       `Do you trust this SonarQube server?`,
@@ -61,13 +61,13 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
 If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.` }, yesOption);
     if (reply === yesOption) {
       const connection :SonarQubeConnection = {
-        token: 'squ_11f77491ccdce55f810baa384587c0cfcbee8b6b',
-        connectionId: 'newConnectionId', // TODO generate real ID from server url
+        token: token,
+        connectionId: serverUrl,
         disableNotifications: false,
         serverUrl: serverUrl
       };
 
-      return await autoCreateConnection(connection, ConnectionSettingsService.instance)
+      return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
     }
   }
 }
@@ -375,23 +375,6 @@ async function openTokenGenerationPage(message) {
         })
     );
   await connectionSetupPanel.webview.postMessage({ command: 'tokenGenerationPageIsOpen' });
-}
-
-async function autoCreateConnection(
-  connection: SonarQubeConnection,
-  connectionSettingsService: ConnectionSettingsService
-) {
-  const serverOrOrganization = connection.serverUrl;
-  const connectionCheckResult = await connectionSettingsService.checkNewConnection(
-    connection.token,
-    serverOrOrganization,
-    true
-  );
-  if (!connectionCheckResult.success) {
-    await reportConnectionCheckResult(connectionCheckResult);
-    return;
-  }
-  return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
 }
 
 async function saveConnection(
