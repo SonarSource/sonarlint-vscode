@@ -53,21 +53,34 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
 
 export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext) {
   return async (serverUrl, token) => {
-    const yesOption = 'Connect to this SonarQube server';
-    const reply = await vscode.window.showInformationMessage(
-      `Connect SonarLint with SonarQube`,
-      { modal: true, detail: `The SonarQube server \n'${serverUrl}'\nis attempting to set up a connection with SonarLint.\n
-      Using SonarLint in Connected Mode with SonarQube is required to open and investigate server issues directly in the IDE.
-      It also allows you to apply the same Clean Code standards as your team, and [more](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/).` }, yesOption);
-    if (reply === yesOption) {
-      const connection :SonarQubeConnection = {
-        token: token,
-        connectionId: serverUrl,
-        disableNotifications: false,
-        serverUrl: serverUrl
-      };
+    const manualConnectionMessage = `Connecting SonarLint to SonarQube will enable issues to be opened directly in your IDE. It will also allow you to apply the same Clean Code standards as your team, analyze more languages, detect more issues, receive notifications about the quality gate status, and more.
+      \nEnsure that the requesting server URL '${serverUrl}' matches your SonarQube instance. Letting SonarLint connect to an untrusted SonarQube server is potentially dangerous. If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.`;
 
-      return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+    const automaticConnectionMessage = `${manualConnectionMessage}
+      \nA token will be automatically generated to allow access to your SonarQube instance.`
+
+    const yesOption = 'Connect to this SonarQube server';
+    const learnMoreOption = 'What is Connected Mode?'
+    const reply = await vscode.window.showWarningMessage(
+      'Do you trust this SonarQube server?',
+      { modal: true, detail: token ? automaticConnectionMessage : manualConnectionMessage }, yesOption, learnMoreOption);
+    if (reply === yesOption) {
+      if(token) {
+        const connection :SonarQubeConnection = {
+          token: token,
+          connectionId: serverUrl,
+          disableNotifications: false,
+          serverUrl: serverUrl
+        };
+
+        return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+      } else {
+        connectToSonarQube(context)(serverUrl);
+        return null; // TODO make sure the future is properly managed in core in this case
+      }
+    } else if (reply === learnMoreOption) {
+      vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'connectedModeDocs');
+      return null;
     }
     else {
       return null;
