@@ -1,7 +1,8 @@
 ## 4.3.0
 
 * Update JS/TS/CSS analyzer 10.10 -> [10.11](https://github.com/SonarSource/SonarJS/releases/tag/10.11.0.25043), support TypeScript 5.3, 5 new adaptability rules, drop support for Node 14
-* Update Java analyzer 7.29 -> [7.30.1](https://github.com/SonarSource/sonar-java/releases/tag/7.30.1.34514), 5 new Spring Boot rules, improve support for the "jakarta" package, fixes for false positives and bugs
+* Update Java analyzer 7.29 -> [7.30.1](https://github.com/SonarSource/sonar-java/releases/tag/7.30.1.34514), 5 new Sprint Boot rules, improve support for the "jakarta" package, fixes for false positives and bugs
+* Update CFamily analyzer 6.51 -> [6.52](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015423%20ORDER%20BY%20created%20ASC), 9 new MISRA 2023 rules for C++
 
 ## 4.2.0
 
