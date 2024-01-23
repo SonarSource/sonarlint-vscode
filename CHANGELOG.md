@@ -1,3 +1,7 @@
+## 4.3.0
+
+* Update JS/TS/CSS analyzer 10.10 -> [10.11](https://github.com/SonarSource/SonarJS/releases/tag/10.11.0.25043), support TypeScript 5.3, 5 new adaptability rules, drop support for Node 14
+
 ## 4.2.0
 
 * Update JS/TS/CSS analyzer 10.9 -> [10.10](https://github.com/SonarSource/SonarJS/releases/tag/10.10.0.24774), 17 new accessibility rules for JSX
