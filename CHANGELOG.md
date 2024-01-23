@@ -1,6 +1,7 @@
 ## 4.3.0
 
 * Update JS/TS/CSS analyzer 10.10 -> [10.11](https://github.com/SonarSource/SonarJS/releases/tag/10.11.0.25043), support TypeScript 5.3, 5 new adaptability rules, drop support for Node 14
+* Update Java analyzer 7.29 -> [7.30.1](https://github.com/SonarSource/sonar-java/releases/tag/7.30.1.34514), 5 new Spring Boot rules, improve support for the "jakarta" package, fixes for false positives and bugs
 
 ## 4.2.0
 
