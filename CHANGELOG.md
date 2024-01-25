@@ -4,6 +4,7 @@
 * Update Java analyzer 7.29 -> [7.30.1](https://github.com/SonarSource/sonar-java/releases/tag/7.30.1.34514), 5 new Sprint Boot rules, improve support for the "jakarta" package, fixes for false positives and bugs
 * Update CFamily analyzer 6.51 -> [6.52](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015423%20ORDER%20BY%20created%20ASC), 9 new MISRA 2023 rules for C++
 * Update IaC analyzer 1.23 -> [1.24](https://github.com/SonarSource/sonar-iac/releases/tag/1.24.0.7839) -> [1.25](https://github.com/SonarSource/sonar-iac/releases/tag/1.25.0.8192), initial support for Helm Charts
+* Update Text analyzer 2.7.1 -> [2.8](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015385%20ORDER%20BY%20created%20ASC), fixes for false positives and performance improvements
 
 ## 4.2.0
 
