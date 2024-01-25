@@ -50,7 +50,7 @@
   {
     "groupId": "org.sonarsource.text",
     "artifactId": "sonar-text-plugin",
-    "version": "2.7.1.1388",
+    "version": "2.8.0.1635",
     "output": "analyzers/sonartext.jar"
   },
   {
