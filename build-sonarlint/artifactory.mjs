@@ -20,7 +20,7 @@ const credentialsDefined =
 
 const repoRoot = credentialsDefined ?
   // When artifactory credentials are defined, use SonarSource internal artifactory
-  'https://repox.jfrog.io/repox/sonarsource' :
+  'https://repox.jfrog.io/artifactory/sonarsource' :
   // Otherwise, fallback to Maven Central (only releases)
   'https://repo.maven.apache.org/maven2';
 
