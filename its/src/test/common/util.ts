@@ -16,8 +16,8 @@ interface WaitForDiagnosticsOptions {
 }
 
 export async function waitForSonarLintDiagnostics(fileUri: vscode.Uri, options?: WaitForDiagnosticsOptions) {
-  const atLeastIssues = options?.atLeastIssues || 1;
-  const timeoutMillis = options?.timeoutMillis || MAX_WAIT_DIAGNOSTICS_MS;
+  const atLeastIssues = options?.atLeastIssues ?? 1;
+  const timeoutMillis = options?.timeoutMillis ?? MAX_WAIT_DIAGNOSTICS_MS;
   let diags = getSonarLintDiagnostics(fileUri);
   let elapsedMillis = 0;
   const periodMillis = 200;

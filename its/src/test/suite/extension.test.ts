@@ -21,6 +21,10 @@ suite('Extension Test Suite', () => {
     vscode.window.showInformationMessage('Start all tests.');
   });
 
+  teardown(() => {
+    dumpLogOutput();
+  });
+
   test('Extension should be present', () => {
     assert.ok(vscode.extensions.getExtension('sonarsource.sonarlint-vscode'));
   });
@@ -35,9 +39,7 @@ suite('Extension Test Suite', () => {
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
 
-    const diags = await waitForSonarLintDiagnostics(fileUri);
-
-    dumpLogOutput();
+    const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2, timeoutMillis: 30_000 });
 
     assert.strictEqual(diags.length, 2);
     assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
@@ -58,8 +60,6 @@ suite('Extension Test Suite', () => {
     await vscode.window.showTextDocument(document);
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
-
-    dumpLogOutput();
 
     assert.strictEqual(diags.length, 1);
     assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'x' variable.");
