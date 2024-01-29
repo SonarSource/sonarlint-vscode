@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { Commands } from '../util/commands';
 import { Connection } from './connections';
-import { AssistCreatingConnectionParams, ConnectionCheckResult } from '../lsp/protocol';
+import { ConnectionCheckResult } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -67,16 +67,16 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
     if (reply === yesOption) {
       if(token) {
         const connection :SonarQubeConnection = {
-          token: token,
+          token,
           connectionId: serverUrl,
           disableNotifications: false,
-          serverUrl: serverUrl
+          serverUrl
         };
 
         return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
       } else {
         connectToSonarQube(context)(serverUrl);
-        return null; // TODO make sure the future is properly managed in core in this case
+        return null;
       }
     } else if (reply === learnMoreOption) {
       vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'connectedModeDocs');
@@ -414,7 +414,8 @@ async function saveConnection(
     if (foundConnection) {
       await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
     } else {
-      return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+      await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+      return;
     }
   } else {
     const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId);

@@ -125,7 +125,6 @@ export class BindingService {
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
         .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
     }
-    // TODO make sure it will work with old versions of SQ
     return { configurationScopeId: workspaceFolder.uri.toString() };
   }
 
