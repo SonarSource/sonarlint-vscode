@@ -300,6 +300,55 @@ suite('Bindings Test Suite', () => {
       );
     });
   });
+
+
+  suite('Assist Binding', () => {
+    let underTest;
+    setup(() => {
+      underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService);
+    });
+
+    test('Should not do anything when binding already exists', async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      const existingBinding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(existingBinding).to.be.empty;
+
+      await underTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
+
+      const updatedBinding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(updatedBinding).to.deep.equal(TEST_BINDING);
+
+      const result = await underTest.assistBinding({ connectionId: TEST_BINDING.connectionId, projectKey: TEST_BINDING.projectKey })
+
+      const afterAssistance = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(afterAssistance).to.deep.equal(TEST_BINDING);
+      expect(result.configurationScopeId).to.equal(workspaceFolder.uri.toString())
+    });
+
+    test('Should create requested binding', async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      const existingBinding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get(BINDING_SETTINGS);
+      expect(existingBinding).to.be.empty;
+
+      const result = await underTest.assistBinding({ connectionId: TEST_BINDING.connectionId, projectKey: TEST_BINDING.projectKey })
+
+      const afterAssistance = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(afterAssistance).to.deep.equal(TEST_BINDING);
+      expect(result.configurationScopeId).to.equal(workspaceFolder.uri.toString())
+    })
+  })
 });
 
 function sleep(time) {

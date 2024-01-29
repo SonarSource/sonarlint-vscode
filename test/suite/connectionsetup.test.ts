@@ -5,16 +5,18 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as assert from 'assert';
 import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
 import {
+  assistCreatingConnection,
   getDefaultConnectionId,
   handleMessageWithConnectionSettingsService
 } from '../../src/connected/connectionsetup';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
+import { ExtensionContext } from 'vscode';
+import { assert } from 'chai';
 
 const FIVE_SECONDS = 5000;
 
@@ -42,6 +44,8 @@ const mockSecretStorage = {
     //nothing to do
   }
 } as vscode.SecretStorage;
+
+const fakeContext = { globalState: null, workspaceState: null, subscriptions: null, extension: null } as ExtensionContext;
 
 suite('Connection Setup', () => {
 
@@ -270,6 +274,18 @@ suite('Connection Setup', () => {
     assert.deepStrictEqual(getSonarQubeConnections(), [{ serverUrl, connectionId }]);
   }).timeout(FIVE_SECONDS);
 });
+
+suite('Assist creating connection', () => {
+  test('should NOT assist creating connection with SonarCloud', async () => {
+    const assistCreatingConnectionParams = { isSonarCloud: true, serverUrl: '', token: null };
+    try {
+      await assistCreatingConnection(fakeContext)(assistCreatingConnectionParams);
+    } catch (e) {
+      assert.typeOf(e, 'error');
+      assert.equal(e.message, 'Unsupported operation: assist creating SonarCloud connection')
+    }
+  });
+})
 
 function getSonarQubeConnections() {
   return vscode.workspace.getConfiguration('sonarlint').get('connectedMode.connections.sonarqube');

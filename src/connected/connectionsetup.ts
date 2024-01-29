@@ -66,7 +66,7 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
       { modal: true, detail: token ? automaticConnectionMessage : manualConnectionMessage }, yesOption, learnMoreOption);
     if (reply === yesOption) {
       if(token) {
-        const connection :SonarQubeConnection = {
+        const connection : SonarQubeConnection = {
           token,
           connectionId: serverUrl,
           disableNotifications: false,
