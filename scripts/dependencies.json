@@ -38,7 +38,7 @@
   {
     "groupId": "org.sonarsource.html",
     "artifactId": "sonar-html-plugin",
-    "version": "3.9.0.3600",
+    "version": "3.13.0.4821",
     "output": "analyzers/sonarhtml.jar"
   },
   {
@@ -63,7 +63,7 @@
   {
     "groupId": "org.sonarsource.iac",
     "artifactId": "sonar-iac-plugin",
-    "version": "1.25.0.8192",
+    "version": "1.26.0.8471",
     "output": "analyzers/sonariac.jar"
   },
   {
