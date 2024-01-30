@@ -33,7 +33,7 @@
     "@types/mocha": "10.0.0",
     "@types/node": "^12.11.7",
     "@types/vscode": "^1.73.0",
-    "@vscode/test-electron": "2.3.8",
+    "@vscode/test-electron": "^2.3.9",
     "compare-versions": "3.6.0",
     "glob": "^8.0.3",
     "mocha": "10.1.0",
