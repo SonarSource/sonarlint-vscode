@@ -120,8 +120,8 @@ export class BindingService {
     const existingSettings = VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .get<ProjectBinding>(BINDING_SETTINGS);
-        if (existingSettings.projectKey === undefined) {
-            await VSCode.workspace
+    if (existingSettings.projectKey === undefined) {
+      await VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
         .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
     }
