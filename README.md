@@ -138,7 +138,7 @@ More information about security-related rules is available in the [SonarQube](ht
 
 ### Security Hotspots in SonarLint
 
-Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with SonarQube 9.7 or above, or SonarCloud.
+Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with SonarQube 9.9 or above, or SonarCloud.
 
 Please see the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) for more details.
 
@@ -148,7 +148,7 @@ Secrets are pieces of user-specific or system-level credentials that should be p
 
 ## Connected Mode
 
-You can connect SonarLint to [SonarQube](https://www.sonarsource.com/products/sonarqube/) 8.9+ or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder.
+You can connect SonarLint to [SonarQube](https://www.sonarsource.com/products/sonarqube/) 9.9+ or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder.
 
 While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings.
 
