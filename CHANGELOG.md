@@ -3,8 +3,9 @@
 * Update JS/TS/CSS analyzer 10.10 -> [10.11](https://github.com/SonarSource/SonarJS/releases/tag/10.11.0.25043) -> [10.11.1](https://github.com/SonarSource/SonarJS/releases/tag/10.11.1.25225), support TypeScript 5.3, 5 new adaptability rules, drop support for Node 14
 * Update Java analyzer 7.29 -> [7.30.1](https://github.com/SonarSource/sonar-java/releases/tag/7.30.1.34514), 5 new Sprint Boot rules, improve support for the "jakarta" package, fixes for false positives and bugs
 * Update CFamily analyzer 6.51 -> [6.52](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015423%20ORDER%20BY%20created%20ASC), 9 new MISRA 2023 rules for C++
-* Update IaC analyzer 1.23 -> [1.24](https://github.com/SonarSource/sonar-iac/releases/tag/1.24.0.7839) -> [1.25](https://github.com/SonarSource/sonar-iac/releases/tag/1.25.0.8192), initial support for Helm Charts
+* Update IaC analyzer 1.23 -> [1.24](https://github.com/SonarSource/sonar-iac/releases/tag/1.24.0.7839) -> [1.25](https://github.com/SonarSource/sonar-iac/releases/tag/1.25.0.8192) -> [1.26](https://github.com/SonarSource/sonar-iac/releases/tag/1.26.0.8471), 8 new Kubernetes rules; fp fixes
 * Update Text analyzer 2.7.1 -> [2.8](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015385%20ORDER%20BY%20created%20ASC), fixes for false positives and performance improvements
+* Update HTML analyzer 3.9 -> [3.13](https://github.com/SonarSource/sonar-html/releases/tag/3.13.0.4821), Add new rules; drop deprecated property "sonar.web.file.suffixes"
 * Enable detection of custom secrets in connected mode with SonarQube 10.4+ (Enterprise and Data Center editions)
 
 ## 4.2.0
