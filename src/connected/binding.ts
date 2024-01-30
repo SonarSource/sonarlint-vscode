@@ -125,7 +125,7 @@ export class BindingService {
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
         .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
     }
-    VSCode.commands.executeCommand('workbench.action.openFolderSettingsFile');
+    return { configurationScopeId: workspaceFolder.uri.toString() };
   }
 
   async createOrEditBinding(

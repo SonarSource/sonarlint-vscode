@@ -609,14 +609,14 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     hotspotsTreeDataProvider.refresh(hotspotsPerFile);
     updateSonarLintViewContainerBadge();
   });
-  languageClient.onNotification(protocol.AssistCreatingConnection.type, assistCreatingConnection(context));
-  languageClient.onNotification(
+  languageClient.onRequest(
     protocol.AssistBinding.type,
     async params => await BindingService.instance.assistBinding(params)
   );
   languageClient.onRequest(protocol.SslCertificateConfirmation.type, cert =>
     showSslCertificateConfirmationDialog(cert)
   );
+  languageClient.onRequest(protocol.AssistCreatingConnection.type, assistCreatingConnection(context))
   languageClient.onNotification(protocol.ShowSoonUnsupportedVersionMessage.type, params =>
     showSoonUnsupportedVersionMessage(params, context.workspaceState)
   );

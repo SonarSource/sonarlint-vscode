@@ -44,23 +44,46 @@ const SONARCLOUD_DESCRIPTION =
   '<a id="sonarCloudProductPage" href="#">SonarCloud</a> is entirely free for open-source projects.';
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
-  return assistCreatingConnectionParams => {
-    assistCreatingConnectionParams.isSonarCloud
-      ? connectToSonarCloud(context)
-      : warnAboutUntrustedServer(context)(assistCreatingConnectionParams.serverUrl);
+  return async assistCreatingConnectionParams => {
+    if (assistCreatingConnectionParams.isSonarCloud) {
+      throw new Error('Unsupported operation: assist creating SonarCloud connection');
+    } return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.serverUrl, assistCreatingConnectionParams.token) }
   };
 }
 
-export function warnAboutUntrustedServer(context: vscode.ExtensionContext) {
-  return async serverUrl => {
-    const yesOption = 'Connect to this SonarQube server';
-    const reply = await vscode.window.showWarningMessage(
-      `Do you trust this SonarQube server?`,
-      { modal: true, detail: `The server '${serverUrl}' is attempting to set up a connection with SonarLint. Letting SonarLint connect to an untrusted SonarQube server is potentially dangerous.
+export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext) {
+  return async (serverUrl, token) => {
+    const manualConnectionMessage = `Connecting SonarLint to SonarQube will enable issues to be opened directly in your IDE. It will also allow you to apply the same Clean Code standards as your team, analyze more languages, detect more issues, receive notifications about the quality gate status, and more.
+      \nEnsure that the requesting server URL '${serverUrl}' matches your SonarQube instance. Letting SonarLint connect to an untrusted SonarQube server is potentially dangerous. If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.`;
 
-If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.` }, yesOption);
+    const automaticConnectionMessage = `${manualConnectionMessage}
+      \nA token will be automatically generated to allow access to your SonarQube instance.`
+
+    const yesOption = 'Connect to this SonarQube server';
+    const learnMoreOption = 'What is Connected Mode?'
+    const reply = await vscode.window.showWarningMessage(
+      'Do you trust this SonarQube server?',
+      { modal: true, detail: token ? automaticConnectionMessage : manualConnectionMessage }, yesOption, learnMoreOption);
     if (reply === yesOption) {
-      connectToSonarQube(context)(serverUrl);
+      if(token) {
+        const connection : SonarQubeConnection = {
+          token,
+          connectionId: serverUrl,
+          disableNotifications: false,
+          serverUrl
+        };
+
+        return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+      } else {
+        connectToSonarQube(context)(serverUrl);
+        return null;
+      }
+    } else if (reply === learnMoreOption) {
+      vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'connectedModeDocs');
+      return null;
+    }
+    else {
+      return null;
     }
   }
 }
@@ -392,6 +415,7 @@ async function saveConnection(
       await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
     } else {
       await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+      return;
     }
   } else {
     const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId);
