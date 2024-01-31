@@ -20,6 +20,9 @@ jobs:
       slackChannel: team-sonarlint-vscode
 
   deploy_to_microsoft_marketplace:
+    permissions:
+      id-token: write
+      contents: write
     runs-on: ubuntu-latest
     name: Deploy to Visual Studio marketplace
     needs: release
@@ -28,6 +31,8 @@ jobs:
       max-parallel: 1
       matrix:
         platform: ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal']
+    env:
+      ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
       - name: Checkout custom actions
         uses: actions/checkout@v3
@@ -37,10 +42,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+      - name: Get vault secrets
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@dc8fe04652687f7278f3ecd27905967836bab0eb # tag=2.7.4-1
+        with:
+          secrets: |
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
       - name: Install dependencies for vsce-publish
-        run: npm install
+        run: |
+          cp .cirrus/npmrc ./.npmrc
+          export ARTIFACTORY_ACCESS_TOKEN=${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+          npm install
         working-directory: ./.github/actions/vsce-publish
-
       - name: Extract version, file name and download URL
         id: extract_version
         shell: python
@@ -88,9 +101,14 @@ jobs:
         uses: ./.github/actions/vsce-publish
 
   deploy_to_openvsx:
+    permissions:
+      id-token: write
+      contents: write
     runs-on: ubuntu-latest
     name: Deploy to OpenVSX
     needs: release
+    env:
+      ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
       - name: Checkout custom actions
         uses: actions/checkout@v3
@@ -98,8 +116,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+      - name: Get vault secrets
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@dc8fe04652687f7278f3ecd27905967836bab0eb # tag=2.7.4-1
+        with:
+          secrets: |
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
       - name: Install dependencies for ovsx-publish
-        run: npm install
+        run: |
+          cp .cirrus/npmrc ./.npmrc
+          export ARTIFACTORY_ACCESS_TOKEN=${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+          npm install
         working-directory: ./.github/actions/ovsx-publish
       - name: Extract version, file name and download URL
         id: extract_version
