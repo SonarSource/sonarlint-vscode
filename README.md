@@ -1,9 +1,9 @@
 # SonarLint for Visual Studio Code
 
 SonarLint by [Sonar](https://www.sonarsource.com/) is a free IDE extension that empowers you to fix coding issues before they exist. More than a linter, SonarLint detects and highlights issues that can lead to bugs, vulnerabilities, and code smells as you create your code.  It offers clear remediation guidance and educational help, so you can fix issues before the code is committed.
-SonarLint in VS Code supports analysis of JS/TS, Python, PHP, Java, C, C++, C#, Go, and IaC code locally in your IDE.
+Out of the box, SonarLint in VS Code supports analysis of JS/TS, Python, PHP, Java, C, C++, C#, Go, and IaC code locally in your IDE.
 
-When paired with [SonarQube](https://www.sonarsource.com/products/sonarqube/) or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) in Connected Mode, SonarLint forms a powerful end-to-end code quality platform to enrich the CI/CD pipeline, ensuring any code edits or additions are clean.
+By default, SonarLint for VSCode analyzes files **open** in the IDE. When paired with [SonarQube](https://www.sonarsource.com/products/sonarqube/) or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) in Connected Mode, SonarLint forms a powerful end-to-end code quality platform to enrich the CI/CD pipeline, ensuring any code edits or additions **across the whole project** are clean.
 In Connected Mode, your team can share common language rulesets, project analysis settings and [more](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/).
 
 <a href='https://www.youtube.com/watch?v=Ks4Slmzb1qY' target='_blank'><img alt='What is SonarLint video' src='images/what_is_sonarlint.png'></a>
@@ -148,7 +148,7 @@ Secrets are pieces of user-specific or system-level credentials that should be p
 
 ## Connected Mode
 
-You can connect SonarLint to [SonarQube](https://www.sonarsource.com/products/sonarqube/) 9.9+ or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Won’t Fix** and **False Positive** issues in any file from a bound folder.
+You can connect SonarLint to [SonarQube](https://www.sonarsource.com/products/sonarqube/) 9.9+ or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Accepted** (formerly **Won’t Fix**) and **False Positive** issues in any file from a bound folder.
 
 While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings.
 
