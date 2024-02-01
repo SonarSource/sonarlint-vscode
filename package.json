@@ -588,7 +588,7 @@
       },
       {
         "view": "SonarLint.SecurityHotspots",
-        "contents": "Please ensure a connection to SonarQube 9.7+ or SonarCloud is set up. Detected Security Hotspots will be displayed here. [Learn More](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
+        "contents": "Please ensure a connection to [SonarQube](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) 9.9+ or [SonarCloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22) is set up. Detected Security Hotspots will be displayed here. [Learn More](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
       }
     ],
     "walkthroughs": [
