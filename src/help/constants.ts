@@ -1,14 +1,27 @@
 import { SonarLintDocumentation } from '../commons';
+import { Command } from 'vscode';
 
 export interface HelpAndFeedbackItem {
   id: string;
   label: string;
-  url: string;
+  url?: string;
   icon: string;
   viewItem: boolean;
+  command?: Command;
 }
 
 export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
+  {
+    id: 'sonarLintWalkthrough',
+    label: 'Get Started',
+    icon: 'heart',
+    viewItem: true,
+    command: {
+      command: 'workbench.action.openWalkthrough',
+      title: 'Welcome to SonarLint!',
+      arguments: ['SonarSource.sonarlint-vscode#SonarLint.walkthrough', false]
+    }
+  },
   {
     id: 'docs',
     label: 'Read Documentation',

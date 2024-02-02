@@ -9,7 +9,7 @@ import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { StatusBarAlignment } from 'vscode';
+import { Command, StatusBarAlignment } from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
@@ -68,6 +68,7 @@ import { IssueService } from './issue/issue';
 import { CAN_SHOW_MISSING_REQUIREMENT_NOTIF, showSslCertificateConfirmationDialog } from './util/showMessage';
 import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
 import { ShowIssueNotification } from './lsp/protocol';
+import * as vscode from 'vscode';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -503,22 +504,22 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItemorId => {
+    VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItemOrId => {
       let itemId: string;
-      let url: string;
-      if (!helpAndFeedbackItemorId) {
-        helpAndFeedbackItemorId = getHelpAndFeedbackItemById('getHelp');
-        itemId = helpAndFeedbackItemorId.id;
-        url = helpAndFeedbackItemorId.url;
-      } else if (typeof helpAndFeedbackItemorId === 'string') {
-        itemId = helpAndFeedbackItemorId;
-        url = getHelpAndFeedbackItemById(itemId).url;
+      if (!helpAndFeedbackItemOrId) {
+        itemId = 'getHelp';
+      } else if (typeof helpAndFeedbackItemOrId === 'string') {
+        itemId = helpAndFeedbackItemOrId;
       } else {
-        itemId = helpAndFeedbackItemorId.id;
-        url = helpAndFeedbackItemorId.url;
+        itemId = helpAndFeedbackItemOrId.id;
       }
+      const { command, url } = getHelpAndFeedbackItemById(itemId);
       languageClient.helpAndFeedbackLinkClicked(itemId);
-      VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(url));
+      if (command) {
+        VSCode.commands.executeCommand(helpAndFeedbackItemOrId.command);
+      } else {
+        VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(url));
+      }
     })
   );
 
