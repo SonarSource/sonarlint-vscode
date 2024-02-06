@@ -12,13 +12,15 @@ suite('Help and Feedback tree view test suite', () => {
   test('getChildren should return all help and feedback view items', () => {
     const underTest = new HelpAndFeedbackTreeDataProvider();
     const children = underTest.getChildren();
-    assert.equal(children.length, 6);
-    assert.equal(children[0].label, 'Read Documentation');
-    assert.equal(children[1].label, 'Get Help | Report Issue');
-    assert.equal(children[2].label, 'See Languages & Rules');
-    assert.equal(children[3].label, "Check What's New");
-    assert.equal(children[4].label, 'Suggest a Feature');
-    assert.equal(children[5].label, 'Review FAQ');
-    assert.equal(children[0].command.command, Commands.TRIGGER_HELP_AND_FEEDBACK_LINK);
+    assert.equal(children.length, 7);
+    assert.equal(children[0].label, 'Get Started');
+    assert.equal(children[1].label, 'Read Documentation');
+    assert.equal(children[2].label, 'Get Help | Report Issue');
+    assert.equal(children[3].label, 'See Languages & Rules');
+    assert.equal(children[4].label, "Check What's New");
+    assert.equal(children[5].label, 'Suggest a Feature');
+    assert.equal(children[6].label, 'Review FAQ');
+    assert.equal(children[1].command.command, Commands.TRIGGER_HELP_AND_FEEDBACK_LINK);
+    assert.equal(children[0].command.command, 'workbench.action.openWalkthrough');
   });
 });
