@@ -18,6 +18,7 @@ import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 import { AssistBindingParams, ShowSoonUnsupportedVersionMessageParams } from '../lsp/protocol';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
+import { boolean } from 'vscode-languageclient/lib/common/utils/is';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -108,6 +109,16 @@ export class BindingService {
       }
     }
     return bindingsPerConnectionId;
+  }
+
+  bindingStatePerFolder(): Map<VSCode.Uri, boolean> {
+    const bindingStatePerFolder = new Map<VSCode.Uri, boolean>();
+    for (const folder of VSCode.workspace.workspaceFolders || []) {
+      const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
+      const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
+      bindingStatePerFolder.set(folder.uri, binding.projectKey !== undefined);
+    }
+    return bindingStatePerFolder;
   }
 
   async assistBinding(params: AssistBindingParams) {
