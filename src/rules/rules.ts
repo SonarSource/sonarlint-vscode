@@ -7,6 +7,8 @@
 'use strict';
 
 import * as VSCode from 'vscode';
+import { identity, negate } from 'lodash';
+import { BindingService } from '../connected/binding';
 import { ConfigLevel, Rule, RulesResponse } from '../lsp/protocol';
 
 function isActive(rule: Rule) {
@@ -44,7 +46,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<AllRulesNode | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
   private levelFilter?: ConfigLevel;
-  private allRules: Thenable<RulesResponse>;
+  private allRules: RulesResponse;
 
   constructor(private readonly allRulesProvider: () => Thenable<RulesResponse>) {}
 
@@ -82,23 +84,22 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
       });
   }
 
-  private getAllRules(): Thenable<RulesResponse> {
-    if (!this.allRules) {
-      this.allRules = this.allRulesProvider();
+  private async getAllRules() {
+    if (this.allRules === undefined) {
+      this.allRules = await this.allRulesProvider();
     }
     return this.allRules;
   }
 
-  getParent(node: AllRulesNode) {
+  async getParent(node: AllRulesNode) {
     if (node instanceof LanguageNode) {
-      return Promise.resolve(null);
+      return null;
     } else {
-      return this.getAllRules().then(response =>
-        Object.keys(response)
+      const response = await this.getAllRules();
+      return Object.keys(response)
           .filter(k => response[k].findIndex(r => r.key.toUpperCase() === node.rule.key.toUpperCase()) >= 0)
           .map(l => new LanguageNode(l))
-          .pop()
-      );
+          .pop();
     }
   }
 
@@ -127,4 +128,23 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
 
 function byName(r1: Rule, r2: Rule) {
   return r1.name.toLowerCase().localeCompare(r2.name.toLowerCase());
+}
+
+export function setRulesViewMessage(allRulesView: VSCode.TreeView<LanguageNode>) {
+  const folderBindingStates = [... BindingService.instance.bindingStatePerFolder().values()];
+  if (allTrue(folderBindingStates)) {
+    allRulesView.message = 'Changes to this view do not have any effect in this workspace since all folders use Connected Mode.';
+  } else if (allFalse(folderBindingStates)) {
+    allRulesView.message = 'Changes to this view are restricted to your personal development environment; to share a rule set with your team, please use Connected Mode .';
+  } else {
+    allRulesView.message = "Changes to this view only apply to folders that don't use Connected Mode.";
+  }
+}
+
+export function allTrue(values: boolean[]) {
+  return values.length > 0 && values.every(identity);
+}
+
+export function allFalse(values: boolean[]) {
+  return values.length === 0 || values.every(negate(identity));
 }
