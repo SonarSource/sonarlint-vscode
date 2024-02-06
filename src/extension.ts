@@ -9,7 +9,6 @@ import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { StatusBarAlignment } from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
@@ -44,7 +43,7 @@ import { SonarLintExtendedLanguageClient } from './lsp/client';
 import * as protocol from './lsp/protocol';
 import { languageServerCommand } from './lsp/server';
 import { showRuleDescription } from './rules/rulepanel';
-import { AllRulesTreeDataProvider, LanguageNode, RuleNode } from './rules/rules';
+import { AllRulesTreeDataProvider, LanguageNode, RuleNode, setRulesViewMessage } from './rules/rules';
 import { initScm, isIgnoredByScm } from './scm/scm';
 import { isFirstSecretDetected, showNotificationForFirstSecretsIssue } from './secrets/secrets';
 import { ConnectionSettingsService, migrateConnectedModeSettings } from './settings/connectionsettings';
@@ -246,7 +245,7 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   installCustomRequestHandlers(context);
 
-  const referenceBranchStatusItem = VSCode.window.createStatusBarItem(StatusBarAlignment.Left, 1);
+  const referenceBranchStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 1);
   const scm = await initScm(languageClient, referenceBranchStatusItem);
   context.subscriptions.push(scm);
   context.subscriptions.push(
@@ -269,6 +268,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {
     treeDataProvider: allRulesTreeDataProvider
   });
+  setRulesViewMessage(allRulesView);
   context.subscriptions.push(allRulesView);
 
   secondaryLocationsTree = new SecondaryLocationsTree();
@@ -284,6 +284,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
       allRulesTreeDataProvider.refresh();
+      setRulesViewMessage(allRulesView);
     }
     if (event.affectsConfiguration('sonarlint.connectedMode')) {
       allConnectionsTreeDataProvider.refresh();

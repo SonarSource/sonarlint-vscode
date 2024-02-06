@@ -8,6 +8,7 @@
 
 import { expect } from 'chai';
 import * as vscode from 'vscode';
+import { allFalse, allTrue } from '../../src/rules/rules';
 
 suite('SonarLint Rules view', () => {
   suiteSetup('reset rules settings', async () => {
@@ -35,6 +36,30 @@ suite('SonarLint Rules view', () => {
     expect(rulesAfterReactivation[secretsAwsRuleKey].level).to.equal('on');
 
   }).timeout(10_000);
+
+  suite('allTrue', () => {
+    test('should return false on empty', () => {
+      expect(allTrue([])).to.be.false;
+    });
+    test('should return false on array that contains at least one false', () => {
+      expect(allTrue([ true, false, true ])).to.be.false;
+    });
+    test('should return true on array that contains all true', () => {
+      expect(allTrue([ true, true, true ])).to.be.true;
+    });
+  });
+
+  suite('allFalse', () => {
+    test('should return true on empty', () => {
+      expect(allFalse([])).to.be.true;
+    });
+    test('should return false on array that contains at least one true', () => {
+      expect(allFalse([ true, false, true ])).to.be.false;
+    });
+    test('should return false on array that contains all false', () => {
+      expect(allFalse([ false, false, false ])).to.be.true;
+    });
+  });
 
   suiteTeardown('reset rules settings', async () => {
     await vscode.workspace.getConfiguration('sonarlint').update('rules', undefined, vscode.ConfigurationTarget.Global);
