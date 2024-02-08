@@ -9,7 +9,7 @@ import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { Command, StatusBarAlignment } from 'vscode';
+import { StatusBarAlignment } from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
@@ -68,7 +68,6 @@ import { IssueService } from './issue/issue';
 import { CAN_SHOW_MISSING_REQUIREMENT_NOTIF, showSslCertificateConfirmationDialog } from './util/showMessage';
 import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
 import { ShowIssueNotification } from './lsp/protocol';
-import * as vscode from 'vscode';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -91,6 +90,7 @@ let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
+const CAN_SHOW_PROMO_NOTIFICATIONS_KEY = 'SonarLint.CanShowPromoNotifications';
 
 function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   return resolveRequirements(context)
@@ -574,6 +574,13 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.CanShowMissingRequirementNotification.type, () => {
     return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true);
   });
+  languageClient.onRequest(protocol.CanShowPromotionalNotifications.type, () => {
+    return { canShowPromotionalNotification: context.globalState.get(CAN_SHOW_PROMO_NOTIFICATIONS_KEY, true) }
+  });
+  languageClient.onNotification(protocol.DoNotShowPromotionalNotificationsAgain.type, () => {
+    context.globalState.update(CAN_SHOW_PROMO_NOTIFICATIONS_KEY, false);
+  });
+  languageClient.onNotification(protocol.ExecuteCommand.type, (commandId) => VSCode.commands.executeCommand(commandId));
   languageClient.onNotification(protocol.DoNotShowNodeRequirementNotificationAgain.type, () => {
     context.globalState.update(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, false);
   })

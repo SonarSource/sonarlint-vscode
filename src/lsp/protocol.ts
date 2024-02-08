@@ -306,6 +306,22 @@ export namespace CanShowMissingRequirementNotification {
   export const type = new lsp.RequestType<string, boolean, void>('sonarlint/canShowMissingRequirementsNotification');
 }
 
+export interface CanShowPromotionalNotificationsResponse {
+  canShowPromotionalNotification: boolean;
+}
+
+export namespace CanShowPromotionalNotifications {
+  export const type = new lsp.RequestType<string, CanShowPromotionalNotificationsResponse, void>('sonarlint/canShowPromotionalNotifications');
+}
+
+export namespace DoNotShowPromotionalNotificationsAgain {
+  export const type = new lsp.NotificationType('sonarlint/doNotShowPromotionalNotificationsAgain');
+}
+
+export namespace ExecuteCommand {
+  export const type = new lsp.NotificationType<string>('sonarlint/executeCommand');
+}
+
 export namespace DoNotShowNodeRequirementNotificationAgain {
   export const type = new lsp.NotificationType('sonarlint/doNotShowMissingRequirementsMessageAgain');
 }
