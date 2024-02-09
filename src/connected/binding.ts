@@ -18,7 +18,6 @@ import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 import { AssistBindingParams, ShowSoonUnsupportedVersionMessageParams } from '../lsp/protocol';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
-import { boolean } from 'vscode-languageclient/lib/common/utils/is';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
