@@ -10,6 +10,8 @@ import * as VSCode from 'vscode';
 import { identity, negate } from 'lodash';
 import { BindingService } from '../connected/binding';
 import { ConfigLevel, Rule, RulesResponse } from '../lsp/protocol';
+import { getSonarLintConfiguration } from '../settings/settings';
+import { Commands } from '../util/commands';
 
 function isActive(rule: Rule) {
   return (rule.activeByDefault && rule.levelFromConfig !== 'off') || rule.levelFromConfig === 'on';
@@ -147,4 +149,43 @@ export function allTrue(values: boolean[]) {
 
 export function allFalse(values: boolean[]) {
   return values.length === 0 || values.every(negate(identity));
+}
+
+export function toggleRule(level: ConfigLevel) {
+  return async (ruleKey: string | RuleNode) => {
+    const configuration = getSonarLintConfiguration();
+    const rules = configuration.get('rules') || {};
+
+    if (typeof ruleKey === 'string') {
+      // This is when a rule is deactivated from a code action, and we only have the key, not the default activation.
+      rules[ruleKey] = { level };
+      configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
+      if (level === 'off') {
+        await notifyOnRuleDeactivation(ruleKey);
+      }
+      return null;
+    } else {
+      // When a rule is toggled from the list of rules, we can be smarter!
+      const { key, activeByDefault } = ruleKey.rule;
+      if ((level === 'on' && !activeByDefault) || (level === 'off' && activeByDefault)) {
+        // Override default
+        rules[key] = { level };
+      } else {
+        // Back to default
+        rules[key] = undefined;
+      }
+      return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
+    }
+  };
+}
+
+async function notifyOnRuleDeactivation(ruleKey: string) {
+  const undoAction = 'Undo';
+  const showAllRulesAction = 'Show All Rules';
+  const selectedAction = await VSCode.window.showInformationMessage(`Sonar rule ${ruleKey} is now disabled in your local environment`, undoAction, showAllRulesAction);
+  if (selectedAction === undoAction) {
+    toggleRule('on')(ruleKey);
+  } else if (selectedAction === showAllRulesAction) {
+    await VSCode.commands.executeCommand(Commands.OPEN_RULE_BY_KEY, ruleKey);
+  }
 }

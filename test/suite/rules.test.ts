@@ -18,6 +18,8 @@ suite('SonarLint Rules view', () => {
   test('should show the whole list of rules grouped by language', async function() {
 
     const secretsAwsRuleKey = 'secrets:S6290';
+    // For the rule toggling actions, we use the TreeNode path to avoid notifications
+    const secretsAwsRuleAsNode = { rule: { key: secretsAwsRuleKey, activeByDefault: true }};
 
     await vscode.commands.executeCommand('SonarLint.AllRules.focus');
 
@@ -25,15 +27,15 @@ suite('SonarLint Rules view', () => {
 
     await vscode.commands.executeCommand('SonarLint.OpenStandaloneRuleDesc', secretsAwsRuleKey);
 
-    await vscode.commands.executeCommand('SonarLint.DeactivateRule', secretsAwsRuleKey);
+    await vscode.commands.executeCommand('SonarLint.DeactivateRule', secretsAwsRuleAsNode);
 
     const rulesAfterDeactivation = vscode.workspace.getConfiguration('sonarlint').get('rules');
     expect(rulesAfterDeactivation[secretsAwsRuleKey].level).to.equal('off');
 
-    await vscode.commands.executeCommand('SonarLint.ActivateRule', secretsAwsRuleKey);
+    await vscode.commands.executeCommand('SonarLint.ActivateRule', secretsAwsRuleAsNode);
 
     const rulesAfterReactivation = vscode.workspace.getConfiguration('sonarlint').get('rules');
-    expect(rulesAfterReactivation[secretsAwsRuleKey].level).to.equal('on');
+    expect(rulesAfterReactivation[secretsAwsRuleKey]).to.be.undefined;
 
   }).timeout(10_000);
 
