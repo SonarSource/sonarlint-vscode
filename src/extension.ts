@@ -43,14 +43,13 @@ import { SonarLintExtendedLanguageClient } from './lsp/client';
 import * as protocol from './lsp/protocol';
 import { languageServerCommand } from './lsp/server';
 import { showRuleDescription } from './rules/rulepanel';
-import { AllRulesTreeDataProvider, LanguageNode, RuleNode, setRulesViewMessage } from './rules/rules';
+import { AllRulesTreeDataProvider, LanguageNode, RuleNode, setRulesViewMessage, toggleRule } from './rules/rules';
 import { initScm, isIgnoredByScm } from './scm/scm';
 import { isFirstSecretDetected, showNotificationForFirstSecretsIssue } from './secrets/secrets';
 import { ConnectionSettingsService, migrateConnectedModeSettings } from './settings/connectionsettings';
 import {
   enableVerboseLogs,
   getCurrentConfiguration,
-  getSonarLintConfiguration,
   isVerboseEnabled,
   loadInitialSettings,
   onConfigurationChange
@@ -141,30 +140,6 @@ export function toUrl(filePath: string) {
   }
 
   return encodeURI('file://' + pathName);
-}
-
-function toggleRule(level: protocol.ConfigLevel) {
-  return (ruleKey: string | RuleNode) => {
-    const configuration = getSonarLintConfiguration();
-    const rules = configuration.get('rules') || {};
-
-    if (typeof ruleKey === 'string') {
-      // This is when a rule is deactivated from a code action, and we only have the key, not the default activation.
-      // So level should be "off" regardless of the default activation.
-      rules[ruleKey] = { level };
-    } else {
-      // When a rule is toggled from the list of rules, we can be smarter!
-      const { key, activeByDefault } = ruleKey.rule;
-      if ((level === 'on' && !activeByDefault) || (level === 'off' && activeByDefault)) {
-        // Override default
-        rules[key] = { level };
-      } else {
-        // Back to default
-        rules[key] = undefined;
-      }
-    }
-    return configuration.update('rules', rules, VSCode.ConfigurationTarget.Global);
-  };
 }
 
 export async function activate(context: VSCode.ExtensionContext) {
