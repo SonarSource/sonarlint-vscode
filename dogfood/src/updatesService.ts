@@ -7,7 +7,7 @@
 import * as vscode from 'vscode';
 import fetch from 'node-fetch';
 import * as semver from 'semver';
-import { CONFIG_SECTION, COMMAND_CHECK_NOW, ARTIFACTORY_DOGFOOD_URL } from './constants';
+import { CONFIG_SECTION, COMMAND_CHECK_NOW, ARTIFACTORY_DOGFOOD_URL, COMMAND_AUTHENTICATE } from './constants';
 import { StatusBar } from './statusBar';
 import { installAndRestart } from './pluginInstallationService';
 import { getUserToken, isAuthenticated } from './authenticationService';
@@ -18,6 +18,7 @@ let checkSetTimeout: NodeJS.Timeout;
 export async function checkUpdateNow(context: vscode.ExtensionContext, statusBar: StatusBar) {
   if (!isAuthenticated(context)) {
     statusBar.setStatus(Status.UNAUTHENTICATED);
+    vscode.commands.executeCommand(COMMAND_AUTHENTICATE);
     return;
   }
 

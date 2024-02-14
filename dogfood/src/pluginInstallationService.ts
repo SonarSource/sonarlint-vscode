@@ -42,7 +42,7 @@ export async function downloadVsix(version: string, url: string, context: vscode
     const fileName = fetchResult.headers.get('X-Artifactory-Filename')!;
     const tempDir = fs.mkdtempSync(downloadDirectory);
     const vsixPath = path.join(tempDir, fileName);
-    fs.writeFileSync(vsixPath, await fetchResult.buffer());
+    fs.writeFileSync(vsixPath, Buffer.from(await fetchResult.arrayBuffer()));
     console.debug('Created VSIX at ', vsixPath);
     return vscode.Uri.file(vsixPath);
   });
