@@ -105,7 +105,7 @@ async function checkUpdateNow() {
 async function checkUpdate() {
   const dogfoodFile = await fetch(ARTIFACTORY_DOGFOOD_URL);
   if (dogfoodFile.status === 200) {
-    const { version, url } = await dogfoodFile.json();
+    const { version, url } = await dogfoodFile.json() as { version: string, url: string };
     const installedSonarLint = vscode.extensions.getExtension('SonarSource.sonarlint-vscode');
     if (
       installedSonarLint === undefined ||
