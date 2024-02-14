@@ -9,7 +9,8 @@ import * as vscode from 'vscode'
 import { DOGFOOD_ARTIFACTORY_USER_TOKEN } from './constants'
 
 export function isAuthenticated(context: vscode.ExtensionContext) {
-	return context.globalState.get(DOGFOOD_ARTIFACTORY_USER_TOKEN) !== undefined;
+	const storedToken : string | undefined = context.globalState.get<string>(DOGFOOD_ARTIFACTORY_USER_TOKEN);
+	return storedToken ? storedToken.trim().length > 0 : false;
 }
 
 export async function updateUserToken(context: vscode.ExtensionContext) {
