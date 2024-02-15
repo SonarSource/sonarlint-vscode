@@ -19,5 +19,6 @@ export class Status {
 	static readonly UNINSTALLING = new Status('😼', 'Uninstalling Previous Build');
 	static readonly INSTALLING = new Status('😼', 'Installing Next Build');
 	static readonly ERROR = new Status('🙀', 'Error (check console)');
-	static readonly UNAUTHENTICATED = new Status('🔌', 'Error: Please Provide Artifactory User Token');
+	static readonly UNAUTHENTICATED = new Status('🙀 + 🔌', 'Error: Please Provide Artifactory User Token');
+	static readonly PINNED_VERSION_USED = new Status('😸 + 📌', 'Installed dogfooding version that was specified in user settings.')
   }

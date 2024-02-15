@@ -12,7 +12,12 @@ import { StatusBar } from './statusBar';
 import { Status } from './status';
 import { getUserToken } from './authenticationService';
 
-export async function installAndRestart(version: string, url: string, installedSonarLint: any, statusBar: StatusBar, context: vscode.ExtensionContext) {
+export async function installAndRestart(version: string,
+   url: string,
+   pinned: boolean,
+   installedSonarLint: any,
+   statusBar: StatusBar,
+   context: vscode.ExtensionContext) {
   if(installedSonarLint) {
     statusBar.setStatus(Status.UNINSTALLING);
     await(vscode.commands.executeCommand('workbench.extensions.uninstallExtension', 'SonarSource.sonarlint-vscode'));
@@ -22,7 +27,7 @@ export async function installAndRestart(version: string, url: string, installedS
   await vscode.commands.executeCommand('workbench.extensions.installExtension', vsixUri);
   fs.unlinkSync(vsixUri.fsPath);
   fs.rmdirSync(path.dirname(vsixUri.fsPath));
-  statusBar.setStatus(Status.IDLE);
+  pinned ? statusBar.setStatus(Status.PINNED_VERSION_USED) : statusBar.setStatus(Status.IDLE);
   const restart = await vscode.window.showInformationMessage('New dogfood build installed!', 'Restart');
   if (restart === 'Restart') {
     vscode.commands.executeCommand('workbench.action.reloadWindow');

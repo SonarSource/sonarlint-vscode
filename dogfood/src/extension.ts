@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 import * as vscode from 'vscode';
 import { checkUpdateNow, disableAutomaticUpdateCheck } from './updatesService';
-import { COMMAND_AUTHENTICATE, COMMAND_CHECK_NOW, CONFIG_SECTION } from './constants';
+import { COMMAND_AUTHENTICATE, COMMAND_CHECK_NOW, CONFIG_SECTION, PIN_VERSION_CONFIG_KEY } from './constants';
 import { StatusBar } from './statusBar';
 import { Status } from './status';
 import { updateUserToken } from './authenticationService';
@@ -25,6 +25,9 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidChangeConfiguration(e => {
     if(e.affectsConfiguration(CONFIG_SECTION)) {
       const configuration = getDogfoodConfiguration();
+      if (e.affectsConfiguration(PIN_VERSION_CONFIG_KEY)) {
+        vscode.window.showInformationMessage('SonarLint dogfooding version pinned.\nNewer versions will not be installed until this setting is populated.')
+      }
       if (configuration.get('check.disable')) {
         statusBar.setStatus(Status.DISABLED);
         disableAutomaticUpdateCheck();
