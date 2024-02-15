@@ -10,7 +10,7 @@
   "version": "1.1.0",
   "icon": "sonarlint-dogfood.png",
   "engines": {
-    "vscode": "^1.55.0"
+    "vscode": "^1.86.0"
   },
   "categories": [
     "Other"
@@ -52,10 +52,10 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run package",
+    "vscode:prepublish": "webpack --mode production --devtool hidden-source-map",
     "compile": "webpack",
     "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
+    "package": "vsce package --skip-license",
     "test-compile": "tsc -p ./",
     "test-watch": "tsc -watch -p ./",
     "pretest": "npm run test-compile",
@@ -69,6 +69,7 @@
     "@types/vscode": "^1.86.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
+    "@vscode/vsce": "2.23.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.10",
     "mocha": "^10.3.0",
