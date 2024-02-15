@@ -14,14 +14,14 @@ import { Status } from './status';
 import { getUserToken } from './authenticationService';
 
 export async function installAndRestart(version: string,
-   url: string,
-   pinned: boolean,
-   installedSonarLint: any,
-   statusBar: StatusBar,
-   context: vscode.ExtensionContext) {
-  if(installedSonarLint) {
+                                        url: string,
+                                        pinned: boolean,
+                                        installedSonarLint: any,
+                                        statusBar: StatusBar,
+                                        context: vscode.ExtensionContext) {
+  if (installedSonarLint) {
     statusBar.setStatus(Status.UNINSTALLING);
-    await(vscode.commands.executeCommand('workbench.extensions.uninstallExtension', 'SonarSource.sonarlint-vscode'));
+    await (vscode.commands.executeCommand('workbench.extensions.uninstallExtension', 'SonarSource.sonarlint-vscode'));
   }
   statusBar.setStatus(Status.DOWNLOADING);
   const vsixUri = await downloadVsix(version, url, context);
@@ -38,7 +38,11 @@ export async function installAndRestart(version: string,
 export async function downloadVsix(version: string, url: string, context: vscode.ExtensionContext) {
   const downloadDirectory = path.join(context.extensionPath, 'temp');
   const userToken = getUserToken(context);
-  return vscode.window.withProgress({location: vscode.ProgressLocation.Notification, title: `Downloading VSIX for ${version}`, cancellable: true}, async (progress, cancelToken) => {
+  return vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: `Downloading VSIX for ${version}`,
+    cancellable: true
+  }, async (progress, cancelToken) => {
     console.debug('Downloading VSIX from ', url);
     const fetchAbort = new AbortController();
     cancelToken.onCancellationRequested(() => {

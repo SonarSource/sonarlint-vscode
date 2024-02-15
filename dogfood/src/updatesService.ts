@@ -54,15 +54,15 @@ async function checkUpdate(statusBar: StatusBar, context: vscode.ExtensionContex
   }
 }
 
-function reinstallationNeeded(dogfoodInfo : DogfoodInfo, installedSonarLint : vscode.Extension<any> | undefined) {
+function reinstallationNeeded(dogfoodInfo: DogfoodInfo, installedSonarLint: vscode.Extension<any> | undefined) {
   if (dogfoodInfo.pinned) {
     return installedSonarLint === undefined || semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) !== 0;
   }
   return installedSonarLint === undefined ||
-  semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) < 0
+      semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) < 0
 }
 
-async function getDogfoodInfo(context: vscode.ExtensionContext) : Promise<DogfoodInfo | undefined> {
+async function getDogfoodInfo(context: vscode.ExtensionContext): Promise<DogfoodInfo | undefined> {
   const pinVersion = vscode.workspace.getConfiguration(CONFIG_SECTION).get(PIN_VERSION_CONFIG_KEY) as string;
 
   if (pinVersion) {
@@ -90,9 +90,9 @@ async function getDogfoodInfo(context: vscode.ExtensionContext) : Promise<Dogfoo
 async function updateAvailable(dogfoodInfo: DogfoodInfo, installedSonarLint: any, statusBar: StatusBar, context: vscode.ExtensionContext) {
   statusBar.setStatus(Status.UPDATE_AVAILABLE);
 
-  const message = dogfoodInfo.pinned ? 
-    `SonarLint for VSCode dogfood version ${dogfoodInfo.version} is ready for installation. This version was specified in your settings` :
-    `New dogfood build ${dogfoodInfo.version} found.`;
+  const message = dogfoodInfo.pinned ?
+      `SonarLint for VSCode dogfood version ${dogfoodInfo.version} is ready for installation. This version was specified in your settings` :
+      `New dogfood build ${dogfoodInfo.version} found.`;
 
   const installNow = await vscode.window.showInformationMessage(message, 'Install');
   if (installNow === 'Install') {

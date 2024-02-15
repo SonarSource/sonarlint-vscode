@@ -9,21 +9,21 @@ import * as vscode from 'vscode'
 import { COMMAND_CHECK_NOW, DOGFOOD_ARTIFACTORY_USER_TOKEN } from './constants'
 
 export function isAuthenticated(context: vscode.ExtensionContext) {
-	const storedToken : string | undefined = context.globalState.get<string>(DOGFOOD_ARTIFACTORY_USER_TOKEN);
-	return storedToken ? storedToken.trim().length > 0 : false;
+  const storedToken: string | undefined = context.globalState.get<string>(DOGFOOD_ARTIFACTORY_USER_TOKEN);
+  return storedToken ? storedToken.trim().length > 0 : false;
 }
 
 export async function updateUserToken(context: vscode.ExtensionContext) {
-	const userToken = await vscode.window.showInputBox();
-	if(userToken) {
-		await context.globalState.update(DOGFOOD_ARTIFACTORY_USER_TOKEN, userToken);
-		vscode.window.showInformationMessage('SonarLint Dogfood: Artiactory token saved');
-		vscode.commands.executeCommand(COMMAND_CHECK_NOW);
-	} else {
-		vscode.window.showErrorMessage('SonarLint Dogfood: Could not update Artifactory user token. Please try again');
-	}
+  const userToken = await vscode.window.showInputBox();
+  if (userToken) {
+    await context.globalState.update(DOGFOOD_ARTIFACTORY_USER_TOKEN, userToken);
+    vscode.window.showInformationMessage('SonarLint Dogfood: Artifactory token saved');
+    vscode.commands.executeCommand(COMMAND_CHECK_NOW);
+  } else {
+    vscode.window.showErrorMessage('SonarLint Dogfood: Could not update Artifactory user token. Please try again');
+  }
 }
 
 export function getUserToken(context: vscode.ExtensionContext) {
-	return context.globalState.get(DOGFOOD_ARTIFACTORY_USER_TOKEN);
+  return context.globalState.get(DOGFOOD_ARTIFACTORY_USER_TOKEN);
 }
