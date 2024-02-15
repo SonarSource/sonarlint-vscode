@@ -7,13 +7,19 @@
 import * as vscode from 'vscode';
 import fetch from 'node-fetch';
 import * as semver from 'semver';
-import { CONFIG_SECTION, COMMAND_CHECK_NOW, ARTIFACTORY_DOGFOOD_URL, COMMAND_AUTHENTICATE } from './constants';
+import { CONFIG_SECTION, COMMAND_CHECK_NOW, ARTIFACTORY_DOGFOOD_URL, COMMAND_AUTHENTICATE, PIN_VERSION_CONFIG_KEY, ARTIFACTORY_VSCODE_PATH } from './constants';
 import { StatusBar } from './statusBar';
 import { installAndRestart } from './pluginInstallationService';
 import { getUserToken, isAuthenticated } from './authenticationService';
 import { Status } from './status'
 
 let checkSetTimeout: NodeJS.Timeout;
+
+interface DogfoodInfo {
+  version: string,
+  url: string,
+  pinned: boolean
+};
 
 export async function checkUpdateNow(context: vscode.ExtensionContext, statusBar: StatusBar) {
   if (!isAuthenticated(context)) {
@@ -38,32 +44,59 @@ export async function checkUpdateNow(context: vscode.ExtensionContext, statusBar
 }
 
 async function checkUpdate(statusBar: StatusBar, context: vscode.ExtensionContext) {
-  const userToken = getUserToken(context);
-  const dogfoodFile = await fetch(ARTIFACTORY_DOGFOOD_URL, {
-    headers: {
-      Authorization: `Bearer ${userToken}`
-    }
-  });
-  if (dogfoodFile.status === 200) {
-    const { version, url } = await dogfoodFile.json() as { version: string, url: string };
+  const dogfoodInfo = await getDogfoodInfo(context);
+  if (dogfoodInfo?.version && dogfoodInfo?.url) {
     const installedSonarLint = vscode.extensions.getExtension('SonarSource.sonarlint-vscode');
-    if (
-      installedSonarLint === undefined ||
-      semver.compareBuild(installedSonarLint.packageJSON.version, version) < 0
-    ) {
-      await updateAvailable(version, url, installedSonarLint, statusBar, context);
+    if (reinstallationNeeded(dogfoodInfo, installedSonarLint)) {
+      await updateAvailable(dogfoodInfo, installedSonarLint, statusBar, context);
     }
-    statusBar.setStatus(Status.IDLE);
-  } else {
-    throw new Error('Could not fetch dogfood.json');
+    dogfoodInfo.pinned ? statusBar.setStatus(Status.PINNED_VERSION_USED) : statusBar.setStatus(Status.IDLE);
   }
 }
 
-async function updateAvailable(version: string, url: string, installedSonarLint: any, statusBar: StatusBar, context: vscode.ExtensionContext) {
+function reinstallationNeeded(dogfoodInfo : DogfoodInfo, installedSonarLint : vscode.Extension<any> | undefined) {
+  if (dogfoodInfo.pinned) {
+    return installedSonarLint === undefined || semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) != 0;
+  }
+  return installedSonarLint === undefined ||
+  semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) < 0
+}
+
+async function getDogfoodInfo(context: vscode.ExtensionContext) : Promise<DogfoodInfo | undefined> {
+  const pinVersion = vscode.workspace.getConfiguration(CONFIG_SECTION).get(PIN_VERSION_CONFIG_KEY) as string;
+
+  if (pinVersion) {
+    return {
+      version: pinVersion,
+      url: `${ARTIFACTORY_VSCODE_PATH}/${pinVersion}/sonarlint-vscode-${pinVersion}.vsix`,
+      pinned: true
+    }
+  } else {
+    const userToken = getUserToken(context);
+    const dogfoodFile = await fetch(ARTIFACTORY_DOGFOOD_URL, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    if (dogfoodFile.status === 200) {
+      const { version, url } = await dogfoodFile.json() as { version: string, url: string };
+      return { version, url, pinned: false }
+    } else {
+      throw new Error('Could not fetch dogfood.json');
+    }
+  }
+}
+
+async function updateAvailable(dogfoodInfo: DogfoodInfo, installedSonarLint: any, statusBar: StatusBar, context: vscode.ExtensionContext) {
   statusBar.setStatus(Status.UPDATE_AVAILABLE);
-  const installNow = await vscode.window.showInformationMessage(`New dogfood build ${version} found.`, 'Install');
+
+  const message = dogfoodInfo.pinned ? 
+    `SonarLint for VSCode dogfood version ${dogfoodInfo.version} is ready for installation. This version was specified in your settings` :
+    `New dogfood build ${dogfoodInfo.version} found.`;
+
+  const installNow = await vscode.window.showInformationMessage(message, 'Install');
   if (installNow === 'Install') {
-    await installAndRestart(version, url, installedSonarLint, statusBar, context);
+    await installAndRestart(dogfoodInfo.version, dogfoodInfo.url, dogfoodInfo.pinned, installedSonarLint, statusBar, context);
   }
 }
 

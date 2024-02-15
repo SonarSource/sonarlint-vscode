@@ -35,6 +35,11 @@
           "default": 3600,
           "description": "Number of seconds before next automated check",
           "scope": "application"
+        },
+        "sonarlint-dogfood.pinVersion": {
+          "type": "string",
+          "description": "A specific build version to download. Recommended for testing PR builds. Example: 4.3.0+12345",
+          "scope": "application"
         }
       }
     },
