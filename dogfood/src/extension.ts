@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand(COMMAND_AUTHENTICATE, () => updateUserToken(context)));
 
   vscode.workspace.onDidChangeConfiguration(e => {
-    if(e.affectsConfiguration(CONFIG_SECTION)) {
+    if (e.affectsConfiguration(CONFIG_SECTION)) {
       const configuration = getDogfoodConfiguration();
       if (e.affectsConfiguration(PIN_VERSION_CONFIG_KEY)) {
         vscode.window.showInformationMessage('SonarLint dogfooding version pinned.\nNewer versions will not be installed until this setting is populated.')
