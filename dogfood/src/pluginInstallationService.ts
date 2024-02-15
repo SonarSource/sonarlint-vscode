@@ -7,6 +7,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as Progress from 'node-fetch-progress';
 import fetch from 'node-fetch';
 import { StatusBar } from './statusBar';
 import { Status } from './status';
@@ -37,14 +38,29 @@ export async function installAndRestart(version: string,
 export async function downloadVsix(version: string, url: string, context: vscode.ExtensionContext) {
   const downloadDirectory = path.join(context.extensionPath, 'temp');
   const userToken = getUserToken(context);
-  return vscode.window.withProgress({location: vscode.ProgressLocation.Notification, title: `Downloading VSIX for ${version}`, cancellable: false}, async () => {
+  return vscode.window.withProgress({location: vscode.ProgressLocation.Notification, title: `Downloading VSIX for ${version}`, cancellable: true}, async (progress, cancelToken) => {
     console.debug('Downloading VSIX from ', url);
+    const fetchAbort = new AbortController();
+    cancelToken.onCancellationRequested(() => {
+      fetchAbort.abort('Download canceled by user');
+    });
     const fetchResult = await fetch(url, {
       headers: {
         Authorization: `Bearer ${userToken}`
-      }
+      },
+      signal: fetchAbort.signal
     });
-    const fileName = fetchResult.headers.get('X-Artifactory-Filename')!;
+    const fetchProgress = new Progress(fetchResult, { throttle: 100 });
+    let previousDone = 0;
+    fetchProgress.on('progress', () => {
+      const increment = 100 * (fetchProgress.done - previousDone) / fetchProgress.total;
+      previousDone = fetchProgress.done;
+      progress.report({ message: 'Downloading', increment });
+    });
+    fetchProgress.on('finish', () => {
+      progress.report({ message: 'Downloaded', increment: 1.0 });
+    });
+    const fileName = fetchResult.headers.get('X-Artifactory-Filename') ?? `sonarlint-vscode-${version}.vsix`;
     const tempDir = fs.mkdtempSync(downloadDirectory);
     const vsixPath = path.join(tempDir, fileName);
     fs.writeFileSync(vsixPath, Buffer.from(await fetchResult.arrayBuffer()));

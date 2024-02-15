@@ -7,7 +7,7 @@
 import * as vscode from 'vscode';
 import fetch from 'node-fetch';
 import * as semver from 'semver';
-import { CONFIG_SECTION, COMMAND_CHECK_NOW, ARTIFACTORY_DOGFOOD_URL, COMMAND_AUTHENTICATE, PIN_VERSION_CONFIG_KEY, ARTIFACTORY_VSCODE_PATH } from './constants';
+import { CONFIG_SECTION, COMMAND_CHECK_NOW, ARTIFACTORY_DOGFOOD_URL, PIN_VERSION_CONFIG_KEY, ARTIFACTORY_VSCODE_PATH } from './constants';
 import { StatusBar } from './statusBar';
 import { installAndRestart } from './pluginInstallationService';
 import { getUserToken, isAuthenticated } from './authenticationService';
@@ -19,7 +19,7 @@ interface DogfoodInfo {
   version: string,
   url: string,
   pinned: boolean
-};
+}
 
 export async function checkUpdateNow(context: vscode.ExtensionContext, statusBar: StatusBar) {
   if (!isAuthenticated(context)) {
@@ -56,7 +56,7 @@ async function checkUpdate(statusBar: StatusBar, context: vscode.ExtensionContex
 
 function reinstallationNeeded(dogfoodInfo : DogfoodInfo, installedSonarLint : vscode.Extension<any> | undefined) {
   if (dogfoodInfo.pinned) {
-    return installedSonarLint === undefined || semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) != 0;
+    return installedSonarLint === undefined || semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) !== 0;
   }
   return installedSonarLint === undefined ||
   semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) < 0
