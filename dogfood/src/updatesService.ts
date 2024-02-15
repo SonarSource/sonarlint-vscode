@@ -18,7 +18,6 @@ let checkSetTimeout: NodeJS.Timeout;
 export async function checkUpdateNow(context: vscode.ExtensionContext, statusBar: StatusBar) {
   if (!isAuthenticated(context)) {
     statusBar.setStatus(Status.UNAUTHENTICATED);
-    vscode.commands.executeCommand(COMMAND_AUTHENTICATE);
     return;
   }
 
