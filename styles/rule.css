@@ -116,7 +116,7 @@ pre {
   font-family: Consolas, Liberation Mono, Menlo, Courier, monospace;
   font-size: 12px;
 }
-.rule-desc ul {
+.rule-desc ul:not(.other-context-list) {
   padding-left: 40px;
   list-style: disc;
 }
