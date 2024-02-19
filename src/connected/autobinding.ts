@@ -21,7 +21,7 @@ import { DEFAULT_CONNECTION_ID, SonarLintDocumentation } from '../commons';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
 import { Uri } from 'vscode';
 
-const AUTOBINDING_THRESHOLD = 5;
+const AUTOBINDING_THRESHOLD = 1;
 const BIND_ACTION = 'Configure Binding';
 const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
 const SONAR_SCANNER_CONFIG_FILENAME = "sonar-project.properties"
@@ -182,19 +182,16 @@ export class AutoBindingService {
       .showInformationMessage(
         CONFIGURE_BINDING_PROMPT_MESSAGE,
         BIND_ACTION,
-        CHOOSE_MANUALLY_ACTION,
         DONT_ASK_AGAIN_ACTION
       )
       .then(async action => {
         if (action === DONT_ASK_AGAIN_ACTION) {
           this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
           return false;
-        } else if (action === CHOOSE_MANUALLY_ACTION) {
+        } else if (action === BIND_ACTION) {
           const targetConnection = await this.getTargetConnectionForManualBinding();
           await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
           return false;
-        } else if (action === BIND_ACTION) {
-          return true;
         }
         return false;
       });
@@ -254,10 +251,11 @@ export class AutoBindingService {
         await this.bindingService.saveBinding(
           bindingSuggestion.sonarProjectKey, bindingSuggestion.connectionId, unboundFolder);
         break;
-      case CHOOSE_MANUALLY_ACTION:
+      case CHOOSE_MANUALLY_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();
         await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;
+      }
       case DONT_ASK_AGAIN_ACTION:
         await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
           ...this.getFoldersThatShouldNotBeAutoBound(),
@@ -282,10 +280,11 @@ export class AutoBindingService {
       DONT_ASK_AGAIN_ACTION
     );
     switch (result) {
-      case BIND_ACTION:
+      case BIND_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();
         await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;
+      }
       case DONT_ASK_AGAIN_ACTION:
         await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
           ...this.getFoldersThatShouldNotBeAutoBound(),
