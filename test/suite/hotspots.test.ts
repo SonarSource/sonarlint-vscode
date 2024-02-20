@@ -34,7 +34,8 @@ import { getWorkspaceFolder } from '../testutil';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',
-  filePath: '',
+  ideFilePath: '',
+  key: '',
   textRange: {
     startLine: 1,
     startLineOffset: 9,
@@ -42,7 +43,7 @@ const templateHotspot: RemoteHotspot = {
     endLineOffset: 12
   },
   author: 'some.one@company.corp',
-  status: HotspotStatus.ToReview,
+  status: 'To Review',
   rule: {
     key: 'java:S4242',
     name: 'Life, The Universe and Everything',
@@ -61,7 +62,7 @@ const templateHotspotRange = new Selection(
 
 function buildHotspot(filePath: string, vulnerabilityProbability: HotspotProbability = HotspotProbability.medium) {
   const newHotspot = Object.assign({}, templateHotspot);
-  newHotspot.filePath = filePath;
+  newHotspot.ideFilePath = filePath;
   newHotspot.rule.vulnerabilityProbability = vulnerabilityProbability;
   return newHotspot;
 }

@@ -192,7 +192,8 @@ export async function activate(context: VSCode.ExtensionContext) {
           },
           omnisharpDirectory: Path.resolve(context.extensionPath, 'omnisharp')
         },
-        enableNotebooks: true
+        enableNotebooks: true,
+        clientNodePath: VSCode.workspace.getConfiguration().get('sonarlint.pathToNodeExecutable'),
       };
     },
     outputChannel: getLogOutput(),
@@ -223,11 +224,6 @@ export async function activate(context: VSCode.ExtensionContext) {
   const referenceBranchStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 1);
   const scm = await initScm(languageClient, referenceBranchStatusItem);
   context.subscriptions.push(scm);
-  context.subscriptions.push(
-    languageClient.onRequest(protocol.GetBranchNameForFolderRequest.type, folderUri => {
-      return scm.getBranchForFolder(VSCode.Uri.parse(folderUri));
-    })
-  );
   context.subscriptions.push(
     languageClient.onNotification(protocol.SetReferenceBranchNameForFolderNotification.type, params => {
       scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
@@ -536,8 +532,8 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
-  languageClient.onRequest(protocol.FindFileByNamesInFolderRequest.type, params =>
-    AutoBindingService.instance.findFileByNameInFolderRequest(params)
+  languageClient.onRequest(protocol.ListFilesInFolderRequest.type, params =>
+    AutoBindingService.instance.listFilesInFolder(params)
   );
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 

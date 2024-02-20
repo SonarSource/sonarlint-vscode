@@ -25,17 +25,12 @@ const GIT_API_VERSION = 1;
 const CHECK_IGNORE_ARGS = ['check-ignore', '-v', '-z', '--stdin'];
 
 interface Scm extends vscode.Disposable {
-  getBranchForFolder(folderUri: vscode.Uri): string|null;
   setReferenceBranchName(folderUri: vscode.Uri, branchName?: string): void;
   getReferenceBranchNameForFile(fileUri: vscode.Uri): string|null;
   updateReferenceBranchStatusItem(event?: vscode.TextEditor): void;
 }
 
 class NoopScm implements Scm {
-
-  getBranchForFolder(folderUri: vscode.Uri) {
-    return null;
-  }
 
   setReferenceBranchName(folderUri: vscode.Uri, branchName?: string) {
     // NOP
