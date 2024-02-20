@@ -30,25 +30,22 @@ export interface BindingSuggestion {
   sonarProjectName: string;
 }
 
-export namespace FindFileByNamesInFolderRequest {
-  export const type = new lsp.RequestType<FindFileByNamesInFolderParams, FindFileByNamesInFolderResponse, void>(
-    'sonarlint/findFileByNamesInFolder'
-  );
-}
-
-export interface FindFileByNamesInFolderParams {
-  folderUri: string;
-  filenames: Array<string>;
-}
-
-export interface FindFileByNamesInFolderResponse {
+export interface ListFilesInScopeResponse {
   foundFiles: Array<FoundFileDto>;
+}
+
+export interface FolderUriParams {
+  folderUri: string;
+}
+
+export namespace ListFilesInFolderRequest {
+  export const type = new lsp.RequestType<FolderUriParams, ListFilesInScopeResponse, void>('sonarlint/listFilesInFolder');
 }
 
 export interface FoundFileDto {
   fileName: string;
   filePath: string;
-  content: string;
+  content?: string;
 }
 
 export namespace ShowHotspotRuleDescriptionNotification {
@@ -160,10 +157,11 @@ export enum ExtendedHotspotStatus {
 
 export interface RemoteHotspot {
   message: string;
-  filePath: string;
+  ideFilePath: string;
+  key: string;
   textRange: TextRange;
   author: string;
-  status: HotspotStatus;
+  status: string;
   resolution?: HotspotResolution;
   rule: {
     key: string;
@@ -217,10 +215,6 @@ export interface Issue {
 
 export namespace ShowIssueOrHotspotNotification {
   export const type = new lsp.NotificationType<Issue>('sonarlint/showIssueOrHotspot');
-}
-
-export namespace GetBranchNameForFolderRequest {
-  export const type = new lsp.RequestType<string, string, void>('sonarlint/getBranchNameForFolder');
 }
 
 export interface BranchNameForFolder {

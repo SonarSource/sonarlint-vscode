@@ -61,14 +61,14 @@ export const showSecurityHotspot = async (
   remoteHotspot?: RemoteHotspot
 ) => {
   const hotspot = remoteHotspot ? remoteHotspot : activeHotspot;
-  const foundUris = await vscode.workspace.findFiles(`**/${hotspot.filePath}`);
+  const foundUris = await vscode.workspace.findFiles(`**/${hotspot.ideFilePath}`);
   if (foundUris.length === 0) {
     handleFileForHotspotNotFound(hotspot);
   } else {
     const documentUri = foundUris[0];
     if (foundUris.length > 1) {
       verboseLogToSonarLintOutput(
-        `Multiple candidates found for '${hotspot.filePath}', using first match '${documentUri}'`
+        `Multiple candidates found for '${hotspot.ideFilePath}', using first match '${documentUri}'`
       );
     }
     const editor = await vscode.window.showTextDocument(documentUri);
@@ -135,13 +135,13 @@ function revealHotspotInTreeView(
   } as Diagnostic;
   let fileToHighlight;
   if (hotspotsTreeDataProvider.hasLocalHotspots()) {
-    fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.filePath);
+    fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.ideFilePath);
   } else {
     // reset local cache before opening each hotspot
     hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
-    const hotspotUri = getUriFromRelativePath(hotspot.filePath, vscode.workspace.workspaceFolders[0]);
+    const hotspotUri = getUriFromRelativePath(hotspot.ideFilePath, vscode.workspace.workspaceFolders[0]);
     hotspotsTreeDataProvider.fileHotspotsCache.set(hotspotUri, [hotspotDiag]);
-    fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.filePath);
+    fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.ideFilePath);
     hotspotsTreeDataProvider.refresh();
   }
   const knownHotspotGroup = hotspotsTreeDataProvider.getChildren(fileToHighlight).find(g => {
@@ -186,7 +186,7 @@ export const showHotspotDescription = () => {
     activeHotspot.rule.securityCategory,
     activeHotspot.rule.vulnerabilityProbability,
     activeHotspot.author,
-    formatRemoteHotspotStatus(activeHotspot.status),
+    activeHotspot.status,
     activeHotspot.message,
     activeHotspot.rule,
     false,

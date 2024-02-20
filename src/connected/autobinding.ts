@@ -10,13 +10,22 @@
 import * as VSCode from 'vscode';
 import { BindingService } from './binding';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
-import { BindingSuggestion, FindFileByNamesInFolderParams, FoundFileDto, SuggestBindingParams } from '../lsp/protocol';
+import {
+  BindingSuggestion,
+  ListFilesInScopeResponse,
+  FolderUriParams,
+  FoundFileDto,
+  SuggestBindingParams
+} from '../lsp/protocol';
 import { DEFAULT_CONNECTION_ID, SonarLintDocumentation } from '../commons';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
+import { Uri } from 'vscode';
 
 const AUTOBINDING_THRESHOLD = 5;
 const BIND_ACTION = 'Configure Binding';
 const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
+const SONAR_SCANNER_CONFIG_FILENAME = "sonar-project.properties"
+const AUTOSCAN_CONFIG_FILENAME = ".sonarcloud.properties"
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindingForWorkspace';
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
@@ -78,31 +87,39 @@ export class AutoBindingService {
     return sonarCloudConnections.length > 0 || sonarQubeConnections.length > 0;
   }
 
-  async findFileByNameInFolderRequest(params: FindFileByNamesInFolderParams) {
-    const folderUri = VSCode.Uri.parse(params.folderUri);
-    const foundFiles = await Promise.all(
-      params.filenames.map(fileName => this.findFileInFolder(fileName, folderUri))
-    );
-
-    return { foundFiles: foundFiles.filter(r => r !== null) };
-  }
-
   private getFoldersThatShouldNotBeAutoBound(): string[] {
     return this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
   }
 
-  async findFileInFolder(fileName: string, folderUri: VSCode.Uri): Promise<FoundFileDto> {
-    const fullFileUri = VSCode.Uri.joinPath(folderUri, fileName);
+  async listFilesInFolder(params: FolderUriParams): Promise<ListFilesInScopeResponse> {
+    const uri = VSCode.Uri.parse(params.folderUri)
+    const foundFiles: Array<FoundFileDto> = await this.listFilesRecursively(uri);
+    return { foundFiles };
+  }
+
+  private async listFilesRecursively(uri: Uri) {
     try {
-      const fileStat = await VSCode.workspace.fs.stat(fullFileUri);
-      if (fileStat.type === VSCode.FileType.File) {
-        const content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
-        return { fileName, filePath: fileName, content };
+      const files = await VSCode.workspace.fs.readDirectory(uri);
+      var foundFiles: Array<FoundFileDto> = new Array<FoundFileDto>();
+      for (const [name, type] of files) {
+        const fullFileUri = VSCode.Uri.joinPath(uri, name);
+
+        if (type === VSCode.FileType.File) {
+          let content: string = null;
+          if (name === AUTOSCAN_CONFIG_FILENAME || name == SONAR_SCANNER_CONFIG_FILENAME) {
+            content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
+          }
+          foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
+        }
+        if (type === VSCode.FileType.Directory) {
+          const subFiles = await this.listFilesRecursively(fullFileUri);
+          foundFiles = foundFiles.concat(subFiles);
+        }
       }
-    } catch (err) {
-      return null;
+      return foundFiles;
+    } catch (error) {
+      return [];
     }
-    return null;
   }
 
   async getTargetConnectionForManualBinding() {

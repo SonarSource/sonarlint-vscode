@@ -20,7 +20,7 @@ import * as VSCode from 'vscode';
 import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
 import { TextEncoder } from 'util';
-import { FindFileByNamesInFolderParams, FindFileByNamesInFolderResponse } from '../../src/lsp/protocol';
+import { ListFilesInScopeResponse, FolderUriParams } from '../../src/lsp/protocol';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
@@ -137,14 +137,11 @@ suite('Auto Binding Test Suite', () => {
       expect(bindingAfter).to.be.empty;
     });
 
-    test('Nothing crashes when analysis file is not present', async () => {
-      const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
-
-      let params: FindFileByNamesInFolderParams = {
-        filenames: ['non-existing-file'],
-        folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
+    test('Nothing crashes when folder does not exist', async () => {
+      let params: FolderUriParams = {
+        folderUri: 'nonExistentFolder'
       };
-      const p = await underTest.findFileByNameInFolderRequest(params);
+      const p = await underTest.listFilesInFolder(params)
 
       expect(p).to.not.be.undefined
       expect(p.foundFiles).to.be.empty;
@@ -162,17 +159,40 @@ suite('Auto Binding Test Suite', () => {
         projectPropsUri,
         new TextEncoder().encode(fileContent)
       );
-      let params: FindFileByNamesInFolderParams = {
-        filenames: [propsFileName],
+      let params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
-      const foundFiles: FindFileByNamesInFolderResponse = await underTest.findFileByNameInFolderRequest(params);
+      const foundFiles: ListFilesInScopeResponse = await underTest.listFilesInFolder(params)
 
-      expect(foundFiles.foundFiles.length).to.equal(1);
-      expect(foundFiles.foundFiles[0].fileName).to.equal(propsFileName);
-      expect(foundFiles.foundFiles[0].content).to.contain('sonar.host.url=https://test.sonarqube.com');
+      expect(foundFiles.foundFiles).to.not.be.empty;
+      expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(propsFileName);
+      expect(foundFiles.foundFiles.map(value => value.content)).to.contain(fileContent);
 
       await VSCode.workspace.fs.delete(projectPropsUri);
+    });
+
+    test('Regular file is properly found and does not have content', async () => {
+      const javaFileName = 'foo.java';
+      const fileContent = `class Foo {}`;
+
+      const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
+      const javaFileUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, javaFileName));
+
+      await VSCode.workspace.fs.writeFile(
+        javaFileUri,
+        new TextEncoder().encode(fileContent)
+      );
+      let params: FolderUriParams = {
+        folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
+      };
+      const foundFiles: ListFilesInScopeResponse = await underTest.listFilesInFolder(params)
+
+      const filesMatchingJavaFileName = foundFiles.foundFiles.filter(file => file.fileName === javaFileName);
+      expect(filesMatchingJavaFileName).to.not.be.empty;
+      const foundJavaFile = filesMatchingJavaFileName.pop();
+      expect(foundJavaFile.content).to.be.null;
+
+      await VSCode.workspace.fs.delete(javaFileUri);
     });
 
     test('Do not propose binding when there are no connections',async () => {
