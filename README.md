@@ -132,7 +132,7 @@ SonarLint for VS Code supports analysis of Python code inside Jupyter notebooks.
 
 Security vulnerabilities requiring taint engine analysis (taint vulnerabilities) are only available in Connected Mode because SonarLint pulls them from SonarQube or SonarCloud following a project analysis.
 
-To browse injection vulnerabilities in SonarLint for VSCode, establish [Connected Mode](https://github.com/SonarSource/sonarlint-vscode#connected-mode) with your SonarQube Developer Edition (and above) or SonarCloud instance. Once a [Project Binding](https://github.com/SonarSource/sonarlint-vscode#project-binding) is configured, SonarLint will synchronize with the SonarQube or SonarCloud server to report the detected injection vulnerabilities.
+To browse injection vulnerabilities in SonarLint for VSCode, establish [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with your SonarQube Developer Edition (and above) or SonarCloud instance. Once a [Project Binding](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#project-binding) is configured, SonarLint will synchronize with the SonarQube or SonarCloud server to report the detected injection vulnerabilities.
 
 More information about security-related rules is available in the [SonarQube](https://docs.sonarqube.org/latest/user-guide/security-rules/) or [SonarCloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/) documentation.
 
@@ -161,7 +161,7 @@ Connected Mode will also unlock your analysis of these languages:
 - [PL/SQL rules](https://rules.sonarsource.com/plsql)
 - [T-SQL rules](https://rules.sonarsource.com/tsql/)
 
-When configuring Connected Mode, follow the [Connection Setup instructions](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/#connection-setup).
+When configuring Connected Mode, follow the [Connection Setup instructions](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#connection-setup).
 
 ## Other settings
 
