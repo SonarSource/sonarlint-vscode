@@ -269,7 +269,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
           <li>the latest analysis of a bound project on ${serverProductName} raises new issues assigned to you</li>
         </ul>
         <br>
-        <a href='https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/#connection-setup'>Need help setting up a connection?</a>
+        <a href='https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#connection-setup'>Need help setting up a connection?</a>
         <div id="connectionCheck" class="formRowWithStatus">
           <vscode-button id="saveConnection" disabled>Save Connection</vscode-button>
           <span id="connectionProgress" class="hidden">
