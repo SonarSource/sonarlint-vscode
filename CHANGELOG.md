@@ -1,6 +1,7 @@
 ## 4.4.0
 
 * Update JS/TS/CSS analyzer 10.11.1 -> [10.12](https://github.com/SonarSource/SonarJS/releases/tag/10.12.0.25537), improve top dismissed JS/TS rules; One new rule (S2004)
+* Update CFamily analyzer 6.52 -> [6.53](https://sonarsource.atlassian.net/browse/CPP-3672?jql=fixVersion%20%3D%2015461%20ORDER%20BY%20created%20ASC), 9 new C++ rules
 
 ## 4.3.0
 
