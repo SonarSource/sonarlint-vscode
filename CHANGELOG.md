@@ -1,3 +1,7 @@
+## 4.4.0
+
+* Update JS/TS/CSS analyzer 10.11.1 -> [10.12](https://github.com/SonarSource/SonarJS/releases/tag/10.12.0.25537), improve top dismissed JS/TS rules; One new rule (S2004)
+
 ## 4.3.0
 
 * Update JS/TS/CSS analyzer 10.10 -> [10.11](https://github.com/SonarSource/SonarJS/releases/tag/10.11.0.25043) -> [10.11.1](https://github.com/SonarSource/SonarJS/releases/tag/10.11.1.25225), support TypeScript 5.3, 5 new adaptability rules, drop support for Node 14
