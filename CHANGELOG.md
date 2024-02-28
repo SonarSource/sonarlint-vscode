@@ -4,6 +4,7 @@
 * Update CFamily analyzer 6.52 -> [6.53](https://sonarsource.atlassian.net/browse/CPP-3672?jql=fixVersion%20%3D%2015461%20ORDER%20BY%20created%20ASC), 9 new C++ rules
 * Update Java analyzer 7.30.1 -> [7.31](https://github.com/SonarSource/sonar-java/releases/tag/7.31.0.34839), Support of Java 21, FP fixes, improvements
 * Update embedded C# analyzer 9.15 -> [9.16](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.16.0.82469) -> [9.17](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.17.0.82934) -> [9.18](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.18.0.83559) -> [9.19](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.19.0.84025) -> [9.20](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.20.0.85982), performance improvements, improved accuracy
+* Update HTML analyzer 3.13 -> [3.14](https://github.com/SonarSource/sonar-html/releases/tag/3.14.0.5048), 17 new rules for accessibility
 
 ## 4.3.0
 
