@@ -360,12 +360,6 @@
     },
     "commands": [
       {
-        "command": "SonarLint.UpdateAllBindings",
-        "title": "Update all project bindings to SonarQube/SonarCloud",
-        "icon": "$(refresh)",
-        "category": "SonarLint"
-      },
-      {
         "command": "SonarLint.ShowSonarLintOutput",
         "title": "Show SonarLint Output",
         "category": "SonarLint"
@@ -689,11 +683,6 @@
           "command": "SonarLint.ConnectToSonarCloud",
           "when": "view == SonarLint.ConnectedMode",
           "group": "inline"
-        },
-        {
-          "command": "SonarLint.UpdateAllBindings",
-          "when": "view == SonarLint.ConnectedMode",
-          "group": "navigation"
         }
       ],
       "view/item/context": [
