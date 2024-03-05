@@ -16,6 +16,7 @@ suite('issues', () => {
         fileUri: 'fileUri',
         message: 'Fix this',
         ruleKey: 'myRuleKey',
+        shouldOpenRuleDescription: true,
         flows: [],
         textRange: {
           startLine: 1,
@@ -41,6 +42,7 @@ suite('issues', () => {
         fileUri: 'fileUri',
         message: 'Fix this',
         ruleKey: 'myRuleKey',
+        shouldOpenRuleDescription: true,
         flows: [],
         textRange: {
           startLine: 0,
@@ -96,6 +98,7 @@ suite('issues', () => {
       fileUri: 'fileUri',
       message: 'Fix this',
       ruleKey: 'myRuleKey',
+      shouldOpenRuleDescription: true,
       flows: [flow],
       textRange: {
         startLine: 1,
