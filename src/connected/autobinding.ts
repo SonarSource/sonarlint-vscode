@@ -100,13 +100,13 @@ export class AutoBindingService {
   private async listFilesRecursively(uri: Uri) {
     try {
       const files = await VSCode.workspace.fs.readDirectory(uri);
-      var foundFiles: Array<FoundFileDto> = new Array<FoundFileDto>();
+      let foundFiles: Array<FoundFileDto> = [];
       for (const [name, type] of files) {
         const fullFileUri = VSCode.Uri.joinPath(uri, name);
 
         if (type === VSCode.FileType.File) {
           let content: string = null;
-          if (name === AUTOSCAN_CONFIG_FILENAME || name == SONAR_SCANNER_CONFIG_FILENAME) {
+          if (name === AUTOSCAN_CONFIG_FILENAME || name === SONAR_SCANNER_CONFIG_FILENAME) {
             content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
           }
           foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
