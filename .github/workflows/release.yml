@@ -17,7 +17,7 @@ jobs:
     with:
       publishToBinaries: false
       mavenCentralSync: false
-      slackChannel: squad-ide-vscode-bots
+      slackChannel: squad-ide-vscode
 
   deploy_to_microsoft_marketplace:
     permissions:
