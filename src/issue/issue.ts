@@ -138,12 +138,15 @@ Please make sure that the right folder is open and bound to the right project on
         editor.revealRange(diagnostic.range, VSCode.TextEditorRevealType.InCenter);
         editor.selection = new VSCode.Selection(diagnostic.range.start, diagnostic.range.end);
       }
-      await VSCode.commands.executeCommand(
-        'SonarLint.OpenRuleDescCodeAction',
-        issue.ruleKey,
-        code2ProtocolConverter(documentUri),
-        ''
-      );
+
+      if (issue.shouldOpenRuleDescription) {
+        await VSCode.commands.executeCommand(
+          'SonarLint.OpenRuleDescCodeAction',
+          issue.ruleKey,
+          code2ProtocolConverter(documentUri),
+          ''
+        );
+      }
     }
   }
 
