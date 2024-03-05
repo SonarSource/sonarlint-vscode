@@ -7,7 +7,7 @@ curl -X POST https://slack.com/api/chat.postMessage \
   -H 'Content-type: application/json; charset=utf-8' \
   --data-binary @- <<EOF
 {
-  "channel": "team-sonarlint-vscode",
+  "channel": "squad-ide-vscode-bots",
 	"blocks": [
 		{
 			"type": "header",
