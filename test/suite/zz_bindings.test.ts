@@ -19,6 +19,7 @@ import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { Connection, WorkspaceFolderItem } from '../../src/connected/connections';
 import * as protocol from '../../src/lsp/protocol';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
+import { sleep } from '../testutil';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -104,6 +105,15 @@ suite('Bindings Test Suite', () => {
     await VSCode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
+  suiteTeardown('Cleanup SQ connections', async function() {
+    await VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY)
+      .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, VSCode.ConfigurationTarget.Global);
+  });
+
+  /*
+   * FIXME This test suite is leaking settings that make other tests fail, which is why it should run last (see 'zz' in file name)
+   */
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
@@ -350,7 +360,3 @@ suite('Bindings Test Suite', () => {
     })
   })
 });
-
-function sleep(time) {
-  return new Promise(resolve => setTimeout(resolve, time));
-}
