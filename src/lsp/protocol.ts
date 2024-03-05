@@ -211,6 +211,7 @@ export interface Issue {
   flows: Flow[];
   textRange: TextRange;
   codeMatches?: boolean;
+  shouldOpenRuleDescription: boolean;
 }
 
 export namespace ShowIssueOrHotspotNotification {

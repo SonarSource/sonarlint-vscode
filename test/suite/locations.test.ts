@@ -39,6 +39,7 @@ suite('locations', () => {
       message: 'Somewhere, over the rainbow',
       severity: 'INFO',
       ruleKey: 'some:where',
+      shouldOpenRuleDescription: true,
       flows: [
         {
           locations: [
@@ -99,6 +100,7 @@ suite('locations', () => {
       message: 'Somewhere, over the rainbow',
       severity: 'INFO',
       ruleKey: 'some:where',
+      shouldOpenRuleDescription: true,
       flows: [
         {
           locations: [
@@ -197,6 +199,7 @@ suite('locations', () => {
       message: 'Somewhere, over the rainbow',
       severity: 'INFO',
       ruleKey: 'some:where',
+      shouldOpenRuleDescription: true,
       flows: [
         {
           locations: [
@@ -259,6 +262,7 @@ suite('locations', () => {
       message: 'Somewhere, over the rainbow',
       severity: 'BLOCKER',
       ruleKey: 'some:where',
+      shouldOpenRuleDescription: true,
       flows: [
         {
           locations: [
