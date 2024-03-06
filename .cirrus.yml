@@ -93,8 +93,8 @@ build_task:
     - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 universal_vsix_task:
   depends_on: build
@@ -108,8 +108,8 @@ universal_vsix_task:
     - source cirrus-env QA # Retrieve build number
     - npm run deploy-universal
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 all_vsix_task:
   <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
@@ -123,8 +123,8 @@ all_vsix_task:
     - source cirrus-env QA # Retrieve build number
     - npm run deploy-all
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 test_windows_task:
   # name: Run tests on Windows
@@ -147,8 +147,8 @@ test_windows_task:
       path: '**/alltests.xml'
       format: junit
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 test_linux_task:
   #  name: Run tests, Sonarqube analysis on Linux
@@ -178,8 +178,8 @@ test_linux_task:
       path: '**/alltests.xml'
       format: junit
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 mend_scan_task:
   depends_on:
@@ -201,8 +201,8 @@ mend_scan_task:
     ws_artifacts:
       path: "whitesource/**/*"
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 qa_task:
   #  name: Run ITs
@@ -257,8 +257,8 @@ qa_task:
     its_test_recording_artifacts:
       path: ${RECORD_FILENAME}
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 promote_task:
   env:
@@ -280,8 +280,8 @@ promote_task:
     - cirrus_jfrog_promote
     - burgr-notify-promotion
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 dogfood_task:
   depends_on:
@@ -298,5 +298,5 @@ dogfood_task:
   dogfood_script:
     - .cirrus/cirrus_dogfood_npm
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
