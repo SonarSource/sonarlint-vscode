@@ -6,6 +6,7 @@
 * Update embedded C# analyzer 9.15 -> [9.16](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.16.0.82469) -> [9.17](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.17.0.82934) -> [9.18](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.18.0.83559) -> [9.19](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.19.0.84025) -> [9.20](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.20.0.85982), performance improvements, improved accuracy
 * Update HTML analyzer 3.13 -> [3.14](https://github.com/SonarSource/sonar-html/releases/tag/3.14.0.5048), 17 new rules for accessibility
 * Update Python analyzer 4.14 -> [4.15](https://sonarsource.atlassian.net/browse/SONARPY-1593?jql=fixVersion%20%3D%2015445%20ORDER%20BY%20created%20ASC), 13 FP fixes, 2 new QuickFixes
+* SonarLint backend refactoring
 
 ## 4.3.0
 
