@@ -62,10 +62,7 @@ export class AutoBindingService {
     }
     const bindingSuggestions = params.suggestions;
     if (Object.keys(bindingSuggestions).length > AUTOBINDING_THRESHOLD) {
-      const userPermission = await this.askUserBeforeAutoBinding();
-      if (userPermission) {
-        this.autoBindAllFolders(bindingSuggestions);
-      }
+      await this.askUserBeforeAutoBinding();
     } else {
       this.autoBindAllFolders(bindingSuggestions);
     }
@@ -105,11 +102,7 @@ export class AutoBindingService {
         const fullFileUri = VSCode.Uri.joinPath(uri, name);
 
         if (type === VSCode.FileType.File) {
-          let content: string = null;
-          if (name === AUTOSCAN_CONFIG_FILENAME || name === SONAR_SCANNER_CONFIG_FILENAME) {
-            content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
-          }
-          foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
+          await this.readPropertiesFiles(name, fullFileUri, foundFiles);
         }
         if (type === VSCode.FileType.Directory) {
           const subFiles = await this.listFilesRecursively(fullFileUri);
@@ -120,6 +113,14 @@ export class AutoBindingService {
     } catch (error) {
       return [];
     }
+  }
+
+  private async readPropertiesFiles(name: string, fullFileUri: VSCode.Uri, foundFiles: Array<FoundFileDto>) {
+    let content: string = null;
+    if (name === AUTOSCAN_CONFIG_FILENAME || name === SONAR_SCANNER_CONFIG_FILENAME) {
+      content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
+    }
+    foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
   }
 
   async getTargetConnectionForManualBinding() {
@@ -187,13 +188,10 @@ export class AutoBindingService {
       .then(async action => {
         if (action === DONT_ASK_AGAIN_ACTION) {
           this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
-          return false;
         } else if (action === BIND_ACTION) {
           const targetConnection = await this.getTargetConnectionForManualBinding();
           await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
-          return false;
         }
-        return false;
       });
   }
 
