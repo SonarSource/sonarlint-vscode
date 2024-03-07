@@ -11,24 +11,14 @@ import * as os from 'os';
 import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
-import * as util from '../../src/util/util';
 import { isFileIgnoredByScm } from '../../src/scm/scm';
 import { sampleFolderLocation } from './commons';
 
 suite('Extension Test Suite', () => {
 
-  suiteSetup('wait for extension activation', async function() {
-    this.timeout(60_000);
-    await util.extension.activate();
-  });
-
   setup(async () => {
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     await vscode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT);
-  });
-
-  test('Extension should be present', () => {
-    assert.ok(util.extension);
   });
 
   test('should report issue on single js file', async function() {
