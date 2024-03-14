@@ -6,6 +6,8 @@ env:
   BURGR_URL: VAULT[development/kv/data/burgr data.url]
   BURGR_USERNAME: VAULT[development/kv/data/burgr data.cirrus_username]
   BURGR_PASSWORD: VAULT[development/kv/data/burgr data.cirrus_password]
+  # Slack
+  SLACK_TOKEN: VAULT[development/kv/data/slack data.token]
   # repox
   ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
   ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
@@ -90,6 +92,9 @@ build_task:
     - echo $BUILD_NUMBER
     - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 universal_vsix_task:
   depends_on: build
@@ -102,6 +107,9 @@ universal_vsix_task:
   deploy_script:
     - source cirrus-env QA # Retrieve build number
     - npm run deploy-universal
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 all_vsix_task:
   <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
@@ -114,6 +122,9 @@ all_vsix_task:
   deploy_all_script:
     - source cirrus-env QA # Retrieve build number
     - npm run deploy-all
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 test_windows_task:
   # name: Run tests on Windows
@@ -135,6 +146,9 @@ test_windows_task:
     unit_tests_artifacts:
       path: '**/alltests.xml'
       format: junit
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 test_linux_task:
   #  name: Run tests, Sonarqube analysis on Linux
@@ -149,7 +163,6 @@ test_linux_task:
     DISPLAY: ":10"
     SONARQUBE_NEXT_TOKEN: VAULT[development/kv/data/next data.token]
     SONARQUBE_NEXT_URL: VAULT[development/kv/data/next data.url]
-
   <<: *NODE_MODULES_CACHE_TEMPLATE
   start_xvfb_background_script:
     - /etc/init.d/xvfb start
@@ -160,11 +173,13 @@ test_linux_task:
     - npm run prepare
     - npm run test-cov
     - .cirrus/cirrus_sonar_analysis_npm
-
   always:
     unit_tests_artifacts:
       path: '**/alltests.xml'
       format: junit
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 mend_scan_task:
   depends_on:
@@ -185,6 +200,9 @@ mend_scan_task:
   always:
     ws_artifacts:
       path: "whitesource/**/*"
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 qa_task:
   #  name: Run ITs
@@ -238,6 +256,9 @@ qa_task:
       format: junit
     its_test_recording_artifacts:
       path: ${RECORD_FILENAME}
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 promote_task:
   env:
@@ -258,6 +279,9 @@ promote_task:
     - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - cirrus_jfrog_promote
     - burgr-notify-promotion
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 dogfood_task:
   depends_on:
@@ -273,3 +297,6 @@ dogfood_task:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
   dogfood_script:
     - .cirrus/cirrus_dogfood_npm
+  on_failure:
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
