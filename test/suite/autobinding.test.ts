@@ -6,9 +6,8 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { BindingService, ServerProject } from '../../src/connected/binding';
+import { BindingService } from '../../src/connected/binding';
 import {
-  BaseConnection,
   ConnectionSettingsService,
   SonarCloudConnection,
   SonarQubeConnection
@@ -20,7 +19,7 @@ import * as VSCode from 'vscode';
 import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
 import { TextEncoder } from 'util';
-import { ListFilesInScopeResponse, FolderUriParams } from '../../src/lsp/protocol';
+import { FolderUriParams, ListFilesInScopeResponse } from '../../src/lsp/protocol';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
@@ -109,9 +108,9 @@ suite('Auto Binding Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(bindingBefore).to.be.empty;
 
-      mockWorkspaceState.updateBindingForFolder([workspaceFolder.uri.toString()]);
+      await mockWorkspaceState.updateBindingForFolder([workspaceFolder.uri.toString()]);
 
-      underTest.checkConditionsAndAttemptAutobinding({ suggestions: {folderUri: [workspaceFolder.uri.toString()]} });
+      await underTest.checkConditionsAndAttemptAutobinding({ suggestions: {folderUri: [workspaceFolder.uri.toString()]} });
 
       const bindingAfter = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -127,9 +126,9 @@ suite('Auto Binding Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(bindingBefore).to.be.empty;
 
-      mockWorkspaceState.updateBindingForWs(true);
+      await mockWorkspaceState.updateBindingForWs(true);
 
-      underTest.checkConditionsAndAttemptAutobinding({ suggestions: {} });
+      await underTest.checkConditionsAndAttemptAutobinding({ suggestions: {} });
 
       const bindingAfter = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -222,11 +221,7 @@ suite('Auto Binding Test Suite', () => {
 });
 
 async function cleanBindings() {
-  return Promise.all(
-    VSCode.workspace.workspaceFolders.map(folder => {
-      return VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, folder.uri)
+  return VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, VSCode.workspace.workspaceFolders[0].uri)
         .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
-    })
-  );
 }

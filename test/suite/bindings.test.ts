@@ -67,13 +67,9 @@ const mockSettingsService = {
 } as ConnectionSettingsService;
 
 async function resetBindings() {
-  return Promise.all(
-    VSCode.workspace.workspaceFolders.map(folder => {
-      return VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, folder.uri)
+  return VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, VSCode.workspace.workspaceFolders[0].uri)
         .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
-    })
-  );
 }
 
 const mockWorkspaceState = {
@@ -89,6 +85,14 @@ const mockWorkspaceState = {
     this.state = newState;
   }
 };
+
+async function selectFirstQuickPickItem() {
+  // Wait for the input field to show
+  await sleep(1000);
+  await VSCode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
+  // Wait for the settings to be updated
+  await sleep(2000);
+}
 
 suite('Bindings Test Suite', () => {
   setup(async () => {
@@ -111,9 +115,6 @@ suite('Bindings Test Suite', () => {
       .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, VSCode.ConfigurationTarget.Global);
   });
 
-  /*
-   * FIXME This test suite is leaking settings that make other tests fail, which is why it should run last (see 'zz' in file name)
-   */
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
@@ -159,13 +160,19 @@ suite('Bindings Test Suite', () => {
       expect(items[1].description).to.equal(remoteProjectKeys[1]);
     });
 
-    test('Folder selection QuickPick should directly return folder name when only 1 folder in WS', async () => {
+    test('Folder selection QuickPick should allow to choose a folder', async () => {
       const workspaceFolders = VSCode.workspace.workspaceFolders;
-      expect(workspaceFolders.length).to.equal(1);
+      expect(workspaceFolders.length).to.equal(4);
 
-      const defaultSelection = await underTest.showFolderSelectionQuickPickOrReturnDefaultSelection(workspaceFolders);
-      expect(defaultSelection).to.equal(workspaceFolders[0].name);
-    });
+      let selectedFolder = '';
+      underTest.showFolderSelectionQuickPickOrReturnDefaultSelection(workspaceFolders).then(selection => {
+        selectedFolder = selection;
+      });
+
+      await selectFirstQuickPickItem();
+
+      expect(selectedFolder).to.equal(workspaceFolders[0].name);
+    }).timeout(5_000);
 
     test('Delete bindings for connection', async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
@@ -333,14 +340,19 @@ suite('Bindings Test Suite', () => {
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(updatedBinding).to.deep.equal(TEST_BINDING);
 
-      const result = await underTest.assistBinding({ connectionId: TEST_BINDING.connectionId, projectKey: TEST_BINDING.projectKey })
+      let result;
+      underTest.assistBinding({ connectionId: TEST_BINDING.connectionId, projectKey: TEST_BINDING.projectKey })
+        .then(r => result = r);
+
+      // assist binding will ask for quick pick
+      await selectFirstQuickPickItem();
 
       const afterAssistance = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(afterAssistance).to.deep.equal(TEST_BINDING);
       expect(result.configurationScopeId).to.equal(workspaceFolder.uri.toString())
-    });
+    }).timeout(5_000);
 
     test('Should create requested binding', async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
@@ -350,13 +362,17 @@ suite('Bindings Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      const result = await underTest.assistBinding({ connectionId: TEST_BINDING.connectionId, projectKey: TEST_BINDING.projectKey })
+      let result;
+      underTest.assistBinding({ connectionId: TEST_BINDING.connectionId, projectKey: TEST_BINDING.projectKey })
+        .then(r => result = r);
+
+      await selectFirstQuickPickItem();
 
       const afterAssistance = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(afterAssistance).to.deep.equal(TEST_BINDING);
       expect(result.configurationScopeId).to.equal(workspaceFolder.uri.toString())
-    })
+    }).timeout(5_000);
   })
 });

@@ -27,7 +27,7 @@ function main() {
   const userDataDir = path.resolve(extensionRootPath, 'test', 'userdir');
 
   const launchArgs = [
-    path.resolve(extensionRootPath, 'test/samples'),
+    path.resolve(extensionRootPath, 'test/samples/samples.code-workspace'),
     '--disable-extensions',
     '--disable-workspace-trust',
     `--user-data-dir=${userDataDir}`,

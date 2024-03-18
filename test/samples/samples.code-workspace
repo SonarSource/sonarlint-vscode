@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "path": "sample-for-bindings"
+    },
+    {
+      "path": "sample-hotspots"
+    },
+    {
+      "path": "sample-js"
+    },
+    {
+      "path": "sample-multi-js"
+    }
+  ],
+  "settings": {
+    "sonarlint.testFilePattern": "**/test/samples/**/test/**",
+    "telemetry.enableTelemetry": false
+  }
+}
