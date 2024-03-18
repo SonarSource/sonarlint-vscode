@@ -19,7 +19,7 @@ const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
 
-const sampleFolderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation));
+const sampleFolderUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-for-bindings'));
 
 const projectKeysToNames = {
   projectKey1: 'Project Name 1',
@@ -126,7 +126,7 @@ suite('Connected Mode Test Suite', () => {
       const remoteProjectChildren = await underTest.getChildren(remoteProjectNode);
       expect(remoteProjectChildren.length).to.equal(1);
       const workspaceFolderNode = remoteProjectChildren[0];
-      expect(workspaceFolderNode.label).to.equal('samples');
+      expect(workspaceFolderNode.label).to.equal('sample-for-bindings');
     });
 
     test('should return two element list when expanding SC and two connections exist', async () => {
