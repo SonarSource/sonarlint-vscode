@@ -56,7 +56,7 @@ suite('Java Test Suite', () => {
 
     // Check that we have 2 diagnostics in the right order
     const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2 });
-    assert.deepEqual(diags.map(d => [ d.code, d.message ]), [
+    assert.deepStrictEqual(diags.map(d => [ d.code, d.message ]), [
       [ 'java:S1130', 'Remove the declaration of thrown exception \'edu.marcelo.App$MyException\', as it cannot be thrown from method\'s body.' ],
       [ 'java:S106', 'Replace this use of System.out by a logger.' ]
     ]);
@@ -72,13 +72,13 @@ suite('Java Test Suite', () => {
     ];
     const actualCodeActionTitles = codeActionsResult.filter(c => expectedActionTitles.indexOf(c.title) >= 0).map(c => c.title);
     // Order of code actions is not stable, forcing lexicographic order for assertion
-    actualCodeActionTitles.sort();
-    assert.deepEqual(actualCodeActionTitles, expectedActionTitles);
+    actualCodeActionTitles.sort((a, b) => a.localeCompare(b));
+    assert.deepStrictEqual(actualCodeActionTitles, expectedActionTitles);
 
     // Check that first fix has an edit that can be applied
     const quickFix = codeActionsResult.filter(c => c.title === 'SonarLint: Remove "MyException"')[0] as vscode.CodeAction;
     const fixApplied = await vscode.workspace.applyEdit(quickFix.edit!);
-    assert.equal(fixApplied, true);
+    assert.strictEqual(fixApplied, true);
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(60 * 1000);
@@ -93,8 +93,8 @@ suite('Java Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.deepEqual(diags.length, 1);
-    assert.equal(diags[0].message, 'Add at least one assertion to this test case.');
+    assert.deepStrictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, 'Add at least one assertion to this test case.');
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(120 * 1000);
