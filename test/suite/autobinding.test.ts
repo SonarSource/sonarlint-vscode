@@ -140,7 +140,7 @@ suite('Auto Binding Test Suite', () => {
       let params: FolderUriParams = {
         folderUri: 'nonExistentFolder'
       };
-      const p = await underTest.listFilesInFolder(params)
+      const p = await underTest.listAutobindingFilesInFolder(params)
 
       expect(p).to.not.be.undefined
       expect(p.foundFiles).to.be.empty;
@@ -161,13 +161,67 @@ suite('Auto Binding Test Suite', () => {
       let params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
-      const foundFiles: ListFilesInScopeResponse = await underTest.listFilesInFolder(params)
+      const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params)
 
       expect(foundFiles.foundFiles).to.not.be.empty;
       expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(propsFileName);
       expect(foundFiles.foundFiles.map(value => value.content)).to.contain(fileContent);
 
       await VSCode.workspace.fs.delete(projectPropsUri);
+    });
+
+    test('Connected mode settings file is properly found when it exists', async () => {
+      const connectedModeJson = 'connectedMode.json';
+      const fileContent = `{
+  "sonarQubeUri": "https://test.sonarqube.com",
+  "projectKey": "org.sonarsource.sonarlint.vscode:test-project"
+}
+`;
+
+      const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
+      const connectedModeJsonUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, '.sonarlint', connectedModeJson));
+
+      await VSCode.workspace.fs.writeFile(
+        connectedModeJsonUri,
+        new TextEncoder().encode(fileContent)
+      );
+      let params: FolderUriParams = {
+        folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
+      };
+      const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params)
+
+      expect(foundFiles.foundFiles).to.not.be.empty;
+      expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(connectedModeJson);
+      expect(foundFiles.foundFiles.map(value => value.content)).to.contain(fileContent);
+
+      await VSCode.workspace.fs.delete(connectedModeJsonUri);
+    });
+
+    test('Connected mode settings file from Visual Studio is properly found when it exists', async () => {
+      const connectedModeJson = 'MySolution.json';
+      const fileContent = `{
+  "SonarQubeUri": "https://test.sonarqube.com",
+  "ProjectKey": "org.sonarsource.sonarlint.vscode:test-project"
+}
+`;
+
+      const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
+      const connectedModeJsonUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, '.sonarlint', connectedModeJson));
+
+      await VSCode.workspace.fs.writeFile(
+        connectedModeJsonUri,
+        new TextEncoder().encode(fileContent)
+      );
+      let params: FolderUriParams = {
+        folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
+      };
+      const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params)
+
+      expect(foundFiles.foundFiles).to.not.be.empty;
+      expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(connectedModeJson);
+      expect(foundFiles.foundFiles.map(value => value.content)).to.contain(fileContent);
+
+      await VSCode.workspace.fs.delete(connectedModeJsonUri);
     });
 
     test('Regular file is properly found and does not have content', async () => {
@@ -184,7 +238,7 @@ suite('Auto Binding Test Suite', () => {
       let params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
-      const foundFiles: ListFilesInScopeResponse = await underTest.listFilesInFolder(params)
+      const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params)
 
       const filesMatchingJavaFileName = foundFiles.foundFiles.filter(file => file.fileName === javaFileName);
       expect(filesMatchingJavaFileName).to.not.be.empty;

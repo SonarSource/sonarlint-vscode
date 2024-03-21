@@ -135,7 +135,7 @@ export function toUrl(filePath: string) {
   let pathName = Path.resolve(filePath).replace(/\\/g, '/');
 
   // Windows drive letter must be prefixed with a slash
-  if (pathName[0] !== '/') {
+  if (!pathName.startsWith('/')) {
     pathName = '/' + pathName;
   }
 
@@ -311,7 +311,7 @@ function cleanRemoteName(remoteName?: string): string {
   let ret = 'other';
   // Allowed remote authorities
   ['ssh-remote', 'dev-container', 'attached-container', 'wsl', 'codespaces'].forEach((res: string) => {
-    if (remoteName.indexOf(`${res}`) === 0) {
+    if (remoteName.startsWith(`${res}`)) {
       ret = res;
     }
   });
@@ -533,7 +533,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
   languageClient.onRequest(protocol.ListFilesInFolderRequest.type, params =>
-    AutoBindingService.instance.listFilesInFolder(params)
+    AutoBindingService.instance.listAutobindingFilesInFolder(params)
   );
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
