@@ -88,10 +88,39 @@ export class AutoBindingService {
     return this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
   }
 
-  async listFilesInFolder(params: FolderUriParams): Promise<ListFilesInScopeResponse> {
-    const uri = VSCode.Uri.parse(params.folderUri)
-    const foundFiles: Array<FoundFileDto> = await this.listFilesRecursively(uri);
+  async listAutobindingFilesInFolder(params: FolderUriParams): Promise<ListFilesInScopeResponse> {
+    const baseFolderUri = VSCode.Uri.parse(params.folderUri)
+    const foundFiles: Array<FoundFileDto> = [
+      ...await this.listJsonFilesInDotSonarLint(baseFolderUri),
+      ...await this.listFilesRecursively(baseFolderUri)
+    ];
     return { foundFiles };
+  }
+
+  private async listJsonFilesInDotSonarLint(folderUri: VSCode.Uri) {
+    const dotSonarLintUri = VSCode.Uri.joinPath(folderUri, '.sonarlint');
+    try {
+      const baseFiles = await VSCode.workspace.fs.readDirectory(dotSonarLintUri);
+      const foundFiles: Array<FoundFileDto> = [];
+      for (const [name, type] of baseFiles) {
+        const fullFileUri = VSCode.Uri.joinPath(dotSonarLintUri, name);
+
+        if (type === VSCode.FileType.File) {
+          await this.readJsonFiles(name, fullFileUri, foundFiles);
+        }
+      }
+      return foundFiles;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  private async readJsonFiles(name: string, fullFileUri: VSCode.Uri, foundFiles: Array<FoundFileDto>) {
+    let content: string = null;
+    if (name.endsWith('.json')) {
+      content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
+    }
+    foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
   }
 
   private async listFilesRecursively(uri: Uri) {
