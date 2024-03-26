@@ -133,7 +133,8 @@ export class AutoBindingService {
         if (type === VSCode.FileType.File) {
           await this.readPropertiesFiles(name, fullFileUri, foundFiles);
         }
-        if (type === VSCode.FileType.Directory) {
+        // .sonarlint folder is already handled separately, skipping it in recursive crawl
+        if (type === VSCode.FileType.Directory && name !== '.sonarlint') {
           const subFiles = await this.listFilesRecursively(fullFileUri);
           foundFiles = foundFiles.concat(subFiles);
         }
