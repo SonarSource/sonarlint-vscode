@@ -637,4 +637,20 @@ export namespace SubmitNewCodeDefinition {
   export const type = new lsp.NotificationType<SubmitNewCodeDefinitionParams>('sonarlint/submitNewCodeDefinition');
 }
 
+export interface ConnectionSuggestion {
+  serverUrl?: string;
+  organization?: string;
+  projectKey: string;
+}
+
+export interface SuggestConnectionParams {
+  suggestionsByConfigScopeId: {
+    [folderUri: string]: Array<ConnectionSuggestion>;
+  };
+}
+
+export namespace SuggestConnection { 
+  export const type = new lsp.NotificationType<SuggestConnectionParams>('sonarlint/suggestConnection');
+}
+
 //#endregion
