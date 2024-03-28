@@ -67,6 +67,7 @@ import { CAN_SHOW_MISSING_REQUIREMENT_NOTIF, showSslCertificateConfirmationDialo
 import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
 import { ShowIssueNotification } from './lsp/protocol';
 import { maybeShowWiderLanguageSupportNotification } from './promotions/promotionalNotifications';
+import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -157,14 +158,16 @@ export async function activate(context: VSCode.ExtensionContext) {
   const serverOptions = () => runJavaServer(context);
 
   const pythonWatcher = VSCode.workspace.createFileSystemWatcher('**/*.py');
+  const sharedConnectedModeConfigurationWatcher = VSCode.workspace.createFileSystemWatcher('**/.sonarlint/*.json');
   context.subscriptions.push(pythonWatcher);
+  context.subscriptions.push(sharedConnectedModeConfigurationWatcher);
 
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
       configurationSection: 'sonarlint',
-      fileEvents: pythonWatcher
+      fileEvents: [pythonWatcher, sharedConnectedModeConfigurationWatcher]
     },
     uriConverters: {
       code2Protocol: code2ProtocolConverter,
@@ -215,6 +218,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
   NewCodeDefinitionService.init(context);
+  SharedConnectedModeSettingsService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
   });
@@ -594,6 +598,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.SubmitNewCodeDefinition.type, newCodeDefinitionForFolderUri => {
     NewCodeDefinitionService.instance.updateNewCodeDefinitionForFolderUri(newCodeDefinitionForFolderUri);
   });
+  languageClient.onNotification(protocol.SuggestConnection.type, (params) => SharedConnectedModeSettingsService.instance.handleSuggestConnectionNotification(params.suggestionsByConfigScopeId))
 }
 
 function updateSonarLintViewContainerBadge() {
