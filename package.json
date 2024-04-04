@@ -858,7 +858,7 @@
     "diff": "^5.1.0",
     "expand-home-dir": "0.0.3",
     "find-java-home": "1.2.2",
-    "follow-redirects": "^1.15.5",
+    "follow-redirects": "^1.15.6",
     "globby": "^13.2.2",
     "highlight.js": "^11.7.0",
     "inly": "4.0.8",
