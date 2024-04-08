@@ -534,6 +534,13 @@
         "command": "SonarLint.EnableVerboseLogs",
         "title": "Enable Verbose Logging",
         "category": "SonarLint"
+      },
+      {
+        "command": "SonarLint.ShareConnectedModeConfiguration",
+        "title": "Share Connected Mode Configuration",
+        "category": "SonarLint",
+        "icon": "$(export)",
+        "enablement": "view == SonarLint.ConnectedMode"
       }
     ],
     "viewsContainers": {
@@ -739,6 +746,12 @@
         {
           "command": "SonarLint.RemoveProjectBinding",
           "title": "Remove",
+          "when": "view == SonarLint.ConnectedMode && viewItem == workspaceFolder",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.ShareConnectedModeConfiguration",
+          "title": "Share",
           "when": "view == SonarLint.ConnectedMode && viewItem == workspaceFolder",
           "group": "inline"
         },
