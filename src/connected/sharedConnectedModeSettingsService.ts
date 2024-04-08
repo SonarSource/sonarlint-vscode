@@ -6,34 +6,94 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { SonarLintExtendedLanguageClient } from "../lsp/client";
 import * as vscode from 'vscode';
-import { ConnectionSettingsService } from "../settings/connectionsettings";
+import { connectToSonarCloud, connectToSonarQube } from './connectionsetup';
+import { SonarLintExtendedLanguageClient } from "../lsp/client";
 import { ConnectionSuggestion } from "../lsp/protocol";
+import { ConnectionSettingsService } from "../settings/connectionsettings";
+import { logToSonarLintOutput } from '../util/logging';
+
+const MAX_FOLDERS_TO_NOTIFY = 5;
+const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
 
 export class SharedConnectedModeSettingsService {
 	private static _instance: SharedConnectedModeSettingsService;
-  
+
 	static init(
 	  languageClient: SonarLintExtendedLanguageClient,
-	  workspaceState: vscode.Memento,
+	  context: vscode.ExtensionContext,
 	  settingsService: ConnectionSettingsService
 	): void {
-		SharedConnectedModeSettingsService._instance = new SharedConnectedModeSettingsService(languageClient, workspaceState, settingsService);
+		SharedConnectedModeSettingsService._instance = new SharedConnectedModeSettingsService(languageClient, context, settingsService);
 	}
-  
+
 	constructor(
 	  private readonly languageClient: SonarLintExtendedLanguageClient,
-	  private readonly workspaceState: vscode.Memento,
+	  private readonly context: vscode.ExtensionContext,
 	  private readonly settingsService: ConnectionSettingsService
 	) {}
-  
+
 	static get instance(): SharedConnectedModeSettingsService {
 	  return SharedConnectedModeSettingsService._instance;
 	}
 
-	handleSuggestConnectionNotification(connectedModeSuggestions: { [folderUri: string]: Array<ConnectionSuggestion> }) {
-		vscode.window.showInformationMessage(
-			`Thanks for suggesting me to connect to ${JSON.stringify(connectedModeSuggestions)}`);
+	handleSuggestConnectionNotification(connectedModeSuggestions: { [configScopeId: string]: Array<ConnectionSuggestion> }) {
+		const configScopeIds = Object.keys(connectedModeSuggestions);
+		if (configScopeIds.length > MAX_FOLDERS_TO_NOTIFY) {
+			logToSonarLintOutput(`Received connection suggestions for too many folders, skipping`);
+		}
+		configScopeIds.forEach(configScopeId => this.suggestConnectionForConfigScope(configScopeId, connectedModeSuggestions[configScopeId]));
 	}
+
+  private async suggestConnectionForConfigScope(configScopeId: string, suggestions: Array<ConnectionSuggestion>) {
+    if (this.context.workspaceState.get(DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE)) {
+      // Ignore silently since user asked not to be bothered again
+      return;
+    }
+    const workspaceFolder = tryGetWorkspaceFolder(configScopeId);
+    if (workspaceFolder === undefined) {
+      logToSonarLintOutput(`Ignoring connection suggestion for unknown folder ${configScopeId}`);
+      return;
+    }
+    if (suggestions.length === 0) {
+      logToSonarLintOutput(`Ignoring empty suggestions for ${configScopeId}`);
+    } else if (suggestions.length === 1) {
+      const { projectKey, serverUrl, organization } = suggestions[0].connectionSuggestion;
+      const serverReference = organization ?
+        `of SonarCloud organization '${organization}'` :
+        `on SonarQube server '${serverUrl}'`;
+      const actions = [ 'Use Configuration', 'Bind Project Manually', "Don't Ask Again" ];
+      const userAnswer = await vscode.window.showInformationMessage(`A connected mode configuration file is available to bind folder '${workspaceFolder.name}'
+        to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`, ...actions);
+      switch (userAnswer) {
+        case 'Use Configuration':
+          if (organization) {
+            // TODO Pass the organization key + projectKey
+            connectToSonarCloud(this.context)();
+          } else {
+            // TODO Pass the project key
+            connectToSonarQube(this.context)(serverUrl);
+          }
+          break;
+        case 'Bind Project Manually':
+          // TODO Trigger manual binding process
+          break;
+        case "Don't Ask Again":
+          this.context.workspaceState.update(DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE, true);
+          break;
+        default:
+          // NOP
+      }
+    } else {
+      // TODO Handle selection between suggestions?
+    }
+  }
+}
+
+function tryGetWorkspaceFolder(configScopeId: string) {
+  try {
+    return vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(configScopeId));
+  } catch(notAuri) {
+    return undefined;
+  }
 }
