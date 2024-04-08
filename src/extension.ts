@@ -218,7 +218,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
   NewCodeDefinitionService.init(context);
-  SharedConnectedModeSettingsService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
+  SharedConnectedModeSettingsService.init(languageClient, context, ConnectionSettingsService.instance);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
   });

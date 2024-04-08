@@ -638,9 +638,11 @@ export namespace SubmitNewCodeDefinition {
 }
 
 export interface ConnectionSuggestion {
-  serverUrl?: string;
-  organization?: string;
-  projectKey: string;
+  connectionSuggestion: {
+    serverUrl?: string;
+    organization?: string;
+    projectKey: string;
+  }
 }
 
 export interface SuggestConnectionParams {
