@@ -215,10 +215,10 @@ export async function activate(context: VSCode.ExtensionContext) {
   await languageClient.start();
 
   ConnectionSettingsService.init(context, languageClient);
-  BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance);
-  AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
   NewCodeDefinitionService.init(context);
-  SharedConnectedModeSettingsService.init(languageClient, context, ConnectionSettingsService.instance);
+  SharedConnectedModeSettingsService.init(languageClient, context);
+  BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance, SharedConnectedModeSettingsService.instance);
+  AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
   });
@@ -476,7 +476,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHARE_CONNECTED_MODE_CONFIG, binding =>
-      SharedConnectedModeSettingsService.instance.shareConnectedModeSettings(binding.uri)
+      SharedConnectedModeSettingsService.instance.askConfirmationAndCreateSharedConnectedModeSettingsFile(binding.uri)
     )
   )
   context.subscriptions.push(
