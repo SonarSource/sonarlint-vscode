@@ -336,6 +336,8 @@ export interface BaseConnection {
   connectionId?: string;
   disableNotifications?: boolean;
   connectionCheckResult?: Promise<ConnectionCheckResult>;
+  projectKey?: string;
+  folderUri?: string;
 }
 
 export interface SonarQubeConnection extends BaseConnection {

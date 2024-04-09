@@ -68,11 +68,9 @@ export class SharedConnectedModeSettingsService {
       switch (userAnswer) {
         case 'Use Configuration':
           if (organization) {
-            // TODO Pass the organization key + projectKey
-            connectToSonarCloud(this.context)();
+            connectToSonarCloud(this.context)(organization, projectKey, workspaceFolder.uri);
           } else {
-            // TODO Pass the project key
-            connectToSonarQube(this.context)(serverUrl);
+            connectToSonarQube(this.context)(serverUrl, projectKey, workspaceFolder.uri);
           }
           break;
         case 'Bind Project Manually':

@@ -136,13 +136,17 @@ function onChangeEnableNotifications() {
 
 function onClickSaveConnection() {
   const connectionId = byId('connectionId').value;
+  const projectKey = byId('projectKey').value;
+  const folderUri = byId('folderUri').value;
   const token = byId('token').value;
   const disableNotifications = !byId('enableNotifications').checked;
   const saveConnectionMessage = {
     command: 'saveConnection',
     connectionId,
     token,
-    disableNotifications
+    disableNotifications,
+    projectKey,
+    folderUri
   };
   const serverUrl = byId('serverUrl');
   if (serverUrl) {

@@ -21,6 +21,7 @@ import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 import TRIGGER_HELP_AND_FEEDBACK_LINK = Commands.TRIGGER_HELP_AND_FEEDBACK_LINK;
+import { BindingService } from './binding';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -89,11 +90,13 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
 }
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
-  return serverUrl => {
+  return (serverUrl='', projectKey='', folderUri?: vscode.Uri) => {
     const initialState = {
-      serverUrl: serverUrl && typeof serverUrl === 'string' ? serverUrl : '',
+      serverUrl,
       token: '',
-      connectionId: ''
+      connectionId: '',
+      projectKey,
+      folderUri: folderUri?.toString(false)
     };
     const serverProductName = 'SonarQube';
     lazyCreateConnectionSetupPanel(context, serverProductName);
@@ -106,11 +109,13 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
 }
 
 export function connectToSonarCloud(context: vscode.ExtensionContext) {
-  return () => {
+  return (organizationKey='', projectKey='', folderUri?: vscode.Uri) => {
     const initialState = {
-      organizationKey: '',
+      organizationKey,
       token: '',
-      connectionId: ''
+      connectionId: '',
+      projectKey,
+      folderUri: folderUri?.toString(false)
     };
     const serverProductName = 'SonarCloud';
     lazyCreateConnectionSetupPanel(context, serverProductName);
@@ -157,22 +162,19 @@ function finishSetupAndRevealPanel(serverProductName: string) {
 }
 
 export async function reportConnectionCheckResult(result: ConnectionCheckResult) {
-  if (connectionSetupPanel) {
+  if (connectionSetupPanel?.webview) {
     const command = result.success ? 'connectionCheckSuccess' : 'connectionCheckFailure';
     connectionSetupPanel.webview.postMessage({ command, ...result });
+  } else if (result.success) {
+    vscode.window.showInformationMessage(`Connection with '${result.connectionId}' was successful!`);
   } else {
-    // If connection UI is not shown, fallback to notifications
-    if (result.success) {
-      vscode.window.showInformationMessage(`Connection with '${result.connectionId}' was successful!`);
-    } else {
-      const editConnectionAction = 'Edit Connection';
-      const reply = await vscode.window.showErrorMessage(
-        `Connection with '${result.connectionId}' failed. Please check your settings.`,
-        editConnectionAction
-      );
-      if (reply === editConnectionAction) {
-        vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, result.connectionId);
-      }
+    const editConnectionAction = 'Edit Connection';
+    const reply = await vscode.window.showErrorMessage(
+      `Connection with '${result.connectionId}' failed. Please check your settings.`,
+      editConnectionAction
+    );
+    if (reply === editConnectionAction) {
+      vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, result.connectionId);
     }
   }
 }
@@ -216,12 +218,14 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
 
   const initialConnectionId = escapeHtml(initialState.connectionId) || '';
   const initialToken = escapeHtml(initialState.token);
+  const maybeProjectKey = initialState.projectKey;
+  const maybeFolderUri = initialState.folderUri || '';
+  const saveButtonLabel = maybeProjectKey ? 'Save Connection And Bind Project' : 'Save Connection';
 
   return `<!doctype html><html lang="en">
     <head>
       <title>${serverProductName} Connection</title>
       <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-      <meta http-equiv="Encoding" content="utf-8" />
       <meta http-equiv="Content-Security-Policy"
         content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource}"/>
       <link rel="stylesheet" type="text/css" href="${styleSrc}" />
@@ -254,7 +258,9 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
           Connection Name
         </vscode-text-field>
         <input type="hidden" id="connectionId-initial" value="${initialConnectionId}" />
-        <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create'}"/>
+        <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create'}" />
+        <input type="hidden" id="projectKey" value="${maybeProjectKey}" />
+        <input type="hidden" id="folderUri" value="${maybeFolderUri}" />
         <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
         </vscode-checkbox>
@@ -271,7 +277,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <br>
         <a href='https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#connection-setup'>Need help setting up a connection?</a>
         <div id="connectionCheck" class="formRowWithStatus">
-          <vscode-button id="saveConnection" disabled>Save Connection</vscode-button>
+          <vscode-button id="saveConnection" disabled>${saveButtonLabel}</vscode-button>
           <span id="connectionProgress" class="hidden">
             <vscode-progress-ring/>
           </span>
@@ -352,7 +358,7 @@ export async function handleMessageWithConnectionSettingsService(
       if (message.serverUrl) {
         message.serverUrl = cleanServerUrl(message.serverUrl);
       }
-      await saveConnection(message, connectionSettingsService);
+      saveConnection(message, connectionSettingsService);
       break;
     case SONARCLOUD_PRODUCT_LINK_COMMAND:
       delete message.command;
@@ -399,34 +405,41 @@ async function saveConnection(
 ) {
   const isSQConnection = isSonarQubeConnection(connection);
   const serverOrOrganization = isSQConnection ? connection.serverUrl : connection.organizationKey;
+
+  await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
   const connectionCheckResult = await connectionSettingsService.checkNewConnection(
     connection.token,
     serverOrOrganization,
     isSQConnection
   );
+  await reportConnectionCheckResult(connectionCheckResult);
+
   if (!connectionCheckResult.success) {
-    await reportConnectionCheckResult(connectionCheckResult);
     return;
   }
+
   if (isSQConnection) {
     const foundConnection = await connectionSettingsService.loadSonarQubeConnection(connection.connectionId);
-    await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
     if (foundConnection) {
-      await ConnectionSettingsService.instance.updateSonarQubeConnection(connection);
+      await connectionSettingsService.updateSonarQubeConnection(connection);
     } else {
-      await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
-      return;
+      await connectionSettingsService.addSonarQubeConnection(connection);
     }
   } else {
     const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId);
-    await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
     if (foundConnection) {
-      await ConnectionSettingsService.instance.updateSonarCloudConnection(connection);
+      await connectionSettingsService.updateSonarCloudConnection(connection);
     } else {
-      await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
+      await connectionSettingsService.addSonarCloudConnection(connection);
     }
   }
-  await reportConnectionCheckResult(connectionCheckResult);
+
+  if (connection.projectKey && connection.folderUri) {
+    // TODO Find a way to prevent auto-bind from kicking in...
+    const folderUri = vscode.Uri.parse(connection.folderUri);
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
+    await BindingService.instance.saveBinding(connection.projectKey, connection.connectionId, workspaceFolder);
+  }
 }
 
 function cleanServerUrl(serverUrl: string) {
