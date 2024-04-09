@@ -33,6 +33,9 @@ const mockClient = {
   },
   async checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean) {
     return Promise.resolve({ connectionId: serverOrOrganization, success: true });
+  },
+  onTokenUpdate(connectionId, token) {
+    // NOP
   }
 } as SonarLintExtendedLanguageClient;
 
