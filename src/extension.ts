@@ -475,9 +475,9 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.SHARE_CONNECTED_MODE_CONFIG, binding => {
-
-    })
+    VSCode.commands.registerCommand(Commands.SHARE_CONNECTED_MODE_CONFIG, binding =>
+      SharedConnectedModeSettingsService.instance.shareConnectedModeSettings(binding.uri)
+    )
   )
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.REMOVE_PROJECT_BINDING, binding =>

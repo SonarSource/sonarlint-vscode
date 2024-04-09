@@ -484,6 +484,19 @@ export namespace GetSuggestedBinding {
   );
 }
 
+export interface GetSharedConnectedModeConfigFileParams {
+  configScopeId: string;
+}
+
+export interface GetSharedConnectedModeConfigFileResponse {
+  jsonFileContent: string;
+}
+
+export namespace GetSharedConnectedModeConfigFileContents {
+  export const type =
+    new lsp.RequestType<GetSharedConnectedModeConfigFileParams, GetSharedConnectedModeConfigFileResponse, null>("sonarlint/getSharedConnectedModeFileContent")
+}
+
 export namespace ReopenResolvedLocalIssues {
   export const type = new lsp.NotificationType<ReopenAllIssuesForFileParams>('sonarlint/reopenResolvedLocalIssues');
 }
