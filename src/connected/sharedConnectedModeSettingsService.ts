@@ -12,12 +12,17 @@ import { SonarLintExtendedLanguageClient } from "../lsp/client";
 import { ConnectionSuggestion } from "../lsp/protocol";
 import { ConnectionSettingsService } from "../settings/connectionsettings";
 import { logToSonarLintOutput } from '../util/logging';
+import { code2ProtocolConverter } from '../util/uri';
+import { TextEncoder } from 'util';
+import * as path from 'path';
 
 const MAX_FOLDERS_TO_NOTIFY = 5;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
 
 export class SharedConnectedModeSettingsService {
 	private static _instance: SharedConnectedModeSettingsService;
+	public static readonly SHARED_CONNECTED_MODE_CONFIG_FOLDER = ".sonarlint";
+	public static readonly SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE = "connectedMode.json";
 
 	static init(
 	  languageClient: SonarLintExtendedLanguageClient,
@@ -86,6 +91,26 @@ export class SharedConnectedModeSettingsService {
       // TODO Handle selection between suggestions?
     }
   }
+
+  async shareConnectedModeSettings(workspaceFolder: vscode.WorkspaceFolder) {
+		const SHARE_ACTION = "Share Configuration";
+		const userConfirmation = await vscode.window.showInformationMessage("Share this Connected Mode configuration?",
+			{ modal: true,
+				detail: "A configuration file will be created in this working directory," +
+					" making it easier for other team members to configure the binding for the same project." },
+			SHARE_ACTION,
+			);
+		if (userConfirmation === SHARE_ACTION) {
+			const configScopeId = code2ProtocolConverter(workspaceFolder.uri);
+			const fileContents = await this.languageClient.getSharedConnectedModeConfigFileContent(configScopeId);
+			const destinationUri = vscode.Uri.file(path.resolve(workspaceFolder.uri.path,
+				SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_FOLDER,
+				SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE));
+			vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
+		} else {
+			return;
+		}
+	}
 }
 
 function tryGetWorkspaceFolder(configScopeId: string) {

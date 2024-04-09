@@ -95,7 +95,11 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   getSuggestedBinding(configScopeId: string, connectionId: string): Promise<protocol.GetSuggestedBindingResponse> {
-    return this.sendRequest(protocol.GetSuggestedBinding.type, { configScopeId, connectionId });
+    return this.sendRequest(protocol. GetSuggestedBinding.type, { configScopeId, connectionId });
+  }
+
+  getSharedConnectedModeConfigFileContent(configScopeId: string): Promise<protocol.GetSharedConnectedModeConfigFileResponse> {
+    return this.sendRequest(protocol.GetSharedConnectedModeConfigFileContents.type, { configScopeId });
   }
 
   checkIssueStatusChangePermitted(folderUri: string, issueKey: string): Promise<protocol.CheckIssueStatusChangePermittedResponse> {
