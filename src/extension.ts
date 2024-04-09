@@ -427,10 +427,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQube(context))
+    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, () => connectToSonarQube(context)())
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARCLOUD, connectToSonarCloud(context))
+    VSCode.commands.registerCommand(Commands.CONNECT_TO_SONARCLOUD, () => connectToSonarCloud(context)())
   );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(context))
