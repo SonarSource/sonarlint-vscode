@@ -18,6 +18,8 @@ import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 import { AssistBindingParams, ShowSoonUnsupportedVersionMessageParams } from '../lsp/protocol';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
+import { SharedConnectedModeSettingsService } from './sharedConnectedModeSettingsService';
+import OPEN_BROWSER = Commands.OPEN_BROWSER;
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -43,15 +45,17 @@ export class BindingService {
   static init(
     languageClient: SonarLintExtendedLanguageClient,
     workspaceState: VSCode.Memento,
-    settingsService: ConnectionSettingsService
+    settingsService: ConnectionSettingsService,
+    sharedConnectedModeSettingsService: SharedConnectedModeSettingsService
   ): void {
-    BindingService._instance = new BindingService(languageClient, workspaceState, settingsService);
+    BindingService._instance = new BindingService(languageClient, workspaceState, settingsService, sharedConnectedModeSettingsService);
   }
 
   constructor(
     private readonly languageClient: SonarLintExtendedLanguageClient,
     private readonly workspaceState: VSCode.Memento,
-    private readonly settingsService: ConnectionSettingsService
+    private readonly settingsService: ConnectionSettingsService,
+    private readonly sharedConnectedModeSettingsService: SharedConnectedModeSettingsService
   ) {}
 
   static get instance(): BindingService {
@@ -216,7 +220,7 @@ export class BindingService {
       remoteProjectsQuickPick.onDidChangeSelection(selection => {
         selectedRemoteProject = selection[0];
 
-        this.saveBinding(selectedRemoteProject.description, connectionId, workspaceFolder);
+        this.saveBinding(selectedRemoteProject.description, workspaceFolder, true, connectionId);
         remoteProjectsQuickPick.dispose();
       });
 
@@ -258,13 +262,34 @@ export class BindingService {
         );
   }
 
-  async saveBinding(projectKey: string, connectionId?: string, workspaceFolder?: VSCode.WorkspaceFolder) {
-    VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/'
-                      has been bound with project '${projectKey}'`);
+  async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, proposeSharing: boolean, connectionId?: string) {
     connectionId = connectionId || DEFAULT_CONNECTION_ID;
-    return VSCode.workspace
+    await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId, projectKey });
+
+    VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/' has been bound with project '${projectKey}'`);
+
+    if (proposeSharing) {
+      this.proposeSharingConfig(projectKey, workspaceFolder);
+    }
+  }
+
+  private async proposeSharingConfig(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder) {
+    const SHARE_CONFIGURATION_ACTION = 'Share configuration';
+    const LEARN_MORE_ACTION = 'Learn more';
+    const NOT_NOW_ACTION = 'Not now';
+
+    VSCode.window.showInformationMessage(`Do you want to share this new SonarLint Connected Mode configuration?
+    A configuration file will be created in this working directory. This will allow your team to reuse the binding configuration`,
+      SHARE_CONFIGURATION_ACTION, LEARN_MORE_ACTION, NOT_NOW_ACTION)
+      .then(selection => {
+        if (selection === SHARE_CONFIGURATION_ACTION) {
+          this.sharedConnectedModeSettingsService.createSharedConnectedModeSettingsFile(workspaceFolder);
+        } else if (selection === LEARN_MORE_ACTION) {
+          VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#save-the-connection-binding'));
+        }
+      });
   }
 
   async getRemoteProjects(connectionId: string) {
@@ -272,7 +297,7 @@ export class BindingService {
   }
 
   async getRemoteProjectsItems(connectionId: string, workspaceFolder: VSCode.WorkspaceFolder, serverType: ServerType) {
-    const getRemoteProjectsParam = connectionId ? connectionId : DEFAULT_CONNECTION_ID;
+    const getRemoteProjectsParam = connectionId || DEFAULT_CONNECTION_ID;
     const itemsList: VSCode.QuickPickItem[] = [];
 
     try {
