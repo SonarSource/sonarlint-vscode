@@ -20,6 +20,7 @@ import { Connection, WorkspaceFolderItem } from '../../src/connected/connections
 import * as protocol from '../../src/lsp/protocol';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 import { sleep } from '../testutil';
+import { SharedConnectedModeSettingsService } from '../../src/connected/sharedConnectedModeSettingsService';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -66,6 +67,7 @@ const mockSettingsService = {
   }
 } as ConnectionSettingsService;
 
+
 async function resetBindings() {
   return VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, VSCode.workspace.workspaceFolders[0].uri)
@@ -85,6 +87,8 @@ const mockWorkspaceState = {
     this.state = newState;
   }
 };
+
+const sharedConnectedModeSettingsService = {} as SharedConnectedModeSettingsService;
 
 async function selectFirstQuickPickItem() {
   // Wait for the input field to show
@@ -118,7 +122,7 @@ suite('Bindings Test Suite', () => {
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
-      underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService);
+      underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService, sharedConnectedModeSettingsService);
     });
 
     test('Save binding updates configuration', async () => {
@@ -129,7 +133,7 @@ suite('Bindings Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
+      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, TEST_BINDING.connectionId);
 
       const updatedBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -180,7 +184,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
+      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, TEST_BINDING.connectionId);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -217,7 +221,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, DEFAULT_CONNECTION_ID, workspaceFolder);
+      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, DEFAULT_CONNECTION_ID);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -250,7 +254,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, undefined, workspaceFolder);
+      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, undefined);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -322,7 +326,7 @@ suite('Bindings Test Suite', () => {
   suite('Assist Binding', () => {
     let underTest;
     setup(() => {
-      underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService);
+      underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService, sharedConnectedModeSettingsService);
     });
 
     test('Should not do anything when binding already exists', async () => {
@@ -333,7 +337,7 @@ suite('Bindings Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, TEST_BINDING.connectionId, workspaceFolder);
+      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, TEST_BINDING.connectionId);
 
       const updatedBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
