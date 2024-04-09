@@ -451,7 +451,7 @@ async function saveConnection(
     // TODO Find a way to prevent auto-bind from kicking in...
     const folderUri = vscode.Uri.parse(connection.folderUri);
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
-    await BindingService.instance.saveBinding(connection.projectKey, connection.connectionId, workspaceFolder);
+    await BindingService.instance.saveBinding(connection.projectKey, workspaceFolder, false, connection.connectionId);
   }
 }
 

@@ -10,7 +10,6 @@ import * as vscode from 'vscode';
 import { connectToSonarCloud, connectToSonarQube } from './connectionsetup';
 import { SonarLintExtendedLanguageClient } from "../lsp/client";
 import { ConnectionSuggestion } from "../lsp/protocol";
-import { ConnectionSettingsService } from "../settings/connectionsettings";
 import { logToSonarLintOutput } from '../util/logging';
 import { code2ProtocolConverter } from '../util/uri';
 import { TextEncoder } from 'util';
@@ -27,15 +26,13 @@ export class SharedConnectedModeSettingsService {
 	static init(
 	  languageClient: SonarLintExtendedLanguageClient,
 	  context: vscode.ExtensionContext,
-	  settingsService: ConnectionSettingsService
 	): void {
-		SharedConnectedModeSettingsService._instance = new SharedConnectedModeSettingsService(languageClient, context, settingsService);
+		SharedConnectedModeSettingsService._instance = new SharedConnectedModeSettingsService(languageClient, context);
 	}
 
 	constructor(
 	  private readonly languageClient: SonarLintExtendedLanguageClient,
 	  private readonly context: vscode.ExtensionContext,
-	  private readonly settingsService: ConnectionSettingsService
 	) {}
 
 	static get instance(): SharedConnectedModeSettingsService {
@@ -92,7 +89,7 @@ export class SharedConnectedModeSettingsService {
     }
   }
 
-  async shareConnectedModeSettings(workspaceFolder: vscode.WorkspaceFolder) {
+  async askConfirmationAndCreateSharedConnectedModeSettingsFile(workspaceFolder: vscode.WorkspaceFolder) {
 		const SHARE_ACTION = "Share Configuration";
 		const userConfirmation = await vscode.window.showInformationMessage("Share this Connected Mode configuration?",
 			{ modal: true,
@@ -101,15 +98,19 @@ export class SharedConnectedModeSettingsService {
 			SHARE_ACTION,
 			);
 		if (userConfirmation === SHARE_ACTION) {
-			const configScopeId = code2ProtocolConverter(workspaceFolder.uri);
-			const fileContents = await this.languageClient.getSharedConnectedModeConfigFileContent(configScopeId);
-			const destinationUri = vscode.Uri.file(path.resolve(workspaceFolder.uri.path,
-				SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_FOLDER,
-				SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE));
-			vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
+			await this.createSharedConnectedModeSettingsFile(workspaceFolder);
 		} else {
 			return;
 		}
+	}
+
+	async createSharedConnectedModeSettingsFile(workspaceFolder: vscode.WorkspaceFolder) {
+		const configScopeId = code2ProtocolConverter(workspaceFolder.uri);
+		const fileContents = await this.languageClient.getSharedConnectedModeConfigFileContent(configScopeId);
+		const destinationUri = vscode.Uri.file(path.resolve(workspaceFolder.uri.path,
+			SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_FOLDER,
+			SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE));
+		vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
 	}
 }
 
