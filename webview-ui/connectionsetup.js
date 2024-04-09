@@ -22,11 +22,17 @@ function init() {
   if (serverUrl) {
     serverUrl.addEventListener('change', onChangeServerUrl);
     serverUrl.addEventListener('keyup', onChangeServerUrl);
+    if (serverUrl.value !== '') {
+      onChangeServerUrl();
+    }
   }
   const organizationKey = byId('organizationKey');
   if (organizationKey) {
     organizationKey.addEventListener('change', onChangeOrganizationKey);
     organizationKey.addEventListener('keyup', onChangeOrganizationKey);
+    if (organizationKey.value !== '') {
+      onChangeOrganizationKey();
+    }
   }
   byId('generateToken').addEventListener('click', onClickGenerateToken);
   byId('token').addEventListener('change', onChangeToken);

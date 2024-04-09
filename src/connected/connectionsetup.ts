@@ -219,8 +219,10 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const initialConnectionId = escapeHtml(initialState.connectionId) || '';
   const initialToken = escapeHtml(initialState.token);
   const maybeProjectKey = initialState.projectKey;
-  const maybeFolderUri = initialState.folderUri || '';
   const saveButtonLabel = maybeProjectKey ? 'Save Connection And Bind Project' : 'Save Connection';
+
+  const maybeFolderUri = initialState.folderUri || '';
+  const maybeFolderBindingParagraph = renderBindingParagraph(maybeFolderUri, maybeProjectKey);
 
   return `<!doctype html><html lang="en">
     <head>
@@ -275,6 +277,8 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
           <li>the latest analysis of a bound project on ${serverProductName} raises new issues assigned to you</li>
         </ul>
         <br>
+        ${maybeFolderBindingParagraph}
+        <br>
         <a href='https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#connection-setup'>Need help setting up a connection?</a>
         <div id="connectionCheck" class="formRowWithStatus">
           <vscode-button id="saveConnection" disabled>${saveButtonLabel}</vscode-button>
@@ -327,6 +331,15 @@ function renderOrganizationKeyField(connection) {
       Organization Key <vscode-badge class='tooltip'>i<span class='tooltiptext'>The key of your organization on SonarCloud</span></vscode-badge>
     </vscode-text-field>
     <input type="hidden" id="organizationKey-initial" value="${organizationKey}" />`;
+}
+
+function renderBindingParagraph(maybeFolderUri: string, maybeProjectKey: string) {
+  if (maybeFolderUri) {
+    const folderUri = vscode.Uri.parse(maybeFolderUri);
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
+    return `Once the connection is saved, workspace folder '${escapeHtml(workspaceFolder.name)}' will be bound to project '${escapeHtml(maybeProjectKey)}'.`
+  }
+  return '';
 }
 
 async function handleMessage(message) {
