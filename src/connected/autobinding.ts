@@ -281,7 +281,7 @@ export class AutoBindingService {
     switch (result) {
       case BIND_ACTION:
         await this.bindingService.saveBinding(
-          bindingSuggestion.sonarProjectKey, unboundFolder, bindingSuggestion.connectionId);
+          bindingSuggestion.sonarProjectKey, unboundFolder, false, bindingSuggestion.connectionId);
         break;
       case CHOOSE_MANUALLY_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();

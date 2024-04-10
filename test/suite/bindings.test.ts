@@ -133,7 +133,7 @@ suite('Bindings Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, TEST_BINDING.connectionId);
+      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, false, TEST_BINDING.connectionId);
 
       const updatedBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -184,7 +184,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, TEST_BINDING.connectionId);
+      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, false, TEST_BINDING.connectionId);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -221,7 +221,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, DEFAULT_CONNECTION_ID);
+      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, false, DEFAULT_CONNECTION_ID);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -254,7 +254,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, undefined);
+      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, false, undefined);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -337,7 +337,7 @@ suite('Bindings Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, TEST_BINDING.connectionId);
+      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, false, TEST_BINDING.connectionId);
 
       const updatedBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)

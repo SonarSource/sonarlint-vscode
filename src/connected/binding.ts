@@ -220,7 +220,7 @@ export class BindingService {
       remoteProjectsQuickPick.onDidChangeSelection(selection => {
         selectedRemoteProject = selection[0];
 
-        this.saveBinding(selectedRemoteProject.description, workspaceFolder, connectionId);
+        this.saveBinding(selectedRemoteProject.description, workspaceFolder, true, connectionId);
         remoteProjectsQuickPick.dispose();
       });
 
@@ -262,22 +262,26 @@ export class BindingService {
         );
   }
 
-  async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, connectionId?: string) {
+  async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, proposeSharing: boolean, connectionId?: string) {
     connectionId = connectionId || DEFAULT_CONNECTION_ID;
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId, projectKey });
 
-    this.notifyBindingSavedAndProposeSharingConfig(projectKey, workspaceFolder);
+    VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/' has been bound with project '${projectKey}'`);
+
+    if (proposeSharing) {
+      this.proposeSharingConfig(projectKey, workspaceFolder);
+    }
   }
 
-  private async notifyBindingSavedAndProposeSharingConfig(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder) {
+  private async proposeSharingConfig(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder) {
     const SHARE_CONFIGURATION_ACTION = 'Share configuration';
     const LEARN_MORE_ACTION = 'Learn more';
     const NOT_NOW_ACTION = 'Not now';
 
-    VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/' has been bound with project '${projectKey}'.
-     Select 'Share configuration' if you want a configuration file to be created in this working directory, making it easier for other team members to configure the binding for the same project.`,
+    VSCode.window.showInformationMessage(`Do you want to share this new SonarLint Connected Mode configuration?
+    A configuration file will be created in this working directory. This will allow your team to reuse the binding configuration`,
       SHARE_CONFIGURATION_ACTION, LEARN_MORE_ACTION, NOT_NOW_ACTION)
       .then(selection => {
         if (selection === SHARE_CONFIGURATION_ACTION) {
@@ -285,7 +289,6 @@ export class BindingService {
         } else if (selection === LEARN_MORE_ACTION) {
           VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#save-the-connection-binding'));
         }
-        return;
       });
   }
 
@@ -294,7 +297,7 @@ export class BindingService {
   }
 
   async getRemoteProjectsItems(connectionId: string, workspaceFolder: VSCode.WorkspaceFolder, serverType: ServerType) {
-    const getRemoteProjectsParam = connectionId ? connectionId : DEFAULT_CONNECTION_ID;
+    const getRemoteProjectsParam = connectionId || DEFAULT_CONNECTION_ID;
     const itemsList: VSCode.QuickPickItem[] = [];
 
     try {
