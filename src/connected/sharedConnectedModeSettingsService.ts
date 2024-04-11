@@ -69,6 +69,7 @@ export class SharedConnectedModeSettingsService {
         to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`, ...actions);
       switch (userAnswer) {
         case 'Use Configuration':
+          // TODO record imported_bindings in telemetry
           if (organization) {
             connectToSonarCloud(this.context)(organization, projectKey, workspaceFolder.uri);
           } else {

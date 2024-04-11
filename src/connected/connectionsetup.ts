@@ -298,7 +298,7 @@ function renderServerUrlField(connection) {
     return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
     autofocus value="${serverUrl}">
       <b>Server URL</b> <vscode-badge class='tooltip'>i<span class='tooltiptext'>The base URL for your SonarQube server</span></vscode-badge>
-    </vscode-text-field>
+    </vscode-text-field><span class='warning'>${serverUrl ? 'Please ensure that your Server URL matches your SonarQube instance.' : ''}</span>
     <input type="hidden" id="serverUrl-initial" value="${serverUrl}" />`;
   }
   return '';
