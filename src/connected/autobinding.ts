@@ -223,6 +223,7 @@ export class AutoBindingService {
         if (action === DONT_ASK_AGAIN_ACTION) {
           this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
         } else if (action === BIND_ACTION) {
+          // TODO record automatic binding in telemetry
           const targetConnection = await this.getTargetConnectionForManualBinding();
           await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         }
@@ -280,6 +281,7 @@ export class AutoBindingService {
     );
     switch (result) {
       case BIND_ACTION:
+        // TODO record automatic binding in telemetry
         await this.bindingService.saveBinding(
           bindingSuggestion.sonarProjectKey, unboundFolder, false, bindingSuggestion.connectionId);
         break;
@@ -313,6 +315,7 @@ export class AutoBindingService {
     );
     switch (result) {
       case BIND_ACTION: {
+        // TODO record automatic binding in telemetry
         const targetConnection = await this.getTargetConnectionForManualBinding();
         await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;

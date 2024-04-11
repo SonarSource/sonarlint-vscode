@@ -70,3 +70,7 @@ ul {
 .tooltip:hover .tooltiptext {
     visibility: visible;
 }
+
+.warning {
+    color: var(--vscode-inputValidation-warningBorder)
+}
