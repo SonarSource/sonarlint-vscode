@@ -263,6 +263,7 @@ export class BindingService {
   }
 
   async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, proposeSharing: boolean, connectionId?: string) {
+    // TODO record somewhere that binding was created manually
     connectionId = connectionId || DEFAULT_CONNECTION_ID;
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
