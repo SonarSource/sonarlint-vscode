@@ -110,7 +110,12 @@ export class SharedConnectedModeSettingsService {
 		const destinationUri = vscode.Uri.file(path.resolve(workspaceFolder.uri.path,
 			SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_FOLDER,
 			SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE));
-		vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
+		try {
+      vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
+      vscode.window.showInformationMessage('SonarLint Connected Mode configuration file was created.')
+    } catch (e) {
+      logToSonarLintOutput(`Error writing SonarLint configuration file: ${e}`);
+    }
 	}
 }
 
