@@ -68,6 +68,7 @@ import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
 import { ShowIssueNotification } from './lsp/protocol';
 import { maybeShowWiderLanguageSupportNotification } from './promotions/promotionalNotifications';
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
+import { FileSystemService } from './util/fileSystemService';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -216,7 +217,8 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   ConnectionSettingsService.init(context, languageClient);
   NewCodeDefinitionService.init(context);
-  SharedConnectedModeSettingsService.init(languageClient, context);
+  FileSystemService.init();
+  SharedConnectedModeSettingsService.init(languageClient, FileSystemService.instance, context);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance, SharedConnectedModeSettingsService.instance);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
@@ -543,7 +545,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
   languageClient.onRequest(protocol.ListFilesInFolderRequest.type, params =>
-    AutoBindingService.instance.listAutobindingFilesInFolder(params)
+    FileSystemService.instance.listAutobindingFilesInFolder(params)
   );
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
