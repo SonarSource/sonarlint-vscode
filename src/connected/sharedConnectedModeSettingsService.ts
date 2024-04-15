@@ -9,11 +9,12 @@
 import * as vscode from 'vscode';
 import { connectToSonarCloud, connectToSonarQube } from './connectionsetup';
 import { SonarLintExtendedLanguageClient } from "../lsp/client";
-import { ConnectionSuggestion } from "../lsp/protocol";
+import { ConnectionSuggestion } from '../lsp/protocol';
 import { logToSonarLintOutput } from '../util/logging';
 import { code2ProtocolConverter } from '../util/uri';
 import { TextEncoder } from 'util';
 import * as path from 'path';
+import { FileSystemService } from '../util/fileSystemService';
 
 const MAX_FOLDERS_TO_NOTIFY = 5;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -25,13 +26,15 @@ export class SharedConnectedModeSettingsService {
 
 	static init(
 	  languageClient: SonarLintExtendedLanguageClient,
+    fileSystemService: FileSystemService,
 	  context: vscode.ExtensionContext,
 	): void {
-		SharedConnectedModeSettingsService._instance = new SharedConnectedModeSettingsService(languageClient, context);
+		SharedConnectedModeSettingsService._instance = new SharedConnectedModeSettingsService(languageClient, fileSystemService, context);
 	}
 
 	constructor(
 	  private readonly languageClient: SonarLintExtendedLanguageClient,
+    private readonly fileSystemService: FileSystemService,
 	  private readonly context: vscode.ExtensionContext,
 	) {}
 
@@ -69,7 +72,6 @@ export class SharedConnectedModeSettingsService {
         to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`, ...actions);
       switch (userAnswer) {
         case 'Use Configuration':
-          // TODO record imported_bindings in telemetry
           if (organization) {
             connectToSonarCloud(this.context)(organization, projectKey, workspaceFolder.uri);
           } else {
@@ -108,16 +110,42 @@ export class SharedConnectedModeSettingsService {
 	async createSharedConnectedModeSettingsFile(workspaceFolder: vscode.WorkspaceFolder) {
 		const configScopeId = code2ProtocolConverter(workspaceFolder.uri);
 		const fileContents = await this.languageClient.getSharedConnectedModeConfigFileContent(configScopeId);
+    const fileName = await this.computeSharedConnectedModeFileName();
+    if (!fileName) {
+      logToSonarLintOutput('Sharing Connected Mode configuration failed. File name is null');
+      vscode.window.showErrorMessage('Failed to create SonarLint Connected Mode configuration file.');
+      return;
+    }
 		const destinationUri = vscode.Uri.file(path.resolve(workspaceFolder.uri.path,
 			SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_FOLDER,
-			SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE));
+			fileName));
 		try {
       vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
-      vscode.window.showInformationMessage('SonarLint Connected Mode configuration file was created.')
+      vscode.window.showInformationMessage('SonarLint Connected Mode configuration file was created.');
     } catch (e) {
+      vscode.window.showErrorMessage('Failed to create SonarLint Connected Mode configuration file.');
       logToSonarLintOutput(`Error writing SonarLint configuration file: ${e}`);
     }
 	}
+
+  async computeSharedConnectedModeFileName() : Promise<string> {
+    try {
+      const solutionFiles = this.fileSystemService.solutionFiles;
+      if (solutionFiles.length === 0) {
+        return SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE;
+      } else if (solutionFiles.length === 1) {
+        return `${solutionFiles[0]}.json`;
+      } else {
+        const selectedSolutionName = await vscode.window.showQuickPick(solutionFiles, {
+          title: 'For which Solution would you like to export SonarLint binding configuration?',
+          placeHolder: 'A configuration file corresponding to the selected Solution will be created in this working directory.'
+        });
+        return selectedSolutionName ? `${selectedSolutionName}.json` : null;
+      }
+    } catch (error) {
+      return null;
+    }
+  }
 }
 
 function tryGetWorkspaceFolder(configScopeId: string) {

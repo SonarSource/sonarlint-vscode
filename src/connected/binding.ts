@@ -263,7 +263,6 @@ export class BindingService {
   }
 
   async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, proposeSharing: boolean, connectionId?: string) {
-    // TODO record somewhere that binding was created manually
     connectionId = connectionId || DEFAULT_CONNECTION_ID;
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
@@ -288,7 +287,7 @@ export class BindingService {
         if (selection === SHARE_CONFIGURATION_ACTION) {
           this.sharedConnectedModeSettingsService.createSharedConnectedModeSettingsFile(workspaceFolder);
         } else if (selection === LEARN_MORE_ACTION) {
-          VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#save-the-connection-binding'));
+          VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#reuse-the-binding-configuration'));
         }
       });
   }

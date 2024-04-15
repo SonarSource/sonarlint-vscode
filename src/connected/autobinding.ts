@@ -24,8 +24,6 @@ import { Uri } from 'vscode';
 const AUTOBINDING_THRESHOLD = 1;
 const BIND_ACTION = 'Configure Binding';
 const CHOOSE_MANUALLY_ACTION = 'Choose Manually';
-const SONAR_SCANNER_CONFIG_FILENAME = "sonar-project.properties"
-const AUTOSCAN_CONFIG_FILENAME = ".sonarcloud.properties"
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindingForWorkspace';
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
@@ -90,71 +88,6 @@ export class AutoBindingService {
 
   private getFoldersThatShouldNotBeAutoBound(): string[] {
     return this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
-  }
-
-  async listAutobindingFilesInFolder(params: FolderUriParams): Promise<ListFilesInScopeResponse> {
-    const baseFolderUri = VSCode.Uri.parse(params.folderUri)
-    const foundFiles: Array<FoundFileDto> = [
-      ...await this.listJsonFilesInDotSonarLint(baseFolderUri),
-      ...await this.listFilesRecursively(baseFolderUri)
-    ];
-    return { foundFiles };
-  }
-
-  private async listJsonFilesInDotSonarLint(folderUri: VSCode.Uri) {
-    const dotSonarLintUri = VSCode.Uri.joinPath(folderUri, '.sonarlint');
-    try {
-      const baseFiles = await VSCode.workspace.fs.readDirectory(dotSonarLintUri);
-      const foundFiles: Array<FoundFileDto> = [];
-      for (const [name, type] of baseFiles) {
-        const fullFileUri = VSCode.Uri.joinPath(dotSonarLintUri, name);
-
-        if (type === VSCode.FileType.File) {
-          await this.readJsonFiles(name, fullFileUri, foundFiles);
-        }
-      }
-      return foundFiles;
-    } catch (error) {
-      return [];
-    }
-  }
-
-  private async readJsonFiles(name: string, fullFileUri: VSCode.Uri, foundFiles: Array<FoundFileDto>) {
-    let content: string = null;
-    if (name.endsWith('.json')) {
-      content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
-    }
-    foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
-  }
-
-  private async listFilesRecursively(uri: Uri) {
-    try {
-      const files = await VSCode.workspace.fs.readDirectory(uri);
-      let foundFiles: Array<FoundFileDto> = [];
-      for (const [name, type] of files) {
-        const fullFileUri = VSCode.Uri.joinPath(uri, name);
-
-        if (type === VSCode.FileType.File) {
-          await this.readPropertiesFiles(name, fullFileUri, foundFiles);
-        }
-        // .sonarlint folder is already handled separately, skipping it in recursive crawl
-        if (type === VSCode.FileType.Directory && name !== '.sonarlint') {
-          const subFiles = await this.listFilesRecursively(fullFileUri);
-          foundFiles = foundFiles.concat(subFiles);
-        }
-      }
-      return foundFiles;
-    } catch (error) {
-      return [];
-    }
-  }
-
-  private async readPropertiesFiles(name: string, fullFileUri: VSCode.Uri, foundFiles: Array<FoundFileDto>) {
-    let content: string = null;
-    if (name === AUTOSCAN_CONFIG_FILENAME || name === SONAR_SCANNER_CONFIG_FILENAME) {
-      content = (await VSCode.workspace.fs.readFile(fullFileUri)).toString();
-    }
-    foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
   }
 
   async getTargetConnectionForManualBinding() {
@@ -223,7 +156,6 @@ export class AutoBindingService {
         if (action === DONT_ASK_AGAIN_ACTION) {
           this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
         } else if (action === BIND_ACTION) {
-          // TODO record automatic binding in telemetry
           const targetConnection = await this.getTargetConnectionForManualBinding();
           await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         }
@@ -281,7 +213,6 @@ export class AutoBindingService {
     );
     switch (result) {
       case BIND_ACTION:
-        // TODO record automatic binding in telemetry
         await this.bindingService.saveBinding(
           bindingSuggestion.sonarProjectKey, unboundFolder, false, bindingSuggestion.connectionId);
         break;
@@ -315,7 +246,6 @@ export class AutoBindingService {
     );
     switch (result) {
       case BIND_ACTION: {
-        // TODO record automatic binding in telemetry
         const targetConnection = await this.getTargetConnectionForManualBinding();
         await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;
