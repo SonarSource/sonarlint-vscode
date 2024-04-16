@@ -69,6 +69,12 @@
     "installTime": "2018-02-01T16:30:49.124+01:00",
     "isTelemetryEnabled": "true",
     "machineId": "123456"
+  },
+  "shared_connected_mode": {
+    "manual_bindings_count": 3,
+    "imported_bindings_count": 2,
+    "auto_bindings_count": 1,
+    "exported_connected_mode_count": 4
   }
 }
 ```

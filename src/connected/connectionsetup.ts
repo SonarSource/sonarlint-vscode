@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { Commands } from '../util/commands';
 import { Connection } from './connections';
-import { ConnectionCheckResult } from '../lsp/protocol';
+import { BindingCreationMode, ConnectionCheckResult } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -20,8 +20,8 @@ import {
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import TRIGGER_HELP_AND_FEEDBACK_LINK = Commands.TRIGGER_HELP_AND_FEEDBACK_LINK;
 import { BindingService } from './binding';
+import TRIGGER_HELP_AND_FEEDBACK_LINK = Commands.TRIGGER_HELP_AND_FEEDBACK_LINK;
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -90,12 +90,13 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
 }
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
-  return (serverUrl='', projectKey='', folderUri?: vscode.Uri) => {
+  return (serverUrl='', projectKey='', isFromSharedConfiguration=false, folderUri?: vscode.Uri) => {
     const initialState = {
       serverUrl,
       token: '',
       connectionId: '',
       projectKey,
+      isFromSharedConfiguration,
       folderUri: folderUri?.toString(false)
     };
     const serverProductName = 'SonarQube';
@@ -109,12 +110,13 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
 }
 
 export function connectToSonarCloud(context: vscode.ExtensionContext) {
-  return (organizationKey='', projectKey='', folderUri?: vscode.Uri) => {
+  return (organizationKey='', projectKey='', isFromSharedConfiguration=false, folderUri?: vscode.Uri) => {
     const initialState = {
       organizationKey,
       token: '',
       connectionId: '',
       projectKey,
+      isFromSharedConfiguration,
       folderUri: folderUri?.toString(false)
     };
     const serverProductName = 'SonarCloud';
@@ -221,6 +223,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const maybeProjectKey = initialState.projectKey;
   const saveButtonLabel = maybeProjectKey ? 'Save Connection And Bind Project' : 'Save Connection';
 
+  const isFromSharedConfiguration = initialState.isFromSharedConfiguration;
   const maybeFolderUri = initialState.folderUri || '';
   const maybeFolderBindingParagraph = renderBindingParagraph(maybeFolderUri, maybeProjectKey);
 
@@ -262,6 +265,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <input type="hidden" id="connectionId-initial" value="${initialConnectionId}" />
         <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create'}" />
         <input type="hidden" id="projectKey" value="${maybeProjectKey}" />
+        <input type="hidden" id="isFromSharedConfiguration" value="${isFromSharedConfiguration}" />
         <input type="hidden" id="folderUri" value="${maybeFolderUri}" />
         <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
@@ -448,10 +452,10 @@ async function saveConnection(
   }
 
   if (connection.projectKey && connection.folderUri) {
-    // TODO Find a way to prevent auto-bind from kicking in...
     const folderUri = vscode.Uri.parse(connection.folderUri);
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
-    await BindingService.instance.saveBinding(connection.projectKey, workspaceFolder, false, connection.connectionId);
+    const bindingCreationMode = connection.isFromSharedConfiguration ? BindingCreationMode.IMPORTED : BindingCreationMode.AUTOMATIC;
+    await BindingService.instance.saveBinding(connection.projectKey, workspaceFolder, bindingCreationMode, connection.connectionId);
   }
 }
 

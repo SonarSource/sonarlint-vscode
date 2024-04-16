@@ -337,6 +337,7 @@ export interface BaseConnection {
   disableNotifications?: boolean;
   connectionCheckResult?: Promise<ConnectionCheckResult>;
   projectKey?: string;
+  isFromSharedConfiguration?: boolean;
   folderUri?: string;
 }
 
