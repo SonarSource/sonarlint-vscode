@@ -145,6 +145,7 @@ function onClickSaveConnection() {
   const projectKey = byId('projectKey').value;
   const folderUri = byId('folderUri').value;
   const token = byId('token').value;
+  const isFromSharedConfiguration = byId('isFromSharedConfiguration').value;
   const disableNotifications = !byId('enableNotifications').checked;
   const saveConnectionMessage = {
     command: 'saveConnection',
@@ -152,7 +153,8 @@ function onClickSaveConnection() {
     token,
     disableNotifications,
     projectKey,
-    folderUri
+    folderUri,
+    isFromSharedConfiguration
   };
   const serverUrl = byId('serverUrl');
   if (serverUrl) {

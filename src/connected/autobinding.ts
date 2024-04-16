@@ -14,7 +14,8 @@ import {
   FolderUriParams,
   FoundFileDto,
   ListFilesInScopeResponse,
-  SuggestBindingParams
+  SuggestBindingParams,
+  BindingCreationMode
 } from '../lsp/protocol';
 import { DEFAULT_CONNECTION_ID, SonarLintDocumentation } from '../commons';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
@@ -218,10 +219,14 @@ export class AutoBindingService {
       CHOOSE_MANUALLY_ACTION,
       DONT_ASK_AGAIN_ACTION
     );
+    const bindingCreationMode = bindingSuggestion.isFromSharedConfiguration ?
+      BindingCreationMode.IMPORTED :
+      BindingCreationMode.AUTOMATIC;
+
     switch (result) {
       case BIND_ACTION:
         await this.bindingService.saveBinding(
-          bindingSuggestion.sonarProjectKey, unboundFolder, false, bindingSuggestion.connectionId);
+          bindingSuggestion.sonarProjectKey, unboundFolder, bindingCreationMode, bindingSuggestion.connectionId);
         break;
       case CHOOSE_MANUALLY_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();

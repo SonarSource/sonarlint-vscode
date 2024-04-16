@@ -16,7 +16,7 @@ import { Connection, ServerType, WorkspaceFolderItem } from './connections';
 import { buildBaseServerUrl, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import { AssistBindingParams, ShowSoonUnsupportedVersionMessageParams } from '../lsp/protocol';
+import { AssistBindingParams, BindingCreationMode, ShowSoonUnsupportedVersionMessageParams } from '../lsp/protocol';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
 import { SharedConnectedModeSettingsService } from './sharedConnectedModeSettingsService';
 import OPEN_BROWSER = Commands.OPEN_BROWSER;
@@ -35,6 +35,7 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId: '', projectKey: '' });
+    await this.languageClient.didCreateBinding(BindingCreationMode.MANUAL);
   }
   VSCode.commands.executeCommand('workbench.action.openFolderSettingsFile');
 }
@@ -138,6 +139,7 @@ export class BindingService {
       await VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
         .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
+      await this.languageClient.didCreateBinding(params.isFromSharedConfiguration ? BindingCreationMode.IMPORTED : BindingCreationMode.AUTOMATIC);
     }
     return { configurationScopeId: workspaceFolder.uri.toString() };
   }
@@ -220,7 +222,7 @@ export class BindingService {
       remoteProjectsQuickPick.onDidChangeSelection(selection => {
         selectedRemoteProject = selection[0];
 
-        this.saveBinding(selectedRemoteProject.description, workspaceFolder, true, connectionId);
+        this.saveBinding(selectedRemoteProject.description, workspaceFolder, BindingCreationMode.MANUAL, connectionId);
         remoteProjectsQuickPick.dispose();
       });
 
@@ -262,15 +264,16 @@ export class BindingService {
         );
   }
 
-  async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, proposeSharing: boolean, connectionId?: string) {
+  async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, creationMode: BindingCreationMode, connectionId?: string) {
     connectionId = connectionId || DEFAULT_CONNECTION_ID;
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId, projectKey });
+    await this.languageClient.didCreateBinding(creationMode);
 
     VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/' has been bound with project '${projectKey}'`);
 
-    if (proposeSharing) {
+    if (creationMode === BindingCreationMode.MANUAL) {
       this.proposeSharingConfig(projectKey, workspaceFolder);
     }
   }
