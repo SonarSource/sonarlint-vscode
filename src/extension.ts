@@ -220,7 +220,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   FileSystemService.init();
   SharedConnectedModeSettingsService.init(languageClient, FileSystemService.instance, context);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance, SharedConnectedModeSettingsService.instance);
-  AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance);
+  AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance, FileSystemService.instance);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
   });
@@ -544,8 +544,10 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
-  languageClient.onRequest(protocol.ListFilesInFolderRequest.type, params =>
-    FileSystemService.instance.listAutobindingFilesInFolder(params)
+  languageClient.onRequest(protocol.ListFilesInFolderRequest.type, async (params) => {
+    await FileSystemService.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
+    return AutoBindingService.instance.listAutobindingFilesInFolder(params);
+  }
   );
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 

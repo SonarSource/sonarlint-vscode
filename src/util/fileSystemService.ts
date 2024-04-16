@@ -7,18 +7,13 @@
 
 'use strict';
 
-import { FolderUriParams, FoundFileDto, ListFilesInScopeResponse } from '../lsp/protocol';
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
-const SONAR_SCANNER_CONFIG_FILENAME = "sonar-project.properties"
-const AUTOSCAN_CONFIG_FILENAME = ".sonarcloud.properties"
+import { logToSonarLintOutput } from './logging';
 
 export class FileSystemService {
   private static _instance: FileSystemService;
-  solutionFilesCache : string[] = [];
-
-  constructor() {
-  }
+  fileListeners= [];
 
   static init(): void {
     FileSystemService._instance = new FileSystemService();
@@ -28,80 +23,31 @@ export class FileSystemService {
     return FileSystemService._instance;
   }
 
-  get solutionFiles() {
-    return this.solutionFilesCache;
+  subscribeOnFile(listener) {
+    this.fileListeners.push(listener);
   }
 
-  async listAutobindingFilesInFolder(params: FolderUriParams): Promise<ListFilesInScopeResponse> {
-    const baseFolderUri = vscode.Uri.parse(params.folderUri)
-    const foundFiles: Array<FoundFileDto> = [
-      ...await this.listJsonFilesInDotSonarLint(baseFolderUri),
-      ...await this.listFilesRecursively(baseFolderUri)
-    ];
-    return { foundFiles };
+  public async crawlDirectory(uri: Uri) {
+    await this.listFilesRecursively(uri, uri);
   }
 
-  private async listJsonFilesInDotSonarLint(folderUri: vscode.Uri) {
-    const dotSonarLintUri = vscode.Uri.joinPath(folderUri, '.sonarlint');
+  private async listFilesRecursively(configScopeUri: Uri, currentDirectory: Uri) {
     try {
-      const baseFiles = await vscode.workspace.fs.readDirectory(dotSonarLintUri);
-      const foundFiles: Array<FoundFileDto> = [];
-      for (const [name, type] of baseFiles) {
-        const fullFileUri = vscode.Uri.joinPath(dotSonarLintUri, name);
-
-        if (type === vscode.FileType.File) {
-          await this.readJsonFiles(name, fullFileUri, foundFiles);
-        }
-      }
-      return foundFiles;
-    } catch (error) {
-      return [];
-    }
-  }
-
-  private async readJsonFiles(name: string, fullFileUri: vscode.Uri, foundFiles: Array<FoundFileDto>) {
-    let content: string = null;
-    if (name.endsWith('.json')) {
-      content = (await vscode.workspace.fs.readFile(fullFileUri)).toString();
-    }
-    foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
-  }
-
-  private async listFilesRecursively(uri: Uri) {
-    try {
-      const files = await vscode.workspace.fs.readDirectory(uri);
-      let foundFiles: Array<FoundFileDto> = [];
+      const files = await vscode.workspace.fs.readDirectory(currentDirectory);
       for (const [name, type] of files) {
-        const fullFileUri = vscode.Uri.joinPath(uri, name);
+        const fullFileUri = vscode.Uri.joinPath(currentDirectory, name);
 
         if (type === vscode.FileType.File) {
-          await this.readPropertiesFiles(name, fullFileUri, foundFiles);
-          this.populateSolutionsFileCache(name);
+          // Call the listeners; Only pass Uri of configScope, not child directories
+          this.fileListeners.forEach(listener => listener(configScopeUri.toString(), name, fullFileUri));
         }
         // .sonarlint folder is already handled separately, skipping it in recursive crawl
         if (type === vscode.FileType.Directory && name !== '.sonarlint') {
-          const subFiles = await this.listFilesRecursively(fullFileUri);
-          foundFiles = foundFiles.concat(subFiles);
+          await this.listFilesRecursively(configScopeUri, fullFileUri);
         }
       }
-      return foundFiles;
     } catch (error) {
-      return [];
-    }
-  }
-
-  private async readPropertiesFiles(name: string, fullFileUri: vscode.Uri, foundFiles: Array<FoundFileDto>) {
-    let content: string = null;
-    if (name === AUTOSCAN_CONFIG_FILENAME || name === SONAR_SCANNER_CONFIG_FILENAME) {
-      content = (await vscode.workspace.fs.readFile(fullFileUri)).toString();
-    }
-    foundFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
-  }
-
-  private populateSolutionsFileCache(name: string) {
-    if (name.endsWith('.sln')) {
-      const friendlySolutionName = name.slice(0, -4);
-      this.solutionFilesCache.push(friendlySolutionName);
+      logToSonarLintOutput(`Error encountered while listing files recursively, ${error}`);
     }
   }
 }
