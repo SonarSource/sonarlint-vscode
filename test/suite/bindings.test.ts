@@ -21,6 +21,7 @@ import * as protocol from '../../src/lsp/protocol';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 import { sleep } from '../testutil';
 import { SharedConnectedModeSettingsService } from '../../src/connected/sharedConnectedModeSettingsService';
+import { selectFirstQuickPickItem } from './commons';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -55,6 +56,9 @@ const mockClient = {
   },
   async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<protocol.SuggestBindingParams> {
     return Promise.resolve({suggestions:{}});
+  },
+  async didCreateBinding(mode) {
+    return Promise.resolve();
   }
 } as SonarLintExtendedLanguageClient;
 
@@ -89,14 +93,6 @@ const mockWorkspaceState = {
 };
 
 const sharedConnectedModeSettingsService = {} as SharedConnectedModeSettingsService;
-
-async function selectFirstQuickPickItem() {
-  // Wait for the input field to show
-  await sleep(1000);
-  await VSCode.commands.executeCommand('workbench.action.acceptSelectedQuickOpenItem');
-  // Wait for the settings to be updated
-  await sleep(2000);
-}
 
 suite('Bindings Test Suite', () => {
   setup(async () => {

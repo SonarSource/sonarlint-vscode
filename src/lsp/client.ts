@@ -98,11 +98,16 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.GetSuggestedBinding.type, { configScopeId, connectionId });
   }
 
-  getSharedConnectedModeConfigFileContent(configScopeId: string): Promise<protocol.GetSharedConnectedModeConfigFileResponse> {
+  getSharedConnectedModeConfigFileContent(
+    configScopeId: string
+  ): Promise<protocol.GetSharedConnectedModeConfigFileResponse> {
     return this.sendRequest(protocol.GetSharedConnectedModeConfigFileContents.type, { configScopeId });
   }
 
-  checkIssueStatusChangePermitted(folderUri: string, issueKey: string): Promise<protocol.CheckIssueStatusChangePermittedResponse> {
+  checkIssueStatusChangePermitted(
+    folderUri: string,
+    issueKey: string
+  ): Promise<protocol.CheckIssueStatusChangePermittedResponse> {
     return this.sendRequest(protocol.CheckIssueStatusChangePermitted.type, { folderUri, issueKey });
   }
 
@@ -155,5 +160,9 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   getHotspotDetails(ruleKey, hotspotId, fileUri): Promise<protocol.ShowRuleDescriptionParams> {
     return this.sendRequest(protocol.GetHotspotDetails.type, { ruleKey, hotspotId, fileUri });
+  }
+
+  didCreateBinding(mode: protocol.BindingCreationMode): Promise<void> {
+    return this.sendNotification(protocol.DidCreateBinding.type, mode);
   }
 }

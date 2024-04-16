@@ -15,7 +15,6 @@ import { code2ProtocolConverter } from '../util/uri';
 import { TextEncoder } from 'util';
 import * as path from 'path';
 import { FileSystemService } from '../util/fileSystemService';
-import { QuickPickItem } from 'vscode';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -96,7 +95,7 @@ export class SharedConnectedModeSettingsService {
     }
   }
 
-  private deduplicateSuggestions(suggestions: Array<ConnectionSuggestion>) : Array<ConnectionSuggestion> {
+  deduplicateSuggestions(suggestions: Array<ConnectionSuggestion>) : Array<ConnectionSuggestion> {
     return Array.from(new Set(suggestions.map(s => JSON.stringify(s.connectionSuggestion))))
       .map(s => JSON.parse(s));
   }
@@ -106,7 +105,7 @@ export class SharedConnectedModeSettingsService {
        configuration files are available to bind folder '${workspaceFolder.name}'
         to a Sonar server. Do you want to use the shared configuration?`;
     const useConfigurationHandler = async () => {
-      const quickPickItems : QuickPickItem[] = uniqueSuggestions.map(s => {
+      const quickPickItems : vscode.QuickPickItem[] = uniqueSuggestions.map(s => {
         return { label: s.projectKey,
           description: s.organization || s.serverUrl,
           detail: s.organization ? 'SonarCloud' : 'SonarQube' };
@@ -124,6 +123,7 @@ export class SharedConnectedModeSettingsService {
 
   private async suggestBindSingleOption(suggestion, workspaceFolder) {
     const { projectKey, serverUrl, organization } = suggestion.connectionSuggestion;
+    const isFromSharedConfiguration = suggestion.isFromSharedConfiguration;
     const serverReference = organization ?
       `of SonarCloud organization '${organization}'` :
       `on SonarQube server '${serverUrl}'`;
@@ -131,9 +131,9 @@ export class SharedConnectedModeSettingsService {
         to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`;
     const useConfigurationHandler = async () => {
       if (organization) {
-        connectToSonarCloud(this.context)(organization, projectKey, workspaceFolder.uri);
+        connectToSonarCloud(this.context)(organization, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
       } else {
-        connectToSonarQube(this.context)(serverUrl, projectKey, workspaceFolder.uri);
+        connectToSonarQube(this.context)(serverUrl, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
       }
     }
     await this.suggestBinding(message, useConfigurationHandler);
@@ -185,7 +185,7 @@ export class SharedConnectedModeSettingsService {
 			SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_FOLDER,
 			fileName));
 		try {
-      vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
+      await vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
       vscode.window.showInformationMessage('SonarLint Connected Mode configuration file was created.');
     } catch (e) {
       vscode.window.showErrorMessage('Failed to create SonarLint Connected Mode configuration file.');
@@ -195,10 +195,10 @@ export class SharedConnectedModeSettingsService {
 
   async computeSharedConnectedModeFileName(workspaceFolderUri: string) : Promise<string> {
     try {
-      if (this.solutionFilesByConfigScope.get(workspaceFolderUri).length === 0) {
+      if (this.solutionFilesByConfigScope.get(workspaceFolderUri)?.length === 0) {
         return SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE;
-      } else if (this.solutionFilesByConfigScope.get(workspaceFolderUri).length === 1) {
-        return `${this.solutionFilesByConfigScope[0]}.json`;
+      } else if (this.solutionFilesByConfigScope.get(workspaceFolderUri)?.length === 1) {
+        return `${this.solutionFilesByConfigScope.get(workspaceFolderUri)[0]}.json`;
       } else {
         const selectedSolutionName = await vscode.window.showQuickPick(this.solutionFilesByConfigScope.get(workspaceFolderUri), {
           title: 'For which Solution would you like to export SonarLint binding configuration?',
