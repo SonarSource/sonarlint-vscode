@@ -15,7 +15,6 @@ import { code2ProtocolConverter } from '../util/uri';
 import { TextEncoder } from 'util';
 import * as path from 'path';
 import { FileSystemService } from '../util/fileSystemService';
-import { QuickPickItem } from 'vscode';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -106,7 +105,7 @@ export class SharedConnectedModeSettingsService {
        configuration files are available to bind folder '${workspaceFolder.name}'
         to a Sonar server. Do you want to use the shared configuration?`;
     const useConfigurationHandler = async () => {
-      const quickPickItems : QuickPickItem[] = uniqueSuggestions.map(s => {
+      const quickPickItems : vscode.QuickPickItem[] = uniqueSuggestions.map(s => {
         return { label: s.projectKey,
           description: s.organization || s.serverUrl,
           detail: s.organization ? 'SonarCloud' : 'SonarQube' };
@@ -124,6 +123,7 @@ export class SharedConnectedModeSettingsService {
 
   private async suggestBindSingleOption(suggestion, workspaceFolder) {
     const { projectKey, serverUrl, organization } = suggestion.connectionSuggestion;
+    const isFromSharedConfiguration = suggestion.isFromSharedConfiguration;
     const serverReference = organization ?
       `of SonarCloud organization '${organization}'` :
       `on SonarQube server '${serverUrl}'`;
@@ -131,9 +131,9 @@ export class SharedConnectedModeSettingsService {
         to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`;
     const useConfigurationHandler = async () => {
       if (organization) {
-        connectToSonarCloud(this.context)(organization, projectKey, workspaceFolder.uri);
+        connectToSonarCloud(this.context)(organization, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
       } else {
-        connectToSonarQube(this.context)(serverUrl, projectKey, workspaceFolder.uri);
+        connectToSonarQube(this.context)(serverUrl, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
       }
     }
     await this.suggestBinding(message, useConfigurationHandler);

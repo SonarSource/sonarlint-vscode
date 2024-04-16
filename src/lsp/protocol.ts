@@ -28,6 +28,7 @@ export interface BindingSuggestion {
   connectionId: string;
   sonarProjectKey: string;
   sonarProjectName: string;
+  isFromSharedConfiguration: boolean;
 }
 
 export interface ListFilesInScopeResponse {
@@ -554,6 +555,7 @@ export namespace AssistCreatingConnection {
 export interface AssistBindingParams {
   connectionId: string;
   projectKey: string;
+  isFromSharedConfiguration: boolean;
 }
 
 export interface AssistBindingResponse {
@@ -655,7 +657,8 @@ export interface ConnectionSuggestion {
     serverUrl?: string;
     organization?: string;
     projectKey: string;
-  }
+  };
+  isFromSharedConfiguration: boolean;
 }
 
 export interface SuggestConnectionParams {
@@ -666,6 +669,16 @@ export interface SuggestConnectionParams {
 
 export namespace SuggestConnection { 
   export const type = new lsp.NotificationType<SuggestConnectionParams>('sonarlint/suggestConnection');
+}
+
+export enum BindingCreationMode {
+  AUTOMATIC,
+  IMPORTED,
+  MANUAL
+}
+
+export namespace DidCreateBinding {
+  export const type = new lsp.NotificationType<BindingCreationMode>('sonarlint/didCreateBinding');
 }
 
 //#endregion

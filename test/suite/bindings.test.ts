@@ -55,6 +55,9 @@ const mockClient = {
   },
   async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<protocol.SuggestBindingParams> {
     return Promise.resolve({suggestions:{}});
+  },
+  async didCreateBinding(mode) {
+    return Promise.resolve();
   }
 } as SonarLintExtendedLanguageClient;
 
