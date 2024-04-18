@@ -11,9 +11,9 @@ import { BindingService } from './binding';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import {
   BindingSuggestion,
-  ListFilesInScopeResponse,
   FolderUriParams,
   FoundFileDto,
+  ListFilesInScopeResponse,
   SuggestBindingParams
 } from '../lsp/protocol';
 import { DEFAULT_CONNECTION_ID, SonarLintDocumentation } from '../commons';
@@ -34,7 +34,7 @@ const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace th
 
 export class AutoBindingService {
   private static _instance: AutoBindingService;
-  private readonly autobindingConfigurationFiles : FoundFileDto[] = [];
+  private readonly filesPerConfigScope : Map<string, FoundFileDto[]> = new Map<string, FoundFileDto[]>(); // TODO find a way to clean up the list
 
   static init(
     bindingService: BindingService,
@@ -269,21 +269,30 @@ export class AutoBindingService {
     }
   }
 
-  onFileListener = async (name, fullFileUri) => {
-    let content: string = null
-    if (name === AUTOSCAN_CONFIG_FILENAME || name === SONAR_SCANNER_CONFIG_FILENAME) {
-      content = (await vscode.workspace.fs.readFile(fullFileUri)).toString();
+  onFileListener = (folderUri: string, fileName: string, fullFileUri: vscode.Uri) => {
+    if(folderUri && this.filesPerConfigScope.get(folderUri) === undefined) {
+      this.filesPerConfigScope.set(folderUri, []);
     }
-    this.autobindingConfigurationFiles.push({ fileName: name, filePath: fullFileUri.fsPath, content });
+    this.filesPerConfigScope.get(folderUri).push({ fileName, filePath: fullFileUri.fsPath, content: null });
   }
 
   async listAutobindingFilesInFolder(params: FolderUriParams): Promise<ListFilesInScopeResponse> {
-    const baseFolderUri = vscode.Uri.parse(params.folderUri)
+    const baseFolderUri = vscode.Uri.parse(params.folderUri);
+    await this.getContentOfAutobindingFiles(params.folderUri);
     const foundFiles: Array<FoundFileDto> = [
       ...await this.listJsonFilesInDotSonarLint(baseFolderUri),
-      ...this.autobindingConfigurationFiles
+      ...this.filesPerConfigScope.get(params.folderUri) || []
     ];
     return { foundFiles };
+  }
+
+  private async getContentOfAutobindingFiles(folderUri: string) {
+    for (const file of this.filesPerConfigScope.get(folderUri) || []) {
+      if (file.fileName === AUTOSCAN_CONFIG_FILENAME || file.fileName === SONAR_SCANNER_CONFIG_FILENAME) {
+        const fileUri = vscode.Uri.file(file.filePath);
+        file.content = (await vscode.workspace.fs.readFile(fileUri)).toString();
+      }
+    }
   }
 
   private async listJsonFilesInDotSonarLint(folderUri: vscode.Uri) {

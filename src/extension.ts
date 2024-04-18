@@ -545,7 +545,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
   languageClient.onRequest(protocol.ListFilesInFolderRequest.type, async (params) => {
-    await FileSystemService.instance.listFilesRecursively(VSCode.Uri.parse(params.folderUri));
+    await FileSystemService.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
     return AutoBindingService.instance.listAutobindingFilesInFolder(params);
   }
   );

@@ -21,6 +21,7 @@ import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '.
 import { TextEncoder } from 'util';
 import { FolderUriParams, ListFilesInScopeResponse } from '../../src/lsp/protocol';
 import { FileSystemService } from '../../src/util/fileSystemService';
+import { sleep } from '../testutil';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
@@ -80,7 +81,8 @@ const mockWorkspaceState = {
   }
 };
 
-FileSystemService.init();
+let tempFiles = [];
+
 
 suite('Auto Binding Test Suite', () => {
   setup(async () => {
@@ -97,11 +99,16 @@ suite('Auto Binding Test Suite', () => {
     await VSCode.commands.executeCommand('workbench.action.closeAllEditors');
     await mockWorkspaceState.updateBindingForWs(false);
     await mockWorkspaceState.updateBindingForFolder([]);
+    for (const fileUri of tempFiles) {
+      await VSCode.workspace.fs.delete(fileUri);
+    }
+    tempFiles = [];
   });
 
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
+      FileSystemService.init();
       underTest = new AutoBindingService(
         mockBindingService,
         mockWorkspaceState,
@@ -167,12 +174,16 @@ suite('Auto Binding Test Suite', () => {
       const projectPropsUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, propsFileName));
 
       await VSCode.workspace.fs.writeFile(projectPropsUri, new TextEncoder().encode(fileContent));
+      tempFiles.push(projectPropsUri);
+      // wait for the file to be actually created and reflected in the fs
+      sleep(2000);
+
       let params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
 
       // crawl the directory
-      await FileSystemService.instance.listFilesRecursively(VSCode.Uri.parse(params.folderUri));
+      await FileSystemService.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
 
       const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
 
@@ -180,7 +191,6 @@ suite('Auto Binding Test Suite', () => {
       expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(propsFileName);
       expect(foundFiles.foundFiles.map(value => value.content)).to.contain(fileContent);
 
-      await VSCode.workspace.fs.delete(projectPropsUri);
     });
 
     test('Connected mode settings file is properly found when it exists', async () => {
@@ -197,6 +207,8 @@ suite('Auto Binding Test Suite', () => {
       );
 
       await VSCode.workspace.fs.writeFile(connectedModeJsonUri, new TextEncoder().encode(fileContent));
+      tempFiles.push(connectedModeJsonUri);
+
       let params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
@@ -206,16 +218,15 @@ suite('Auto Binding Test Suite', () => {
       expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(connectedModeJson);
       expect(foundFiles.foundFiles.map(value => value.content)).to.contain(fileContent);
 
-      await VSCode.workspace.fs.delete(connectedModeJsonUri);
     });
 
     test('Connected mode settings file from Visual Studio is properly found when it exists', async () => {
       const connectedModeJson = 'MySolution.json';
       const fileContent = `{
-  "SonarQubeUri": "https://test.sonarqube.com",
-  "ProjectKey": "org.sonarsource.sonarlint.vscode:test-project"
-}
-`;
+        "SonarQubeUri": "https://test.sonarqube.com",
+        "ProjectKey": "org.sonarsource.sonarlint.vscode:test-project"
+      }
+      `;
 
       const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
       const connectedModeJsonUri = VSCode.Uri.file(
@@ -223,6 +234,8 @@ suite('Auto Binding Test Suite', () => {
       );
 
       await VSCode.workspace.fs.writeFile(connectedModeJsonUri, new TextEncoder().encode(fileContent));
+      tempFiles.push(connectedModeJsonUri);
+
       let params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
@@ -233,7 +246,6 @@ suite('Auto Binding Test Suite', () => {
       expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(connectedModeJson);
       expect(foundFiles.foundFiles.map(value => value.content)).to.contain(fileContent);
 
-      await VSCode.workspace.fs.delete(connectedModeJsonUri);
     });
 
     test('Regular file is properly found and does not have content', async () => {
@@ -244,12 +256,13 @@ suite('Auto Binding Test Suite', () => {
       const javaFileUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, javaFileName));
 
       await VSCode.workspace.fs.writeFile(javaFileUri, new TextEncoder().encode(fileContent));
+      tempFiles.push(javaFileUri);
       let params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
 
       // crawl the directory
-      await FileSystemService.instance.listFilesRecursively(VSCode.Uri.parse(params.folderUri));
+      await FileSystemService.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
 
       const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
 
@@ -258,7 +271,6 @@ suite('Auto Binding Test Suite', () => {
       const foundJavaFile = filesMatchingJavaFileName.pop();
       expect(foundJavaFile.content).to.be.null;
 
-      await VSCode.workspace.fs.delete(javaFileUri);
     });
 
     test('Do not propose binding when there are no connections', async () => {

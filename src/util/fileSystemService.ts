@@ -7,7 +7,6 @@
 
 'use strict';
 
-import { FolderUriParams, FoundFileDto, ListFilesInScopeResponse } from '../lsp/protocol';
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
 import { logToSonarLintOutput } from './logging';
@@ -28,18 +27,23 @@ export class FileSystemService {
     this.fileListeners.push(listener);
   }
 
-  public async listFilesRecursively(uri: Uri) {
+  public async crawlDirectory(uri: Uri) {
+    await this.listFilesRecursively(uri, uri);
+  }
+
+  private async listFilesRecursively(configScopeUri: Uri, currentDirectory: Uri) {
     try {
-      const files = await vscode.workspace.fs.readDirectory(uri);
+      const files = await vscode.workspace.fs.readDirectory(currentDirectory);
       for (const [name, type] of files) {
-        const fullFileUri = vscode.Uri.joinPath(uri, name);
+        const fullFileUri = vscode.Uri.joinPath(currentDirectory, name);
 
         if (type === vscode.FileType.File) {
-          this.fileListeners.forEach(async (listener) => await listener(name, fullFileUri));
+          // Call the listeners; Only pass Uri of configScope, not child directories
+          this.fileListeners.forEach(listener => listener(configScopeUri.toString(), name, fullFileUri));
         }
         // .sonarlint folder is already handled separately, skipping it in recursive crawl
         if (type === vscode.FileType.Directory && name !== '.sonarlint') {
-          await this.listFilesRecursively(fullFileUri);
+          await this.listFilesRecursively(configScopeUri, fullFileUri);
         }
       }
     } catch (error) {

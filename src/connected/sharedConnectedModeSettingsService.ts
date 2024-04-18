@@ -24,11 +24,13 @@ const USE_CONFIGURATION_ACTION = 'Use Configuration';
 const NOT_NOW_ACTION = 'Bind Project Manually';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 
+const SOLUTION_FILE_SUFFIX_LENGTH = -4;
+
 export class SharedConnectedModeSettingsService {
 	private static _instance: SharedConnectedModeSettingsService;
 	public static readonly SHARED_CONNECTED_MODE_CONFIG_FOLDER = ".sonarlint";
 	public static readonly SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE = "connectedMode.json";
-  private readonly solutionFilesCache : string[] = [];
+  private readonly solutionFilesByConfigScope : Map<string, string[]> = new Map<string, string[]>();
 
 	static init(
 	  languageClient: SonarLintExtendedLanguageClient,
@@ -50,11 +52,14 @@ export class SharedConnectedModeSettingsService {
 	  return SharedConnectedModeSettingsService._instance;
 	}
 
-  onFileListener = async (name, _fullFileUri) => {
-      if (name.endsWith('.sln')) {
-        const friendlySolutionName = name.slice(0, -4);
-        this.solutionFilesCache.push(friendlySolutionName);
-      }
+  onFileListener = (folderUri, fileName, _fullFileUri) => {
+    if (folderUri && !this.solutionFilesByConfigScope.get(folderUri)) {
+      this.solutionFilesByConfigScope.set(folderUri, []);
+    }
+    if (fileName.endsWith('.sln')) {
+      const friendlySolutionName = fileName.slice(0, SOLUTION_FILE_SUFFIX_LENGTH);
+      this.solutionFilesByConfigScope.get(folderUri).push(friendlySolutionName);
+    }
   }
 
 	handleSuggestConnectionNotification(connectedModeSuggestions: { [configScopeId: string]: Array<ConnectionSuggestion> }) {
@@ -170,7 +175,7 @@ export class SharedConnectedModeSettingsService {
 	async createSharedConnectedModeSettingsFile(workspaceFolder: vscode.WorkspaceFolder) {
 		const configScopeId = code2ProtocolConverter(workspaceFolder.uri);
 		const fileContents = await this.languageClient.getSharedConnectedModeConfigFileContent(configScopeId);
-    const fileName = await this.computeSharedConnectedModeFileName();
+    const fileName = await this.computeSharedConnectedModeFileName(workspaceFolder.uri.toString());
     if (!fileName) {
       logToSonarLintOutput('Sharing Connected Mode configuration failed. File name is null');
       vscode.window.showErrorMessage('Failed to create SonarLint Connected Mode configuration file.');
@@ -188,14 +193,14 @@ export class SharedConnectedModeSettingsService {
     }
 	}
 
-  async computeSharedConnectedModeFileName() : Promise<string> {
+  async computeSharedConnectedModeFileName(workspaceFolderUri: string) : Promise<string> {
     try {
-      if (this.solutionFilesCache.length === 0) {
+      if (this.solutionFilesByConfigScope.get(workspaceFolderUri).length === 0) {
         return SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE;
-      } else if (this.solutionFilesCache.length === 1) {
-        return `${this.solutionFilesCache[0]}.json`;
+      } else if (this.solutionFilesByConfigScope.get(workspaceFolderUri).length === 1) {
+        return `${this.solutionFilesByConfigScope[0]}.json`;
       } else {
-        const selectedSolutionName = await vscode.window.showQuickPick(this.solutionFilesCache, {
+        const selectedSolutionName = await vscode.window.showQuickPick(this.solutionFilesByConfigScope.get(workspaceFolderUri), {
           title: 'For which Solution would you like to export SonarLint binding configuration?',
           placeHolder: 'A configuration file corresponding to the selected Solution will be created in this working directory.'
         });
