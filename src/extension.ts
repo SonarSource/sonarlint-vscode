@@ -271,6 +271,16 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
   });
 
+  VSCode.workspace.onDidChangeWorkspaceFolders(async event => {
+    for (const removed of event.removed) {
+      FileSystemServiceImpl.instance.didRemoveWorkspaceFolder(removed);
+    }
+
+    for (const added of event.added) {
+      FileSystemServiceImpl.instance.didAddWorkspaceFolder(added);
+    }
+  })
+
   registerCommands(context);
 
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);

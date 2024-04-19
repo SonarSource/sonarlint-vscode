@@ -113,7 +113,7 @@ Please make sure that the right folder is open and bound to the right project on
         )
         .then(action => {
           if (action === 'Show Documentation') {
-            VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#opening-issues-in-the-ide-from-sonarqube'));
+            VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/troubleshooting/#no-matching-issue-found'));
           }
         });
     } else {

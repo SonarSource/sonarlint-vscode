@@ -7,7 +7,7 @@
 'use strict';
 
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
-import { ExtensionContext, workspace } from 'vscode';
+import { ExtensionContext } from 'vscode';
 import { SharedConnectedModeSettingsService } from '../../src/connected/sharedConnectedModeSettingsService';
 import { FileSystemServiceImpl } from '../../src/fileSystem/fileSystemServiceImpl';
 import * as vscode from 'vscode';
@@ -16,13 +16,13 @@ import { TextEncoder } from 'util';
 import * as path from 'path';
 import { selectFirstQuickPickItem } from './commons';
 import { sleep } from '../testutil';
-import { T } from '@vscode/webview-ui-toolkit/dist/utilities/design-tokens/create';
+
+const SHARED_CONNECTED_MODE_FILE_CONTENT = '{\n' + '    "sonarCloudOrganization": "sonarsource",\n' + '    "projectKey": "autoscan.net"\n' + '}';
 
 const mockClient = ({
   async getSharedConnectedModeConfigFileContent(configScopeId) {
     return Promise.resolve({
-      jsonFileContent:
-        '{\n' + '    "sonarCloudOrganization": "sonarsource",\n' + '    "projectKey": "autoscan.net"\n' + '}'
+      jsonFileContent: SHARED_CONNECTED_MODE_FILE_CONTENT        
     });
   }
 } as unknown) as SonarLintExtendedLanguageClient;
@@ -68,7 +68,7 @@ suite('Shared Connected Mode service test suite', () => {
   test('Should name file by solution when one solution in the folder', async () => {
     const workspaceFolder1 = vscode.workspace.workspaceFolders[0];
     const solutionFileName = 'mySolution.sln';
-    const solutionFileUri = vscode.Uri.file(path.join(workspaceFolder1.uri.path, solutionFileName));
+    const solutionFileUri = vscode.Uri.file(path.join(workspaceFolder1.uri.fsPath, solutionFileName));
 
     await vscode.workspace.fs.writeFile(solutionFileUri, new TextEncoder().encode(''));
     tempFiles.push(solutionFileUri);
@@ -82,8 +82,8 @@ suite('Shared Connected Mode service test suite', () => {
 
   test('Should propose options when multiple solutions in the folder', async () => {
     const workspaceFolder1 = vscode.workspace.workspaceFolders[0];
-    const solutionFileUri1 = vscode.Uri.file(path.join(workspaceFolder1.uri.path, 'mySolution1.sln'));
-    const solutionFileUri2 = vscode.Uri.file(path.join(workspaceFolder1.uri.path, 'myOtherSolution.sln'));
+    const solutionFileUri1 = vscode.Uri.file(path.join(workspaceFolder1.uri.fsPath, 'mySolution1.sln'));
+    const solutionFileUri2 = vscode.Uri.file(path.join(workspaceFolder1.uri.fsPath, 'myOtherSolution.sln'));
 
     await vscode.workspace.fs.writeFile(solutionFileUri1, new TextEncoder().encode(''));
     await vscode.workspace.fs.writeFile(solutionFileUri2, new TextEncoder().encode(''));
@@ -98,16 +98,15 @@ suite('Shared Connected Mode service test suite', () => {
   }).timeout(5000);
 
   test('Should create shared connected mode config file', async () => {
-    let fileExists = false;
     const workspaceFolder = vscode.workspace.workspaceFolders[0];
     const workspaceFolderUri = workspaceFolder.uri;
-    const expectedFileUri = vscode.Uri.file(path.join(workspaceFolderUri.fsPath, '.sonarlint/connectedMode.json'));
+    const expectedFileUri = vscode.Uri.file(path.resolve(workspaceFolderUri.fsPath, '.sonarlint/connectedMode.json'));
 
     try {
       // make sure we start with a clean state
-      vscode.workspace.fs.delete(expectedFileUri);
+      await vscode.workspace.fs.delete(expectedFileUri);
     } catch (e) {
-      // nop
+      console.log(e);
     }
 
     await FileSystemServiceImpl.instance.crawlDirectory(workspaceFolder.uri);
@@ -117,13 +116,10 @@ suite('Shared Connected Mode service test suite', () => {
     // wait for file to be created and ready to be read
     await sleep(2000);
 
-    console.log(`before reading actual file ${new Date().toISOString()}`);
     const fileContent = await vscode.workspace.fs.readFile(expectedFileUri);
 
     expect(fileContent).to.not.be.null;
-    expect(fileContent.toString()).to.contain(
-      '{\n' + '    "sonarCloudOrganization": "sonarsource",\n' + '    "projectKey": "autoscan.net"\n' + '}'
-    );
+    expect(fileContent.toString()).to.contain(SHARED_CONNECTED_MODE_FILE_CONTENT);
 
     vscode.workspace.fs.delete(expectedFileUri);
   }).timeout(5000);

@@ -52,4 +52,14 @@ export class FileSystemServiceImpl implements FileSystemService {
       logToSonarLintOutput(`Error encountered while listing files recursively, ${error}`);
     }
   }
+
+  async didRemoveWorkspaceFolder(folder: vscode.WorkspaceFolder) {
+    for(const listener of this.listeners) {
+      listener.didRemoveWorkspaceFolder(folder.uri);
+    }
+  }
+
+  async didAddWorkspaceFolder(folder: vscode.WorkspaceFolder) {
+    this.crawlDirectory(folder.uri);
+  }
 }

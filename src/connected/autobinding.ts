@@ -36,7 +36,7 @@ const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace th
 
 export class AutoBindingService implements FileSystemSubscriber {
   private static _instance: AutoBindingService;
-  private readonly filesPerConfigScope : Map<string, FoundFileDto[]> = new Map<string, FoundFileDto[]>(); // TODO find a way to clean up the list
+  private readonly filesPerConfigScope : Map<string, FoundFileDto[]> = new Map<string, FoundFileDto[]>();
 
   static init(
     bindingService: BindingService,
