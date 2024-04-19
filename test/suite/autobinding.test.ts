@@ -172,14 +172,14 @@ suite('Auto Binding Test Suite', () => {
       sonar.projectKey=org.sonarsource.sonarlint.vscode:test-project`;
 
       const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
-      const projectPropsUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, propsFileName));
+      const projectPropsUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.fsPath, propsFileName));
 
       await VSCode.workspace.fs.writeFile(projectPropsUri, new TextEncoder().encode(fileContent));
       tempFiles.push(projectPropsUri);
       // wait for the file to be actually created and reflected in the fs
       sleep(2000);
 
-      let params: FolderUriParams = {
+      const params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
 
@@ -204,13 +204,13 @@ suite('Auto Binding Test Suite', () => {
 
       const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
       const connectedModeJsonUri = VSCode.Uri.file(
-        path.join(workspaceFolder1.uri.path, '.sonarlint', connectedModeJson)
+        path.join(workspaceFolder1.uri.fsPath, '.sonarlint', connectedModeJson)
       );
 
       await VSCode.workspace.fs.writeFile(connectedModeJsonUri, new TextEncoder().encode(fileContent));
       tempFiles.push(connectedModeJsonUri);
 
-      let params: FolderUriParams = {
+      const params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
       const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
@@ -231,13 +231,13 @@ suite('Auto Binding Test Suite', () => {
 
       const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
       const connectedModeJsonUri = VSCode.Uri.file(
-        path.join(workspaceFolder1.uri.path, '.sonarlint', connectedModeJson)
+        path.join(workspaceFolder1.uri.fsPath, '.sonarlint', connectedModeJson)
       );
 
       await VSCode.workspace.fs.writeFile(connectedModeJsonUri, new TextEncoder().encode(fileContent));
       tempFiles.push(connectedModeJsonUri);
 
-      let params: FolderUriParams = {
+      const params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
 
@@ -254,11 +254,11 @@ suite('Auto Binding Test Suite', () => {
       const fileContent = `class Foo {}`;
 
       const workspaceFolder1 = VSCode.workspace.workspaceFolders[0];
-      const javaFileUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.path, javaFileName));
+      const javaFileUri = VSCode.Uri.file(path.join(workspaceFolder1.uri.fsPath, javaFileName));
 
       await VSCode.workspace.fs.writeFile(javaFileUri, new TextEncoder().encode(fileContent));
       tempFiles.push(javaFileUri);
-      let params: FolderUriParams = {
+      const params: FolderUriParams = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
 
