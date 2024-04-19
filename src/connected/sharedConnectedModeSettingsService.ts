@@ -14,7 +14,8 @@ import { logToSonarLintOutput } from '../util/logging';
 import { code2ProtocolConverter } from '../util/uri';
 import { TextEncoder } from 'util';
 import * as path from 'path';
-import { FileSystemService } from '../util/fileSystemService';
+import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
+import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -25,7 +26,7 @@ const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 
 const SOLUTION_FILE_SUFFIX_LENGTH = -4;
 
-export class SharedConnectedModeSettingsService {
+export class SharedConnectedModeSettingsService implements FileSystemSubscriber {
 	private static _instance: SharedConnectedModeSettingsService;
 	public static readonly SHARED_CONNECTED_MODE_CONFIG_FOLDER = ".sonarlint";
 	public static readonly SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE = "connectedMode.json";
@@ -33,25 +34,23 @@ export class SharedConnectedModeSettingsService {
 
 	static init(
 	  languageClient: SonarLintExtendedLanguageClient,
-    fileSystemService: FileSystemService,
+    fileSystemService: FileSystemServiceImpl,
 	  context: vscode.ExtensionContext,
 	): void {
-		SharedConnectedModeSettingsService._instance = new SharedConnectedModeSettingsService(languageClient, fileSystemService, context);
+		SharedConnectedModeSettingsService._instance = new SharedConnectedModeSettingsService(languageClient, context);
+    fileSystemService.subscribe(SharedConnectedModeSettingsService._instance);
 	}
 
 	constructor(
 	  private readonly languageClient: SonarLintExtendedLanguageClient,
-    private readonly fileSystemService: FileSystemService,
 	  private readonly context: vscode.ExtensionContext,
-	) {
-    fileSystemService.subscribeOnFile(this.onFileListener);
-  }
+	) {}
 
 	static get instance(): SharedConnectedModeSettingsService {
 	  return SharedConnectedModeSettingsService._instance;
 	}
 
-  onFileListener = (folderUri, fileName, _fullFileUri) => {
+  onFile(folderUri: string, fileName: string, fullFileUri: vscode.Uri) {
     if (folderUri && !this.solutionFilesByConfigScope.get(folderUri)) {
       this.solutionFilesByConfigScope.set(folderUri, []);
     }
@@ -59,6 +58,9 @@ export class SharedConnectedModeSettingsService {
       const friendlySolutionName = fileName.slice(0, SOLUTION_FILE_SUFFIX_LENGTH);
       this.solutionFilesByConfigScope.get(folderUri).push(friendlySolutionName);
     }
+  }
+  didRemoveWorkspaceFolder(workspaceFolderUri:vscode.Uri) {
+    this.solutionFilesByConfigScope.set(workspaceFolderUri.toString(), []);
   }
 
 	handleSuggestConnectionNotification(connectedModeSuggestions: { [configScopeId: string]: Array<ConnectionSuggestion> }) {
