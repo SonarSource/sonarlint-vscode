@@ -20,7 +20,8 @@ import {
 import { DEFAULT_CONNECTION_ID, SonarLintDocumentation } from '../commons';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
 import * as vscode from 'vscode';
-import { FileSystemService } from '../util/fileSystemService';
+import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
+import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl'
 
 const AUTOBINDING_THRESHOLD = 1;
 const BIND_ACTION = 'Configure Binding';
@@ -33,7 +34,7 @@ const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace th
       Do you want to configure binding?
       [Learn More](${SonarLintDocumentation.CONNECTED_MODE})`;
 
-export class AutoBindingService {
+export class AutoBindingService implements FileSystemSubscriber {
   private static _instance: AutoBindingService;
   private readonly filesPerConfigScope : Map<string, FoundFileDto[]> = new Map<string, FoundFileDto[]>(); // TODO find a way to clean up the list
 
@@ -41,19 +42,17 @@ export class AutoBindingService {
     bindingService: BindingService,
     workspaceState: vscode.Memento,
     settingsService: ConnectionSettingsService,
-    fileSystemService: FileSystemService
+    fileSystemService: FileSystemServiceImpl
   ): void {
-    AutoBindingService._instance = new AutoBindingService(bindingService, workspaceState, settingsService, fileSystemService);
+    AutoBindingService._instance = new AutoBindingService(bindingService, workspaceState, settingsService);
+    fileSystemService.subscribe(AutoBindingService._instance);
   }
 
   constructor(
     private readonly bindingService: BindingService,
     private readonly workspaceState: vscode.Memento,
     private readonly settingsService: ConnectionSettingsService,
-    private readonly fileSystemService: FileSystemService
-  ) {
-    fileSystemService.subscribeOnFile(this.onFileListener);
-  }
+  ) {}
 
   static get instance(): AutoBindingService {
     return AutoBindingService._instance;
@@ -274,11 +273,15 @@ export class AutoBindingService {
     }
   }
 
-  onFileListener = (folderUri: string, fileName: string, fullFileUri: vscode.Uri) => {
+  onFile(folderUri: string, fileName: string, fullFileUri: vscode.Uri) {
     if(folderUri && this.filesPerConfigScope.get(folderUri) === undefined) {
       this.filesPerConfigScope.set(folderUri, []);
     }
     this.filesPerConfigScope.get(folderUri).push({ fileName, filePath: fullFileUri.fsPath, content: null });
+  }
+
+  didRemoveWorkspaceFolder(workspaceFolderUri:vscode.Uri) {
+    this.filesPerConfigScope.set(workspaceFolderUri.toString(), []);
   }
 
   async listAutobindingFilesInFolder(params: FolderUriParams): Promise<ListFilesInScopeResponse> {

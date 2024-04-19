@@ -9,22 +9,24 @@
 
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
-import { logToSonarLintOutput } from './logging';
+import { logToSonarLintOutput } from '../util/logging';
+import { FileSystemService } from './fileSystemService';
+import { FileSystemSubscriber } from './fileSystemSubscriber';
 
-export class FileSystemService {
-  private static _instance: FileSystemService;
-  fileListeners= [];
+export class FileSystemServiceImpl implements FileSystemService {
+  private static _instance: FileSystemServiceImpl;
+  listeners= [];
 
   static init(): void {
-    FileSystemService._instance = new FileSystemService();
+    FileSystemServiceImpl._instance = new FileSystemServiceImpl();
   }
 
-  static get instance() : FileSystemService {
-    return FileSystemService._instance;
+  static get instance() : FileSystemServiceImpl {
+    return FileSystemServiceImpl._instance;
   }
 
-  subscribeOnFile(listener) {
-    this.fileListeners.push(listener);
+  subscribe(listener: FileSystemSubscriber) {
+    this.listeners.push(listener);
   }
 
   public async crawlDirectory(uri: Uri) {
@@ -39,7 +41,7 @@ export class FileSystemService {
 
         if (type === vscode.FileType.File) {
           // Call the listeners; Only pass Uri of configScope, not child directories
-          this.fileListeners.forEach(listener => listener(configScopeUri.toString(), name, fullFileUri));
+          this.listeners.forEach(listener => listener.onFile(configScopeUri.toString(), name, fullFileUri));
         }
         // .sonarlint folder is already handled separately, skipping it in recursive crawl
         if (type === vscode.FileType.Directory && name !== '.sonarlint') {

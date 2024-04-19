@@ -20,7 +20,7 @@ import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
 import { TextEncoder } from 'util';
 import { FolderUriParams, ListFilesInScopeResponse } from '../../src/lsp/protocol';
-import { FileSystemService } from '../../src/util/fileSystemService';
+import { FileSystemServiceImpl } from '../../src/fileSystem/fileSystemServiceImpl';
 import { sleep } from '../testutil';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
@@ -108,13 +108,14 @@ suite('Auto Binding Test Suite', () => {
   suite('Bindings Manager', () => {
     let underTest;
     setup(() => {
-      FileSystemService.init();
-      underTest = new AutoBindingService(
+      FileSystemServiceImpl.init();
+      AutoBindingService.init(
         mockBindingService,
         mockWorkspaceState,
         mockSettingsService,
-        FileSystemService.instance
+        FileSystemServiceImpl.instance
       );
+      underTest = AutoBindingService.instance;
     });
 
     test(`No autobinding when user said "don't ask again" for folder`, async () => {
@@ -183,7 +184,7 @@ suite('Auto Binding Test Suite', () => {
       };
 
       // crawl the directory
-      await FileSystemService.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
+      await FileSystemServiceImpl.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
 
       const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
 
@@ -262,7 +263,7 @@ suite('Auto Binding Test Suite', () => {
       };
 
       // crawl the directory
-      await FileSystemService.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
+      await FileSystemServiceImpl.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
 
       const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
 
