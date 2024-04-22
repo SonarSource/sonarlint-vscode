@@ -21,7 +21,7 @@ const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
 
 const USE_CONFIGURATION_ACTION = 'Use Configuration';
-const NOT_NOW_ACTION = 'Bind Project Manually';
+const NOT_NOW_ACTION = 'Not Now';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 
 const SOLUTION_FILE_SUFFIX_LENGTH = -4;
