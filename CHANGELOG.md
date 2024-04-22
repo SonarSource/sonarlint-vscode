@@ -8,6 +8,7 @@
 * Update IaC analyzer 1.26 -> [1.27](https://github.com/SonarSource/sonar-iac/releases/tag/1.27.0.9518), improvements and bug fixes
 * Update CFamily analyzer 6.53 -> [6.54](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%206.54%20ORDER%20BY%20created%20ASC), support analyzing C++23, remove 3 rules and add 1, performance improvements
 * Update Text analyzer 2.8 -> [2.9](https://sonarsource.atlassian.net/projects/SONARTEXT/versions/15479/tab/release-report-all-issues) -> [2.10](https://sonarsource.atlassian.net/projects/SONARTEXT/versions/15539/tab/release-report-all-issues), 1 new rule, improvements and bug fixes
+* Update Java analyzer 7.31 -> [7.32](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15503/tab/release-report-all-issues) -> [7.33](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15552/tab/release-report-all-issues), support analysis of Java 21 code, new rules about sustainability, improvements for Spring security rules
 
 ## 4.4.2
 
