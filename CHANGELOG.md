@@ -4,6 +4,7 @@
 * Update JS/TS/CSS analyzer 10.12 -> [10.13](https://github.com/SonarSource/SonarJS/releases/tag/10.13.0.25911), require Node 18, disable type checking for Vue.js, bug fixes and performance improvements
 * Update HTML analyzer 3.14 -> [3.15](https://github.com/SonarSource/sonar-html/releases/tag/3.15.0.5107) -> [3.16](https://github.com/SonarSource/sonar-html/releases/tag/3.16.0.5274), new rules about accessibility, precision improvements
 * Update Python analyzer 4.15 -> [4.16](https://sonarsource.atlassian.net/projects/SONARPY/versions/15512/tab/release-report-all-issues) -> [4.17](https://sonarsource.atlassian.net/projects/SONARPY/versions/15531/tab/release-report-all-issues), new rules about use of date and time, new rules specific to TensorFlow and numpy
+* Update PHP analyzer 3.33 -> [3.34](https://github.com/SonarSource/sonar-php/releases/tag/3.34.0.11311) -> [3.35](https://github.com/SonarSource/sonar-php/releases/tag/3.35.0.11659), bug fixes and precision improvements
 
 ## 4.4.2
 
