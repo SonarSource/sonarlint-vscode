@@ -6,6 +6,7 @@
 * Update Python analyzer 4.15 -> [4.16](https://sonarsource.atlassian.net/projects/SONARPY/versions/15512/tab/release-report-all-issues) -> [4.17](https://sonarsource.atlassian.net/projects/SONARPY/versions/15531/tab/release-report-all-issues), new rules about use of date and time, new rules specific to TensorFlow and numpy
 * Update PHP analyzer 3.33 -> [3.34](https://github.com/SonarSource/sonar-php/releases/tag/3.34.0.11311) -> [3.35](https://github.com/SonarSource/sonar-php/releases/tag/3.35.0.11659), bug fixes and precision improvements
 * Update IaC analyzer 1.26 -> [1.27](https://github.com/SonarSource/sonar-iac/releases/tag/1.27.0.9518), improvements and bug fixes
+* Update CFamily analyzer 6.53 -> [6.54](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%206.54%20ORDER%20BY%20created%20ASC), support analyzing C++23, remove 3 rules and add 1, performance improvements
 
 ## 4.4.2
 
