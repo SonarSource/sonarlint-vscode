@@ -2,6 +2,7 @@
 
 * Allow users to share connected mode settings among contributors
 * Update JS/TS/CSS analyzer 10.12 -> [10.13](https://github.com/SonarSource/SonarJS/releases/tag/10.13.0.25911), require Node 18, disable type checking for Vue.js, bug fixes and performance improvements
+* Update HTML analyzer 3.14 -> [3.15](https://github.com/SonarSource/sonar-html/releases/tag/3.15.0.5107) -> [3.16](https://github.com/SonarSource/sonar-html/releases/tag/3.16.0.5274), new rules about accessibility, precision improvements
 
 ## 4.4.2
 
