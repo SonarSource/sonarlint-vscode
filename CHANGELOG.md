@@ -1,3 +1,7 @@
+## 4.5
+
+* Allow users to share connected mode settings among contributors
+
 ## 4.4.2
 
 * Fix issue that prevents analysis when URI-escaped characters are in a workspace folder's path
