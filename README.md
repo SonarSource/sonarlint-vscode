@@ -86,11 +86,11 @@ If a suitable JRE cannot be found at those places, SonarLint will ask for your p
 
 ### JS/TS analysis specific requirements
 
-To analyze JavaScript and TypeScript code, SonarLint requires a Node.js executable. The minimal supported version is `16` for standalone analysis or Connected Mode with SonarCloud. For Connected Mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate Node, or you can force the location using:
+To analyze JavaScript and TypeScript code, SonarLint requires a Node.js executable. The minimal supported version is `18.18` for standalone analysis or Connected Mode with SonarCloud. For Connected Mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate Node, or you can force the location using:
 
 ```json
 {
-  "sonarlint.pathToNodeExecutable": "/home/yourname/.nvm/versions/node/v18.15.0/bin/node"
+  "sonarlint.pathToNodeExecutable": "/home/yourname/.nvm/versions/node/v18.18.0/bin/node"
 }
 ```
 
