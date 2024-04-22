@@ -50,7 +50,7 @@ jobs:
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
       - name: Install dependencies for vsce-publish
         run: |
-          cp .cirrus/npmrc ./.npmrc
+          cp ${GITHUB_WORKSPACE}/.cirrus/.npmrc ./.npmrc
           export ARTIFACTORY_ACCESS_TOKEN=${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
           npm install
         working-directory: ./.github/actions/vsce-publish
@@ -118,7 +118,7 @@ jobs:
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
       - name: Install dependencies for ovsx-publish
         run: |
-          cp .cirrus/npmrc ./.npmrc
+          cp ${GITHUB_WORKSPACE}/.cirrus/.npmrc ./.npmrc
           export ARTIFACTORY_ACCESS_TOKEN=${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
           npm install
         working-directory: ./.github/actions/ovsx-publish
