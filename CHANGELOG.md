@@ -9,6 +9,7 @@
 * Update CFamily analyzer 6.53 -> [6.54](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%206.54%20ORDER%20BY%20created%20ASC), support analyzing C++23, remove 3 rules and add 1, performance improvements
 * Update Text analyzer 2.8 -> [2.9](https://sonarsource.atlassian.net/projects/SONARTEXT/versions/15479/tab/release-report-all-issues) -> [2.10](https://sonarsource.atlassian.net/projects/SONARTEXT/versions/15539/tab/release-report-all-issues), 1 new rule, improvements and bug fixes
 * Update Java analyzer 7.31 -> [7.32](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15503/tab/release-report-all-issues) -> [7.33](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15552/tab/release-report-all-issues), support analysis of Java 21 code, new rules about sustainability, improvements for Spring security rules
+* Update C#/VB.Net analyzer 9.20 -> [9.21](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.21.0.86780) -> [9.22](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.22.0.87781) -> [9.23](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.23.0.88079) -> [9.23.1](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.23.1.88495) -> [9.23.2](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.23.2.88755), new rules about logging and ASP.Net, improvements and bug fixes
 
 ## 4.4.2
 
