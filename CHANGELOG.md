@@ -1,3 +1,7 @@
+## 4.5.1
+
+* Fix an issue with the activation of product telemetry
+
 ## 4.5
 
 * Allow users to share connected mode settings among contributors
