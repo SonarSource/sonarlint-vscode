@@ -1,0 +1,58 @@
+name: credentials-sanity-check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-credentials:
+    permissions:
+      id-token: write
+      contents: write
+    runs-on: ubuntu-latest
+    name: Check release credentials are valid
+    steps:
+      - name: Checkout custom actions
+        uses: actions/checkout@v3
+        with:
+          clean: false
+      - name: Use Node 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Get vault secrets
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@dc8fe04652687f7278f3ecd27905967836bab0eb # tag=2.7.4-1
+        with:
+          secrets: |
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
+
+      - name: Check marketplace publisher personal access token
+        if: ${{ !cancelled() }}
+        env:
+          VSCE_TOKEN: ${{ secrets.VISUALSTUDIO_PAT }}
+        working-directory: ./.github/actions/vsce-publish
+        run: |
+          cp ${GITHUB_WORKSPACE}/.cirrus/.npmrc ./.npmrc
+          npm install
+          npx vsce verify-pat -p "${VSCE_TOKEN}" SonarSource
+
+      - name: Check Microsoft marketplace publisher personal access token
+        if: ${{ !cancelled() }}
+        env:
+          OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
+        working-directory: ./.github/actions/ovsx-publish
+        run: |
+          cp ${GITHUB_WORKSPACE}/.cirrus/.npmrc ./.npmrc
+          npm install
+          npx ovsx verify-pat -p "${OPENVSX_TOKEN}" SonarSource
+
+      - name: Check Artifactory reader token
+        if: ${{ !cancelled() }}
+        env:
+          ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
+          ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+        run: |
+          curl -s -o /dev/null \
+            -w '%{http_code}\n' \
+            -H "Authorization: Bearer ${ARTIFACTORY_ACCESS_TOKEN}" \
+            "${ARTIFACTORY_URL}/sonarsource-releases/org/sonarsource/sonarlint/vscode/sonarlint-vscode"
