@@ -10,6 +10,8 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     name: Check release credentials are valid
+    env:
+      ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
       - name: Checkout custom actions
         uses: actions/checkout@v3
@@ -29,6 +31,7 @@ jobs:
       - name: Check marketplace publisher personal access token
         if: ${{ !cancelled() }}
         env:
+          ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
           VSCE_TOKEN: ${{ secrets.VISUALSTUDIO_PAT }}
         working-directory: ./.github/actions/vsce-publish
         run: |
@@ -39,6 +42,7 @@ jobs:
       - name: Check Microsoft marketplace publisher personal access token
         if: ${{ !cancelled() }}
         env:
+          ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
           OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
         working-directory: ./.github/actions/ovsx-publish
         run: |
@@ -49,7 +53,6 @@ jobs:
       - name: Check Artifactory reader token
         if: ${{ !cancelled() }}
         env:
-          ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
           ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
         run: |
           curl -s -o /dev/null \
