@@ -55,7 +55,7 @@ jobs:
         env:
           ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
         run: |
-          curl -s -o /dev/null \
+          curl -L -s -o /dev/null \
             -w '%{http_code}\n' \
             -H "Authorization: Bearer ${ARTIFACTORY_ACCESS_TOKEN}" \
             "${ARTIFACTORY_URL}/sonarsource-releases/org/sonarsource/sonarlint/vscode/sonarlint-vscode"
