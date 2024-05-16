@@ -102,7 +102,7 @@ Please make sure that the right folder is open and bound to the right project on
     });
 }
 
-export const hideSecurityHotspot = (hotspotsTreeDataProvider: AllHotspotsTreeDataProvider) => {
+export const hideSecurityHotspot = async (hotspotsTreeDataProvider: AllHotspotsTreeDataProvider) => {
   if (hotspotDescriptionPanel) {
     hotspotDescriptionPanel.dispose();
   }
@@ -110,7 +110,7 @@ export const hideSecurityHotspot = (hotspotsTreeDataProvider: AllHotspotsTreeDat
     hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
   }
   activeHotspot = null;
-  hotspotsTreeDataProvider.refresh();
+  await hotspotsTreeDataProvider.refresh();
 };
 
 function revealHotspotInTreeView(
