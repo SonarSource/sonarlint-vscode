@@ -425,8 +425,8 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, () => {
-      hideSecurityHotspot(hotspotsTreeDataProvider);
+    VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, async () => {
+      await hideSecurityHotspot(hotspotsTreeDataProvider);
       updateSonarLintViewContainerBadge();
     })
   );
@@ -600,8 +600,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
-  languageClient.onNotification(protocol.PublishHotspotsForFile.type, hotspotsPerFile => {
-    hotspotsTreeDataProvider.refresh(hotspotsPerFile);
+  languageClient.onNotification(protocol.PublishHotspotsForFile.type, async hotspotsPerFile => {
+    await hotspotsTreeDataProvider.refresh(hotspotsPerFile);
     updateSonarLintViewContainerBadge();
   });
   languageClient.onRequest(
