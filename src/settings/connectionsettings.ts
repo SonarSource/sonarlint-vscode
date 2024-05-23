@@ -241,7 +241,7 @@ export class ConnectionSettingsService {
     await updateConfigIfNotEmpty(scConnections, SONARCLOUD_CONNECTIONS_CATEGORY);
   }
 
-  async loadSonarQubeConnection(connectionId: string) {
+  async loadSonarQubeConnection(connectionId: string) : Promise<SonarQubeConnection> {
     const allSonarQubeConnections = this.getSonarQubeConnections();
     const loadedConnection = allSonarQubeConnections.find(c => c.connectionId === connectionId);
     if (loadedConnection) {
@@ -250,7 +250,7 @@ export class ConnectionSettingsService {
     return loadedConnection;
   }
 
-  async loadSonarCloudConnection(connectionId: string) {
+  async loadSonarCloudConnection(connectionId: string) : Promise<SonarCloudConnection> {
     const allSonarCloudConnections = this.getSonarCloudConnections();
     const loadedConnection = allSonarCloudConnections.find(c => c.connectionId === connectionId);
     if (loadedConnection) {

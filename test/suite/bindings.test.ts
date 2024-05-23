@@ -64,10 +64,18 @@ const mockClient = {
 
 const mockSettingsService = {
   async loadSonarQubeConnection(connectionId: string): Promise<SonarQubeConnection> {
-    return { serverUrl: 'https://next.sonarqube.com/sonarqube', connectionId: connectionId };
+    return { serverUrl: 'https://next.sonarqube.com/sonarqube', connectionId };
   },
   async loadSonarCloudConnection(connectionId: string): Promise<SonarCloudConnection> {
-    return { organizationKey: 'orgKey', connectionId: connectionId };
+    return { organizationKey: 'orgKey', connectionId };
+  },
+  getStatusForConnection: (connectionId: string): protocol.ConnectionCheckResult => {
+    console.log('Checking connection', connectionId)
+    if (connectionId === 'test') {
+      return { connectionId, success: true };
+    } else {
+      return { connectionId, success: false };
+    }
   }
 } as ConnectionSettingsService;
 
@@ -315,6 +323,19 @@ suite('Bindings Test Suite', () => {
       expect(await underTest.getBaseServerUrl('connectionId', 'SonarCloud')).to.be.equal(
         'https://sonarcloud.io/project/overview'
       );
+    });
+
+    test('Should not allow creating binding for broken connection', async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+      await underTest.createOrEditBinding('brokenConnection', 'contextValue', workspaceFolder, 'SonarQube');
+      
+      binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
     });
   });
 

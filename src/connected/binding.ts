@@ -150,6 +150,11 @@ export class BindingService {
     workspaceFolder?: VSCode.WorkspaceFolder,
     serverType?: ServerType
   ) {
+    if (!this.isRelatedConnectionValid(connectionId)) {
+      VSCode.window.showErrorMessage(`Connection '${connectionId}' is not working. You cannot create a binding for a non-working connection.
+      Please fix the connection and try again.`);
+      return;
+    }
     const workspaceFolders = VSCode.workspace.workspaceFolders;
     if (!workspaceFolders) {
       const action = await VSCode.window.showWarningMessage(
@@ -174,7 +179,11 @@ export class BindingService {
     }
     await this.pickRemoteProjectToBind(connectionId, workspaceFolder, serverType, selectedFolderName);
   }
-
+  
+  isRelatedConnectionValid(connectionId: string) : boolean {
+    return this.settingsService.getStatusForConnection(connectionId).success;
+  }
+  
   async getBaseServerUrl(connectionId: string, serverType: ServerType): Promise<string> {
     const serverUrlOrOrganizationKey =
       serverType === 'SonarQube'
