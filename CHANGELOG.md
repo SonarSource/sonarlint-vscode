@@ -1,8 +1,9 @@
 ## 4.6
 
-* Update Java analyzer 7.33 -> [7.34](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15587/tab/release-report-all-issues), 21 rules enabled on test sources and 8 FP fixes
+* Update Java analyzer 7.33 -> [7.34](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015587%20ORDER%20BY%20created%20ASC), 21 rules enabled on test sources and 8 FP fixes
 * Update CFamily analyzer 6.54 -> [6.55](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015557%20ORDER%20BY%20created%20ASC), hardening
 * Update IaC analyzer 1.27 -> [1.28](https://github.com/SonarSource/sonar-iac/releases/tag/1.28.0.9889) -> [1.29](https://github.com/SonarSource/sonar-iac/releases/tag/1.29.0.10169) -> [1.30](https://github.com/SonarSource/sonar-iac/releases/tag/1.30.0.10357), detection of Security Hotspots in Spring configuration files, new rules for ARM, bug fixes
+* Update Python analyzer 4.17 -> [4.18](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015609%20ORDER%20BY%20created%20ASC), 5 new rules, FP fixes
 
 
 ## 4.5.1

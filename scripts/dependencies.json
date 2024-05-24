@@ -32,7 +32,7 @@
   {
     "groupId": "org.sonarsource.python",
     "artifactId": "sonar-python-plugin",
-    "version": "4.17.0.14845",
+    "version": "4.18.0.15334",
     "output": "analyzers/sonarpython.jar"
   },
   {
