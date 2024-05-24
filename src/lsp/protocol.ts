@@ -307,6 +307,10 @@ export namespace MaybeShowWiderLanguageSupportNotification {
   export const type = new lsp.NotificationType<string[]>('sonarlint/maybeShowWiderLanguageSupportNotification');
 }
 
+export namespace RemoveBindingsForDeletedConnections {
+  export const type = new lsp.NotificationType<string[]>('sonarlint/removeBindingsForDeletedConnections');
+}
+
 //#endregion
 
 //#region Server side extensions to LSP
