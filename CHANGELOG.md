@@ -1,6 +1,7 @@
 ## 4.6
 
 * Update Java analyzer 7.33 -> [7.34](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15587/tab/release-report-all-issues), 21 rules enabled on test sources and 8 FP fixes
+* Update CFamily analyzer 6.54 -> [6.55](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015557%20ORDER%20BY%20created%20ASC), hardening
 
 ## 4.5.1
 
