@@ -1,3 +1,7 @@
+## 4.6
+
+* Update Java analyzer 7.33 -> [7.34](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15587/tab/release-report-all-issues), 21 rules enabled on test sources and 8 FP fixes
+
 ## 4.5.1
 
 * Fix an issue with the activation of product telemetry
