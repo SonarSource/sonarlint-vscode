@@ -210,6 +210,27 @@ suite('Bindings Test Suite', () => {
       expect(binding).to.be.empty;
     });
 
+    test('Delete bindings for deleted connection', async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+
+      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+
+      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, false, TEST_BINDING.connectionId);
+
+      binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(binding).to.deep.equal(TEST_BINDING);
+
+      await underTest.removeBindingsForRemovedConnections([TEST_BINDING.connectionId]);
+
+      binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(binding).to.be.empty;
+    })
+
     test('Default connection ID to <default> if not provided during deletion', async () => {
       await VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY)

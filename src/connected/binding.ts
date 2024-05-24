@@ -83,8 +83,8 @@ export class BindingService {
     return config.update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
   }
 
-  async deleteBindingsForConnection(connection: Connection) {
-    const connectionId = connection.id || DEFAULT_CONNECTION_ID;
+  async deleteBindingsForConnection(connection: Connection | string) {
+    const connectionId = typeof connection === 'string' ? connection : connection.id || DEFAULT_CONNECTION_ID;
     const allBindings = this.getAllBindings();
     const bindingsForConnection: Map<string, BoundFolder[]> = allBindings.get(connectionId);
     if (bindingsForConnection) {
@@ -357,6 +357,12 @@ export class BindingService {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
     const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
     return !!binding.projectKey;
+  }
+
+  async removeBindingsForRemovedConnections(connectionIds: string[]) {
+    for (const connectionId of connectionIds) {
+      await this.deleteBindingsForConnection(connectionId);
+    }
   }
 }
 
