@@ -42,8 +42,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.CheckConnection.type, params);
   }
 
-  getRemoteProjectNames(connectionId: string, projectKeys: Array<string>) {
-    return this.sendRequest(protocol.GetRemoteProjectNames.type, { connectionId, projectKeys });
+  getRemoteProjectNamesByKeys(connectionId: string, projectKeys: Array<string>) {
+    return this.sendRequest(protocol.GetRemoteProjectNamesByProjectKeys.type, { connectionId, projectKeys });
   }
 
   onTokenUpdate(connectionId: string, token: string) {

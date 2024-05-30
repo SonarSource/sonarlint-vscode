@@ -161,7 +161,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
       return [];
     }
     const allKeys = [...boundProjects.keys()];
-    const keysToNames = await this.client.getRemoteProjectNames(connectionId || DEFAULT_CONNECTION_ID, allKeys);
+    const keysToNames = await this.client.getRemoteProjectNamesByKeys(connectionId || DEFAULT_CONNECTION_ID, allKeys);
     return allKeys.map(k => new RemoteProject(connectionId, k, serverType, keysToNames[k]));
   }
 
