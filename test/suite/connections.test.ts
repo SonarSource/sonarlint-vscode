@@ -30,7 +30,7 @@ const mockClient = {
   async checkConnection(connectionId: string) {
     return Promise.resolve({ connectionId, success: true });
   },
-  async getRemoteProjectNames(_connectionId, _projectKeys) {
+  async getRemoteProjectNamesByKeys(_connectionId, _projectKeys) {
     return Promise.resolve(projectKeysToNames);
   }
 } as SonarLintExtendedLanguageClient;

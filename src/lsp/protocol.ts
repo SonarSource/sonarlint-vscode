@@ -381,9 +381,9 @@ interface GetRemoteProjectNamesParams {
   projectKeys: Array<string>;
 }
 
-export namespace GetRemoteProjectNames {
+export namespace GetRemoteProjectNamesByProjectKeys {
   export const type = new lsp.RequestType<GetRemoteProjectNamesParams, { [key: string]: string }, null>(
-    'sonarlint/getRemoteProjectNames'
+    'sonarlint/getRemoteProjectNamesByProjectKeys'
   );
 }
 
