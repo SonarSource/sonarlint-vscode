@@ -5,6 +5,7 @@
 * Update IaC analyzer 1.27 -> [1.28](https://github.com/SonarSource/sonar-iac/releases/tag/1.28.0.9889) -> [1.29](https://github.com/SonarSource/sonar-iac/releases/tag/1.29.0.10169) -> [1.30](https://github.com/SonarSource/sonar-iac/releases/tag/1.30.0.10357) -> [1.31](https://github.com/SonarSource/sonar-iac/releases/tag/1.31.0.10579), analysis of Spring configuration files, new rules for ARM, bug fixes and FP fixes
 * Update Python analyzer 4.17 -> [4.18](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015609%20ORDER%20BY%20created%20ASC), 5 new rules, FP fixes
 * Update C# analyzer 9.23.2 -> [9.24](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.24.0.89429) -> [9.25](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.25.0.90414), 8 new rules, improvements
+* Delegate analysis execution to common SonarLint backend
 
 
 ## 4.5.1
