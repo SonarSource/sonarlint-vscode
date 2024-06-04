@@ -30,5 +30,4 @@ jobs:
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
         env:
-          VSCE: ${{ fromJSON(steps.secrets.outputs.vault).VISUALSTUDIO_PAT }}
-          OPENVSX: ${{ fromJSON(steps.secrets.outputs.vault).OPENVSX_TOKEN }}
+          OPENVSX: ${{ secrets.OPENVSX_TOKEN }}
