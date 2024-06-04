@@ -117,6 +117,7 @@ jobs:
         with:
           secrets: |
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
+            development/team/sonarlint/kv/data/openvsx token | OPENVSX_TOKEN;
       - name: Install dependencies for ovsx-publish
         run: |
           cp ${GITHUB_WORKSPACE}/.cirrus/.npmrc ./.npmrc
@@ -155,5 +156,5 @@ jobs:
         id: ovsx_publish
         env:
           ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
-          OPENVSX_TOKEN: ${{ secrets.OPENVSX_TOKEN }}
+          OPENVSX_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).OPENVSX_TOKEN }}
         uses: ./.github/actions/ovsx-publish
