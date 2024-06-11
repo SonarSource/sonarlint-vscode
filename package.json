@@ -353,7 +353,7 @@
           "order": 100,
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Set SonarLint focus to new code. [Learn how](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code) to deliver clean code with Clean as You Code.",
+          "markdownDescription": "Highlight issues in new code.\n\nFocussing on new code helps you practice [Clean as You Code](https://docs.sonarsource.com/sonarlint/vs-code/clean-as-you-code-in-the-ide/).\n\nIn [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) you benefit from a more accurate new code definition based on your SonarQube or SonarCloud settings.\n\nWithout Connected Mode (in standalone mode), any code added or changed in the **last 30 days** is considered new code.",
           "scope": "window"
         }
       }
