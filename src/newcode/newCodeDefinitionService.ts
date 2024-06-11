@@ -88,19 +88,15 @@ export class NewCodeDefinitionService {
   }
 
   private updateStatusBarTooltip(newCodeDefinition: NewCodeDefinition) {
-    const genericMessage = 'SonarLint focus helps you to deliver clean code by focusing on code that was recently modified';
     let newCodeDefinitionMessage = '';
     if (newCodeDefinition && this.focusOnNewCode) {
-      newCodeDefinitionMessage = newCodeDefinition.newCodeDefinitionOrMessage;
+      newCodeDefinitionMessage = `Only issues in new code are highlighted.\n\nFocussing on new code helps you practice Clean as You Code.\n\nNew Code Definition: ${newCodeDefinition.newCodeDefinitionOrMessage}`;
     } else if (!this.focusOnNewCode) {
-      newCodeDefinitionMessage = 'The SonarLint focus setting is disabled';
+      newCodeDefinitionMessage = 'All issues are shown.\n\nSet SonarLint focus on new code to see only issues in recently added or changed code. This will help you practice Clean as You Code.';
     } else if (!newCodeDefinition) {
-      newCodeDefinitionMessage = 'There is no new code definition for the project';
+      newCodeDefinitionMessage = 'There is no New Code Definition for the project';
     }
-    if (newCodeDefinitionMessage.length > 0) {
-      newCodeDefinitionMessage = `\n\nIssues shown: ${newCodeDefinitionMessage}`;
-    }
-    this.newCodeStatusBarItem.tooltip = `${genericMessage}${newCodeDefinitionMessage}`;
+    this.newCodeStatusBarItem.tooltip = `${newCodeDefinitionMessage}`;
   }
 
   isSupportedForFile(newCodeDefinition: NewCodeDefinition) {
