@@ -201,6 +201,8 @@ export class ConnectionSettingsService {
     VSCode.workspace
       .getConfiguration()
       .update(SONARCLOUD_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
+
+    return newConnection.connectionId;  
   }
 
   async updateSonarCloudConnection(connection: SonarCloudConnection) {
