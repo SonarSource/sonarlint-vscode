@@ -46,46 +46,68 @@ const SONARCLOUD_DESCRIPTION =
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
   return async assistCreatingConnectionParams => {
-    if (assistCreatingConnectionParams.isSonarCloud) {
-      throw new Error('Unsupported operation: assist creating SonarCloud connection');
-    } return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.serverUrl, assistCreatingConnectionParams.token) }
+    return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.isSonarCloud, assistCreatingConnectionParams.serverUrlOrOrganisationKey, assistCreatingConnectionParams.token) }
   };
 }
 
+
+interface ConnectionConfirmationResponse {
+  confirmed: boolean;
+  cancelled: boolean;
+}
+
+async function confirmConnection(isSonarCloud : boolean, serverUrlOrOrganisationKey: string, token: string) : Promise<ConnectionConfirmationResponse> {
+  const manualConnectionMessage = `Connecting SonarLint to ${isSonarCloud ? 'SonarCloud' : 'SonarQube'} will enable issues to be opened directly in your IDE. It will also allow you to apply the same Clean Code standards as your team, analyze more languages, detect more issues, receive notifications about the quality gate status, and more.
+      \nEnsure that the requesting ${isSonarCloud ? 'organisation' : 'server URL'} '${serverUrlOrOrganisationKey}' matches your ${isSonarCloud ? 'SonarCloud' : 'SonarQube'} instance. Letting SonarLint connect to an untrusted ${isSonarCloud ? 'SonarCloud' : 'SonarQube'} server is potentially dangerous. If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.`;
+
+  const automaticConnectionMessage = `${manualConnectionMessage}
+      \nA token will be automatically generated to allow access to your ${isSonarCloud ? 'SonarCloud' : 'SonarQube'} instance.`
+
+  const yesOption = `Connect to this ${isSonarCloud ? 'SonarCloud organisation' : 'SonarQube server'}`;
+  const learnMoreOption = 'What is Connected Mode?'
+  const result = await vscode.window.showWarningMessage(
+    `Do you trust this ${isSonarCloud ? 'SonarCloud organisation' : 'SonarQube server'}?`,
+    { modal: true, detail: token ? automaticConnectionMessage : manualConnectionMessage },
+    yesOption,
+    learnMoreOption
+  );
+  return {
+    confirmed : result === yesOption,
+    cancelled : result === undefined
+  };
+}
+
+
 export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext) {
-  return async (serverUrl, token) => {
-    const manualConnectionMessage = `Connecting SonarLint to SonarQube will enable issues to be opened directly in your IDE. It will also allow you to apply the same Clean Code standards as your team, analyze more languages, detect more issues, receive notifications about the quality gate status, and more.
-      \nEnsure that the requesting server URL '${serverUrl}' matches your SonarQube instance. Letting SonarLint connect to an untrusted SonarQube server is potentially dangerous. If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.`;
-
-    const automaticConnectionMessage = `${manualConnectionMessage}
-      \nA token will be automatically generated to allow access to your SonarQube instance.`
-
-    const yesOption = 'Connect to this SonarQube server';
-    const learnMoreOption = 'What is Connected Mode?'
-    const reply = await vscode.window.showWarningMessage(
-      'Do you trust this SonarQube server?',
-      { modal: true, detail: token ? automaticConnectionMessage : manualConnectionMessage }, yesOption, learnMoreOption);
-    if (reply === yesOption) {
-      if(token) {
-        const connection : SonarQubeConnection = {
+  return async (isSonarCloud: boolean, serverUrlOrOrganisationKey: string, token: string) => {
+    const reply = await confirmConnection(isSonarCloud, serverUrlOrOrganisationKey, token);
+    if (reply.confirmed) {
+      if (token) {
+        const connection = isSonarCloud ? {
           token,
-          connectionId: serverUrl,
+          connectionId: serverUrlOrOrganisationKey,
           disableNotifications: false,
-          serverUrl
-        };
+          organizationKey: serverUrlOrOrganisationKey
+        } as SonarCloudConnection : {
+          token,
+          connectionId: serverUrlOrOrganisationKey,
+          disableNotifications: false,
+          serverUrl: serverUrlOrOrganisationKey
+        } as SonarQubeConnection;
 
-        return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
-      } else {
-        connectToSonarQube(context)(serverUrl);
+        return isSonarCloud ?
+          await ConnectionSettingsService.instance.addSonarCloudConnection(connection as SonarCloudConnection) :
+          await ConnectionSettingsService.instance.addSonarQubeConnection(connection as SonarQubeConnection);
+      } else if (!token && !isSonarCloud) {
+        // old flow for SonarQube
+        connectToSonarQube(context)(serverUrlOrOrganisationKey);
         return null;
       }
-    } else if (reply === learnMoreOption) {
+    } else if (!reply.confirmed && !reply.cancelled) {
       vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'connectedModeDocs');
       return null;
     }
-    else {
-      return null;
-    }
+    return null;
   }
 }
 
