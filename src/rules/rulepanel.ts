@@ -19,6 +19,9 @@ let ruleDescriptionPanel: VSCode.WebviewPanel;
 
 export function showRuleDescription(context: VSCode.ExtensionContext) {
   return params => {
+    if (!params) {
+      return;
+    }
     lazyCreateRuleDescriptionPanel(context);
     ruleDescriptionPanel.webview.html = computeRuleDescPanelContent(context, ruleDescriptionPanel.webview, params);
     ruleDescriptionPanel.iconPath = util.resolveExtensionFile('images', 'sonarlint.svg');
