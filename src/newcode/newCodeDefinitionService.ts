@@ -90,7 +90,7 @@ export class NewCodeDefinitionService {
   private updateStatusBarTooltip(newCodeDefinition: NewCodeDefinition) {
     let newCodeDefinitionMessage = '';
     if (newCodeDefinition && this.focusOnNewCode) {
-      newCodeDefinitionMessage = `Only issues in new code are highlighted.\n\nFocussing on new code helps you practice Clean as You Code.\n\nNew Code Definition: ${newCodeDefinition.newCodeDefinitionOrMessage}`;
+      newCodeDefinitionMessage = `Only issues in new code are highlighted.\n\nFocusing on new code helps you practice Clean as You Code.\n\nNew Code Definition: ${newCodeDefinition.newCodeDefinitionOrMessage}`;
     } else if (!this.focusOnNewCode) {
       newCodeDefinitionMessage = 'All issues are shown.\n\nSet SonarLint focus on new code to see only issues in recently added or changed code. This will help you practice Clean as You Code.';
     } else if (!newCodeDefinition) {
