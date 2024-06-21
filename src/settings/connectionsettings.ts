@@ -324,6 +324,10 @@ export class ConnectionSettingsService {
   getStatusForConnection(connectionId: string) {
     return this.connectionCheckResults.get(connectionId);
   }
+
+  listUserOrganizations(token: string) {
+    return this.client.listUserOrganizations(token);
+  }
 }
 
 function showSaveSettingsWarning() {
