@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { Commands } from '../util/commands';
 import { Connection } from './connections';
-import { BindingCreationMode, ConnectionCheckResult } from '../lsp/protocol';
+import { BindingCreationMode, ConnectionCheckResult, Organization } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -31,6 +31,8 @@ const sonarCloudNotificationsDocUrl =
 const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
 const OPEN_TOKEN_GENERATION_PAGE_COMMAND = 'openTokenGenerationPage';
 const SAVE_CONNECTION_COMMAND = 'saveConnection';
+const ORGANIZATION_LIST_RECEIVED_COMMAND = 'organizationListReceived';
+
 const SONARQUBE_DESCRIPTION =
   "An <b>open-source, self-managed</b> tool that easily integrates into the developers' CI/CD pipeline" +
   '<br>' +
@@ -49,7 +51,6 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
     return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.isSonarCloud, assistCreatingConnectionParams.serverUrlOrOrganisationKey, assistCreatingConnectionParams.token) }
   };
 }
-
 
 interface ConnectionConfirmationResponse {
   confirmed: boolean;
@@ -114,12 +115,14 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
 export function connectToSonarQube(context: vscode.ExtensionContext) {
   return (serverUrl='', projectKey='', isFromSharedConfiguration=false, folderUri?: vscode.Uri) => {
     const initialState = {
-      serverUrl,
-      token: '',
-      connectionId: '',
-      projectKey,
-      isFromSharedConfiguration,
-      folderUri: folderUri?.toString(false)
+      conn: {
+        serverUrl,
+        token: '',
+        connectionId: '',
+        projectKey,
+        isFromSharedConfiguration,
+        folderUri: folderUri?.toString(false)
+      }
     };
     const serverProductName = 'SonarQube';
     lazyCreateConnectionSetupPanel(context, serverProductName);
@@ -134,12 +137,14 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
 export function connectToSonarCloud(context: vscode.ExtensionContext) {
   return (organizationKey='', projectKey='', isFromSharedConfiguration=false, folderUri?: vscode.Uri) => {
     const initialState = {
-      organizationKey,
-      token: '',
-      connectionId: '',
-      projectKey,
-      isFromSharedConfiguration,
-      folderUri: folderUri?.toString(false)
+      conn: {
+        organizationKey,
+        token: '',
+        connectionId: '',
+        projectKey,
+        isFromSharedConfiguration,
+        folderUri: folderUri?.toString(false)
+      }
     };
     const serverProductName = 'SonarCloud';
     lazyCreateConnectionSetupPanel(context, serverProductName);
@@ -154,7 +159,9 @@ export function connectToSonarCloud(context: vscode.ExtensionContext) {
 export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof connection === 'string' ? connection : (await connection).id;
-    const initialState = await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId);
+    const initialState = {
+      conn: await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId)
+    };
     const serverProductName = 'SonarQube';
     lazyCreateConnectionSetupPanel(context, serverProductName);
     connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
@@ -168,7 +175,11 @@ export function editSonarQubeConnection(context: vscode.ExtensionContext) {
 export function editSonarCloudConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof connection === 'string' ? connection : (await connection).id;
-    const initialState = await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
+    const existingConnection= await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
+    const initialState = {
+      conn: existingConnection,
+      userOrganizations: await ConnectionSettingsService.instance.listUserOrganizations(existingConnection.token)
+    };
     const serverProductName = 'SonarCloud';
     lazyCreateConnectionSetupPanel(context, serverProductName);
     connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
@@ -225,7 +236,12 @@ function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, server
 
 interface RenderOptions {
   mode: 'create' | 'update';
-  initialState: SonarQubeConnection | SonarCloudConnection;
+  initialState: WebviewInitialState;
+}
+
+interface WebviewInitialState {
+  conn: SonarQubeConnection | SonarCloudConnection;
+  userOrganizations?: Organization[];
 }
 
 function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: vscode.Webview, options: RenderOptions) {
@@ -235,18 +251,19 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const webviewMainUri = resolver.resolve('webview-ui', 'connectionsetup.js');
 
   const { mode, initialState } = options;
-  const isSonarQube = isSonarQubeConnection(initialState);
+  const connection = initialState.conn
+  const isSonarQube = isSonarQubeConnection(connection);
 
   const serverProductName = isSonarQube ? 'SonarQube' : 'SonarCloud';
   const serverDocUrl = isSonarQube ? sonarQubeNotificationsDocUrl : sonarCloudNotificationsDocUrl;
 
-  const initialConnectionId = escapeHtml(initialState.connectionId) || '';
-  const initialToken = escapeHtml(initialState.token);
-  const maybeProjectKey = initialState.projectKey;
+  const initialConnectionId = escapeHtml(connection.connectionId) || '';
+  const initialToken = escapeHtml(connection.token);
+  const maybeProjectKey = connection.projectKey;
   const saveButtonLabel = maybeProjectKey ? 'Save Connection And Bind Project' : 'Save Connection';
 
-  const isFromSharedConfiguration = initialState.isFromSharedConfiguration;
-  const maybeFolderUri = initialState.folderUri || '';
+  const isFromSharedConfiguration = connection.isFromSharedConfiguration;
+  const maybeFolderUri = connection.folderUri || '';
   const maybeFolderBindingParagraph = renderBindingParagraph(maybeFolderUri, maybeProjectKey);
 
   return `<!doctype html><html lang="en">
@@ -289,10 +306,10 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <input type="hidden" id="projectKey" value="${maybeProjectKey}" />
         <input type="hidden" id="isFromSharedConfiguration" value="${isFromSharedConfiguration}" />
         <input type="hidden" id="folderUri" value="${maybeFolderUri}" />
-        <vscode-checkbox id="enableNotifications" ${!initialState.disableNotifications ? 'checked' : ''}>
+        <vscode-checkbox id="enableNotifications" ${!connection.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
         </vscode-checkbox>
-        <input type="hidden" id="enableNotifications-initial" value="${!initialState.disableNotifications}" />
+        <input type="hidden" id="enableNotifications-initial" value="${!connection.disableNotifications}" />
         <p>
           You will receive
           <vscode-link target="_blank" href="${serverDocUrl}">notifications</vscode-link>
@@ -347,15 +364,29 @@ function renderGenerateTokenButton(connection, serverProductName) {
     </p>`;
 }
 
-function renderOrganizationKeyField(connection) {
-  if (isSonarQubeConnection(connection)) {
+function renderOrganizationKeyField(initialState : WebviewInitialState) {
+  if (isSonarQubeConnection(initialState.conn)) {
     return '';
   }
-  const organizationKey = escapeHtml(connection.organizationKey);
-  return `<vscode-text-field id="organizationKey" type="text" placeholder="your-organization" required size="40"
- autofocus value="${organizationKey}">
-      Organization Key <vscode-badge class='tooltip'>i<span class='tooltiptext'>The key of your organization on SonarCloud</span></vscode-badge>
-    </vscode-text-field>
+  const organizationKey = escapeHtml(initialState.conn.organizationKey);
+  let prePopulatedOptions = '';
+  if (organizationKey !== '') {
+    prePopulatedOptions += `<vscode-option selected>${organizationKey}</vscode-option>`;
+  }
+  if (initialState.userOrganizations && initialState.userOrganizations.length > 0) {
+    for (const userOrganization of initialState.userOrganizations) {
+      if (organizationKey !== userOrganization.key) {
+        prePopulatedOptions += `<vscode-option>${userOrganization.name}</vscode-option>`;
+      }
+    }
+  }
+  return `
+    <label for="organizationKey">Organization</label>
+    <div class="dropdown-container">    
+      <vscode-dropdown id="organizationKey" required position="below">
+      ${prePopulatedOptions}
+      </vscode-dropdown>
+    </div>
     <input type="hidden" id="organizationKey-initial" value="${organizationKey}" />`;
 }
 
@@ -377,6 +408,7 @@ async function handleMessage(message) {
  */
 const SONARCLOUD_PRODUCT_LINK_COMMAND = 'sonarCloudProductPageLinkClick';
 const SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND = 'sonarQubeEditionsDownloadsLinkClick';
+const TOKEN_CHANGED_COMMAND = 'tokenChanged';
 
 export async function handleMessageWithConnectionSettingsService(
   message,
@@ -406,6 +438,10 @@ export async function handleMessageWithConnectionSettingsService(
     case SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND:
       delete message.command;
       vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarQubeEditionsDownloads');
+    case TOKEN_CHANGED_COMMAND:
+      delete message.command;
+      await getUserOrganizationsAndUpdateUI(message.token);
+      break;  
   }
 }
 
@@ -496,5 +532,11 @@ function removeTrailingSlashes(url: string) {
 export async function handleTokenReceivedNotification(token: string) {
   if (connectionSetupPanel?.active && token) {
     await connectionSetupPanel.webview.postMessage({ command: TOKEN_RECEIVED_COMMAND, token });
+    await getUserOrganizationsAndUpdateUI(token);
   }
+}
+
+async function getUserOrganizationsAndUpdateUI(token: string) {
+  const organizations = await ConnectionSettingsService.instance.listUserOrganizations(token);
+  await connectionSetupPanel.webview.postMessage({ command: ORGANIZATION_LIST_RECEIVED_COMMAND, organizations });
 }

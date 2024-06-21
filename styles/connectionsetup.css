@@ -74,3 +74,18 @@ ul {
 .warning {
     color: var(--vscode-inputValidation-warningBorder)
 }
+
+.dropdown-container {
+    width: 100%; /* Full width by default */
+    max-width: 300px;
+}
+
+vscode-dropdown {
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+.dropdown-container {
+    max-width: 100%; /* Full width on smaller screens */
+}
+}

@@ -10,7 +10,7 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
-import { AnalysisFile } from './protocol';
+import { AnalysisFile, Organization } from './protocol';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<protocol.RulesResponse> {
@@ -164,5 +164,9 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   didCreateBinding(mode: protocol.BindingCreationMode): Promise<void> {
     return this.sendNotification(protocol.DidCreateBinding.type, mode);
+  }
+
+  listUserOrganizations(token: string) : Promise<Organization[]> {
+    return this.sendRequest(protocol.ListUserOrganizations.type, token)
   }
 }

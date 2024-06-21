@@ -302,13 +302,22 @@ export namespace CanShowMissingRequirementNotification {
   export const type = new lsp.RequestType<string, boolean, void>('sonarlint/canShowMissingRequirementsNotification');
 }
 
-
 export namespace MaybeShowWiderLanguageSupportNotification {
   export const type = new lsp.NotificationType<string[]>('sonarlint/maybeShowWiderLanguageSupportNotification');
 }
 
 export namespace RemoveBindingsForDeletedConnections {
   export const type = new lsp.NotificationType<string[]>('sonarlint/removeBindingsForDeletedConnections');
+}
+
+export interface Organization {
+  key: string;
+  name: string;
+  description: string;
+}
+
+export namespace ListUserOrganizations {
+  export const type = new lsp.RequestType<string, Organization[], void>('sonarlint/listUserOrganizations');
 }
 
 //#endregion

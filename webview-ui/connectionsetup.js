@@ -65,6 +65,9 @@ function onChangeOrganizationKey() {
   if (byId('shouldGenerateConnectionId').value === 'true') {
     byId('connectionId').value = sanitize(byId('organizationKey').value);
   }
+  if (byId('organizationKey').value) {
+    byId('organizationKey').setAttribute('selected', true);
+  }
   toggleSaveConnectionButton();
 }
 
@@ -102,7 +105,7 @@ function hasValidOrganizationKey() {
    * @type {HTMLInputElement}
    */
   const organizationKeyInput = byId('organizationKey');
-  return organizationKeyInput.validity.valid;
+  return organizationKeyInput.getAttribute('selected') && organizationKeyInput.value.length > 0;
 }
 
 function onClickGenerateToken() {
@@ -121,6 +124,11 @@ function onClickGenerateToken() {
 function onChangeToken() {
   saveState();
   toggleSaveConnectionButton();
+  const tokenChangedMessage = {
+    command: 'tokenChanged',
+    token: byId('token').value
+  };
+  vscode.postMessage(tokenChangedMessage);
 }
 
 function hasValidToken() {
@@ -251,6 +259,9 @@ function handleMessage(event) {
     case 'tokenGenerationPageIsOpen':
       tokenGenerationPageIsOpen(message.errorMessage);
       break;
+    case 'organizationListReceived':
+      replaceOrganizationDropdown(message.organizations);
+      break;
   }
 }
 
@@ -277,6 +288,36 @@ function populateTokenField(token) {
   byId('tokenStatus').classList.remove('hidden');
   toggleSaveConnectionButton();
   saveState();
+}
+
+function replaceOrganizationDropdown(organizations) {
+  const dropdown = byId('organizationKey');
+  dropdown.innerHTML = '';
+  if (organizations.length === 0) {
+    // do something to indicate that there are no organizations
+  } else if (organizations.length === 1) {
+    const option = document.createElement('vscode-option')
+    option.setAttribute('value', organizations[0].key)
+    option.innerText = organizations[0].name;
+    dropdown.appendChild(option);
+    option.selected = true;
+    dropdown.value = organizations[0].key;
+    dropdown.setAttribute('selected', true);
+    dropdown.dispatchEvent(new Event('change'));
+  } else {
+    const defaultOption = document.createElement('option');
+    defaultOption.innerText = 'Select your organization...';
+    defaultOption.setAttribute('value', '');
+    defaultOption.selected = true;
+    dropdown.appendChild(defaultOption);
+    for (const organization of organizations) {
+      const option = document.createElement('vscode-option')
+      option.setAttribute('value', organization.key)
+      option.selected = false;
+      option.innerText = organization.name;
+      dropdown.appendChild(option);
+    }
+  }
 }
 
 function tokenGenerationPageIsOpen(errorMessage) {
