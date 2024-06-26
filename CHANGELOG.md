@@ -5,7 +5,7 @@
 * Update C# analyzer 9.25 -> [9.25.1](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.25.1.91650) -> [9.26](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.26.0.92422) -> [9.27](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.27.0.93347), new rules, FP fixes and improvements
 * Update Python analyzer 4.18 -> [4.19](https://sonarsource.atlassian.net/issues/SONARPY-1518?jql=fixversion%20%3D%204.19%20ORDER%20BY%20created%20ASC), Improve type inference to detect issues related to collections item types
 * Update PHP analyzer 3.35 -> [3.36](https://github.com/SonarSource/sonar-php/releases/tag/3.36.0.11813), updated rule descriptions
-* Update Java analyzer 7.34 -> [7.35](https://sonarsource.atlassian.net/issues/SONARJAVA-4951?jql=fixversion%20%3D%207.35%20ORDER%20BY%20created%20ASC), provide needed change to run Java Dataflow Bug Detection rules in SonarLint in Connected Mode
+* Update Java analyzer 7.34 -> [7.35](https://sonarsource.atlassian.net/issues/SONARJAVA-4951?jql=fixversion%20%3D%207.35%20ORDER%20BY%20created%20ASC) -> [8.0.1], provide needed change to run Java Dataflow Bug Detection rules in SonarLint in Connected Mode, custom rules plugin around symbolic execution engine
 
 ## 4.6
 
