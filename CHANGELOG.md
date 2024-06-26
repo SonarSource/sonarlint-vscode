@@ -1,6 +1,7 @@
 ## 4.7
 
 * Update text and secrets analyzer 2.10 -> [2.11](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.11.0.2807) -> [2.12](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.12.0.2889) -> [2.12.1](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.12.1.2905), bugfixes, FP fixes
+* Update CFamily analyzer 6.55 -> [6.56](https://sonarsource.atlassian.net/issues/?jql=fixversion%20%3D%206.56%20ORDER%20BY%20created%20ASC), Linux ARM support, c++23 deducing this, rules hardening
 
 ## 4.6
 
