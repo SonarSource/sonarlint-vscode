@@ -15,6 +15,7 @@ import {
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { assert } from 'chai';
+import { Organization } from '../../src/lsp/protocol';
 
 const FIVE_SECONDS = 5000;
 
@@ -34,6 +35,9 @@ const mockClient = {
   },
   onTokenUpdate(connectionId, token) {
     // NOP
+  },
+  async listUserOrganizations(token: string) : Promise<Organization[]> {
+    return Promise.resolve([]);
   }
 } as SonarLintExtendedLanguageClient;
 
@@ -205,7 +209,7 @@ suite('Connection Setup', () => {
 
     const organizationKey = 'another-organization';
     const token = 'XXX SUPER SECRET TOKEN XXX';
-    const connectionId = 'My Little SonarQube';
+    const connectionId = 'My Little SonarCloud';
 
     await ConnectionSettingsService.instance.addSonarCloudConnection(
       {
