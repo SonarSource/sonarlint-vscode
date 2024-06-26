@@ -1,3 +1,7 @@
+## 4.7
+
+* Update text and secrets analyzer 2.10 -> [2.11](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.11.0.2807) -> [2.12](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.12.0.2889) -> [2.12.1](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.12.1.2905), bugfixes, FP fixes
+
 ## 4.6
 
 * Update Java analyzer 7.33 -> [7.34](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015587%20ORDER%20BY%20created%20ASC), 21 rules enabled on test sources and 8 FP fixes
