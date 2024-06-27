@@ -93,8 +93,9 @@ suite('Java Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.deepStrictEqual(diags.length, 1);
-    assert.strictEqual(diags[0].message, 'Add at least one assertion to this test case.');
+    assert.deepStrictEqual(diags.length, 2);
+    assert.strictEqual(diags[0].message, 'Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.');
+    assert.strictEqual(diags[1].message, 'Add at least one assertion to this test case.');
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(120 * 1000);
