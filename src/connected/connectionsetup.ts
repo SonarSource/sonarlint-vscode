@@ -438,10 +438,11 @@ export async function handleMessageWithConnectionSettingsService(
     case SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND:
       delete message.command;
       vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarQubeEditionsDownloads');
+      break;
     case TOKEN_CHANGED_COMMAND:
       delete message.command;
       await getUserOrganizationsAndUpdateUI(message.token);
-      break;  
+      break;
   }
 }
 
