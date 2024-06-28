@@ -285,7 +285,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
       <hr>
       <form id="connectionForm">
         ${renderServerUrlField(initialState)}
-        ${renderGenerateTokenButton(initialState, serverProductName)}
+        ${renderGenerateTokenButton(connection, serverProductName)}
         <div class="formRowWithStatus">
           <vscode-text-field id="token" type="password" placeholder="········" required size="40"
             title="A user token generated for your account on ${serverProductName}" value="${initialToken}">
@@ -335,9 +335,9 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   </html>`;
 }
 
-function renderServerUrlField(connection) {
-  if (isSonarQubeConnection(connection)) {
-    const serverUrl = escapeHtml(connection.serverUrl);
+function renderServerUrlField(initialState) {
+  if (isSonarQubeConnection(initialState.conn)) {
+    const serverUrl = escapeHtml(initialState.conn.serverUrl);
     return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
     autofocus value="${serverUrl}">
       <b>Server URL</b> <vscode-badge class='tooltip'>i<span class='tooltiptext'>The base URL for your SonarQube server</span></vscode-badge>
