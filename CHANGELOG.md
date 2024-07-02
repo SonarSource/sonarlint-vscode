@@ -1,7 +1,7 @@
 ## 4.7
 
 * Allow focusing on New Code for standalone projects. [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/concepts/new-code/)
-* Automatic toke exchange when setting up SonarCloud connection
+* Automatic token exchange when setting up SonarCloud connection
 * Update text and secrets analyzer 2.10 -> [2.11](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.11.0.2807) -> [2.12](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.12.0.2889) -> [2.12.1](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.12.1.2905), bugfixes, FP fixes
 * Update CFamily analyzer 6.55 -> [6.56](https://sonarsource.atlassian.net/issues/?jql=fixversion%20%3D%206.56%20ORDER%20BY%20created%20ASC), Linux ARM support, c++23 deducing this, rules hardening
 * Update C# analyzer 9.25 -> [9.25.1](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.25.1.91650) -> [9.26](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.26.0.92422) -> [9.27](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.27.0.93347), new rules, FP fixes and improvements
