@@ -8,6 +8,7 @@ env:
   BURGR_PASSWORD: VAULT[development/kv/data/burgr data.cirrus_password]
   # Slack
   SLACK_TOKEN: VAULT[development/kv/data/slack data.token]
+  SLACK_CHANNEL: squad-ide-vscode-bots
   # repox
   ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
   ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
@@ -94,7 +95,7 @@ build_task:
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
 
 universal_vsix_task:
   depends_on: build
@@ -109,7 +110,7 @@ universal_vsix_task:
     - npm run deploy-universal
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
 
 all_vsix_task:
   <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
@@ -124,7 +125,7 @@ all_vsix_task:
     - npm run deploy-all
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
 
 test_windows_task:
   # name: Run tests on Windows
@@ -148,7 +149,7 @@ test_windows_task:
       format: junit
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
 
 test_linux_task:
   #  name: Run tests, Sonarqube analysis on Linux
@@ -179,7 +180,7 @@ test_linux_task:
       format: junit
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
 
 mend_scan_task:
   depends_on:
@@ -202,7 +203,7 @@ mend_scan_task:
       path: "whitesource/**/*"
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
 
 qa_task:
   #  name: Run ITs
@@ -258,7 +259,7 @@ qa_task:
       path: ${RECORD_FILENAME}
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
 
 promote_task:
   env:
@@ -281,7 +282,7 @@ promote_task:
     - burgr-notify-promotion
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
 
 dogfood_task:
   depends_on:
@@ -299,4 +300,4 @@ dogfood_task:
     - .cirrus/cirrus_dogfood_npm
   on_failure:
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure
