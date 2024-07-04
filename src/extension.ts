@@ -534,6 +534,9 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.FORGET_FOLDER_HOTSPOTS, () => languageClient.forgetFolderHotspots())
   );
 
+  // TODO fix this line
+  const i = 10;  
+
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()));
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () =>
@@ -567,6 +570,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.FilterOutExcludedFiles.type, params =>
     filterOutFilesIgnoredForAnalysis(params.fileUris)
   );
+  const anotherUnusedVariable = 10;
   languageClient.onRequest(protocol.CanShowMissingRequirementNotification.type, () => {
     return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true);
   });
