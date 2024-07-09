@@ -265,6 +265,7 @@ promote_task:
   env:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     ARTIFACTS: "org.sonarsource.sonarlint.vscode:sonarlint-vscode:vsix"
+    GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
   depends_on:
     - qa
     - test_windows
@@ -279,7 +280,7 @@ promote_task:
     - source cirrus-env PROMOTE
     - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
     - cirrus_jfrog_promote
-    - burgr-notify-promotion
+    - github-notify-promotion
   on_failure:
     slack_notification_script: |
       source slack_notification_failure
