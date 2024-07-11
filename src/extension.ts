@@ -160,8 +160,10 @@ export async function activate(context: VSCode.ExtensionContext) {
   const serverOptions = () => runJavaServer(context);
 
   const pythonWatcher = VSCode.workspace.createFileSystemWatcher('**/*.py');
+  const helmWatcher = VSCode.workspace.createFileSystemWatcher('**/*.{y?ml,tpl,txt,toml}');
   const sharedConnectedModeConfigurationWatcher = VSCode.workspace.createFileSystemWatcher('**/.sonarlint/*.json');
   context.subscriptions.push(pythonWatcher);
+  context.subscriptions.push(helmWatcher);
   context.subscriptions.push(sharedConnectedModeConfigurationWatcher);
 
   // Options to control the language client
@@ -169,7 +171,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
       configurationSection: 'sonarlint',
-      fileEvents: [pythonWatcher, sharedConnectedModeConfigurationWatcher]
+      fileEvents: [pythonWatcher, helmWatcher, sharedConnectedModeConfigurationWatcher]
     },
     uriConverters: {
       code2Protocol: code2ProtocolConverter,
