@@ -95,7 +95,7 @@ build_task:
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
 
 universal_vsix_task:
   depends_on: build
@@ -110,7 +110,7 @@ universal_vsix_task:
     - npm run deploy-universal
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
 
 all_vsix_task:
   <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
@@ -125,7 +125,7 @@ all_vsix_task:
     - npm run deploy-all
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
 
 test_windows_task:
   # name: Run tests on Windows
@@ -149,7 +149,7 @@ test_windows_task:
       format: junit
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
 
 test_linux_task:
   #  name: Run tests, Sonarqube analysis on Linux
@@ -180,7 +180,7 @@ test_linux_task:
       format: junit
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
 
 mend_scan_task:
   depends_on:
@@ -203,7 +203,7 @@ mend_scan_task:
       path: "whitesource/**/*"
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
 
 qa_task:
   #  name: Run ITs
@@ -259,7 +259,7 @@ qa_task:
       path: ${RECORD_FILENAME}
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
 
 promote_task:
   env:
@@ -283,7 +283,7 @@ promote_task:
     - github-notify-promotion
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
 
 dogfood_task:
   depends_on:
@@ -301,4 +301,4 @@ dogfood_task:
     - .cirrus/cirrus_dogfood_npm
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure
+      source slack-failure-notification
