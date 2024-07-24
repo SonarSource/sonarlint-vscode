@@ -7,6 +7,7 @@
 'use strict';
 
 import * as lsp from 'vscode-languageserver-protocol';
+import * as vscode from 'vscode';
 
 //#region Client side extensions to LSP
 
@@ -692,6 +693,25 @@ export enum BindingCreationMode {
 
 export namespace DidCreateBinding {
   export const type = new lsp.NotificationType<BindingCreationMode>('sonarlint/didCreateBinding');
+}
+
+interface LineRange {
+  startLine: number;
+  endLine: number;
+}
+
+interface Change {
+  before: string;
+  after: string;
+  beforeLineRange: LineRange;
+}
+
+export interface ShowFixSuggestionParams {
+  textEdits: Change[]
+  fileUri: string;
+}
+export namespace ShowFixSuggestion {
+  export const type = new lsp.NotificationType<ShowFixSuggestionParams>('sonarlint/showFixSuggestion');
 }
 
 //#endregion
