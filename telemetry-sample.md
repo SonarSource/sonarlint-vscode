@@ -75,6 +75,19 @@
     "imported_bindings_count": 2,
     "auto_bindings_count": 1,
     "exported_connected_mode_count": 4
+  },
+  "fix_suggestion_received": {
+    "count_by_fix_suggestion_id": {
+      "eb93b2b4-f7b0-4b5c-9460-50893968c26d": 3,
+      "eb93b2b4-f7b0-4b5c-9460-50893968c264": 1
+    }
+  },
+  "fix_suggestion_resolved": {
+    "opened_fix_status_by_suggestion_id": {
+      "eb93b2b4-f7b0-4b5c-9460-50893968c264":[{
+        "status":"ACCEPTED"
+      }]
+    }
   }
 }
 ```

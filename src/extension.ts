@@ -69,7 +69,7 @@ import { ShowIssueNotification } from './lsp/protocol';
 import { maybeShowWiderLanguageSupportNotification } from './promotions/promotionalNotifications';
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
-import { showFixSuggestion } from './fixSuggestions/fixSuggestionsService';
+import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -225,6 +225,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
   });
+  FixSuggestionService.init(languageClient);
 
   installCustomRequestHandlers(context);
 
@@ -553,7 +554,7 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
-  languageClient.onNotification(protocol.ShowFixSuggestion.type, params => showFixSuggestion(params))
+  languageClient.onNotification(protocol.ShowFixSuggestion.type, params => FixSuggestionService.instance.showFixSuggestion(params))
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
   languageClient.onRequest(protocol.ListFilesInFolderRequest.type, async (params) => {

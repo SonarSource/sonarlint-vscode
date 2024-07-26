@@ -7,7 +7,6 @@
 'use strict';
 
 import * as lsp from 'vscode-languageserver-protocol';
-import * as vscode from 'vscode';
 
 //#region Client side extensions to LSP
 
@@ -319,6 +318,15 @@ export interface Organization {
 
 export namespace ListUserOrganizations {
   export const type = new lsp.RequestType<string, Organization[], void>('sonarlint/listUserOrganizations');
+}
+
+interface FixSuggestionResolvedParams {
+  suggestionId: string;
+  accepted: boolean;
+}
+
+export namespace FixSuggestionResolved {
+  export const type = new lsp.NotificationType<FixSuggestionResolvedParams>('sonarlint/fixSuggestionResolved');
 }
 
 //#endregion
@@ -707,7 +715,8 @@ interface Change {
 }
 
 export interface ShowFixSuggestionParams {
-  textEdits: Change[]
+  suggestionId: string;
+  textEdits: Change[];
   fileUri: string;
 }
 export namespace ShowFixSuggestion {
