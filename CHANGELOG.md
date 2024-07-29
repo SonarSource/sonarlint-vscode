@@ -1,3 +1,7 @@
+## 4.8
+
+* Update IaC analyzer 1.31 -> [1.32](https://github.com/SonarSource/sonar-iac/releases/tag/1.32.0.11383), new rules for Kubernetes, improvements and bug fixes
+
 ## 4.7
 
 * Allow focusing on New Code for standalone projects. [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/concepts/new-code/)
