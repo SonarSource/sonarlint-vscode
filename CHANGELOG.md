@@ -2,6 +2,7 @@
 
 * Update IaC analyzer 1.31 -> [1.32](https://github.com/SonarSource/sonar-iac/releases/tag/1.32.0.11383), new rules for Kubernetes, improvements and bug fixes
 * Update CFamily analyzer 6.56 -> [6.57](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015734%20ORDER%20BY%20created%20ASC), improvements and bug fixes
+* Update text and secrets analyzer 2.12.1 -> [2.13](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.13.0.3515), 34 new secret types
 
 ## 4.7
 
