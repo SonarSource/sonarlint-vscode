@@ -4,6 +4,7 @@ import { logToSonarLintOutput } from "../util/logging";
 import { SonarLintExtendedLanguageClient } from "../lsp/client";
 
 export class FixSuggestionService {
+	private static readonly END_OF_LINE_OFFSET = 10_000;
 	private static _instance : FixSuggestionService;
 
 	static init(client: SonarLintExtendedLanguageClient) {
@@ -21,8 +22,11 @@ export class FixSuggestionService {
 			await vscode.window.showTextDocument(fileUri);
 			const wsedit = new vscode.WorkspaceEdit();
 			params.textEdits.forEach(async (edit) => {
-				const range = new vscode.Range(edit.beforeLineRange.startLine, 0, edit.beforeLineRange.endLine, 10000);
-				this.isBeforeContentIdentical(fileUri, range, edit.before);
+				const range = new vscode.Range(edit.beforeLineRange.startLine, 0, edit.beforeLineRange.endLine, FixSuggestionService.END_OF_LINE_OFFSET);
+				const isContentIdentical = await this.isBeforeContentIdentical(fileUri, range, edit.before);
+				if (!isContentIdentical) {
+					await vscode.window.showWarningMessage('The content of the file has changed. The fix suggestion may not be applicable.');
+				}
 				wsedit.replace(fileUri, range, edit.after, {label: 'preview', needsConfirmation: true});
 			});
 			const result = await vscode.workspace.applyEdit(wsedit);
@@ -36,10 +40,7 @@ export class FixSuggestionService {
 
 	isBeforeContentIdentical = async (fileUri: vscode.Uri, range: vscode.Range, before: string) => {
 		const doc = await vscode.workspace.openTextDocument(fileUri);
-		const content = doc.getText(range);
-		if (content !== before) {
-			await vscode.window.showWarningMessage('The content of the file has changed. The fix suggestion may not be applicable.');
-		}
+		return doc.getText(range) === before;
 	}
 }
 
