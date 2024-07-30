@@ -4,7 +4,7 @@ import { logToSonarLintOutput } from "../util/logging";
 import { SonarLintExtendedLanguageClient } from "../lsp/client";
 
 export class FixSuggestionService {
-	private static readonly END_OF_LINE_OFFSET = 10_000;
+	private static readonly END_OF_LINE_OFFSET = 10000;
 	private static _instance : FixSuggestionService;
 
 	static init(client: SonarLintExtendedLanguageClient) {
@@ -19,16 +19,19 @@ export class FixSuggestionService {
 	showFixSuggestion = async (params : ShowFixSuggestionParams) => {
 		try {
 			const fileUri = vscode.Uri.parse(params.fileUri);
-			await vscode.window.showTextDocument(fileUri);
+			const editor = await vscode.window.showTextDocument(fileUri);
 			const wsedit = new vscode.WorkspaceEdit();
-			params.textEdits.forEach(async (edit) => {
-				const range = new vscode.Range(edit.beforeLineRange.startLine, 0, edit.beforeLineRange.endLine, FixSuggestionService.END_OF_LINE_OFFSET);
-				const isContentIdentical = await this.isBeforeContentIdentical(fileUri, range, edit.before);
-				if (!isContentIdentical) {
-					await vscode.window.showWarningMessage('The content of the file has changed. The fix suggestion may not be applicable.');
-				}
-				wsedit.replace(fileUri, range, edit.after, {label: 'preview', needsConfirmation: true});
-			});
+			for (const edit of params.textEdits) {
+				await (async () => {
+					const range = new vscode.Range(edit.beforeLineRange.startLine, 0, edit.beforeLineRange.endLine, FixSuggestionService.END_OF_LINE_OFFSET);
+					const validRange = editor.document.validateRange(range);
+					const isContentIdentical = await this.isBeforeContentIdentical(fileUri, range, edit.before);
+					if (!isContentIdentical) {
+						vscode.window.showWarningMessage('The content of the file has changed. The fix suggestion may not be applicable.');
+					}
+					wsedit.replace(fileUri, validRange, edit.after, {label: 'preview', needsConfirmation: true});
+				})();
+			}
 			const result = await vscode.workspace.applyEdit(wsedit);
 			// result will be true if at least one edit was applied
 			// result will be false if no edits were applied
