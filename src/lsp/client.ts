@@ -169,4 +169,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   listUserOrganizations(token: string) : Promise<Organization[]> {
     return this.sendRequest(protocol.ListUserOrganizations.type, token)
   }
+
+  fixSuggestionResolved(suggestionId: string, accepted: boolean): Promise<void> {
+    return this.sendNotification(protocol.FixSuggestionResolved.type, { suggestionId, accepted });
+  }
 }

@@ -75,6 +75,30 @@
     "imported_bindings_count": 2,
     "auto_bindings_count": 1,
     "exported_connected_mode_count": 4
-  }
+  },
+  "ai_fix_suggestions": [
+    {
+      "suggestion_id": "eb93b2b4-f7b0-4b5c-9460-50893968c264",
+      "count_snippets": 4,
+      "opened_from": "SONARCLOUD",
+      "snippets": [
+          {
+            "status": "ACCEPTED",
+            "snippet_index": null
+          }
+      ]
+    },
+    {
+      "ai_suggestion_id": "eb93b2b4-f7b0-4b5c-9460-50893968c261",
+      "count_snippets": 2,
+      "opened_from": "SONARCLOUD",
+      "snippets": [
+          {
+            "status": null,
+            "snippet_index": null
+          }
+      ]
+    }
+  ]
 }
 ```

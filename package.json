@@ -476,7 +476,7 @@
       },
       {
         "command": "SonarLint.RemoveConnection",
-        "title": "Remove SonarQube/SonarCloud Connection",
+        "title": "Remove Connection",
         "category": "SonarLint",
         "icon": "$(trash)",
         "enablement": "view == SonarLint.ConnectedMode"

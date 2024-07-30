@@ -320,6 +320,15 @@ export namespace ListUserOrganizations {
   export const type = new lsp.RequestType<string, Organization[], void>('sonarlint/listUserOrganizations');
 }
 
+interface FixSuggestionResolvedParams {
+  suggestionId: string;
+  accepted: boolean;
+}
+
+export namespace FixSuggestionResolved {
+  export const type = new lsp.NotificationType<FixSuggestionResolvedParams>('sonarlint/fixSuggestionResolved');
+}
+
 //#endregion
 
 //#region Server side extensions to LSP
@@ -692,6 +701,26 @@ export enum BindingCreationMode {
 
 export namespace DidCreateBinding {
   export const type = new lsp.NotificationType<BindingCreationMode>('sonarlint/didCreateBinding');
+}
+
+interface LineRange {
+  startLine: number;
+  endLine: number;
+}
+
+interface Change {
+  before: string;
+  after: string;
+  beforeLineRange: LineRange;
+}
+
+export interface ShowFixSuggestionParams {
+  suggestionId: string;
+  textEdits: Change[];
+  fileUri: string;
+}
+export namespace ShowFixSuggestion {
+  export const type = new lsp.NotificationType<ShowFixSuggestionParams>('sonarlint/showFixSuggestion');
 }
 
 //#endregion
