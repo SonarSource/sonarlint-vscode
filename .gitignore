@@ -16,3 +16,4 @@ test/userdir
 its/extdir*
 .DS_Store
 omnisharp
+.vs
