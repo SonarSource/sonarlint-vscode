@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: example-pod
+  namespace: {{ .Values.namespace }}
+spec:
+  containers:
+    - name: nginx-ns-compliant
+      image: nginx:1.27.0
+  automountServiceAccountToken: false
