@@ -15,6 +15,8 @@ import { waitForSonarLintDiagnostics, dumpLogOutput } from '../common/util';
 
 const sampleFolderLocation = '../../../samples/';
 
+const ONE_MINUTE_MS = 60_000;
+
 suite('Extension Test Suite', () => {
 
   suiteSetup(() => {
@@ -47,7 +49,7 @@ suite('Extension Test Suite', () => {
     assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable.");
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-  }).timeout(60 * 1000);
+  }).timeout(ONE_MINUTE_MS);
 
   test('should report issue on single yaml file', async function () {
     const ext = vscode.extensions.getExtension('sonarsource.sonarlint-vscode')!;
@@ -65,5 +67,5 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'x' variable.");
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-  }).timeout(60 * 1000);
+  }).timeout(ONE_MINUTE_MS);
 });

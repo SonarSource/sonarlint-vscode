@@ -64,6 +64,7 @@ async function main() {
 
     // run the integration tests
     await runTestSuite('./suite');
+    await runTestSuite('./helmSuite', 'workspace-helm.code-workspace');
     await runTestSuite('./secretsSuite', 'workspace-secrets.code-workspace');
     await runTestSuite('./pythonSuite', 'workspace-python.code-workspace');
     await runTestSuite('./cfamilySuite', 'workspace-cfamily.code-workspace');
