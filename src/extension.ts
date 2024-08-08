@@ -607,6 +607,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
   languageClient.onNotification(protocol.PublishHotspotsForFile.type, async hotspotsPerFile => {
+    const i = 10;
     await hotspotsTreeDataProvider.refresh(hotspotsPerFile);
     updateSonarLintViewContainerBadge();
   });
