@@ -10,6 +10,7 @@ import { TextEncoder } from 'util';
 import * as fs from 'fs';
 import * as url from 'url';
 import * as os from 'os';
+import { exec } from 'child_process';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -24,6 +25,8 @@ suite('Secrets Test Suite', () => {
   suiteSetup(async function () {
     this.timeout(30 * 1000);
     vscode.window.showInformationMessage('Starting Secrets tests.');
+
+    exec('git init', { cwd: path.join(__dirname, secretsFolderLocation) }); 
 
     await activateAndShowOutput();
   });
