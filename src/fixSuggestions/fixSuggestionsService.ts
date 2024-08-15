@@ -23,7 +23,7 @@ export class FixSuggestionService {
 			const wsedit = new vscode.WorkspaceEdit();
 			for (const edit of params.textEdits) {
 				await (async () => {
-					const range = new vscode.Range(edit.beforeLineRange.startLine, 0, edit.beforeLineRange.endLine, FixSuggestionService.END_OF_LINE_OFFSET);
+					const range = new vscode.Range(edit.beforeLineRange.startLine - 1, 0, edit.beforeLineRange.endLine - 1, FixSuggestionService.END_OF_LINE_OFFSET);
 					const validRange = editor.document.validateRange(range);
 					const isContentIdentical = await this.isBeforeContentIdentical(fileUri, range, edit.before);
 					if (!isContentIdentical) {
