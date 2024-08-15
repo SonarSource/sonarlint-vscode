@@ -88,26 +88,29 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
   return async (isSonarCloud: boolean, serverUrlOrOrganizationKey: string, token: string) => {
     const reply = await confirmConnection(isSonarCloud, serverUrlOrOrganizationKey, token);
     if (reply.confirmed) {
-      if (token) {
-        const connection = isSonarCloud ? {
-          token,
+      if (isSonarCloud) {
+        const sonarCloudToken = token || await ConnectionSettingsService.instance.getServerToken(serverUrlOrOrganizationKey);
+        const connection = {
+          sonarCloudToken,
           connectionId: serverUrlOrOrganizationKey,
           disableNotifications: false,
           organizationKey: serverUrlOrOrganizationKey
-        } as SonarCloudConnection : {
-          token,
-          connectionId: serverUrlOrOrganizationKey,
-          disableNotifications: false,
-          serverUrl: serverUrlOrOrganizationKey
-        } as SonarQubeConnection;
+        } as SonarCloudConnection;
 
-        return isSonarCloud ?
-          await ConnectionSettingsService.instance.addSonarCloudConnection(connection as SonarCloudConnection) :
-          await ConnectionSettingsService.instance.addSonarQubeConnection(connection as SonarQubeConnection);
-      } else if (!token && !isSonarCloud) {
-        // old flow for SonarQube
-        connectToSonarQube(context)(serverUrlOrOrganizationKey);
-        return null;
+        return await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
+      } else if (!isSonarCloud && token) {
+          // new flow for SonarQube
+          const connection = {
+            token,
+            connectionId: serverUrlOrOrganizationKey,
+            disableNotifications: false,
+            serverUrl: serverUrlOrOrganizationKey
+          } as SonarQubeConnection;
+          return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
+      } else {
+          // old flow for SonarQube
+          connectToSonarQube(context)(serverUrlOrOrganizationKey);
+          return null;
       }
     } else if (!reply.confirmed && !reply.cancelled) {
       vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'connectedModeDocs');
