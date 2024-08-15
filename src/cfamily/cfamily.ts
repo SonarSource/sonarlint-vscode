@@ -33,7 +33,7 @@ function showMessageAndUpdateConfig(compilationDbPath: string) {
     .update(FULL_PATH_TO_COMPILE_COMMANDS, pathForSettings, vscode.ConfigurationTarget.Workspace);
 }
 
-function tryRelativizeToWorkspaceFolder(filePath: string): [string, vscode.WorkspaceFolder] {
+function tryRelativizeToWorkspaceFolder(filePath: string): [string, (vscode.WorkspaceFolder | undefined)] {
   if (!path.isAbsolute(filePath)) {
     return [filePath, undefined];
   }

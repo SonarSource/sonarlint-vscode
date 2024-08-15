@@ -8,7 +8,7 @@
 'use strict';
 
 import { BindingService } from './binding';
-import { ConnectionSettingsService } from '../settings/connectionsettings';
+import { ConnectionSettingsService, SonarCloudConnection, SonarQubeConnection } from '../settings/connectionsettings';
 import {
   BindingSuggestion,
   FolderUriParams,
@@ -33,6 +33,13 @@ export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoB
 const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
       Do you want to configure binding?
       [Learn More](${SonarLintDocumentation.CONNECTED_MODE})`;
+
+type ConnectionQuickPickItem = {
+  label : string;
+  description : string;
+  connectionId : string;
+  contextValue : string;
+}      
 
 export class AutoBindingService implements FileSystemSubscriber {
   private static _instance: AutoBindingService;
@@ -116,7 +123,7 @@ export class AutoBindingService implements FileSystemSubscriber {
         contextValue: 'sonarcloudConnection'
       };
     } else {
-      const connectionNames = [];
+      const connectionNames : ConnectionQuickPickItem[] = [];
       sonarQubeConnections.forEach(c => {
         connectionNames.push({
           label: this.computeItemLabel('SonarQube', c),
@@ -141,14 +148,14 @@ export class AutoBindingService implements FileSystemSubscriber {
     return targetConnection;
   }
 
-  private computeItemLabel(serverType: 'SonarQube' | 'SonarCloud', connection) {
+  private computeItemLabel(serverType: 'SonarQube' | 'SonarCloud', connection: (SonarCloudConnection | SonarQubeConnection)) {
     if (serverType === 'SonarQube') {
-      return connection.connectionId ? connection.connectionId : connection.serverUrl;
+      return connection.connectionId ? connection.connectionId : (connection as SonarQubeConnection).serverUrl;
     }
-    return connection.connectionId ? connection.connectionId : connection.organizationKey;
+    return connection.connectionId ? connection.connectionId : (connection as SonarCloudConnection).organizationKey;
   }
 
-  private computeConnectionId(connection) {
+  private computeConnectionId(connection : (SonarCloudConnection | SonarQubeConnection)) {
     return connection.connectionId ? connection.connectionId : DEFAULT_CONNECTION_ID;
   }
 
@@ -164,7 +171,9 @@ export class AutoBindingService implements FileSystemSubscriber {
           this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
         } else if (action === BIND_ACTION) {
           const targetConnection = await this.getTargetConnectionForManualBinding();
-          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+          if (targetConnection) {
+            await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+          }
         }
       });
   }
@@ -195,7 +204,9 @@ export class AutoBindingService implements FileSystemSubscriber {
           ]);
         } else if (action === BIND_ACTION) {
           const targetConnection = await this.getTargetConnectionForManualBinding();
-          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+          if (targetConnection) {
+            await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+          }
         }
       });
   }
@@ -229,7 +240,9 @@ export class AutoBindingService implements FileSystemSubscriber {
         break;
       case CHOOSE_MANUALLY_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();
-        await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+        if (targetConnection) {
+          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+        }
         break;
       }
       case DONT_ASK_AGAIN_ACTION:
@@ -258,7 +271,9 @@ export class AutoBindingService implements FileSystemSubscriber {
     switch (result) {
       case BIND_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();
-        await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+        if (targetConnection) {
+          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+        }
         break;
       }
       case DONT_ASK_AGAIN_ACTION:
@@ -277,7 +292,7 @@ export class AutoBindingService implements FileSystemSubscriber {
     if(folderUri && this.filesPerConfigScope.get(folderUri) === undefined) {
       this.filesPerConfigScope.set(folderUri, []);
     }
-    this.filesPerConfigScope.get(folderUri).push({ fileName, filePath: fullFileUri.fsPath, content: null });
+    this.filesPerConfigScope.get(folderUri)?.push({ fileName, filePath: fullFileUri.fsPath, content: undefined });
   }
 
   didRemoveWorkspaceFolder(workspaceFolderUri:vscode.Uri) {
@@ -322,7 +337,7 @@ export class AutoBindingService implements FileSystemSubscriber {
   }
 
   private async readJsonFiles(name: string, fullFileUri: vscode.Uri, foundFiles: Array<FoundFileDto>) {
-    let content: string = null;
+    let content: (string | undefined) = undefined;
     if (name.endsWith('.json')) {
       content = (await vscode.workspace.fs.readFile(fullFileUri)).toString();
     }
