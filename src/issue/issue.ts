@@ -123,7 +123,7 @@ Please make sure that the right folder is open and bound to the right project on
 
       if (!isValidRange(diagnostic.range, editor.document) || !issue.codeMatches) {
         VSCode.window.showWarningMessage(
-          `SonarLint failed to open a SonarQube issue in '${getFileNameFromFullPath(issue.fileUri)}'.
+          `SonarLint failed to open the issue in '${getFileNameFromFullPath(issue.fileUri)}'.
            Local code does not match remote. Please make sure that the right branch is checked out.`
         );
         return;
