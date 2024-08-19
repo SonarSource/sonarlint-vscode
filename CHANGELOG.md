@@ -1,6 +1,6 @@
 ## 4.9
 
-* Update IaC analyzer 1.32 -> [1.33](https://github.com/SonarSource/sonar-iac/releases/tag/1.33.0.11761), new rules for Helm charts
+* Update IaC analyzer 1.32 -> [1.33](https://github.com/SonarSource/sonar-iac/releases/tag/1.33.0.11761) -> [1.33.1](https://github.com/SonarSource/sonar-iac/releases/tag/1.33.1.11833), new rules for Helm charts
 
 ## 4.8
 
