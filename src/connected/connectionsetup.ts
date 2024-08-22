@@ -90,22 +90,22 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
     if (reply.confirmed) {
       if (isSonarCloud) {
         const sonarCloudToken = token || await ConnectionSettingsService.instance.getServerToken(serverUrlOrOrganizationKey);
-        const connection = {
-          sonarCloudToken,
+        const connection : SonarCloudConnection = {
+          token: sonarCloudToken,
           connectionId: serverUrlOrOrganizationKey,
           disableNotifications: false,
           organizationKey: serverUrlOrOrganizationKey
-        } as SonarCloudConnection;
+        };
 
         return await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
       } else if (!isSonarCloud && token) {
           // new flow for SonarQube
-          const connection = {
+          const connection : SonarQubeConnection = {
             token,
             connectionId: serverUrlOrOrganizationKey,
             disableNotifications: false,
             serverUrl: serverUrlOrOrganizationKey
-          } as SonarQubeConnection;
+          };
           return await ConnectionSettingsService.instance.addSonarQubeConnection(connection);
       } else {
           // old flow for SonarQube
