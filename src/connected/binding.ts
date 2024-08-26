@@ -27,19 +27,6 @@ const OPEN_FOLDER_ACTION = 'Open Folder';
 const BIND_MANUALLY_ACTION = 'Bind Manually';
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 
-async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
-  const existingSettings = VSCode.workspace
-    .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
-    .get<ProjectBinding>(BINDING_SETTINGS);
-  if (existingSettings?.projectKey === undefined) {
-    await VSCode.workspace
-      .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
-      .update(BINDING_SETTINGS, { connectionId: '', projectKey: '' });
-    await this.languageClient.didCreateBinding(BindingCreationMode.MANUAL);
-  }
-  VSCode.commands.executeCommand('workbench.action.openFolderSettingsFile');
-}
-
 export class BindingService {
   private static _instance: BindingService;
 
@@ -86,7 +73,7 @@ export class BindingService {
   async deleteBindingsForConnection(connection: Connection | string) {
     const connectionId = typeof connection === 'string' ? connection : connection.id || DEFAULT_CONNECTION_ID;
     const allBindings = this.getAllBindings();
-    const bindingsForConnection: Map<string, BoundFolder[]> = allBindings.get(connectionId);
+    const bindingsForConnection: Map<string, BoundFolder[]> | undefined = allBindings.get(connectionId);
     if (bindingsForConnection) {
       for (const folders of bindingsForConnection.values()) {
         await Promise.all(folders.map(f => this.deleteBinding(f)));
@@ -99,17 +86,17 @@ export class BindingService {
     for (const folder of VSCode.workspace.workspaceFolders || []) {
       const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
       const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
-      const projectKey = binding.projectKey;
+      const projectKey = binding?.projectKey;
       if (projectKey) {
         const connectionId = binding.connectionId || binding.serverId || DEFAULT_CONNECTION_ID;
         if (!bindingsPerConnectionId.has(connectionId)) {
           bindingsPerConnectionId.set(connectionId, new Map<string, BoundFolder[]>());
         }
         const connectionBindingsPerProjectKey = bindingsPerConnectionId.get(connectionId);
-        if (!connectionBindingsPerProjectKey.has(projectKey)) {
-          connectionBindingsPerProjectKey.set(projectKey, []);
+        if (!connectionBindingsPerProjectKey?.has(projectKey)) {
+          connectionBindingsPerProjectKey?.set(projectKey, []);
         }
-        connectionBindingsPerProjectKey.get(projectKey).push({ folder, binding });
+        connectionBindingsPerProjectKey?.get(projectKey)?.push({ folder, binding });
       }
     }
     return bindingsPerConnectionId;
@@ -120,28 +107,31 @@ export class BindingService {
     for (const folder of VSCode.workspace.workspaceFolders || []) {
       const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
       const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
-      bindingStatePerFolder.set(folder.uri, binding.projectKey !== undefined);
+      bindingStatePerFolder.set(folder.uri, binding?.projectKey !== undefined);
     }
     return bindingStatePerFolder;
   }
 
   async assistBinding(params: AssistBindingParams) {
     const workspaceFolders = VSCode.workspace.workspaceFolders;
+    if (workspaceFolders === undefined) {
+      return null;
+    }
     const selectedWorkspaceFolderName = await this.showFolderSelectionQuickPickOrReturnDefaultSelection(
       workspaceFolders
     );
-    const workspaceFolder = workspaceFolders.find(f => f.name === selectedWorkspaceFolderName);
+    const workspaceFolder = workspaceFolders?.find(f => f.name === selectedWorkspaceFolderName);
 
     const existingSettings = VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .get<ProjectBinding>(BINDING_SETTINGS);
-    if (existingSettings.projectKey === undefined) {
+    if (existingSettings?.projectKey === undefined) {
       await VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
         .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
       await this.languageClient.didCreateBinding(params.isFromSharedConfiguration ? BindingCreationMode.IMPORTED : BindingCreationMode.AUTOMATIC);
     }
-    return { configurationScopeId: workspaceFolder.uri.toString() };
+    return { configurationScopeId: workspaceFolder?.uri.toString() };
   }
 
   async createOrEditBinding(
@@ -170,7 +160,7 @@ export class BindingService {
     if (!serverType) {
       serverType = contextValue === 'sonarqubeConnection' ? 'SonarQube' : 'SonarCloud';
     }
-    let selectedFolderName;
+    let selectedFolderName : string | undefined;
     if (workspaceFolder) {
       selectedFolderName = workspaceFolder.name;
     } else {
@@ -180,23 +170,23 @@ export class BindingService {
     await this.pickRemoteProjectToBind(connectionId, workspaceFolder, serverType, selectedFolderName);
   }
   
-  isRelatedConnectionValid(connectionId: string) : boolean {
-    return this.settingsService.getStatusForConnection(connectionId).success;
+  isRelatedConnectionValid(connectionId: string) : boolean | undefined {
+    return this.settingsService.getStatusForConnection(connectionId)?.success;
   }
   
   async getBaseServerUrl(connectionId: string, serverType: ServerType): Promise<string> {
     const serverUrlOrOrganizationKey =
       serverType === 'SonarQube'
-        ? (await this.settingsService.loadSonarQubeConnection(connectionId)).serverUrl
-        : (await this.settingsService.loadSonarCloudConnection(connectionId)).organizationKey;
-    return buildBaseServerUrl(serverType, serverUrlOrOrganizationKey);
+        ? (await this.settingsService.loadSonarQubeConnection(connectionId))?.serverUrl
+        : (await this.settingsService.loadSonarCloudConnection(connectionId))?.organizationKey;
+    return serverUrlOrOrganizationKey ? buildBaseServerUrl(serverType, serverUrlOrOrganizationKey) : '';
   }
 
   private async pickRemoteProjectToBind(
     connectionId: string,
-    workspaceFolder: VSCode.WorkspaceFolder,
+    workspaceFolder: VSCode.WorkspaceFolder | undefined,
     serverType: ServerType,
-    selectedFolderName
+    selectedFolderName : string | undefined
   ) {
     if (!workspaceFolder) {
       return;
@@ -210,8 +200,9 @@ export class BindingService {
     const suggestedProjectsGroup = { label: 'Suggested Projects', kind: VSCode.QuickPickItemKind.Separator };
     if (remoteProjects) {
       const remoteProjectsQuickPick = VSCode.window.createQuickPick();
-      remoteProjectsQuickPick.title = `Select ${serverType} Project to Bind with '${selectedFolderName}/'`;
-      remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with '${selectedFolderName}/' folder`;
+      remoteProjectsQuickPick.title = `Select ${serverType} Project to Bind with '${selectedFolderName ?? workspaceFolder.name}/'`;
+      remoteProjectsQuickPick.placeholder =
+      `Select the remote project you want to bind with '${selectedFolderName ?? workspaceFolder.name}/' folder`;
       remoteProjectsQuickPick.items = [
         suggestedProjectsGroup,
         ...suggestedProjects,
@@ -261,6 +252,19 @@ export class BindingService {
     return [];
   }
 
+  async bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
+    const existingSettings = VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
+      .get<ProjectBinding>(BINDING_SETTINGS);
+    if (existingSettings?.projectKey === undefined) {
+      await VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
+        .update(BINDING_SETTINGS, { connectionId: '', projectKey: '' });
+      await this.languageClient.didCreateBinding(BindingCreationMode.MANUAL);
+    }
+    VSCode.commands.executeCommand('workbench.action.openFolderSettingsFile');
+  }
+
   async showFolderSelectionQuickPickOrReturnDefaultSelection(workspaceFolders: readonly VSCode.WorkspaceFolder[]) {
     return workspaceFolders.length === 1
       ? workspaceFolders[0].name
@@ -273,17 +277,23 @@ export class BindingService {
         );
   }
 
-  async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, creationMode: BindingCreationMode, connectionId?: string) {
-    connectionId = connectionId || DEFAULT_CONNECTION_ID;
-    await VSCode.workspace
-      .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
-      .update(BINDING_SETTINGS, { connectionId, projectKey });
-    await this.languageClient.didCreateBinding(creationMode);
+  async saveBinding(projectKey: string | undefined, workspaceFolder: VSCode.WorkspaceFolder | undefined, creationMode: BindingCreationMode, connectionId?: string) {
+    if (!projectKey) {
+      VSCode.window.showWarningMessage('No project selected. Binding cannot be created.');
+    } else if (!workspaceFolder) {
+      VSCode.window.showWarningMessage('No workspace folder selected. Binding cannot be created.');
+    } else {
+      connectionId = connectionId || DEFAULT_CONNECTION_ID;
+      await VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
+        .update(BINDING_SETTINGS, { connectionId, projectKey });
+      await this.languageClient.didCreateBinding(creationMode);
 
-    VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/' has been bound with project '${projectKey}'`);
+      VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/' has been bound with project '${projectKey}'`);
 
-    if (creationMode === BindingCreationMode.MANUAL) {
-      this.proposeSharingConfig(projectKey, workspaceFolder);
+      if (creationMode === BindingCreationMode.MANUAL) {
+        this.proposeSharingConfig(projectKey, workspaceFolder);
+      }
     }
   }
 
@@ -321,7 +331,7 @@ export class BindingService {
       if (remoteProjects.size === 0) {
         VSCode.window.showWarningMessage('No remote projects to display.', BIND_MANUALLY_ACTION).then(async action => {
           if (action === BIND_MANUALLY_ACTION) {
-            bindManuallyAction(workspaceFolder);
+            this.bindManuallyAction(workspaceFolder);
           }
         });
       }
@@ -356,7 +366,7 @@ export class BindingService {
   isBound(workspaceFolder: VSCode.WorkspaceFolder) {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
     const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
-    return !!binding.projectKey;
+    return !!binding?.projectKey;
   }
 
   async removeBindingsForRemovedConnections(connectionIds: string[]) {

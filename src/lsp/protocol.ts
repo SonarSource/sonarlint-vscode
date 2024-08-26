@@ -250,7 +250,7 @@ export namespace FilterOutExcludedFiles {
 }
 
 export interface ConnectionCheckResult {
-  connectionId: string;
+  connectionId: string | undefined;
   success: boolean;
   reason?: string;
 }
@@ -561,7 +561,7 @@ export interface SetIssueStatusParams {
 
 export interface AssistCreatingConnectionParams {
   isSonarCloud: boolean;
-  serverUrl: string;
+  serverUrlOrOrganisationKey: string;
   token: string;
 }
 

@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { Commands } from '../util/commands';
 import { Connection } from './connections';
-import { BindingCreationMode, ConnectionCheckResult, Organization } from '../lsp/protocol';
+import { AssistCreatingConnectionParams, BindingCreationMode, ConnectionCheckResult, Organization } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -24,6 +24,15 @@ import { BindingService } from './binding';
 import TRIGGER_HELP_AND_FEEDBACK_LINK = Commands.TRIGGER_HELP_AND_FEEDBACK_LINK;
 
 let connectionSetupPanel: vscode.WebviewPanel;
+
+type ConnectionSetupWebviewMessage = {
+  command?: string;
+  connectionId?: string;
+  serverUrl?: string;
+  organizationKey?: string;
+  disableNotifications?: boolean;
+  token?: string;
+};
 
 const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/connected-mode/';
 const sonarCloudNotificationsDocUrl =
@@ -47,7 +56,7 @@ const SONARCLOUD_DESCRIPTION =
   '<a id="sonarCloudProductPage" href="#">SonarCloud</a> is entirely free for open-source projects.';
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
-  return async assistCreatingConnectionParams => {
+  return async (assistCreatingConnectionParams : AssistCreatingConnectionParams) => {
     return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.isSonarCloud, assistCreatingConnectionParams.serverUrlOrOrganisationKey, assistCreatingConnectionParams.token) }
   };
 }
@@ -183,7 +192,8 @@ export function editSonarCloudConnection(context: vscode.ExtensionContext) {
     const existingConnection= await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
     const initialState = {
       conn: existingConnection,
-      userOrganizations: await ConnectionSettingsService.instance.listUserOrganizations(existingConnection.token)
+      userOrganizations: existingConnection?.token ?
+       await ConnectionSettingsService.instance.listUserOrganizations(existingConnection.token) : [] 
     };
     const serverProductName = 'SonarCloud';
     lazyCreateConnectionSetupPanel(context, serverProductName);
@@ -219,7 +229,7 @@ export async function reportConnectionCheckResult(result: ConnectionCheckResult)
   }
 }
 
-function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, serverProductName) {
+function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, serverProductName: string) {
   if (!connectionSetupPanel) {
     connectionSetupPanel = vscode.window.createWebviewPanel(
       'sonarlint.ConnectionSetup',
@@ -230,9 +240,7 @@ function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, server
       }
     );
     connectionSetupPanel.onDidDispose(
-      () => {
-        connectionSetupPanel = undefined;
-      },
+      () => {},
       null,
       context.subscriptions
     );
@@ -245,7 +253,7 @@ interface RenderOptions {
 }
 
 interface WebviewInitialState {
-  conn: SonarQubeConnection | SonarCloudConnection;
+  conn?: SonarQubeConnection | SonarCloudConnection;
   userOrganizations?: Organization[];
 }
 
@@ -262,13 +270,13 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const serverProductName = isSonarQube ? 'SonarQube' : 'SonarCloud';
   const serverDocUrl = isSonarQube ? sonarQubeNotificationsDocUrl : sonarCloudNotificationsDocUrl;
 
-  const initialConnectionId = escapeHtml(connection.connectionId) || '';
-  const initialToken = escapeHtml(connection.token);
-  const maybeProjectKey = connection.projectKey;
+  const initialConnectionId = escapeHtml(connection?.connectionId || '');
+  const initialToken = escapeHtml(connection?.token || '');
+  const maybeProjectKey = connection?.projectKey;
   const saveButtonLabel = maybeProjectKey ? 'Save Connection And Bind Project' : 'Save Connection';
 
-  const isFromSharedConfiguration = connection.isFromSharedConfiguration;
-  const maybeFolderUri = connection.folderUri || '';
+  const isFromSharedConfiguration = connection?.isFromSharedConfiguration;
+  const maybeFolderUri = connection?.folderUri || '';
   const maybeFolderBindingParagraph = renderBindingParagraph(maybeFolderUri, maybeProjectKey);
 
   return `<!doctype html><html lang="en">
@@ -311,10 +319,10 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <input type="hidden" id="projectKey" value="${maybeProjectKey}" />
         <input type="hidden" id="isFromSharedConfiguration" value="${isFromSharedConfiguration}" />
         <input type="hidden" id="folderUri" value="${maybeFolderUri}" />
-        <vscode-checkbox id="enableNotifications" ${!connection.disableNotifications ? 'checked' : ''}>
+        <vscode-checkbox id="enableNotifications" ${!connection?.disableNotifications ? 'checked' : ''}>
           Receive notifications from ${serverProductName}
         </vscode-checkbox>
-        <input type="hidden" id="enableNotifications-initial" value="${!connection.disableNotifications}" />
+        <input type="hidden" id="enableNotifications-initial" value="${!connection?.disableNotifications}" />
         <p>
           You will receive
           <vscode-link target="_blank" href="${serverDocUrl}">notifications</vscode-link>
@@ -340,7 +348,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   </html>`;
 }
 
-function renderServerUrlField(initialState) {
+function renderServerUrlField(initialState: WebviewInitialState) {
   if (isSonarQubeConnection(initialState.conn)) {
     const serverUrl = escapeHtml(initialState.conn.serverUrl);
     return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
@@ -352,7 +360,7 @@ function renderServerUrlField(initialState) {
   return '';
 }
 
-function renderGenerateTokenButton(connection, serverProductName) {
+function renderGenerateTokenButton(connection: SonarQubeConnection | SonarCloudConnection | undefined, serverProductName: string) {
   const buttonDisabled = isSonarQubeConnection(connection) && connection.serverUrl === '' ? 'disabled' : '';
   return `<div id="tokenGeneration" class="formRowWithStatus">
       <vscode-button id="generateToken" ${buttonDisabled}>
@@ -373,7 +381,7 @@ function renderOrganizationKeyField(initialState : WebviewInitialState) {
   if (isSonarQubeConnection(initialState.conn)) {
     return '';
   }
-  const organizationKey = escapeHtml(initialState.conn.organizationKey);
+  const organizationKey = escapeHtml(initialState.conn?.organizationKey || '');
   let prePopulatedOptions = '';
   if (organizationKey !== '') {
     prePopulatedOptions += `<vscode-option selected>${organizationKey}</vscode-option>`;
@@ -395,16 +403,16 @@ function renderOrganizationKeyField(initialState : WebviewInitialState) {
     <input type="hidden" id="organizationKey-initial" value="${organizationKey}" />`;
 }
 
-function renderBindingParagraph(maybeFolderUri: string, maybeProjectKey: string) {
+function renderBindingParagraph(maybeFolderUri: string, maybeProjectKey: string | undefined) {
   if (maybeFolderUri) {
     const folderUri = vscode.Uri.parse(maybeFolderUri);
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
-    return `Once the connection is saved, workspace folder '${escapeHtml(workspaceFolder.name)}' will be bound to project '${escapeHtml(maybeProjectKey)}'.`
+    return `Once the connection is saved, workspace folder '${escapeHtml(workspaceFolder?.name || '')}' will be bound to project '${escapeHtml(maybeProjectKey || '')}'.`
   }
   return '';
 }
 
-async function handleMessage(message) {
+async function handleMessage(message: ConnectionSetupWebviewMessage) {
   handleMessageWithConnectionSettingsService(message, ConnectionSettingsService.instance);
 }
 
@@ -416,9 +424,12 @@ const SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND = 'sonarQubeEditionsDownloadsLink
 const TOKEN_CHANGED_COMMAND = 'tokenChanged';
 
 export async function handleMessageWithConnectionSettingsService(
-  message,
+  message: ConnectionSetupWebviewMessage,
   connectionSettingsService: ConnectionSettingsService
 ) {
+  const sqConnection: SonarQubeConnection | undefined = message.serverUrl ? message as SonarQubeConnection : undefined;
+  const scConnection: SonarCloudConnection | undefined = message.organizationKey ? message as SonarCloudConnection : undefined;
+
   switch (message.command) {
     case OPEN_TOKEN_GENERATION_PAGE_COMMAND:
       await openTokenGenerationPage(message);
@@ -434,7 +445,7 @@ export async function handleMessageWithConnectionSettingsService(
       if (message.serverUrl) {
         message.serverUrl = cleanServerUrl(message.serverUrl);
       }
-      saveConnection(message, connectionSettingsService);
+      saveConnection(sqConnection || scConnection, connectionSettingsService);
       break;
     case SONARCLOUD_PRODUCT_LINK_COMMAND:
       delete message.command;
@@ -451,7 +462,7 @@ export async function handleMessageWithConnectionSettingsService(
   }
 }
 
-export function getDefaultConnectionId(message): string {
+export function getDefaultConnectionId(message: ConnectionSetupWebviewMessage): string {
   let defaultConnectionId = DEFAULT_CONNECTION_ID;
   if (message.serverUrl) {
     defaultConnectionId = cleanServerUrl(message.serverUrl);
@@ -462,13 +473,13 @@ export function getDefaultConnectionId(message): string {
   return defaultConnectionId;
 }
 
-async function openTokenGenerationPage(message) {
+async function openTokenGenerationPage(message: ConnectionSetupWebviewMessage) {
   const { serverUrl } = message;
-  const cleanedUrl = cleanServerUrl(serverUrl);
+  const cleanedUrl = cleanServerUrl(serverUrl || '');
   ConnectionSettingsService.instance
     .generateToken(cleanedUrl)
     .then(async token => {
-      await handleTokenReceivedNotification(token);
+      await handleTokenReceivedNotification(token || '');
     })
     .catch(
       async _error =>
@@ -481,15 +492,18 @@ async function openTokenGenerationPage(message) {
 }
 
 async function saveConnection(
-  connection: SonarQubeConnection | SonarCloudConnection,
+  connection: SonarQubeConnection | SonarCloudConnection | undefined,
   connectionSettingsService: ConnectionSettingsService
 ) {
+  if (!connection) {
+    return;
+  }
   const isSQConnection = isSonarQubeConnection(connection);
   const serverOrOrganization = isSQConnection ? connection.serverUrl : connection.organizationKey;
 
   await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
   const connectionCheckResult = await connectionSettingsService.checkNewConnection(
-    connection.token,
+    connection.token || '',
     serverOrOrganization,
     isSQConnection
   );
@@ -500,14 +514,14 @@ async function saveConnection(
   }
 
   if (isSQConnection) {
-    const foundConnection = await connectionSettingsService.loadSonarQubeConnection(connection.connectionId);
+    const foundConnection = await connectionSettingsService.loadSonarQubeConnection(connection.connectionId || DEFAULT_CONNECTION_ID);
     if (foundConnection) {
       await connectionSettingsService.updateSonarQubeConnection(connection);
     } else {
       await connectionSettingsService.addSonarQubeConnection(connection);
     }
   } else {
-    const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId);
+    const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId || DEFAULT_CONNECTION_ID);
     if (foundConnection) {
       await connectionSettingsService.updateSonarCloudConnection(connection);
     } else {
@@ -542,7 +556,7 @@ export async function handleTokenReceivedNotification(token: string) {
   }
 }
 
-async function getUserOrganizationsAndUpdateUI(token: string) {
-  const organizations = await ConnectionSettingsService.instance.listUserOrganizations(token);
+async function getUserOrganizationsAndUpdateUI(token?: string) {
+  const organizations = token ? await ConnectionSettingsService.instance.listUserOrganizations(token) : [];
   await connectionSetupPanel.webview.postMessage({ command: ORGANIZATION_LIST_RECEIVED_COMMAND, organizations });
 }

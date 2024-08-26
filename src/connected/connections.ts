@@ -10,8 +10,9 @@ import * as VSCode from 'vscode';
 import { BindingService } from './binding';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionCheckResult } from '../lsp/protocol';
-import { BaseConnection, ConnectionSettingsService } from '../settings/connectionsettings';
+import { BaseConnection, ConnectionSettingsService, SonarCloudConnection, SonarQubeConnection } from '../settings/connectionsettings';
 import { DEFAULT_CONNECTION_ID } from '../commons';
+import { logToSonarLintOutput } from '../util/logging';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 
@@ -85,35 +86,35 @@ export type ConnectionsNode = Connection | ConnectionGroup | RemoteProject | Wor
 export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<ConnectionsNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<Connection | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<ConnectionsNode | undefined> = this._onDidChangeTreeData.event;
-  private allConnections = { sonarqube: Array.from<Connection>([]), sonarcloud: Array.from<Connection>([]) };
+  private allConnections: { [key: string]: Connection[] } = { sonarqube: Array.from<Connection>([]), sonarcloud: Array.from<Connection>([]) };
 
   constructor(private readonly client: SonarLintExtendedLanguageClient) {}
 
   async getConnections(type: string): Promise<Connection[]> {
     const contextValue = type === 'sonarqube' ? 'sonarqubeConnection' : 'sonarcloudConnection';
     const labelKey = 'connectionId';
-    const alternativeLabelKey = type === 'sonarqube' ? 'serverUrl' : 'organizationKey';
-
-    const connectionsFromSettings: BaseConnection[] =
+    
+    const connectionsFromSettings: (SonarQubeConnection | SonarCloudConnection)[] =
       type === 'sonarqube'
         ? ConnectionSettingsService.instance.getSonarQubeConnections()
         : ConnectionSettingsService.instance.getSonarCloudConnections();
     const connections = await Promise.all(
       connectionsFromSettings.map(async c => {
-        const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
+        const alternativeLabel = type === 'sonarqube' ? (c as SonarQubeConnection)['serverUrl'] : (c as SonarCloudConnection)['organizationKey'];
+        const label = c[labelKey] ? c[labelKey] : alternativeLabel;
         let status: ConnectionStatus = 'loading';
         const connectionId: string = c.connectionId ? c.connectionId : DEFAULT_CONNECTION_ID;
         try {
           const connectionCheckResult = ConnectionSettingsService.instance.getStatusForConnection(connectionId);
           if (connectionCheckResult?.success) {
             status = 'ok';
-          } else if (connectionCheckResult && !/unknown/.test(connectionCheckResult.reason)) {
+          } else if (connectionCheckResult?.reason && !/unknown/.test(connectionCheckResult.reason)) {
             status = 'notok';
           }
         } catch (e) {
-          console.log(e);
+          logToSonarLintOutput((e as Error).message);
         }
-        return new Connection(c.connectionId, label, contextValue, status);
+        return new Connection(c.connectionId ?? DEFAULT_CONNECTION_ID, label, contextValue, status);
       })
     );
 
@@ -121,7 +122,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return connections;
   }
 
-  async checkConnection(connectionId) {
+  async checkConnection(connectionId : string) {
     return this.client.checkConnection(connectionId);
   }
 
@@ -129,7 +130,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     if (connection) {
       this._onDidChangeTreeData.fire(connection);
     } else {
-      this._onDidChangeTreeData.fire(null);
+      this._onDidChangeTreeData.fire(undefined);
     }
   }
 
@@ -137,7 +138,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return element;
   }
 
-  async getChildren(element?: ConnectionsNode): Promise<ConnectionsNode[]> {
+  async getChildren(element?: ConnectionsNode): Promise<ConnectionsNode[] | null> {
     if (!element) {
       return this.getInitialState();
     } else if (element.contextValue === 'sonarQubeGroup') {
@@ -155,7 +156,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return null;
   }
 
-  async getBoundProjects(connectionId, serverType) {
+  async getBoundProjects(connectionId : string, serverType : ServerType) {
     const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
     if (!boundProjects) {
       return [];
@@ -165,7 +166,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return allKeys.map(k => new RemoteProject(connectionId, k, serverType, keysToNames[k]));
   }
 
-  getWorkspaceFoldersBoundTo(connectionId, projectKey, serverType) {
+  getWorkspaceFoldersBoundTo(connectionId : string, projectKey : string, serverType : ServerType) {
     const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
     if (!boundProjects) {
       return [];
@@ -177,13 +178,17 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return boundFolders.map(f => new WorkspaceFolderItem(f.folder.name, f.folder, connectionId, serverType));
   }
 
-  getInitialState(): ConnectionGroup[] {
+  getInitialState(): (ConnectionGroup)[] {
     const sqConnections = ConnectionSettingsService.instance.getSonarQubeConnections();
     const scConnections = ConnectionSettingsService.instance.getSonarCloudConnections();
-    return [
-      sqConnections.length > 0 ? new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup') : null,
-      scConnections.length > 0 ? new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup') : null
-    ];
+    const groups : ConnectionGroup[] = [];
+    if (sqConnections.length > 0) {
+      groups.push(new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup'));
+    }
+    if (scConnections.length > 0) {
+      groups.push(new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup'));
+    }
+    return groups;
   }
 
   reportConnectionCheckResult(checkResult: ConnectionCheckResult) {

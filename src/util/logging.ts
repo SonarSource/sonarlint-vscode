@@ -20,7 +20,7 @@ export function getLogOutput() {
   return sonarlintOutput;
 }
 
-export function logToSonarLintOutput(message) {
+export function logToSonarLintOutput(message : string) {
   if (sonarlintOutput) {
     sonarlintOutput.appendLine(message);
   }

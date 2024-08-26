@@ -56,7 +56,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     }
     if (fileName.endsWith('.sln')) {
       const friendlySolutionName = fileName.slice(0, SOLUTION_FILE_SUFFIX_LENGTH);
-      this.solutionFilesByConfigScope.get(folderUri).push(friendlySolutionName);
+      this.solutionFilesByConfigScope.get(folderUri)?.push(friendlySolutionName);
     }
   }
   didRemoveWorkspaceFolder(workspaceFolderUri: vscode.Uri) {
@@ -105,31 +105,31 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     return Array.from(new Set(suggestions.map(s => JSON.stringify(s.connectionSuggestion)))).map(s => JSON.parse(s));
   }
 
-  private async suggestBindingMultiOption(uniqueSuggestions, workspaceFolder) {
+  private async suggestBindingMultiOption(uniqueSuggestions: ConnectionSuggestion[], workspaceFolder: vscode.WorkspaceFolder) {
     const message = `Multiple Connected Mode
        configuration files are available to bind folder '${workspaceFolder.name}'
         to a Sonar server. Do you want to use the shared configuration?`;
     const useConfigurationHandler = async () => {
       const quickPickItems: vscode.QuickPickItem[] = uniqueSuggestions.map(s => {
         return {
-          label: s.projectKey,
-          description: s.organization || s.serverUrl,
-          detail: s.organization ? 'SonarCloud' : 'SonarQube'
+          label: s.connectionSuggestion.projectKey,
+          description: s.connectionSuggestion.organization || s.connectionSuggestion.serverUrl,
+          detail: s.connectionSuggestion.organization ? 'SonarCloud' : 'SonarQube'
         };
       });
       const selectedConfig = await vscode.window.showQuickPick(quickPickItems, {
         title: `Which project would you like to bind with the folder '${workspaceFolder.name}/'`
       });
       if (selectedConfig && selectedConfig.detail === 'SonarCloud') {
-        connectToSonarCloud(this.context)(selectedConfig.description, selectedConfig.label, workspaceFolder.uri);
+        connectToSonarCloud(this.context)(selectedConfig.description, selectedConfig.label, true, workspaceFolder.uri);
       } else if (selectedConfig && selectedConfig.detail === 'SonarQube') {
-        connectToSonarQube(this.context)(selectedConfig.description, selectedConfig.label, workspaceFolder.uri);
+        connectToSonarQube(this.context)(selectedConfig.description, selectedConfig.label, true, workspaceFolder.uri);
       }
     };
     await this.suggestBinding(message, useConfigurationHandler);
   }
 
-  private async suggestBindSingleOption(suggestion, workspaceFolder) {
+  private async suggestBindSingleOption(suggestion: ConnectionSuggestion, workspaceFolder: vscode.WorkspaceFolder) {
     const { projectKey, serverUrl, organization } = suggestion.connectionSuggestion;
     const isFromSharedConfiguration = suggestion.isFromSharedConfiguration;
     const serverReference = organization
@@ -214,20 +214,21 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
       if (this.solutionFilesByConfigScope.get(workspaceFolderUri)?.length === 0) {
         return SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE;
       } else if (this.solutionFilesByConfigScope.get(workspaceFolderUri)?.length === 1) {
-        return `${this.solutionFilesByConfigScope.get(workspaceFolderUri)[0]}.json`;
+        return `${this.solutionFilesByConfigScope.get(workspaceFolderUri)?[0] :
+           SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE}.json`;
       } else {
         const selectedSolutionName = await vscode.window.showQuickPick(
-          this.solutionFilesByConfigScope.get(workspaceFolderUri),
+          this.solutionFilesByConfigScope.get(workspaceFolderUri) || [],
           {
             title: 'For which Solution would you like to export SonarLint binding configuration?',
             placeHolder:
               'A configuration file corresponding to the selected Solution will be created in this working directory.'
           }
         );
-        return selectedSolutionName ? `${selectedSolutionName}.json` : null;
+        return selectedSolutionName ? `${selectedSolutionName}.json` : SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE;
       }
     } catch (error) {
-      return null;
+      return SharedConnectedModeSettingsService.SHARED_CONNECTED_MODE_CONFIG_GENERIC_FILE;
     }
   }
 }
