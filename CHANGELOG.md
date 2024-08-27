@@ -4,6 +4,7 @@
 * Update PHP analyzer 3.36 -> [3.37](https://github.com/SonarSource/sonar-php/releases/tag/3.37.0.12086), FP and bug fixes, improvements
 * Update Python analyzer 3.19 -> [3.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015724%20ORDER%20BY%20created%20ASC) -> [3.21](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015883%20ORDER%20BY%20created%20ASC), FP and bug fixes, improvements, framework detection improvements, performance improvements
 * Update CFamily analyzer 6.57 -> [6.58](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015814%20ORDER%20BY%20created%20ASC), support for C23, FP fixes
+* Update C# analyzer 9.30 -> [9.31](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.31.0.96804) -> [9.32](https://github.com/SonarSource/sonar-dotnet/releases/tag/9.32.0.97167), FP fixes, one rule deprecated
 
 ## 4.9
 
