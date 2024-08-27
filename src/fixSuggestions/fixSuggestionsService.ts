@@ -52,7 +52,7 @@ export class FixSuggestionService {
       // result will be true if at least one edit was applied
       // result will be false if no edits were applied
       this.client.fixSuggestionResolved(params.suggestionId, result);
-    } catch (error) {
+    } catch (error: any) {
       logToSonarLintOutput('Failed to apply edit:'.concat(error.message));
     }
   };

@@ -10,13 +10,16 @@ import * as VSCode from 'vscode';
 import { Commands } from '../util/commands';
 import { HelpAndFeedbackItem, helpAndFeedbackItems } from './constants';
 
-export function getHelpAndFeedbackItemById(id: string): HelpAndFeedbackItem {
+export function getHelpAndFeedbackItemById(id: string): HelpAndFeedbackItem | undefined {
   return helpAndFeedbackItems.find(i => i.id === id);
 }
 
 export class HelpAndFeedbackLink extends VSCode.TreeItem {
-  constructor(public readonly id) {
+  constructor(public readonly id: string) {
     const itemById = getHelpAndFeedbackItemById(id);
+    if (!itemById) {
+      throw new Error(`Help and feedback item with ID '${id}' not found`);
+    }
     super(itemById.label, VSCode.TreeItemCollapsibleState.None);
     this.iconPath = new VSCode.ThemeIcon(itemById.icon);
     this.command = itemById.command ? itemById.command : {
@@ -32,7 +35,7 @@ export class HelpAndFeedbackTreeDataProvider implements VSCode.TreeDataProvider<
   readonly onDidChangeTreeData: VSCode.Event<HelpAndFeedbackLink | undefined> = this._onDidChangeTreeData.event;
 
   refresh() {
-    this._onDidChangeTreeData.fire(null);
+    this._onDidChangeTreeData.fire(undefined);
   }
 
   getChildren(element?: HelpAndFeedbackLink): HelpAndFeedbackLink[] {

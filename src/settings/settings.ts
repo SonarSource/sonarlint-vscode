@@ -59,10 +59,10 @@ export function onConfigurationChange() {
   });
 }
 
-function hasSonarLintLsConfigChanged(oldConfig, newConfig) {
+function hasSonarLintLsConfigChanged(oldConfig: vscode.WorkspaceConfiguration, newConfig: vscode.WorkspaceConfiguration) {
   return !configKeyEquals('ls.javaHome', oldConfig, newConfig) || !configKeyEquals('ls.vmargs', oldConfig, newConfig);
 }
 
-function configKeyEquals(key, oldConfig, newConfig) {
+function configKeyEquals(key: string, oldConfig: vscode.WorkspaceConfiguration, newConfig: vscode.WorkspaceConfiguration) {
   return oldConfig.get(key) === newConfig.get(key);
 }

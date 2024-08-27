@@ -7,7 +7,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { HotspotProbability } from '../lsp/protocol';
+import { HotspotProbability, RemoteHotspot } from '../lsp/protocol';
 import { renderRuleDescription } from '../rules/rulepanel';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
@@ -19,7 +19,7 @@ export function formatProbability(vulnerabilityProbability: string) {
   return `<span class="hotspot-probability hotspot-probability-${probabilityName}">${probabilityName}</span>`;
 }
 
-const categoryShortToLong = {
+const categoryShortToLong: { [key: string]: string; } = {
   'buffer-overflow': 'Buffer Overflow',
   'sql-injection': 'SQL Injection',
   rce: 'Code Injection (RCE)',
@@ -48,13 +48,13 @@ const categoryShortToLong = {
 };
 
 export function computeHotspotContextPanelContent(
-  securityCategory,
-  vulnerabilityProbability,
-  author,
-  status,
-  message,
-  ruleDetails,
-  isLocallyDetectedHotspot,
+  securityCategory: string,
+  vulnerabilityProbability: HotspotProbability,
+  author: string,
+  status: string,
+  message: string,
+  ruleDetails: RemoteHotspot["rule"],
+  isLocallyDetectedHotspot: boolean,
   webview: vscode.Webview
 ) {
   const resolver = new ResourceResolver(util.extensionContext, webview);

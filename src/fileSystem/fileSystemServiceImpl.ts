@@ -15,7 +15,7 @@ import { FileSystemSubscriber } from './fileSystemSubscriber';
 
 export class FileSystemServiceImpl implements FileSystemService {
   private static _instance: FileSystemServiceImpl;
-  listeners= [];
+  listeners: FileSystemSubscriber[] = [];
 
   static init(): void {
     FileSystemServiceImpl._instance = new FileSystemServiceImpl();

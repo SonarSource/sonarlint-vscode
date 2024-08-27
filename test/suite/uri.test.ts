@@ -32,32 +32,32 @@ suite('uri', () => {
   });
 
   test('should get relative path from full path without ws name', () => {
-    const workspaceFolder = vscode.workspace.workspaceFolders[0];
-    const fullPath = `${workspaceFolder.uri}/samples/sample-js/main.js`;
+    const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined;
+    const fullPath = `${workspaceFolder?.uri}/samples/sample-js/main.js`;
 
     expect(getRelativePathFromFullPath(fullPath, workspaceFolder, false)).to.equal(`samples${path.sep}sample-js${path.sep}`);
   });
 
   test('should get relative path from full path with ws name', () => {
-    const workspaceFolder = vscode.workspace.workspaceFolders[0];
-    const fullPath = `${workspaceFolder.uri}/samples/sample-js/main.js`;
+    const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined;;
+    const fullPath = `${workspaceFolder?.uri}/samples/sample-js/main.js`;
 
     expect(getRelativePathFromFullPath(fullPath, workspaceFolder, true)).to.equal(
-      `${workspaceFolder.name} • samples${path.sep}sample-js${path.sep}`
+      `${workspaceFolder?.name} • samples${path.sep}sample-js${path.sep}`
     );
   });
 
   test('should get file name from full path', () => {
-    const workspaceFolder = vscode.workspace.workspaceFolders[0];
-    const fullPath = `${workspaceFolder.uri}/samples/sample-js/main.js`;
+    const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined;;
+    const fullPath = `${workspaceFolder?.uri}/samples/sample-js/main.js`;
 
     expect(getFileNameFromFullPath(fullPath)).to.equal('main.js');
   });
 
   test('should get URI from relative path', () => {
     const relativePath = 'samples/sample-js/main.js';
-    const workspaceFolder = vscode.workspace.workspaceFolders[0];
-    const expectedUri = `${workspaceFolder.uri}/samples/sample-js/main.js`;
+    const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined;;
+    const expectedUri = `${workspaceFolder?.uri}/samples/sample-js/main.js`;
 
     expect(getUriFromRelativePath(relativePath, workspaceFolder)).to.equal(expectedUri);
   });

@@ -21,13 +21,14 @@ import {
   isRunningAutoBuild,
   startedInDebugMode
 } from '../../src/util/util';
+import { Disposable } from 'vscode-languageclient';
 
 const sampleFolderLocation = '../../../test/samples/';
 
 const progress: vscode.Progress<any> = {
   report() { /* NOP */ }
 };
-const cancelToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: null };
+const cancelToken: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: () => Disposable.create(() => {}) };
 
 suite('util', () => {
   test('should detect --debug', () => {
@@ -51,7 +52,7 @@ suite('util', () => {
   });
 
   test('should not have args', () => {
-    process.execArgv = null;
+    process.execArgv = [];
     expect(startedInDebugMode(process)).to.be.false;
   });
 

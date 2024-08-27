@@ -8,11 +8,11 @@ import { HTMLElement, parse } from 'node-html-parser';
 import hljs from 'highlight.js';
 import { logToSonarLintOutput } from '../util/logging';
 
-function getNonDiffCodeSnippetsToHighlight(doc) {
+function getNonDiffCodeSnippetsToHighlight(doc: HTMLElement) {
   return doc.querySelectorAll(`pre:not(.code-difference-scrollable)`);
 }
 
-function getDiffedCodeSnippetsToHighlight(doc) {
+function getDiffedCodeSnippetsToHighlight(doc: HTMLElement) {
   return doc.querySelectorAll(`pre.code-difference-scrollable`);
 }
 
@@ -35,7 +35,7 @@ export function sonarToHighlightJsLanguageKeyMapping(sonarLanguageKey: string): 
   }
 }
 
-export function highlightAllCodeSnippetsInDesc(htmlDescription, ruleLanguageKey, diffed: boolean) {
+export function highlightAllCodeSnippetsInDesc(htmlDescription: string, ruleLanguageKey: string, diffed: boolean) {
   const doc = parse(htmlDescription);
   const preTagsNoDiff = getNonDiffCodeSnippetsToHighlight(doc);
   const languageKey = sonarToHighlightJsLanguageKeyMapping(ruleLanguageKey);
@@ -49,17 +49,17 @@ export function highlightAllCodeSnippetsInDesc(htmlDescription, ruleLanguageKey,
 
     if (diffed) {
       const preTagsWithDiff = getDiffedCodeSnippetsToHighlight(doc);
-      let realContainer;
+      let realContainer: HTMLElement;
       preTagsWithDiff.forEach(pre => {
         const codeDiffContainer = parse(
-          parse(pre.firstChild.toString()).querySelectorAll('div.code-difference-container').toString()
+          parse(pre.firstChild?.toString() || '').querySelectorAll('div.code-difference-container').toString()
         );
         codeDiffContainer.querySelectorAll('div').forEach((div, index) => {
           if (index === 0) {
             realContainer = div;
             return;
           }
-          const newDiv = new HTMLElement('div', div.attrs, '', codeDiffContainer, null);
+          const newDiv = new HTMLElement('div', div.attrs, '', codeDiffContainer, undefined);
           newDiv.textContent = div.textContent;
           const highlightedCode = hljs.highlight(newDiv.textContent, {
             language: languageKey,
@@ -70,12 +70,14 @@ export function highlightAllCodeSnippetsInDesc(htmlDescription, ruleLanguageKey,
           realContainer.appendChild(newDiv);
         });
         pre.appendChild(realContainer);
-        pre.removeChild(pre.firstChild);
+        if (pre.firstChild) {
+          pre.removeChild(pre.firstChild);
+        }
       });
     }
   } catch (e) {
     logToSonarLintOutput(
-      `Error occurred when rendering rule description. Rendering without syntax highlighting. \n ${e.message}`
+      `Error occurred when rendering rule description. Rendering without syntax highlighting. \n ${(e as Error).message}`
     );
   }
 

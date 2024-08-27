@@ -37,8 +37,8 @@ export function createDiagnosticFromIssue(issue: protocol.Issue) {
   if (!isFileLevelIssue(issue.textRange)) {
     // this is NOT a file-level issue
     // vscode line positions are 0-based
-    startPosition = new vscode.Position(startLine - 1, startLineOffset);
-    endPosition = new vscode.Position(endLine - 1, endLineOffset);
+    startPosition = new vscode.Position(startLine - 1, startLineOffset || 0);
+    endPosition = new vscode.Position((endLine || 1) - 1, endLineOffset || 0);
     range = new vscode.Range(startPosition, endPosition);
   }
   const issueDiag = new vscode.Diagnostic(range, 'params.message', DiagnosticSeverity.Warning);

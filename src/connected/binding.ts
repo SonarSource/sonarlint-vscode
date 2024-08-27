@@ -88,7 +88,7 @@ export class BindingService {
       const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
       const projectKey = binding?.projectKey;
       if (projectKey) {
-        const connectionId = binding.connectionId || binding.serverId || DEFAULT_CONNECTION_ID;
+        const connectionId = (binding.connectionId ?? binding.serverId) ?? DEFAULT_CONNECTION_ID;
         if (!bindingsPerConnectionId.has(connectionId)) {
           bindingsPerConnectionId.set(connectionId, new Map<string, BoundFolder[]>());
         }
@@ -283,7 +283,7 @@ export class BindingService {
     } else if (!workspaceFolder) {
       VSCode.window.showWarningMessage('No workspace folder selected. Binding cannot be created.');
     } else {
-      connectionId = connectionId || DEFAULT_CONNECTION_ID;
+      connectionId = connectionId ?? DEFAULT_CONNECTION_ID;
       await VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
         .update(BINDING_SETTINGS, { connectionId, projectKey });

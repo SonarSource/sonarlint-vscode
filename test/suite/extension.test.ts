@@ -73,7 +73,7 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(diags[1].message, 'Unexpected var, use let or const instead.');
   }
 
-  async function waitForSonarLintDiagnostics(fileUri) {
+  async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
     let diags = getSonarLintDiagnostics(fileUri);
     while (diags.length == 0) {
       await sleep(200);
@@ -82,6 +82,6 @@ suite('Extension Test Suite', () => {
     return diags;
   }
 });
-function getSonarLintDiagnostics(fileUri: any) {
+function getSonarLintDiagnostics(fileUri: vscode.Uri) {
   return vscode.languages.getDiagnostics(fileUri).filter(d => d.source == 'sonarlint');
 }

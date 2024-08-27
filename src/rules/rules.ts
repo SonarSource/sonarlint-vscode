@@ -21,6 +21,11 @@ function actualLevel(rule: Rule) {
   return isActive(rule) ? 'on' : 'off';
 }
 
+interface RuleConfiguration {
+  level: ConfigLevel,
+  parameters: object
+}
+
 export class LanguageNode extends VSCode.TreeItem {
   constructor(label: string) {
     super(label, VSCode.TreeItemCollapsibleState.Collapsed);
@@ -48,7 +53,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<AllRulesNode | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
   private levelFilter?: ConfigLevel;
-  private allRules: RulesResponse;
+  private allRules: RulesResponse | undefined;
 
   constructor(private readonly allRulesProvider: () => Thenable<RulesResponse>) {}
 
@@ -64,7 +69,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
         if (node) {
           return response[node.label as string]
             .map(rule => {
-              rule.levelFromConfig = localRuleConfig.get(rule.key, {})['level'];
+              rule.levelFromConfig = localRuleConfig.get(rule.key, {} as RuleConfiguration)['level'];
               return rule;
             })
             .filter(r => {
@@ -110,7 +115,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   }
 
   refresh() {
-    this._onDidChangeTreeData.fire(null);
+    this._onDidChangeTreeData.fire(undefined);
   }
 
   filter(level?: ConfigLevel) {
@@ -148,13 +153,13 @@ export function allTrue(values: boolean[]) {
 }
 
 export function allFalse(values: boolean[]) {
-  return values.length === 0 || values.every(negate(identity));
+  return values.length === 0 || values.every(v => negate(() => identity(v)));
 }
 
 export function toggleRule(level: ConfigLevel) {
   return async (ruleKey: string | RuleNode) => {
     const configuration = getSonarLintConfiguration();
-    const rules = configuration.get('rules') || {};
+    const rules: { [key: string] : object | undefined} = configuration.get('rules') || {};
 
     if (typeof ruleKey === 'string') {
       // This is when a rule is deactivated from a code action, and we only have the key, not the default activation.

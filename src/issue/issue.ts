@@ -55,12 +55,16 @@ export class IssueService {
   }
 
   reopenLocalIssues() {
-    const currentlyOpenFileUri = VSCode.window.activeTextEditor.document.uri;
+    const currentlyOpenFileUri = VSCode.window.activeTextEditor?.document.uri;
+    if (!currentlyOpenFileUri) {
+      showNoActiveFileOpenWarning();
+      return Promise.resolve();
+    }
     const workspaceFolder = VSCode.workspace.getWorkspaceFolder(currentlyOpenFileUri);
     const fileRelativePath = getRelativePathWithFileNameFromFullPath(currentlyOpenFileUri.toString(), workspaceFolder);
     const unixStyleRelativePath = fileRelativePath.replace(/\\/g, '/');
     return this.languageClient.reopenResolvedLocalIssues(
-      code2ProtocolConverter(workspaceFolder.uri),
+      code2ProtocolConverter(workspaceFolder?.uri || VSCode.Uri.file('')),
       unixStyleRelativePath,
       code2ProtocolConverter(currentlyOpenFileUri)
     );
@@ -160,11 +164,12 @@ Please make sure that the right folder is open and bound to the right project on
         ? `Analyzed ${createdAgo} on '${issue.connectionId}'`
         : `Detected by SonarLint`;
     } else {
-      IssueService._instance.issueLocationsView.message = null;
+      IssueService._instance.issueLocationsView.message = undefined;
     }
     if (issue.flows.length > 0) {
+      const firstLocation = IssueService._instance.secondaryLocationsTree.getChildren(null)[0];
       IssueService._instance.issueLocationsView.reveal(
-        IssueService._instance.secondaryLocationsTree.getChildren(null)[0]
+        
       );
     }
   }

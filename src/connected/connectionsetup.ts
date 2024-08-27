@@ -270,13 +270,13 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const serverProductName = isSonarQube ? 'SonarQube' : 'SonarCloud';
   const serverDocUrl = isSonarQube ? sonarQubeNotificationsDocUrl : sonarCloudNotificationsDocUrl;
 
-  const initialConnectionId = escapeHtml(connection?.connectionId || '');
-  const initialToken = escapeHtml(connection?.token || '');
+  const initialConnectionId = escapeHtml(connection?.connectionId ?? '');
+  const initialToken = escapeHtml(connection?.token ?? '');
   const maybeProjectKey = connection?.projectKey;
   const saveButtonLabel = maybeProjectKey ? 'Save Connection And Bind Project' : 'Save Connection';
 
   const isFromSharedConfiguration = connection?.isFromSharedConfiguration;
-  const maybeFolderUri = connection?.folderUri || '';
+  const maybeFolderUri = connection?.folderUri ?? '';
   const maybeFolderBindingParagraph = renderBindingParagraph(maybeFolderUri, maybeProjectKey);
 
   return `<!doctype html><html lang="en">
@@ -381,7 +381,7 @@ function renderOrganizationKeyField(initialState : WebviewInitialState) {
   if (isSonarQubeConnection(initialState.conn)) {
     return '';
   }
-  const organizationKey = escapeHtml(initialState.conn?.organizationKey || '');
+  const organizationKey = escapeHtml(initialState.conn?.organizationKey ?? '');
   let prePopulatedOptions = '';
   if (organizationKey !== '') {
     prePopulatedOptions += `<vscode-option selected>${organizationKey}</vscode-option>`;
@@ -407,7 +407,7 @@ function renderBindingParagraph(maybeFolderUri: string, maybeProjectKey: string 
   if (maybeFolderUri) {
     const folderUri = vscode.Uri.parse(maybeFolderUri);
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
-    return `Once the connection is saved, workspace folder '${escapeHtml(workspaceFolder?.name || '')}' will be bound to project '${escapeHtml(maybeProjectKey || '')}'.`
+    return `Once the connection is saved, workspace folder '${escapeHtml(workspaceFolder?.name ?? '')}' will be bound to project '${escapeHtml(maybeProjectKey ?? '')}'.`
   }
   return '';
 }
@@ -475,11 +475,11 @@ export function getDefaultConnectionId(message: ConnectionSetupWebviewMessage): 
 
 async function openTokenGenerationPage(message: ConnectionSetupWebviewMessage) {
   const { serverUrl } = message;
-  const cleanedUrl = cleanServerUrl(serverUrl || '');
+  const cleanedUrl = cleanServerUrl(serverUrl ?? '');
   ConnectionSettingsService.instance
     .generateToken(cleanedUrl)
     .then(async token => {
-      await handleTokenReceivedNotification(token || '');
+      await handleTokenReceivedNotification(token ?? '');
     })
     .catch(
       async _error =>
@@ -503,7 +503,7 @@ async function saveConnection(
 
   await connectionSetupPanel.webview.postMessage({ command: 'connectionCheckStart' });
   const connectionCheckResult = await connectionSettingsService.checkNewConnection(
-    connection.token || '',
+    connection.token ?? '',
     serverOrOrganization,
     isSQConnection
   );
@@ -514,14 +514,14 @@ async function saveConnection(
   }
 
   if (isSQConnection) {
-    const foundConnection = await connectionSettingsService.loadSonarQubeConnection(connection.connectionId || DEFAULT_CONNECTION_ID);
+    const foundConnection = await connectionSettingsService.loadSonarQubeConnection(connection.connectionId ?? DEFAULT_CONNECTION_ID);
     if (foundConnection) {
       await connectionSettingsService.updateSonarQubeConnection(connection);
     } else {
       await connectionSettingsService.addSonarQubeConnection(connection);
     }
   } else {
-    const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId || DEFAULT_CONNECTION_ID);
+    const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId ?? DEFAULT_CONNECTION_ID);
     if (foundConnection) {
       await connectionSettingsService.updateSonarCloudConnection(connection);
     } else {

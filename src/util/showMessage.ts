@@ -33,7 +33,7 @@ export async function noWorkspaceFolderToScanMessage(): Promise<void> {
   }
 }
 
-export async function tooManyFilesConfirmation(filesCount: number): Promise<HotspotAnalysisConfirmation> {
+export async function tooManyFilesConfirmation(filesCount: number): Promise<HotspotAnalysisConfirmation | undefined> {
   return vscode.window.showWarningMessage(
     `There are ${filesCount} files to analyze for hotspots in project. 
         Analysis may consume too many resources. Do you want to proceed?\n 

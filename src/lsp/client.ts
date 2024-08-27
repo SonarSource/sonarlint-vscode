@@ -144,8 +144,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   ): Promise<void> {
     return this.sendNotification(protocol.AnalyseOpenFileIgnoringExcludes.type, {
       textDocument,
-      notebookUri: notebookDocument ? notebookDocument.uri.toString() : null,
-      notebookVersion: notebookDocument ? notebookDocument.version : null,
+      notebookUri: notebookDocument ? notebookDocument.uri.toString() : undefined,
+      notebookVersion: notebookDocument ? notebookDocument.version : undefined,
       notebookCells
     });
   }
@@ -158,7 +158,7 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.CheckLocalDetectionSupported.type, { uri: folderUri });
   }
 
-  getHotspotDetails(ruleKey, hotspotId, fileUri): Promise<protocol.ShowRuleDescriptionParams> {
+  getHotspotDetails(ruleKey: string, hotspotId: string, fileUri: string): Promise<protocol.ShowRuleDescriptionParams> {
     return this.sendRequest(protocol.GetHotspotDetails.type, { ruleKey, hotspotId, fileUri });
   }
 

@@ -40,15 +40,15 @@ export function getFileNameFromFullPath(fullPath: string): string {
   return fullPath.substring(fullPath.lastIndexOf('/') + 1);
 }
 
-export function getRelativePathWithFileNameFromFullPath(fullPath: string, workspaceFolder: vscode.WorkspaceFolder,): string {
+export function getRelativePathWithFileNameFromFullPath(fullPath: string, workspaceFolder?: vscode.WorkspaceFolder): string {
   const fullFsPath = vscode.Uri.parse(fullPath).fsPath; // /Users/user/sonarlint-vscode/samples/main.js
-  const workspaceFolderFsPath = workspaceFolder.uri.fsPath; // /Users/user/sonarlint-vscode/
+  const workspaceFolderFsPath = workspaceFolder ? workspaceFolder.uri.fsPath : ''; // /Users/user/sonarlint-vscode/
   return fullFsPath.replace(`${workspaceFolderFsPath}${path.sep}`, ''); // samples/main.js
 }
 
 export function getRelativePathFromFullPath(
   fullPath: string,
-  workspaceFolder: vscode.WorkspaceFolder,
+  workspaceFolder: vscode.WorkspaceFolder | undefined,
   specifyWorkspaceFolderName: boolean
 ): string {
   const relativePathWithFileName = getRelativePathWithFileNameFromFullPath(fullPath, workspaceFolder)
@@ -56,8 +56,8 @@ export function getRelativePathFromFullPath(
   const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, ''); // samples/
   if (specifyWorkspaceFolderName) {
     return relativePathWithoutFileName
-      ? `${workspaceFolder.name} • ${relativePathWithoutFileName}`
-      : workspaceFolder.name;
+      ? `${workspaceFolder?.name} • ${relativePathWithoutFileName}`
+      : workspaceFolder?.name || '';
   }
   if (relativePathWithFileName.endsWith(path.sep)) { //NB: Use os-specific path separator
     return relativePathWithoutFileName.substring(0, relativePathWithFileName.length - 2);
@@ -65,7 +65,10 @@ export function getRelativePathFromFullPath(
   return relativePathWithoutFileName;
 }
 
-export function getUriFromRelativePath(relativePath: string, workspaceFolder: vscode.WorkspaceFolder): string {
+export function getUriFromRelativePath(relativePath: string, workspaceFolder?: vscode.WorkspaceFolder): string {
+  if (!workspaceFolder) {
+    return relativePath;
+  }
   const workspaceFolderUri = workspaceFolder.uri;
   return `${workspaceFolderUri}/${relativePath}`;
 }

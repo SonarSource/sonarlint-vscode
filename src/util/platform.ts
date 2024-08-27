@@ -28,17 +28,17 @@ function archToJreArch(arch: string) {
 }
 
 export class PlatformInformation {
-  constructor(public os: string, public arch: string) {}
+  constructor(public os: string | undefined, public arch: string | undefined) {}
 
   public static GetPlatformInformation(): Promise<PlatformInformation> {
     const platform: string = os.platform();
-    let architecturePromise: Promise<string>;
-
+    let architecturePromise: Promise<string> = Promise.resolve('');
+    
     switch (platform) {
       case 'win32':
         architecturePromise = PlatformInformation.GetWindowsArchitecture();
         break;
-
+    
       case 'linux':
       case 'darwin':
         architecturePromise = PlatformInformation.GetUnixArchitecture();
@@ -83,7 +83,7 @@ export class PlatformInformation {
       if (architecture) {
         return architecture.trim();
       }
-      return null;
+      return PlatformInformation.GetUnknownArchitecture();
     });
   }
 }

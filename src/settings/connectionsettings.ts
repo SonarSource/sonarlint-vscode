@@ -145,7 +145,7 @@ export class ConnectionSettingsService {
     if (connection.disableNotifications) {
       newConnection.disableNotifications = true;
     }
-    await this.storeUpdatedConnectionToken(connection, connection.token || '');
+    await this.storeUpdatedConnectionToken(connection, connection.token ?? '');
     connections.push(newConnection);
     await VSCode.workspace
       .getConfiguration()
@@ -166,9 +166,9 @@ export class ConnectionSettingsService {
     } else {
       delete connectionToUpdate.disableNotifications;
     }
-    const didUpdateToken = await this.storeUpdatedConnectionToken(connection, connection.token || '');
+    const didUpdateToken = await this.storeUpdatedConnectionToken(connection, connection.token ?? '');
     if (didUpdateToken) {
-      await this.client.onTokenUpdate(connection.connectionId || DEFAULT_CONNECTION_ID, connection.token || '');
+      await this.client.onTokenUpdate(connection.connectionId ?? DEFAULT_CONNECTION_ID, connection.token ?? '');
     }
     delete connectionToUpdate.token;
     VSCode.workspace
@@ -197,7 +197,7 @@ export class ConnectionSettingsService {
     if (connection.disableNotifications) {
       newConnection.disableNotifications = true;
     }
-    await this.storeUpdatedConnectionToken(connection, connection.token || '');
+    await this.storeUpdatedConnectionToken(connection, connection.token ?? '');
     connections.push(newConnection);
     VSCode.workspace
       .getConfiguration()
@@ -218,9 +218,9 @@ export class ConnectionSettingsService {
     } else {
       delete connectionToUpdate.disableNotifications;
     }
-    const didUpdateToken = await this.storeUpdatedConnectionToken(connection, connection.token || '');
+    const didUpdateToken = await this.storeUpdatedConnectionToken(connection, connection.token ?? '');
     if (didUpdateToken) {
-      await this.client.onTokenUpdate(connection.connectionId || DEFAULT_CONNECTION_ID, connection.token || '');
+      await this.client.onTokenUpdate(connection.connectionId ?? DEFAULT_CONNECTION_ID, connection.token ?? '');
     }
     delete connectionToUpdate.token;
     VSCode.workspace
@@ -319,7 +319,7 @@ export class ConnectionSettingsService {
   }
 
   reportConnectionCheckResult(connectionCheckResult: ConnectionCheckResult) {
-    this.connectionCheckResults.set(connectionCheckResult.connectionId || DEFAULT_CONNECTION_ID, connectionCheckResult);
+    this.connectionCheckResults.set(connectionCheckResult.connectionId ?? DEFAULT_CONNECTION_ID, connectionCheckResult);
   }
 
   getStatusForConnection(connectionId: string) {

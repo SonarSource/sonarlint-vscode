@@ -17,9 +17,15 @@ const CODE_ADDED_CLASS = 'code-added';
 const CODE_REMOVED_CLASS = 'code-removed';
 const CODE_DIFF_GENERAL_CLASS = 'code-diff';
 
+type DiffLineHunk = {
+  added?: boolean;
+  removed?: boolean;
+  value: string;
+}
+
 function replaceInDom(current: HTMLElement, code: string) {
-  const markedCode = new HTMLElement('pre', { class: PARENT_PRE_TAG_CLASS }, '', current, null);
-  const flexDiv = new HTMLElement('div', { class: CODE_DIFF_CONTAINER_CLASS }, '', current, null);
+  const markedCode = new HTMLElement('pre', { class: PARENT_PRE_TAG_CLASS }, '', current, undefined);
+  const flexDiv = new HTMLElement('div', { class: CODE_DIFF_CONTAINER_CLASS }, '', current, undefined);
   flexDiv.innerHTML = code;
   markedCode.appendChild(flexDiv);
   current.replaceWith(markedCode);
@@ -31,7 +37,7 @@ export function differentiateCode(compliant: string, nonCompliant: string) {
   let nonCompliantCode = '';
   let compliantCode = '';
 
-  hunks.forEach(hunk => {
+  hunks.forEach((hunk: DiffLineHunk) => {
     if (!hunk.added && !hunk.removed) {
       nonCompliantCode += `<div>${hunk.value}</div>`;
       compliantCode += `<div>${hunk.value}</div>`;
@@ -48,7 +54,7 @@ export function differentiateCode(compliant: string, nonCompliant: string) {
   return [nonCompliantCode, compliantCode];
 }
 
-export function getExamplesFromDom(document) {
+export function getExamplesFromDom(document: HTMLElement) {
   const pres = document.querySelectorAll(`pre[data-diff-id]`);
 
   return (
@@ -64,7 +70,7 @@ export function getExamplesFromDom(document) {
   );
 }
 
-export function decorateContextualHtmlContentWithDiff(htmlContent) {
+export function decorateContextualHtmlContentWithDiff(htmlContent: string) {
   const doc = parse(htmlContent);
   const codeExamples = getExamplesFromDom(doc);
 
@@ -72,10 +78,10 @@ export function decorateContextualHtmlContentWithDiff(htmlContent) {
     if (noncompliant === undefined || compliant === undefined) {
       return;
     }
-    const [markedNonCompliant, markedCompliantCode] = differentiateCode(noncompliant.innerHTML, compliant.innerHTML);
+    const [markedNonCompliant, markedCompliantCode] = differentiateCode((noncompliant as HTMLElement).innerHTML, (compliant as HTMLElement).innerHTML);
 
-    replaceInDom(noncompliant, markedNonCompliant);
-    replaceInDom(compliant, markedCompliantCode);
+    replaceInDom((noncompliant as HTMLElement), markedNonCompliant);
+    replaceInDom((compliant as HTMLElement), markedCompliantCode);
   });
 
   return doc.toString();

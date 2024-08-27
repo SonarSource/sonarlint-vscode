@@ -105,7 +105,7 @@ export function unzip(downloadResponse: DownloadResponse) {
   }
   return new Promise((resolve, reject) => {
     const extract = inly(downloadResponse.jreZipPath, jreDir);
-    extract.on('error', err => {
+    extract.on('error', (err: any) => {
       reject(err);
     });
     extract.on('end', () => {

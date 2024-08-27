@@ -36,7 +36,7 @@ suite('rulepanel', () => {
       htmlDescriptionTabs: [
         {
           title: 'Title',
-          ruleDescriptionTabNonContextual: null,
+          ruleDescriptionTabNonContextual: undefined,
           hasContextualInformation: true,
           defaultContextKey: 'jsp',
           ruleDescriptionTabContextual: [

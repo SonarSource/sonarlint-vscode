@@ -20,7 +20,7 @@ import { sleep } from '../testutil';
 const SHARED_CONNECTED_MODE_FILE_CONTENT = '{\n' + '    "sonarCloudOrganization": "sonarsource",\n' + '    "projectKey": "autoscan.net"\n' + '}';
 
 const mockClient = ({
-  async getSharedConnectedModeConfigFileContent(configScopeId) {
+  async getSharedConnectedModeConfigFileContent(_configScopeId: string) {
     return Promise.resolve({
       jsonFileContent: SHARED_CONNECTED_MODE_FILE_CONTENT        
     });
@@ -31,14 +31,14 @@ const fakeContext = {
   globalState: null,
   workspaceState: {
     get<T>(key: string): T | undefined {
-      return null;
+      return undefined;
     }
   },
   subscriptions: null,
   extension: null
-} as ExtensionContext;
+} as unknown as ExtensionContext;
 
-let tempFiles = [];
+let tempFiles: vscode.Uri[] = [];
 suite('Shared Connected Mode service test suite', () => {
   let underTest: SharedConnectedModeSettingsService;
   setup(() => {
@@ -55,8 +55,11 @@ suite('Shared Connected Mode service test suite', () => {
   });
 
   test('Should name file connectedMode.json when no solutions in the folder', async () => {
-    const workspaceFolderUri = vscode.workspace.workspaceFolders[0].uri;
+    const workspaceFolderUri = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : undefined;
 
+    if (workspaceFolderUri === undefined) {
+      throw new Error('No workspace folder found');
+    }
     // populate cache
     await FileSystemServiceImpl.instance.crawlDirectory(workspaceFolderUri);
 
@@ -66,8 +69,11 @@ suite('Shared Connected Mode service test suite', () => {
   });
 
   test('Should name file by solution when one solution in the folder', async () => {
-    const workspaceFolder1 = vscode.workspace.workspaceFolders[0];
+    const workspaceFolder1 = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined;
     const solutionFileName = 'mySolution.sln';
+    if (!workspaceFolder1) {
+      throw new Error('No workspace folder found');
+    }
     const solutionFileUri = vscode.Uri.file(path.join(workspaceFolder1.uri.fsPath, solutionFileName));
 
     await vscode.workspace.fs.writeFile(solutionFileUri, new TextEncoder().encode(''));
@@ -81,7 +87,11 @@ suite('Shared Connected Mode service test suite', () => {
   });
 
   test('Should propose options when multiple solutions in the folder', async () => {
-    const workspaceFolder1 = vscode.workspace.workspaceFolders[0];
+    const workspaceFolder1 = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined;
+
+    if (!workspaceFolder1) {
+      throw new Error('No workspace folder found');
+    }
     const solutionFileUri1 = vscode.Uri.file(path.join(workspaceFolder1.uri.fsPath, 'mySolution1.sln'));
     const solutionFileUri2 = vscode.Uri.file(path.join(workspaceFolder1.uri.fsPath, 'myOtherSolution.sln'));
 
@@ -98,7 +108,10 @@ suite('Shared Connected Mode service test suite', () => {
   }).timeout(5000);
 
   test('Should create shared connected mode config file', async () => {
-    const workspaceFolder = vscode.workspace.workspaceFolders[0];
+    const workspaceFolder = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined;
+    if (!workspaceFolder) {
+      throw new Error('No workspace folder found');
+    }
     const workspaceFolderUri = workspaceFolder.uri;
     const expectedFileUri = vscode.Uri.file(path.resolve(workspaceFolderUri.fsPath, '.sonarlint/connectedMode.json'));
 
@@ -125,17 +138,19 @@ suite('Shared Connected Mode service test suite', () => {
   }).timeout(5000);
 
   test('Should deduplicate suggestions', () => {
+    const SERVER_URL = 'localhost:9000';
+    
     const suggestions1 = [
       {
         connectionSuggestion: {
-          serverUrl: 'localhost:9000',
+          serverUrl: SERVER_URL,
           projectKey: 'myProject'
         },
         isFromSharedConfiguration: true
       },
       {
         connectionSuggestion: {
-          serverUrl: 'localhost:9000',
+          serverUrl: SERVER_URL,
           projectKey: 'myProject'
         },
         isFromSharedConfiguration: true
@@ -155,7 +170,7 @@ suite('Shared Connected Mode service test suite', () => {
         isFromSharedConfiguration: true
       }
     ];
-
+    
     const uniqueSuggestions1 = underTest.deduplicateSuggestions(suggestions1);
 
     expect(uniqueSuggestions1.length).to.equal(3);
@@ -164,14 +179,14 @@ suite('Shared Connected Mode service test suite', () => {
     const suggestions2 = [
       {
         connectionSuggestion: {
-          serverUrl: 'localhost:9000',
+          serverUrl: SERVER_URL,
           projectKey: 'myProject'
         },
         isFromSharedConfiguration: false
       },
       {
         connectionSuggestion: {
-          serverUrl: 'localhost:9000',
+          serverUrl: SERVER_URL,
           projectKey: 'myProject212'
         },
         isFromSharedConfiguration: false

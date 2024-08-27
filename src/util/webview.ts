@@ -22,7 +22,7 @@ export class ResourceResolver {
   }
 }
 
-const entityMap = {
+const entityMap: { [key: string]: string}= {
   '&': '&amp;',
   '<': '&lt;',
   '>': '&gt;',
@@ -34,7 +34,7 @@ const entityMap = {
 };
 
 export function escapeHtml(str: string) {
-  return String(str).replace(/[&<>"'\/`=]/g, function (s) {
+  return String(str).replace(/[&<>"'`=/]/g, function (s) {
     return entityMap[s];
   });
 }

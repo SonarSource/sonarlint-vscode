@@ -113,7 +113,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
       const quickPickItems: vscode.QuickPickItem[] = uniqueSuggestions.map(s => {
         return {
           label: s.connectionSuggestion.projectKey,
-          description: s.connectionSuggestion.organization || s.connectionSuggestion.serverUrl,
+          description: s.connectionSuggestion.organization ?? s.connectionSuggestion.serverUrl,
           detail: s.connectionSuggestion.organization ? 'SonarCloud' : 'SonarQube'
         };
       });

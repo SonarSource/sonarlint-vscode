@@ -12,8 +12,8 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { GetJavaConfigResponse } from '../lsp/protocol';
 import { logToSonarLintOutput } from '../util/logging';
 
-let classpathChangeListener: Disposable;
-let serverModeListener: Disposable;
+let classpathChangeListener: Disposable | null;
+let serverModeListener: Disposable | null;
 let javaApiTooLowAlreadyLogged = false;
 let javaServerInLightWeightModeAlreadyLogged = false;
 
@@ -89,7 +89,7 @@ function isJavaApiRecentEnough(apiVersion: string): boolean {
 export async function getJavaConfig(
   languageClient: SonarLintExtendedLanguageClient,
   fileUri: string
-): Promise<GetJavaConfigResponse> {
+): Promise<GetJavaConfigResponse | null> {
   const extension = getJavaExtension();
   try {
     const extensionApi = await extension?.activate();

@@ -9,12 +9,14 @@
 import { logToSonarLintOutput } from '../src/util/logging';
 import { extension } from '../src/util/util';
 
+const ONE_MINUTE = 60_000;
+
 setup('ensure extension is ready', async function () {
-  logToSonarLintOutput(`>>>>>>>>>> Start  ${this.currentTest.fullTitle()}`);
-  this.timeout(60_000);
-  await extension.activate();
+  logToSonarLintOutput(`>>>>>>>>>> Start  ${this.currentTest?.fullTitle()}`);
+  this.timeout(ONE_MINUTE);
+  await extension?.activate();
 });
 
 teardown(function() {
-  logToSonarLintOutput(`<<<<<<<<<< Finish ${this.currentTest.fullTitle()}`);
+  logToSonarLintOutput(`<<<<<<<<<< Finish ${this.currentTest?.fullTitle()}`);
 });
