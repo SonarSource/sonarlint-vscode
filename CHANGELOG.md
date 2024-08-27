@@ -1,3 +1,7 @@
+## 4.10
+
+* Update text and secrets analyzer 2.13 -> [2.14](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015846%20ORDER%20BY%20created%20ASC) -> [2.15](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015894%20ORDER%20BY%20created%20ASC), FP fixes, improvements
+
 ## 4.9
 
 * Update IaC analyzer 1.32 -> [1.33](https://github.com/SonarSource/sonar-iac/releases/tag/1.33.0.11761) -> [1.33.1](https://github.com/SonarSource/sonar-iac/releases/tag/1.33.1.11833), new rules for Helm charts
