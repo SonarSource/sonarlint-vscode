@@ -32,7 +32,7 @@
   {
     "groupId": "org.sonarsource.php",
     "artifactId": "sonar-php-plugin",
-    "version": "3.36.0.11813",
+    "version": "3.37.0.12086",
     "output": "analyzers/sonarphp.jar"
   },
   {

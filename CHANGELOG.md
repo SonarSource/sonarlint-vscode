@@ -1,6 +1,7 @@
 ## 4.10
 
 * Update text and secrets analyzer 2.13 -> [2.14](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015846%20ORDER%20BY%20created%20ASC) -> [2.15](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015894%20ORDER%20BY%20created%20ASC), FP fixes, improvements
+* Update PHP analyzer 3.36 -> [3.37](https://github.com/SonarSource/sonar-php/releases/tag/3.37.0.12086), FP and bug fixes, improvements
 
 ## 4.9
 
