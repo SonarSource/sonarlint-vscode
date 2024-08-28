@@ -22,6 +22,7 @@ import { escapeHtml, ResourceResolver } from '../util/webview';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 import { BindingService } from './binding';
 import TRIGGER_HELP_AND_FEEDBACK_LINK = Commands.TRIGGER_HELP_AND_FEEDBACK_LINK;
+import { AutomaticConnectionSetupCancellationError } from './automaticConnectionCancellationError';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -48,7 +49,15 @@ const SONARCLOUD_DESCRIPTION =
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
   return async assistCreatingConnectionParams => {
-    return { newConnectionId: await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.isSonarCloud, assistCreatingConnectionParams.serverUrlOrOrganisationKey, assistCreatingConnectionParams.token) }
+    let newConnectionId : string | null;
+    try {
+      newConnectionId = await confirmConnectionDetailsAndSave(context)(assistCreatingConnectionParams.isSonarCloud, assistCreatingConnectionParams.serverUrlOrOrganisationKey, assistCreatingConnectionParams.token);
+    } catch (error) {
+      if (error instanceof AutomaticConnectionSetupCancellationError) {
+        return null;
+      }
+    }
+    return { newConnectionId }
   };
 }
 
@@ -110,13 +119,13 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
       } else {
           // old flow for SonarQube
           connectToSonarQube(context)(serverUrlOrOrganizationKey);
-          return null;
+          throw new AutomaticConnectionSetupCancellationError('Automatic Connection setup cancelled; User will manually enter token');
       }
     } else if (!reply.confirmed && !reply.cancelled) {
       vscode.commands.executeCommand(TRIGGER_HELP_AND_FEEDBACK_LINK, 'connectedModeDocs');
-      return null;
+      throw new AutomaticConnectionSetupCancellationError('Automatic Connection setup was cancelled; Opening documentation');
     }
-    return null;
+    throw new AutomaticConnectionSetupCancellationError('Automatic Connection setup was cancelled by the user')
   }
 }
 
