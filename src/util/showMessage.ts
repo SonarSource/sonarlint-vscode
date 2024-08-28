@@ -77,8 +77,9 @@ export async function showSslCertificateConfirmationDialog(cert: SslCertificateC
     Valid from: ${cert.validFrom}\n
     Valid to: ${cert.validTo}\n
     ${fingerprints}
-    If you trust the certificate, it will be saved in truststore ${cert.truststorePath}\n
-    Default password: changeit\n
+    If you trust the certificate, by default it will be saved in truststore '${cert.truststorePath}'\n
+    Default password: sonarlint\n
+    For actual values of truststore path and password, check the 'sonarlint.ls.vmargs' setting.\n
     Consider removing connection if you don't trust the certificate\n`,
     { modal: true }, dontTrust, trust);
   return dialogResponse === trust;
