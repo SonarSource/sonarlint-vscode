@@ -12,10 +12,10 @@ import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
+import { assistCreatingConnection } from './connected/assistCreatingConnection';
 import { BindingService, showSoonUnsupportedVersionMessage } from './connected/binding';
 import { AllConnectionsTreeDataProvider } from './connected/connections';
 import {
-  assistCreatingConnection,
   connectToSonarCloud,
   connectToSonarQube,
   editSonarCloudConnection,
@@ -619,7 +619,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.SslCertificateConfirmation.type, cert =>
     showSslCertificateConfirmationDialog(cert)
   );
-  languageClient.onRequest(protocol.AssistCreatingConnection.type, assistCreatingConnection(context))
+  languageClient.onRequest(protocol.AssistCreatingConnection.type, assistCreatingConnection(context));
   languageClient.onNotification(protocol.ShowSoonUnsupportedVersionMessage.type, params =>
     showSoonUnsupportedVersionMessage(params, context.workspaceState)
   );
