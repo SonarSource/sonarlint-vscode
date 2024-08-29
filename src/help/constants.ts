@@ -88,7 +88,7 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   {
     id: 'compareServerProducts',
     label: 'Compare SonarQube and SonarCloud',
-    url: 'https://www.sonarsource.com/open-source-editions/',
+    url: 'https://www.sonarsource.com/blog/sq-sc_guidance/',
     icon: 'n/a',
     viewItem: false
   },
