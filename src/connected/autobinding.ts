@@ -306,6 +306,11 @@ export class AutoBindingService implements FileSystemSubscriber {
   private async listJsonFilesInDotSonarLint(folderUri: vscode.Uri) {
     const dotSonarLintUri = vscode.Uri.joinPath(folderUri, '.sonarlint');
     try {
+      // First check that the directory exists with `stat` to avoid errors logged by `readDirectory`
+      const dotSonarLintStats = await vscode.workspace.fs.stat(dotSonarLintUri);
+      if ((dotSonarLintStats.type | vscode.FileType.Directory) === 0) {
+        return [];
+      }
       const baseFiles = await vscode.workspace.fs.readDirectory(dotSonarLintUri);
       const foundFiles: Array<FoundFileDto> = [];
       for (const [name, type] of baseFiles) {
