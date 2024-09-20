@@ -61,21 +61,37 @@ a {
 .impact.capsule {
   margin-left: 0.6em;
   padding-right: 0.2em;
+  border: 1px solid;
+}
+
+.impact-blocker {
+  color: var(--sonarlint-blocker-color);
+  background-color: var(--sonarlint-blocker-background-color);
+  border-color: var(--sonarlint-blocker-border-color);
 }
 
 .impact-high {
-  color: rgb(180, 35, 24);
-  background-color: rgb(180, 35, 24, 0.2);
+  color: var(--sonarlint-high-color);
+  background-color: var(--sonarlint-high-background-color);
+  border-color: var(--sonarlint-high-border-color);
 }
 
 .impact-medium {
-  color: rgb(174, 122, 41);
-  background-color: rgb(174, 122, 41, 0.2);
+  color: var(--sonarlint-medium-color);
+  background-color: var(--sonarlint-medium-background-color);
+  border-color: var(--sonarlint-medium-border-color);
 }
 
 .impact-low {
-  color: rgb(49, 108, 146);
-  background-color: rgb(49, 108, 146, 0.2);
+  color: var(--sonarlint-low-color);
+  background-color: var(--sonarlint-low-background-color);
+  border-color: var(--sonarlint-low-border-color);
+}
+
+.impact-info {
+  color: var(--sonarlint-info-color);
+  background-color: var(--sonarlint-info-background-color);
+  border-color: var(--sonarlint-info-border-color);
 }
 
 .impact img {
