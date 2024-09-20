@@ -55,6 +55,7 @@ function computeRuleDescPanelContent(
   rule: ShowRuleDescriptionParams
 ) {
   const resolver = new ResourceResolver(context, webview);
+  const themeSrc = resolver.resolve('styles', 'theme.css');
   const styleSrc = resolver.resolve('styles', 'rule.css');
   const hljsSrc = resolver.resolve('styles', 'vs.css');
   const hotspotSrc = resolver.resolve('styles', 'hotspot.css');
@@ -72,6 +73,7 @@ function computeRuleDescPanelContent(
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <meta http-equiv="Content-Security-Policy"
       content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}"/>
+    <link rel="stylesheet" type="text/css" href="${themeSrc}" />
     <link rel="stylesheet" type="text/css" href="${styleSrc}" />
     <link rel="stylesheet" type="text/css" href="${hotspotSrc}" />
     <link rel="stylesheet" type="text/css" href="${hljsSrc}" />

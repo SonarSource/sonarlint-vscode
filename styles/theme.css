@@ -1,0 +1,42 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2024 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+.vscode-light {
+    --sonarlint-blocker-color: #801B14;
+    --sonarlint-blocker-border-color: #801B14;
+    --sonarlint-blocker-background-color: #FEE4E2;
+    --sonarlint-high-color: #B42318;
+    --sonarlint-high-border-color: #D92D20;
+    --sonarlint-high-background-color: #FEF3F2;
+    --sonarlint-medium-color: #93370D;
+    --sonarlint-medium-border-color: #FE964B;
+    --sonarlint-medium-background-color: #FFF0EB;
+    --sonarlint-low-color: #8C5E1E;
+    --sonarlint-low-border-color: #FADC79;
+    --sonarlint-low-background-color: #FCF5E4;
+    --sonarlint-info-color: #316C92;
+    --sonarlint-info-border-color: #8FCAEA;
+    --sonarlint-info-background-color: #F5FBFF;
+}
+
+.vscode-dark {
+    --sonarlint-blocker-color: #F97066;
+    --sonarlint-blocker-border-color: #F97066;
+    --sonarlint-blocker-background-color: rgba(128, 27, 20, 0.2);
+    --sonarlint-high-color: #FDA29B;
+    --sonarlint-high-border-color: #FDA29B;
+    --sonarlint-high-background-color: rgba(253, 162, 155, 0.2);
+    --sonarlint-medium-color: #FE964B;
+    --sonarlint-medium-border-color: #FE964B;
+    --sonarlint-medium-background-color: rgba(181, 71, 8, 0.2);
+    --sonarlint-low-color: #FADC79;
+    --sonarlint-low-border-color: #FADC79;
+    --sonarlint-low-background-color: rgba(250, 220, 121, 0.2);
+    --sonarlint-info-color: #8FCAEA;
+    --sonarlint-info-border-color: #8FCAEA;
+    --sonarlint-info-background-color: rgba(143, 202, 234, 0.2);
+}
