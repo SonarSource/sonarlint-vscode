@@ -24,7 +24,8 @@ export function isVerboseEnabled(): boolean {
 
 export function enableVerboseLogs() {
   getCurrentConfiguration()?.update(VERBOSE_LOGS, true, vscode.ConfigurationTarget.Global);
-  vscode.window.showInformationMessage('Verbose logging enabled.');
+  // TODO make sure this is correct text
+  vscode.window.showWarningMessage('Verbose logging enabled.', 'Dismiss');
 }
 
 export function loadInitialSettings() {
