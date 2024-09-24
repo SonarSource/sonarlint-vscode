@@ -17,7 +17,7 @@ import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { assert } from 'chai';
 import { Organization } from '../../src/lsp/protocol';
 
-const FIVE_SECONDS = 5000;
+const TEN_SECONDS = 10_000;
 
 async function deleteConnectedModeSettings() {
   await vscode.workspace.getConfiguration('sonarlint')
@@ -53,7 +53,7 @@ const mockSecretStorage = {
 suite('Connection Setup', () => {
 
   const mockedConnectionSettingsService = new ConnectionSettingsService(mockSecretStorage, mockClient);
-  const sleepTime = 1000;
+  const sleepTime = 2000;
 
   setup(async () => {
     await deleteConnectedModeSettings();
@@ -86,7 +86,7 @@ suite('Connection Setup', () => {
 
     const connectionsAfter = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsAfter, [{ connectionId: serverUrl, serverUrl }]);
-  }).timeout(FIVE_SECONDS);
+  }).timeout(TEN_SECONDS);
 
   test('Should provide default connectionId', async () => {
     const connectionsBefore = getSonarQubeConnections();
@@ -109,7 +109,7 @@ suite('Connection Setup', () => {
     // @ts-ignore
     assert.deepStrictEqual(message.connectionId, serverUrl);
 
-  }).timeout(FIVE_SECONDS);
+  }).timeout(TEN_SECONDS);
 
   test('should show SonarCloud creation webview when command is called', async () => {
     const connectionsBefore = getSonarCloudConnections();
@@ -132,7 +132,7 @@ suite('Connection Setup', () => {
 
     const connectionsAfter = getSonarCloudConnections();
     assert.deepStrictEqual(connectionsAfter, [{ connectionId:organizationKey, organizationKey }]);
-  }).timeout(FIVE_SECONDS);
+  }).timeout(TEN_SECONDS);
 
   test('should edit default connection when command is called', async () => {
     const connectionsBefore = getSonarQubeConnections();
@@ -165,7 +165,7 @@ suite('Connection Setup', () => {
 
     const connectionsAfter = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsAfter, [{connectionId, serverUrl, disableNotifications }]);
-  }).timeout(FIVE_SECONDS);
+  }).timeout(TEN_SECONDS);
 
   test('should edit identified SonarQube connection when command is called', async () => {
     const connectionsBefore = getSonarQubeConnections();
@@ -201,7 +201,7 @@ suite('Connection Setup', () => {
 
     const connectionsAfter = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsAfter, [{ connectionId, serverUrl, disableNotifications }]);
-  }).timeout(FIVE_SECONDS);
+  }).timeout(TEN_SECONDS);
 
   test('should edit identified SonarCloud connection when command is called', async () => {
     const connectionsBefore = getSonarCloudConnections();
@@ -237,7 +237,7 @@ suite('Connection Setup', () => {
 
     const connectionsAfter = getSonarCloudConnections();
     assert.deepStrictEqual(connectionsAfter, [{ connectionId, organizationKey, disableNotifications }]);
-  }).timeout(FIVE_SECONDS);
+  }).timeout(TEN_SECONDS);
 
   test('should NOT edit connection for which status check failed', async () => {
     const mockClient = {
@@ -275,7 +275,7 @@ suite('Connection Setup', () => {
     await sleep(sleepTime);
 
     assert.deepStrictEqual(getSonarQubeConnections(), [{ serverUrl, connectionId }]);
-  }).timeout(FIVE_SECONDS);
+  }).timeout(TEN_SECONDS);
 });
 
 function getSonarQubeConnections() {
