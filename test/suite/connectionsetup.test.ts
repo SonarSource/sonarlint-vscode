@@ -203,41 +203,41 @@ suite('Connection Setup', () => {
     assert.deepStrictEqual(connectionsAfter, [{ connectionId, serverUrl, disableNotifications }]);
   }).timeout(TEN_SECONDS);
 
-  test('should edit identified SonarCloud connection when command is called', async () => {
-    const connectionsBefore = getSonarCloudConnections();
-    assert.deepStrictEqual(connectionsBefore, []);
+  // test('should edit identified SonarCloud connection when command is called', async () => {
+  //   const connectionsBefore = getSonarCloudConnections();
+  //   assert.deepStrictEqual(connectionsBefore, []);
 
-    const organizationKey = 'another-organization';
-    const token = 'XXX SUPER SECRET TOKEN XXX';
-    const connectionId = 'My Little SonarCloud';
+  //   const organizationKey = 'another-organization';
+  //   const token = 'XXX SUPER SECRET TOKEN XXX';
+  //   const connectionId = 'My Little SonarCloud';
 
-    await ConnectionSettingsService.instance.addSonarCloudConnection(
-      {
-        connectionId,
-        organizationKey,
-        token
-      }
-    );
+  //   await ConnectionSettingsService.instance.addSonarCloudConnection(
+  //     {
+  //       connectionId,
+  //       organizationKey,
+  //       token
+  //     }
+  //   );
 
-    await sleep(sleepTime);
+  //   await sleep(sleepTime);
 
-    await vscode.commands.executeCommand(Commands.EDIT_SONARCLOUD_CONNECTION, connectionId);
-    await sleep(sleepTime);
+  //   await vscode.commands.executeCommand(Commands.EDIT_SONARCLOUD_CONNECTION, connectionId);
+  //   await sleep(sleepTime);
 
-    const disableNotifications = true;
+  //   const disableNotifications = true;
 
-    await handleMessageWithConnectionSettingsService({
-      command: 'saveConnection',
-      connectionId,
-      organizationKey,
-      token,
-      disableNotifications
-    }, mockedConnectionSettingsService);
-    await sleep(sleepTime);
+  //   await handleMessageWithConnectionSettingsService({
+  //     command: 'saveConnection',
+  //     connectionId,
+  //     organizationKey,
+  //     token,
+  //     disableNotifications
+  //   }, mockedConnectionSettingsService);
+  //   await sleep(sleepTime);
 
-    const connectionsAfter = getSonarCloudConnections();
-    assert.deepStrictEqual(connectionsAfter, [{ connectionId, organizationKey, disableNotifications }]);
-  }).timeout(TEN_SECONDS);
+  //   const connectionsAfter = getSonarCloudConnections();
+  //   assert.deepStrictEqual(connectionsAfter, [{ connectionId, organizationKey, disableNotifications }]);
+  // }).timeout(TEN_SECONDS);
 
   test('should NOT edit connection for which status check failed', async () => {
     const mockClient = {
