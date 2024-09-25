@@ -1,3 +1,7 @@
+## 4.11
+
+* Update IaC analyzer 1.33 -> [1.34](https://github.com/SonarSource/sonar-iac/releases/tag/1.34.0.12019) -> [1.35](https://github.com/SonarSource/sonar-iac/releases/tag/1.35.0.12330) -> [1.36](https://github.com/SonarSource/sonar-iac/releases/tag/1.36.0.12431), FP & FN fixes, improved detection logic, support for detecting Micronaut configuration issues in YAML & properties files, parsing improvements for AzureResourceManager
+
 ## 4.10
 
 * Update text and secrets analyzer 2.13 -> [2.14](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2015846%20ORDER%20BY%20created%20ASC) -> [2.15](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015894%20ORDER%20BY%20created%20ASC), FP fixes, improvements
