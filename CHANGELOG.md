@@ -1,6 +1,7 @@
 ## 4.11
 
 * Update IaC analyzer 1.33 -> [1.34](https://github.com/SonarSource/sonar-iac/releases/tag/1.34.0.12019) -> [1.35](https://github.com/SonarSource/sonar-iac/releases/tag/1.35.0.12330) -> [1.36](https://github.com/SonarSource/sonar-iac/releases/tag/1.36.0.12431), FP & FN fixes, improved detection logic, support for detecting Micronaut configuration issues in YAML & properties files, parsing improvements for AzureResourceManager
+* Update JS/TS/CSS analyzer 10.14 -> [10.15](https://sonarsource.atlassian.net/issues/?jql=project%20=%2011216%20AND%20fixVersion=15600%20ORDER%20BY%20priority%20DESC,%20key%20ASC), new rules, improvements
 
 ## 4.10
 
