@@ -6,6 +6,7 @@
 * Update Go analyzer 1.15 -> [1.15.1](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010144%20AND%20fixVersion=15900%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.15.2](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010144%20AND%20fixVersion=15906%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.16](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010144%20AND%20fixVersion=15325%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.16.1](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010144%20AND%20fixVersion=15980%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.17](https://sonarsource.atlassian.net/issues/?jql=project%20=%2011251%20AND%20fixVersion=15919%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.17.1](https://sonarsource.atlassian.net/issues/?jql=project%20=%2011251%20AND%20fixVersion=15991%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
 * Update Python analyzer 4.21 -> [4.22](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010127%20AND%20fixVersion=15898%20ORDER%20BY%20priority%20DESC,%20key%20ASC) 7 new rules related to Pytorch
 * Update Secrets analyzer 2.15 -> [2.16](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010173%20AND%20fixVersion%3D15923%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), bug fixes
+* Update PHP analyzer 3.37 -> [3.38](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010124%20AND%20fixVersion%3D15889%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), new rule, improvements
 
 ## 4.10
 
