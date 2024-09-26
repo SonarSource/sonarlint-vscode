@@ -260,7 +260,7 @@
           "order": 13,
           "type": "string",
           "default": "",
-          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) will not be processed by analyzers. In [Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) with SonarQube or SonarCloud, this property will be ignored and server exclusion settings will be applied. No rules are evaluated on excluded files. Example: `**/lib/**,**/*generated*`",
+          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) will not be processed by analyzers. In [Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) with SonarQube or SonarCloud, this property will be ignored and the server's exclusion settings will be applied. No rules are evaluated on excluded files. Example: `**/lib/**,**/*generated*`",
           "scope": "resource"
         },
         "sonarlint.ls.javaHome": {
