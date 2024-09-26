@@ -4,6 +4,7 @@
 * Update JS/TS/CSS analyzer 10.14 -> [10.15](https://sonarsource.atlassian.net/issues/?jql=project%20=%2011216%20AND%20fixVersion=15600%20ORDER%20BY%20priority%20DESC,%20key%20ASC), new rules, improvements
 * Update CFamily analyzer 6.58 -> [6.59](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D15909%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), improvements, bug fixes
 * Update Go analyzer 1.15 -> [1.15.1](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010144%20AND%20fixVersion=15900%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.15.2](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010144%20AND%20fixVersion=15906%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.16](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010144%20AND%20fixVersion=15325%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.16.1](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010144%20AND%20fixVersion=15980%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.17](https://sonarsource.atlassian.net/issues/?jql=project%20=%2011251%20AND%20fixVersion=15919%20ORDER%20BY%20priority%20DESC,%20key%20ASC) -> [1.17.1](https://sonarsource.atlassian.net/issues/?jql=project%20=%2011251%20AND%20fixVersion=15991%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
+* Update Python analyzer 4.21 -> [4.22](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010127%20AND%20fixVersion=15898%20ORDER%20BY%20priority%20DESC,%20key%20ASC) 7 new rules related to Pytorch
 
 ## 4.10
 
