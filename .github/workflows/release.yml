@@ -35,16 +35,16 @@ jobs:
       ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
       - name: Checkout custom actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           clean: false
-      - name: Use Node 18
-        uses: actions/setup-node@v3
+      - name: Use Node 20
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       - name: Get vault secrets
         id: secrets
-        uses: SonarSource/vault-action-wrapper@dc8fe04652687f7278f3ecd27905967836bab0eb # tag=2.7.4-1
+        uses: SonarSource/vault-action-wrapper@3.0.1
         with:
           secrets: |
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
@@ -106,14 +106,14 @@ jobs:
       ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
       - name: Checkout custom actions
-        uses: actions/checkout@v3
-      - name: Use Node 18
-        uses: actions/setup-node@v3
+        uses: actions/checkout@v4
+      - name: Use Node 20
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       - name: Get vault secrets
         id: secrets
-        uses: SonarSource/vault-action-wrapper@dc8fe04652687f7278f3ecd27905967836bab0eb # tag=2.7.4-1
+        uses: SonarSource/vault-action-wrapper@3.0.1
         with:
           secrets: |
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
