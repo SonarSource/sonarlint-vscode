@@ -21,6 +21,8 @@ const {
   OPENVSX_TOKEN
 } = process.env;
 
+console.log(`Publishing ${ARTIFACT_FILE} to OpenVSX`);
+
 (async () => {
   /**
    * @type ovsx.PublishOptions
@@ -29,10 +31,13 @@ const {
     extensionFile: ARTIFACT_FILE,
     pat: OPENVSX_TOKEN
   };
-  await ovsx.publish(options);
-
+  const [ publicationResult ] = await ovsx.publish(options);
+  if (publicationResult.status === 'rejected') {
+    throw new Error(`Impossible to publish ${ARTIFACT_FILE} to OpenVSX`, { cause: publicationResult.reason });
+  }
 })()
   .then(() => {
+    console.log(`Published ${ARTIFACT_FILE} to OpenVSX`);
     process.exit(0);
   })
   .catch(e => {
