@@ -38,7 +38,7 @@ export class FileSystemServiceImpl implements FileSystemService {
       const files = await vscode.workspace.fs.readDirectory(currentDirectory);
       for (const [name, type] of files) {
         const fullFileUri = vscode.Uri.joinPath(currentDirectory, name);
-
+        const a = Object.assign({}, fullFileUri);
         if (type === vscode.FileType.File) {
           // Call the listeners; Only pass Uri of configScope, not child directories
           this.listeners.forEach(listener => listener.onFile(configScopeUri.toString(), name, fullFileUri));
