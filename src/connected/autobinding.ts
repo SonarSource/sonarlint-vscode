@@ -289,7 +289,7 @@ export class AutoBindingService implements FileSystemSubscriber {
     await this.getContentOfAutobindingFiles(params.folderUri);
     const foundFiles: Array<FoundFileDto> = [
       ...await this.listJsonFilesInDotSonarLint(baseFolderUri),
-      ...this.filesPerConfigScope.get(params.folderUri) || []
+      ...this.filesPerConfigScope.get(baseFolderUri.toString()) || []
     ];
     return { foundFiles };
   }
