@@ -11,6 +11,7 @@
 import * as vscode from 'vscode';
 import { window } from 'vscode';
 import { SslCertificateConfirmationParams } from '../lsp/protocol';
+import { Commands } from '../util/commands';
 
 const OPEN_FOLDER_ACTION = 'Open Folder';
 export const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
@@ -87,4 +88,19 @@ export async function showSslCertificateConfirmationDialog(cert: SslCertificateC
 
 export function showNoActiveFileOpenWarning() {
   return window.showWarningMessage('At least one file needs to be open to use this command');
+}
+
+export function showNoFileWithUriError(uri: vscode.Uri) {
+  vscode.window
+  .showErrorMessage(
+    `Could not find file '${uri}' in the current workspace.
+Please make sure that the right folder is open and bound to the right project on the server,
+and that the file has not been removed or renamed.`,
+    'Show Documentation'
+  )
+  .then(action => {
+    if (action === 'Show Documentation') {
+      vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse('https://docs.sonarsource.com/sonarlint/vs-code/troubleshooting/#no-matching-issue-found'));
+    }
+  });
 }
