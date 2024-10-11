@@ -69,3 +69,12 @@ export function getUriFromRelativePath(relativePath: string, workspaceFolder: vs
   const workspaceFolderUri = workspaceFolder.uri;
   return `${workspaceFolderUri}/${relativePath}`;
 }
+
+export async function pathExists(uri: vscode.Uri): Promise<boolean> {
+  try {
+    await vscode.workspace.fs.stat(uri);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

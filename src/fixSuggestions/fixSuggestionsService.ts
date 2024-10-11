@@ -2,6 +2,8 @@ import { ShowFixSuggestionParams } from "../lsp/protocol";
 import * as vscode from "vscode";
 import { logToSonarLintOutput } from "../util/logging";
 import { SonarLintExtendedLanguageClient } from "../lsp/client";
+import { pathExists } from "../util/uri";
+import { showNoFileWithUriError } from "../util/showMessage";
 
 export class FixSuggestionService {
 	private static readonly END_OF_LINE_OFFSET = 10000;
@@ -19,6 +21,10 @@ export class FixSuggestionService {
 	showFixSuggestion = async (params : ShowFixSuggestionParams) => {
 		try {
 			const fileUri = vscode.Uri.parse(params.fileUri);
+			if (!(await pathExists(fileUri))) {
+				showNoFileWithUriError(fileUri);
+				return;
+			}
 			const editor = await vscode.window.showTextDocument(fileUri);
 			const wsedit = new vscode.WorkspaceEdit();
 			for (const edit of params.textEdits) {
@@ -37,7 +43,7 @@ export class FixSuggestionService {
 			// result will be false if no edits were applied
 			this.client.fixSuggestionResolved(params.suggestionId, result);
 		} catch (error) {
-			logToSonarLintOutput('Failed to apply edit:'.concat(error.message));
+			logToSonarLintOutput('Failed to apply edit: '.concat(error.message));
 		}
 	}
 
