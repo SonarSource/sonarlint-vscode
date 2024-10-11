@@ -132,15 +132,11 @@ export class BindingService {
     );
     const workspaceFolder = workspaceFolders.find(f => f.name === selectedWorkspaceFolderName);
 
-    const existingSettings = VSCode.workspace
+    await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
-      .get<ProjectBinding>(BINDING_SETTINGS);
-    if (existingSettings.projectKey === undefined) {
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
-        .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
-      await this.languageClient.didCreateBinding(params.isFromSharedConfiguration ? BindingCreationMode.IMPORTED : BindingCreationMode.AUTOMATIC);
-    }
+      .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
+    await this.languageClient.didCreateBinding(params.isFromSharedConfiguration ? BindingCreationMode.IMPORTED : BindingCreationMode.AUTOMATIC);
+
     return { configurationScopeId: workspaceFolder.uri.toString() };
   }
 
