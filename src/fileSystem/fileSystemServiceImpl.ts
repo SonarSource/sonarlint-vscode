@@ -12,6 +12,7 @@ import { Uri } from 'vscode';
 import { logToSonarLintOutput } from '../util/logging';
 import { FileSystemService } from './fileSystemService';
 import { FileSystemSubscriber } from './fileSystemSubscriber';
+import { minimatch } from 'minimatch';
 
 export class FileSystemServiceImpl implements FileSystemService {
   private static _instance: FileSystemServiceImpl;
@@ -44,7 +45,7 @@ export class FileSystemServiceImpl implements FileSystemService {
           this.listeners.forEach(listener => listener.onFile(configScopeUri.toString(), name, fullFileUri));
         }
         // .sonarlint folder is already handled separately, skipping it in recursive crawl
-        if (type === vscode.FileType.Directory && name !== '.sonarlint') {
+        if (type === vscode.FileType.Directory && name !== '.sonarlint' && !(await this.isFolderExcluded(fullFileUri))) {
           await this.listFilesRecursively(configScopeUri, fullFileUri);
         }
       }
@@ -62,4 +63,21 @@ export class FileSystemServiceImpl implements FileSystemService {
   async didAddWorkspaceFolder(folder: vscode.WorkspaceFolder) {
     this.crawlDirectory(folder.uri);
   }
+
+  async isFolderExcluded(folderUri: vscode.Uri): Promise<boolean> {
+    const filesExclude = vscode.workspace.getConfiguration('files').get<{ [key: string]: boolean }>('exclude');
+    const searchExclude = vscode.workspace.getConfiguration('search').get<{ [key: string]: boolean }>('exclude');
+
+    const isExcluded = (excludeConfig: { [key: string]: boolean } | undefined): boolean => {
+        if (!excludeConfig) {
+            return false;
+        }
+        return Object.keys(excludeConfig).some(pattern => {
+            const glob = new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], pattern);
+            return excludeConfig[pattern] && minimatch(vscode.workspace.asRelativePath(folderUri), glob.pattern);
+        });
+    };
+
+    return isExcluded(filesExclude) || isExcluded(searchExclude);
+}
 }
