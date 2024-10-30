@@ -22,7 +22,7 @@ env:
 
 auto_cancellation: $CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH
 
-eks_container: &CONTAINER_DEFINITION
+container_definition: &CONTAINER_DEFINITION
   dockerfile: .cirrus/Dockerfile
   docker_arguments:
     CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
@@ -35,12 +35,11 @@ eks_container: &CONTAINER_DEFINITION
   builder_subnet_id: ${CIRRUS_AWS_SUBNET}
   namespace: default
 
-ec2_instance: &WINVM_DEFINITION
+ec2_instance_definition: &WINVM_DEFINITION
   experimental: true
   image: base-windows-jdk17-v*
   platform: windows
   region: eu-central-1
-  subnet_id: ${CIRRUS_AWS_SUBNET}
   type: t3.xlarge
 
 skip_master_branch_and_allvsix_branch: &SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
