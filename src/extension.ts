@@ -361,13 +361,13 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_RULE_DESCRIPTION, hotspot =>
-      languageClient.showHotspotRuleDescription(hotspot.ruleKey, hotspot.key, hotspot.fileUri)
+      languageClient.showHotspotRuleDescription(hotspot.key, hotspot.fileUri)
     )
   );
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DETAILS, async hotspot => {
-      const hotspotDetails = await languageClient.getHotspotDetails(hotspot.ruleKey, hotspot.key, hotspot.fileUri);
+      const hotspotDetails = await languageClient.getHotspotDetails(hotspot.key, hotspot.fileUri);
       showHotspotDetails(hotspotDetails, hotspot);
     })
   );

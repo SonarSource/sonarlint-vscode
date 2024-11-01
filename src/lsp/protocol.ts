@@ -11,7 +11,7 @@ import * as lsp from 'vscode-languageserver-protocol';
 //#region Client side extensions to LSP
 
 export namespace ShowRuleDescriptionNotification {
-  export const type = new lsp.NotificationType<ShowRuleDescriptionParams>('sonarlint/showRuleDescription');
+  export const type = new lsp.NotificationType<ShowStandaloneRuleDescriptionParams>('sonarlint/showRuleDescription');
 }
 
 export namespace SuggestBindingNotification {
@@ -56,12 +56,11 @@ export namespace ShowHotspotRuleDescriptionNotification {
 }
 
 export interface ShowHotspotRuleDescriptionNotificationParams {
-  ruleKey: string;
   hotspotId: string;
   fileUri: string;
 }
 
-export interface ShowRuleDescriptionParams {
+export interface ShowStandaloneRuleDescriptionParams {
   key: string;
   name: string;
   htmlDescription: string;
@@ -90,6 +89,41 @@ export interface ShowRuleDescriptionParams {
     description: string;
     defaultValue: string;
   }>;
+}
+
+export interface ShowRuleDescriptionParams {
+  key: string;
+  name: string;
+  htmlDescription: string;
+  htmlDescriptionTabs: Array<{
+    title: string;
+    ruleDescriptionTabNonContextual?: {
+      htmlContent: string;
+    };
+    ruleDescriptionTabContextual?: Array<{
+      htmlContent: string;
+      contextKey: string;
+      displayName: string;
+    }>;
+    hasContextualInformation: boolean;
+    defaultContextKey?: string;
+  }>;
+  severityDetails: SeverityDetails;
+  languageKey: string;
+  isTaint: boolean;
+  parameters?: Array<{
+    name: string;
+    description: string;
+    defaultValue: string;
+  }>;
+}
+
+interface SeverityDetails {
+  severity?: string;
+  type?: string;
+  cleanCodeAttribute?: string;
+  cleanCodeAttributeCategory?: string;
+  impacts?: { [softwareQuality: string]: string };
 }
 
 export namespace GetJavaConfigRequest {

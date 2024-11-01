@@ -64,12 +64,15 @@ suite('Java Test Suite', () => {
 
     // Check that the exception-related diagnostic has 3 code actions
     const rangeInMiddleOfThrowsMyException = new vscode.Range(8, 54, 8, 54);
-    const codeActionsResult = (await vscode.commands.executeCommand<(vscode.Command | vscode.CodeAction)[]>('vscode.executeCodeActionProvider', document.uri, rangeInMiddleOfThrowsMyException, vscode.CodeActionKind.QuickFix.value))!;
+    const codeActionsResult = (await vscode.commands.executeCommand<(vscode.Command | vscode.CodeAction)[]>('vscode.executeCodeActionProvider', document.uri, rangeInMiddleOfThrowsMyException, vscode.CodeActionKind.QuickFix.value));
     // With old versions of VSCode, code actions are not necessarily filtered on kind
+    console.log('+++++++', codeActionsResult[0].title)
+    console.log('+++++++', codeActionsResult[2].title)
+    console.log('+++++++', codeActionsResult[1].title)
     const expectedActionTitles = [
       "SonarLint: Deactivate rule 'java:S1130'",
-      "SonarLint: Open description of rule 'java:S1130'",
-      'SonarLint: Remove "MyException"'
+      "SonarLint: Remove \"MyException\"",
+      "SonarLint: Show issue details for 'java:S1130'"
     ];
     const actualCodeActionTitles = codeActionsResult.filter(c => expectedActionTitles.indexOf(c.title) >= 0).map(c => c.title);
     // Order of code actions is not stable, forcing lexicographic order for assertion

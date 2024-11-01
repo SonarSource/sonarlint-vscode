@@ -62,8 +62,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     this.sendRequest(protocol.ShowHotspotLocations.type, { hotspotKey, fileUri });
   }
 
-  showHotspotRuleDescription(ruleKey: string, hotspotId: string, fileUri: string) {
-    this.sendNotification(protocol.ShowHotspotRuleDescriptionNotification.type, { ruleKey, hotspotId, fileUri });
+  showHotspotRuleDescription(hotspotId: string, fileUri: string) {
+    this.sendNotification(protocol.ShowHotspotRuleDescriptionNotification.type, { hotspotId, fileUri });
   }
 
   openHotspotOnServer(hotspotId: string, fileUri: string) {
@@ -158,8 +158,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.CheckLocalDetectionSupported.type, { uri: folderUri });
   }
 
-  getHotspotDetails(ruleKey, hotspotId, fileUri): Promise<protocol.ShowRuleDescriptionParams> {
-    return this.sendRequest(protocol.GetHotspotDetails.type, { ruleKey, hotspotId, fileUri });
+  getHotspotDetails(hotspotId, fileUri): Promise<protocol.ShowRuleDescriptionParams> {
+    return this.sendRequest(protocol.GetHotspotDetails.type, { hotspotId, fileUri });
   }
 
   didCreateBinding(mode: protocol.BindingCreationMode): Promise<void> {

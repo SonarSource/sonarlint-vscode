@@ -54,7 +54,7 @@ suite('CSharp Test Suite', () => {
     const expectedActionTitles = [
       'SonarLint: Add comment',
       "SonarLint: Deactivate rule 'csharpsquid:S1186'",
-      "SonarLint: Open description of rule 'csharpsquid:S1186'",
+      "SonarLint: Show issue details for 'csharpsquid:S1186'",
       'SonarLint: Throw NotSupportedException'
     ];
     const actualCodeActionTitles = codeActionsResult
