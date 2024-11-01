@@ -197,7 +197,9 @@ export async function activate(context: VSCode.ExtensionContext) {
             isTelemetryEnabled: VSCode.env.isTelemetryEnabled,
             ...(VSCode.env.isTelemetryEnabled && { machineId: VSCode.env.machineId })
           },
-          omnisharpDirectory: Path.resolve(context.extensionPath, 'omnisharp')
+          omnisharpDirectory: Path.resolve(context.extensionPath, 'omnisharp'),
+          csharpOssPath: Path.resolve(context.extensionPath, 'analyzers', 'sonarcsharp.jar'),
+          csharpEnterprisePath: Path.resolve(context.extensionPath, 'analyzers', 'csharpenterprise.jar'),
         },
         enableNotebooks: true,
         clientNodePath: VSCode.workspace.getConfiguration().get('sonarlint.pathToNodeExecutable'),
