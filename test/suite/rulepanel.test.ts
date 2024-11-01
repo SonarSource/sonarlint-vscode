@@ -23,8 +23,10 @@ suite('rulepanel', () => {
         isTaint: false,
         key: '',
         name: '',
-        severity: '',
-        type: '',
+        severityDetails: {
+          severity: '',
+          type: ''
+        },
         languageKey: '',
         htmlDescription: 'monolithicDescription'
       })
@@ -56,9 +58,11 @@ suite('rulepanel', () => {
       isTaint: true,
       key: '',
       name: '',
-      severity: '',
+      severityDetails: {
+        severity: '',
+        type: ''
+      },
       languageKey: '',
-      type: '',
       htmlDescription: 'contextualDescription'
     });
     let inlineHtmlResult = htmlResult.replace(/(\r\n|\n|\r)/gm, "");
@@ -91,9 +95,11 @@ suite('rulepanel', () => {
         isTaint: false,
         key: '',
         name: '',
-        severity: '',
+        severityDetails: {
+          severity: '',
+          type: ''
+        },
         languageKey: '',
-        type: '',
         htmlDescription: ''
       })
     ).to.be.empty;
@@ -103,8 +109,10 @@ suite('rulepanel', () => {
         isTaint: false,
         key: '',
         name: '',
-        severity: '',
-        type: '',
+        severityDetails: {
+          severity: '',
+          type: ''
+        },
         languageKey: '',
         htmlDescription: '',
         parameters: []
@@ -119,8 +127,10 @@ suite('rulepanel', () => {
         isTaint: false,
         key: '',
         name: '',
-        severity: '',
-        type: '',
+        severityDetails: {
+          severity: '',
+          type: ''
+        },
         languageKey: '',
         htmlDescription: '',
         parameters: [
@@ -142,8 +152,10 @@ suite('rulepanel', () => {
           isTaint: false,
           key: '',
           name: '',
-          severity: '',
-          type: 'NOT A HOTSPOT',
+          severityDetails: {
+            severity: '',
+            type: 'NOT_A_HOTSPOT'
+          },
           languageKey: '',
           htmlDescription: ''
         },
@@ -160,9 +172,11 @@ suite('rulepanel', () => {
           isTaint: false,
           key: '',
           name: '',
-          severity: '',
+          severityDetails: {
+            severity: '',
+            type: 'SECURITY_HOTSPOT'
+          },
           languageKey: '',
-          type: 'SECURITY_HOTSPOT',
           htmlDescription: ''
         },
         ''
@@ -178,9 +192,11 @@ suite('rulepanel', () => {
           isTaint: false,
           key: '',
           name: '',
-          severity: '',
+          severityDetails: {
+            severity: '',
+            type: ''
+          },
           languageKey: '',
-          type: '',
           htmlDescription: ''
         },
         ''
@@ -196,9 +212,11 @@ suite('rulepanel', () => {
           isTaint: true,
           key: '',
           name: '',
-          severity: '',
+          severityDetails: {
+            severity: '',
+            type: ''
+          },
           languageKey: '',
-          type: '',
           htmlDescription: ''
         },
         ''

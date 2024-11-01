@@ -89,8 +89,8 @@ function computeRuleDescPanelContent(
 }
 
 function renderCleanCodeAttribute(rule: ShowRuleDescriptionParams) {
-  const categoryLabel = escapeHtml(rule.cleanCodeAttributeCategory);
-  const attributeLabel = escapeHtml(rule.cleanCodeAttribute);
+  const categoryLabel = escapeHtml(rule.severityDetails.cleanCodeAttributeCategory);
+  const attributeLabel = escapeHtml(rule.severityDetails.cleanCodeAttribute);
   return `<div class="clean-code-attribute capsule" title="Clean Code attributes are characteristics code needs to have to be considered clean.">
   <span class="attribute-category">${categoryLabel} issue</span>
   <span class="attribute">${attributeLabel}</span>
@@ -109,9 +109,9 @@ function renderImpact(softwareQuality: string, severity: string, resolver: Resou
 }
 
 function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceResolver) {
-  if (rule.impacts && Object.keys(rule.impacts).length > 0) {
+  if (rule.severityDetails.impacts && Object.keys(rule.severityDetails.impacts).length > 0) {
     // Clean Code taxonomy
-    const renderedImpacts = Object.entries(rule.impacts).map(([softwareQuality, severity]) => renderImpact(softwareQuality, severity, resolver));
+    const renderedImpacts = Object.entries(rule.severityDetails.impacts).map(([softwareQuality, severity]) => renderImpact(softwareQuality, severity, resolver));
     return `<div class="taxonomy">
   ${renderCleanCodeAttribute(rule)}
   &nbsp;
@@ -123,16 +123,16 @@ function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceR
 </div>`;
   } else {
     // Old type + severity taxonomy
-    const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severity.toLowerCase()}.png`);
-    const typeImgSrc = resolver.resolve('images', 'type', `${rule.type.toLowerCase()}.png`);
+    const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severityDetails.severity.toLowerCase()}.png`);
+    const typeImgSrc = resolver.resolve('images', 'type', `${rule.severityDetails.type.toLowerCase()}.png`);
     return `<div class="taxonomy">
   <div class="impact capsule">
-    ${clean(rule.type)}
-    <img alt="${rule.type}" src="${typeImgSrc}" />
+    ${clean(rule.severityDetails.type)}
+    <img alt="${rule.severityDetails.type}" src="${typeImgSrc}" />
   </div>
   <div class="impact capsule">
-    ${clean(rule.severity)}
-    <img alt="${rule.severity}" src="${severityImgSrc}" />
+    ${clean(rule.severityDetails.severity)}
+    <img alt="${rule.severityDetails.severity}" src="${severityImgSrc}" />
   </div>
 </div>`;
   }
@@ -153,7 +153,7 @@ export function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc: s
 }
 
 export function renderHotspotBanner(rule: ShowRuleDescriptionParams, infoImgSrc: string) {
-  if (rule.type !== 'SECURITY_HOTSPOT') {
+  if (rule.severityDetails.type !== 'SECURITY_HOTSPOT') {
     return '';
   }
   return `<div class="info-banner-wrapper">

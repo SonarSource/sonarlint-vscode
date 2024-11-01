@@ -130,10 +130,9 @@ export class IssueService {
 
       if (issue.shouldOpenRuleDescription) {
         await VSCode.commands.executeCommand(
-          'SonarLint.OpenRuleDescCodeAction',
+          'SonarLint.OpenRuleDesc',
           issue.ruleKey,
-          code2ProtocolConverter(documentUri),
-          ''
+          issue.fileUri,
         );
       }
     }
