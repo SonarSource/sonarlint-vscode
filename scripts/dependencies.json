@@ -2,7 +2,7 @@
   {
     "groupId": "org.sonarsource.sonarlint.ls",
     "artifactId": "sonarlint-language-server",
-    "version": "3.13.0.75632",
+    "version": "3.13.0.75636",
     "output": "server/sonarlint-ls.jar"
   },
   {
@@ -75,8 +75,22 @@
   {
     "groupId": "org.sonarsource.sonarlint.omnisharp",
     "artifactId": "sonarlint-omnisharp-plugin",
-    "version": "1.24.0.100127",
+    "version": "1.25.0.100205",
     "output": "analyzers/sonarlintomnisharp.jar",
+    "requiresCredentials": true
+  },
+  {
+    "groupId": "org.sonarsource.dotnet",
+    "artifactId": "sonar-csharp-plugin",
+    "version": "10.2.0.103721",
+    "output": "analyzers/sonarcsharp.jar",
+    "requiresCredentials": true
+  },
+  {
+    "groupId": "com.sonarsource.dotnet",
+    "artifactId": "sonar-csharp-enterprise-plugin",
+    "version": "10.2.0.103721",
+    "output": "analyzers/csharpenterprise.jar",
     "requiresCredentials": true
   }
 ]
