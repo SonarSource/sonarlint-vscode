@@ -1,3 +1,7 @@
+## 4.12
+
+* Update CFamily analyzer 6.59 -> [6.60](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=15976%20ORDER%20BY%20priority%20DESC,%20key%20ASC), Clang 19, Support for WindRiver GNU C++ compiler for arm
+
 ## 4.11
 
 * Update IaC analyzer 1.33 -> [1.34](https://github.com/SonarSource/sonar-iac/releases/tag/1.34.0.12019) -> [1.35](https://github.com/SonarSource/sonar-iac/releases/tag/1.35.0.12330) -> [1.36](https://github.com/SonarSource/sonar-iac/releases/tag/1.36.0.12431), FP & FN fixes, improved detection logic, support for detecting Micronaut configuration issues in YAML & properties files, parsing improvements for AzureResourceManager
