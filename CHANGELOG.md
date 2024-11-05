@@ -2,6 +2,7 @@
 
 * Update CFamily analyzer 6.59 -> [6.60](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=15976%20ORDER%20BY%20priority%20DESC,%20key%20ASC), Clang 19, Support for WindRiver GNU C++ compiler for arm
 * Update Java analyzer 8.1 -> [8.5](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15977/tab/release-report-all-issues?isReleaseNoteModalOpen=true), support for Java 22, hardening
+* Update XML analyzer 2.10 -> [2.11](https://sonarsource.atlassian.net/projects/SONARXML/versions/14256/tab/release-report-all-issues)
 
 ## 4.11
 
