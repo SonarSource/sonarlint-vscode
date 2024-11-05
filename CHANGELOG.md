@@ -4,6 +4,7 @@
 * Update Java analyzer 8.1 -> [8.5](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/15977/tab/release-report-all-issues?isReleaseNoteModalOpen=true), support for Java 22, hardening
 * Update XML analyzer 2.10 -> [2.11](https://sonarsource.atlassian.net/projects/SONARXML/versions/14256/tab/release-report-all-issues)
 * Update Python analyzer 4.22 -> [4.23](https://sonarsource.atlassian.net/projects/SONARPY/versions/15939/tab/release-report-all-issues?isReleaseNoteModalOpen=true)
+* Update IaC analyzer 1.36 -> [1.37](https://sonarsource.atlassian.net/projects/SONARIAC/versions/15987/tab/release-report-all-issues)
 
 ## 4.11
 
