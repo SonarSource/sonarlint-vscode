@@ -3,7 +3,7 @@
   "displayName": "SonarLint",
   "description": "Linter to detect & fix coding issues locally in JS/TS, Python, PHP, Java, C, C++, C#, Go, IaC. Use with SonarQube & SonarCloud for optimal team performance.",
   "version": "4.13.0-SNAPSHOT",
-  "icon": "images/sonarlint_wave_128px.png",
+  "icon": "images/sonarqube_for_ide_128px.png",
   "publisher": "SonarSource",
   "homepage": "https://www.sonarsource.com/products/sonarlint/",
   "repository": {
@@ -546,7 +546,7 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "icon": "images/sonarlint.svg",
+          "icon": "images/sonarqube_for_ide.svg",
           "id": "SonarLint",
           "title": "SonarLint"
         }
