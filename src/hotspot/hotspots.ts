@@ -364,8 +364,8 @@ export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, ho
   );
 
   hotspotDetailsPanel.iconPath = {
-    light: resolveExtensionFile('images/sonarlint.svg'),
-    dark: resolveExtensionFile('images/sonarlint.svg')
+    light: resolveExtensionFile('images/sonarqube_for_ide.svg'),
+    dark: resolveExtensionFile('images/sonarqube_for_ide.svg')
   };
 
   hotspotDetailsPanel.reveal();
