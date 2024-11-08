@@ -18,7 +18,7 @@ import { logToSonarLintOutput } from '../util/logging';
 import { isVerboseEnabled } from '../settings/settings';
 import { SINGLE_LOCATION_DECORATION } from '../location/locations';
 
-const SONARLINT_SOURCE = 'sonarlint';
+const SONARLINT_SOURCE = 'sonarqube';
 const REMOTE_SOURCE = 'remote';
 
 const REFRESH_DELAY_MS = 500;

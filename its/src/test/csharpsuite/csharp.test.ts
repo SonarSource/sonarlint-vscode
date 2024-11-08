@@ -52,10 +52,10 @@ suite('CSharp Test Suite', () => {
     ));
     // With old versions of VSCode, code actions are not necessarily filtered on kind
     const expectedActionTitles = [
-      'SonarLint: Add comment',
-      "SonarLint: Deactivate rule 'csharpsquid:S1186'",
-      "SonarLint: Show issue details for 'csharpsquid:S1186'",
-      'SonarLint: Throw NotSupportedException'
+      'SonarQube: Add comment',
+      "SonarQube: Deactivate rule 'csharpsquid:S1186'",
+      "SonarQube: Show issue details for 'csharpsquid:S1186'",
+      'SonarQube: Throw NotSupportedException'
     ];
     const actualCodeActionTitles = codeActionsResult
       .filter(c => expectedActionTitles.indexOf(c.title) >= 0)
@@ -66,7 +66,7 @@ suite('CSharp Test Suite', () => {
 
     // Check that first fix has an edit that can be applied
     const quickFix = codeActionsResult.filter(
-      c => c.title === 'SonarLint: Throw NotSupportedException'
+      c => c.title === 'SonarQube: Throw NotSupportedException'
     )[0] as vscode.CodeAction;
     const fixApplied = await vscode.workspace.applyEdit(quickFix.edit!);
     assert.equal(fixApplied, true);

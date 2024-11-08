@@ -18,7 +18,7 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     viewItem: true,
     command: {
       command: 'workbench.action.openWalkthrough',
-      title: 'Welcome to SonarLint!',
+      title: 'Welcome to SonarQube for VS Code!',
       arguments: ['SonarSource.sonarlint-vscode#SonarLint.walkthrough', false]
     }
   },

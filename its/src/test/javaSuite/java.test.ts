@@ -70,9 +70,9 @@ suite('Java Test Suite', () => {
     console.log('+++++++', codeActionsResult[2].title)
     console.log('+++++++', codeActionsResult[1].title)
     const expectedActionTitles = [
-      "SonarLint: Deactivate rule 'java:S1130'",
-      "SonarLint: Remove \"MyException\"",
-      "SonarLint: Show issue details for 'java:S1130'"
+      "SonarQube: Deactivate rule 'java:S1130'",
+      "SonarQube: Remove \"MyException\"",
+      "SonarQube: Show issue details for 'java:S1130'"
     ];
     const actualCodeActionTitles = codeActionsResult.filter(c => expectedActionTitles.indexOf(c.title) >= 0).map(c => c.title);
     // Order of code actions is not stable, forcing lexicographic order for assertion
@@ -80,7 +80,7 @@ suite('Java Test Suite', () => {
     assert.deepStrictEqual(actualCodeActionTitles, expectedActionTitles);
 
     // Check that first fix has an edit that can be applied
-    const quickFix = codeActionsResult.filter(c => c.title === 'SonarLint: Remove "MyException"')[0] as vscode.CodeAction;
+    const quickFix = codeActionsResult.filter(c => c.title === 'SonarQube: Remove "MyException"')[0] as vscode.CodeAction;
     const fixApplied = await vscode.workspace.applyEdit(quickFix.edit!);
     assert.strictEqual(fixApplied, true);
 

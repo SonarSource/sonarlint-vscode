@@ -83,5 +83,5 @@ suite('Extension Test Suite', () => {
   }
 });
 function getSonarLintDiagnostics(fileUri: any) {
-  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source == 'sonarlint');
+  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source == 'sonarqube');
 }

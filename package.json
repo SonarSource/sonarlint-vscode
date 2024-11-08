@@ -1,6 +1,6 @@
 {
   "name": "sonarlint-vscode",
-  "displayName": "SonarLint",
+  "displayName": "SonarQube for IDE",
   "description": "Linter to detect & fix coding issues locally in JS/TS, Python, PHP, Java, C, C++, C#, Go, IaC. Use with SonarQube Server or SonarQube Cloud for optimal team performance.",
   "version": "4.13.0-SNAPSHOT",
   "icon": "images/sonarqube_for_ide_128px.png",
@@ -105,7 +105,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Connect SonarLint to SonarQube Server to apply the same Clean Code standards as your team. Analyze more languages, detect more issues **on the whole project**, receive notifications about the quality gate status, and more. Quality Profiles and file exclusion settings defined on the server are shared between all connected users. Please find the documentation [here](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/)",
+          "markdownDescription": "Connect SonarQube for VS Code to SonarQube Server to apply the same Clean Code standards as your team. Analyze more languages, detect more issues **on the whole project**, receive notifications about the quality gate status, and more. Quality Profiles and file exclusion settings defined on the server are shared between all connected users. Please find the documentation [here](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/)",
           "items": {
             "type": "object",
             "properties": {
@@ -123,7 +123,7 @@
               },
               "disableNotifications": {
                 "type": "boolean",
-                "description": "SonarLint will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
+                "description": "SonarQube for VS Code will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
               }
             },
             "additionalProperties": false,
@@ -147,7 +147,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Connect SonarLint to SonarQube Cloud to apply the same Clean Code standards as your team. Analyze more languages, detect more issues **on the whole project**, receive notifications about the quality gate status, and more. Quality Profiles and file exclusion settings defined on the server are shared between all connected users. Please find the documentation [here](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/)",
+          "markdownDescription": "Connect SonarQube for VS Code to SonarQube Cloud to apply the same Clean Code standards as your team. Analyze more languages, detect more issues **on the whole project**, receive notifications about the quality gate status, and more. Quality Profiles and file exclusion settings defined on the server are shared between all connected users. Please find the documentation [here](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/)",
           "items": {
             "type": "object",
             "properties": {
@@ -165,7 +165,7 @@
               },
               "disableNotifications": {
                 "type": "boolean",
-                "description": "SonarLint will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
+                "description": "SonarQube for VS Code will show notifications for bound projects when there are new issues assigned to you, or when the quality gate status changed. Set to false to disable all notifications for projects bound to this connection."
               }
             },
             "additionalProperties": false,
@@ -186,7 +186,7 @@
         },
         "sonarlint.connectedMode.project": {
           "order": 4,
-          "markdownDescription": "Bind the current workspace folder to a [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22) project. Requires connection details to be defined in the setting `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`.\n\nBinding a workspace folder to a server project allows SonarLint to match, as much as possible, the same rules and settings as found on the server, and hence share the analysis configuration with other contributors.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"projectKey\": \"my_project\",\n      \"connectionId\":\"my_connection_id\"\n    }\n\n",
+          "markdownDescription": "Bind the current workspace folder to a [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22) project. Requires connection details to be defined in the setting `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`.\n\nBinding a workspace folder to a server project allows SonarQube for VS Code to match, as much as possible, the same rules and settings as found on the server, and hence share the analysis configuration with other contributors.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"projectKey\": \"my_project\",\n      \"connectionId\":\"my_connection_id\"\n    }\n\n",
           "examples": [
             {
               "projectKey": "<replace_with_server_project_key>"
@@ -266,7 +266,7 @@
         "sonarlint.ls.javaHome": {
           "order": 20,
           "type": "string",
-          "markdownDescription": "Path to a Java Runtime Environment (17 or more recent) used to launch the SonarLint Language Server.\n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-17` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/corretto-17.0.5/Contents/Home`",
+          "markdownDescription": "Path to a Java Runtime Environment (17 or more recent) used to launch the SonarQube for VS Code Language Server.\n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-17` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/corretto-17.0.5/Contents/Home`",
           "scope": "machine"
         },
         "sonarlint.ls.vmargs": {
@@ -279,14 +279,14 @@
           "order": 90,
           "type": "boolean",
           "default": false,
-          "description": "Enable verbose log level in the SonarLint output.",
+          "description": "Enable verbose log level in the SonarQube for IDE output.",
           "scope": "window"
         },
         "sonarlint.output.showAnalyzerLogs": {
           "order": 91,
           "type": "boolean",
           "default": false,
-          "description": "Show analyzer's logs in the SonarLint output.",
+          "description": "Show analyzer's logs in the SonarQube for IDE output.",
           "scope": "window"
         },
         "sonarlint.analyzerProperties": {
@@ -361,28 +361,28 @@
     "commands": [
       {
         "command": "SonarLint.ShowSonarLintOutput",
-        "title": "Show SonarLint Output",
-        "category": "SonarLint"
+        "title": "Show SonarQube for IDE Output",
+        "category": "SonarQube"
       },
       {
         "command": "SonarLint.ReopenLocalIssues",
         "title": "Reopen Local Issues for current file",
-        "category": "SonarLint"
+        "category": "SonarQube"
       },
       {
         "command": "SonarLint.AnalyseOpenFile",
         "title": "Analyse current file ignoring excludes",
-        "category": "SonarLint"
+        "category": "SonarQube"
       },
       {
         "command": "SonarLint.ConfigureCompilationDatabase",
         "title": "Configure the compilation database for C and C++ analysis",
-        "category": "SonarLint"
+        "category": "SonarQube"
       },
       {
         "command": "SonarLint.AutoBindWorkspaceFolders",
         "title": "Bind all workspace folders to SonarQube (Server, Cloud)",
-        "category": "SonarLint"
+        "category": "SonarQube"
       },
       {
         "command": "SonarLint.DeactivateRule",
@@ -444,101 +444,101 @@
       {
         "command": "SonarLint.ConnectToSonarQube",
         "title": "Connect to SonarQube Server",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(plus)"
       },
       {
         "command": "SonarLint.ConnectToSonarCloud",
         "title": "Connect to SonarQube Cloud",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(plus)"
       },
       {
         "command": "SonarLint.EditSonarQubeConnection",
         "title": "Edit SonarQube Server Connection",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(pencil)",
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
         "command": "SonarLint.EditSonarCloudConnection",
         "title": "Edit SonarQube Cloud Connection",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(pencil)",
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
         "command": "SonarLint.AddProjectBinding",
         "title": "Add Project Binding",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(plus)",
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
         "command": "SonarLint.RemoveConnection",
         "title": "Remove Connection",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(trash)",
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
         "command": "SonarLint.EditProjectBinding",
         "title": "Edit Project Binding",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(pencil)",
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
         "command": "SonarLint.RemoveProjectBinding",
         "title": "Remove Project Binding",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(trash)",
         "enablement": "view == SonarLint.ConnectedMode"
       },
       {
         "command": "SonarLint.OpenHotspotOnServer",
         "title": "Review on Server",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
       },
       {
         "command": "SonarLint.ShowHotspotRuleDescription",
         "title": "Show Rule Description",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem"
       },
       {
         "command": "SonarLint.ShowHotspotDetails",
         "title": "Show Hotspot Details",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "enablement": "view == SonarLint.SecurityHotspots && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
       },
       {
         "command": "SonarLint.HideHotspot",
         "title": "Hide Security Hotspot",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
       },
       {
         "command": "SonarLint.ChangeHotspotStatus",
         "title": "Change Status",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
       },
       {
         "command": "SonarLint.HelpAndFeedbackLinkClicked",
         "title": "Share feedback",
-        "category": "SonarLint"
+        "category": "SonarQube"
       },
       {
         "command": "SonarLint.EnableVerboseLogs",
         "title": "Enable Verbose Logging",
-        "category": "SonarLint"
+        "category": "SonarQube"
       },
       {
         "command": "SonarLint.ShareConnectedModeConfiguration",
         "title": "Share Connected Mode Configuration",
-        "category": "SonarLint",
+        "category": "SonarQube",
         "icon": "$(export)",
         "enablement": "view == SonarLint.ConnectedMode"
       }
@@ -548,7 +548,7 @@
         {
           "icon": "images/sonarqube_for_ide.svg",
           "id": "SonarLint",
-          "title": "SonarLint"
+          "title": "SonarQube"
         }
       ]
     },
@@ -556,7 +556,7 @@
       "explorer": [
         {
           "id": "SonarLint.IssueLocations",
-          "name": "SonarLint Issue Locations"
+          "name": "SonarQube Issue Locations"
         }
       ],
       "SonarLint": [
@@ -582,11 +582,11 @@
     "viewsWelcome": [
       {
         "view": "SonarLint.IssueLocations",
-        "contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarLint issue."
+        "contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarQube for VS Code issue."
       },
       {
         "view": "SonarLint.ConnectedMode",
-        "contents": "[Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) links SonarLint to SonarQube (Server, Cloud) to apply the same Clean Code standards as your team.\n\n[Add SonarQube Server Connection](command:SonarLint.ConnectToSonarQube)\n[Add SonarQube Cloud Connection](command:SonarLint.ConnectToSonarCloud)\n\nAnalyze more languages, detect more issues on the whole project, receive notifications about the quality gate status, and more.\n\nQuality Profiles and file exclusion settings defined on the server are shared between all connected users.\n\nDiscover which option is the best for your team [here](command:SonarLint.HelpAndFeedbackLinkClicked?%22compareServerProducts%22)."
+        "contents": "[Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) links SonarQube for VS Code to SonarQube (Server, Cloud) to apply the same Clean Code standards as your team.\n\n[Add SonarQube Server Connection](command:SonarLint.ConnectToSonarQube)\n[Add SonarQube Cloud Connection](command:SonarLint.ConnectToSonarCloud)\n\nAnalyze more languages, detect more issues on the whole project, receive notifications about the quality gate status, and more.\n\nQuality Profiles and file exclusion settings defined on the server are shared between all connected users.\n\nDiscover which option is the best for your team [here](command:SonarLint.HelpAndFeedbackLinkClicked?%22compareServerProducts%22)."
       },
       {
         "view": "SonarLint.SecurityHotspots",
@@ -596,13 +596,13 @@
     "walkthroughs": [
       {
         "id": "SonarLint.walkthrough",
-        "title": "Welcome to SonarLint!",
+        "title": "Welcome to SonarQube for VS Code!",
         "description": "Your Clean Code journey starts here.",
         "steps": [
           {
             "id": "SonarLint.inAction",
-            "title": "$(rocket) New to SonarLint? See it in action",
-            "description": "SonarLint for VSCode supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, C#, and [more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/rules). SonarLint detects issues in all files **open** in the editor. For project-level analysis, check out [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
+            "title": "$(rocket) New to SonarQube for VS Code? See it in action",
+            "description": "SonarQube for VS Code supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, C#, and [more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/rules). SonarQube for VS Code detects issues in all files **open** in the editor. For project-level analysis, check out [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
@@ -613,7 +613,7 @@
           {
             "id": "SonarLint.learnMoreAboutIssues",
             "title": "$(book) Learn more about issues",
-            "description": "Check the [Problems view](command:workbench.panel.markers.view.focus): SonarLint has found something $(warning).\nRight-click on the issue found by SonarLint.\nOpen the rule description: SonarLint clearly explains why this is an issue.\nFor certain rules and issues, SonarLint will suggest available Quick Fixes.",
+            "description": "Check the [Problems view](command:workbench.panel.markers.view.focus): SonarQube for VS Code has found something $(warning).\nRight-click on the issue found by SonarQube for VS Code.\nOpen the rule description: SonarQube for VS Code clearly explains why this is an issue.\nFor certain rules and issues, SonarQube for VS Code will suggest available Quick Fixes.",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
@@ -624,7 +624,7 @@
           {
             "id": "SonarLint.connectedModeIntro",
             "title": "$(link) Connect with your team",
-            "description": "Apply the same Clean Code standards as your team by using SonarLint in Connected Mode with [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n**Already using SonarQube Server or SonarQube Cloud?** Set up connection in the CONNECTED MODE view.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)",
+            "description": "Apply the same Clean Code standards as your team by using SonarQube for VS Code in Connected Mode with [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n**Already using SonarQube Server or SonarQube Cloud?** Set up connection in the CONNECTED MODE view.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
@@ -635,7 +635,7 @@
           {
             "id": "SonarLint.reachOut",
             "title": "$(comment-discussion) Share feedback or ask for help",
-            "description": "You suspect your code has issues but don't see any problems detected by SonarLint? [Enable verbose logging](command:SonarLint.EnableVerboseLogs) and check the output in the SonarLint Output window\n[Check Output](command:SonarLint.ShowSonarLintOutput)\n\nYou'd like to learn more about SonarLint, or give us feedback? Check out the [Help and Feedback view](command:SonarLint.HelpAndFeedback.focus)\n\n",
+            "description": "You suspect your code has issues but don't see any problems detected by SonarQube for VS Code? [Enable verbose logging](command:SonarLint.EnableVerboseLogs) and check the output in the SonarQube for IDE Output window\n[Check Output](command:SonarLint.ShowSonarLintOutput)\n\nYou'd like to learn more about SonarQube for VS Code, or give us feedback? Check out the [Help and Feedback view](command:SonarLint.HelpAndFeedback.focus)\n\n",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
@@ -784,7 +784,7 @@
         {
           "command": "SonarLint.HideHotspot",
           "title": "Hide Security Hotspot",
-          "category": "SonarLint",
+          "category": "SonarQube",
           "when": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
         }
       ]

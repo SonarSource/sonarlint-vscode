@@ -190,7 +190,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     const fileName = await this.computeSharedConnectedModeFileName(workspaceFolder.uri.toString());
     if (!fileName) {
       logToSonarLintOutput('Sharing Connected Mode configuration failed. File name is null');
-      vscode.window.showErrorMessage('Failed to create SonarLint Connected Mode configuration file.');
+      vscode.window.showErrorMessage('Failed to create SonarQube for VS Code Connected Mode configuration file.');
       return;
     }
     const destinationUri = vscode.Uri.file(
@@ -202,10 +202,10 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     );
     try {
       await vscode.workspace.fs.writeFile(destinationUri, new TextEncoder().encode(fileContents.jsonFileContent));
-      vscode.window.showInformationMessage('SonarLint Connected Mode configuration file was created.');
+      vscode.window.showInformationMessage('SonarQube for VS Code Connected Mode configuration file was created.');
     } catch (e) {
-      vscode.window.showErrorMessage('Failed to create SonarLint Connected Mode configuration file.');
-      logToSonarLintOutput(`Error writing SonarLint configuration file: ${e}`);
+      vscode.window.showErrorMessage('Failed to create SonarQube for VS Code Connected Mode configuration file.');
+      logToSonarLintOutput(`Error writing SonarQube for VS Code configuration file: ${e}`);
     }
   }
 
@@ -219,7 +219,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         const selectedSolutionName = await vscode.window.showQuickPick(
           this.solutionFilesByConfigScope.get(workspaceFolderUri),
           {
-            title: 'For which Solution would you like to export SonarLint binding configuration?',
+            title: 'For which Solution would you like to export SonarQube for VS Code binding configuration?',
             placeHolder:
               'A configuration file corresponding to the selected Solution will be created in this working directory.'
           }

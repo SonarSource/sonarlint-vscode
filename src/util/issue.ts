@@ -43,7 +43,7 @@ export function createDiagnosticFromIssue(issue: protocol.Issue) {
   }
   const issueDiag = new vscode.Diagnostic(range, 'params.message', DiagnosticSeverity.Warning);
   issueDiag.code = issue.ruleKey;
-  issueDiag.source = `sonarlint(${issue.ruleKey})`;
+  issueDiag.source = `sonarqube(${issue.ruleKey})`;
   issueDiag.message = issue.message;
   return issueDiag;
 }

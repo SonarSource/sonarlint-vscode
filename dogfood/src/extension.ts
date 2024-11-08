@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (e.affectsConfiguration(CONFIG_SECTION)) {
       const configuration = getDogfoodConfiguration();
       if (e.affectsConfiguration(PIN_VERSION_CONFIG_KEY)) {
-        vscode.window.showInformationMessage('SonarLint dogfooding version pinned.\nNewer versions will not be installed until this setting is populated.')
+        vscode.window.showInformationMessage('SonarQube for VS Code dogfooding version pinned.\nNewer versions will not be installed until this setting is populated.')
       }
       if (configuration.get('check.disable')) {
         statusBar.setStatus(Status.DISABLED);

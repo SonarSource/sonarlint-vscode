@@ -39,11 +39,11 @@ interface ConnectionConfirmationResponse {
 
 async function confirmConnection(isSonarCloud : boolean, serverUrlOrOrganizationKey: string, token: string) : Promise<ConnectionConfirmationResponse> {
   const connectionType = isSonarCloud ? 'SonarQube Cloud organization' : 'SonarQube Server instance';
-  let manualConnectionMessage = `Connecting SonarLint to ${isSonarCloud ? 'SonarQube Cloud' : 'SonarQube Server'} will enable issues to be opened directly in your IDE. It will also allow you to apply the same Clean Code standards as your team, analyze more languages, detect more issues, receive notifications about the quality gate status, and more.
+  let manualConnectionMessage = `Connecting SonarQube for VS Code to ${isSonarCloud ? 'SonarQube Cloud' : 'SonarQube Server'} will enable issues to be opened directly in your IDE. It will also allow you to apply the same Clean Code standards as your team, analyze more languages, detect more issues, receive notifications about the quality gate status, and more.
       \nEnsure that the requesting ${isSonarCloud ? 'organization' : 'server URL'} '${serverUrlOrOrganizationKey}' matches your ${connectionType}.`;
 
   if (!isSonarCloud) {
-    manualConnectionMessage += ` Letting SonarLint connect to an untrusted SonarQube Server instance is potentially dangerous. If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.`
+    manualConnectionMessage += ` Letting SonarQube for VS Code connect to an untrusted SonarQube Server instance is potentially dangerous. If you don't trust this server, we recommend canceling this action and manually setting up Connected Mode.`
   }
 
   const automaticConnectionMessage = `${manualConnectionMessage}

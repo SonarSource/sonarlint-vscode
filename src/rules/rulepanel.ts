@@ -36,7 +36,7 @@ function lazyCreateRuleDescriptionPanel(context: VSCode.ExtensionContext) {
   if (!ruleDescriptionPanel) {
     ruleDescriptionPanel = VSCode.window.createWebviewPanel(
       'sonarlint.RuleDesc',
-      'SonarLint Rule Description',
+      'SonarQube Rule Description',
       VSCode.ViewColumn.Two,
       {
         enableScripts: true
@@ -121,7 +121,7 @@ function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceR
   ${renderedImpacts.join('&nbsp;')}
   &nbsp;
   <a href="${SonarLintDocumentation.CLEAN_CODE_CONCEPTS}" class="capsule"
-    title="Check out the Clean Code concepts in the SonarLint documentation"
+    title="Check out the Clean Code concepts in the SonarQube for VS Code documentation"
     rel="external glossary" target="_blank" referrerpolicy="no-referrer">What is clean code?</a>
 </div>`;
   } else {
@@ -148,7 +148,7 @@ export function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc: s
   return `<div class="info-banner-wrapper">
             <p class="info-banner"><span><img src=${infoImgSrc} alt="info"></span> 
             This injection vulnerability was detected by the latest SonarQube (Server, Cloud) analysis.
-             SonarLint fetches and reports it in your local code to help you investigate it and fix it,
+             SonarQube for VS Code fetches and reports it in your local code to help you investigate it and fix it,
               but cannot tell you whether you successfully fixed it. To verify your fix, please ensure
               the code containing your fix is analyzed by SonarQube (Server, Cloud).
             </p>

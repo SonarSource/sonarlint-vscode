@@ -654,7 +654,7 @@ async function showAllLocations(issue: protocol.Issue) {
       : null;
     issueLocationsView.message = createdAgo
       ? `Analyzed ${createdAgo} on '${issue.connectionId}'`
-      : `Detected by SonarLint`;
+      : `Detected by SonarQube for VS Code`;
   } else {
     issueLocationsView.message = null;
   }
