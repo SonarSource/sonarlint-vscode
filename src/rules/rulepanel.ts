@@ -24,7 +24,10 @@ export function showRuleDescription(context: VSCode.ExtensionContext) {
     }
     lazyCreateRuleDescriptionPanel(context);
     ruleDescriptionPanel.webview.html = computeRuleDescPanelContent(context, ruleDescriptionPanel.webview, params);
-    ruleDescriptionPanel.iconPath = util.resolveExtensionFile('images', 'sonarqube_for_ide.svg');
+    ruleDescriptionPanel.iconPath = {
+      light: util.resolveExtensionFile('images', 'sonarqube_for_ide.svg'),
+      dark: util.resolveExtensionFile('images', 'sonarqube_for_ide_dark.svg')
+    };
     ruleDescriptionPanel.reveal();
   };
 }

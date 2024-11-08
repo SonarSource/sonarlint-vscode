@@ -124,7 +124,10 @@ export function editSonarCloudConnection(context: vscode.ExtensionContext) {
 
 function finishSetupAndRevealPanel(serverProductName: string) {
   connectionSetupPanel.webview.onDidReceiveMessage(handleMessage);
-  connectionSetupPanel.iconPath = util.resolveExtensionFile('images', `${serverProductName.toLowerCase()}.svg`);
+  connectionSetupPanel.iconPath = {
+    light: util.resolveExtensionFile('images', `${serverProductName.toLowerCase()}.svg`),
+    dark: util.resolveExtensionFile('images', `${serverProductName.toLowerCase()}_dark.svg`)
+  }
   connectionSetupPanel.reveal();
 }
 
