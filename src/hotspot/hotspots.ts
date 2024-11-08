@@ -194,7 +194,7 @@ export const showHotspotDescription = () => {
   );
   hotspotDescriptionPanel.iconPath = {
     light: resolveExtensionFile('images/sonarqube.svg'),
-    dark: resolveExtensionFile('images/sonarqube.svg')
+    dark: resolveExtensionFile('images/sonarqube_dark.svg')
   };
   hotspotDescriptionPanel.reveal();
 };
@@ -365,7 +365,7 @@ export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, ho
 
   hotspotDetailsPanel.iconPath = {
     light: resolveExtensionFile('images/sonarqube_for_ide.svg'),
-    dark: resolveExtensionFile('images/sonarqube_for_ide.svg')
+    dark: resolveExtensionFile('images/sonarqube_for_ide_dark.svg')
   };
 
   hotspotDetailsPanel.reveal();
