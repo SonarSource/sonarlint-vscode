@@ -27,7 +27,7 @@ export async function waitForSonarLintDiagnostics(fileUri: vscode.Uri, options?:
     elapsedMillis += periodMillis;
   }
   if (options?.atLeastIssues && diags.length < atLeastIssues) {
-    fail(`Expected at least ${options?.atLeastIssues} SonarLint diagnostics, got ${diags.length} after ${timeoutMillis}ms`);
+    fail(`Expected at least ${options?.atLeastIssues} SonarQube for VS Code diagnostics, got ${diags.length} after ${timeoutMillis}ms`);
   }
   return diags;
 }
@@ -42,7 +42,7 @@ export function dumpLogOutput() {
 }
 
 function getSonarLintDiagnostics(fileUri: vscode.Uri) {
-  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source === 'sonarlint');
+  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source === 'sonarqube');
 }
 
 function sleep(ms: number): Promise<void> {

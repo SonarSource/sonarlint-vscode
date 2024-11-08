@@ -112,7 +112,7 @@ export class IssueService {
 
       if (!isValidRange(diagnostic.range, editor.document) || !issue.codeMatches) {
         VSCode.window.showWarningMessage(
-          `SonarLint failed to open the issue in '${getFileNameFromFullPath(issue.fileUri)}'.
+          `SonarQube for VS Code failed to open the issue in '${getFileNameFromFullPath(issue.fileUri)}'.
            Local code does not match remote. Please make sure that the right branch is checked out.`
         );
         return;
@@ -146,7 +146,7 @@ export class IssueService {
         : null;
       IssueService._instance.issueLocationsView.message = createdAgo
         ? `Analyzed ${createdAgo} on '${issue.connectionId}'`
-        : `Detected by SonarLint`;
+        : `Detected by SonarQube for VS Code`;
     } else {
       IssueService._instance.issueLocationsView.message = null;
     }

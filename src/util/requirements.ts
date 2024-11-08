@@ -167,9 +167,9 @@ export function parseMajorVersion(content: string): number {
 function suggestManagedJre(reject) {
   reject({
     message: `The Java Runtime Environment can not be located. Please install a JRE, or configure its path with the
-      ${JAVA_HOME_CONFIG} property. You can also let SonarLint download the JRE from AdoptOpenJDK. This JRE will be
-      used only by SonarLint.`,
-    label: 'Let SonarLint download the JRE',
+      ${JAVA_HOME_CONFIG} property. You can also let SonarQube for VS Code download the JRE from AdoptOpenJDK. This JRE will be
+      used only by SonarQube for VS Code.`,
+    label: 'Let SonarQube for VS Code download the JRE',
     command: Commands.INSTALL_MANAGED_JRE
   });
 }
@@ -214,7 +214,7 @@ async function findEmbeddedJRE(context: vscode.ExtensionContext): Promise<string
 
 export function installManagedJre() {
   return vscode.window.withProgress(
-    { location: vscode.ProgressLocation.Notification, title: 'SonarLint JRE Install' },
+    { location: vscode.ProgressLocation.Notification, title: 'SonarQube for VS Code JRE Install' },
     (progress, cancelToken) => {
       return PlatformInformation.GetPlatformInformation()
         .then(platformInfo => {

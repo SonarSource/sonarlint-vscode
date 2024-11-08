@@ -17,10 +17,10 @@ export async function updateUserToken(context: vscode.ExtensionContext) {
   const userToken = await vscode.window.showInputBox();
   if (userToken) {
     await context.globalState.update(DOGFOOD_ARTIFACTORY_USER_TOKEN, userToken);
-    vscode.window.showInformationMessage('SonarLint Dogfood: Artifactory token saved');
+    vscode.window.showInformationMessage('SonarQube for VS Code Dogfood: Artifactory token saved');
     vscode.commands.executeCommand(COMMAND_CHECK_NOW);
   } else {
-    vscode.window.showErrorMessage('SonarLint Dogfood: Could not update Artifactory user token. Please try again');
+    vscode.window.showErrorMessage('SonarQube for VS Code Dogfood: Could not update Artifactory user token. Please try again');
   }
 }
 

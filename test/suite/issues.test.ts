@@ -34,7 +34,7 @@ suite('issues', () => {
       expect(diagnostic.range.end.character).to.equal(issue.textRange.endLineOffset);
       expect(diagnostic.message).to.equal(issue.message);
       expect(diagnostic.code).to.equal(issue.ruleKey);
-      expect(diagnostic.source).to.equal('sonarlint(myRuleKey)');
+      expect(diagnostic.source).to.equal('sonarqube(myRuleKey)');
     });
 
     test('should create diagnostic from file-level issue', () => {
@@ -60,7 +60,7 @@ suite('issues', () => {
       expect(diagnostic.range.end.character).to.equal(0);
       expect(diagnostic.message).to.equal(issue.message);
       expect(diagnostic.code).to.equal(issue.ruleKey);
-      expect(diagnostic.source).to.equal('sonarlint(myRuleKey)');
+      expect(diagnostic.source).to.equal('sonarqube(myRuleKey)');
     });
   });
   test('should adaptFlows', async () => {

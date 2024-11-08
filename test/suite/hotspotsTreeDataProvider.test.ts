@@ -55,7 +55,7 @@ suite('Hotspots tree view test suite', () => {
       flows: [],
       range: { start: { line: 1, character: 1 }, end: { line: 2, character: 1 } },
       message: 'hotspot 1',
-      source: 'sonarlint'
+      source: 'sonarqube'
     };
     const diagnostic2 = {
       flows: [],
@@ -85,7 +85,7 @@ suite('Hotspots tree view test suite', () => {
       flows: [],
       range: { start: { line: 1, character: 1 }, end: { line: 2, character: 1 } },
       message: 'hotspot 1',
-      source: 'sonarlint',
+      source: 'sonarqube',
       data: {
         entryKey: 'hotspotKey2'
       }
@@ -153,7 +153,7 @@ suite('Hotspots tree view test suite', () => {
     });
     test('Should return newHotspotItem', () => {
       const itemContextValue = underTestWithDummyInitData.getHotspotItemContextValue(
-        { source: 'sonarlint' },
+        { source: 'sonarqube' },
         'newHotspotsGroup'
       );
       assert.equal(itemContextValue, 'newHotspotItem');
@@ -161,7 +161,7 @@ suite('Hotspots tree view test suite', () => {
   });
 
   suite('fileHasNewHotspots() & fileHasTrackedHotspots() & openHotspotInIdeForFileWasTriggered()', () => {
-    test('should return true when one diag source is sonarlint', () => {
+    test('should return true when one diag source is sonarqube', () => {
       assert.equal(underTestWithDummyInitData.fileHasNewHotspots('file1'), true);
       assert.equal(underTestWithDummyInitData.fileHasNewHotspots('file2'), false);
 

@@ -14,7 +14,7 @@ export async function showNotificationForFirstSecretsIssue(context: vscode.Exten
   const showProblemsViewActionTitle = 'Show Problems View';
   vscode.window
     .showWarningMessage(
-      'SonarLint detected some secrets in one of the open files.\n' +
+      'SonarQube for VS Code detected some secrets in one of the open files.\n' +
       'We strongly advise you to review those secrets and ensure they are not committed into repositories. ' +
       'Please refer to the Problems view for more information.',
       showProblemsViewActionTitle
