@@ -30,7 +30,7 @@ const SONAR_SCANNER_CONFIG_FILENAME = "sonar-project.properties"
 const AUTOSCAN_CONFIG_FILENAME = ".sonarcloud.properties"
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG = 'doNotAskAboutAutoBindingForWorkspace';
 export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
-const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace that are not bound to any SonarQube/SonarCloud projects.
+const CONFIGURE_BINDING_PROMPT_MESSAGE = `There are folders in your workspace that are not bound to any SonarQube (Server, Cloud) projects.
       Do you want to configure binding?
       [Learn More](${SonarLintDocumentation.CONNECTED_MODE})`;
 
@@ -104,14 +104,14 @@ export class AutoBindingService implements FileSystemSubscriber {
     if (sonarCloudConnections.length === 0 && sonarQubeConnections.length === 1) {
       targetConnection = {
         label: this.computeItemLabel('SonarQube', sonarQubeConnections[0]),
-        description: 'SonarQube',
+        description: 'SonarQube Server',
         connectionId: this.computeConnectionId(sonarQubeConnections[0]),
         contextValue: 'sonarqubeConnection'
       };
     } else if (sonarQubeConnections.length === 0 && sonarCloudConnections.length === 1) {
       targetConnection = {
         label: this.computeItemLabel('SonarCloud', sonarCloudConnections[0]),
-        description: 'SonarCloud',
+        description: 'SonarQube Cloud',
         connectionId: this.computeConnectionId(sonarCloudConnections[0]),
         contextValue: 'sonarcloudConnection'
       };
@@ -120,7 +120,7 @@ export class AutoBindingService implements FileSystemSubscriber {
       sonarQubeConnections.forEach(c => {
         connectionNames.push({
           label: this.computeItemLabel('SonarQube', c),
-          description: 'SonarQube',
+          description: 'SonarQube Server',
           connectionId: this.computeConnectionId(c),
           contextValue: 'sonarqubeConnection'
         });
@@ -128,7 +128,7 @@ export class AutoBindingService implements FileSystemSubscriber {
       sonarCloudConnections.forEach(c => {
         connectionNames.push({
           label: this.computeItemLabel('SonarCloud', c),
-          description: 'SonarCloud',
+          description: 'SonarQube Cloud',
           connectionId: this.computeConnectionId(c),
           contextValue: 'sonarcloudConnection'
         });
@@ -208,8 +208,8 @@ export class AutoBindingService implements FileSystemSubscriber {
       `Do you want to bind folder '${unboundFolder.name}' to project '${bindingSuggestion.sonarProjectKey}'`;
     const message =
       this.isBindingSuggestionForSonarCloud(bindingSuggestion)
-        ? `${commonMessage} of SonarCloud organization '${bindingSuggestion.connectionId}'?`
-        : `${commonMessage} of SonarQube server '${bindingSuggestion.connectionId}'?`;
+        ? `${commonMessage} of SonarQube Cloud organization '${bindingSuggestion.connectionId}'?`
+        : `${commonMessage} of SonarQube Server '${bindingSuggestion.connectionId}'?`;
 
     const result = await vscode.window.showInformationMessage(
       `${message}

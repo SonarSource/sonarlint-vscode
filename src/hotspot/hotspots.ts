@@ -172,7 +172,7 @@ export const showHotspotDescription = () => {
   if (!hotspotDescriptionPanel) {
     hotspotDescriptionPanel = vscode.window.createWebviewPanel(
       'sonarlint.DiagContext',
-      'SonarQube Security Hotspot',
+      'SonarQube Server Security Hotspot',
       vscode.ViewColumn.Two,
       {
         enableScripts: false
@@ -193,8 +193,8 @@ export const showHotspotDescription = () => {
     hotspotDescriptionPanel.webview
   );
   hotspotDescriptionPanel.iconPath = {
-    light: resolveExtensionFile('images/sonarqube.svg'),
-    dark: resolveExtensionFile('images/sonarqube_dark.svg')
+    light: resolveExtensionFile('images/sonarqube server.svg'),
+    dark: resolveExtensionFile('images/sonarqube server_dark.svg')
   };
   hotspotDescriptionPanel.reveal();
 };

@@ -79,8 +79,8 @@ suite('Connected Mode Test Suite', () => {
   });
 
   suite('ConnectedMode TreeView', () => {
-    const SQGroup = new ConnectionGroup('sonarqube', 'SonarQube', 'sonarQubeGroup');
-    const SCGroup = new ConnectionGroup('sonarcloud', 'SonarCloud', 'sonarCloudGroup');
+    const SQGroup = new ConnectionGroup('sonarqube', 'SonarQube Server', 'sonarQubeGroup');
+    const SCGroup = new ConnectionGroup('sonarcloud', 'SonarQube Cloud', 'sonarCloudGroup');
 
     test('should return empty lists when expanding SQ and SC tabs and no connections exist', async () => {
       const underTest = new AllConnectionsTreeDataProvider(mockClient);

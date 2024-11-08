@@ -147,10 +147,10 @@ export function renderTaintBanner(rule: ShowRuleDescriptionParams, infoImgSrc: s
   }
   return `<div class="info-banner-wrapper">
             <p class="info-banner"><span><img src=${infoImgSrc} alt="info"></span> 
-            This injection vulnerability was detected by the latest SonarQube or SonarCloud analysis.
+            This injection vulnerability was detected by the latest SonarQube (Server, Cloud) analysis.
              SonarLint fetches and reports it in your local code to help you investigate it and fix it,
               but cannot tell you whether you successfully fixed it. To verify your fix, please ensure
-              the code containing your fix is analyzed by SonarQube or SonarCloud.
+              the code containing your fix is analyzed by SonarQube (Server, Cloud).
             </p>
            </div>`;
 }
