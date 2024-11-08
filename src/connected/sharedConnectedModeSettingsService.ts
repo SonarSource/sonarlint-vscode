@@ -114,15 +114,15 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         return {
           label: s.projectKey,
           description: s.organization || s.serverUrl,
-          detail: s.organization ? 'SonarCloud' : 'SonarQube'
+          detail: s.organization ? 'SonarQube Cloud' : 'SonarQube Server'
         };
       });
       const selectedConfig = await vscode.window.showQuickPick(quickPickItems, {
         title: `Which project would you like to bind with the folder '${workspaceFolder.name}/'`
       });
-      if (selectedConfig && selectedConfig.detail === 'SonarCloud') {
+      if (selectedConfig && selectedConfig.detail === 'SonarQube Cloud') {
         connectToSonarCloud(this.context)(selectedConfig.description, selectedConfig.label, workspaceFolder.uri);
-      } else if (selectedConfig && selectedConfig.detail === 'SonarQube') {
+      } else if (selectedConfig && selectedConfig.detail === 'SonarQube Server') {
         connectToSonarQube(this.context)(selectedConfig.description, selectedConfig.label, workspaceFolder.uri);
       }
     };
@@ -133,8 +133,8 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     const { projectKey, serverUrl, organization } = suggestion.connectionSuggestion;
     const isFromSharedConfiguration = suggestion.isFromSharedConfiguration;
     const serverReference = organization
-      ? `of SonarCloud organization '${organization}'`
-      : `on SonarQube server '${serverUrl}'`;
+      ? `of SonarQube Cloud organization '${organization}'`
+      : `on SonarQube Server '${serverUrl}'`;
     const message = `A Connected Mode configuration file is available to bind folder '${workspaceFolder.name}'
         to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`;
     const useConfigurationHandler = async () => {
