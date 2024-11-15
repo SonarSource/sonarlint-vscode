@@ -71,7 +71,7 @@ export async function showSslCertificateConfirmationDialog(cert: SslCertificateC
     SHA-256:\n ${cert.sha256Fingerprint}\n
     SHA-1:\n ${cert.sha1Fingerprint}\n`;
   const dialogResponse = await vscode.window.showErrorMessage(`
-    SonarLint found untrusted server's certificate\n
+    SonarQube for VS Code found untrusted server's certificate\n
     Issued to:\n ${cert.issuedTo}\n
     Issued by:\n ${cert.issuedBy}\n
     VALIDITY PERIOD\n

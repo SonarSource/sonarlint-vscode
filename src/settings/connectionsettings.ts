@@ -50,7 +50,7 @@ async function suggestMigrationToSecureStorage(
 ) {
   const remindMeLaterAction = 'Ask me later';
   const migrateToSecureStorageAction = 'Migrate';
-  const message = `SonarLint found SonarQube (Server, Cloud) token in settings file.
+  const message = `SonarQube for VS Code found SonarQube (Server, Cloud) token in settings file.
    Do you want to migrate them to secure storage?`;
   const selection = await VSCode.window.showWarningMessage(message, migrateToSecureStorageAction, remindMeLaterAction);
   if (selection === migrateToSecureStorageAction) {

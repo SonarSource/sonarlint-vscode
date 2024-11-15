@@ -80,7 +80,7 @@ function isJavaApiRecentEnough(apiVersion: string): boolean {
     return true;
   }
   if (!javaApiTooLowAlreadyLogged) {
-    logToSonarLintOutput(`SonarLint requires VSCode Java extension 0.56 or greater to enable analysis of Java files`);
+    logToSonarLintOutput(`SonarQube for VS Code requires VSCode Java extension 0.56 or greater to enable analysis of Java files`);
     javaApiTooLowAlreadyLogged = true;
   }
   return false;

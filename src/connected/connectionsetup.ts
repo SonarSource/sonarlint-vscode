@@ -59,13 +59,7 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
         folderUri: folderUri?.toString(false)
       }
     };
-    const serverProductName = SONARQUBE_SERVER_LABEL;
-    lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
-      mode: 'create',
-      initialState
-    });
-    finishSetupAndRevealPanel(serverProductName);
+    initializeAndRevealPanel(context, { mode: 'create', initialState }, SONARQUBE_SERVER_LABEL);
   };
 }
 
@@ -82,13 +76,7 @@ export function connectToSonarCloud(context: vscode.ExtensionContext) {
         folderUri: folderUri?.toString(false)
       }
     };
-    const serverProductName = SONARQUBE_CLOUD_LABEL;
-    lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
-      mode: 'create',
-      initialState
-    });
-    finishSetupAndRevealPanel(serverProductName);
+    initializeAndRevealPanel(context, { mode: 'create', initialState }, SONARQUBE_CLOUD_LABEL);
   };
 }
 
@@ -98,13 +86,7 @@ export function editSonarQubeConnection(context: vscode.ExtensionContext) {
     const initialState = {
       conn: await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId)
     };
-    const serverProductName = SONARQUBE_SERVER_LABEL;
-    lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
-      mode: 'update',
-      initialState
-    });
-    finishSetupAndRevealPanel(serverProductName);
+    initializeAndRevealPanel(context, { mode: 'update', initialState }, SONARQUBE_SERVER_LABEL);
   };
 }
 
@@ -116,14 +98,14 @@ export function editSonarCloudConnection(context: vscode.ExtensionContext) {
       conn: existingConnection,
       userOrganizations: await ConnectionSettingsService.instance.listUserOrganizations(existingConnection.token)
     };
-    const serverProductName = SONARQUBE_CLOUD_LABEL;
-    lazyCreateConnectionSetupPanel(context, serverProductName);
-    connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, {
-      mode: 'update',
-      initialState
-    });
-    finishSetupAndRevealPanel(serverProductName);
+    initializeAndRevealPanel(context, { mode: 'update', initialState }, SONARQUBE_CLOUD_LABEL);
   };
+}
+
+function initializeAndRevealPanel(context: vscode.ExtensionContext, renderOptions: RenderOptions, serverProductName: string) {
+  lazyCreateConnectionSetupPanel(context, serverProductName);
+  connectionSetupPanel.webview.html = renderConnectionSetupPanel(context, connectionSetupPanel.webview, renderOptions);
+  finishSetupAndRevealPanel(serverProductName);
 }
 
 function finishSetupAndRevealPanel(serverProductName: string) {
