@@ -92,7 +92,7 @@ export class NewCodeDefinitionService {
     if (newCodeDefinition && this.focusOnNewCode) {
       newCodeDefinitionMessage = `Only issues in new code are highlighted.\n\nFocusing on new code helps you practice Clean as You Code.\n\nNew Code Definition: ${newCodeDefinition.newCodeDefinitionOrMessage}`;
     } else if (!this.focusOnNewCode) {
-      newCodeDefinitionMessage = 'All issues are shown.\n\nSet SonarLint focus on new code to see only issues in recently added or changed code. This will help you practice Clean as You Code.';
+      newCodeDefinitionMessage = 'All issues are shown.\n\nSet SonarQube focus on new code to see only issues in recently added or changed code. This will help you practice Clean as You Code.';
     } else if (!newCodeDefinition) {
       newCodeDefinitionMessage = 'There is no New Code Definition for the project';
     }
@@ -108,7 +108,7 @@ export class NewCodeDefinitionService {
 
   updateStatusBarText(isSupportedForFile: boolean) {
     const enabledText = this.focusOnNewCode && isSupportedForFile ? 'new code' : 'overall code';
-    this.newCodeStatusBarItem.text = `SonarLint focus: ${enabledText}`;
+    this.newCodeStatusBarItem.text = `SonarQube focus: ${enabledText}`;
   }
 
   updateFocusOnNewCodeState() {

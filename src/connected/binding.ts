@@ -288,7 +288,7 @@ export class BindingService {
     const LEARN_MORE_ACTION = 'Learn more';
     const NOT_NOW_ACTION = 'Not now';
 
-    VSCode.window.showInformationMessage(`Do you want to share this new SonarLint Connected Mode configuration?
+    VSCode.window.showInformationMessage(`Do you want to share this new SonarQube Connected Mode configuration?
     A configuration file will be created in this working directory. This will allow your team to reuse the binding configuration`,
       SHARE_CONFIGURATION_ACTION, LEARN_MORE_ACTION, NOT_NOW_ACTION)
       .then(selection => {
