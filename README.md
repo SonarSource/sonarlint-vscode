@@ -1,35 +1,35 @@
-# SonarLint for Visual Studio Code
+# SonarQube for IDE: Visual Studio Code (formerly SonarLint)
 
-SonarLint by [Sonar](https://www.sonarsource.com/) is a free IDE extension that empowers you to fix coding issues before they exist. More than a linter, SonarLint detects and highlights issues that can lead to bugs, vulnerabilities, and code smells as you create your code.  It offers clear remediation guidance and educational help, so you can fix issues before the code is committed.
-Out of the box, SonarLint in VS Code supports analysis of JS/TS, Python, PHP, Java, C, C++, C#, Go, and IaC code locally in your IDE.
+SonarQube for IDE by [Sonar](https://www.sonarsource.com/) is a free IDE extension that empowers you to fix coding issues before they exist. More than a linter, SonarQube for IDE detects and highlights issues that can lead to bugs, vulnerabilities, and code smells as you create your code.  It offers clear remediation guidance and educational help, so you can fix issues before the code is committed.
+Out of the box, SonarQube for IDE: Visual Studio Code supports analysis of JS/TS, Python, PHP, Java, C, C++, C#, Go, and IaC code locally in your IDE.
 
-By default, SonarLint for VSCode analyzes files **open** in the IDE. When paired with [SonarQube](https://www.sonarsource.com/products/sonarqube/) or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) in Connected Mode, SonarLint forms a powerful end-to-end code quality platform to enrich the CI/CD pipeline, ensuring any code edits or additions **across the whole project** are clean.
+By default, SonarQube for IDE analyzes files **open** in the IDE. When paired with SonarQube ([Server](https://www.sonarsource.com/products/sonarqube/), [Cloud](https://www.sonarsource.com/products/sonarcloud/)) in Connected Mode, SonarQube for IDE forms a powerful end-to-end code quality platform to enrich the CI/CD pipeline, ensuring any code edits or additions **across the whole project** are clean.
 In Connected Mode, your team can share common language rulesets, project analysis settings and [more](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/).
 
-<a href='https://www.youtube.com/watch?v=Ks4Slmzb1qY' target='_blank'><img alt='What is SonarLint video' src='images/what_is_sonarlint.png'></a>
+<a href='https://www.youtube.com/watch?v=Ks4Slmzb1qY' target='_blank'><img alt='What is SonarQube for IDE video' src='images/what_is_sonarlint.png'></a>
 
-Check the [SonarLint for VS Code documentation](https://docs.sonarsource.com/sonarlint/vs-code/) for the most up-to-date requirements, installation instructions, and feature details.
+Check the [SonarQube for IDE: VS Code documentation](https://docs.sonarsource.com/sonarlint/vs-code/) for the most up-to-date requirements, installation instructions, and feature details.
 
 Sonar's [Clean Code solutions](https://www.sonarsource.com/solutions/clean-code/) help developers deliver high-quality, efficient code standards that benefit the entire team or organization. 
 
 ## How it works
 
-Simply open any source file, start coding, and you will start seeing issues reported by SonarLint. Issues are highlighted in your code and also listed in the 'Problems' panel.
+Simply open any source file, start coding, and you will start seeing issues reported by SonarQube for IDE. Issues are highlighted in your code and also listed in the 'Problems' panel.
 
-![sonarlint on-the-fly](images/sonarlint-vscode.gif)
+![SonarQube for IDE on-the-fly](images/sonarqube-for-vscode.gif)
 
 You can access the detailed rule description directly from your editor, using the provided contextual menu.
 
-![rule description](images/sonarlint-rule-description.gif)
+![rule description](images/sonarqube-rule-description.gif)
 
-Watch the [SonarLint for VSCode Overview](https://www.youtube.com/watch?v=m8sAdYCIWhY) video to explore SonarLint features.
+Watch the [SonarQube for IDE: VSCode Overview](https://www.youtube.com/watch?v=m8sAdYCIWhY) video to explore SonarQube for IDE: VS Code features.
 
 <a href='https://www.youtube.com/watch?v=m8sAdYCIWhY' target='_blank'><img alt='SonarLint for VSCode Overview video' src='images/sonarlint_overview.png'></a>
 
 
 ## Static Analysis Rules
 
-Out of the box, SonarLint automatically checks your code against the following rules:
+Out of the box, SonarQube for IDE: VS Code automatically checks your code against the following rules:
 
 - [Azure Resource Manager rules](https://rules.sonarsource.com/azureresourcemanager)
 - [C rules](https://rules.sonarsource.com/c)
@@ -53,15 +53,15 @@ The full list of supported languages and rules is available in [our docs](https:
 
 ## Requirements
 
-The SonarLint language server needs a Java Runtime (JRE) 17+.
+The SonarQube for IDE language server needs a Java Runtime (JRE) 17+.
 
-On the following platforms, SonarLint comes with its own Java runtime:
+On the following platforms, SonarQube for IDE: VS Code comes with its own Java runtime:
 
 - Windows x86-64
 - Linux x86-64
 - macOS x86-64 (Intel Macs) and arm-64 (Apple Silicon Macs)
 
-On other platforms and if a Java runtime is already installed on your computer, SonarLint should automatically find and use it. Here is how SonarLint will search for an installed JRE (in priority order):
+On other platforms and if a Java runtime is already installed on your computer, SonarQube for IDE: VS Code should automatically find and use it. Here is how SonarQube for IDE will search for an installed JRE (in priority order):
 
 1. the `sonarlint.ls.javaHome` variable in VS Code settings if set. For instance:
 
@@ -80,13 +80,13 @@ On other platforms and if a Java runtime is already installed on your computer, 
    2. on macOS, the parent directory of `javac` is checked for a `java_home` binary. If that binary exists then it is executed and the result is used
    3. the grandparent directory of `javac` is used. This is similar to `$(dirname $(dirname $(readlink $(which javac))))`
 
-SonarLint then uses the first JRE found in these steps to check its version.
+SonarQube for IDE: VS Code then uses the first JRE found in these steps to check its version.
 
-If a suitable JRE cannot be found at those places, SonarLint will ask for your permission to download and manage its own version.
+If a suitable JRE cannot be found at those places, SonarQube for IDE: VS Code will ask for your permission to download and manage its own version.
 
 ### JS/TS analysis specific requirements
 
-To analyze JavaScript and TypeScript code, SonarLint requires a Node.js executable. The minimal supported version is `18.18` for standalone analysis or Connected Mode with SonarCloud. For Connected Mode with SonarQube, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarLint will attempt to automatically locate Node, or you can force the location using:
+To analyze JavaScript and TypeScript code, SonarQube for IDE requires a Node.js executable. The minimal supported version is `18.18` for standalone analysis or Connected Mode with SonarQube Cloud. For Connected Mode with SonarQube Server, it depends on the version of the JS/TS analyzer on your SonarQube server. SonarQube for IDE will attempt to automatically locate Node, or you can force the location using:
 
 ```json
 {
@@ -98,7 +98,7 @@ Analysis of TypeScript in Connected Mode with SonarQube requires the server to u
 
 ### C and C++ analysis specific requirements
 
-To analyze C and C++ code, SonarLint requires [compile commands json file](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/running-an-analysis/#analyze-c-and-cpp-code):
+To analyze C and C++ code, SonarQube for IDE: VS Code requires [compile commands json file](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/running-an-analysis/#analyze-c-and-cpp-code):
 
 ```json
 {
@@ -114,45 +114,45 @@ To enable the support for Java analysis, you need the [Language support for Java
 
 ### Apex analysis specific requirements
 
-The support for Apex analysis is only available together with SonarQube Enterprise Edition or SonarCloud (see Connected Mode below). You also need the [Salesforce Extension Pack](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode) VSCode extension.
+The support for Apex analysis is only available together with SonarQube Server Enterprise Edition or SonarQube Cloud (see Connected Mode below). You also need the [Salesforce Extension Pack](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode) VSCode extension.
 
 ### PL/SQL analysis specific requirements
 
-The support for PL/SQL analysis is only available together with SonarQube Developer Edition or SonarCloud (see Connected Mode below). You also need the [Oracle Developer Tools for VS Code](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
+The support for PL/SQL analysis is only available together with SonarQube Server Developer Edition or SonarQube Cloud (see Connected Mode below). You also need the [Oracle Developer Tools for VS Code](https://marketplace.visualstudio.com/items?itemName=Oracle.oracledevtools) extension.
 
 ### COBOL analysis specific requirements
 
-The support for COBOL analysis is only available together with SonarQube Enterprise Edition or SonarCloud (see Connected Mode below). You also need an extension that declares the COBOL language; SonarLint has been tested with the [IBM Z Open Editor](https://marketplace.visualstudio.com/items?itemName=IBM.zopeneditor) and [Micro Focus COBOL](https://marketplace.visualstudio.com/items?itemName=Micro-Focus-AMC.mfcobol) extensions.
+The support for COBOL analysis is only available together with SonarQube Server Enterprise Edition or SonarQube Cloud (see Connected Mode below). You also need an extension that declares the COBOL language; SonarQube for IDE has been tested with the [IBM Z Open Editor](https://marketplace.visualstudio.com/items?itemName=IBM.zopeneditor) and [Micro Focus COBOL](https://marketplace.visualstudio.com/items?itemName=Micro-Focus-AMC.mfcobol) extensions.
 
 ### Jupyter notebooks
 
-SonarLint for VS Code supports analysis of Python code inside Jupyter notebooks. See the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/scan-my-project/#jupyter-notebooks) page for details.
+SonarQube for IDE: VS Code supports analysis of Python code inside Jupyter notebooks. See the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/scan-my-project/#jupyter-notebooks) page for details.
 
 ### Injection vulnerabilities specific requirements
 
-Security vulnerabilities requiring taint engine analysis (taint vulnerabilities) are only available in Connected Mode because SonarLint pulls them from SonarQube or SonarCloud following a project analysis.
+Security vulnerabilities requiring taint engine analysis (taint vulnerabilities) are only available in Connected Mode because SonarQube for IDE pulls them from SonarQube (Server, Cloud) following a project analysis.
 
-To browse injection vulnerabilities in SonarLint for VSCode, establish [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with your SonarQube Developer Edition (and above) or SonarCloud instance. Once a [Project Binding](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#project-binding) is configured, SonarLint will synchronize with the SonarQube or SonarCloud server to report the detected injection vulnerabilities.
+To browse injection vulnerabilities in SonarQube for IDE: VS Code, establish [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with your SonarQube Server Developer Edition (and above) or SonarQube Cloud instance. Once a [Project Binding](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#project-binding) is configured, SonarQube for IDE will synchronize with the SonarQube (Server, Cloud) to report the detected injection vulnerabilities.
 
-More information about security-related rules is available in the [SonarQube](https://docs.sonarqube.org/latest/user-guide/security-rules/) or [SonarCloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/) documentation.
+More information about security-related rules is available in the SonarQube ([Server](https://docs.sonarqube.org/latest/user-guide/security-rules/), [Cloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/)) documentation.
 
-### Security Hotspots in SonarLint
+### Security Hotspots in SonarQube for IDE: VS Code
 
-Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with SonarQube 9.9 or above, or SonarCloud.
+Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with SonarQube Server 9.9 or above, or SonarQube Cloud.
 
 Please see the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) for more details.
 
 ### Secrets detection
 
-Secrets are pieces of user-specific or system-level credentials that should be protected and accessible to legitimate users only. SonarLint detects exposed Secrets in your source code and language-agnostic config files. When running in Connected Mode, the SonarQube or SonarCloud Quality Profiles are applied to locally detected Secrets.
+Secrets are pieces of user-specific or system-level credentials that should be protected and accessible to legitimate users only. SonarQube for IDE detects exposed Secrets in your source code and language-agnostic config files. When running in Connected Mode, the SonarQube (Server, Cloud) Quality Profiles are applied to locally detected Secrets.
 
 ## Connected Mode
 
-You can connect SonarLint to [SonarQube](https://www.sonarsource.com/products/sonarqube/) 9.9+ or [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) by binding your VSCode workspace folder to your SonarQube/SonarCloud project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarLint in VSCode then hides **Accepted** (formerly **Won’t Fix**) and **False Positive** issues in any file from a bound folder.
+You can connect SonarQube for IDE to [SonarQube Server](https://www.sonarsource.com/products/sonarqube/) 9.9+ or [SonarQube Cloud](https://www.sonarsource.com/products/sonarcloud/) by binding your VSCode workspace folder to your SonarQube (Server, Cloud) project(s), and benefit from the same rules and settings that are used to inspect your project on the server. SonarQube for IDE: VS Code then hides **Accepted** (formerly **Won’t Fix**) and **False Positive** issues in any file from a bound folder.
 
-While in Connected Mode, SonarLint receives notifications from SonarQube/SonarCloud about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings.
+While in Connected Mode, SonarQube for IDE receives notifications from SonarQube (Server, Cloud) about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings.
 
-When running in Connected Mode, and browsing a [Security Hotspot](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/), a button will be available offering to open the hotspot in SonarLint (with SonarLint already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarLint, and consequently is not available in some remote environments such as GitPod, or GitHub CodeSpaces.
+When running in Connected Mode, and browsing a [Security Hotspot](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/), a button will be available offering to open the hotspot in SonarQube for IDE (with SonarQube for IDE already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarQube for IDE, and consequently is not available in some remote environments such as GitPod, or GitHub CodeSpaces.
 
 Connected Mode will also unlock your analysis of these languages:
 
@@ -178,7 +178,7 @@ It is possible to specify extra analyzer properties that will be used for analys
 
 ## Contributions
 
-Have a need in SonarLint that’s not being met? Or not being met well? Ever wish you could talk directly to the Product Manager? Well now’s your chance! Congratulations, you are SonarLint’s Product Manager for a day. If you would like to see a new feature, please create a new thread in the Community Forum here, under ["Product Manager for a Day"](https://community.sonarsource.com/c/sl/pm-for-a-day-sl/41). 
+Have a need in SonarQube for IDE: VS Code that’s not being met? Or not being met well? Ever wish you could talk directly to the Product Manager? Well now’s your chance! Congratulations, you are SonarQube's Product Manager for a day. If you would like to see a new feature, please create a new thread in the Community Forum here, under ["Product Manager for a Day"](https://community.sonarsource.com/c/sl/pm-for-a-day-sl/41). 
 
 Please read here about why we [deprecated the "Suggest New Features" category](https://community.sonarsource.com/t/introducing-the-product-manager-for-a-day-subcategories/68606) on the Community Forum. The truth is that it's extremely difficult for someone outside SonarSource to comply with our roadmap and expectations. Therefore, we typically only accept minor cosmetic changes and typo fixes.
 
@@ -188,7 +188,7 @@ Make sure that you follow our [code style](https://github.com/SonarSource/sonar-
 
 ## Have Questions or Feedback?
 
-For SonarLint support questions ("How do I?", "I got this error, why?", ...), please first read the [FAQ](https://community.sonarsource.com/t/frequently-asked-questions/7204) and then head to the [SonarSource forum](https://community.sonarsource.com/c/help/sl). There are chances that a question similar to yours has already been answered.
+For SonarQube for IDE support questions ("How do I?", "I got this error, why?", ...), please first read the [FAQ](https://community.sonarsource.com/t/frequently-asked-questions/7204) and then head to the [Sonar forum](https://community.sonarsource.com/c/help/sl). There are chances that a question similar to yours has already been answered.
 
 Be aware that this forum is a community, so the standard pleasantries ("Hi", "Thanks", ...) are expected. And if you don't get an answer to your thread, you should sit on your hands for at least three days before bumping it. Operators are not standing by. :-)
 
@@ -202,4 +202,4 @@ Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.g
 
 ## Data and telemetry
 
-This extension collects anonymous usage data and sends it to SonarSource to help improve SonarLint functionality.  No source code or IP address is collected, and SonarSource does not share the data with anyone else. Collection of telemetry is controlled via the setting: `sonarlint.disableTelemetry`. Click [here](telemetry-sample.md) to see a sample of the data that are collected.
+This extension collects anonymous usage data and sends it to SonarSource to help improve SonarQube for IDE: VS Code functionality.  No source code or IP address is collected, and SonarSource does not share the data with anyone else. Collection of telemetry is controlled via the setting: `sonarlint.disableTelemetry`. Click [here](telemetry-sample.md) to see a sample of the data that are collected.
