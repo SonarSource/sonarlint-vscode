@@ -111,6 +111,18 @@ function renderImpact(softwareQuality: string, severity: string, resolver: Resou
 </div>`;
 }
 
+function renderStandardModeSeverityDetails(ruleType: string, severity: string, resolver: ResourceResolver) {
+  const ruleTypeToLowerCase = ruleType.toLocaleLowerCase('en-us');
+  const severityToLowerCase = severity.toLocaleLowerCase('en-us');
+  const ruleTypeImgSrc = resolver.resolve('images', 'standardMode', ruleTypeToLowerCase, `${severityToLowerCase}.svg`);
+  const severityImgSrc = resolver.resolve('images', 'severity', `${severityToLowerCase}.svg`);
+  return `<div class="impact severity-${severityToLowerCase} capsule">
+  <img alt="${clean(ruleType)}" src="${ruleTypeImgSrc}"/>
+  &nbsp;${clean(ruleType)}&nbsp;
+  <img alt="${severityToLowerCase}" src="${severityImgSrc}"/>
+</div>`;
+}
+
 function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceResolver) {
   if (rule.severityDetails.impacts && Object.keys(rule.severityDetails.impacts).length > 0) {
     // Clean Code taxonomy
@@ -126,17 +138,8 @@ function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceR
 </div>`;
   } else {
     // Old type + severity taxonomy
-    const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severityDetails.severity.toLowerCase()}.png`);
-    const typeImgSrc = resolver.resolve('images', 'type', `${rule.severityDetails.type.toLowerCase()}.png`);
     return `<div class="taxonomy">
-  <div class="impact capsule">
-    ${clean(rule.severityDetails.type)}
-    <img alt="${rule.severityDetails.type}" src="${typeImgSrc}" />
-  </div>
-  <div class="impact capsule">
-    ${clean(rule.severityDetails.severity)}
-    <img alt="${rule.severityDetails.severity}" src="${severityImgSrc}" />
-  </div>
+      ${renderStandardModeSeverityDetails(rule.severityDetails.type, rule.severityDetails.severity, resolver)}
 </div>`;
   }
 }
