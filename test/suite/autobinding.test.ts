@@ -19,9 +19,10 @@ import * as VSCode from 'vscode';
 import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
 import { TextEncoder } from 'util';
-import { FolderUriParams, ListFilesInScopeResponse } from '../../src/lsp/protocol';
+import { FolderUriParams, ListFilesInScopeResponse, SuggestBindingParams } from '../../src/lsp/protocol';
 import { FileSystemServiceImpl } from '../../src/fileSystem/fileSystemServiceImpl';
 import { sleep } from '../testutil';
+import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
@@ -32,6 +33,21 @@ const TEST_SONARQUBE_CONNECTION = {
   connectionId: 'test',
   serverUrl: 'https://test.sonarqube.com'
 };
+
+const mockClient = {
+  async getRemoteProjectsForConnection(_connectionId: string): Promise<Object> {
+    return { projectKey1: 'projectName1', projectKey2: 'projectName2' };
+  },
+  async checkConnection(connectionId: string) {
+    return Promise.resolve({ connectionId, success: true });
+  },
+  async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<SuggestBindingParams> {
+    return Promise.resolve({suggestions:{}});
+  },
+  async didCreateBinding(mode) {
+    return Promise.resolve();
+  }
+} as SonarLintExtendedLanguageClient;
 
 const mockSettingsService = {
   async loadSonarQubeConnection(connectionId: string): Promise<SonarQubeConnection> {
@@ -113,7 +129,8 @@ suite('Auto Binding Test Suite', () => {
         mockBindingService,
         mockWorkspaceState,
         mockSettingsService,
-        FileSystemServiceImpl.instance
+        FileSystemServiceImpl.instance,
+        mockClient
       );
       underTest = AutoBindingService.instance;
     });

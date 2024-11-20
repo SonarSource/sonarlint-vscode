@@ -71,4 +71,5 @@ export namespace Commands {
   export const ENABLE_VERBOSE_LOGS = 'SonarLint.EnableVerboseLogs';
   export const ANALYSE_OPEN_FILE = 'SonarLint.AnalyseOpenFile';
   export const NEW_CODE_DEFINITION = 'SonarLint.NewCodeDefinition';
+  export const AUTO_BIND_WORKSPACE_FOLDERS = 'SonarLint.AutoBindWorkspaceFolders';
 }
