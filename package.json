@@ -881,6 +881,7 @@
     "node-html-parser": "^6.1.5",
     "path-exists": "4.0.0",
     "properties": "1.2.1",
+    "sinon": "^19.0.2",
     "supports-color": "^9.4.0",
     "tar": "^7.2.0",
     "underscore": "^1.13.6",
