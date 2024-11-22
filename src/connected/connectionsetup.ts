@@ -26,7 +26,7 @@ let connectionSetupPanel: vscode.WebviewPanel;
 
 const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/connected-mode/';
 const sonarCloudNotificationsDocUrl =
-  'https://docs.sonarsource.com/sonarcloud/advanced-setup/sonarlint-smart-notifications/';
+  'https://docs.sonarsource.com/sonarcloud/improving/sonarlint/#smart-notifications';
 const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
 const OPEN_TOKEN_GENERATION_PAGE_COMMAND = 'openTokenGenerationPage';
 const SAVE_CONNECTION_COMMAND = 'saveConnection';
