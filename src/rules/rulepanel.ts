@@ -14,6 +14,8 @@ import * as util from '../util/util';
 import { clean, escapeHtml, ResourceResolver } from '../util/webview';
 import { decorateContextualHtmlContentWithDiff } from './code-diff';
 import { highlightAllCodeSnippetsInDesc } from './syntax-highlight';
+import * as fs from 'fs';
+import { DOMParser, XMLSerializer } from 'xmldom';
 
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 
@@ -114,13 +116,40 @@ function renderImpact(softwareQuality: string, severity: string, resolver: Resou
 function renderStandardModeSeverityDetails(ruleType: string, severity: string, resolver: ResourceResolver) {
   const ruleTypeToLowerCase = ruleType.toLocaleLowerCase('en-us');
   const severityToLowerCase = severity.toLocaleLowerCase('en-us');
-  const ruleTypeImgSrc = resolver.resolve('images', 'standardMode', ruleTypeToLowerCase, `${severityToLowerCase}.svg`);
+  const ruleTypeImgSrc = util.resolveExtensionFile('images', 'type', `${ruleTypeToLowerCase}.svg`);
   const severityImgSrc = resolver.resolve('images', 'severity', `${severityToLowerCase}.svg`);
   return `<div class="impact severity-${severityToLowerCase} capsule">
-  <img alt="${clean(ruleType)}" src="${ruleTypeImgSrc}"/>
+  ${fetchAndColorSVGIcon(ruleTypeImgSrc, getColorFromSeverity(severityToLowerCase))}
   &nbsp;${clean(ruleType)}&nbsp;
   <img alt="${severityToLowerCase}" src="${severityImgSrc}"/>
-</div>`;
+  </div>`;
+}
+
+function getColorFromSeverity(severity: string) {
+  switch (severity) {
+    case 'blocker':
+      return '#E05555';
+    case 'critical':
+      return '#D92D20';
+    case 'major':
+      return '#FD7122';
+    case 'minor':
+      return '#F5B840';
+    case 'info':
+      return '#4595CB';
+    default:
+      return '';
+  }
+}
+
+function fetchAndColorSVGIcon(pathToSVG: VSCode.Uri, color: string) : string {
+  const svgText = fs.readFileSync(pathToSVG.path, 'utf8');
+  const parser : DOMParser = new DOMParser();
+  const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+  const svgElement = svgDoc.documentElement;
+  svgElement.setAttribute('fill', color);
+
+  return new XMLSerializer().serializeToString(svgElement);
 }
 
 function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceResolver) {
