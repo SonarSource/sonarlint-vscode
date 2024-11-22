@@ -24,7 +24,7 @@ import { escapeHtml, ResourceResolver } from '../util/webview';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
-const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/connected-mode/';
+const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/sonarlint-connected-mode/';
 const sonarCloudNotificationsDocUrl =
   'https://docs.sonarsource.com/sonarcloud/improving/sonarlint/#smart-notifications';
 const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
