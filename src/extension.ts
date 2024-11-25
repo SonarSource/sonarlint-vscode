@@ -231,6 +231,10 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   FixSuggestionService.init(languageClient);
 
+  VSCode.workspace.workspaceFolders?.map((folder) => {
+    FileSystemServiceImpl.instance.crawlDirectory(folder.uri);
+  });
+
   installCustomRequestHandlers(context);
 
   const referenceBranchStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 1);
@@ -568,7 +572,6 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
   languageClient.onRequest(protocol.ListFilesInFolderRequest.type, async (params) => {
-    await FileSystemServiceImpl.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
     return AutoBindingService.instance.listAutobindingFilesInFolder(params);
   }
   );

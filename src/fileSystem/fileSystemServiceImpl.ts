@@ -30,7 +30,7 @@ export class FileSystemServiceImpl implements FileSystemService {
   }
 
   public async crawlDirectory(uri: Uri) {
-    await this.listFilesRecursively(uri, uri);
+    this.listFilesRecursively(uri, uri);
   }
 
   private async listFilesRecursively(configScopeUri: Uri, currentDirectory: Uri) {
@@ -45,7 +45,7 @@ export class FileSystemServiceImpl implements FileSystemService {
         }
         // .sonarlint folder is already handled separately, skipping it in recursive crawl
         if (type === vscode.FileType.Directory && name !== '.sonarlint') {
-          await this.listFilesRecursively(configScopeUri, fullFileUri);
+          this.listFilesRecursively(configScopeUri, fullFileUri);
         }
       }
     } catch (error) {
