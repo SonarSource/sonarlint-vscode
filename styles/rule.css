@@ -94,6 +94,31 @@ a {
   border-color: var(--sonarlint-info-border-color);
 }
 
+.severity-blocker svg {
+  fill: currentColor;
+  color: var(--sonarlint-blocker-border-color);
+}
+
+.severity-critical svg {
+  fill: currentColor; 
+  color: var(--sonarlint-high-boder-color);
+}
+
+.severity-major svg {
+  fill: currentColor; 
+  color: var(--sonarlint-medium-border-color);
+}
+
+.severity-minor svg {
+  fill: currentColor; 
+  color: var(--sonarlint-low-border-color);
+}
+
+.severity-info svg {
+  fill: currentColor; 
+  color: var(--sonarlint-info-border-color);
+}
+
 .impact img {
   display: inline-block;
   width: 16px;

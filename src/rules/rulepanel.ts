@@ -117,37 +117,19 @@ function renderStandardModeSeverityDetails(ruleType: string, severity: string, r
   const ruleTypeToLowerCase = ruleType.toLocaleLowerCase('en-us');
   const severityToLowerCase = severity.toLocaleLowerCase('en-us');
   const ruleTypeImgSrc = util.resolveExtensionFile('images', 'type', `${ruleTypeToLowerCase}.svg`);
-  const severityImgSrc = resolver.resolve('images', 'severity', `${severityToLowerCase}.svg`);
+  const severityImgSrc = util.resolveExtensionFile('images', 'severity', `${severityToLowerCase}.svg`);
   return `<div class="impact severity-${severityToLowerCase} capsule">
-  ${fetchAndColorSVGIcon(ruleTypeImgSrc, getColorFromSeverity(severityToLowerCase))}
+  ${fetchSVGIcon(ruleTypeImgSrc)}
   &nbsp;${clean(ruleType)}&nbsp;
-  <img alt="${severityToLowerCase}" src="${severityImgSrc}"/>
+  ${fetchSVGIcon(severityImgSrc)}
   </div>`;
 }
 
-function getColorFromSeverity(severity: string) {
-  switch (severity) {
-    case 'blocker':
-      return '#E05555';
-    case 'critical':
-      return '#D92D20';
-    case 'major':
-      return '#FD7122';
-    case 'minor':
-      return '#F5B840';
-    case 'info':
-      return '#4595CB';
-    default:
-      return '';
-  }
-}
-
-function fetchAndColorSVGIcon(pathToSVG: VSCode.Uri, color: string) : string {
+function fetchSVGIcon(pathToSVG: VSCode.Uri) : string {
   const svgText = fs.readFileSync(pathToSVG.path, 'utf8');
   const parser : DOMParser = new DOMParser();
   const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
   const svgElement = svgDoc.documentElement;
-  svgElement.setAttribute('fill', color);
 
   return new XMLSerializer().serializeToString(svgElement);
 }
