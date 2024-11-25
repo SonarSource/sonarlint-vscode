@@ -64,34 +64,59 @@ a {
   border: 1px solid;
 }
 
-.impact-blocker {
+.impact-blocker, .severity-blocker {
   color: var(--sonarlint-blocker-color);
   background-color: var(--sonarlint-blocker-background-color);
   border-color: var(--sonarlint-blocker-border-color);
 }
 
-.impact-high {
+.impact-high, .severity-critical {
   color: var(--sonarlint-high-color);
   background-color: var(--sonarlint-high-background-color);
   border-color: var(--sonarlint-high-border-color);
 }
 
-.impact-medium {
+.impact-medium, .severity-major {
   color: var(--sonarlint-medium-color);
   background-color: var(--sonarlint-medium-background-color);
   border-color: var(--sonarlint-medium-border-color);
 }
 
-.impact-low {
+.impact-low, .severity-minor {
   color: var(--sonarlint-low-color);
   background-color: var(--sonarlint-low-background-color);
   border-color: var(--sonarlint-low-border-color);
 }
 
-.impact-info {
+.impact-info, .severity-info {
   color: var(--sonarlint-info-color);
   background-color: var(--sonarlint-info-background-color);
   border-color: var(--sonarlint-info-border-color);
+}
+
+.severity-blocker svg {
+  fill: currentColor;
+  color: var(--sonarlint-blocker-border-color);
+}
+
+.severity-critical svg {
+  fill: currentColor; 
+  color: var(--sonarlint-high-boder-color);
+}
+
+.severity-major svg {
+  fill: currentColor; 
+  color: var(--sonarlint-medium-border-color);
+}
+
+.severity-minor svg {
+  fill: currentColor; 
+  color: var(--sonarlint-low-border-color);
+}
+
+.severity-info svg {
+  fill: currentColor; 
+  color: var(--sonarlint-info-border-color);
 }
 
 .impact img {

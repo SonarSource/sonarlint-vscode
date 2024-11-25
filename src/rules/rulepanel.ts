@@ -14,6 +14,8 @@ import * as util from '../util/util';
 import { clean, escapeHtml, ResourceResolver } from '../util/webview';
 import { decorateContextualHtmlContentWithDiff } from './code-diff';
 import { highlightAllCodeSnippetsInDesc } from './syntax-highlight';
+import * as fs from 'fs';
+import { DOMParser, XMLSerializer } from 'xmldom';
 
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 
@@ -111,6 +113,27 @@ function renderImpact(softwareQuality: string, severity: string, resolver: Resou
 </div>`;
 }
 
+function renderStandardModeSeverityDetails(ruleType: string, severity: string, resolver: ResourceResolver) {
+  const ruleTypeToLowerCase = ruleType.toLocaleLowerCase('en-us');
+  const severityToLowerCase = severity.toLocaleLowerCase('en-us');
+  const ruleTypeImgSrc = util.resolveExtensionFile('images', 'type', `${ruleTypeToLowerCase}.svg`);
+  const severityImgSrc = util.resolveExtensionFile('images', 'severity', `${severityToLowerCase}.svg`);
+  return `<div class="impact severity-${severityToLowerCase} capsule">
+  ${fetchSVGIcon(ruleTypeImgSrc)}
+  &nbsp;${clean(ruleType)}&nbsp;
+  ${fetchSVGIcon(severityImgSrc)}
+  </div>`;
+}
+
+function fetchSVGIcon(pathToSVG: VSCode.Uri) : string {
+  const svgText = fs.readFileSync(pathToSVG.path, 'utf8');
+  const parser : DOMParser = new DOMParser();
+  const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+  const svgElement = svgDoc.documentElement;
+
+  return new XMLSerializer().serializeToString(svgElement);
+}
+
 function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceResolver) {
   if (rule.severityDetails.impacts && Object.keys(rule.severityDetails.impacts).length > 0) {
     // Clean Code taxonomy
@@ -126,17 +149,8 @@ function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceR
 </div>`;
   } else {
     // Old type + severity taxonomy
-    const severityImgSrc = resolver.resolve('images', 'severity', `${rule.severityDetails.severity.toLowerCase()}.png`);
-    const typeImgSrc = resolver.resolve('images', 'type', `${rule.severityDetails.type.toLowerCase()}.png`);
     return `<div class="taxonomy">
-  <div class="impact capsule">
-    ${clean(rule.severityDetails.type)}
-    <img alt="${rule.severityDetails.type}" src="${typeImgSrc}" />
-  </div>
-  <div class="impact capsule">
-    ${clean(rule.severityDetails.severity)}
-    <img alt="${rule.severityDetails.severity}" src="${severityImgSrc}" />
-  </div>
+      ${renderStandardModeSeverityDetails(rule.severityDetails.type, rule.severityDetails.severity, resolver)}
 </div>`;
   }
 }
