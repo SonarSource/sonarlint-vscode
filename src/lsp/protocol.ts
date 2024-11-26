@@ -753,8 +753,13 @@ export interface ShowFixSuggestionParams {
   textEdits: Change[];
   fileUri: string;
 }
+
 export namespace ShowFixSuggestion {
   export const type = new lsp.NotificationType<ShowFixSuggestionParams>('sonarlint/showFixSuggestion');
+}
+
+export namespace IsOpenInEditor {
+  export const type = new lsp.RequestType<string, boolean, void>('sonarlint/isOpenInEditor');
 }
 
 //#endregion
