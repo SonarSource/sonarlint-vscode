@@ -231,8 +231,8 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   FixSuggestionService.init(languageClient);
 
-  VSCode.workspace.workspaceFolders?.map((folder) => {
-    FileSystemServiceImpl.instance.crawlDirectory(folder.uri);
+  VSCode.workspace.workspaceFolders?.map(async (folder) => {
+    await FileSystemServiceImpl.instance.crawlDirectory(folder.uri);
   });
 
   installCustomRequestHandlers(context);
