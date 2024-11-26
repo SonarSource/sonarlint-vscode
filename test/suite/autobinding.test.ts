@@ -242,6 +242,9 @@ suite('Auto Binding Test Suite', () => {
       // crawl the directory
       await FileSystemServiceImpl.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
 
+      // make sure results get in place
+      await sleep(500);
+
       const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
 
       expect(foundFiles.foundFiles).to.not.be.empty;

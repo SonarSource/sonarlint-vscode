@@ -66,9 +66,6 @@ suite('Java Test Suite', () => {
     const rangeInMiddleOfThrowsMyException = new vscode.Range(8, 54, 8, 54);
     const codeActionsResult = (await vscode.commands.executeCommand<(vscode.Command | vscode.CodeAction)[]>('vscode.executeCodeActionProvider', document.uri, rangeInMiddleOfThrowsMyException, vscode.CodeActionKind.QuickFix.value));
     // With old versions of VSCode, code actions are not necessarily filtered on kind
-    console.log('+++++++', codeActionsResult[0].title)
-    console.log('+++++++', codeActionsResult[2].title)
-    console.log('+++++++', codeActionsResult[1].title)
     const expectedActionTitles = [
       "SonarQube: Deactivate rule 'java:S1130'",
       "SonarQube: Remove \"MyException\"",
