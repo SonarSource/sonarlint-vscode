@@ -37,7 +37,7 @@
 
 ## 4.7
 
-* Allow focusing on New Code for standalone projects. [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/concepts/new-code/)
+* Allow focusing on New Code for standalone projects. [Learn more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/concepts/new-code/)
 * Automatic token exchange when setting up SonarCloud connection
 * Update text and secrets analyzer 2.10 -> [2.11](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.11.0.2807) -> [2.12](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.12.0.2889) -> [2.12.1](https://github.com/SonarSource/sonar-text-enterprise/releases/tag/2.12.1.2905), bugfixes, FP fixes
 * Update CFamily analyzer 6.55 -> [6.56](https://sonarsource.atlassian.net/issues/?jql=fixversion%20%3D%206.56%20ORDER%20BY%20created%20ASC), Linux ARM support, c++23 deducing this, rules hardening
@@ -124,7 +124,7 @@
 
 ## 4.0.1
 
-* Initial support for C# analysis. More info in [docs](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/requirements/#c-sharp-analysis); Please share feedback on our [Community Forum](https://community.sonarsource.com/c/sl/vs-code/36).
+* Initial support for C# analysis. More info in [docs](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/getting-started/requirements/#c-sharp-analysis); Please share feedback on our [Community Forum](https://community.sonarsource.com/c/sl/vs-code/36).
 * Update Python analyzer 4.8 -> [4.9](https://sonarsource.atlassian.net/projects/SONARPY/versions/14308/tab/release-report-all-issues), 5 new rules for Pandas library
 * Update JS/TS/CSS analyzer 10.6.0 -> [10.7.0](https://github.com/SonarSource/SonarJS/releases/tag/10.7.0.22914) -> [10.8.0](https://github.com/SonarSource/SonarJS/releases/tag/10.8.0.24207), new rules, FP fixes, improved diagnostics for memory issues
 * Update Java analyzer 7.25 -> [7.26](https://github.com/SonarSource/sonar-java/releases/tag/7.26.0.33315) -> [7.27](https://github.com/SonarSource/sonar-java/releases/tag/7.27.0.33463) -> [7.27.1](https://github.com/SonarSource/sonar-java/releases/tag/7.27.1.33504), Add first part of support in rules for jakarta packages, 6 new Spring rules, bugfix and improvements
@@ -138,8 +138,8 @@
 
 ## 3.22
 
-* Add possibility to exclude files from analysis when ***not*** in Connected Mode. [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/file-exclusions)
-* Add focusing on new code in connected mode [Learn more](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code)
+* Add possibility to exclude files from analysis when ***not*** in Connected Mode. [Learn more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/file-exclusions)
+* Add focusing on new code in connected mode [Learn more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code)
 * Update JS/TS/CSS analyzer 10.5.1 -> [10.6.0](https://github.com/SonarSource/SonarJS/releases/tag/10.6.0.22520), FP fixes, QuickFix for S6326, remove S2814 for TypeScript, recommendation to use Node.js 20
 * Update CFamily analyzer 6.48 -> [6.49](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2014261%20ORDER%20BY%20created%20ASC), 2 new C++ MISRA 2023 rules
 * Update text and secrets analyzer 2.3.0 -> [2.4.0](https://github.com/SonarSource/sonar-text/releases/tag/2.4.0.2120) -> [2.5.0](https://github.com/SonarSource/sonar-text/releases/tag/2.5.0.2293), 42 new cloud app secrets, FP fixes, analysis time logging
@@ -239,7 +239,7 @@
 
 ## 3.14
 
-* Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/)
+* Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/security-hotspots/)
 * Update PHP analyzer 3.25.0 -> [3.26.0](https://github.com/SonarSource/sonar-php/releases/tag/3.26.0.9313) -> [3.27.0](https://github.com/SonarSource/sonar-php/releases/tag/3.27.0.9339) -> [3.27.1](https://github.com/SonarSource/sonar-php/releases/tag/3.27.1.9352), Fix parsing error on namespaces with reserved words
 * Update CFamily analyzer 6.40.0 -> [6.41.0](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013953%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), 13 new rules on C++20's "std::format"
 * Update Java analyzer 7.15.0 -> [7.16.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/13922/tab/release-report-all-issues), FP fixes, bugfixes, FN fixes

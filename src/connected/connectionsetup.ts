@@ -24,9 +24,9 @@ import { escapeHtml, ResourceResolver } from '../util/webview';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
-const sonarQubeNotificationsDocUrl = 'https://docs.sonarqube.org/latest/user-guide/sonarlint-connected-mode/';
+const sonarQubeNotificationsDocUrl = 'https://docs.sonarsource.com/sonarqube-server/latest/user-guide/sonarlint-connected-mode/';
 const sonarCloudNotificationsDocUrl =
-  'https://docs.sonarsource.com/sonarcloud/improving/sonarlint/#smart-notifications';
+  'https://docs.sonarsource.com/sonarqube-cloud/improving/sonarlint/#smart-notifications';
 const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
 const OPEN_TOKEN_GENERATION_PAGE_COMMAND = 'openTokenGenerationPage';
 const SAVE_CONNECTION_COMMAND = 'saveConnection';
@@ -243,7 +243,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <br>
         ${maybeFolderBindingParagraph}
         <br>
-        <a href='https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#connection-setup'>Need help setting up a connection?</a>
+        <a href='https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode-setup/#connection-setup'>Need help setting up a connection?</a>
         <div id="connectionCheck" class="formRowWithStatus">
           <vscode-button id="saveConnection" disabled>${saveButtonLabel}</vscode-button>
           <span id="connectionProgress" class="hidden">

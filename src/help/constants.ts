@@ -81,7 +81,7 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   {
     id: 'connectedModeDocs',
     label: 'Connected Mode',
-    url: 'https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/',
+    url: 'https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/',
     icon: 'n/a',
     viewItem: false
   },

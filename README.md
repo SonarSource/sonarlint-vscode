@@ -4,11 +4,11 @@ SonarQube for IDE by [Sonar](https://www.sonarsource.com/) is a free IDE extensi
 Out of the box, SonarQube for IDE: Visual Studio Code supports analysis of JS/TS, Python, PHP, Java, C, C++, C#, Go, and IaC code locally in your IDE.
 
 By default, SonarQube for IDE analyzes files **open** in the IDE. When paired with SonarQube ([Server](https://www.sonarsource.com/products/sonarqube/), [Cloud](https://www.sonarsource.com/products/sonarcloud/)) in Connected Mode, SonarQube for IDE forms a powerful end-to-end code quality platform to enrich the CI/CD pipeline, ensuring any code edits or additions **across the whole project** are clean.
-In Connected Mode, your team can share common language rulesets, project analysis settings and [more](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/).
+In Connected Mode, your team can share common language rulesets, project analysis settings and [more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/).
 
 <a href='https://www.youtube.com/watch?v=Ks4Slmzb1qY' target='_blank'><img alt='What is SonarQube for IDE video' src='images/what_is_sonarlint.png'></a>
 
-Check the [SonarQube for IDE: VS Code documentation](https://docs.sonarsource.com/sonarlint/vs-code/) for the most up-to-date requirements, installation instructions, and feature details.
+Check the [SonarQube for IDE: VS Code documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/) for the most up-to-date requirements, installation instructions, and feature details.
 
 Sonar's [Clean Code solutions](https://www.sonarsource.com/solutions/clean-code/) help developers deliver high-quality, efficient code standards that benefit the entire team or organization. 
 
@@ -49,7 +49,7 @@ Out of the box, SonarQube for IDE: VS Code automatically checks your code agains
 - [Terraform rules](https://rules.sonarsource.com/terraform)
 - [TypeScript rules](https://rules.sonarsource.com/typescript)
 
-The full list of supported languages and rules is available in [our docs](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/rules/).
+The full list of supported languages and rules is available in [our docs](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/rules/).
 
 ## Requirements
 
@@ -98,7 +98,7 @@ Analysis of TypeScript in Connected Mode with SonarQube requires the server to u
 
 ### C and C++ analysis specific requirements
 
-To analyze C and C++ code, SonarQube for IDE: VS Code requires [compile commands json file](https://docs.sonarsource.com/sonarlint/vs-code/getting-started/running-an-analysis/#analyze-c-and-cpp-code):
+To analyze C and C++ code, SonarQube for IDE: VS Code requires [compile commands json file](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/getting-started/running-an-analysis/#analyze-c-and-cpp-code):
 
 ```json
 {
@@ -126,21 +126,21 @@ The support for COBOL analysis is only available together with SonarQube Server 
 
 ### Jupyter notebooks
 
-SonarQube for IDE: VS Code supports analysis of Python code inside Jupyter notebooks. See the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/scan-my-project/#jupyter-notebooks) page for details.
+SonarQube for IDE: VS Code supports analysis of Python code inside Jupyter notebooks. See the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/scan-my-project/#jupyter-notebooks) page for details.
 
 ### Injection vulnerabilities specific requirements
 
 Security vulnerabilities requiring taint engine analysis (taint vulnerabilities) are only available in Connected Mode because SonarQube for IDE pulls them from SonarQube (Server, Cloud) following a project analysis.
 
-To browse injection vulnerabilities in SonarQube for IDE: VS Code, establish [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with your SonarQube Server Developer Edition (and above) or SonarQube Cloud instance. Once a [Project Binding](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#project-binding) is configured, SonarQube for IDE will synchronize with the SonarQube (Server, Cloud) to report the detected injection vulnerabilities.
+To browse injection vulnerabilities in SonarQube for IDE: VS Code, establish [Connected Mode](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/) with your SonarQube Server Developer Edition (and above) or SonarQube Cloud instance. Once a [Project Binding](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode-setup/#project-binding) is configured, SonarQube for IDE will synchronize with the SonarQube (Server, Cloud) to report the detected injection vulnerabilities.
 
-More information about security-related rules is available in the SonarQube ([Server](https://docs.sonarqube.org/latest/user-guide/security-rules/), [Cloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/)) documentation.
+More information about security-related rules is available in the SonarQube ([Server](https://docs.sonarsource.com/sonarqube-server/latest/user-guide/rules/security-related-rules/), [Cloud](https://docs.sonarcloud.io/digging-deeper/security-related-rules/)) documentation.
 
 ### Security Hotspots in SonarQube for IDE: VS Code
 
-Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode/) with SonarQube Server 9.9 or above, or SonarQube Cloud.
+Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/security-hotspots/) is enabled if you are using [Connected Mode](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/) with SonarQube Server 9.9 or above, or SonarQube Cloud.
 
-Please see the [documentation](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/) for more details.
+Please see the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/security-hotspots/) for more details.
 
 ### Secrets detection
 
@@ -152,7 +152,7 @@ You can connect SonarQube for IDE to [SonarQube Server](https://www.sonarsource.
 
 While in Connected Mode, SonarQube for IDE receives notifications from SonarQube (Server, Cloud) about your Quality Gate changes and new issues. Notifications can be enabled or disabled from the UI while creating or editing the connection settings.
 
-When running in Connected Mode, and browsing a [Security Hotspot](https://docs.sonarsource.com/sonarlint/vs-code/using-sonarlint/security-hotspots/), a button will be available offering to open the hotspot in SonarQube for IDE (with SonarQube for IDE already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarQube for IDE, and consequently is not available in some remote environments such as GitPod, or GitHub CodeSpaces.
+When running in Connected Mode, and browsing a [Security Hotspot](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/security-hotspots/), a button will be available offering to open the hotspot in SonarQube for IDE (with SonarQube for IDE already running in VSCode). Limitation: this feature relies on local communication between your web browser and SonarQube for IDE, and consequently is not available in some remote environments such as GitPod, or GitHub CodeSpaces.
 
 Connected Mode will also unlock your analysis of these languages:
 
@@ -161,7 +161,7 @@ Connected Mode will also unlock your analysis of these languages:
 - [PL/SQL rules](https://rules.sonarsource.com/plsql)
 - [T-SQL rules](https://rules.sonarsource.com/tsql/)
 
-When configuring Connected Mode, follow the [Connection Setup instructions](https://docs.sonarsource.com/sonarlint/vs-code/team-features/connected-mode-setup/#connection-setup).
+When configuring Connected Mode, follow the [Connection Setup instructions](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode-setup/#connection-setup).
 
 ## Other settings
 
