@@ -1,7 +1,7 @@
 export const DEFAULT_CONNECTION_ID = '<default>';
 
 export namespace SonarLintDocumentation {
-  export const BASE_DOCS_URL = "https://docs.sonarsource.com/sonarlint/vs-code/";
+  export const BASE_DOCS_URL = "https://docs.sonarsource.com/sonarqube-for-ide/vs-code/";
 
   export const C_CPP_ANALYSIS = BASE_DOCS_URL + "getting-started/running-an-analysis/#analyze-c-and-cpp-code";
   export const CONNECTED_MODE = BASE_DOCS_URL + "team-features/connected-mode/";
