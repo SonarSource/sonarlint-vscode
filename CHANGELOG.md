@@ -1,3 +1,7 @@
+## 4.13
+
+* Update IaC analyzer 1.37 -> [1.38](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016052%20ORDER%20BY%20created%20ASC) -> [1.39](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016088%20ORDER%20BY%20created%20ASC)
+
 ## 4.12
 
 * Update CFamily analyzer 6.59 -> [6.60](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=15976%20ORDER%20BY%20priority%20DESC,%20key%20ASC), Clang 19, Support for WindRiver GNU C++ compiler for arm
