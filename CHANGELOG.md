@@ -1,6 +1,7 @@
 ## 4.13
 
 * Update IaC analyzer 1.37 -> [1.38](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016052%20ORDER%20BY%20created%20ASC) -> [1.39](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016088%20ORDER%20BY%20created%20ASC)
+* Update XML analyzer 2.11 -> [2.12](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016054%20ORDER%20BY%20created%20ASC)
 
 ## 4.12
 
