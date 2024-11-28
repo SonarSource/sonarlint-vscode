@@ -4,6 +4,7 @@
 * Update XML analyzer 2.11 -> [2.12](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016054%20ORDER%20BY%20created%20ASC)
 * Update HTML analyzer 3.16 -> [3.17](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015601%20ORDER%20BY%20created%20ASC)
 * Update Python analyzer 4.23 -> [4.24](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016033%20ORDER%20BY%20created%20ASC)
+* Update PHP analyzer 3.38 -> [3.39](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016002%20ORDER%20BY%20created%20ASC) -> [3.40](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016120%20ORDER%20BY%20created%20ASC)
 
 ## 4.12
 
