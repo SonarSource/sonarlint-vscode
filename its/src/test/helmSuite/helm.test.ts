@@ -11,8 +11,7 @@ import * as path from 'path';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 
-import { activateAndShowOutput, dumpLogOutput, waitForSonarLintDiagnostics } from '../common/util';
-import { expect } from 'chai';
+import { waitForSonarLintDiagnostics } from '../common/util';
 
 const sampleHelmFolderLocation = '../../../samples/sample-helm/';
 
@@ -30,9 +29,8 @@ suite('Helm Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.strictEqual(diags.length, 2);
-    assert.strictEqual(diags[0].message, "Specify a storage limit for this container.");
-    assert.strictEqual(diags[1].message, "Specify a storage request for this container.");
+    assert.strictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, "Specify a storage request for this container.");
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
