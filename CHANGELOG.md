@@ -13,7 +13,7 @@
 * Update JS/TS/CSS analyzer 10.16 -> [10.17](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015999%20ORDER%20BY%20created%20ASC)
 * Update Java analyzer 8.5 -> [8.6](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016055%20ORDER%20BY%20created%20ASC)
 * Update Go analyzer 1.17 -> [1.18](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015960%20ORDER%20BY%20created%20ASC)
-* Update Secrets analyzer 2.16 -> [2.17](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016005%20ORDER%20BY%20created%20ASC) -> [2.18](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016042%20ORDER%20BY%20created%20ASC)
+* Update Secrets analyzer 2.16 -> [2.17](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016005%20ORDER%20BY%20created%20ASC) -> [2.18](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016042%20ORDER%20BY%20created%20ASC) -> [2.19](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016139%20ORDER%20BY%20created%20ASC)
 
 ## 4.12
 
