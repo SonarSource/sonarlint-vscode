@@ -9,6 +9,7 @@
 * Update C# analyzer 9.32 -> [10.3](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.3.0.106239)
 * Update JS/TS/CSS analyzer 10.16 -> [10.17](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015999%20ORDER%20BY%20created%20ASC)
 * Update Java analyzer 8.5 -> [8.6](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016055%20ORDER%20BY%20created%20ASC)
+* Update Go analyzer 1.17 -> [1.18](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2015960%20ORDER%20BY%20created%20ASC)
 
 ## 4.12
 
