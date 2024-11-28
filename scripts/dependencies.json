@@ -82,14 +82,14 @@
   {
     "groupId": "org.sonarsource.dotnet",
     "artifactId": "sonar-csharp-plugin",
-    "version": "10.2.0.103721",
+    "version": "10.3.0.106239",
     "output": "analyzers/sonarcsharp.jar",
     "requiresCredentials": true
   },
   {
     "groupId": "com.sonarsource.dotnet",
     "artifactId": "sonar-csharp-enterprise-plugin",
-    "version": "10.2.0.103721",
+    "version": "10.3.0.106239",
     "output": "analyzers/csharpenterprise.jar",
     "requiresCredentials": true
   }
