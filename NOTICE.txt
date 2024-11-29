@@ -8,18 +8,12 @@ SonarSource (http://www.sonarsource.com/).
 
 This program is distributed with SonarQube analyzers that are subject to specific license terms.
 
-Analyzers distributed with this program are published under the terms
-of the Sonar Source-Available License Version 1, as published by SonarSource SA.
-For more details see https://sonarsource.com/license/ssal/
+The sonar-csharp-enterprise-plugin and sonar-cfamily-plugin are SonarQube analyzers
+published under the following proprietary license: SonarSource SA  grants you a non-transferable,
+non-sublicensable, limited license to use the aforementioned plugins solely as part of this program.
+Any use, reproduction, distribution, or modification of the plugins outside the scope of this program is strictly prohibited.
 
-EXCEPTION: Sonar C# Enterprise Plugin and Sonar CFamily Plugin
----------------------------------------------
+All of the other analyzers distributed with this program are published under the terms of the
+Sonar Source-Available License Version 1, as published by SonarSource SA.
+For more details see https://sonarsource.com/license/ssal/ 
 
-This software includes the sonar-csharp-enterprise-plugin and the sonar-cfamily-plugin,
-proprietary plugins owned by SonarSource SA. This plugin is embedded within this software and is
-only licensed for use as an integrated part of this application.
-
-Users of this software are granted a non-transferable, non-sublicensable,
-limited license to use the aforementioned plugins solely as part of this
-application. Any use, reproduction, distribution, or modification of the plugin
-outside the scope of this application is strictly prohibited.
