@@ -59,7 +59,6 @@ suite('Shared Connected Mode service test suite', () => {
 
     // populate cache
     await FileSystemServiceImpl.instance.crawlDirectory(workspaceFolderUri);
-    await sleep(200);
 
     const result = await underTest.computeSharedConnectedModeFileName(workspaceFolderUri.toString());
 
@@ -75,7 +74,6 @@ suite('Shared Connected Mode service test suite', () => {
     tempFiles.push(solutionFileUri);
 
     await FileSystemServiceImpl.instance.crawlDirectory(workspaceFolder1.uri);
-    await sleep(200);
 
     const result = await underTest.computeSharedConnectedModeFileName(workspaceFolder1.uri.toString());
 
@@ -92,7 +90,6 @@ suite('Shared Connected Mode service test suite', () => {
     tempFiles.push(solutionFileUri1, solutionFileUri2);
 
     await FileSystemServiceImpl.instance.crawlDirectory(workspaceFolder1.uri);
-    await sleep(200);
 
     const resultPromise = underTest.computeSharedConnectedModeFileName(workspaceFolder1.uri.toString());
     await selectFirstQuickPickItem();
@@ -113,7 +110,6 @@ suite('Shared Connected Mode service test suite', () => {
     }
 
     await FileSystemServiceImpl.instance.crawlDirectory(workspaceFolder.uri);
-    await sleep(200);
 
     await underTest.createSharedConnectedModeSettingsFile(workspaceFolder);
 

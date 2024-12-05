@@ -15,6 +15,7 @@ import { FileSystemSubscriber } from './fileSystemSubscriber';
 
 export class FileSystemServiceImpl implements FileSystemService {
   private static _instance: FileSystemServiceImpl;
+  private static readonly EXCLUDED_FOLDER_NAMES : string[] = ['.sonarlint', '.git', 'node_modules', '.DS_Store']
   listeners= [];
 
   static init(): void {
@@ -44,7 +45,7 @@ export class FileSystemServiceImpl implements FileSystemService {
           this.listeners.forEach(listener => listener.onFile(configScopeUri.toString(), name, fullFileUri));
         }
         // .sonarlint folder is already handled separately, skipping it in recursive crawl
-        if (type === vscode.FileType.Directory && name !== '.sonarlint') {
+        if (type === vscode.FileType.Directory && !FileSystemServiceImpl.EXCLUDED_FOLDER_NAMES.includes(name)) {
           await this.listFilesRecursively(configScopeUri, fullFileUri);
         }
       }
