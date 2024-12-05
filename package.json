@@ -877,7 +877,6 @@
     "highlight.js": "^11.7.0",
     "inly": "4.0.8",
     "luxon": "^3.2.1",
-    "minimatch": "^10.0.1",
     "node-fetch": "^2.7.0",
     "node-html-parser": "^6.1.5",
     "path-exists": "4.0.0",
