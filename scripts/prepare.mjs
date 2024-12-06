@@ -7,14 +7,18 @@
 'use strict';
 import { exec } from 'child_process';
 import { createHash } from 'crypto';
-import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync } from 'fs';
+import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, unlinkSync } from 'fs';
 import { dirname, join, resolve } from 'path';
+import * as unzipper from 'unzipper';
+import { extract } from 'tar';
+import { createGunzip } from 'node:zlib';
 
 import { promisify } from 'util';
 
 import artifactory from '../build-sonarlint/artifactory.mjs';
 
 const execAsync = promisify(exec);
+const ESLINT_BRIDGE_SERVER_BUNDLE_PATH_MATCHER = /sonarjs-\d+\.\d+\.\d+\.tgz/;
 
 const jarDependencies = JSON.parse(readFileSync(resolve(dirname(''), 'scripts/dependencies.json')));
 
@@ -32,6 +36,9 @@ jarDependencies.map(async dep => {
     return;
   }
   downloadIfNeeded(await artifactUrl(dep), dep.output);
+  if (dep.artifactId === 'sonar-javascript-plugin') {
+    await unzipEslintBridgeBundle(dep.output);
+  }
 });
 
 async function artifactUrl(dep) {
@@ -130,4 +137,49 @@ function sendRequest(url) {
         throw new Error(err);
       });
   }
+}
+
+async function unzipEslintBridgeBundle(jarPath) {
+  const directory = await unzipper.Open.file(jarPath);
+
+  const file = directory.files.find(d => ESLINT_BRIDGE_SERVER_BUNDLE_PATH_MATCHER.test(d.path));
+  if (!file) {
+    throw new Error(`eslint bridge server bundle not found in JAR ${jarPath}`);
+  }
+
+  const outputFolderPath = join('.', 'eslint-bridge');
+  const outputFilePath = join('.', 'eslint-bridge', 'sonarjs.tgz');
+  if (!existsSync(outputFolderPath)) {
+    mkdirSync(outputFolderPath);
+  }
+
+  file.stream().pipe(createWriteStream(outputFilePath))
+    .on('finish',  async () => {
+      const compressedReadStream = createReadStream(join('.', outputFilePath));
+      const decompressionStream = createGunzip();
+      const extractionStream = extract({
+        cwd: outputFolderPath // Set the current working directory for extraction
+      });
+      compressedReadStream.pipe(decompressionStream).pipe(extractionStream);
+
+      await new Promise((resolve, reject) => {
+        extractionStream.on('finish', () => {
+          resolve();
+        });
+        compressedReadStream.on('error', err => {
+          console.log(err);
+          reject(err);
+        });
+        decompressionStream.on('error', err => {
+          console.error(err);
+          reject(err);
+        });
+        extractionStream.on('error', err => {
+          console.error(err);
+          reject(err);
+        });
+      });
+
+      unlinkSync(outputFilePath)
+    });
 }

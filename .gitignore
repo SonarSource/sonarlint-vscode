@@ -17,3 +17,4 @@ its/extdir*
 .DS_Store
 omnisharp
 .vs
+eslint-bridge
