@@ -200,6 +200,7 @@ export async function activate(context: VSCode.ExtensionContext) {
           omnisharpDirectory: Path.resolve(context.extensionPath, 'omnisharp'),
           csharpOssPath: Path.resolve(context.extensionPath, 'analyzers', 'sonarcsharp.jar'),
           csharpEnterprisePath: Path.resolve(context.extensionPath, 'analyzers', 'csharpenterprise.jar'),
+          eslintBridgeServerPath: Path.resolve(context.extensionPath, 'eslint-bridge')
         },
         enableNotebooks: true,
         clientNodePath: VSCode.workspace.getConfiguration().get('sonarlint.pathToNodeExecutable'),

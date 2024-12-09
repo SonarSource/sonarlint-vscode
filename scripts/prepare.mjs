@@ -7,14 +7,18 @@
 'use strict';
 import { exec } from 'child_process';
 import { createHash } from 'crypto';
-import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync } from 'fs';
+import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, unlinkSync } from 'fs';
 import { dirname, join, resolve } from 'path';
+import * as unzipper from 'unzipper';
+import { extract } from 'tar';
+import { createGunzip } from 'node:zlib';
 
 import { promisify } from 'util';
 
 import artifactory from '../build-sonarlint/artifactory.mjs';
 
 const execAsync = promisify(exec);
+const ESLINT_BRIDGE_SERVER_BUNDLE_PATH_MATCHER = /sonarjs-\d+\.\d+\.\d+\.tgz/;
 
 const jarDependencies = JSON.parse(readFileSync(resolve(dirname(''), 'scripts/dependencies.json')));
 
@@ -92,7 +96,12 @@ function downloadIfNeeded(url, dest) {
 async function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!existsSync(dest)) {
     (await sendRequest(url))
-      .pipe(createWriteStream(dest));
+      .pipe(createWriteStream(dest)
+            .on('finish', async () => {
+              if (dest.endsWith('sonarjs.jar')) {
+                unzipEslintBridgeBundle(dest);
+              }
+            }));
   } else {
     createReadStream(dest)
       .pipe(createHash('sha1').setEncoding('hex'))
@@ -101,7 +110,12 @@ async function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
           (await sendRequest(url))
-            .pipe(createWriteStream(dest));
+            .pipe(createWriteStream(dest)
+            .on('finish', async () => {
+              if (dest.endsWith('sonarjs.jar')) {
+                unzipEslintBridgeBundle(dest);
+              }
+            }));
         }
       });
   }
@@ -130,4 +144,49 @@ function sendRequest(url) {
         throw new Error(err);
       });
   }
+}
+
+async function unzipEslintBridgeBundle(jarPath) {
+  const directory = await unzipper.Open.file(jarPath);
+
+  const file = directory.files.find(d => ESLINT_BRIDGE_SERVER_BUNDLE_PATH_MATCHER.test(d.path));
+  if (!file) {
+    throw new Error(`eslint bridge server bundle not found in JAR ${jarPath}`);
+  }
+
+  const outputFolderPath = join('.', 'eslint-bridge');
+  const outputFilePath = join('.', 'eslint-bridge', 'sonarjs.tgz');
+  if (!existsSync(outputFolderPath)) {
+    mkdirSync(outputFolderPath);
+  }
+
+  file.stream().pipe(createWriteStream(outputFilePath))
+    .on('finish',  async () => {
+      const compressedReadStream = createReadStream(join('.', outputFilePath));
+      const decompressionStream = createGunzip();
+      const extractionStream = extract({
+        cwd: outputFolderPath // Set the current working directory for extraction
+      });
+      compressedReadStream.pipe(decompressionStream).pipe(extractionStream);
+
+      await new Promise((resolve, reject) => {
+        extractionStream.on('finish', () => {
+          resolve();
+        });
+        compressedReadStream.on('error', err => {
+          console.log(err);
+          reject(err);
+        });
+        decompressionStream.on('error', err => {
+          console.error(err);
+          reject(err);
+        });
+        extractionStream.on('error', err => {
+          console.error(err);
+          reject(err);
+        });
+      });
+
+      unlinkSync(outputFilePath)
+    });
 }
