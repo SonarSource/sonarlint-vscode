@@ -199,11 +199,11 @@ export async function activate(context: VSCode.ExtensionContext) {
           },
           omnisharpDirectory: Path.resolve(context.extensionPath, 'omnisharp'),
           csharpOssPath: Path.resolve(context.extensionPath, 'analyzers', 'sonarcsharp.jar'),
-          csharpEnterprisePath: Path.resolve(context.extensionPath, 'analyzers', 'csharpenterprise.jar'),
-          eslintBridgeServerPath: Path.resolve(context.extensionPath, 'eslint-bridge')
+          csharpEnterprisePath: Path.resolve(context.extensionPath, 'analyzers', 'csharpenterprise.jar')
         },
         enableNotebooks: true,
         clientNodePath: VSCode.workspace.getConfiguration().get('sonarlint.pathToNodeExecutable'),
+        eslintBridgeServerPath: Path.resolve(context.extensionPath, 'eslint-bridge')
       };
     },
     outputChannel: getLogOutput(),
