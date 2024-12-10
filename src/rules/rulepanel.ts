@@ -15,7 +15,7 @@ import { clean, escapeHtml, ResourceResolver } from '../util/webview';
 import { decorateContextualHtmlContentWithDiff } from './code-diff';
 import { highlightAllCodeSnippetsInDesc } from './syntax-highlight';
 import * as fs from 'fs';
-import { DOMParser, XMLSerializer } from 'xmldom';
+import { DOMParser, XMLSerializer } from '@xmldom/xmldom';
 
 let ruleDescriptionPanel: VSCode.WebviewPanel;
 
