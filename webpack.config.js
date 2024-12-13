@@ -10,6 +10,18 @@
 
 const path = require('path');
 
+const plugins = [];
+// Must be injected by CI environment
+if (process.env.SENTRY_UPLOAD_TOKEN) {
+  /**@type {import('webpack').WebpackPluginFunction}*/
+  const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
+  plugins.push(sentryWebpackPlugin({
+    org: 'sonar-x0',
+    project: 'sonarqube-vscode',
+    authToken: process.env.SENTRY_UPLOAD_TOKEN
+  }));
+}
+
 /**@type {import('webpack').Configuration}*/
 const config = {
   // vscode extensions run in a Node.js-context -> https://webpack.js.org/configuration/node/
@@ -46,6 +58,7 @@ const config = {
         ]
       }
     ]
-  }
+  },
+  plugins
 };
 module.exports = config;
