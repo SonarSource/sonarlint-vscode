@@ -897,6 +897,7 @@
   },
   "devDependencies": {
     "@cyclonedx/bom": "^4.1.0",
+    "@sentry/webpack-plugin": "^2.22.7",
     "@types/chai": "^4.3.9",
     "@types/follow-redirects": "^1.14.4",
     "@types/lodash": "^4.14.194",
