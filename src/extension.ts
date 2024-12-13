@@ -5,6 +5,10 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
+
+// Must be kept at the top for Node instrumentation to work correctly
+import { withMonitoring } from './monitoring/monitoring';
+
 import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
 import * as Path from 'path';
@@ -154,6 +158,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     installTime = new Date().toISOString();
     context.globalState.update(installTimeKey, installTime);
   }
+
   loadInitialSettings();
   util.setExtensionContext(context);
   initLogOutput(context);
@@ -352,6 +357,14 @@ function suggestBinding(params: protocol.SuggestBindingParams) {
 }
 
 function registerCommands(context: VSCode.ExtensionContext) {
+  function checkMonitoring () {
+    throw new Error('Test from a command handler');
+  }
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand('SonarLint.CheckMonitoring', () => withMonitoring(checkMonitoring))
+  );
+
   context.subscriptions.push(
     VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
       const sampleFileUri = VSCode.Uri.joinPath(context.extensionUri, 'walkthrough', 'sample.py');
