@@ -1,3 +1,9 @@
+## 4.14
+
+* Further performance improvements for JS/TS/CSS analysis
+* Eliminate reliance on temporary folders for JS/TS/CSS analysis (some of `.sonarlinttmp_*` folders)
+* Update JS/TS/CSS analyzer 10.18 -> [10.19](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016165%20ORDER%20BY%20created%20ASC)
+
 ## 4.13
 
 * ✨ Rebranding: SonarLint is now SonarQube for IDE ✨
