@@ -12,7 +12,7 @@
   "editor.suggestSelection": "first",
   "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
   // Disable SonarLint product telemetry in ITs
-  "sonarlint.ls.vmargs": " -Dsonarlint.telemetry.disabled=true ",
+  "sonarlint.ls.vmargs": " -Dsonarlint.telemetry.disabled=true -Dsonarlint.monitoring.disabled=true ",
   // Enable auto import of Git repositories
   "git.openRepositoryInParentFolders": "always",
   "sonarlint.output.showAnalyzerLogs": true,
