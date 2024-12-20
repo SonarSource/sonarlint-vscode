@@ -1,3 +1,7 @@
+## 4.15
+
+* Update JS/TS/CSS analyzer 10.19 -> [10.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016210%20ORDER%20BY%20created%20ASC)
+
 ## 4.14
 
 * Further performance improvements for JS/TS/CSS analysis
