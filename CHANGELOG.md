@@ -2,6 +2,7 @@
 
 * Update JS/TS/CSS analyzer 10.19 -> [10.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016210%20ORDER%20BY%20created%20ASC)
 * Update CFamily analyzer 6.61 -> [6.62](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=16126%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
+* Update PHP analyzer 3.40 -> [3.41](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016138%20ORDER%20BY%20created%20ASC)
 
 ## 4.14
 
