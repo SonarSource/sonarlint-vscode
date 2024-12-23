@@ -5,6 +5,7 @@
 * Update PHP analyzer 3.40 -> [3.41](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016138%20ORDER%20BY%20created%20ASC)
 * Update Java analyzer 8.7 -> [8.8](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016163%20ORDER%20BY%20created%20ASC)
 * Update IaC analyzer 1.39 -> [1.40](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016151%20ORDER%20BY%20created%20ASC)
+* Update Text analyzer 2.19 -> [2.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016159%20ORDER%20BY%20created%20ASC)
 
 ## 4.14
 
