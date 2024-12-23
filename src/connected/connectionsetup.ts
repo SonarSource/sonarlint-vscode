@@ -36,13 +36,13 @@ const SONARQUBE_DESCRIPTION =
   `An <b>open-source, self-managed</b> tool that easily integrates into the developers' CI/CD pipeline<br>
   and DevOps platform to systematically help developers and organizations deliver Clean Code.
   <br><br>
-  SonarQube offers a free <a id="sonarQubeEditionsDownloads" href="#">Community Build</a>`;
+  Discover which offer is better for your team <a id="sonarQubeEditionsDownloads" href="#">here</a>.`;
 
 const SONARCLOUD_DESCRIPTION =
   `A <b>Software-as-a-Service (SaaS)</b> tool that easily integrates into the cloud DevOps platforms<br>
   and extends the CI/CD workflow to systematically help developers and organizations deliver Clean Code.
   <br><br>
-  <a id="sonarCloudProductPage" href="#">SonarQube Cloud</a> is entirely free for open-source projects.`;
+  Explore SonarQube Cloud with our <a id="sonarqubeCloudFreeSignUp" href="#">free tier</a>.`;
 
 const SONARQUBE_SERVER_LABEL = 'SonarQube Server';
 const SONARQUBE_CLOUD_LABEL = 'SonarQube Cloud';
@@ -327,7 +327,7 @@ async function handleMessage(message) {
 /*
  * Exported for unit tests
  */
-const SONARCLOUD_PRODUCT_LINK_COMMAND = 'sonarCloudProductPageLinkClick';
+const SONARCLOUD_FREE_SIGNUP_LINK_COMMAND = 'sonarCloudFreeSignupPageLinkClick';
 const SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND = 'sonarQubeEditionsDownloadsLinkClick';
 const TOKEN_CHANGED_COMMAND = 'tokenChanged';
 
@@ -352,9 +352,9 @@ export async function handleMessageWithConnectionSettingsService(
       }
       saveConnection(message, connectionSettingsService);
       break;
-    case SONARCLOUD_PRODUCT_LINK_COMMAND:
+    case SONARCLOUD_FREE_SIGNUP_LINK_COMMAND:
       delete message.command;
-      vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarCloudProductPage');
+      vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarqubeCloudFreeSignUp');
       break;
     case SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND:
       delete message.command;
