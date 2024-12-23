@@ -72,6 +72,13 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     viewItem: false
   },
   {
+    id: 'sonarqubeCloudFreeSignUp',
+    label: 'SonarQube Cloud free tier',
+    url: 'https://www.sonarsource.com/products/sonarcloud/signup-free/',
+    icon: 'n/a',
+    viewItem: false
+  },
+  {
     id: 'sonarQubeProductPage',
     label: 'SonarQube Server',
     url: 'https://www.sonarsource.com/products/sonarqube/',
@@ -88,7 +95,7 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   {
     id: 'compareServerProducts',
     label: 'Compare SonarQube Server and SonarQube Cloud',
-    url: 'https://www.sonarsource.com/blog/sq-sc_guidance/',
+    url: 'https://www.sonarsource.com/plans-and-pricing/sonarcloud/',
     icon: 'n/a',
     viewItem: false
   },

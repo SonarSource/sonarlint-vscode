@@ -39,7 +39,7 @@ function init() {
   byId('token').addEventListener('keyup', onChangeToken);
   byId('enableNotifications').addEventListener('change', onChangeEnableNotifications);
   byId('saveConnection').addEventListener('click', onClickSaveConnection);
-  byId('sonarCloudProductPage')?.addEventListener('click', onClickSonarCloudProductPage);
+  byId('sonarqubeCloudFreeSignUp')?.addEventListener('click', onClickSonarCloudFreeSignupLink);
   byId('sonarQubeEditionsDownloads')?.addEventListener('click', onClickSonarQubeDownloadsPage);
   tryRestoreState();
 }
@@ -175,8 +175,8 @@ function onClickSaveConnection() {
   vscode.postMessage(saveConnectionMessage);
 }
 
-function onClickSonarCloudProductPage() {
-  vscode.postMessage({ command: 'sonarCloudProductPageLinkClick' });
+function onClickSonarCloudFreeSignupLink() {
+  vscode.postMessage({ command: 'sonarCloudFreeSignupPageLinkClick' });
 }
 
 function onClickSonarQubeDownloadsPage() {
