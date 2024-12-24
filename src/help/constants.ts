@@ -3,9 +3,9 @@ import { Command } from 'vscode';
 
 export interface HelpAndFeedbackItem {
   id: string;
-  label: string;
+  label?: string;
   url?: string;
-  icon: string;
+  icon?: string;
   viewItem: boolean;
   command?: Command;
 }
@@ -66,44 +66,32 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   },
   {
     id: 'sonarCloudProductPage',
-    label: 'SonarQube Cloud',
     url: 'https://www.sonarsource.com/products/sonarcloud/',
-    icon: 'n/a',
     viewItem: false
   },
   {
     id: 'sonarqubeCloudFreeSignUp',
-    label: 'SonarQube Cloud free tier',
     url: 'https://www.sonarsource.com/products/sonarcloud/signup-free/',
-    icon: 'n/a',
     viewItem: false
   },
   {
     id: 'sonarQubeProductPage',
-    label: 'SonarQube Server',
     url: 'https://www.sonarsource.com/products/sonarqube/',
-    icon: 'n/a',
     viewItem: false
   },
   {
     id: 'connectedModeDocs',
-    label: 'Connected Mode',
     url: 'https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/',
-    icon: 'n/a',
     viewItem: false
   },
   {
     id: 'compareServerProducts',
-    label: 'Compare SonarQube Server and SonarQube Cloud',
     url: 'https://www.sonarsource.com/plans-and-pricing/sonarcloud/',
-    icon: 'n/a',
     viewItem: false
   },
   {
     id: 'sonarQubeEditionsDownloads',
-    label: 'SonarQube Server Downloads',
     url: 'https://www.sonarsource.com/products/sonarqube/downloads/',
-    icon: 'n/a',
     viewItem: false
   }
 ];
