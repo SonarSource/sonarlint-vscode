@@ -454,7 +454,10 @@ function removeTrailingSlashes(url: string) {
 export async function handleTokenReceivedNotification(token: string) {
   if (connectionSetupPanel?.active && token) {
     await connectionSetupPanel.webview.postMessage({ command: TOKEN_RECEIVED_COMMAND, token });
-    await getUserOrganizationsAndUpdateUI(token);
+    // only for SonarQube Cloud connections
+    if (connectionSetupPanel.title.includes('Cloud')) {
+      await getUserOrganizationsAndUpdateUI(token);
+    }
   }
 }
 
