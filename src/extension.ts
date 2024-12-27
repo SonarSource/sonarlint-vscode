@@ -9,7 +9,7 @@ import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
+import { DiagnosticSeverity, LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
 import { assistCreatingConnection } from './connected/assistCreatingConnection';
@@ -92,6 +92,7 @@ let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
+let diagnosticCollection: VSCode.DiagnosticCollection;
 
 function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   return resolveRequirements(context)
@@ -220,6 +221,9 @@ export async function activate(context: VSCode.ExtensionContext) {
   );
 
   await languageClient.start();
+
+  diagnosticCollection = VSCode.languages.createDiagnosticCollection('SonarQube Taint Vulnerabilities');
+  context.subscriptions.push(diagnosticCollection);
 
   ConnectionSettingsService.init(context, languageClient);
   NewCodeDefinitionService.init(context);
@@ -623,6 +627,24 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     await hotspotsTreeDataProvider.refresh(hotspotsPerFile);
     updateSonarLintViewContainerBadge();
   });
+  languageClient.onNotification(protocol.PublishTaintVulnerabilitiesForFile.type, async taintVulnerabilitiesPerFile => {
+    const diagnostics = taintVulnerabilitiesPerFile.diagnostics.map(diagnostic => {
+      const d = new VSCode.Diagnostic(
+        new VSCode.Range(
+          new VSCode.Position(diagnostic.range.start.line, diagnostic.range.start.character),
+          new VSCode.Position(diagnostic.range.end.line, diagnostic.range.end.character)
+        ),
+        diagnostic.message,
+        DiagnosticSeverity.Error
+      );
+      d.source = diagnostic.source;
+      d.code = diagnostic.code;
+      d['data'] = diagnostic.data;
+      return d;
+    });
+    diagnosticCollection.set(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics);
+  });
+
   languageClient.onRequest(
     protocol.AssistBinding.type,
     async params => await BindingService.instance.assistBinding(params)
