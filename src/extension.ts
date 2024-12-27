@@ -637,7 +637,18 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(protocol.SuggestConnection.type, (params) => SharedConnectedModeSettingsService.instance.handleSuggestConnectionNotification(params.suggestionsByConfigScopeId));
   languageClient.onRequest(protocol.IsOpenInEditor.type, fileUri => {
-    return VSCode.workspace.textDocuments.some(doc => code2ProtocolConverter(doc.uri) === fileUri);
+    console.log('fileUri', fileUri)
+    console.log('tabGroups', VSCode.window.tabGroups)
+    return isFileInAnyTabGroup(fileUri);
+  });
+}
+
+function isFileInAnyTabGroup(fileUri: string): boolean {
+  return VSCode.window.tabGroups.all.some(tabGroup => {
+    return code2ProtocolConverter((tabGroup.activeTab.input as VSCode.TabInputText).uri) === fileUri
+     || tabGroup.tabs.some(tab => code2ProtocolConverter((tab.input as VSCode.TabInputText).uri) === fileUri
+     || code2ProtocolConverter((tabGroup.activeTab.input as VSCode.TabInputNotebook).uri) === fileUri
+     || tabGroup.tabs.some(tab => code2ProtocolConverter((tab.input as VSCode.TabInputNotebook).uri) === fileUri));
   });
 }
 
