@@ -460,13 +460,17 @@ export interface Diagnostic extends lsp.Diagnostic {
   flows: Flow[];
 }
 
-export interface PublishHotspotsForFileParams {
+export interface PublishDiagnosticsParams {
   uri: string;
   diagnostics: Diagnostic[];
 }
 
 export namespace PublishHotspotsForFile {
-  export const type = new lsp.NotificationType<PublishHotspotsForFileParams>('sonarlint/publishSecurityHotspots');
+  export const type = new lsp.NotificationType<PublishDiagnosticsParams>('sonarlint/publishSecurityHotspots');
+}
+
+export namespace PublishTaintVulnerabilitiesForFile {
+  export const type = new lsp.NotificationType<PublishDiagnosticsParams>('sonarlint/publishTaintVulnerabilities');
 }
 
 export interface ShowHotspotLocationsParams {
