@@ -424,7 +424,9 @@ function registerCommands(context: VSCode.ExtensionContext) {
         prompt: 'Rule Key',
         validateInput: value => allRulesTreeDataProvider.checkRuleExists(value)
       });
-      await VSCode.commands.executeCommand(Commands.OPEN_RULE_BY_KEY, key);
+      if (key) {
+        await VSCode.commands.executeCommand(Commands.OPEN_RULE_BY_KEY, key);
+      }
     })
   );
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => showLogOutput()));
