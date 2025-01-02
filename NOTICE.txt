@@ -1,5 +1,5 @@
 SonarQube for IDE: Visual Studio Code
-Copyright (C) 2017-2024 SonarSource SA
+Copyright (C) 2017-2025 SonarSource SA
 All rights reserved.
 mailto:info AT sonarsource DOT com
 
