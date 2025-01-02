@@ -9,7 +9,7 @@
 import Timeout = NodeJS.Timeout;
 import * as VSCode from 'vscode';
 import { ProviderResult, TextDocument, ThemeColor, ThemeIcon } from 'vscode';
-import { Diagnostic, PublishHotspotsForFileParams } from '../lsp/protocol';
+import { Diagnostic, PublishDiagnosticsParams } from '../lsp/protocol';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath, protocol2CodeConverter } from '../util/uri';
@@ -126,7 +126,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     await VSCode.commands.executeCommand('setContext', 'SonarLint.Hotspots.ShowMode', showMode);
   }
 
-  async refresh(hotspotsPerFile?: PublishHotspotsForFileParams) {
+  async refresh(hotspotsPerFile?: PublishDiagnosticsParams) {
     if (hotspotsPerFile && hotspotsPerFile.uri) {
       if (hotspotsPerFile.diagnostics.length > 0) {
         this.fileHotspotsCache.set(hotspotsPerFile.uri, hotspotsPerFile.diagnostics);
