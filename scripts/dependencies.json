@@ -14,37 +14,37 @@
   {
     "groupId": "org.sonarsource.javascript",
     "artifactId": "sonar-javascript-plugin",
-    "version": "10.19.0.29100",
+    "version": "10.20.0.29356",
     "output": "analyzers/sonarjs.jar"
   },
   {
     "groupId": "org.sonarsource.java",
     "artifactId": "sonar-java-plugin",
-    "version": "8.7.0.37452",
+    "version": "8.8.0.37665",
     "output": "analyzers/sonarjava.jar"
   },
   {
     "groupId": "org.sonarsource.java",
     "artifactId": "sonar-java-symbolic-execution-plugin",
-    "version": "8.7.0.37452",
+    "version": "8.8.0.37665",
     "output": "analyzers/sonarjavasymbolicexecution.jar"
   },
   {
     "groupId": "org.sonarsource.php",
     "artifactId": "sonar-php-plugin",
-    "version": "3.40.0.12590",
+    "version": "3.41.0.12692",
     "output": "analyzers/sonarphp.jar"
   },
   {
     "groupId": "org.sonarsource.python",
     "artifactId": "sonar-python-plugin",
-    "version": "4.24.0.18631",
+    "version": "4.25.0.19056",
     "output": "analyzers/sonarpython.jar"
   },
   {
     "groupId": "org.sonarsource.html",
     "artifactId": "sonar-html-plugin",
-    "version": "3.17.0.5548",
+    "version": "3.18.0.5605",
     "output": "analyzers/sonarhtml.jar"
   },
   {
@@ -56,20 +56,20 @@
   {
     "groupId": "org.sonarsource.text",
     "artifactId": "sonar-text-plugin",
-    "version": "2.19.0.4883",
+    "version": "2.20.0.5038",
     "output": "analyzers/sonartext.jar"
   },
   {
     "groupId": "com.sonarsource.cpp",
     "artifactId": "sonar-cfamily-plugin",
-    "version": "6.61.0.77816",
+    "version": "6.62.0.78645",
     "output": "analyzers/sonarcfamily.jar",
     "requiresCredentials": true
   },
   {
     "groupId": "org.sonarsource.iac",
     "artifactId": "sonar-iac-plugin",
-    "version": "1.39.0.13718",
+    "version": "1.40.0.13983",
     "output": "analyzers/sonariac.jar"
   },
   {
