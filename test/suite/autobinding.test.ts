@@ -410,7 +410,6 @@ suite('Auto Binding Test Suite', () => {
           .getConfiguration(SONARLINT_CATEGORY, folder.uri)
           .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
       }));
-      deleteSettingsFiles();
     });
 
     test('Should show binding suggestion notification', async () => {
@@ -439,7 +438,7 @@ suite('Auto Binding Test Suite', () => {
   });
 });
 
-async function deleteSettingsFiles() {
+async function cleanBindings() {
   const workspaceFolders = VSCode.workspace.workspaceFolders;
   if (workspaceFolders) {
     for (const folder of workspaceFolders) {
@@ -451,10 +450,4 @@ async function deleteSettingsFiles() {
       }
     }
   }
-}
-
-async function cleanBindings() {
-  return VSCode.workspace
-    .getConfiguration(SONARLINT_CATEGORY, VSCode.workspace.workspaceFolders[0].uri)
-    .update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
 }
