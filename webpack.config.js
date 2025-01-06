@@ -10,18 +10,6 @@
 
 const path = require('path');
 
-const plugins = [];
-// Must be injected by CI environment
-if (process.env.SENTRY_UPLOAD_TOKEN) {
-  /**@type {import('webpack').WebpackPluginFunction}*/
-  const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
-  plugins.push(sentryWebpackPlugin({
-    org: 'sonar-x0',
-    project: 'sonarqube-vscode',
-    authToken: process.env.SENTRY_UPLOAD_TOKEN
-  }));
-}
-
 /**@type {import('webpack').Configuration}*/
 const config = {
   // vscode extensions run in a Node.js-context -> https://webpack.js.org/configuration/node/
@@ -59,6 +47,35 @@ const config = {
       }
     ]
   },
-  plugins
+  plugins: []
 };
-module.exports = config;
+
+module.exports = (env, argv) => {
+
+  if (
+    // Only for production builds (e.g. CI)
+    argv.mode === 'production' &&
+    // Injected by Vault
+    process.env.SENTRY_UPLOAD_TOKEN &&
+    // Injected by CI
+    process.env.BUILD_NUMBER
+  ) {
+    console.log('Enabling Sentry upload plugin');
+    /**@type {import('webpack').WebpackPluginFunction}*/
+    const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
+    const { version } = require('./package.json');
+
+    config.plugins.push(sentryWebpackPlugin({
+      org: 'sonar-x0',
+      project: 'sonarqube-vscode',
+      authToken: process.env.SENTRY_UPLOAD_TOKEN,
+      release: {
+        name: version
+      }
+    }));
+  } else {
+    console.log('Not enabling Sentry upload plugin');
+  }
+
+  return config;
+}
