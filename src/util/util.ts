@@ -300,3 +300,22 @@ function isOpenInEditor(fileUri: string) {
   const notebookDocumentIsOpen = vscode.workspace.notebookDocuments.some(d => d.uri.toString(false) === codeFileUri);
   return textDocumentIsOpen || notebookDocumentIsOpen;
 }
+
+export function getSeverity(severity: number): vscode.DiagnosticSeverity {
+  const SEVERITY_ERROR = 1;
+  const SEVERITY_WARNING = 2;
+  const SEVERITY_INFORMATION = 3;
+  const SEVERITY_HINT = 4;
+  switch (severity) {
+    case SEVERITY_ERROR:
+      return vscode.DiagnosticSeverity.Error;
+    case SEVERITY_WARNING:
+      return vscode.DiagnosticSeverity.Warning;
+    case SEVERITY_INFORMATION:
+      return vscode.DiagnosticSeverity.Information;
+    case SEVERITY_HINT:
+      return vscode.DiagnosticSeverity.Hint;
+    default:
+      return vscode.DiagnosticSeverity.Warning;
+  }
+}
