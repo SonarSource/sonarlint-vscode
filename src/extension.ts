@@ -9,7 +9,7 @@ import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
 import * as Path from 'path';
 import * as VSCode from 'vscode';
-import { DiagnosticSeverity, LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
+import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
 import { assistCreatingConnection } from './connected/assistCreatingConnection';
@@ -60,7 +60,7 @@ import { getPlatform } from './util/platform';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
-import { filterOutFilesIgnoredForAnalysis, shouldAnalyseFile } from './util/util';
+import { filterOutFilesIgnoredForAnalysis, getSeverity, shouldAnalyseFile } from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { CAN_SHOW_MISSING_REQUIREMENT_NOTIF, showSslCertificateConfirmationDialog } from './util/showMessage';
@@ -92,7 +92,7 @@ let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
-let diagnosticCollection: VSCode.DiagnosticCollection;
+let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
 
 function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   return resolveRequirements(context)
@@ -222,8 +222,8 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   await languageClient.start();
 
-  diagnosticCollection = VSCode.languages.createDiagnosticCollection('SonarQube Taint Vulnerabilities');
-  context.subscriptions.push(diagnosticCollection);
+  taintVulnerabilityCollection = VSCode.languages.createDiagnosticCollection('SonarQube Taint Vulnerabilities');
+  context.subscriptions.push(taintVulnerabilityCollection);
 
   ConnectionSettingsService.init(context, languageClient);
   NewCodeDefinitionService.init(context);
@@ -635,14 +635,14 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
           new VSCode.Position(diagnostic.range.end.line, diagnostic.range.end.character)
         ),
         diagnostic.message,
-        DiagnosticSeverity.Error
+        getSeverity(diagnostic.severity)
       );
       d.source = diagnostic.source;
       d.code = diagnostic.code;
       d['data'] = diagnostic.data;
       return d;
     });
-    diagnosticCollection.set(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics);
+    taintVulnerabilityCollection.set(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics);
   });
 
   languageClient.onRequest(
