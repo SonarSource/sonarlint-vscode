@@ -14,6 +14,7 @@ env:
   ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
   NPM_CONFIG_registry: https://repox.jfrog.io/artifactory/api/npm/npm
   NPM_CONFIG_//repox.jfrog.io/artifactory/api/npm/:_authToken: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+  SENTRY_UPLOAD_TOKEN: VAULT[development/kv/data/sentry/sq-ide-upload data.token]
 
   ARTIFACTORY_PRIVATE_READER_USERNAME: $ARTIFACTORY_PRIVATE_USERNAME
   ARTIFACTORY_PRIVATE_READER_PASSWORD: $ARTIFACTORY_PRIVATE_PASSWORD

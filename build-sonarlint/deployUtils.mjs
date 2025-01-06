@@ -10,7 +10,7 @@ import { getPackageJSON } from './fsUtils.mjs';
 import { join, extname, basename } from 'path';
 import dateformat from 'dateformat';
 import { computeDependencyHashes, fileHashsum } from './hashes.mjs';
-import jarDependencies from '../scripts/dependencies.json' assert { type: "json" } ;
+import jarDependencies from '../scripts/dependencies.json' with { type: "json" } ;
 import { createReadStream } from 'fs';
 import fetch, { Headers } from 'node-fetch';
 import { globbySync } from 'globby';
