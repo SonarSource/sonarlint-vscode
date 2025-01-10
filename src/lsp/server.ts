@@ -26,6 +26,7 @@ export function languageServerCommand(
   if (DEBUG) {
     params.push('-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000,quiet=y');
     params.push('-Dsonarlint.telemetry.disabled=true');
+    params.push('-Dsonarlint.monitoring.disabled=true');
   }
   const vmargs = getSonarLintConfiguration().get('ls.vmargs', '');
   parseVMargs(params, vmargs);
