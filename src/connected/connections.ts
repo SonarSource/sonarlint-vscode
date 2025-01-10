@@ -70,9 +70,11 @@ export class Connection extends VSCode.TreeItem {
   }
 }
 
+type ConnectionType = '__sonarqube__' | '__sonarcloud__';
+
 export class ConnectionGroup extends VSCode.TreeItem {
   constructor(
-    public readonly id: 'sonarqube' | 'sonarcloud',
+    public readonly id: ConnectionType,
     public readonly label: 'SonarQube Server' | 'SonarQube Cloud',
     public readonly contextValue: 'sonarQubeGroup' | 'sonarCloudGroup'
   ) {
@@ -89,13 +91,13 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
   constructor(private readonly client: SonarLintExtendedLanguageClient) {}
 
-  async getConnections(type: string): Promise<Connection[]> {
-    const contextValue = type === 'sonarqube' ? 'sonarqubeConnection' : 'sonarcloudConnection';
+  async getConnections(type: ConnectionType): Promise<Connection[]> {
+    const contextValue = type === '__sonarqube__' ? 'sonarqubeConnection' : 'sonarcloudConnection';
     const labelKey = 'connectionId';
-    const alternativeLabelKey = type === 'sonarqube' ? 'serverUrl' : 'organizationKey';
+    const alternativeLabelKey = type === '__sonarqube__' ? 'serverUrl' : 'organizationKey';
 
     const connectionsFromSettings: BaseConnection[] =
-      type === 'sonarqube'
+      type === '__sonarqube__'
         ? ConnectionSettingsService.instance.getSonarQubeConnections()
         : ConnectionSettingsService.instance.getSonarCloudConnections();
     const connections = await Promise.all(
@@ -141,9 +143,9 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     if (!element) {
       return this.getInitialState();
     } else if (element.contextValue === 'sonarQubeGroup') {
-      return this.getConnections('sonarqube');
+      return this.getConnections('__sonarqube__');
     } else if (element.contextValue === 'sonarCloudGroup') {
-      return this.getConnections('sonarcloud');
+      return this.getConnections('__sonarcloud__');
     } else if (element.contextValue === 'sonarqubeConnection' || element.contextValue === 'sonarcloudConnection') {
       const connection = element as Connection;
       const serverType = element.contextValue === 'sonarqubeConnection' ? 'SonarQube' : 'SonarCloud';
@@ -181,8 +183,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     const sqConnections = ConnectionSettingsService.instance.getSonarQubeConnections();
     const scConnections = ConnectionSettingsService.instance.getSonarCloudConnections();
     return [
-      sqConnections.length > 0 ? new ConnectionGroup('sonarqube', 'SonarQube Server', 'sonarQubeGroup') : null,
-      scConnections.length > 0 ? new ConnectionGroup('sonarcloud', 'SonarQube Cloud', 'sonarCloudGroup') : null
+      sqConnections.length > 0 ? new ConnectionGroup('__sonarqube__', 'SonarQube Server', 'sonarQubeGroup') : null,
+      scConnections.length > 0 ? new ConnectionGroup('__sonarcloud__', 'SonarQube Cloud', 'sonarCloudGroup') : null
     ];
   }
 

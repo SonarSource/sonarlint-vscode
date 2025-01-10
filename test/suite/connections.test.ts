@@ -57,30 +57,30 @@ suite('Connected Mode Test Suite', () => {
   });
 
   suite('getConnections()', () => {
-    let underTest;
+    let underTest: AllConnectionsTreeDataProvider;
     setup(() => {
       underTest = new AllConnectionsTreeDataProvider(mockClient);
     });
 
     test('should return same number of sonarqube settings as in config file', async () => {
       const connectionConfig = vscode.workspace.getConfiguration('sonarlint.connectedMode.connections');
-      expect(connectionConfig.sonarqube.length).to.equal((await underTest.getConnections('sonarqube')).length);
+      expect(connectionConfig.sonarqube.length).to.equal((await underTest.getConnections('__sonarqube__')).length);
     });
 
     test('should return no sq/sc connections when config is blank', async () => {
-      expect((await underTest.getConnections('sonarqube')).length).to.equal(0);
-      expect((await underTest.getConnections('sonarcloud')).length).to.equal(0);
+      expect((await underTest.getConnections('__sonarqube__')).length).to.equal(0);
+      expect((await underTest.getConnections('__sonarcloud__')).length).to.equal(0);
     });
 
     test('should return same number of sonarcloud settings as in config file', async () => {
       const connectionConfig = vscode.workspace.getConfiguration('sonarlint.connectedMode.connections');
-      expect(connectionConfig.sonarcloud.length).to.equal((await underTest.getConnections('sonarcloud')).length);
+      expect(connectionConfig.sonarcloud.length).to.equal((await underTest.getConnections('__sonarcloud__')).length);
     });
   });
 
   suite('ConnectedMode TreeView', () => {
-    const SQGroup = new ConnectionGroup('sonarqube', 'SonarQube Server', 'sonarQubeGroup');
-    const SCGroup = new ConnectionGroup('sonarcloud', 'SonarQube Cloud', 'sonarCloudGroup');
+    const SQGroup = new ConnectionGroup('__sonarqube__', 'SonarQube Server', 'sonarQubeGroup');
+    const SCGroup = new ConnectionGroup('__sonarcloud__', 'SonarQube Cloud', 'sonarCloudGroup');
 
     test('should return empty lists when expanding SQ and SC tabs and no connections exist', async () => {
       const underTest = new AllConnectionsTreeDataProvider(mockClient);
