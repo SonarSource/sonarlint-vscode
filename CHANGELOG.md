@@ -8,6 +8,7 @@
 * Update Text analyzer 2.19 -> [2.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016159%20ORDER%20BY%20created%20ASC)
 * Update HTML analyzer 3.17 -> [3.18](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016146%20ORDER%20BY%20created%20ASC)
 * Update Python analyzer 4.24 -> [4.25](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016147%20ORDER%20BY%20created%20ASC) -> [4.26](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016224%20ORDER%20BY%20created%20ASC)
+* Update C# analyzer 10.3 -> [10.4](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.4.0.108396)
 
 ## 4.14
 
