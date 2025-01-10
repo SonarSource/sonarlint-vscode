@@ -2,7 +2,7 @@
 
 * Update JS/TS/CSS analyzer 10.19 -> [10.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016210%20ORDER%20BY%20created%20ASC)
 * Update CFamily analyzer 6.61 -> [6.62](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=16126%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
-* Update PHP analyzer 3.40 -> [3.41](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016138%20ORDER%20BY%20created%20ASC)
+* Update PHP analyzer 3.40 -> [3.41](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016138%20ORDER%20BY%20created%20ASC) -> [3.42](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016238%20ORDER%20BY%20created%20ASC)
 * Update Java analyzer 8.7 -> [8.8](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016163%20ORDER%20BY%20created%20ASC) -> [8.9](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016180%20ORDER%20BY%20created%20ASC)
 * Update IaC analyzer 1.39 -> [1.40](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016151%20ORDER%20BY%20created%20ASC) -> [1.41](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016244%20ORDER%20BY%20created%20ASC)
 * Update Text analyzer 2.19 -> [2.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016159%20ORDER%20BY%20created%20ASC)
