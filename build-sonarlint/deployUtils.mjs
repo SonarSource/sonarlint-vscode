@@ -10,7 +10,6 @@ import { getPackageJSON } from './fsUtils.mjs';
 import { join, extname, basename } from 'path';
 import dateformat from 'dateformat';
 import { computeDependencyHashes, fileHashsum } from './hashes.mjs';
-import jarDependencies from '../scripts/dependencies.json' assert { type: "json" } ;
 import { createReadStream } from 'fs';
 import fetch, { Headers } from 'node-fetch';
 import { globbySync } from 'globby';
@@ -18,9 +17,9 @@ import { globbySync } from 'globby';
 export async function deployBuildInfo() {
   info('Starting task "deployBuildInfo"');
   const packageJSON = getPackageJSON();
-  const { version, name } = packageJSON;
+  const { version, name, jarDependencies } = packageJSON;
   const buildNumber = process.env.BUILD_ID;
-  const json = buildInfo(name, version, buildNumber);
+  const json = buildInfo(name, version, buildNumber, jarDependencies);
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   headers.append(
@@ -102,7 +101,7 @@ function artifactoryUpload(readStream, url, fileName, options) {
     .catch(err => error(`Failed to upload ${fileName} to ${destinationUrl}, ${err}`));
 }
 
-function buildInfo(name, version, buildNumber) {
+function buildInfo(name, version, buildNumber, jarDependencies) {
   const {
     CIRRUS_BUILD_ID,
     BUILD_ID,
