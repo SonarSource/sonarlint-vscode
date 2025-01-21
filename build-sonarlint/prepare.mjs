@@ -15,12 +15,12 @@ import { createGunzip } from 'node:zlib';
 
 import { promisify } from 'util';
 
-import artifactory from '../build-sonarlint/artifactory.mjs';
+import artifactory from './artifactory.mjs';
 
 const execAsync = promisify(exec);
 const ESLINT_BRIDGE_SERVER_BUNDLE_PATH_MATCHER = /sonarjs-\d+\.\d+\.\d+\.tgz/;
 
-const jarDependencies = JSON.parse(readFileSync(resolve(dirname(''), 'scripts/dependencies.json')));
+const { jarDependencies } = JSON.parse(readFileSync(resolve(dirname(''), 'package.json')));
 
 if (!existsSync('server')) {
   mkdirSync('server');
