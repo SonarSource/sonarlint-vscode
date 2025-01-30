@@ -56,7 +56,7 @@ export class NewCodeDefinitionService {
               .update('focusOnNewCode', !this.focusOnNewCode, VSCode.ConfigurationTarget.Global);
           }
           if (item.label === `Learn how to deliver clean code with Clean as You Code`) {
-            VSCode.env.openExternal(VSCode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code'));
+            VSCode.env.openExternal(VSCode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/investigating-issues/#focusing-on-new-code'));
           }
         });
     }));

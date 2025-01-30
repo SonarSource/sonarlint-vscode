@@ -590,7 +590,7 @@
       },
       {
         "view": "SonarLint.SecurityHotspots",
-        "contents": "Please ensure a connection to [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) 9.9+ or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22) is set up. Detected Security Hotspots will be displayed here. [Learn More](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
+        "contents": "Please ensure a connection to [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) 9.9+ or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22) is set up. Detected Security Hotspots will be displayed here. [Learn More](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
       }
     ],
     "walkthroughs": [
@@ -602,7 +602,7 @@
           {
             "id": "SonarLint.inAction",
             "title": "$(rocket) New to SonarQube for VS Code? See it in action",
-            "description": "SonarQube for VS Code supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, C#, and [more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/rules). SonarQube for VS Code detects issues in all files **open** in the editor. For project-level analysis, check out [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
+            "description": "SonarQube for VS Code supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, C#, and [more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/rules). SonarQube for VS Code detects issues in all files **open** in the editor. For project-level analysis, check out [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
             "media": {
               "markdown": "walkthrough/empty.md"
             },
