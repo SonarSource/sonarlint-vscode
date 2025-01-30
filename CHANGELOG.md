@@ -173,8 +173,8 @@
 
 ## 3.22
 
-* Add possibility to exclude files from analysis when ***not*** in Connected Mode. [Learn more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/file-exclusions)
-* Add focusing on new code in connected mode [Learn more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/investigating-issues/#focusing-on-new-code)
+* Add possibility to exclude files from analysis when ***not*** in Connected Mode. [Learn more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/file-exclusions)
+* Add focusing on new code in connected mode [Learn more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/investigating-issues/#focusing-on-new-code)
 * Update JS/TS/CSS analyzer 10.5.1 -> [10.6.0](https://github.com/SonarSource/SonarJS/releases/tag/10.6.0.22520), FP fixes, QuickFix for S6326, remove S2814 for TypeScript, recommendation to use Node.js 20
 * Update CFamily analyzer 6.48 -> [6.49](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2014261%20ORDER%20BY%20created%20ASC), 2 new C++ MISRA 2023 rules
 * Update text and secrets analyzer 2.3.0 -> [2.4.0](https://github.com/SonarSource/sonar-text/releases/tag/2.4.0.2120) -> [2.5.0](https://github.com/SonarSource/sonar-text/releases/tag/2.5.0.2293), 42 new cloud app secrets, FP fixes, analysis time logging
@@ -274,7 +274,7 @@
 
 ## 3.14
 
-* Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using-sonarlint/security-hotspots/)
+* Local detection of [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/)
 * Update PHP analyzer 3.25.0 -> [3.26.0](https://github.com/SonarSource/sonar-php/releases/tag/3.26.0.9313) -> [3.27.0](https://github.com/SonarSource/sonar-php/releases/tag/3.27.0.9339) -> [3.27.1](https://github.com/SonarSource/sonar-php/releases/tag/3.27.1.9352), Fix parsing error on namespaces with reserved words
 * Update CFamily analyzer 6.40.0 -> [6.41.0](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%20%3D%2013953%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC), 13 new rules on C++20's "std::format"
 * Update Java analyzer 7.15.0 -> [7.16.0](https://sonarsource.atlassian.net/projects/SONARJAVA/versions/13922/tab/release-report-all-issues), FP fixes, bugfixes, FN fixes
