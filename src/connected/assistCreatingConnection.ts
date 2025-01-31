@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { AutomaticConnectionSetupCancellationError } from './automaticConnectionCancellationError';
 import { connectToSonarQube } from './connectionsetup';
 import { AssistCreatingConnectionParams } from '../lsp/protocol';
-import { ConnectionSettingsService, SonarCloudConnection, SonarQubeConnection } from '../settings/connectionsettings';
+import { ConnectionSettingsService, SonarCloudConnection, SonarCloudRegion, SonarQubeConnection } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
@@ -21,7 +21,8 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
       newConnectionId = await confirmConnectionDetailsAndSave(context)(
         assistCreatingConnectionParams.isSonarCloud,
         assistCreatingConnectionParams.serverUrlOrOrganisationKey,
-        assistCreatingConnectionParams.token
+        assistCreatingConnectionParams.token,
+        assistCreatingConnectionParams.region
       );
     } catch (error) {
       if (error instanceof AutomaticConnectionSetupCancellationError) {
@@ -65,7 +66,7 @@ async function confirmConnection(isSonarCloud : boolean, serverUrlOrOrganization
 
 
 export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext) {
-  return async (isSonarCloud: boolean, serverUrlOrOrganizationKey: string, token: string) => {
+  return async (isSonarCloud: boolean, serverUrlOrOrganizationKey: string, token: string, region: SonarCloudRegion) => {
     const reply = await confirmConnection(isSonarCloud, serverUrlOrOrganizationKey, token);
     if (reply.confirmed) {
       if (isSonarCloud) {
@@ -74,7 +75,8 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
           token: sonarCloudToken,
           connectionId: serverUrlOrOrganizationKey,
           disableNotifications: false,
-          organizationKey: serverUrlOrOrganizationKey
+          organizationKey: serverUrlOrOrganizationKey,
+          region
         };
 
         return await ConnectionSettingsService.instance.addSonarCloudConnection(connection);

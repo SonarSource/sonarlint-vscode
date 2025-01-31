@@ -16,6 +16,7 @@ import { TextEncoder } from 'util';
 import * as path from 'path';
 import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
 import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl';
+import { SonarCloudRegion } from '../settings/connectionsettings';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -25,6 +26,11 @@ const NOT_NOW_ACTION = 'Not Now';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 
 const SOLUTION_FILE_SUFFIX_LENGTH = -4;
+
+
+interface CustomQuickPickItem extends vscode.QuickPickItem {
+  data?: {region?: SonarCloudRegion};
+}
 
 export class SharedConnectedModeSettingsService implements FileSystemSubscriber {
   private static _instance: SharedConnectedModeSettingsService;
@@ -110,18 +116,19 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
        configuration files are available to bind folder '${workspaceFolder.name}'
         to a Sonar server. Do you want to use the shared configuration?`;
     const useConfigurationHandler = async () => {
-      const quickPickItems: vscode.QuickPickItem[] = uniqueSuggestions.map(s => {
+      const quickPickItems: CustomQuickPickItem[] = uniqueSuggestions.map(s => {
         return {
           label: s.projectKey,
           description: s.organization || s.serverUrl,
-          detail: s.organization ? 'SonarQube Cloud' : 'SonarQube Server'
+          detail: s.organization ? `[${s.region}] SonarQube Cloud` : 'SonarQube Server',
+          data: { region: s.region }
         };
       });
       const selectedConfig = await vscode.window.showQuickPick(quickPickItems, {
         title: `Which project would you like to bind with the folder '${workspaceFolder.name}/'`
       });
-      if (selectedConfig && selectedConfig.detail === 'SonarQube Cloud') {
-        connectToSonarCloud(this.context)(selectedConfig.description, selectedConfig.label, workspaceFolder.uri);
+      if (selectedConfig?.detail.includes('SonarQube Cloud')) {
+        connectToSonarCloud(this.context)(selectedConfig.description, selectedConfig.label, false, selectedConfig.data?.region, workspaceFolder.uri);
       } else if (selectedConfig && selectedConfig.detail === 'SonarQube Server') {
         connectToSonarQube(this.context)(selectedConfig.description, selectedConfig.label, workspaceFolder.uri);
       }
@@ -130,7 +137,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
   }
 
   private async suggestBindSingleOption(suggestion, workspaceFolder) {
-    const { projectKey, serverUrl, organization } = suggestion.connectionSuggestion;
+    const { projectKey, serverUrl, organization, region } = suggestion.connectionSuggestion;
     const isFromSharedConfiguration = suggestion.isFromSharedConfiguration;
     const serverReference = organization
       ? `of SonarQube Cloud organization '${organization}'`
@@ -139,7 +146,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`;
     const useConfigurationHandler = async () => {
       if (organization) {
-        connectToSonarCloud(this.context)(organization, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
+        connectToSonarCloud(this.context)(organization, projectKey, isFromSharedConfiguration, region, workspaceFolder.uri);
       } else {
         connectToSonarQube(this.context)(serverUrl, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
       }

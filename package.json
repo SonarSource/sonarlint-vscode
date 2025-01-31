@@ -155,6 +155,10 @@
                 "type": "string",
                 "description": "A unique identifier for this connection to be used as a reference in `#sonarlint.connectedMode.project#`. Only needed if you plan to use multiple connections to SonarQube (Server, Cloud)."
               },
+              "region": {
+                "type": "string",
+                "description": "Region of the SonarQube Cloud instance. Use 'US' for `us.sonarcloud.io`, 'EU' for `sonarcloud.io`."
+              },
               "organizationKey": {
                 "type": "string",
                 "description": "A SonarQube Cloud organization key. If you want to bind different projects that are in different organizations, simply declare multiple connections."
@@ -873,6 +877,7 @@
   },
   "dependencies": {
     "@sentry/node": "^8.44.0",
+    "@vscode-elements/elements": "^1.11.0",
     "@vscode/webview-ui-toolkit": "1.0.0",
     "@xmldom/xmldom": "^0.9.6",
     "compare-versions": "4.1.3",

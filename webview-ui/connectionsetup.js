@@ -113,7 +113,13 @@ function onClickGenerateToken() {
    * @type {HTMLInputElement}
    */
   const serverUrlElement = byId('serverUrl');
-  const serverUrl = serverUrlElement ? serverUrlElement.value : 'https://sonarcloud.io';
+  let serverUrl;
+  if (serverUrlElement) {
+    serverUrl = serverUrlElement.value;
+  } else {
+    const region = byId('region').value;
+    serverUrl = region === 'US' ? 'https://us.sonarcloud.io' : 'https://sonarcloud.io';
+  }
   byId('tokenGenerationProgress').classList.remove('hidden');
   vscode.postMessage({
     command: 'openTokenGenerationPage',
@@ -155,6 +161,7 @@ function onClickSaveConnection() {
   const token = byId('token').value;
   const isFromSharedConfiguration = byId('isFromSharedConfiguration').value;
   const disableNotifications = !byId('enableNotifications').checked;
+  const region = byId('region').value;
   const saveConnectionMessage = {
     command: 'saveConnection',
     connectionId,
@@ -162,7 +169,8 @@ function onClickSaveConnection() {
     disableNotifications,
     projectKey,
     folderUri,
-    isFromSharedConfiguration
+    isFromSharedConfiguration,
+    region
   };
   const serverUrl = byId('serverUrl');
   if (serverUrl) {
