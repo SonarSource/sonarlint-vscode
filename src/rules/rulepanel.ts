@@ -126,7 +126,7 @@ function renderStandardModeSeverityDetails(ruleType: string, severity: string, r
 }
 
 function fetchSVGIcon(pathToSVG: VSCode.Uri) : string {
-  const svgText = fs.readFileSync(pathToSVG.path, 'utf8');
+  const svgText = fs.readFileSync(pathToSVG.fsPath, 'utf8');
   const parser : DOMParser = new DOMParser();
   const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
   const svgElement = svgDoc.documentElement;
