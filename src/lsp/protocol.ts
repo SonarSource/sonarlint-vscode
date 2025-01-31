@@ -7,6 +7,7 @@
 'use strict';
 
 import * as lsp from 'vscode-languageserver-protocol';
+import { SonarCloudRegion } from '../settings/connectionsettings';
 
 //#region Client side extensions to LSP
 
@@ -601,6 +602,7 @@ export interface AssistCreatingConnectionParams {
   isSonarCloud: boolean;
   serverUrlOrOrganisationKey: string;
   token: string;
+  region?: SonarCloudRegion;
 }
 
 export interface AssistCreatingConnectionResponse {
@@ -717,6 +719,7 @@ export interface ConnectionSuggestion {
     serverUrl?: string;
     organization?: string;
     projectKey: string;
+    region?: SonarCloudRegion;
   };
   isFromSharedConfiguration: boolean;
 }

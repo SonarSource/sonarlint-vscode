@@ -11,6 +11,7 @@ import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
 import { AnalysisFile, Organization } from './protocol';
+import { SonarCloudRegion } from '../settings/connectionsettings';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<protocol.RulesResponse> {
@@ -35,10 +36,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(protocol.CheckConnection.type, { connectionId });
   }
 
-  checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean) {
+  checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean, region?: SonarCloudRegion) {
     const params = isSonarQube
       ? { token, serverUrl: serverOrOrganization }
-      : { token, organization: serverOrOrganization };
+      : { token, organization: serverOrOrganization, region };
     return this.sendRequest(protocol.CheckConnection.type, params);
   }
 
