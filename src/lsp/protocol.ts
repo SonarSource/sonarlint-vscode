@@ -351,8 +351,13 @@ export interface Organization {
   description: string;
 }
 
+export interface ListUserOrganizationsParams {
+  token: string,
+  region: string
+}
+
 export namespace ListUserOrganizations {
-  export const type = new lsp.RequestType<string, Organization[], void>('sonarlint/listUserOrganizations');
+  export const type = new lsp.RequestType<ListUserOrganizationsParams, Organization[], void>('sonarlint/listUserOrganizations');
 }
 
 interface FixSuggestionResolvedParams {
@@ -602,7 +607,7 @@ export interface AssistCreatingConnectionParams {
   isSonarCloud: boolean;
   serverUrlOrOrganisationKey: string;
   token: string;
-  region?: SonarCloudRegion;
+  region?: number;
 }
 
 export interface AssistCreatingConnectionResponse {

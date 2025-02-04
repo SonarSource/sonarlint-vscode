@@ -13,6 +13,7 @@ import { connectToSonarQube } from './connectionsetup';
 import { AssistCreatingConnectionParams } from '../lsp/protocol';
 import { ConnectionSettingsService, SonarCloudConnection, SonarCloudRegion, SonarQubeConnection } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
+import { sonarCloudRegionToLabel } from '../util/util';
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
   return async (assistCreatingConnectionParams: AssistCreatingConnectionParams) => {
@@ -22,7 +23,7 @@ export function assistCreatingConnection(context: vscode.ExtensionContext) {
         assistCreatingConnectionParams.isSonarCloud,
         assistCreatingConnectionParams.serverUrlOrOrganisationKey,
         assistCreatingConnectionParams.token,
-        assistCreatingConnectionParams.region
+        sonarCloudRegionToLabel(assistCreatingConnectionParams.region)
       );
     } catch (error) {
       if (error instanceof AutomaticConnectionSetupCancellationError) {

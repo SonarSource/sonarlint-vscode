@@ -15,6 +15,7 @@ import { AnalysisFile, FileUris, ShouldAnalyseFileCheckResult } from '../lsp/pro
 import { code2ProtocolConverter } from './uri';
 import { verboseLogToSonarLintOutput } from './logging';
 import { BindingService } from '../connected/binding';
+import { SonarCloudRegion } from '../settings/connectionsettings';
 
 const ANALYSIS_EXCLUDES = 'sonarlint.analysisExcludesStandalone';
 
@@ -317,5 +318,13 @@ export function getSeverity(severity: number): vscode.DiagnosticSeverity {
       return vscode.DiagnosticSeverity.Hint;
     default:
       return vscode.DiagnosticSeverity.Warning;
+  }
+}
+
+export function sonarCloudRegionToLabel(region: number): SonarCloudRegion {
+  switch (region) {
+    case 0: return 'EU';
+    case 1: return 'US';
+    default: return 'EU';
   }
 }

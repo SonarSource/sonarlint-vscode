@@ -329,8 +329,8 @@ export class ConnectionSettingsService {
     return this.connectionCheckResults.get(connectionId);
   }
 
-  listUserOrganizations(token: string) {
-    return this.client.listUserOrganizations(token);
+  listUserOrganizations(token: string, region: string) {
+    return this.client.listUserOrganizations(token, region);
   }
 }
 

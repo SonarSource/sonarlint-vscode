@@ -167,8 +167,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendNotification(protocol.DidCreateBinding.type, mode);
   }
 
-  listUserOrganizations(token: string) : Promise<Organization[]> {
-    return this.sendRequest(protocol.ListUserOrganizations.type, token)
+  listUserOrganizations(token: string, region: string) : Promise<Organization[]> {
+    return this.sendRequest(protocol.ListUserOrganizations.type, { token, region })
   }
 
   fixSuggestionResolved(suggestionId: string, accepted: boolean): Promise<void> {

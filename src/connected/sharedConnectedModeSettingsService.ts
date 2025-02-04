@@ -17,6 +17,7 @@ import * as path from 'path';
 import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
 import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl';
 import { SonarCloudRegion } from '../settings/connectionsettings';
+import { sonarCloudRegionToLabel } from '../util/util';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -121,7 +122,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
           label: s.projectKey,
           description: s.organization || s.serverUrl,
           detail: s.organization ? `[${s.region}] SonarQube Cloud` : 'SonarQube Server',
-          data: { region: s.region }
+          data: { region: sonarCloudRegionToLabel(s.region) }
         };
       });
       const selectedConfig = await vscode.window.showQuickPick(quickPickItems, {
@@ -146,7 +147,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`;
     const useConfigurationHandler = async () => {
       if (organization) {
-        connectToSonarCloud(this.context)(organization, projectKey, isFromSharedConfiguration, region, workspaceFolder.uri);
+        connectToSonarCloud(this.context)(organization, projectKey, isFromSharedConfiguration, sonarCloudRegionToLabel(region), workspaceFolder.uri);
       } else {
         connectToSonarQube(this.context)(serverUrl, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
       }
