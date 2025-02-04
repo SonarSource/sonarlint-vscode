@@ -114,16 +114,18 @@ function onClickGenerateToken() {
    */
   const serverUrlElement = byId('serverUrl');
   let serverUrl;
+  let region = null;
   if (serverUrlElement) {
     serverUrl = serverUrlElement.value;
   } else {
-    const region = byId('region').value;
-    serverUrl = region === 'US' ? 'https://us.sonarcloud.io' : 'https://sonarcloud.io';
+    region = byId('region').value;
+    serverUrl = region === 'US' ? 'https://us-sc-staging.io/' : 'https://sonarcloud.io';
   }
   byId('tokenGenerationProgress').classList.remove('hidden');
   vscode.postMessage({
     command: 'openTokenGenerationPage',
-    serverUrl
+    serverUrl,
+    region
   });
 }
 
@@ -132,7 +134,8 @@ function onChangeToken() {
   toggleSaveConnectionButton();
   const tokenChangedMessage = {
     command: 'tokenChanged',
-    token: byId('token').value
+    token: byId('token').value,
+    region: byId('region').value
   };
   vscode.postMessage(tokenChangedMessage);
 }

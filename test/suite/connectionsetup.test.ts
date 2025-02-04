@@ -36,7 +36,7 @@ const mockClient = {
   onTokenUpdate(connectionId, token) {
     // NOP
   },
-  async listUserOrganizations(token: string) : Promise<Organization[]> {
+  async listUserOrganizations(token: string, region: string) : Promise<Organization[]> {
     return Promise.resolve([]);
   }
 } as SonarLintExtendedLanguageClient;

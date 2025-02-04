@@ -98,7 +98,7 @@ export function editSonarCloudConnection(context: vscode.ExtensionContext) {
     const existingConnection= await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
     const initialState = {
       conn: existingConnection,
-      userOrganizations: await ConnectionSettingsService.instance.listUserOrganizations(existingConnection.token)
+      userOrganizations: await ConnectionSettingsService.instance.listUserOrganizations(existingConnection.token, existingConnection.region)
     };
     initializeAndRevealPanel(context, { mode: 'update', initialState }, SONARQUBE_CLOUD_LABEL);
   };
@@ -359,7 +359,7 @@ export async function handleMessageWithConnectionSettingsService(
       break;
     case TOKEN_CHANGED_COMMAND:
       delete message.command;
-      await getUserOrganizationsAndUpdateUI(message.token);
+      await getUserOrganizationsAndUpdateUI(message.token, message.region);
       break;
   }
 }
@@ -376,12 +376,12 @@ export function getDefaultConnectionId(message): string {
 }
 
 async function openTokenGenerationPage(message) {
-  const { serverUrl } = message;
+  const { serverUrl, region } = message;
   const cleanedUrl = cleanServerUrl(serverUrl);
   ConnectionSettingsService.instance
     .generateToken(cleanedUrl)
     .then(async token => {
-      await handleTokenReceivedNotification(token);
+      await handleTokenReceivedNotification(token, region);
     })
     .catch(
       async _error =>
@@ -450,17 +450,17 @@ function removeTrailingSlashes(url: string) {
   return cleanedUrl;
 }
 
-export async function handleTokenReceivedNotification(token: string) {
+export async function handleTokenReceivedNotification(token: string, region: string) {
   if (connectionSetupPanel?.active && token) {
     await connectionSetupPanel.webview.postMessage({ command: TOKEN_RECEIVED_COMMAND, token });
     // only for SonarQube Cloud connections
     if (connectionSetupPanel.title.includes('Cloud')) {
-      await getUserOrganizationsAndUpdateUI(token);
+      await getUserOrganizationsAndUpdateUI(token, region);
     }
   }
 }
 
-async function getUserOrganizationsAndUpdateUI(token: string) {
-  const organizations = await ConnectionSettingsService.instance.listUserOrganizations(token);
+async function getUserOrganizationsAndUpdateUI(token: string, region: string) {
+  const organizations = await ConnectionSettingsService.instance.listUserOrganizations(token, region);
   await connectionSetupPanel.webview.postMessage({ command: ORGANIZATION_LIST_RECEIVED_COMMAND, organizations });
 }
