@@ -12,6 +12,7 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionCheckResult } from '../lsp/protocol';
 import { BaseConnection, ConnectionSettingsService, SonarCloudConnection } from '../settings/connectionsettings';
 import { DEFAULT_CONNECTION_ID } from '../commons';
+import { isDogfoodingEnvironment } from '../util/dogfoodingUtils';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 
@@ -103,7 +104,9 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     const connections = await Promise.all(
       connectionsFromSettings.map(async c => {
         // Display the region prefix in case user has more than 1 SonarQube Cloud connections, and the region is set
+        // TODO check the region and default to EU if invalid
         const regionPrefix = 
+          isDogfoodingEnvironment() &&
           type !== '__sonarqube__'
           && connectionsFromSettings.length > 1
           && (c as SonarCloudConnection).region
