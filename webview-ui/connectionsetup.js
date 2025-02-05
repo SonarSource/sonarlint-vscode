@@ -118,7 +118,8 @@ function onClickGenerateToken() {
   if (serverUrlElement) {
     serverUrl = serverUrlElement.value;
   } else {
-    region = byId('region').value;
+    const regionField = byId('region');
+    region = regionField ? regionField.value : 'EU';
     serverUrl = region === 'US' ? 'https://us-sc-staging.io/' : 'https://sonarcloud.io';
   }
   byId('tokenGenerationProgress').classList.remove('hidden');
@@ -132,10 +133,11 @@ function onClickGenerateToken() {
 function onChangeToken() {
   saveState();
   toggleSaveConnectionButton();
+  const regionField = byId('region');
   const tokenChangedMessage = {
     command: 'tokenChanged',
     token: byId('token').value,
-    region: byId('region').value
+    region: regionField ? regionField.value : 'EU'
   };
   vscode.postMessage(tokenChangedMessage);
 }
@@ -164,7 +166,8 @@ function onClickSaveConnection() {
   const token = byId('token').value;
   const isFromSharedConfiguration = byId('isFromSharedConfiguration').value;
   const disableNotifications = !byId('enableNotifications').checked;
-  const region = byId('region').value;
+  const regionField = byId('region');
+  const region = regionField ? regionField.value : 'EU';
   const saveConnectionMessage = {
     command: 'saveConnection',
     connectionId,
