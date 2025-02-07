@@ -328,3 +328,12 @@ export function sonarCloudRegionToLabel(region: number): SonarCloudRegion {
     default: return 'EU';
   }
 }
+
+export function sanitizeSonarCloudRegionSetting(region: string): SonarCloudRegion {
+  // Technically, users could put anything in the `region` setting. If it is something invalid, we default to EU.
+  switch (region) {
+    case 'EU': return 'EU';
+    case 'US': return 'US';
+    default: return 'EU';
+  }
+}

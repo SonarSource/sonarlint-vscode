@@ -11,6 +11,7 @@ import { Connection } from '../connected/connections';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { logToSonarLintOutput } from '../util/logging';
 import { ConnectionCheckResult } from '../lsp/protocol';
+import { sanitizeSonarCloudRegionSetting } from '../util/util';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const CONNECTIONS_SECTION = 'connectedMode.connections';
@@ -181,7 +182,7 @@ export class ConnectionSettingsService {
       .get<SonarCloudConnection[]>(`${CONNECTIONS_SECTION}.${SONARCLOUD}`);
 
     // Default to EU region for existing connections
-    return connections.map(c => ({ ...c, region: c.region || 'EU' }));
+    return connections.map(c => ({ ...c, region: sanitizeSonarCloudRegionSetting(c.region) }));
   }
 
   setSonarCloudConnections(scConnections: SonarCloudConnection[]) {
