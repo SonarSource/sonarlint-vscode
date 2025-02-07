@@ -17,7 +17,11 @@ import * as path from 'path';
 import { selectFirstQuickPickItem } from './commons';
 import { sleep } from '../testutil';
 
-const SHARED_CONNECTED_MODE_FILE_CONTENT = '{\n' + '    "sonarCloudOrganization": "sonarsource",\n' + '    "projectKey": "autoscan.net"\n' + '}';
+const SHARED_CONNECTED_MODE_FILE_CONTENT = '{\n'
+ + '    "sonarCloudOrganization": "sonarsource",\n'
+ + '    "projectKey": "autoscan.net"\n'
+ + '    "region": "EU",\n'
+ + '}';
 
 const mockClient = ({
   async getSharedConnectedModeConfigFileContent(configScopeId) {
