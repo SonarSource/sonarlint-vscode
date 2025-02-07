@@ -19,6 +19,8 @@ import {
   getQuickPickListItemsForWorkspaceFolders,
   globPatternToRegex,
   isRunningAutoBuild,
+  sanitizeSonarCloudRegionSetting,
+  sonarCloudRegionToLabel,
   startedInDebugMode
 } from '../../src/util/util';
 
@@ -213,6 +215,21 @@ suite('util', () => {
     expect(excludedPatterns.length).to.equal(2);
     expect(excludedPatterns[0]).to.equal('**/*.foo');
     expect(excludedPatterns[1]).to.equal('**/*.bar');
+  });
+
+  test('should convert SonarCloudRegion enum to label', () => {
+    expect(sonarCloudRegionToLabel(0)).to.equal('EU');
+    expect(sonarCloudRegionToLabel(1)).to.equal('US');
+    expect(sonarCloudRegionToLabel(2)).to.equal('EU');
+    expect(sonarCloudRegionToLabel(null)).to.equal('EU');
+  });
+
+  test('should sanitize SonarCloudRegion user setting', () => {
+    expect(sanitizeSonarCloudRegionSetting('EU')).to.equal('EU');
+    expect(sanitizeSonarCloudRegionSetting('eu')).to.equal('EU');
+    expect(sanitizeSonarCloudRegionSetting('US')).to.equal('US');
+    expect(sanitizeSonarCloudRegionSetting('us')).to.equal('US');
+    expect(sanitizeSonarCloudRegionSetting('APJ')).to.equal('EU');
   });
 
 });

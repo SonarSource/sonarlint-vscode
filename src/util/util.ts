@@ -330,8 +330,11 @@ export function sonarCloudRegionToLabel(region: number): SonarCloudRegion {
 }
 
 export function sanitizeSonarCloudRegionSetting(region: string): SonarCloudRegion {
+  if (!region) {
+    return 'EU';
+  }
   // Technically, users could put anything in the `region` setting. If it is something invalid, we default to EU.
-  switch (region) {
+  switch (region.toUpperCase()) {
     case 'EU': return 'EU';
     case 'US': return 'US';
     default: return 'EU';
