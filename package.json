@@ -878,7 +878,6 @@
   },
   "dependencies": {
     "@sentry/node": "^8.44.0",
-    "@vscode-elements/elements": "^1.11.0",
     "@vscode/webview-ui-toolkit": "1.0.0",
     "@xmldom/xmldom": "^0.9.6",
     "compare-versions": "4.1.3",
