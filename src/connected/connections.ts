@@ -12,7 +12,7 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionCheckResult } from '../lsp/protocol';
 import { BaseConnection, ConnectionSettingsService, SonarCloudConnection } from '../settings/connectionsettings';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import { isDogfoodingEnvironment } from '../util/dogfoodingUtils';
+import { isDogfoodingEnvironment } from '../monitoring/dogfooding';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 

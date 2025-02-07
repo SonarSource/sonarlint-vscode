@@ -22,7 +22,7 @@ import {
 import { Commands } from '../util/commands';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
-import { isDogfoodingEnvironment } from '../util/dogfoodingUtils';
+import { isDogfoodingEnvironment } from '../monitoring/dogfooding';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -256,7 +256,7 @@ function renderServerUrlField(initialState, mode) {
     return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
     autofocus value="${serverUrl}">
       <b>Server URL</b> <vscode-badge class='tooltip'>i<span class='tooltiptext'>The base URL for your SonarQube Server instance</span></vscode-badge>
-    </vscode-text-field><span class='warning'>${serverUrl ? 'Please ensure that your Server URL matches your SonarQube Server instance.' : ''}</span>
+    </vscode-text-field><span class='warning'>${serverUrl && mode !== 'update' ? 'Please ensure that your Server URL matches your SonarQube Server instance.' : ''}</span>
     <input type="hidden" id="serverUrl-initial" value="${serverUrl}" />`;
   }
 
