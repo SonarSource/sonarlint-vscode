@@ -103,8 +103,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         : ConnectionSettingsService.instance.getSonarCloudConnections();
     const connections = await Promise.all(
       connectionsFromSettings.map(async c => {
-        // Display the region prefix in case user has more than 1 SonarQube Cloud connections, and the region is set
-        // TODO check the region and default to EU if invalid
+        // Display the region prefix in case user is in dogfooding, 
+        // has more than 1 SonarQube Cloud connections, and the region is set
         const regionPrefix = 
           isDogfoodingEnvironment() &&
           type !== '__sonarqube__'
