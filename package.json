@@ -157,6 +157,7 @@
               },
               "region": {
                 "type": "string",
+                "enum": ["EU", "US"],
                 "description": "Region of the SonarQube Cloud instance. Use 'US' for `us.sonarcloud.io`, 'EU' for `sonarcloud.io`."
               },
               "organizationKey": {

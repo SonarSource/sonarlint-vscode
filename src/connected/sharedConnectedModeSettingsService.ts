@@ -18,6 +18,7 @@ import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
 import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 import { sonarCloudRegionToLabel } from '../util/util';
+import { isDogfoodingEnvironment } from '../monitoring/dogfooding';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -101,7 +102,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
       // deduplicate suggestions first
       const uniqueSuggestions = this.deduplicateSuggestions(suggestions);
       if (uniqueSuggestions.length === 1) {
-        this.suggestBindSingleOption(uniqueSuggestions[0], workspaceFolder);
+        this.suggestBindSingleOption({ connectionSuggestion: uniqueSuggestions[0] }, workspaceFolder);
       } else {
         this.suggestBindingMultiOption(uniqueSuggestions, workspaceFolder);
       }
@@ -118,10 +119,11 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         to a Sonar server. Do you want to use the shared configuration?`;
     const useConfigurationHandler = async () => {
       const quickPickItems: CustomQuickPickItem[] = uniqueSuggestions.map(s => {
+        const regionPrefix = s.organization && isDogfoodingEnvironment() ? `[${sonarCloudRegionToLabel(s.region)}] ` : '';
         return {
           label: s.projectKey,
           description: s.organization || s.serverUrl,
-          detail: s.organization ? `[${s.region}] SonarQube Cloud` : 'SonarQube Server',
+          detail: s.organization ? `${regionPrefix}SonarQube Cloud` : 'SonarQube Server',
           data: { region: sonarCloudRegionToLabel(s.region) }
         };
       });
