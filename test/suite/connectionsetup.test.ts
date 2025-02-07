@@ -211,12 +211,14 @@ suite('Connection Setup', () => {
     const organizationKey = 'another-organization';
     const token = 'XXX SUPER SECRET TOKEN XXX';
     const connectionId = 'My Little SonarCloud';
+    const region = 'EU';
 
     await ConnectionSettingsService.instance.addSonarCloudConnection(
       {
         connectionId,
         organizationKey,
-        token
+        token,
+        region
       }
     );
 
@@ -232,12 +234,13 @@ suite('Connection Setup', () => {
       connectionId,
       organizationKey,
       token,
-      disableNotifications
+      disableNotifications,
+      region
     }, mockedConnectionSettingsService);
     await sleep(sleepTime);
 
     const connectionsAfter = getSonarCloudConnections();
-    assert.deepStrictEqual(connectionsAfter, [{ connectionId, organizationKey, disableNotifications }]);
+    assert.deepStrictEqual(connectionsAfter, [{ connectionId, organizationKey, disableNotifications, region }]);
   }).timeout(TEN_SECONDS);
 
   test('should NOT edit connection for which status check failed', async () => {
