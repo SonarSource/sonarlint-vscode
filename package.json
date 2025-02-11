@@ -592,7 +592,7 @@
     "viewsWelcome": [
       {
         "view": "SonarLint.IssueLocations",
-        "contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarQube for VS Code issue."
+        "contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarQube for VS Code issue in the \"Problems\" view.\n[Show Problems](command:workbench.panel.markers.view.focus)"
       },
       {
         "view": "SonarLint.ConnectedMode",
