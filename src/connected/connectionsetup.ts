@@ -26,9 +26,9 @@ import { isDogfoodingEnvironment } from '../monitoring/dogfooding';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
-const sonarQubeNotificationsDocUrl = 'https://docs.sonarsource.com/sonarqube-server/latest/user-guide/sonarlint-connected-mode/';
+const sonarQubeNotificationsDocUrl = 'https://docs.sonarsource.com/sonarqube-server/latest/user-guide/connected-mode/';
 const sonarCloudNotificationsDocUrl =
-  'https://docs.sonarsource.com/sonarqube-cloud/improving/sonarlint/#smart-notifications';
+  'https://docs.sonarsource.com/sonarqube-cloud/improving/connected-mode/#smart-notifications';
 const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
 const OPEN_TOKEN_GENERATION_PAGE_COMMAND = 'openTokenGenerationPage';
 const SAVE_CONNECTION_COMMAND = 'saveConnection';
