@@ -1,6 +1,7 @@
 ## 4.16
 
 * Update Go analyzer 1.18 -> [1.19](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016206%20ORDER%20BY%20created%20ASC)
+* Update PHP analyzer 3.42 -> [3.43](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016340%20ORDER%20BY%20created%20ASC)
 
 ## 4.15
 
