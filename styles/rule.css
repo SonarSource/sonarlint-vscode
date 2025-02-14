@@ -101,7 +101,7 @@ a {
 
 .severity-critical svg {
   fill: currentColor; 
-  color: var(--sonarlint-high-boder-color);
+  color: var(--sonarlint-high-border-color);
 }
 
 .severity-major svg {
