@@ -2,6 +2,7 @@
 
 * Update Go analyzer 1.18 -> [1.19](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016206%20ORDER%20BY%20created%20ASC)
 * Update PHP analyzer 3.42 -> [3.43](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016340%20ORDER%20BY%20created%20ASC)
+* Update C# analyzer 10.4 -> [10.5](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.5.0.109200) -> [10.6](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.6.0.109712)
 
 ## 4.15
 
