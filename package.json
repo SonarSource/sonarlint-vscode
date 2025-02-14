@@ -948,9 +948,9 @@
       "output": "server/sonarlint-ls.jar"
     },
     {
-      "groupId": "org.sonarsource.slang",
+      "groupId": "org.sonarsource.go",
       "artifactId": "sonar-go-plugin",
-      "version": "1.18.0.240",
+      "version": "1.19.0.512",
       "output": "analyzers/sonargo.jar"
     },
     {
