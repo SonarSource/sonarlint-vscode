@@ -11,6 +11,7 @@ import { TransportKind } from 'vscode-languageclient/node';
 import { getSonarLintConfiguration } from '../settings/settings';
 import { RequirementsData } from '../util/requirements';
 import * as util from '../util/util';
+import { maybeAddCFamilyJar } from '../cfamily/ondemand';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
@@ -41,10 +42,10 @@ export function languageServerCommand(
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarxml.jar'));
-  // TODO Insert here path to downloaded sonarcfamily.jar, if needed and available
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonartext.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonariac.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarlintomnisharp.jar'));
+  maybeAddCFamilyJar(params);
 
   return { command: javaExecutablePath, args: params, transport: TransportKind.stdio };
 }
