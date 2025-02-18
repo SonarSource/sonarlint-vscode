@@ -7,6 +7,7 @@
 * Update IaC analyzer 1.41 -> [1.42](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016341%20ORDER%20BY%20created%20ASC) -> [1.43](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016664%20ORDER%20BY%20created%20ASC)
 * Update Text analyzer 2.20 -> [2.21](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016310%20ORDER%20BY%20created%20ASC)
 * Update Java analyzer 8.9 -> [8.10](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016245%20ORDER%20BY%20created%20ASC)
+* Update JS/TS/CSS analyzer 10.20 -> [10.21](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016343%20ORDER%20BY%20created%20ASC)
 
 ## 4.15
 
