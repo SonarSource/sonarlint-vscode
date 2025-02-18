@@ -41,7 +41,7 @@ export function languageServerCommand(
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarxml.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarcfamily.jar'));
+  // TODO Insert here path to downloaded sonarcfamily.jar, if needed and available
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonartext.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonariac.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarlintomnisharp.jar'));

@@ -20,7 +20,7 @@ import artifactory from './artifactory.mjs';
 const execAsync = promisify(exec);
 const ESLINT_BRIDGE_SERVER_BUNDLE_PATH_MATCHER = /sonarjs-\d+\.\d+\.\d+\.tgz/;
 
-const { jarDependencies } = JSON.parse(readFileSync(resolve(dirname(''), 'package.json')));
+const { jarDependencies } = JSON.parse(readFileSync(resolve(dirname(''), 'package.json')).toString('utf8'));
 
 if (!existsSync('server')) {
   mkdirSync('server');
@@ -69,7 +69,7 @@ async function artifactUrl(dep) {
       return null;
     }
   }
-  return `${artifactory.repoRoot}/${groupIdForArtifactory}/${dep.artifactId}/${dep.version}/${dep.artifactId}-${dep.version}.jar`;
+  return `${artifactory.repoRoot}/${groupIdForArtifactory}/${dep.artifactId}/${dep.version}/${dep.artifactId}-${dep.version}.jar${dep.signatureOnly ? '.asc' : ''}`;
 }
 
 function downloadIfNeeded(url, dest) {
@@ -93,15 +93,19 @@ function downloadIfNeeded(url, dest) {
   }
 }
 
+async function actuallyDownloadFile(url, dest) {
+  (await sendRequest(url)).pipe(
+    createWriteStream(dest).on('finish', async () => {
+      if (dest.endsWith('sonarjs.jar')) {
+        await unzipEslintBridgeBundle(dest);
+      }
+    })
+  );
+}
+
 async function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   if (!existsSync(dest)) {
-    (await sendRequest(url))
-      .pipe(createWriteStream(dest)
-            .on('finish', async () => {
-              if (dest.endsWith('sonarjs.jar')) {
-                unzipEslintBridgeBundle(dest);
-              }
-            }));
+    await actuallyDownloadFile(url, dest);
   } else {
     createReadStream(dest)
       .pipe(createHash('sha1').setEncoding('hex'))
@@ -109,41 +113,24 @@ async function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
         const sha1 = this.read();
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
-          (await sendRequest(url))
-            .pipe(createWriteStream(dest)
-            .on('finish', async () => {
-              if (dest.endsWith('sonarjs.jar')) {
-                unzipEslintBridgeBundle(dest);
-              }
-            }));
+          await actuallyDownloadFile(url, dest);
         }
       });
   }
 }
 
 function sendRequest(url) {
-  if (artifactory.credentialsDefined) {
-    return artifactory.maybeAuthenticatedFetch(url, {
-      headers: {
-        Authorization: 'Basic ' + Buffer.from(`${artifactory.auth.user}:${artifactory.auth.pass}`).toString('base64')
-      }})
-      .then(response => {
-        if(!response.ok) {
-          throw new Error(`Unable to get file ${url}: ${response.status}`);
-        } else {
-          return response.body;
-        }
-      })
-      .catch(err => {
-        throw new Error(err);
-      });
-  } else {
-    return artifactory.maybeAuthenticatedFetch(url)
-      .then(response => response.body)
-      .catch(err => {
-        throw new Error(err);
-      });
-  }
+  return artifactory.maybeAuthenticatedFetch(url)
+    .then(response => {
+      if(!response.ok) {
+        throw new Error(`Unable to get file ${url}: ${response.status}`);
+      } else {
+        return response.body;
+      }
+    })
+    .catch(err => {
+      throw new Error(err);
+    });
 }
 
 async function unzipEslintBridgeBundle(jarPath) {
