@@ -7,34 +7,23 @@
 'use strict';
 
 import { decryptKey, readPrivateKey, createMessage, sign as _sign } from 'openpgp';
-import { PassThrough } from 'stream';
 import { createReadStream, writeFileSync } from 'fs';
 import { join } from 'path';
 import { info } from 'fancy-log';
 import { globbySync } from 'globby';
+import { Readable } from 'node:stream';
 
 export default async function signVsix(opts = {}) {
   info('Starting task "sign"');
   const files = globbySync(join('*{.vsix,-cyclonedx.json}'));
 
   for (const file of files) {
-    const passThroughStream = new PassThrough();
-    const fileReadStream = createReadStream(`./${file}`);
-    fileReadStream.pipe(passThroughStream);
-    const signature = await sign(passThroughStream, opts.privateKeyArmored, opts.passphrase);
-    const signatureString = await streamToString(signature);
-    writeFileSync(`./${file}.asc`, signatureString);
+    const fileReadStream = Readable.toWeb(createReadStream(`./${file}`));
+    const signature = await sign(fileReadStream, opts.privateKeyArmored, opts.passphrase);
+    writeFileSync(`./${file}.asc`, signature.toString(), 'ascii');
     info(`Signature for ${file} generated`);
   }
 };
-
-async function streamToString(stream) {
-  return new Promise(function (resolve) {
-    const chunks = [];
-    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
-  });
-}
 
 async function sign(content, privateKeyArmored, passphrase) {
   const privateKey = await decryptKey({
