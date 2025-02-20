@@ -7,7 +7,7 @@
 'use strict';
 
 import * as fs from 'fs';
-import * as Progress from 'node-fetch-progress';
+import * as openpgp from 'openpgp';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as util from '../util/util';
@@ -28,6 +28,7 @@ export function maybeAddCFamilyJar(params: string[]) {
 }
 
 async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion: string) {
+  let errorMessage = '';
   const actuallyDownloaded = await vscode.window.withProgress({
     location: vscode.ProgressLocation.Notification,
     title: `Downloading ${CFAMILY_PLUGIN_ID} analyzer version ${expectedVersion}`,
@@ -35,6 +36,7 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
   },  async (progress, cancelToken) => {
     const fetchAbort = new AbortController();
     cancelToken.onCancellationRequested(() => {
+      errorMessage = 'Canceled by user';
       fetchAbort.abort('Download canceled by user');
     });
     const url = `https://binaries.sonarsource.com/CommercialDistribution/${CFAMILY_PLUGIN_ID}/${CFAMILY_PLUGIN_ID}-${expectedVersion}.jar`;
@@ -44,11 +46,12 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
       fetchResult = await fetch(url, {
         signal: fetchAbort.signal
       });
-      followFetchProgress(fetchResult, progress);
       if (! fetchResult?.ok) {
+        errorMessage = fetchResult.statusText;
         return false;
       }
     } catch (err) {
+      errorMessage = err.message;
       return false;
     }
 
@@ -56,11 +59,22 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
     fs.mkdirSync(destinationDir, { recursive: true });
     const jarPath = path.join(destinationDir, CFAMILY_JAR);
     fs.writeFileSync(jarPath, Buffer.from(await fetchResult.arrayBuffer()));
-    return true;
+
+    progress.report({
+      message: `Checking signature`
+    });
+    const validSignature = await verifySignature(jarPath);
+    if (!validSignature) {
+      errorMessage = 'Invalid signature';
+    }
+    progress.report({
+      message: `Signature is ${validSignature ? 'valid' : 'invalid'}`
+    });
+
+    return validSignature;
   });
 
   if (actuallyDownloaded) {
-    // TODO Validate signature!
     const restart = await vscode.window.showInformationMessage(
       `Downloaded ${CFAMILY_PLUGIN_ID} ${expectedVersion}, please reload the current window to activate it.`,
       'Restart'
@@ -68,18 +82,28 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
     if (restart === 'Restart') {
       vscode.commands.executeCommand('workbench.action.reloadWindow');
     }
+  } else {
+    vscode.window.showErrorMessage(errorMessage);
   }
 }
 
-function followFetchProgress(fetchResult: Response, progress: Progress<{ message?: string; increment?: number }>) {
-  const fetchProgress = new Progress(fetchResult, { throttle: 100 });
-  let previousDone = 0;
-  fetchProgress.on('progress', () => {
-    const increment = (100 * (fetchProgress.done - previousDone)) / fetchProgress.total;
-    previousDone = fetchProgress.done;
-    progress.report({ message: 'Downloading', increment });
+async function verifySignature(jarPath: string) {
+  const armoredKey = fs.readFileSync(path.join(util.extensionPath, 'sonarsource-public.key'), { encoding: 'ascii'});
+  const verificationKey = await openpgp.readKey({ armoredKey });
+  const armoredSignature = fs.readFileSync(path.join(util.extensionPath, 'analyzers', 'sonarcfamily.jar.asc'), { encoding: 'ascii' });
+  const signature = await openpgp.readSignature({ armoredSignature });
+  const binary = fs.readFileSync(jarPath);
+  const message = await openpgp.createMessage({ binary });
+  const verificationResult = await openpgp.verify({
+    message,
+    format: 'binary',
+    verificationKeys: [ verificationKey ],
+    signature
   });
-  fetchProgress.on('finish', () => {
-    progress.report({ message: 'Downloaded', increment: 1.0 });
-  });
+  for (const _ of verificationResult.data) { /* Iterate over the binary buffer to trigger verification */ }
+  try {
+    return await verificationResult.signatures[0].verified;
+  } catch (e) {
+    return false;
+  }
 }
