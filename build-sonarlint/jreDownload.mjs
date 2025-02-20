@@ -5,18 +5,17 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import artifactory from './artifactory.mjs';
-import { cleanJreDir, deleteFile } from './fsUtils.mjs';
-import { ensureDir } from 'fs-extra';
-import { parse } from 'url';
-import { basename } from 'path';
-import { error, info } from 'fancy-log';
-import fetch from 'node-fetch';
-import { existsSync, mkdirSync, createReadStream, createWriteStream } from 'fs';
-import { extract } from 'tar';
-import { createGunzip } from 'node:zlib';
 
-const HTTP_BAD_REQUEST = 400;
+import { error, info } from 'fancy-log';
+import { createReadStream, existsSync, mkdirSync } from 'fs';
+import { ensureDir } from 'fs-extra';
+import { createGunzip } from 'node:zlib';
+import { basename } from 'path';
+import { extract } from 'tar';
+import { parse } from 'url';
+
+import { downloadFile } from './downloadUtil.mjs';
+import { cleanJreDir, deleteFile } from './fsUtils.mjs';
 
 export default async function downloadJre(targetPlatform, javaVersion) {
   cleanJreDir();
@@ -142,19 +141,4 @@ function isValidParams(targetPlatform, platformMapping) {
     return false;
   }
   return true;
-}
-
-export async function downloadFile(fileUrl, destPath, useAuthentication=false) {
-  const maybeAuthenticatedFetch = useAuthentication ? artifactory.maybeAuthenticatedFetch : fetch;
-  return new Promise(function (resolve, reject) {
-    maybeAuthenticatedFetch(fileUrl).then(function (res) {
-      const fileStream = createWriteStream(destPath);
-      res.body.on('error', reject);
-      if (res.statusCode >= HTTP_BAD_REQUEST) {
-        reject(new Error(`Unexpected HTTP status code: ${res.statusCode} - ${res.statusText}`));
-      }
-      fileStream.on('finish', resolve);
-      res.body.pipe(fileStream);
-    });
-  });
 }

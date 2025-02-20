@@ -157,7 +157,10 @@
               },
               "region": {
                 "type": "string",
-                "enum": ["EU", "US"],
+                "enum": [
+                  "EU",
+                  "US"
+                ],
                 "description": "Region of the SonarQube Cloud instance. Use 'US' for `us.sonarcloud.io`, 'EU' for `sonarcloud.io`."
               },
               "organizationKey": {
@@ -889,7 +892,6 @@
     "highlight.js": "^11.7.0",
     "inly": "4.0.8",
     "luxon": "^3.2.1",
-    "node-fetch": "3.3.2",
     "node-fetch-progress": "1.0.2",
     "node-html-parser": "^6.1.5",
     "path-exists": "4.0.0",

@@ -21,6 +21,7 @@ const config = {
     // modules added here also need to be added in the .vsceignore file
   },
   resolve: {
+    mainFields: ['browser', 'module', 'main'],
     extensions: ['.ts', '.js']
   },
   module: {

@@ -6,8 +6,6 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import fetch from 'node-fetch';
-
 const { ARTIFACTORY_PRIVATE_READER_USERNAME, ARTIFACTORY_PRIVATE_READER_PASSWORD } = process.env;
 
 const auth = {
