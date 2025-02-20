@@ -7,7 +7,6 @@
 'use strict';
 
 import * as fs from 'fs';
-import fetch, { Response } from 'node-fetch';
 import * as Progress from 'node-fetch-progress';
 import * as path from 'path';
 import * as vscode from 'vscode';

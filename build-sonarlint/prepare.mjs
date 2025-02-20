@@ -16,6 +16,7 @@ import { createGunzip } from 'node:zlib';
 import { promisify } from 'util';
 
 import artifactory from './artifactory.mjs';
+import { Readable } from 'node:stream';
 
 const execAsync = promisify(exec);
 const ESLINT_BRIDGE_SERVER_BUNDLE_PATH_MATCHER = /sonarjs-\d+\.\d+\.\d+\.tgz/;
@@ -94,13 +95,14 @@ function downloadIfNeeded(url, dest) {
 }
 
 async function actuallyDownloadFile(url, dest) {
-  (await sendRequest(url)).pipe(
-    createWriteStream(dest).on('finish', async () => {
-      if (dest.endsWith('sonarjs.jar')) {
-        await unzipEslintBridgeBundle(dest);
-      }
-    })
-  );
+  const fetchedBody = await sendRequest(url);
+  const writeStream = createWriteStream(dest, { flags: 'w' });
+  writeStream.on('finish', async () => {
+    if (dest.endsWith('sonarjs.jar')) {
+      await unzipEslintBridgeBundle(dest);
+    }
+  });
+  await Readable.fromWeb(fetchedBody).pipe(writeStream);
 }
 
 async function downloadIfChecksumMismatch(expectedChecksum, url, dest) {

@@ -5,7 +5,6 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import * as vscode from 'vscode';
-import fetch from 'node-fetch';
 import * as semver from 'semver';
 import { CONFIG_SECTION, COMMAND_CHECK_NOW, ARTIFACTORY_DOGFOOD_URL, PIN_VERSION_CONFIG_KEY, ARTIFACTORY_VSCODE_PATH } from './constants';
 import { StatusBar } from './statusBar';

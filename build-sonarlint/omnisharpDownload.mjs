@@ -5,16 +5,18 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import artifactory from './artifactory.mjs';
-import { deleteFile } from './fsUtils.mjs';
+
 import { ensureDir } from 'fs-extra';
 import { error, info } from 'fancy-log';
-import { parse } from 'url';
-import { basename } from 'path';
-import { downloadFile } from './jreDownload.mjs';
 import { createReadStream, existsSync, mkdirSync } from 'fs';
-import { extract } from 'tar';
 import { createGunzip } from 'node:zlib';
+import { basename } from 'path';
+import { extract } from 'tar';
+import { parse } from 'url';
+
+import artifactory from './artifactory.mjs';
+import { downloadFile } from './downloadUtil.mjs';
+import { deleteFile } from './fsUtils.mjs';
 
 export const omnisharpPlatformMapping = {
   'linux-arm64': 'mono',

@@ -4,7 +4,7 @@ FROM ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j${JDK_VERSIO
 
 USER root
 
-ENV NODE_VERSION=20
+ENV NODE_VERSION=22
 RUN apt-get update \
     && apt-get install -y \
         nodejs=${NODE_VERSION}.* \

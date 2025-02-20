@@ -78,7 +78,6 @@
     "eslint": "^8.56.0",
     "glob": "^10.3.10",
     "mocha": "^10.3.0",
-    "node-fetch": "^3.3.2",
     "node-fetch-progress": "1.0.2",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",

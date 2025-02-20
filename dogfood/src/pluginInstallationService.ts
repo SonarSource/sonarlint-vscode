@@ -8,7 +8,6 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Progress from 'node-fetch-progress';
-import fetch from 'node-fetch';
 import { StatusBar } from './statusBar';
 import { Status } from './status';
 import { getUserToken } from './authenticationService';

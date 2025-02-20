@@ -11,7 +11,6 @@ import { join, extname, basename } from 'path';
 import dateformat from 'dateformat';
 import { computeDependencyHashes, fileHashsum } from './hashes.mjs';
 import { createReadStream } from 'fs';
-import fetch, { Headers } from 'node-fetch';
 import { globbySync } from 'globby';
 
 export async function deployBuildInfo() {
@@ -33,7 +32,8 @@ export async function deployBuildInfo() {
   const response = await fetch(`${process.env.ARTIFACTORY_URL}/api/build`, {
     method: 'PUT',
     body,
-    headers
+    headers,
+    duplex: 'half'
   });
   if (!response.ok) {
     error(`Error ${response.status}`);
@@ -91,7 +91,8 @@ function artifactoryUpload(readStream, url, fileName, options) {
       Authorization: 'Basic ' + Buffer.from(`${options.username}:${options.password}`).toString('base64')
     },
     method: 'PUT',
-    body: readStream
+    body: readStream,
+    duplex: 'half'
   })
     .then(res => {
       if (!res.ok) {

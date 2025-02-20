@@ -31,6 +31,7 @@ const config = {
     vscode: 'commonjs vscode'
   },
   resolve: {
+    mainFields: ['browser', 'module', 'main'],
     // support reading TypeScript and JavaScript files -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js']
   },
