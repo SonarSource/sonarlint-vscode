@@ -28,6 +28,10 @@ export function maybeAddCFamilyJar(params: string[]) {
 }
 
 async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion: string) {
+
+  const destinationDir = path.resolve(onDemandAnalyzersPath, CFAMILY_PLUGIN_ID, expectedVersion);
+  const jarPath = path.join(destinationDir, CFAMILY_JAR);
+
   let errorMessage = '';
   const actuallyDownloaded = await vscode.window.withProgress({
     location: vscode.ProgressLocation.Notification,
@@ -36,8 +40,8 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
   },  async (progress, cancelToken) => {
     const fetchAbort = new AbortController();
     cancelToken.onCancellationRequested(() => {
-      errorMessage = 'Canceled by user';
-      fetchAbort.abort('Download canceled by user');
+      errorMessage = 'Download aborted. Analysis of C and C++ is disabled in this IDE session.';
+      fetchAbort.abort(errorMessage);
     });
     const url = `https://binaries.sonarsource.com/CommercialDistribution/${CFAMILY_PLUGIN_ID}/${CFAMILY_PLUGIN_ID}-${expectedVersion}.jar`;
     let fetchResult: Response;
@@ -55,9 +59,7 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
       return false;
     }
 
-    const destinationDir = path.resolve(onDemandAnalyzersPath, CFAMILY_PLUGIN_ID, expectedVersion);
     fs.mkdirSync(destinationDir, { recursive: true });
-    const jarPath = path.join(destinationDir, CFAMILY_JAR);
     fs.writeFileSync(jarPath, Buffer.from(await fetchResult.arrayBuffer()));
 
     progress.report({
@@ -65,7 +67,7 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
     });
     const validSignature = await verifySignature(jarPath);
     if (!validSignature) {
-      errorMessage = 'Invalid signature';
+      errorMessage = 'SonarQube for IDE could not verify the authenticity of the downloaded file';
     }
     progress.report({
       message: `Signature is ${validSignature ? 'valid' : 'invalid'}`
@@ -77,12 +79,14 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
   if (actuallyDownloaded) {
     const restart = await vscode.window.showInformationMessage(
       `Downloaded ${CFAMILY_PLUGIN_ID} ${expectedVersion}, please reload the current window to activate it.`,
-      'Restart'
+      'Reload'
     );
-    if (restart === 'Restart') {
+    if (restart === 'Reload') {
       vscode.commands.executeCommand('workbench.action.reloadWindow');
     }
   } else {
+    // Remove partial/invalid file to avoid issues at next start
+    fs.rmSync(jarPath, { force: true });
     vscode.window.showErrorMessage(errorMessage);
   }
 }
