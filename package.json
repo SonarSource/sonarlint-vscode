@@ -889,7 +889,7 @@
     "expand-home-dir": "0.0.3",
     "find-java-home": "1.2.2",
     "follow-redirects": "^1.15.6",
-    "globby": "^14.0.2",
+    "globby": "14.1.0",
     "highlight.js": "^11.7.0",
     "inly": "4.0.8",
     "luxon": "^3.2.1",
