@@ -873,7 +873,6 @@
     "test-cov": "node out/test/runTest.js --coverage",
     "prepare": "node build-sonarlint/prepare.mjs",
     "cyclonedx-run": "cyclonedx-npm",
-    "cyclonedx": "node build-sonarlint/sbomGeneration.mjs",
     "deploy-all": "node build-sonarlint/deployAll.mjs",
     "deploy-universal": "node build-sonarlint/deploy.mjs",
     "package": "node build-sonarlint/package.mjs",
@@ -905,7 +904,7 @@
     "zlib": "^1.0.5"
   },
   "devDependencies": {
-    "@cyclonedx/bom": "^4.1.0",
+    "@cyclonedx/cyclonedx-npm": "2.0.0",
     "@sentry/webpack-plugin": "^2.22.7",
     "@types/chai": "^4.3.9",
     "@types/follow-redirects": "^1.14.4",
