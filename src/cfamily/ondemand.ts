@@ -7,23 +7,32 @@
 'use strict';
 
 import * as fs from 'fs';
+import { DateTime } from 'luxon';
 import * as openpgp from 'openpgp';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as util from '../util/util';
 
+// Comparing a `DateTime` in the past with `diffNow` returns a negative number
+const PLUGIN_MAX_AGE_MONTHS = -2;
+
 const CFAMILY_PLUGIN_ID = 'sonar-cfamily-plugin';
 const CFAMILY_JAR = 'sonarcfamily.jar';
 
+function getOnDemandAnalyzersPath() {
+  return path.resolve(util.extensionPath, '..', 'sonarsource.sonarlint_ondemand-analyzers');
+}
+
 export function maybeAddCFamilyJar(params: string[]) {
   const expectedVersion: string = util.packageJson.jarDependencies.filter(dep => dep.artifactId === CFAMILY_PLUGIN_ID)[0].version;
-  const onDemandAnalyzersPath = path.resolve(util.extensionPath, '..', 'sonarsource.sonarlint_ondemand-analyzers');
-  const maybeCFamilyJar = path.resolve(onDemandAnalyzersPath, CFAMILY_PLUGIN_ID, expectedVersion, CFAMILY_JAR);
+  const maybeCFamilyJar = path.resolve(getOnDemandAnalyzersPath(), CFAMILY_PLUGIN_ID, expectedVersion, CFAMILY_JAR);
   if (fs.existsSync(maybeCFamilyJar)) {
     params.push(maybeCFamilyJar);
+    util.extensionContext.globalState.update(lastUsedKey(CFAMILY_PLUGIN_ID, expectedVersion), DateTime.now().toMillis());
+    cleanupOldAnalyzersAsync();
   } else {
     // Async call is expected here
-    startDownloadAsync(onDemandAnalyzersPath, expectedVersion);
+    startDownloadAsync(getOnDemandAnalyzersPath(), expectedVersion);
   }
 }
 
@@ -109,5 +118,44 @@ async function verifySignature(jarPath: string) {
     return await verificationResult.signatures[0].verified;
   } catch (e) {
     return false;
+  }
+}
+
+function lastUsedKey(pluginId: string, version: string) {
+  return `plugins[${pluginId}][${version}].lastUsed`;
+}
+
+// Exported for tests
+export async function cleanupOldAnalyzersAsync(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      fs.readdirSync(getOnDemandAnalyzersPath()).forEach(cleanupOldAnalyzerVersions);
+      resolve();
+    } catch (e) {
+      if (e instanceof Error) {
+        reject(e);
+      } else {
+        reject(new Error(e));
+      }
+    }
+  });
+}
+
+function cleanupOldAnalyzerVersions(pluginId: string) {
+  fs.readdirSync(path.resolve(getOnDemandAnalyzersPath(), pluginId)).forEach(cleanVersionIfUnused(pluginId));
+}
+
+function cleanVersionIfUnused(pluginId: string) {
+  return (version: string) => {
+    const lastUsedForThisPluginAndVersion = lastUsedKey(pluginId, version);
+    const lastUsed = util.extensionContext.globalState.get<number>(lastUsedForThisPluginAndVersion);
+    if (lastUsed) {
+      const dateTimeLastUsed = DateTime.fromMillis(lastUsed);
+      // Comparing a `DateTime` in the past with `diffNow` returns a negative number
+      if (dateTimeLastUsed.diffNow('months').months <= PLUGIN_MAX_AGE_MONTHS) {
+        fs.rmSync(path.resolve(getOnDemandAnalyzersPath(), pluginId, version), { recursive: true, force: true });
+        util.extensionContext.globalState.update(lastUsedForThisPluginAndVersion, undefined);
+      }
+    }
   }
 }
