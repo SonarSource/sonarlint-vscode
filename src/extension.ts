@@ -98,34 +98,29 @@ let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
 
-function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
-  return resolveRequirements(context)
-    .catch(error => {
-      //show error
-      VSCode.window.showErrorMessage(error.message, error.label).then(selection => {
-        if (error.label && error.label === selection && error.command) {
-          VSCode.commands.executeCommand(error.command, error.commandParam);
-        }
-      });
-      // rethrow to disrupt the chain.
-      throw error;
-    })
-    .then(requirements => {
-      return new Promise<StreamInfo>((resolve, reject) => {
-        const { command, args } = languageServerCommand(context, requirements);
-        logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
-        const process = ChildProcess.spawn(command, args);
-
-        process.stderr.on('data', function (data) {
-          logWithPrefix(data, '[stderr]');
-        });
-
-        resolve({
-          reader: process.stdout,
-          writer: process.stdin
-        });
-      });
+async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
+  try {
+    const requirements = await resolveRequirements(context);
+    const { command, args } = await languageServerCommand(context, requirements);
+    logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
+    const process = ChildProcess.spawn(command, args);
+    process.stderr.on('data', function (data) {
+      logWithPrefix(data, '[stderr]');
     });
+    return {
+      reader: process.stdout,
+      writer: process.stdin
+    }
+  } catch (error) {
+    //show error
+    VSCode.window.showErrorMessage(error.message, error.label).then(selection => {
+      if (error.label && error.label === selection && error.command) {
+        VSCode.commands.executeCommand(error.command, error.commandParam);
+      }
+    });
+    // rethrow to disrupt the chain.
+    throw error;
+  }
 }
 
 function logWithPrefix(data, prefix) {
