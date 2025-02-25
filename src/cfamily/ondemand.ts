@@ -23,12 +23,12 @@ function getOnDemandAnalyzersPath() {
   return path.resolve(util.extensionPath, '..', 'sonarsource.sonarlint_ondemand-analyzers');
 }
 
-export function maybeAddCFamilyJar(params: string[]) {
+export async function maybeAddCFamilyJar(params: string[]) {
   const expectedVersion: string = util.packageJson.jarDependencies.filter(dep => dep.artifactId === CFAMILY_PLUGIN_ID)[0].version;
   const maybeCFamilyJar = path.resolve(getOnDemandAnalyzersPath(), CFAMILY_PLUGIN_ID, expectedVersion, CFAMILY_JAR);
   if (fs.existsSync(maybeCFamilyJar)) {
     params.push(maybeCFamilyJar);
-    util.extensionContext.globalState.update(lastUsedKey(CFAMILY_PLUGIN_ID, expectedVersion), DateTime.now().toMillis());
+    await util.extensionContext.globalState.update(lastUsedKey(CFAMILY_PLUGIN_ID, expectedVersion), DateTime.now().toMillis());
     cleanupOldAnalyzersAsync();
   } else {
     // Async call is expected here
