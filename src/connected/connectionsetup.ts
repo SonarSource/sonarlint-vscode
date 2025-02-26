@@ -260,18 +260,16 @@ function renderServerUrlField(initialState, mode) {
     <input type="hidden" id="serverUrl-initial" value="${serverUrl}" />`;
   }
 
-  if (isDogfoodingEnvironment()) {
-    // SonarQube Cloud connection - pre-populate region field if available
-    const region = initialState.conn.region ?? 'EU';
-    const euChecked = region === 'EU' ? 'checked' : '';
-    const usChecked = region === 'US' ? 'checked' : '';
-    return `<vscode-radio-group orientation=vertical id="region" ${mode === 'update' ? 'disabled' : ''}>
-              <label slot="label">Select the SonarQube Cloud instance you would like to connect to</label>
-              <vscode-radio ${euChecked} value="EU"><b>EU</b> - sonarcloud.io</vscode-radio>
-              <vscode-radio ${usChecked} value="US"><b>US</b> - us.sonarcloud.io</vscode-radio>
-            </vscode-radio-group>`;
-  }
-  return '';
+  // SonarQube Cloud connection - pre-populate region field if available
+  const hidden = !isDogfoodingEnvironment();
+  const region = initialState.conn.region ?? 'EU';
+  const euChecked = region === 'EU' ? 'checked' : '';
+  const usChecked = region === 'US' ? 'checked' : '';
+  return `<vscode-radio-group orientation=vertical id="region" ${mode === 'update' ? 'disabled' : ''} ${hidden ? 'hidden' : ''}>
+            <label slot="label">Select the SonarQube Cloud instance you would like to connect to</label>
+            <vscode-radio ${euChecked} value="EU"><b>EU</b> - sonarcloud.io</vscode-radio>
+            <vscode-radio ${usChecked} value="US"><b>US</b> - us.sonarcloud.io</vscode-radio>
+          </vscode-radio-group>`;
 }
 
 function renderGenerateTokenButton(connection, serverProductName) {
