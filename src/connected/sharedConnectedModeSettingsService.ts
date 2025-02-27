@@ -18,7 +18,7 @@ import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
 import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 import { sonarCloudRegionToLabel } from '../util/util';
-import { isDogfoodingEnvironment } from '../monitoring/dogfooding';
+import { shouldShowRegionSelection } from '../settings/settings';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -119,7 +119,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         to a Sonar server. Do you want to use the shared configuration?`;
     const useConfigurationHandler = async () => {
       const quickPickItems: CustomQuickPickItem[] = uniqueSuggestions.map(s => {
-        const regionPrefix = s.organization && isDogfoodingEnvironment() ? `[${sonarCloudRegionToLabel(s.region)}] ` : '';
+        const regionPrefix = s.organization && shouldShowRegionSelection() ? `[${sonarCloudRegionToLabel(s.region)}] ` : '';
         return {
           label: s.projectKey,
           description: s.organization || s.serverUrl,

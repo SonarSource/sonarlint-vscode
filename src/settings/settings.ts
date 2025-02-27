@@ -66,3 +66,7 @@ function hasSonarLintLsConfigChanged(oldConfig, newConfig) {
 function configKeyEquals(key, oldConfig, newConfig) {
   return oldConfig.get(key) === newConfig.get(key);
 }
+
+export function shouldShowRegionSelection() {
+  return vscode.workspace.getConfiguration(SONARLINT_CATEGORY).get("earlyAccess.showRegionSelection", false);
+}
