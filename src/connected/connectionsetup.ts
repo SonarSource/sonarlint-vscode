@@ -22,7 +22,7 @@ import {
 import { Commands } from '../util/commands';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
-import { isDogfoodingEnvironment } from '../monitoring/dogfooding';
+import { shouldShowRegionSelection } from '../settings/settings';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -261,7 +261,7 @@ function renderServerUrlField(initialState, mode) {
   }
 
   // SonarQube Cloud connection - pre-populate region field if available
-  const hidden = !isDogfoodingEnvironment();
+  const hidden = !shouldShowRegionSelection();
   const region = initialState.conn.region ?? 'EU';
   const euChecked = region === 'EU' ? 'checked' : '';
   const usChecked = region === 'US' ? 'checked' : '';

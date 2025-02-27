@@ -12,7 +12,7 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionCheckResult } from '../lsp/protocol';
 import { BaseConnection, ConnectionSettingsService, SonarCloudConnection } from '../settings/connectionsettings';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import { isDogfoodingEnvironment } from '../monitoring/dogfooding';
+import { shouldShowRegionSelection } from '../settings/settings';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 
@@ -106,7 +106,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         // Display the region prefix in case user is in dogfooding, 
         // has more than 1 SonarQube Cloud connections, and the region is set
         const regionPrefix = 
-          isDogfoodingEnvironment() &&
+          shouldShowRegionSelection() &&
           type !== '__sonarqube__'
           && connectionsFromSettings.length > 1
           && (c as SonarCloudConnection).region
