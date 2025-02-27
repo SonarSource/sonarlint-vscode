@@ -185,9 +185,9 @@ export enum HotspotStatus {
 
 export enum ExtendedHotspotStatus {
   ToReview,
-  Safe,
+  Acknowledged,
   Fixed,
-  Acknowledged
+  Safe
 }
 
 export interface RemoteHotspot {

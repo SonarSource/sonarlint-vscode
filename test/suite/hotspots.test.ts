@@ -380,9 +380,9 @@ suite('Hotspots Test Suite', async () => {
   suite('formatStatus', () => {
     test('Should correctly format status', () => {
       assert.strictEqual(formatDetectedHotspotStatus(0), 'To review');
-      assert.strictEqual(formatDetectedHotspotStatus(1), 'Safe');
+      assert.strictEqual(formatDetectedHotspotStatus(1), 'Acknowledged');
       assert.strictEqual(formatDetectedHotspotStatus(2), 'Fixed');
-      assert.strictEqual(formatDetectedHotspotStatus(3), 'Acknowledged');
+      assert.strictEqual(formatDetectedHotspotStatus(3), 'Safe');
     });
   });
 });
