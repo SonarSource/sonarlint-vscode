@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import { DateTime } from 'luxon';
 import * as path from 'path';
 
-import { cleanupOldAnalyzersAsync } from '../../src/cfamily/ondemand';
+import { cleanupOldAnalyzersAsync, verifySignature } from '../../src/cfamily/ondemand';
 import * as util from '../../src/util/util';
 
 suite('On demand analyzer download and cleanup', () => {
@@ -40,6 +40,18 @@ suite('On demand analyzer download and cleanup', () => {
     expect(fs.existsSync(cFamily660PluginFolder)).to.be.false;
     expect(fs.existsSync(cFamily662PluginFolder)).to.be.true;
   })
+
+  test('Should log error and fail on invalid signature', async () => {
+
+    // Create a bogus CFamily analyzer Jar
+    const notCFamily662Jar = path.resolve(cFamily662PluginFolder, 'sonarcfamily.jar');
+    fs.mkdirSync(cFamily662PluginFolder, { recursive: true });
+    fs.writeFileSync(notCFamily662Jar, 'CFamily Analyzer 6.62!');
+
+    const verificationResult = await verifySignature(notCFamily662Jar);
+
+    expect(verificationResult).to.be.false;
+  });
 
   teardown(async () => {
     fs.rmSync(onDemandAnalyzersPath, { recursive: true, force: true });

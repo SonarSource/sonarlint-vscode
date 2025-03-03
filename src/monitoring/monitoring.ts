@@ -24,7 +24,7 @@ const SKIPPED_DEFAULT_INTEGRATIONS = [
   'GlobalHandlers'
 ];
 
-class MonitoringService {
+export class MonitoringService {
 
   public static readonly instance = new MonitoringService();
   private readonly scope: Scope;
@@ -70,7 +70,7 @@ class MonitoringService {
   }
 
   public captureException(exception: Error, hint?: EventHint) {
-    this.scope.captureException(exception, hint);
+    this.scope?.captureException(exception, hint);
   }
 }
 
