@@ -11,7 +11,10 @@ import { DateTime } from 'luxon';
 import * as openpgp from 'openpgp';
 import * as path from 'path';
 import * as vscode from 'vscode';
+
+import { MonitoringService } from '../monitoring/monitoring';
 import * as util from '../util/util';
+import { logToSonarLintOutput } from '../util/logging';
 
 // Comparing a `DateTime` in the past with `diffNow` returns a negative number
 const PLUGIN_MAX_AGE_MONTHS = -2;
@@ -100,7 +103,7 @@ async function startDownloadAsync(onDemandAnalyzersPath: string, expectedVersion
   }
 }
 
-async function verifySignature(jarPath: string) {
+export async function verifySignature(jarPath: string) {
   const armoredKey = fs.readFileSync(path.join(util.extensionPath, 'sonarsource-public.key'), { encoding: 'ascii'});
   const verificationKey = await openpgp.readKey({ armoredKey });
   const armoredSignature = fs.readFileSync(path.join(util.extensionPath, 'analyzers', 'sonarcfamily.jar.asc'), { encoding: 'ascii' });
@@ -117,6 +120,8 @@ async function verifySignature(jarPath: string) {
   try {
     return await verificationResult.signatures[0].verified;
   } catch (e) {
+    logToSonarLintOutput(`Could not validate analyzer at ${jarPath}: ${e}`);
+    MonitoringService.instance.captureException(e);
     return false;
   }
 }
