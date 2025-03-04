@@ -4,6 +4,7 @@
 * Update HTML analyzer 3.18 -> [3.19](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2016333%20ORDER%20BY%20created%20ASC)
 * Update XML analyzer 2.12.0 -> [2.12.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2017130%20ORDER%20BY%20created%20ASC)
 * Update JS/TS/CSS analyzer 10.21.0 -> [10.21.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2017155%20ORDER%20BY%20created%20ASC)
+* Update CFamily analyzer 6.63 -> [6.64](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=16404%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
 * Download CFamily analyzer separately after install
 * Improve performance of `git blame` operations
 
