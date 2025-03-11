@@ -68,5 +68,5 @@ function configKeyEquals(key, oldConfig, newConfig) {
 }
 
 export function shouldShowRegionSelection() {
-  return vscode.workspace.getConfiguration(SONARLINT_CATEGORY).get("earlyAccess.showRegionSelection", false);
+  return getSonarLintConfiguration().get("earlyAccess.showRegionSelection", false);
 }
