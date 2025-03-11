@@ -161,7 +161,7 @@
                   "EU",
                   "US"
                 ],
-                "description": "Region of the SonarQube Cloud instance. Use 'US' for `us.sonarcloud.io`, 'EU' for `sonarcloud.io`."
+                "description": "Region of the SonarQube Cloud instance. Use 'US' for `sonarqube.us`, 'EU' for `sonarcloud.io`."
               },
               "organizationKey": {
                 "type": "string",

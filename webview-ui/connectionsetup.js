@@ -120,7 +120,7 @@ function onClickGenerateToken() {
   } else {
     const regionField = byId('region');
     region = regionField ? regionField.value : 'EU';
-    serverUrl = region === 'US' ? 'https://us.sonarcloud.io/' : 'https://sonarcloud.io';
+    serverUrl = region === 'US' ? 'https://sonarqube.us/' : 'https://sonarcloud.io';
   }
   byId('tokenGenerationProgress').classList.remove('hidden');
   vscode.postMessage({
