@@ -78,10 +78,28 @@ ul {
 .dropdown-container {
     width: 100%; /* Full width by default */
     max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Add space between dropdown and manual input */
 }
 
 vscode-dropdown {
     width: 100%;
+}
+
+.no-org-info-message {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    padding: 8px;
+    background-color: var(--vscode-textLink-background, rgba(0, 122, 204, 0.1));
+    border-radius: 4px;
+}
+
+.no-org-info-icon {
+    margin-right: 8px;
+    font-size: 14px;
+    color: var(--vscode-textLink-foreground);
 }
 
 @media (max-width: 600px) {
