@@ -62,11 +62,32 @@ function onChangeServerUrl() {
 
 function onChangeOrganizationKey() {
   saveState();
+  const manualInput = byId('manualOrganizationKey');
   if (byId('shouldGenerateConnectionId').value === 'true') {
-    byId('connectionId').value = sanitize(byId('organizationKey').value);
+    const organizationKey = byId('organizationKey');
+    const value = organizationKey.value === 'organizationKeyManualInput' 
+      ? byId('manualOrganizationKey').value 
+      : organizationKey.value;
+    byId('connectionId').value = sanitize(value);
   }
   if (byId('organizationKey').value) {
     byId('organizationKey').setAttribute('selected', true);
+    if (byId('organizationKey').value === 'organizationKeyManualInput') {
+      console.log('about to show manual input');
+      manualInput.removeAttribute('hidden');
+      manualInput.focus();
+      // Add listeners to sync manual input with organizationKey
+      manualInput.addEventListener('change', () => {
+        byId('organizationKey').value = 'organizationKeyManualInput';
+        byId('organizationKey').setAttribute('selected', true);
+        onChangeOrganizationKey();
+      });
+      manualInput.addEventListener('keyup', () => {
+        byId('organizationKey').value = 'organizationKeyManualInput';
+        byId('organizationKey').setAttribute('selected', true);
+        onChangeOrganizationKey();
+      });
+    }
   }
   toggleSaveConnectionButton();
 }
@@ -101,10 +122,11 @@ function isValidUrl(value) {
 }
 
 function hasValidOrganizationKey() {
-  /**
-   * @type {HTMLInputElement}
-   */
   const organizationKeyInput = byId('organizationKey');
+  if (organizationKeyInput.value === 'other') {
+    const manualInput = byId('manualOrganizationKey');
+    return manualInput && manualInput.value.length > 0;
+  }
   return organizationKeyInput.getAttribute('selected') && organizationKeyInput.value.length > 0;
 }
 
@@ -184,7 +206,7 @@ function onClickSaveConnection() {
   }
   const organizationKey = byId('organizationKey');
   if (organizationKey) {
-    saveConnectionMessage.organizationKey = organizationKey.value;
+    saveConnectionMessage.organizationKey = organizationKey.value === 'organizationKeyManualInput' ? byId('manualOrganizationKey').value : organizationKey.value;
   }
   vscode.postMessage(saveConnectionMessage);
 }
@@ -307,8 +329,29 @@ function populateTokenField(token) {
 function replaceOrganizationDropdown(organizations) {
   const dropdown = byId('organizationKey');
   dropdown.innerHTML = '';
+  // Remove any existing messages
+  const existingMessage = dropdown.parentElement.querySelector('.no-org-info-message');
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+
   if (organizations.length === 0) {
-    // do something to indicate that there are no organizations
+    const infoSpan = document.createElement('span');
+    infoSpan.className = 'no-org-info-message';
+    
+    // Add info icon
+    const infoIcon = document.createElement('span');
+    infoIcon.innerHTML = 'ℹ️';
+    infoIcon.className = 'no-org-info-icon';
+    
+    const messageSpan = document.createElement('span');
+    messageSpan.innerText = 'You are not a member of any organization. Please provide the organization key manually.';
+    messageSpan.style.color = 'var(--vscode-textLink-foreground)';
+    
+    infoSpan.appendChild(infoIcon);
+    infoSpan.appendChild(messageSpan);
+    dropdown.parentElement.appendChild(infoSpan);
+    dropdown.dispatchEvent(new Event('change'));
   } else if (organizations.length === 1) {
     const option = document.createElement('vscode-option')
     option.setAttribute('value', organizations[0].key)
@@ -316,7 +359,6 @@ function replaceOrganizationDropdown(organizations) {
     dropdown.appendChild(option);
     option.selected = true;
     dropdown.value = organizations[0].key;
-    dropdown.setAttribute('selected', true);
     dropdown.dispatchEvent(new Event('change'));
   } else {
     const defaultOption = document.createElement('option');
@@ -324,14 +366,25 @@ function replaceOrganizationDropdown(organizations) {
     defaultOption.setAttribute('value', '');
     defaultOption.selected = true;
     dropdown.appendChild(defaultOption);
+    
     for (const organization of organizations) {
-      const option = document.createElement('vscode-option')
-      option.setAttribute('value', organization.key)
+      const option = document.createElement('vscode-option');
+      option.setAttribute('value', organization.key);
       option.selected = false;
       option.innerText = organization.name;
       dropdown.appendChild(option);
     }
   }
+  
+  addOtherOption(dropdown);
+}
+
+function addOtherOption(dropdown) {
+  // Add "Other..." option
+  const otherOption = document.createElement('vscode-option');
+  otherOption.setAttribute('value', 'organizationKeyManualInput');
+  otherOption.innerText = 'Other... (provide Organization Key)';
+  dropdown.appendChild(otherOption);
 }
 
 function tokenGenerationPageIsOpen(errorMessage) {

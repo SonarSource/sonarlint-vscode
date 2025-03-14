@@ -304,9 +304,11 @@ function renderOrganizationKeyField(initialState : WebviewInitialState) {
   return `
     <label for="organizationKey">Organization</label>
     <div class="dropdown-container">    
-      <vscode-dropdown id="organizationKey" required position="below">
-      ${prePopulatedOptions}
+      <vscode-dropdown id="organizationKey" required position="below" size="40">
+        ${prePopulatedOptions}
       </vscode-dropdown>
+      <vscode-text-field id="manualOrganizationKey" type="text" placeholder="Enter organization key" required size="40"
+        title="Enter the organization key manually" value="${organizationKey}" hidden ></vscode-text-field>
     </div>
     <input type="hidden" id="organizationKey-initial" value="${organizationKey}" />`;
 }
