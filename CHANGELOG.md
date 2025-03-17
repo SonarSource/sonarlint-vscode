@@ -1,5 +1,6 @@
 ## 4.18
 
+* Prepare for the upcoming launch of the US region of SonarQube Cloud
 * Update Go analyzer 1.19 -> [1.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016696%20ORDER%20BY%20created%20ASC)
 * Update CFamily analyzer 6.64 -> [6.64.1](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=17353%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
 * Update C# analyzer 10.6 -> [10.7](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.7.0.110445)

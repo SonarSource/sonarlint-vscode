@@ -952,7 +952,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "3.18.0.75967",
+      "version": "3.18.0.75982",
       "output": "server/sonarlint-ls.jar"
     },
     {
