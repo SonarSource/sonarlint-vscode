@@ -1012,7 +1012,7 @@
     {
       "groupId": "com.sonarsource.cpp",
       "artifactId": "sonar-cfamily-plugin",
-      "version": "6.64.0.81013",
+      "version": "6.64.1.81116",
       "output": "analyzers/sonarcfamily.jar.asc",
       "requiresCredentials": true,
       "signatureOnly": true
