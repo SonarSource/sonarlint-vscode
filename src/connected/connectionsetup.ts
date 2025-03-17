@@ -266,7 +266,7 @@ function renderServerUrlField(initialState, mode) {
   const euChecked = region === 'EU' ? 'checked' : '';
   const usChecked = region === 'US' ? 'checked' : '';
   return `<vscode-radio-group orientation=vertical id="region" ${mode === 'update' ? 'disabled' : ''} ${hidden ? 'hidden' : ''}>
-            <label slot="label">Select the SonarQube Cloud instance you would like to connect to</label>
+            <label slot="label">Select the SonarQube Cloud region you would like to connect to</label>
             <vscode-radio ${euChecked} value="EU"><b>EU</b> - sonarcloud.io</vscode-radio>
             <vscode-radio ${usChecked} value="US"><b>US</b> - sonarqube.us</vscode-radio>
           </vscode-radio-group>`;
