@@ -2,7 +2,7 @@
   "name": "sonarlint-vscode",
   "displayName": "SonarQube for IDE",
   "description": "Linter to detect & fix coding issues locally in JS/TS, Python, PHP, Java, C, C++, C#, Go, IaC. Use with SonarQube (Server, Cloud) for optimal team performance.",
-  "version": "4.18.0",
+  "version": "4.19.0-SNAPSHOT",
   "icon": "images/sonarqube_for_ide_128px.png",
   "publisher": "SonarSource",
   "homepage": "https://www.sonarsource.com/products/sonarlint/",
