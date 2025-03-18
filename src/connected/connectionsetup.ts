@@ -297,12 +297,12 @@ function renderOrganizationKeyField(initialState : WebviewInitialState) {
   if (initialState.userOrganizations && initialState.userOrganizations.length > 0) {
     for (const userOrganization of initialState.userOrganizations) {
       if (organizationKey !== userOrganization.key) {
-        prePopulatedOptions += `<vscode-option>${userOrganization.name}</vscode-option>`;
+        prePopulatedOptions += `<vscode-option value="${userOrganization.key}">${userOrganization.name}</vscode-option>`;
       }
     }
+    // Always give the option to manually input the organization key
+    prePopulatedOptions += `<vscode-option value="organizationKeyManualInput">Other... (provide organization key)</vscode-option>`;
   }
-  // Always give the option to manually input the organization key
-  prePopulatedOptions += `<vscode-option value="organizationKeyManualInput">Other... (provide Organization Key)</vscode-option>`;
   return `
     <label for="organizationKey">Organization</label>
     <div class="dropdown-container">    

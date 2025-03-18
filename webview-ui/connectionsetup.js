@@ -38,7 +38,6 @@ function init() {
   }
   byId('generateToken').addEventListener('click', onClickGenerateToken);
   byId('token').addEventListener('change', onChangeToken);
-  byId('token').addEventListener('keyup', onChangeToken);
   byId('enableNotifications').addEventListener('change', onChangeEnableNotifications);
   byId('saveConnection').addEventListener('click', onClickSaveConnection);
   byId('sonarqubeCloudFreeSignUp')?.addEventListener('click', onClickSonarCloudFreeSignupLink);
