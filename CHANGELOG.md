@@ -6,6 +6,7 @@
 * Update C# analyzer 10.6 -> [10.7](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.7.0.110445)
 * Update PHP analyzer 3.44 -> [3.45](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016961%20ORDER%20BY%20created%20ASC)
 * Update IaC analyzer 1.43 -> [1.44](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2016989%20ORDER%20BY%20created%20ASC)
+* Update Python analyzer 5.1.0 -> [5.2.0](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2017321%20ORDER%20BY%20created%20ASC)
 
 ## 4.17
 
