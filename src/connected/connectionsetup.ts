@@ -301,6 +301,8 @@ function renderOrganizationKeyField(initialState : WebviewInitialState) {
       }
     }
   }
+  // Always give the option to manually input the organization key
+  prePopulatedOptions += `<vscode-option value="organizationKeyManualInput">Other... (provide Organization Key)</vscode-option>`;
   return `
     <label for="organizationKey">Organization</label>
     <div class="dropdown-container">    

@@ -7,6 +7,8 @@
 'use strict';
 
 const vscode = acquireVsCodeApi();
+import { selectFirstOrganization, addNoOrgInfoMessage,
+   addManualInputOption, addDefaultSelection, populateDropdown } from './organizationsDropdownHelper.js';
 
 window.addEventListener('load', init);
 window.addEventListener('message', handleMessage);
@@ -87,6 +89,8 @@ function onChangeOrganizationKey() {
         byId('organizationKey').setAttribute('selected', true);
         onChangeOrganizationKey();
       });
+    } else {
+      manualInput.setAttribute('hidden', true);
     }
   }
   toggleSaveConnectionButton();
@@ -336,55 +340,18 @@ function replaceOrganizationDropdown(organizations) {
   }
 
   if (organizations.length === 0) {
-    const infoSpan = document.createElement('span');
-    infoSpan.className = 'no-org-info-message';
-    
-    // Add info icon
-    const infoIcon = document.createElement('span');
-    infoIcon.innerHTML = 'ℹ️';
-    infoIcon.className = 'no-org-info-icon';
-    
-    const messageSpan = document.createElement('span');
-    messageSpan.innerText = 'You are not a member of any organization. Please provide the organization key manually.';
-    messageSpan.style.color = 'var(--vscode-textLink-foreground)';
-    
-    infoSpan.appendChild(infoIcon);
-    infoSpan.appendChild(messageSpan);
-    dropdown.parentElement.appendChild(infoSpan);
+    addNoOrgInfoMessage(dropdown);
+    // Trigger change event with manual input selection
     dropdown.dispatchEvent(new Event('change'));
   } else if (organizations.length === 1) {
-    const option = document.createElement('vscode-option')
-    option.setAttribute('value', organizations[0].key)
-    option.innerText = organizations[0].name;
-    dropdown.appendChild(option);
-    option.selected = true;
-    dropdown.value = organizations[0].key;
+    selectFirstOrganization(dropdown, organizations);
     dropdown.dispatchEvent(new Event('change'));
   } else {
-    const defaultOption = document.createElement('option');
-    defaultOption.innerText = 'Select your organization...';
-    defaultOption.setAttribute('value', '');
-    defaultOption.selected = true;
-    dropdown.appendChild(defaultOption);
-    
-    for (const organization of organizations) {
-      const option = document.createElement('vscode-option');
-      option.setAttribute('value', organization.key);
-      option.selected = false;
-      option.innerText = organization.name;
-      dropdown.appendChild(option);
-    }
+    addDefaultSelection(dropdown);
+    populateDropdown(dropdown, organizations);
   }
   
-  addOtherOption(dropdown);
-}
-
-function addOtherOption(dropdown) {
-  // Add "Other..." option
-  const otherOption = document.createElement('vscode-option');
-  otherOption.setAttribute('value', 'organizationKeyManualInput');
-  otherOption.innerText = 'Other... (provide Organization Key)';
-  dropdown.appendChild(otherOption);
+  addManualInputOption(dropdown);
 }
 
 function tokenGenerationPageIsOpen(errorMessage) {
