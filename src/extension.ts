@@ -74,6 +74,7 @@ import { maybeShowWiderLanguageSupportNotification } from './promotions/promotio
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
 import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
+import { TabCountTool } from './TabCountTool';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -377,6 +378,12 @@ function registerCommands(context: VSCode.ExtensionContext) {
       languageClient.showHotspotRuleDescription(hotspot.key, hotspot.fileUri)
     )
   );
+
+  context.subscriptions.push(VSCode.lm.registerTool('sonarqube-ide-sample_tabCount', new TabCountTool()));
+  // log available tools
+  console.log('Available tools:');
+  VSCode.lm.tools.forEach(t => console.log(t.name));
+  console.log('language model access:', context.languageModelAccessInformation)
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DETAILS, async hotspot => {

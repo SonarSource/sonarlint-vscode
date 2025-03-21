@@ -17,6 +17,11 @@
   "engines": {
     "vscode": "^1.75.0"
   },
+  "enabledApiProposals": [
+    "languageModelToolsForAgent",
+    "languageModelCapabilities",
+    "languageModelSystem"
+  ],
   "categories": [
     "Linters"
   ],
@@ -39,6 +44,30 @@
     "virtualWorkspaces": false
   },
   "contributes": {
+    "languageModelTools": [
+        {
+            "name": "sonarqube-ide-sample_tabCount",
+            "tags": [
+                "editors",
+                "security-analysis",
+                "linter"
+            ],
+            "toolReferenceName": "sonarqube",
+            "displayName": "SonarQube for IDE Tab Count",
+            "modelDescription": "count the number of active editor tabs in the current workspace",
+            "icon": "$(files)",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "tabGroup": {
+                        "type": "number",
+                        "description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
+                        "default": 0
+                    }
+                }
+            }
+        }
+    ],
     "configuration": {
       "type": "object",
       "title": "SonarLint",
