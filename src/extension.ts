@@ -7,7 +7,7 @@
 'use strict';
 
 // Must be kept at the top for Node instrumentation to work correctly
-import { withMonitoring } from './monitoring/monitoring';
+import { MonitoringService, withMonitoring } from './monitoring/monitoring';
 
 import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
@@ -157,6 +157,8 @@ export async function activate(context: VSCode.ExtensionContext) {
   loadInitialSettings();
   util.setExtensionContext(context);
   initLogOutput(context);
+
+  context.subscriptions.push(VSCode.env.createTelemetryLogger(MonitoringService.instance));
 
   const serverOptions = () => runJavaServer(context);
 

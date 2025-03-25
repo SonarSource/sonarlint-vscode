@@ -24,7 +24,7 @@ const SKIPPED_DEFAULT_INTEGRATIONS = [
   'GlobalHandlers'
 ];
 
-export class MonitoringService {
+export class MonitoringService implements vscode.TelemetrySender {
 
   public static readonly instance = new MonitoringService();
   private readonly scope: Scope;
@@ -71,6 +71,20 @@ export class MonitoringService {
 
   public captureException(exception: Error, hint?: EventHint) {
     this.scope?.captureException(exception, hint);
+  }
+
+  sendErrorData(error: Error, data?: Record<string, any>) {
+    this.captureException(error, { data });
+  }
+
+  sendEventData(eventName: string, data?: Record<string, any>) {
+    // This method is required by the TelemetrySender contract, but we don't actually use it yet
+    console.warn(`Unexpected telemetry event '${eventName}' with data: ${JSON.stringify(data)}`);
+  }
+
+  async flush() {
+    // This is supposed to be called when the extension is disposed, to give a chance to send pending events
+    await this.scope?.getClient().flush();
   }
 }
 
