@@ -138,20 +138,24 @@ function onClickGenerateToken() {
    * @type {HTMLInputElement}
    */
   const serverUrlElement = byId('serverUrl');
+  const initialOrganizationKey = byId('organizationKey-initial');
   let serverUrl;
   let region = null;
+  let preFilledOrganizationKey = '';
   if (serverUrlElement) {
     serverUrl = serverUrlElement.value;
   } else {
     const regionField = byId('region');
     region = regionField ? regionField.value : 'EU';
     serverUrl = region === 'US' ? 'https://sonarqube.us/' : 'https://sonarcloud.io';
+    preFilledOrganizationKey = initialOrganizationKey ? initialOrganizationKey.value : '';
   }
   byId('tokenGenerationProgress').classList.remove('hidden');
   vscode.postMessage({
     command: 'openTokenGenerationPage',
     serverUrl,
-    region
+    region,
+    preFilledOrganizationKey
   });
 }
 
@@ -159,10 +163,12 @@ function onChangeToken() {
   saveState();
   toggleSaveConnectionButton();
   const regionField = byId('region');
+  const initialOrganizationKey = byId('organizationKey-initial');
   const tokenChangedMessage = {
     command: 'tokenChanged',
     token: byId('token').value,
-    region: regionField ? regionField.value : 'EU'
+    region: regionField ? regionField.value : 'EU',
+    preFilledOrganizationKey: initialOrganizationKey ? initialOrganizationKey.value : ''
   };
   vscode.postMessage(tokenChangedMessage);
 }
@@ -299,7 +305,7 @@ function handleMessage(event) {
       tokenGenerationPageIsOpen(message.errorMessage);
       break;
     case 'organizationListReceived':
-      replaceOrganizationDropdown(message.organizations);
+      replaceOrganizationDropdown(message.organizations, message.preFilledOrganizationKey);
       break;
   }
 }
@@ -329,7 +335,7 @@ function populateTokenField(token) {
   saveState();
 }
 
-function replaceOrganizationDropdown(organizations) {
+function replaceOrganizationDropdown(organizations, preFilledOrganizationKey) {
   const dropdown = byId('organizationKey');
   dropdown.innerHTML = '';
   // Remove any existing messages
@@ -337,8 +343,16 @@ function replaceOrganizationDropdown(organizations) {
   if (existingMessage) {
     existingMessage.remove();
   }
-
-  if (organizations.length === 0) {
+  // If there is a pre-filled organization key, select it and populate the dropdown; Otherwise, go with the normal flow
+  if (preFilledOrganizationKey) {
+    // Remove the pre-filled organization key from the list of organizations so that it's not duplicated in the dropdown
+    const maybeMatchingOrganization = organizations.find(org => org.key === preFilledOrganizationKey);
+    const preFilledOrganization = maybeMatchingOrganization || { key: preFilledOrganizationKey, name: preFilledOrganizationKey, description: '' };
+    organizations = organizations.filter(org => org.key !== preFilledOrganizationKey);
+    selectFirstOrganization(dropdown, [preFilledOrganization, ...organizations]);
+    dropdown.dispatchEvent(new Event('change'));
+    populateDropdown(dropdown, organizations);
+  } else if (organizations.length === 0) {
     addNoOrgInfoMessage(dropdown);
     // Trigger change event with manual input selection
     dropdown.dispatchEvent(new Event('change'));

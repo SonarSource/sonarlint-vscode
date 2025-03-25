@@ -366,7 +366,7 @@ export async function handleMessageWithConnectionSettingsService(
       break;
     case TOKEN_CHANGED_COMMAND:
       delete message.command;
-      await getUserOrganizationsAndUpdateUI(message.token, message.region);
+      await getUserOrganizationsAndUpdateUI(message.token, message.region, message.preFilledOrganizationKey);
       break;
   }
 }
@@ -383,12 +383,12 @@ export function getDefaultConnectionId(message): string {
 }
 
 async function openTokenGenerationPage(message) {
-  const { serverUrl, region } = message;
+  const { serverUrl, region, preFilledOrganizationKey } = message;
   const cleanedUrl = cleanServerUrl(serverUrl);
   ConnectionSettingsService.instance
     .generateToken(cleanedUrl)
     .then(async token => {
-      await handleTokenReceivedNotification(token, region);
+      await handleTokenReceivedNotification(token, region, preFilledOrganizationKey);
     })
     .catch(
       async _error =>
@@ -457,17 +457,17 @@ function removeTrailingSlashes(url: string) {
   return cleanedUrl;
 }
 
-export async function handleTokenReceivedNotification(token: string, region: string) {
+export async function handleTokenReceivedNotification(token: string, region: string, preFilledOrganizationKey: string) {
   if (connectionSetupPanel?.active && token) {
     await connectionSetupPanel.webview.postMessage({ command: TOKEN_RECEIVED_COMMAND, token });
     // only for SonarQube Cloud connections
     if (connectionSetupPanel.title.includes('Cloud')) {
-      await getUserOrganizationsAndUpdateUI(token, region);
+      await getUserOrganizationsAndUpdateUI(token, region, preFilledOrganizationKey);
     }
   }
 }
 
-async function getUserOrganizationsAndUpdateUI(token: string, region: string) {
+async function getUserOrganizationsAndUpdateUI(token: string, region: string, preFilledOrganizationKey: string) {
   const organizations = await ConnectionSettingsService.instance.listUserOrganizations(token, region);
-  await connectionSetupPanel.webview.postMessage({ command: ORGANIZATION_LIST_RECEIVED_COMMAND, organizations });
+  await connectionSetupPanel.webview.postMessage({ command: ORGANIZATION_LIST_RECEIVED_COMMAND, organizations, preFilledOrganizationKey });
 }
