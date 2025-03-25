@@ -555,11 +555,6 @@
         "category": "SonarQube",
         "icon": "$(export)",
         "enablement": "view == SonarLint.ConnectedMode"
-      },
-      {
-        "command": "SonarLint.CheckMonitoring",
-        "title": "Send A Monitoring Event",
-        "category": "SonarQube"
       }
     ],
     "viewsContainers": {

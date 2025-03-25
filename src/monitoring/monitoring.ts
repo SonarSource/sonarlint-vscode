@@ -87,12 +87,3 @@ export class MonitoringService implements vscode.TelemetrySender {
     await this.scope?.getClient().flush();
   }
 }
-
-export function withMonitoring<T>(wrapped: () => T) {
-  try {
-    return wrapped();
-  } catch (error) {
-    MonitoringService.instance.captureException(error);
-    throw error;
-  }
-}

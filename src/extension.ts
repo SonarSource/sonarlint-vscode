@@ -7,7 +7,7 @@
 'use strict';
 
 // Must be kept at the top for Node instrumentation to work correctly
-import { MonitoringService, withMonitoring } from './monitoring/monitoring';
+import { MonitoringService } from './monitoring/monitoring';
 
 import * as ChildProcess from 'child_process';
 import { DateTime } from 'luxon';
@@ -357,10 +357,6 @@ function registerCommands(context: VSCode.ExtensionContext) {
   function checkMonitoring () {
     throw new Error('Test from a command handler');
   }
-
-  context.subscriptions.push(
-    VSCode.commands.registerCommand('SonarLint.CheckMonitoring', () => withMonitoring(checkMonitoring))
-  );
 
   context.subscriptions.push(
     VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
