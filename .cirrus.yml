@@ -215,7 +215,7 @@ qa_task:
   matrix:
     - env:
         QA_CATEGORY: oldest
-        VSCODE_VERSION: '1.73.0'
+        VSCODE_VERSION: '1.75.0'
     - env:
         QA_CATEGORY: stable
         VSCODE_VERSION: 'stable'
