@@ -953,7 +953,7 @@
     {
       "groupId": "org.sonarsource.go",
       "artifactId": "sonar-go-plugin",
-      "version": "1.20.0.1242",
+      "version": "1.21.0.1607",
       "output": "analyzers/sonargo.jar"
     },
     {
