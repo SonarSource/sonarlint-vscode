@@ -55,7 +55,7 @@
             ],
             "toolReferenceName": "sonarqube",
             "displayName": "SonarQube for IDE Security Hotspot count",
-            "modelDescription": "count the number of reported Security Hotspots and problems in the file",
+            "modelDescription": "Provide list of reported Security Hotspots and problems in the file",
             "icon": "$(files)",
             "inputSchema": {
                 "type": "object",

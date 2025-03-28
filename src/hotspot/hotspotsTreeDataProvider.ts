@@ -122,29 +122,29 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
 		options: VSCode.LanguageModelToolInvocationOptions<IHotspotCountParameters>,
 		_token: VSCode.CancellationToken
 	) {
-    // TODO take given file path into account
 		const params = options.input;
-		// if (typeof params.filePath === 'string') {
-    //   const fileUri = VSCode.Uri.parse(params.filePath);
-    //   const file = VSCode.workspace.findFiles(fileUri.path);
-    //   if (!file) {
-		// 	const group = VSCode.window.tabGroups.all[Math.max(params.tabGroup - 1, 0)];
-		// 	const nth =
-		// 		params.tabGroup === 1
-		// 			? '1st'
-		// 			: params.tabGroup === 2
-		// 				? '2nd'
-		// 				: params.tabGroup === 3
-		// 					? '3rd'
-		// 					: `${params.tabGroup}th`;
-    //   }
-    const activeFile = VSCode.window.activeTextEditor.document;
-    const hotspotsInFile = this.fileHotspotsCache.get(activeFile.uri.toString()).length;
+    let fileUri: VSCode.Uri;
+		if (typeof params.filePath === 'string') {
+      fileUri = VSCode.Uri.file(params.filePath);
+    } else {
+      const activeFile = VSCode.window.activeTextEditor?.document;
+      fileUri = activeFile ? activeFile.uri : null;
+    }
 
-    console.log(`There are ${hotspotsInFile} hotspots in the active file`);
+    const hotspotsInFile: Diagnostic[] = this.fileHotspotsCache.get(fileUri.toString());
+
+    console.log(`There are ${hotspotsInFile.length} hotspots in the active file`);
     console.log(this.fileHotspotsCache)
 
-    return new VSCode.LanguageModelToolResult([new VSCode.LanguageModelTextPart(`There are ${hotspotsInFile} in the active file`)]);
+    const results : VSCode.LanguageModelTextPart[] = [];
+    for (const h of hotspotsInFile) {
+      results.push(new VSCode.LanguageModelTextPart(`There is a problem with message ${h.message} on line ${h.range.start.line}`));
+    }
+
+    return new VSCode.LanguageModelToolResult([
+      new VSCode.LanguageModelTextPart(`There are ${hotspotsInFile.length} hotspots in the active file`),
+      ...results
+    ]);
 	}
 
 	async prepareInvocation(
