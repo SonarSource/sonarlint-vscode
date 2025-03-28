@@ -46,23 +46,23 @@
   "contributes": {
     "languageModelTools": [
         {
-            "name": "sonarqube-ide-sample_tabCount",
+            "name": "sonarqube-ide-sample_hotspotCount",
             "tags": [
                 "editors",
                 "security-analysis",
-                "linter"
+                "linter",
+                "vscode_editing"
             ],
             "toolReferenceName": "sonarqube",
-            "displayName": "SonarQube for IDE Tab Count",
-            "modelDescription": "count the number of active editor tabs in the current workspace",
+            "displayName": "SonarQube for IDE Security Hotspot count",
+            "modelDescription": "count the number of reported Security Hotspots and problems in the file",
             "icon": "$(files)",
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "tabGroup": {
-                        "type": "number",
-                        "description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-                        "default": 0
+                    "filePath": {
+                        "type": "string",
+                        "description": "The path of file for which the hotspot count is requested"
                     }
                 }
             }
