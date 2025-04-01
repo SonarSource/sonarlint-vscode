@@ -100,7 +100,11 @@ export type HotspotTreeViewItem = HotspotNode | HotspotGroup | FileGroup;
 
 type ShowMode = 'Folder' | 'OpenFiles';
 
-export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<HotspotTreeViewItem> {
+interface IHotspotCountParameters {
+  filePath?: string;
+}
+
+export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<HotspotTreeViewItem>, VSCode.LanguageModelTool<IHotspotCountParameters> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<HotspotTreeViewItem | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<HotspotTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   public fileHotspotsCache = new Map<string, Diagnostic[]>();
@@ -108,10 +112,60 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   private showMode: ShowMode;
   private refreshTimeout: Timeout;
 
-  constructor(private readonly connectionSettingsService: ConnectionSettingsService) {
+  constructor(private readonly connectionSettingsService: ConnectionSettingsService, context: VSCode.ExtensionContext) {
     this.refreshTimeout = null;
     this.updateContextShowMode('OpenFiles');
+    context.subscriptions.push(VSCode.lm.registerTool('sonarqube-ide-sample_hotspotCount', this));
   }
+
+  async invoke(
+		options: VSCode.LanguageModelToolInvocationOptions<IHotspotCountParameters>,
+		_token: VSCode.CancellationToken
+	) {
+		const params = options.input;
+    let fileUri: VSCode.Uri;
+		if (typeof params.filePath === 'string') {
+      fileUri = VSCode.Uri.file(params.filePath);
+    } else {
+      const activeFile = VSCode.window.activeTextEditor?.document;
+      fileUri = activeFile ? activeFile.uri : null;
+    }
+
+    const hotspotsInFile: Diagnostic[] = this.fileHotspotsCache.get(fileUri.toString());
+
+    console.log(`There are ${hotspotsInFile.length} hotspots in the active file`);
+    console.log(this.fileHotspotsCache)
+
+    const results : VSCode.LanguageModelTextPart[] = [];
+    for (const h of hotspotsInFile) {
+      results.push(new VSCode.LanguageModelTextPart(`There is a problem with message ${h.message} on line ${h.range.start.line}`));
+    }
+
+    return new VSCode.LanguageModelToolResult([
+      new VSCode.LanguageModelTextPart(`There are ${hotspotsInFile.length} hotspots in the active file`),
+      ...results
+    ]);
+	}
+
+	async prepareInvocation(
+		options: VSCode.LanguageModelToolInvocationPrepareOptions<IHotspotCountParameters>,
+		_token: VSCode.CancellationToken
+	) {
+		const confirmationMessages = {
+			title: 'Count the number of Security Hotspots in the active editor',
+			message: new VSCode.MarkdownString(
+				`Count the number of Security Hotspots in the active editor?` +
+				(options.input.filePath !== undefined
+					? ` in tab group ${options.input.filePath}`
+					: '')
+			),
+		};
+
+		return {
+			invocationMessage: 'Counting the number of hotspots',
+			confirmationMessages,
+		};
+	}
 
   async showHotspotsInFolder() {
     await this.updateContextShowMode('Folder');
