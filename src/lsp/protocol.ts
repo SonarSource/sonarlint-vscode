@@ -763,6 +763,7 @@ export interface ShowFixSuggestionParams {
   suggestionId: string;
   textEdits: Change[];
   fileUri: string;
+  isLocal: boolean;
 }
 
 export namespace ShowFixSuggestion {

@@ -31,7 +31,7 @@ export class FixSuggestionService {
 				await (async () => {
 					const range = new vscode.Range(edit.beforeLineRange.startLine - 1, 0, edit.beforeLineRange.endLine - 1, FixSuggestionService.END_OF_LINE_OFFSET);
 					const validRange = editor.document.validateRange(range);
-					const isContentIdentical = await this.isBeforeContentIdentical(fileUri, range, edit.before);
+					const isContentIdentical = params.isLocal || await this.isBeforeContentIdentical(fileUri, range, edit.before);
 					if (!isContentIdentical) {
 						vscode.window.showWarningMessage('The content of the file has changed. The fix suggestion may not be applicable.');
 					}
