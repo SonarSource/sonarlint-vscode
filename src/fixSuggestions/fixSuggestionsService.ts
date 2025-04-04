@@ -41,6 +41,11 @@ export class FixSuggestionService {
 			const result = await vscode.workspace.applyEdit(wsedit);
 			// result will be true if at least one edit was applied
 			// result will be false if no edits were applied
+			if (result) {
+				vscode.window.showInformationMessage('SonarQube for IDE: AI Fix applied.');
+			} else {
+				vscode.window.showInformationMessage('SonarQube for IDE: AI Fix declined.');
+			}
 			this.client.fixSuggestionResolved(params.suggestionId, result);
 		} catch (error) {
 			logToSonarLintOutput('Failed to apply edit: '.concat(error.message));
