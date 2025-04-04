@@ -763,6 +763,7 @@ export interface ShowFixSuggestionParams {
   suggestionId: string;
   textEdits: Change[];
   fileUri: string;
+  isLocal: boolean;
 }
 
 export namespace ShowFixSuggestion {
@@ -772,5 +773,25 @@ export namespace ShowFixSuggestion {
 export namespace IsOpenInEditor {
   export const type = new lsp.RequestType<string, boolean, void>('sonarlint/isOpenInEditor');
 }
+
+export namespace StartProgressNotification {
+  export const type = new lsp.NotificationType<StartProgressNotificationParams>('sonarlint/startProgressNotification');
+}
+
+export interface StartProgressNotificationParams {
+  taskId: string;
+  message: string;
+}
+
+export namespace EndProgressNotification {
+  export const type = new lsp.NotificationType<EndProgressNotificationParams>('sonarlint/endProgressNotification');
+}
+
+export interface EndProgressNotificationParams {
+  taskId: string;
+}
+
+
+
 
 //#endregion

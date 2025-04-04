@@ -31,7 +31,7 @@ export class FixSuggestionService {
 				await (async () => {
 					const range = new vscode.Range(edit.beforeLineRange.startLine - 1, 0, edit.beforeLineRange.endLine - 1, FixSuggestionService.END_OF_LINE_OFFSET);
 					const validRange = editor.document.validateRange(range);
-					const isContentIdentical = await this.isBeforeContentIdentical(fileUri, range, edit.before);
+					const isContentIdentical = params.isLocal || await this.isBeforeContentIdentical(fileUri, range, edit.before);
 					if (!isContentIdentical) {
 						vscode.window.showWarningMessage('The content of the file has changed. The fix suggestion may not be applicable.');
 					}
@@ -41,6 +41,11 @@ export class FixSuggestionService {
 			const result = await vscode.workspace.applyEdit(wsedit);
 			// result will be true if at least one edit was applied
 			// result will be false if no edits were applied
+			if (result) {
+				vscode.window.showInformationMessage('SonarQube for IDE:AI Fix applied.');
+			} else {
+				vscode.window.showInformationMessage('SonarQube for IDE: AI Fix declined.');
+			}
 			this.client.fixSuggestionResolved(params.suggestionId, result);
 		} catch (error) {
 			logToSonarLintOutput('Failed to apply edit: '.concat(error.message));
