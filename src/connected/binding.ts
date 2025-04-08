@@ -177,7 +177,7 @@ export class BindingService {
   }
   
   isRelatedConnectionValid(connectionId: string) : boolean {
-    return this.settingsService.getStatusForConnection(connectionId).success;
+    return this.settingsService.getStatusForConnection(connectionId)?.success ?? false;
   }
   
   async getBaseServerUrl(connectionId: string, serverType: ServerType): Promise<string> {
