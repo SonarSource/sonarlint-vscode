@@ -97,7 +97,7 @@ let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
-let currentProgress: { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined;
+const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   try {
@@ -273,9 +273,10 @@ export async function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(languageClient.onNotification(ShowIssueNotification.type, IssueService.showIssue));
   
   context.subscriptions.push(languageClient.onNotification(protocol.StartProgressNotification.type, (params: protocol.StartProgressNotificationParams) => {
-    if (currentProgress) {
+    const taskId = params.taskId;
+    if (currentProgress[taskId]) {
       // If there's an existing progress, resolve it first
-      currentProgress.resolve();
+      currentProgress[taskId].resolve();
     }
     
     VSCode.window.withProgress(
@@ -286,7 +287,7 @@ export async function activate(context: VSCode.ExtensionContext) {
       },
       (progress) => {
         return new Promise<void>((resolve) => {
-          currentProgress = { progress, resolve };
+          currentProgress[taskId] = { progress, resolve };
           if (params.message) {
             progress.report({ message: params.message });
           }
@@ -295,10 +296,11 @@ export async function activate(context: VSCode.ExtensionContext) {
     );
   }));
 
-  context.subscriptions.push(languageClient.onNotification(protocol.EndProgressNotification.type, (_params: protocol.EndProgressNotificationParams) => {
-    if (currentProgress) {
-      currentProgress.resolve();
-      currentProgress = undefined;
+  context.subscriptions.push(languageClient.onNotification(protocol.EndProgressNotification.type, (params: protocol.EndProgressNotificationParams) => {
+    const taskId = params.taskId
+    if (currentProgress[taskId]) {
+      currentProgress[taskId].resolve();
+      currentProgress[taskId] = undefined;
     }
   }));
 
