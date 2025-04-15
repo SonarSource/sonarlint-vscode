@@ -575,10 +575,6 @@
       ],
       "SonarLint": [
         {
-          "id": "SonarLint.AllRules",
-          "name": "Rules"
-        },
-        {
           "id": "SonarLint.ConnectedMode",
           "name": "Connected Mode"
         },
@@ -586,6 +582,10 @@
           "id": "SonarLint.SecurityHotspots",
           "name": "Security Hotspots",
           "visibility": "collapsed"
+        },
+        {
+          "id": "SonarLint.AllRules",
+          "name": "Rules"
         },
         {
           "id": "SonarLint.HelpAndFeedback",
