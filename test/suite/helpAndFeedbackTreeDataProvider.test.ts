@@ -16,10 +16,7 @@ suite('Help and Feedback tree view test suite', () => {
       [ 'Get Started', 'workbench.action.openWalkthrough' ],
       [ 'Read Documentation', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ],
       [ 'Get Help | Report Issue', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ],
-      [ 'See Languages & Rules', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ],
-      [ "Check What's New", Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ],
-      [ 'Suggest a Feature', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ],
-      [ 'Review FAQ', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ]
+      [ 'Suggest a Feature', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ]
     ]);
   });
 });
