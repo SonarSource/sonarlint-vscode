@@ -585,7 +585,8 @@
         },
         {
           "id": "SonarLint.AllRules",
-          "name": "Rules"
+          "name": "Rules",
+          "visibility": "collapsed"
         },
         {
           "id": "SonarLint.HelpAndFeedback",
