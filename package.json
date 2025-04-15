@@ -581,12 +581,14 @@
         {
           "id": "SonarLint.SecurityHotspots",
           "name": "Security Hotspots",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "sonarqube.onlyConnectedMode"
         },
         {
           "id": "SonarLint.AllRules",
           "name": "Rules",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "sonarqube.onlyStandaloneMode"
         },
         {
           "id": "SonarLint.HelpAndFeedback",
