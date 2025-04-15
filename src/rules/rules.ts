@@ -87,9 +87,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   }
 
   private async getAllRules() {
-    if (this.allRules === undefined) {
-      this.allRules = await this.allRulesProvider();
-    }
+    this.allRules ??= await this.allRulesProvider();
     return this.allRules;
   }
 
