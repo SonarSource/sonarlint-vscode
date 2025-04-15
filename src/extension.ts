@@ -74,6 +74,7 @@ import { maybeShowWiderLanguageSupportNotification } from './promotions/promotio
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
 import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
+import { ContextManager } from './contextManager';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -98,6 +99,8 @@ let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
+
+ContextManager.init();
 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   try {
@@ -238,6 +241,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     /* ignored */
   });
   FixSuggestionService.init(languageClient);
+  ContextManager.instance.setConnectedModeContext();
 
   installCustomRequestHandlers(context);
 
@@ -311,6 +315,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint.connectedMode')) {
       allConnectionsTreeDataProvider.refresh();
+      ContextManager.instance.setConnectedModeContext();
     }
     if (event.affectsConfiguration('sonarlint.focusOnNewCode')) {
       NewCodeDefinitionService.instance.updateFocusOnNewCodeState();
