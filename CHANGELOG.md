@@ -1,3 +1,7 @@
+## 4.20.1
+
+* Bugfix release
+
 ## 4.20
 
 * Update IaC analyzer 1.44 -> [1.45](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2017783%20ORDER%20BY%20created%20ASC)
