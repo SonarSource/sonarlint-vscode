@@ -37,31 +37,10 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     viewItem: true
   },
   {
-    id: 'supportedRules',
-    label: 'See Languages & Rules',
-    url: SonarLintDocumentation.LANGUAGES_AND_RULES,
-    icon: 'checklist',
-    viewItem: true
-  },
-  {
-    id: 'whatsNew',
-    label: "Check What's New",
-    url: 'https://www.sonarsource.com/products/sonarlint/whats-new/vs-code/',
-    icon: 'megaphone',
-    viewItem: true
-  },
-  {
     id: 'suggestFeature',
     label: 'Suggest a Feature',
     url: 'https://www.sonarsource.com/products/sonarlint/roadmap/',
     icon: 'extensions',
-    viewItem: true
-  },
-  {
-    id: 'faq',
-    label: 'Review FAQ',
-    url: 'https://community.sonarsource.com/t/frequently-asked-questions/7204',
-    icon: 'question',
     viewItem: true
   },
   {

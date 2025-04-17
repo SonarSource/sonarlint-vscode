@@ -87,9 +87,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   }
 
   private async getAllRules() {
-    if (this.allRules === undefined) {
-      this.allRules = await this.allRulesProvider();
-    }
+    this.allRules ??= await this.allRulesProvider();
     return this.allRules;
   }
 
@@ -134,9 +132,7 @@ function byName(r1: Rule, r2: Rule) {
 
 export function setRulesViewMessage(allRulesView: VSCode.TreeView<LanguageNode>) {
   const folderBindingStates = [... BindingService.instance.bindingStatePerFolder().values()];
-  if (allTrue(folderBindingStates)) {
-    allRulesView.message = 'Changes to this view do not have any effect in this workspace since all folders use Connected Mode.';
-  } else if (allFalse(folderBindingStates)) {
+  if (allFalse(folderBindingStates)) {
     allRulesView.message = 'Changes to this view are restricted to your personal development environment; to share a rule set with your team, please use Connected Mode .';
   } else {
     allRulesView.message = "Changes to this view only apply to folders that don't use Connected Mode.";

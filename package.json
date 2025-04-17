@@ -575,17 +575,20 @@
       ],
       "SonarLint": [
         {
-          "id": "SonarLint.AllRules",
-          "name": "Rules"
-        },
-        {
           "id": "SonarLint.ConnectedMode",
           "name": "Connected Mode"
         },
         {
           "id": "SonarLint.SecurityHotspots",
           "name": "Security Hotspots",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "sonarqube.onlyConnectedMode"
+        },
+        {
+          "id": "SonarLint.AllRules",
+          "name": "Rules",
+          "visibility": "collapsed",
+          "when": "sonarqube.onlyStandaloneMode"
         },
         {
           "id": "SonarLint.HelpAndFeedback",
