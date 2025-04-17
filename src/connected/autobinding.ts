@@ -68,12 +68,7 @@ export class AutoBindingService implements FileSystemSubscriber {
 
   async checkConditionsAndAttemptAutobinding(params: SuggestBindingParams) {
     const bindingSuggestionsPerConfigScope = params.suggestions;
-    const totalSuggestions = [];
-    Object.keys(bindingSuggestionsPerConfigScope).forEach(configScopeId => {
-      totalSuggestions.push(...bindingSuggestionsPerConfigScope[configScopeId]);
-    });
     if (!this.isConnectionConfigured() || // no connections
-     totalSuggestions.length === 0 || // no suggestions
      this.workspaceState.get(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG) // don't ask again
     ) {
       return;
