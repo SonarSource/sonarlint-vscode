@@ -6,7 +6,7 @@ import {
 import { AllHotspotsTreeDataProvider, HotspotNode } from '../../src/hotspot/hotspotsTreeDataProvider';
 import { assert } from 'chai';
 import * as vscode from 'vscode';
-import { TextDocument, ThemeIcon } from 'vscode';
+import { ExtensionContext, TextDocument, ThemeIcon } from 'vscode';
 import { protocol2CodeConverter } from '../../src/util/uri';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 
@@ -31,6 +31,17 @@ const mockSettingsServiceWithOneConnection = {
   }
 } as ConnectionSettingsService;
 
+const fakeContext = {
+  globalState: null,
+  workspaceState: {
+    get<T>(key: string): T | undefined {
+      return null;
+    }
+  },
+  subscriptions: null,
+  extension: null
+} as ExtensionContext;
+
 const mockSettingsServiceWithOutConnections = {
   getSonarQubeConnections(): SonarQubeConnection[] {
     return [];
@@ -50,7 +61,7 @@ let openDocuments: TextDocument[];
 
 suite('Hotspots tree view test suite', () => {
   setup(() => {
-    underTestWithDummyInitData = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection);
+    underTestWithDummyInitData = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection, fakeContext);
     const diagnostic1 = {
       flows: [],
       range: { start: { line: 1, character: 1 }, end: { line: 2, character: 1 } },
@@ -80,7 +91,7 @@ suite('Hotspots tree view test suite', () => {
     underTestWithDummyInitData.fileHotspotsCache.set('file2', [diagnostic2]);
     underTestWithDummyInitData.fileHotspotsCache.set('file3', [diagnostic4]);
 
-    underTestWithValidInitData = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection);
+    underTestWithValidInitData = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection, fakeContext);
     const diagnostic5 = {
       flows: [],
       range: { start: { line: 1, character: 1 }, end: { line: 2, character: 1 } },
@@ -115,7 +126,7 @@ suite('Hotspots tree view test suite', () => {
       assert.equal(underTestWithValidInitData.countAllHotspots(openDocuments), 2);
     });
     test('countAllHotspots should return 0 when there are no hotspots', () => {
-      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithConnections);
+      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithConnections, fakeContext);
 
       assert.equal(underTest.countAllHotspots(), 0);
     });
@@ -123,15 +134,15 @@ suite('Hotspots tree view test suite', () => {
 
   suite('isAnyConnectionConfigured()', () => {
     test('Should return true when two connections exist', () => {
-      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithConnections);
+      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithConnections, fakeContext);
       assert.isTrue(underTest.isAnyConnectionConfigured());
     });
     test('Should return true when one connection exists', () => {
-      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection);
+      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection, fakeContext);
       assert.isTrue(underTest.isAnyConnectionConfigured());
     });
     test('Should return false when no connection exists', () => {
-      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOutConnections);
+      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOutConnections, fakeContext);
       assert.isFalse(underTest.isAnyConnectionConfigured());
     });
   });
@@ -199,7 +210,7 @@ suite('Hotspots tree view test suite', () => {
       assert.isTrue(underTestWithDummyInitData.hasLocalHotspots());
     });
     test('returns false if there is only openInIde hotspot', () => {
-      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection);
+      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection, fakeContext);
       const diagnostic = {
         flows: [],
         range: { start: { line: 3, character: 1 }, end: { line: 5, character: 1 } },
@@ -212,7 +223,7 @@ suite('Hotspots tree view test suite', () => {
       assert.isFalse(underTest.hasLocalHotspots());
     });
     test('returns false if there is only openInIde hotspot', () => {
-      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection);
+      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection, fakeContext);
       const diagnostic = {
         flows: [],
         range: { start: { line: 3, character: 1 }, end: { line: 5, character: 1 } },
@@ -226,7 +237,7 @@ suite('Hotspots tree view test suite', () => {
     });
 
     test('returns true if there are only known hotspots', () => {
-      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection);
+      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOneConnection, fakeContext);
       const diagnostic1 = {
         flows: [],
         range: { start: { line: 3, character: 1 }, end: { line: 5, character: 1 } },
@@ -264,7 +275,7 @@ suite('Hotspots tree view test suite', () => {
 
   suite('getFiles()', () => {
     test('should return empty list when there is no connection', () => {
-      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOutConnections);
+      const underTest = new AllHotspotsTreeDataProvider(mockSettingsServiceWithOutConnections, fakeContext);
       const children = underTest.getChildren(null);
 
       assert.equal(children.length, 0);
