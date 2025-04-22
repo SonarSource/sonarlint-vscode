@@ -20,6 +20,7 @@
     "babel-preset-nano-react-app": "^0.1.0",
     "typescript": "^5.0.4",
     "vite": "^4.3.8",
-    "vite-tsconfig-paths": "^4.2.0"
+    "vite-tsconfig-paths": "^4.2.0",
+    "@types/vscode-webview": "^1.57.5"
   }
 }
