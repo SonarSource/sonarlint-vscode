@@ -9,6 +9,8 @@
 import * as vscode from 'vscode';
 import * as util from '../util/util';
 import { ResourceResolver } from '../util/webview';
+import { ConnectionSettingsService } from '../settings/connectionsettings';
+import { DEFAULT_CONNECTION_ID } from '../commons';
 
 let listConnectionsPanel;
 
@@ -20,6 +22,49 @@ export function listConnections(context: vscode.ExtensionContext) {
       dark: util.resolveExtensionFile('images', 'sonarqube_for_ide_dark.svg')
     };
     listConnectionsPanel.reveal();
+    listConnectionsPanel.webview.onDidReceiveMessage(handleMessage);
+
+    setSonarCloudConnections();
+    setSonarQubeConnections();
+}
+
+export function setSonarQubeConnections() {
+  const serverConnections = ConnectionSettingsService.instance.getSonarQubeConnections().map((connection) => {
+    return {
+    serverUrl: connection.serverUrl,
+    connectionId: connection.connectionId || DEFAULT_CONNECTION_ID,
+    connectionCheckResult: connection.connectionCheckResult,
+    };
+  });
+
+  listConnectionsPanel.webview.postMessage({
+    command: 'setServerConnections',
+    connections: serverConnections
+  });
+}
+
+export function setSonarCloudConnections() {
+  const cloudConnections = ConnectionSettingsService.instance.getSonarCloudConnections().map((connection) => {
+    return {
+    organizationKey: connection.organizationKey,
+    connectionId: connection.connectionId || DEFAULT_CONNECTION_ID,
+    connectionCheckResult: connection.connectionCheckResult,
+    };
+  });
+
+  listConnectionsPanel.webview.postMessage({
+    command: 'setCloudConnections',
+    connections: cloudConnections
+  });
+}
+
+function handleMessage(message) {
+    switch (message.command) {
+        case 'showNotification':
+            vscode.window.showInformationMessage(`Demo notification from SonarQube List Connections View says: '${message.displayMessage}'!`);
+            break;
+        default: break;
+    }
 }
 
 function lazyCreateListConnectionsPanel(context: vscode.ExtensionContext) {
