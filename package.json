@@ -391,6 +391,11 @@
     },
     "commands": [
       {
+        "command": "SonarLint.ListConnections",
+        "title": "List Connections",
+        "category": "SonarQube"
+      },
+      {
         "command": "SonarLint.ShowSonarLintOutput",
         "title": "Show SonarQube for IDE Output",
         "category": "SonarQube"
@@ -1291,7 +1296,7 @@
   },
   "main": "./dist/extension",
   "scripts": {
-    "vscode:prepublish": "node build-sonarlint/prepare.mjs && webpack --mode production",
+    "vscode:prepublish": "node build-sonarlint/prepare.mjs && npm run build-webviews && webpack --mode production",
     "compile": "tsc -p ./",
     "webpack": "webpack --mode development",
     "pretest": "webpack --mode development && tsc -p ./",
@@ -1302,7 +1307,8 @@
     "deploy-all": "node build-sonarlint/deployAll.mjs",
     "deploy-universal": "node build-sonarlint/deploy.mjs",
     "package": "node build-sonarlint/package.mjs",
-    "package-all": "node build-sonarlint/package-all.mjs"
+    "package-all": "node build-sonarlint/package-all.mjs",
+    "build-webviews": "cd views && npm install && npm run build"
   },
   "dependencies": {
     "@openpgp/web-stream-tools": "^0.1.3",

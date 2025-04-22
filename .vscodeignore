@@ -18,3 +18,5 @@ scripts/
 .github/
 .idea/
 build-sonarlint/
+views/
+!views/dist/
