@@ -71,7 +71,7 @@ export class Connection extends VSCode.TreeItem {
   }
 }
 
-type ConnectionType = '__sonarqube__' | '__sonarcloud__';
+export type ConnectionType = '__sonarqube__' | '__sonarcloud__';
 
 export class ConnectionGroup extends VSCode.TreeItem {
   constructor(
@@ -79,7 +79,7 @@ export class ConnectionGroup extends VSCode.TreeItem {
     public readonly label: 'SonarQube Server' | 'SonarQube Cloud',
     public readonly contextValue: 'sonarQubeGroup' | 'sonarCloudGroup'
   ) {
-    super(label, VSCode.TreeItemCollapsibleState.Collapsed);
+    super(label, VSCode.TreeItemCollapsibleState.Expanded);
   }
 }
 
@@ -88,7 +88,7 @@ export type ConnectionsNode = Connection | ConnectionGroup | RemoteProject | Wor
 export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<ConnectionsNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<Connection | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<ConnectionsNode | undefined> = this._onDidChangeTreeData.event;
-  private allConnections = { sonarqube: Array.from<Connection>([]), sonarcloud: Array.from<Connection>([]) };
+  private allConnections = { __sonarqube__: Array.from<Connection>([]), __sonarcloud__: Array.from<Connection>([]) };
 
   constructor(private readonly client: SonarLintExtendedLanguageClient) {}
 
@@ -166,6 +166,15 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return null;
   }
 
+  async getParent(element: ConnectionsNode): Promise<ConnectionsNode> {
+    if (element.contextValue === 'sonarqubeConnection') {
+     return this.getInitialState()[0];
+    } else if (element.contextValue === 'sonarcloudConnection') {
+      return this.getInitialState()[1];
+    }
+    return null;
+  }
+
   async getBoundProjects(connectionId, serverType) {
     const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
     if (!boundProjects) {
@@ -201,7 +210,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     if (checkResult.connectionId === DEFAULT_CONNECTION_ID) {
       checkResult.connectionId = undefined;
     }
-    const allConnections = [...this.allConnections.sonarqube, ...this.allConnections.sonarcloud];
+    const allConnections = [...this.allConnections.__sonarqube__, ...this.allConnections.__sonarcloud__];
     const connectionToUpdate = allConnections.find(c => c.id === checkResult.connectionId);
     if (connectionToUpdate) {
       connectionToUpdate.status = checkResult.success ? 'ok' : 'notok';

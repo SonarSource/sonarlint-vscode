@@ -443,6 +443,8 @@ async function saveConnection(
     const bindingCreationMode = connection.isFromSharedConfiguration ? BindingCreationMode.IMPORTED : BindingCreationMode.AUTOMATIC;
     await BindingService.instance.saveBinding(connection.projectKey, workspaceFolder, bindingCreationMode, connection.connectionId);
   }
+
+  vscode.commands.executeCommand(Commands.FOCUS_ON_CONNECTION, isSQConnection ? '__sonarqube__' : '__sonarcloud__', connection.connectionId);
 }
 
 function cleanServerUrl(serverUrl: string) {
