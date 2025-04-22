@@ -85,6 +85,7 @@ import { AutomaticAnalysisService } from './settings/automaticAnalysis';
 import { FlightRecorderService } from './monitoring/flightrecorder';
 import { configureMCPServer, onEmbeddedServerStarted, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
 import { introduceSonarQubeRulesFile, openSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
+import { listConnections } from './connected/listConnections';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -629,6 +630,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackLinkClicked(languageClient))
   );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand('SonarLint.ListConnections', () => listConnections(context))
+  )
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER, async folder => {
