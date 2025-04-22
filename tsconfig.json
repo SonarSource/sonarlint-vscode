@@ -15,6 +15,7 @@
         ".vscode-test",
         "its",
         "dogfood",
-        "eslint-bridge"
+        "eslint-bridge",
+        "views"
     ]
 }
