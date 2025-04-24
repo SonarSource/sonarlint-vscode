@@ -583,13 +583,13 @@
           "id": "SonarLint.SecurityHotspots",
           "name": "Security Hotspots",
           "visibility": "collapsed",
-          "when": "sonarqube.onlyConnectedMode"
+          "when": "sonarqube.someFoldersUseConnectedMode"
         },
         {
           "id": "SonarLint.AllRules",
           "name": "Rules",
           "visibility": "collapsed",
-          "when": "sonarqube.onlyStandaloneMode"
+          "when": "sonarqube.someFoldersUseStandaloneMode"
         },
         {
           "id": "SonarLint.HelpAndFeedback",
