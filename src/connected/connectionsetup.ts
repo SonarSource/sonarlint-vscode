@@ -121,7 +121,12 @@ function finishSetupAndRevealPanel(serverProductName: string) {
 }
 
 export async function reportConnectionCheckResult(result: ConnectionCheckResult) {
-  if (connectionSetupPanel?.webview) {
+  if (connectionSetupPanel?.webview && result.success) {
+    // connection check was successful; close the webview automatically and show a visible notification instead
+    vscode.window.showInformationMessage(
+      `Connection with '${result.connectionId}' was successful!`)
+    connectionSetupPanel.dispose();
+  } else if (connectionSetupPanel?.webview) {
     const command = result.success ? 'connectionCheckSuccess' : 'connectionCheckFailure';
     connectionSetupPanel.webview.postMessage({ command, ...result });
   } else if (result.success) {
