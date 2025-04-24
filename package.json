@@ -1308,7 +1308,7 @@
     "deploy-universal": "node build-sonarlint/deploy.mjs",
     "package": "node build-sonarlint/package.mjs",
     "package-all": "node build-sonarlint/package-all.mjs",
-    "build-webviews": "cd views && npm install && npm run build"
+    "build-webviews": "cd views && yarn install && yarn build"
   },
   "dependencies": {
     "@openpgp/web-stream-tools": "^0.1.3",
