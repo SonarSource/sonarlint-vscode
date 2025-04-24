@@ -426,19 +426,9 @@ async function saveConnection(
   }
 
   if (isSQConnection) {
-    const foundConnection = await connectionSettingsService.loadSonarQubeConnection(connection.connectionId);
-    if (foundConnection) {
-      await connectionSettingsService.updateSonarQubeConnection(connection);
-    } else {
-      await connectionSettingsService.addSonarQubeConnection(connection);
-    }
+    await saveSonarQubeServerConnection(connection, connectionSettingsService);
   } else {
-    const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId);
-    if (foundConnection) {
-      await connectionSettingsService.updateSonarCloudConnection(connection);
-    } else {
-      await connectionSettingsService.addSonarCloudConnection(connection);
-    }
+    await saveSonarQubeCloudConnection(connection, connectionSettingsService);
   }
 
   if (connection.projectKey && connection.folderUri) {
@@ -449,6 +439,24 @@ async function saveConnection(
   }
 
   vscode.commands.executeCommand(Commands.FOCUS_ON_CONNECTION, isSQConnection ? '__sonarqube__' : '__sonarcloud__', connection.connectionId);
+}
+
+async function saveSonarQubeServerConnection(connection: SonarQubeConnection, connectionSettingsService: ConnectionSettingsService) {
+  const foundConnection = await connectionSettingsService.loadSonarQubeConnection(connection.connectionId);
+  if (foundConnection) {
+    await connectionSettingsService.updateSonarQubeConnection(connection);
+  } else {
+    await connectionSettingsService.addSonarQubeConnection(connection);
+  }
+}
+
+async function saveSonarQubeCloudConnection(connection: SonarCloudConnection, connectionSettingsService: ConnectionSettingsService) {
+  const foundConnection = await connectionSettingsService.loadSonarCloudConnection(connection.connectionId);
+  if (foundConnection) {
+    await connectionSettingsService.updateSonarCloudConnection(connection);
+  } else {
+    await connectionSettingsService.addSonarCloudConnection(connection);
+  }
 }
 
 function cleanServerUrl(serverUrl: string) {
