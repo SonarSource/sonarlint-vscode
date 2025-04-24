@@ -758,5 +758,6 @@ export function deactivate(): Thenable<void> {
   if (!languageClient) {
     return undefined;
   }
+  ContextManager.instance.resetAllContexts();
   return languageClient.stop();
 }

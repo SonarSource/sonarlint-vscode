@@ -16,6 +16,7 @@ import { isValidRange, LocationTreeItem, SecondaryLocationsTree } from '../locat
 import * as protocol from '../lsp/protocol';
 import { DateTime } from 'luxon';
 import { adaptFlows, createDiagnosticFromIssue } from '../util/issue';
+import { ContextManager } from '../contextManager';
 
 export class IssueService {
   private static _instance: IssueService;
@@ -139,6 +140,8 @@ export class IssueService {
   }
 
   static async showAllLocations(issue: protocol.Issue) {
+    // make sure the view is visible
+    ContextManager.instance.setIssueLocationsContext();
     await IssueService._instance.secondaryLocationsTree.showAllLocations(issue);
     if (issue.creationDate) {
       const createdAgo = issue.creationDate

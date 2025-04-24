@@ -570,7 +570,8 @@
       "explorer": [
         {
           "id": "SonarLint.IssueLocations",
-          "name": "SonarQube Issue Locations"
+          "name": "SonarQube Issue Locations",
+          "when": "sonarqube.hasExploredIssueLocations"
         }
       ],
       "SonarLint": [
