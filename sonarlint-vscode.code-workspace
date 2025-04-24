@@ -8,6 +8,9 @@
 	},
 	{
 		"path": "dogfood"
+	},
+	{
+		"path": "views"
 	}
 ],
   "settings": {

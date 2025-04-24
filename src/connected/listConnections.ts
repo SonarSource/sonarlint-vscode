@@ -12,7 +12,7 @@ import { ResourceResolver } from '../util/webview';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 
-let listConnectionsPanel;
+let listConnectionsPanel: vscode.WebviewPanel;
 
 export function listConnections(context: vscode.ExtensionContext) {
     lazyCreateListConnectionsPanel(context);
@@ -23,9 +23,6 @@ export function listConnections(context: vscode.ExtensionContext) {
     };
     listConnectionsPanel.reveal();
     listConnectionsPanel.webview.onDidReceiveMessage(handleMessage);
-
-    setSonarCloudConnections();
-    setSonarQubeConnections();
 }
 
 export function setSonarQubeConnections() {
@@ -60,6 +57,10 @@ export function setSonarCloudConnections() {
 
 function handleMessage(message) {
     switch (message.command) {
+        case 'ready':
+            setSonarCloudConnections();
+            setSonarQubeConnections();
+            break;
         case 'showNotification':
             vscode.window.showInformationMessage(`Demo notification from SonarQube List Connections View says: '${message.displayMessage}'!`);
             break;
@@ -85,16 +86,18 @@ function lazyCreateListConnectionsPanel(context: vscode.ExtensionContext) {
     );
 }
 
-function generateHTML(context, webview) {
+function generateHTML(context: vscode.ExtensionContext, webview: vscode.Webview) {
   const resolver = new ResourceResolver(context, webview);
   const webviewMainUri = resolver.resolve('views', 'dist', 'connectionsList.js');
+  const webviewMainCssUri = resolver.resolve('views', 'dist', 'connectionsListIndex.css');
   return `<!doctype html><html lang="en">
     <head>
       <title>List of Connections</title>
       <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
       <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource}"/>
+        content="default-src 'none'; style-src 'unsafe-inline' ${webview.cspSource}; script-src ${webview.cspSource}"/>
       <script type="module" src="${webviewMainUri}"></script>
+      <link rel="stylesheet" href="${webviewMainCssUri}" />
     </head>
     <body>
         <div id="root"></div>

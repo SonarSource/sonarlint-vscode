@@ -1,26 +1,29 @@
 {
   "name": "sonarqube-vscode-webviews",
   "version": "0.1.0",
-  "description": "",
+  "description": "SonarQube for IDE: Views",
+  "license": "SEE LICENSE IN ../LICENSE.txt",
+  "packageManager": "yarn@4.9.1",
   "scripts": {
-    "start": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "typewatch": "tsc --noEmit --watch"
+    "typecheck": "tsc --noEmit"
   },
-  "license": "MIT",
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@sonarsource/echoes-react": "0.17.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-intl": "7.1.11",
+    "react-router-dom": "^6.18.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.7",
     "@types/react-dom": "^18.2.4",
+    "@types/vscode-webview": "^1.57.5",
     "babel-preset-nano-react-app": "^0.1.0",
     "typescript": "^5.0.4",
     "vite": "^4.3.8",
-    "vite-tsconfig-paths": "^4.2.0",
-    "@types/vscode-webview": "^1.57.5"
+    "vite-tsconfig-paths": "^4.2.0"
   }
 }

@@ -15,7 +15,7 @@ export default defineConfig({
                 dir: 'dist',
                 entryFileNames: '[name].js',
                 chunkFileNames: '[name]-[hash].js',
-                assetFileNames: '[name]-[hash][extname]'
+                assetFileNames: '[name][extname]'
             }
         }
     }
