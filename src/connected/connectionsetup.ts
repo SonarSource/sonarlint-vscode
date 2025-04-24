@@ -127,8 +127,7 @@ export async function reportConnectionCheckResult(result: ConnectionCheckResult)
       `Connection with '${result.connectionId}' was successful!`)
     connectionSetupPanel.dispose();
   } else if (connectionSetupPanel?.webview) {
-    const command = result.success ? 'connectionCheckSuccess' : 'connectionCheckFailure';
-    connectionSetupPanel.webview.postMessage({ command, ...result });
+    connectionSetupPanel.webview.postMessage({ command: 'connectionCheckFailure', ...result });
   } else if (result.success) {
     vscode.window.showInformationMessage(`Connection with '${result.connectionId}' was successful!`);
   } else {
