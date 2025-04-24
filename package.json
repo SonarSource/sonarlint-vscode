@@ -607,7 +607,7 @@
       },
       {
         "view": "SonarLint.SecurityHotspots",
-        "contents": "Please ensure a connection to [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) 9.9+ or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22) is set up. Detected Security Hotspots will be displayed here. [Learn More](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
+        "contents": "Security Hotspots detected in open files will be displayed here. [Learn More](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
       }
     ],
     "walkthroughs": [
