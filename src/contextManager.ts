@@ -12,6 +12,7 @@ import { allFalse, allTrue } from './rules/rules';
 
 const ONLY_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.onlyConnectedMode';
 const ONLY_STANDALONE_MODE_CONTEXT_KEY = 'sonarqube.onlyStandaloneMode';
+const HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY = 'sonarqube.hasExploredIssueLocations';
 
 export class ContextManager {
   private static _instance: ContextManager;
@@ -39,6 +40,16 @@ export class ContextManager {
       vscode.commands.executeCommand('setContext', ONLY_CONNECTED_MODE_CONTEXT_KEY, true);
       vscode.commands.executeCommand('setContext', ONLY_STANDALONE_MODE_CONTEXT_KEY, true);
     }
+  }
+
+  setIssueLocationsContext() {
+    vscode.commands.executeCommand('setContext', HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY, true);
+  }
+
+  resetAllContexts() {
+    vscode.commands.executeCommand('setContext', ONLY_CONNECTED_MODE_CONTEXT_KEY, undefined);
+    vscode.commands.executeCommand('setContext', ONLY_STANDALONE_MODE_CONTEXT_KEY, undefined);
+    vscode.commands.executeCommand('setContext', HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY, undefined);
   }
 
 }
