@@ -1,5 +1,12 @@
-import * as React from "react";
-import { Button } from "@sonarsource/echoes-react";
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2025 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+import * as React from 'react';
+import { Button } from '@sonarsource/echoes-react';
+import { WebviewApi } from 'vscode-webview';
 
 interface ConnectionCheckResult {
   connectionId: string;
@@ -19,12 +26,18 @@ interface CloudConnection {
   connectionCheckResult?: ConnectionCheckResult;
 }
 
-export default ({ vscode }) => {
+interface Props {
+  vscode: WebviewApi<any>
+}
+
+export default ({ vscode }: Props) => {
   const [serverConnections, setServerConnections] = React.useState<ServerConnection[]>([]);
   const [cloudConnections, setCloudConnections] = React.useState<CloudConnection[]>([]);
   React.useEffect(() => {
     window.addEventListener('message', (event) => {
-      console.log(JSON.stringify(event));
+      if (event.origin !== window.origin) {
+        return;
+      }
       const message = event.data;
       if (message.command === 'setServerConnections') {
         setServerConnections(message.connections);
