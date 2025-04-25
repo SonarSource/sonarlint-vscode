@@ -20,6 +20,7 @@ env:
   ARTIFACTORY_PRIVATE_READER_PASSWORD: $ARTIFACTORY_PRIVATE_PASSWORD
   GPG_SIGNING_KEY: VAULT[development/kv/data/sign data.key]
   GPG_SIGNING_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
+  PATH: ${HOME}/bin:${PATH}
 
 auto_cancellation: $CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH
 
@@ -101,12 +102,10 @@ universal_vsix_task:
     cpu: 2
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
-  env:
-    PATH: ${CIRRUS_WORKING_DIR}/bin:${PATH}
   deploy_script:
     - source cirrus-env QA # Retrieve build number
     - pushd views
-    - mkdir ${CIRRUS_WORKING_DIR}/bin && corepack enable --install-directory ${CIRRUS_WORKING_DIR}/bin
+    - corepack enable --install-directory ${HOME}/bin
     - popd
     - npm run deploy-universal
   on_failure:
