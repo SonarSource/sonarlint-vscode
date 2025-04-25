@@ -918,7 +918,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.9.3",
     "@types/vscode": "^1.73.1",
-    "@vscode/test-electron": "^2.4.1",
+    "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "2.21.1",
     "chai": "^4.3.10",
     "crypto": "^0.0.3",
