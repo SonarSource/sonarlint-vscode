@@ -95,7 +95,7 @@ function generateHTML(context: vscode.ExtensionContext, webview: vscode.Webview)
       <title>List of Connections</title>
       <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
       <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; style-src 'unsafe-inline' ${webview.cspSource}; script-src ${webview.cspSource}"/>
+        content="default-src 'none'; style-src 'unsafe-inline' ${webview.cspSource}; script-src ${webview.cspSource}; font-src data:"/>
       <script type="module" src="${webviewMainUri}"></script>
       <link rel="stylesheet" href="${webviewMainCssUri}" />
     </head>

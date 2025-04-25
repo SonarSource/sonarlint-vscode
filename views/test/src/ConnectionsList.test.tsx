@@ -56,7 +56,7 @@ describe('ConnectionsList', () => {
       }
     }));
 
-    const serverUrlSpans = await screen.findAllByText(/my-sq-server/);
+    const serverUrlSpans = await screen.findAllByText("Open Dashboard");
     expect(serverUrlSpans).toHaveLength(2);
   });
 
