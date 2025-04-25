@@ -865,10 +865,6 @@
     }
   },
   "main": "./dist/extension",
-  "files": [
-    "server/sonarlint-ls.jar",
-    "analyzers"
-  ],
   "scripts": {
     "vscode:prepublish": "node build-sonarlint/prepare.mjs && webpack --mode production",
     "compile": "tsc -p ./",
