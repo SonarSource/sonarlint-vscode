@@ -173,6 +173,11 @@ test_linux_task:
     - npm run compile
     - npm run prepare
     - npm run test-cov
+    - pushd views
+    - corepack enable --install-directory ${HOME}/bin
+    - yarn
+    - yarn test --coverage
+    - popd
     - .cirrus/cirrus_sonar_analysis_npm
   always:
     unit_tests_artifacts:
