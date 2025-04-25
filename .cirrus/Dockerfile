@@ -27,3 +27,4 @@ RUN apt-get update \
 COPY --chmod=755 .cirrus/xvfb /etc/init.d/
 
 USER sonarsource
+RUN mkdir ${HOME}/bin
