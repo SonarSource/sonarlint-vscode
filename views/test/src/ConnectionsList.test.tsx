@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { describe, expect, jest, test } from '@jest/globals';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { WebviewApi } from 'vscode-webview';
 import { EchoesProvider } from '@sonarsource/echoes-react';
@@ -35,6 +35,8 @@ describe('ConnectionsList', () => {
       </EchoesProvider>);
     const title = screen.findByText('Welcome to the List of SonarQube Connections View!');
     expect(title).toBeDefined();
+
+    expect(mockVscode.postMessage).toHaveBeenCalledWith({ command: 'ready' });
   });
 
   test('renders correctly with Server connections', async () => {
@@ -56,5 +58,20 @@ describe('ConnectionsList', () => {
 
     const serverUrlSpans = await screen.findAllByText(/my-sq-server/);
     expect(serverUrlSpans).toHaveLength(2);
+  });
+
+  test('renders and sends back message', async () => {
+    render(
+      <EchoesProvider>
+        <ConnectionsList vscode={mockVscode} />
+      </EchoesProvider>);
+
+    const button = screen.getByText('Show Demo Notification').closest('button');
+    fireEvent(button, new MouseEvent('click'));
+
+    waitFor(() => expect(mockVscode.postMessage).toHaveBeenCalledWith(
+      { command: 'ready' },
+      { command: 'showNotification', displayMessage: 'This came from WebView' },
+    ));
   });
 });
