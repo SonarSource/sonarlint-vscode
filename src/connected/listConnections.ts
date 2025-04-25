@@ -34,7 +34,7 @@ export function setSonarQubeConnections() {
     };
   });
 
-  listConnectionsPanel.webview.postMessage({
+  listConnectionsPanel?.webview.postMessage({
     command: 'setServerConnections',
     connections: serverConnections
   });
@@ -49,7 +49,7 @@ export function setSonarCloudConnections() {
     };
   });
 
-  listConnectionsPanel.webview.postMessage({
+  listConnectionsPanel?.webview.postMessage({
     command: 'setCloudConnections',
     connections: cloudConnections
   });
