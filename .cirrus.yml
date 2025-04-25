@@ -101,8 +101,13 @@ universal_vsix_task:
     cpu: 2
     memory: 2G
   <<: *NODE_MODULES_CACHE_TEMPLATE
+  env:
+    PATH: ${CIRRUS_WORKING_DIR}/bin:${PATH}
   deploy_script:
     - source cirrus-env QA # Retrieve build number
+    - pushd views
+    - mkdir ${CIRRUS_WORKING_DIR}/bin && corepack enable --install-directory ${CIRRUS_WORKING_DIR}/bin
+    - popd
     - npm run deploy-universal
   on_failure:
     slack_notification_script: |
