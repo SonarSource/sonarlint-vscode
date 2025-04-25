@@ -2,8 +2,21 @@
 
 This folder contains the source for the Web views of SonarQube for IDE based on [nano-react-app](https://github.com/nano-react-app/nano-react-app).
 
-- `npm run build` — This will output a production build in the `dist` directory.
-- `npm run typecheck` — This will run `tsc --noEmit` which basically just typechecks your project.
+## Building
+
+The first time this repository is cloned, the following command needs to be run from inside the `views` directory:
+
+```shell
+corepack enable
+```
+
+This will install the `corepack`-provided version of `yarn` specifiedd as `packageManager` in `package.json`.
+
+Once `yarn` is available the following command will output a production build in the `dist` directory: 
+
+```shell
+yarn build
+``` 
 
 ## Adding styles
 
