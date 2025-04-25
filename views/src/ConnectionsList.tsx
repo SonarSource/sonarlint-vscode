@@ -47,7 +47,7 @@ export default ({ vscode }: Props) => {
     });
     vscode.postMessage({ command: 'ready' });
     return () => { /* NOP */ };
-  });
+  }, [ /* run useEffect only at first render */ ]);
 
   return (<>
     <h1>Welcome to the List of SonarQube Connections View!</h1>
