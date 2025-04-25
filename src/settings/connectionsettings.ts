@@ -12,6 +12,7 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { logToSonarLintOutput } from '../util/logging';
 import { ConnectionCheckResult } from '../lsp/protocol';
 import { sanitizeSonarCloudRegionSetting } from '../util/util';
+import { setSonarCloudConnections, setSonarQubeConnections } from '../connected/listConnections';
 
 const SONARLINT_CATEGORY = 'sonarlint';
 const CONNECTIONS_SECTION = 'connectedMode.connections';
@@ -151,6 +152,8 @@ export class ConnectionSettingsService {
       .getConfiguration()
       .update(SONARQUBE_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
 
+    setSonarQubeConnections();
+
     return newConnection.connectionId;
   }
 
@@ -206,6 +209,8 @@ export class ConnectionSettingsService {
     VSCode.workspace
       .getConfiguration()
       .update(SONARCLOUD_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
+
+    setSonarCloudConnections();  
 
     return newConnection.connectionId;  
   }

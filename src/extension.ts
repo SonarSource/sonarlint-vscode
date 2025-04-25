@@ -74,6 +74,7 @@ import { maybeShowWiderLanguageSupportNotification } from './promotions/promotio
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
 import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
+import { listConnections } from './connected/listConnections';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -574,6 +575,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
       }
     })
   );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand('SonarLint.ListConnections', () => listConnections(context))
+  )
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER, async folder => {
