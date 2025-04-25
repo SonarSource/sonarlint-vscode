@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { describe, expect, jest, test } from '@jest/globals';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { WebviewApi } from 'vscode-webview';
 import { EchoesProvider } from '@sonarsource/echoes-react';
@@ -19,7 +19,15 @@ const mockVscode = {
   setState: jest.fn(),
 } as WebviewApi<any>;
 
+const testOrigin = 'vscode-webview://test';
+
 describe('ConnectionsList', () => {
+
+  beforeEach(() => {
+    delete window.origin;
+    window.origin = testOrigin;
+  });
+
   test('renders correctly', () => {
     render(
       <EchoesProvider>
@@ -27,5 +35,26 @@ describe('ConnectionsList', () => {
       </EchoesProvider>);
     const title = screen.findByText('Welcome to the List of SonarQube Connections View!');
     expect(title).toBeDefined();
+  });
+
+  test('renders correctly with Server connections', async () => {
+    render(
+      <EchoesProvider>
+        <ConnectionsList vscode={mockVscode} />
+      </EchoesProvider>);
+
+    fireEvent(window, new MessageEvent('message', {
+      origin: testOrigin,
+      data: {
+        command: 'setServerConnections',
+        connections: [
+          { serverUrl: 'https://my-sq-server1.example', connectionId: 'My SQ Server 1' },
+          { serverUrl: 'https://my-sq-server2.example', connectionId: 'My SQ Server 2' },
+        ]
+      }
+    }));
+
+    const serverUrlSpans = await screen.findAllByText(/my-sq-server/);
+    expect(serverUrlSpans).toHaveLength(2);
   });
 });
