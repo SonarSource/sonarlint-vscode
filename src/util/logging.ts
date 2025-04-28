@@ -12,7 +12,7 @@ import { isVerboseEnabled } from '../settings/settings';
 let sonarlintOutput: VSCode.OutputChannel;
 
 export function initLogOutput(context: VSCode.ExtensionContext) {
-  sonarlintOutput = VSCode.window.createOutputChannel('SonarQube for IDE');
+  sonarlintOutput = VSCode.window.createOutputChannel('SonarQube for IDE', { log: true });
   context.subscriptions.push(sonarlintOutput);
 }
 
