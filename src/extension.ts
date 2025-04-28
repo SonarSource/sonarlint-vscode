@@ -101,8 +101,6 @@ let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
-ContextManager.init();
-
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   try {
     const requirements = await resolveRequirements(context);
