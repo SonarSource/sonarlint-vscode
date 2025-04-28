@@ -21,13 +21,13 @@ suite('Extension Test Suite', () => {
     await vscode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT);
   });
 
-  test('should report issue on single js file', async function() {
-    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', 'main.js'));
+  test('should report issue on single Python file', async function() {
+    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-py', 'main.py'));
     await checkSonarLintDiagnostics(fileUri);
   }).timeout(60 * 1000);
 
-  test('should report issue on js file with URI-encoded characters', async function() {
-    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-js', '# {}', 'main.js'));
+  test('should report issue on Python file with URI-encoded characters', async function() {
+    const fileUri = vscode.Uri.file(path.join(__dirname, sampleFolderLocation, 'sample-py', '# {}', 'main.py'));
     await checkSonarLintDiagnostics(fileUri)
   }).timeout(60 * 1000);
 
@@ -68,9 +68,8 @@ suite('Extension Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
-    assert.strictEqual(diags.length, 2);
-    assert.strictEqual(diags[0].message, 'Remove the declaration of the unused \'i\' variable.');
-    assert.strictEqual(diags[1].message, 'Unexpected var, use let or const instead.');
+    assert.strictEqual(diags.length, 1);
+    assert.strictEqual(diags[0].message, 'Remove or refactor this statement; it has no side effects.');
   }
 
   async function waitForSonarLintDiagnostics(fileUri) {

@@ -72,7 +72,7 @@ suite('util', () => {
 
     const files = await findFilesInFolder(folderUri, cancelToken);
 
-    expect(files.length).to.equal(9);
+    expect(files.length).to.equal(11);
   });
 
   test('should create analysis files from file uris', async () => {
@@ -89,8 +89,8 @@ suite('util', () => {
     }];
     const analysisFiles = await createAnalysisFilesFromFileUris(fileUris, openDocuments, progress, cancelToken);
 
-    expect(fileUris.length).to.equal(9);
-    expect(analysisFiles.length).to.equal(8);
+    expect(fileUris.length).to.equal(11);
+    expect(analysisFiles.length).to.equal(10);
     let inlineAnalysisResult = analysisFiles[0].text.replace(/(\r\n|\n|\r)/gm, '');
     expect(inlineAnalysisResult).to.equal('{    "sonarlint.testFilePattern": "**/test/samples/**/test/**",' +
       '    "telemetry.enableTelemetry": false}');
