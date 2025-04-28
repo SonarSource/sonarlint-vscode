@@ -17,11 +17,10 @@ const HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY = 'sonarqube.hasExploredIssueLoca
 export class ContextManager {
   private static _instance: ContextManager;
 
-  static init(): void {
-    ContextManager._instance = new ContextManager();
-  }
-
   static get instance(): ContextManager {
+    if (!ContextManager._instance) {
+      ContextManager._instance = new ContextManager();
+    }
     return ContextManager._instance;
   }
 
