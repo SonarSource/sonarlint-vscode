@@ -24,7 +24,7 @@ export function isVerboseEnabled(): boolean {
 
 export function enableVerboseLogs() {
   getCurrentConfiguration()?.update(VERBOSE_LOGS, true, vscode.ConfigurationTarget.Global);
-  vscode.window.showInformationMessage('Verbose logging enabled.');
+  vscode.window.showInformationMessage('SonarQube for IDE: Verbose logging enabled.');
 }
 
 export function loadInitialSettings() {

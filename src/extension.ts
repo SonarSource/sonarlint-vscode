@@ -481,6 +481,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_SONARLINT_OUTPUT, () => showLogOutput()));
 
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.ENABLE_LOGS_AND_SHOW_OUTPUT, () => {
+    enableVerboseLogs();
+    showLogOutput();
+  }));
+
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
   context.subscriptions.push(

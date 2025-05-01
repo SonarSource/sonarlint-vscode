@@ -550,6 +550,11 @@
         "category": "SonarQube"
       },
       {
+        "command": "SonarLint.EnableLogsAndShowOutput",
+        "title": "Enable Verbose Logging and Show Output",
+        "category": "SonarQube"
+      },
+      {
         "command": "SonarLint.ShareConnectedModeConfiguration",
         "title": "Share Connected Mode Configuration",
         "category": "SonarQube",

@@ -13,10 +13,10 @@ suite('Help and Feedback tree view test suite', () => {
     const underTest = new HelpAndFeedbackTreeDataProvider();
     const children = underTest.getChildren();
     expect(children.map(c => [ c.label, c.command.command ])).to.deep.equal([
-      [ 'Get Started', 'workbench.action.openWalkthrough' ],
       [ 'Read Documentation', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ],
       [ 'Get Help | Report Issue', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ],
-      [ 'Suggest a Feature', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ]
+      [ 'Suggest a Feature', Commands.TRIGGER_HELP_AND_FEEDBACK_LINK ],
+      [ 'See Extension Logs', Commands.ENABLE_LOGS_AND_SHOW_OUTPUT ]
     ]);
   });
 });
