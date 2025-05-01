@@ -576,6 +576,12 @@
       ],
       "SonarLint": [
         {
+          "type": "webview",
+          "id": "SonarQube.GetStarted",
+          "name": "Get Started",
+          "when": "sonarqube.noConnectionConfigured"
+        },
+        {
           "id": "SonarLint.ConnectedMode",
           "name": "Connected Mode"
         },
@@ -613,7 +619,7 @@
     ],
     "walkthroughs": [
       {
-        "id": "SonarQube.walkthrough",
+        "id": "SonarLint.walkthrough",
         "title": "Welcome to SonarQube for IDE!",
         "description": "Start left and discover issues early.\nSonarQube for IDE empowers you to find & fix code issues in real time, in 15+ languages.",
         "steps": [
@@ -886,6 +892,7 @@
   "dependencies": {
     "@openpgp/web-stream-tools": "^0.1.3",
     "@sentry/node": "^8.44.0",
+    "@vscode/codicons": "^0.0.36",
     "@vscode/webview-ui-toolkit": "1.0.0",
     "@xmldom/xmldom": "^0.9.6",
     "compare-versions": "4.1.3",

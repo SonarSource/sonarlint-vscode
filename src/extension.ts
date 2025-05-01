@@ -75,6 +75,7 @@ import { SharedConnectedModeSettingsService } from './connected/sharedConnectedM
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
 import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
 import { ContextManager } from './contextManager';
+import { GetStartedViewProvider } from './views/getStartedViewProvider';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -334,6 +335,8 @@ export async function activate(context: VSCode.ExtensionContext) {
   registerCommands(context);
 
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
+
+  context.subscriptions.push(VSCode.window.registerWebviewViewProvider(GetStartedViewProvider.viewId, new GetStartedViewProvider(context.extensionUri)));
 
   allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
     treeDataProvider: allConnectionsTreeDataProvider
