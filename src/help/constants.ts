@@ -1,5 +1,6 @@
 import { SonarLintDocumentation } from '../commons';
 import { Command } from 'vscode';
+import { Commands } from '../util/commands';
 
 export interface HelpAndFeedbackItem {
   id: string;
@@ -11,17 +12,6 @@ export interface HelpAndFeedbackItem {
 }
 
 export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
-  {
-    id: 'sonarLintWalkthrough',
-    label: 'Get Started',
-    icon: 'heart',
-    viewItem: true,
-    command: {
-      command: 'workbench.action.openWalkthrough',
-      title: 'Welcome to SonarQube for VS Code!',
-      arguments: ['SonarSource.sonarlint-vscode#SonarLint.walkthrough', false]
-    }
-  },
   {
     id: 'docs',
     label: 'Read Documentation',
@@ -42,6 +32,16 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     url: 'https://www.sonarsource.com/products/sonarlint/roadmap/',
     icon: 'extensions',
     viewItem: true
+  },
+  {
+    id: 'checkLogs',
+    label: 'See Extension Logs',
+    icon: 'output',
+    viewItem: true,
+    command: {
+      command: Commands.ENABLE_LOGS_AND_SHOW_OUTPUT,
+      title: 'Show SonarQube Output'
+    }
   },
   {
     id: 'sonarCloudProductPage',
