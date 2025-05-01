@@ -604,7 +604,7 @@
       },
       {
         "view": "SonarLint.ConnectedMode",
-        "contents": "[Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) links SonarQube for VS Code to SonarQube (Server, Cloud) to apply the same Clean Code standards as your team.\n\n[Add SonarQube Server Connection](command:SonarLint.ConnectToSonarQube)\n[Add SonarQube Cloud Connection](command:SonarLint.ConnectToSonarCloud)\n\nAnalyze more languages, detect more issues on the whole project, receive notifications about the quality gate status, and more.\n\nQuality Profiles and file exclusion settings defined on the server are shared between all connected users.\n\nDiscover which option is the best for your team [here](command:SonarLint.HelpAndFeedbackLinkClicked?%22compareServerProducts%22)."
+        "contents": "[Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) links SonarQube for IDE to SonarQube Server or SonarQube Cloud projects. \n\n[Connect to SonarQube Server](command:SonarLint.ConnectToSonarQube)\n[Connect to SonarQube Cloud](command:SonarLint.ConnectToSonarCloud)\n\nAnalyze more languages, detect more issues on the whole project, receive notifications about the quality gate status, and more."
       },
       {
         "view": "SonarLint.SecurityHotspots",
