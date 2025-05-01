@@ -613,38 +613,41 @@
     ],
     "walkthroughs": [
       {
-        "id": "SonarLint.walkthrough",
-        "title": "Welcome to SonarQube for VS Code!",
-        "description": "Your Clean Code journey starts here.",
+        "id": "SonarQube.walkthrough",
+        "title": "Welcome to SonarQube for IDE!",
+        "description": "Start left and discover issues early.\nSonarQube for IDE empowers you to find & fix code issues in real time, in 15+ languages.",
         "steps": [
           {
-            "id": "SonarLint.inAction",
-            "title": "$(rocket) New to SonarQube for VS Code? See it in action",
-            "description": "SonarQube for VS Code supports analysis of 15+ languages including JS/TS, Java, Python, CSS/HTML, C, C++, C#, and [more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/rules). SonarQube for VS Code detects issues in all files **open** in the editor. For project-level analysis, check out [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n\nThe best way to get started is to see it in action!\n[Open Sample File](command:SonarLint.OpenSample)",
+            "id": "SonarQube.getStarted",
+            "title": "$(rocket) New to SonarQube?",
+            "description": "Unlock more languages and security rules.\n[Create Free Account](https://www.sonarsource.com/products/sonarcloud/signup-free/)",
             "media": {
-              "markdown": "walkthrough/empty.md"
+              "image": "walkthrough/abstractServerProduct.png",
+              "altText": "SonarQube Cloud illustration"
             },
             "completionEvents": [
-              "onView:workbench.panel.markers.view"
+              "onLink:https://www.sonarsource.com/products/sonarcloud/signup-free/"
             ]
           },
           {
-            "id": "SonarLint.learnMoreAboutIssues",
-            "title": "$(book) Learn more about issues",
-            "description": "Check the [Problems view](command:workbench.panel.markers.view.focus): SonarQube for VS Code has found something $(warning).\nRight-click on the issue found by SonarQube for VS Code.\nOpen the rule description: SonarQube for VS Code clearly explains why this is an issue.\nFor certain rules and issues, SonarQube for VS Code will suggest available Quick Fixes.",
+            "id": "SonarLint.resolveIssues",
+            "title": "$(bug) Resolve issues, fast",
+            "description": "Open our sample file and get started instantly:\n[Open Sample File](command:SonarLint.OpenSample)\nCheck the [Problems view](command:workbench.panel.markers.view.focus): SonarQube has found something $(warning).\nRight-click on the issue.\nShow issue details: SonarQube explains why this is an issue.\nFor certain rules and issues, SonarQube for IDE will suggest available Quick Fixes.",
             "media": {
-              "markdown": "walkthrough/empty.md"
+              "image": "walkthrough/issueDetected.png",
+              "altText": "SonarQube for IDE Rule Description"
             },
             "completionEvents": [
-              "onCommand:SonarLint.OpenStandaloneRuleDesc"
+              "onCommand:SonarLint.ShowIssueDetailsCodeAction"
             ]
           },
           {
             "id": "SonarLint.connectedModeIntro",
-            "title": "$(link) Connect with your team",
-            "description": "Apply the same Clean Code standards as your team by using SonarQube for VS Code in Connected Mode with [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarCloudProductPage%22).\n**Already using SonarQube Server or SonarQube Cloud?** Set up connection in the CONNECTED MODE view.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)",
+            "title": "$(shield) Taint Vulnerabilities and More",
+            "description": "Enable advanced analysis (including [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) and wider language support) by connecting to SonarQube (Server, Cloud). Also, benefit from the [AI CodeFix](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/ai-capabilities/) within your IDE.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)\n",
             "media": {
-              "markdown": "walkthrough/empty.md"
+              "image": "walkthrough/taintVulnerabilities.png",
+              "altText": "SonarQube for IDE Taint Vulnerabilities"
             },
             "completionEvents": [
               "onView:SonarLint.ConnectedMode"
@@ -653,9 +656,10 @@
           {
             "id": "SonarLint.reachOut",
             "title": "$(comment-discussion) Share feedback or ask for help",
-            "description": "You suspect your code has issues but don't see any problems detected by SonarQube for VS Code? [Enable verbose logging](command:SonarLint.EnableVerboseLogs) and check the output in the SonarQube for IDE Output window\n[Check Output](command:SonarLint.ShowSonarLintOutput)\n\nYou'd like to learn more about SonarQube for VS Code, or give us feedback? Check out the [Help and Feedback view](command:SonarLint.HelpAndFeedback.focus)\n\n",
+            "description": "You'd like to learn more about SonarQube for IDE, or give us feedback? Check out the [Help and Feedback view](command:SonarLint.HelpAndFeedback.focus).\n",
             "media": {
-              "markdown": "walkthrough/empty.md"
+              "image": "walkthrough/community.svg",
+              "altText": "Sonar Community"
             },
             "completionEvents": [
               "onView:SonarLint.HelpAndFeedback"
