@@ -124,6 +124,10 @@ export class ConnectionSettingsService {
     return this.secretStorage.delete(serverUrlOrOrganizationKey);
   }
 
+  hasConnectionConfigured(): boolean {
+    return this.getSonarQubeConnections().length > 0 || this.getSonarCloudConnections().length > 0;
+  }
+
   getSonarQubeConnections(): SonarQubeConnection[] {
     return VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
