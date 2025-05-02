@@ -7,6 +7,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import { Commands } from '../util/commands';
 
 export class GetStartedViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewId = 'SonarQube.GetStarted';
@@ -46,7 +47,7 @@ export class GetStartedViewProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.onDidReceiveMessage(data => {
 			if (data.command === 'getStartedLinkClicked') {
-                vscode.commands.executeCommand('workbench.action.openWalkthrough', 'SonarSource.sonarlint-vscode#SonarLint.walkthrough', false);
+                vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarLintWalkthrough');
 			}
 		});
     }

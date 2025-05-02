@@ -580,7 +580,8 @@ function registerCommands(context: VSCode.ExtensionContext) {
       const { command, url } = getHelpAndFeedbackItemById(itemId);
       languageClient.helpAndFeedbackLinkClicked(itemId);
       if (command) {
-        VSCode.commands.executeCommand(helpAndFeedbackItemOrId.command);
+        const args = command.arguments || [];
+        VSCode.commands.executeCommand(command.command, ...args);
       } else {
         VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(url));
       }

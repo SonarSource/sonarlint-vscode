@@ -72,5 +72,14 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     id: 'sonarQubeEditionsDownloads',
     url: 'https://www.sonarsource.com/products/sonarqube/downloads/',
     viewItem: false
-  }
+  },
+  {
+    id: 'sonarLintWalkthrough',
+    viewItem: false,
+    command: {
+      command: 'workbench.action.openWalkthrough',
+      title: 'Welcome to SonarQube for IDE!',
+      arguments: ['SonarSource.sonarlint-vscode#SonarLint.walkthrough', false]
+    }
+  },
 ];
