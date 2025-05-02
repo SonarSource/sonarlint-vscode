@@ -19,7 +19,7 @@ export class HelpAndFeedbackLink extends VSCode.TreeItem {
     const itemById = getHelpAndFeedbackItemById(id);
     super(itemById.label, VSCode.TreeItemCollapsibleState.None);
     this.iconPath = new VSCode.ThemeIcon(itemById.icon);
-    this.command = itemById.command ? itemById.command : {
+    this.command = {
       command: Commands.TRIGGER_HELP_AND_FEEDBACK_LINK,
       title: 'Trigger Help and Feedback Link',
       arguments: [itemById]

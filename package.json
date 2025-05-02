@@ -631,7 +631,7 @@
           {
             "id": "SonarQube.getStarted",
             "title": "$(rocket) New to SonarQube?",
-            "description": "Unlock more languages and security rules.\n[Create Free Account](https://www.sonarsource.com/products/sonarcloud/signup-free/)",
+            "description": "Unlock more languages and security rules.\n[Create Free Account](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarqubeCloudFreeSignUp%22)",
             "media": {
               "image": "walkthrough/abstractServerProduct.svg",
               "altText": "SonarQube Cloud illustration"
