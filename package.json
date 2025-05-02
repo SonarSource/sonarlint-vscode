@@ -633,23 +633,11 @@
             "title": "$(rocket) New to SonarQube?",
             "description": "Unlock more languages and security rules.\n[Create Free Account](https://www.sonarsource.com/products/sonarcloud/signup-free/)",
             "media": {
-              "image": "walkthrough/abstractServerProduct.png",
+              "image": "walkthrough/abstractServerProduct.svg",
               "altText": "SonarQube Cloud illustration"
             },
             "completionEvents": [
               "onLink:https://www.sonarsource.com/products/sonarcloud/signup-free/"
-            ]
-          },
-          {
-            "id": "SonarLint.resolveIssues",
-            "title": "$(bug) Resolve issues, fast",
-            "description": "Open our sample file and get started instantly:\n[Open Sample File](command:SonarLint.OpenSample)\nCheck the [Problems view](command:workbench.panel.markers.view.focus): SonarQube has found something $(warning).\nRight-click on the issue.\nShow issue details: SonarQube explains why this is an issue.\nFor certain rules and issues, SonarQube for IDE will suggest available Quick Fixes.",
-            "media": {
-              "image": "walkthrough/issueDetected.png",
-              "altText": "SonarQube for IDE Rule Description"
-            },
-            "completionEvents": [
-              "onCommand:SonarLint.ShowIssueDetailsCodeAction"
             ]
           },
           {
@@ -674,6 +662,18 @@
             },
             "completionEvents": [
               "onView:SonarLint.HelpAndFeedback"
+            ]
+          },
+          {
+            "id": "SonarLint.resolveIssues",
+            "title": "$(bug) Enough theory, let's fix some code!",
+            "description": "Open our sample file and get started instantly:\n[Open Sample File](command:SonarLint.OpenSample)\nCheck the [Problems view](command:workbench.panel.markers.view.focus): SonarQube has found something $(warning).\nRight-click on the issue.\nShow issue details: SonarQube explains why this is an issue.\nFor certain rules and issues, SonarQube for IDE will suggest available Quick Fixes.",
+            "media": {
+              "image": "walkthrough/issueDetected.png",
+              "altText": "SonarQube for IDE Rule Description"
+            },
+            "completionEvents": [
+              "onCommand:SonarLint.ShowIssueDetailsCodeAction"
             ]
           }
         ]
