@@ -581,10 +581,10 @@
       ],
       "SonarLint": [
         {
-          "type": "webview",
+          "type": "tree",
           "id": "SonarQube.GetStarted",
           "name": "Get Started",
-          "when": "sonarqube.noConnectionConfigured"
+          "when": "sonarqube.shouldShowGetStartedView"
         },
         {
           "id": "SonarLint.ConnectedMode",
@@ -620,6 +620,10 @@
       {
         "view": "SonarLint.SecurityHotspots",
         "contents": "Security Hotspots detected in open files will be displayed here. [Learn More](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
+      },
+      {
+        "view": "SonarQube.GetStarted",
+        "contents": "Automatically find and fix code quality and security issues as you write, using powerful linting tools built right into your code editor.\n\n[Get Started with SonarQube for IDE](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarLintWalkthrough%22) $(arrow-right)"
       }
     ],
     "walkthroughs": [
