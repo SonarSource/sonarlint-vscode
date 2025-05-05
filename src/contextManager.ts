@@ -10,11 +10,12 @@ import * as vscode from 'vscode';
 import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
+import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
 const SOME_STANDALONE_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseStandaloneMode';
 const HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY = 'sonarqube.hasExploredIssueLocations';
-const NO_CONNECTION_CONFIGURED = 'sonarqube.noConnectionConfigured';
+const SHOULD_SHOW_GET_STARTED_VIEW = 'sonarqube.shouldShowGetStartedView';
 
 export class ContextManager {
   private static _instance: ContextManager;
@@ -26,10 +27,8 @@ export class ContextManager {
     return ContextManager._instance;
   }
 
-  setConnectedModeContext() {
-    const hasConnectionConfigured = ConnectionSettingsService.instance.hasConnectionConfigured();
-    vscode.commands.executeCommand('setContext', NO_CONNECTION_CONFIGURED, !hasConnectionConfigured);
-
+  setConnectedModeContext(context: vscode.ExtensionContext) {
+    this.setGetStartedViewContext(context);
     const folderBindingStates = [...BindingService.instance.bindingStatePerFolder().values()];
     if (allTrue(folderBindingStates)) {
       // All folders are bound; Show hotspots view and hide rules view
@@ -50,11 +49,18 @@ export class ContextManager {
     vscode.commands.executeCommand('setContext', HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY, true);
   }
 
+  setGetStartedViewContext(context: vscode.ExtensionContext) {
+    const hasConnectionConfigured = ConnectionSettingsService.instance.hasConnectionConfigured();
+    const hasClickedGetStartedLink = context.globalState.get(HAS_CLICKED_GET_STARTED_LINK, false);
+    // only show the get started view if user has no connection AND has not clicked the link
+    vscode.commands.executeCommand('setContext', SHOULD_SHOW_GET_STARTED_VIEW, !hasConnectionConfigured && !hasClickedGetStartedLink);
+  }
+
   resetAllContexts() {
     vscode.commands.executeCommand('setContext', SOME_CONNECTED_MODE_CONTEXT_KEY, undefined);
     vscode.commands.executeCommand('setContext', SOME_STANDALONE_MODE_CONTEXT_KEY, undefined);
     vscode.commands.executeCommand('setContext', HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY, undefined);
-    vscode.commands.executeCommand('setContext', NO_CONNECTION_CONFIGURED, undefined);
+    vscode.commands.executeCommand('setContext', SHOULD_SHOW_GET_STARTED_VIEW, undefined);
   }
 
 }

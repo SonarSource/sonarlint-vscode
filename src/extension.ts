@@ -75,7 +75,7 @@ import { SharedConnectedModeSettingsService } from './connected/sharedConnectedM
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
 import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
 import { ContextManager } from './contextManager';
-import { GetStartedViewProvider } from './views/getStartedViewProvider';
+import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -241,7 +241,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     /* ignored */
   });
   FixSuggestionService.init(languageClient);
-  ContextManager.instance.setConnectedModeContext();
+  ContextManager.instance.setConnectedModeContext(context);
 
   installCustomRequestHandlers(context);
 
@@ -315,7 +315,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint.connectedMode')) {
       allConnectionsTreeDataProvider.refresh();
-      ContextManager.instance.setConnectedModeContext();
+      ContextManager.instance.setConnectedModeContext(context);
     }
     if (event.affectsConfiguration('sonarlint.focusOnNewCode')) {
       NewCodeDefinitionService.instance.updateFocusOnNewCodeState();
@@ -335,8 +335,6 @@ export async function activate(context: VSCode.ExtensionContext) {
   registerCommands(context);
 
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
-
-  context.subscriptions.push(VSCode.window.registerWebviewViewProvider(GetStartedViewProvider.viewId, new GetStartedViewProvider(context.extensionUri)));
 
   allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
     treeDataProvider: allConnectionsTreeDataProvider
@@ -582,6 +580,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
       if (command) {
         const args = command.arguments || [];
         VSCode.commands.executeCommand(command.command, ...args);
+        // if the link clicked was the get started one, we update the global flag to not show it again
+        if (itemId === 'sonarLintWalkthrough') {
+          context.globalState.update(HAS_CLICKED_GET_STARTED_LINK, true);
+          ContextManager.instance.setGetStartedViewContext(context);
+        }
       } else {
         VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(url));
       }

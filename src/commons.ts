@@ -8,3 +8,5 @@ export namespace SonarLintDocumentation {
   export const LANGUAGES_AND_RULES = BASE_DOCS_URL + "using-sonarlint/rules";
   export const CLEAN_CODE_CONCEPTS = BASE_DOCS_URL + "concepts/clean-code/introduction/";
 }
+
+export const HAS_CLICKED_GET_STARTED_LINK = 'sonarqube.hasClickedGetStartedLink';
