@@ -71,7 +71,7 @@ module.exports = (env, argv) => {
       project: 'sonarqube-vscode',
       authToken: process.env.SENTRY_UPLOAD_TOKEN,
       release: {
-        name: version
+        name: `${version}+${process.env.BUILD_NUMBER}`,
       }
     }));
   } else {

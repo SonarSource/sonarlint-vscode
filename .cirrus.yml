@@ -87,7 +87,7 @@ build_task:
   setup_script:
     - source cirrus-env BUILD # Generates a build number
     - echo $BUILD_NUMBER
-    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
   on_failure:
     slack_notification_script: |
@@ -273,7 +273,7 @@ promote_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   promote_script:
     - source cirrus-env PROMOTE
-    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
     - cirrus_jfrog_promote
     - github-notify-promotion
   on_failure:

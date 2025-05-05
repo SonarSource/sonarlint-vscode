@@ -55,7 +55,7 @@ export function deployVsix() {
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
   const packagePath = 'org/sonarsource/sonarlint/vscode';
-  const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}`;
+  const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}+${BUILD_NUMBER}`;
   info(`Artifactory target URL: ${artifactoryTargetUrl}`);
   globbySync(join('*{.vsix,-cyclonedx.json,.asc}')).map(fileName => {
     const [sha1, md5] = fileHashsum(fileName);
