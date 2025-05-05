@@ -230,9 +230,13 @@ qa_task:
   prepare_tests_script:
     - sleep 5 # ensure xvfb is up
     - source cirrus-env QA
-    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
-    - echo "Download staged vsix for ${PROJECT_VERSION}"
-    - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings ~/.m2/settings.xml -Denable-repo=qa -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:$PROJECT_VERSION:vsix -DoutputDirectory=$CIRRUS_WORKING_DIR
+    - export BASE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
+    - export VERSION_WITH_BUIILD_NUMBER=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - echo "Download staged vsix for ${VERSION_WITH_BUIILD_NUMBER}"
+    - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:copy -B --settings ~/.m2/settings.xml -Denable-repo=qa \
+     -Dartifact=org.sonarsource.sonarlint.vscode:sonarlint-vscode:${BASE_VERSION}:vsix \
+     -DoutputDirectory=$CIRRUS_WORKING_DIR \
+     -DartifactPath=org/sonarsource/sonarlint/vscode/sonarlint-vscode/${VERSION_WITH_BUIILD_NUMBER}/sonarlint-vscode-${BASE_VERSION}.vsix
     - cd its
     - npm ci
   start_screen_recording_background_script:
