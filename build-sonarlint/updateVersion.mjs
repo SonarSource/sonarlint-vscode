@@ -15,7 +15,7 @@ export default function updateVersion() {
   const packageJSON = getPackageJSON();
   const version = packageJSON.version;
   if (version.endsWith('-SNAPSHOT') && buildNumber) {
-    packageJSON.version = version.replace('-SNAPSHOT', `+${buildNumber}`);
+    packageJSON.version = version.replace('-SNAPSHOT', '');
     writeFileSync('./package.json', JSON.stringify(packageJSON));
   } else {
     info(`Not modifying version ${version} with build number ${buildNumber}`);
