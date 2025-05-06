@@ -65,9 +65,10 @@ async function getDogfoodInfo(context: vscode.ExtensionContext): Promise<Dogfood
   const pinVersion = vscode.workspace.getConfiguration(CONFIG_SECTION).get(PIN_VERSION_CONFIG_KEY) as string;
 
   if (pinVersion) {
+    const baseVersion = pinVersion.split('+')[0];
     return {
       version: pinVersion,
-      url: `${ARTIFACTORY_VSCODE_PATH}/${pinVersion}/sonarlint-vscode-${pinVersion}.vsix`,
+      url: `${ARTIFACTORY_VSCODE_PATH}/${pinVersion}/sonarlint-vscode-${baseVersion}.vsix`,
       pinned: true
     }
   } else {
