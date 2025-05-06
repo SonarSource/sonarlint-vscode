@@ -75,7 +75,7 @@ jobs:
             artifactName = f'sonarlint-vscode-{version}.vsix'
           else:
             artifactName = f'sonarlint-vscode-{platform}-{version}.vsix'
-          artifactUrl = f'{slvscodeBaseUrl}/{version}/{artifactName}'
+          artifactUrl = f'{slvscodeBaseUrl}/{tagName}/{artifactName}'
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:
             print(f'artifactUrl={artifactUrl}', file=githubOutput)
@@ -140,7 +140,7 @@ jobs:
           artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases'
           slvscodeBaseUrl = f'{artifactoryPublicRepo}/org/sonarsource/sonarlint/vscode/sonarlint-vscode'
           artifactName = f'sonarlint-vscode-{version}.vsix'
-          artifactUrl = f'{slvscodeBaseUrl}/{version}/{artifactName}'
+          artifactUrl = f'{slvscodeBaseUrl}/{tagName}/{artifactName}'
           
           with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:
             print(f'artifactUrl={artifactUrl}', file=githubOutput)
