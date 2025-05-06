@@ -8,7 +8,6 @@
   import { createVSIX } from '@vscode/vsce';
 import { clean, cleanOmnisharpDir } from './fsUtils.mjs';
 import { info } from 'fancy-log';
-import updateVersion from './updateVersion.mjs';
 import downloadJre from './jreDownload.mjs';
 import cycloneDx from './sbomGeneration.mjs';
 import { computeUniversalVsixHashes } from './hashes.mjs';
@@ -58,7 +57,6 @@ async function buildForPlatform(platform) {
 
 function commonPreBuildTasks() {
   clean();
-  updateVersion();
   cycloneDx();
 }
 

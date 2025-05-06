@@ -87,7 +87,7 @@ build_task:
   setup_script:
     - source cirrus-env BUILD # Generates a build number
     - echo $BUILD_NUMBER
-    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
+    - export PACKAGE_VERSION=$(npm pkg get version | tr -d \")
     - echo PACKAGE_VERSION=${PACKAGE_VERSION}
   on_failure:
     slack_notification_script: |
@@ -190,7 +190,7 @@ mend_scan_task:
     JDK_VERSION: "17"
   whitesource_script:
     - source cirrus-env QA # read build number
-    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
+    - export PROJECT_VERSION=$(npm pkg get version | tr -d \")
     - export WS_PROJECTNAME="${CIRRUS_REPO_FULL_NAME} ${PROJECT_VERSION}"
     - source ws_scan.sh
   allow_failures: "true"
@@ -230,8 +230,8 @@ qa_task:
   prepare_tests_script:
     - sleep 5 # ensure xvfb is up
     - source cirrus-env QA
-    - export BASE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
-    - export VERSION_WITH_BUILD_NUMBER=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+    - export BASE_VERSION=$(npm pkg get version | tr -d \")
+    - export VERSION_WITH_BUILD_NUMBER=$(npm pkg get version | tr -d \" | sed "s|$|+$BUILD_NUMBER|g")
     - echo "Download staged vsix for ${VERSION_WITH_BUILD_NUMBER}"
     - jfrog rt dl --user ${ARTIFACTORY_PRIVATE_USERNAME} --password ${ARTIFACTORY_PRIVATE_PASSWORD} --url "${ARTIFACTORY_URL}" --flat "sonarsource-public-qa/org/sonarsource/sonarlint/vscode/sonarlint-vscode/${VERSION_WITH_BUILD_NUMBER}/sonarlint-vscode-${BASE_VERSION}.vsix" "${CIRRUS_WORKING_DIR}/sonarlint-vscode-${BASE_VERSION}.vsix"
     - cd its
