@@ -95,6 +95,14 @@ jobs:
           VSCE_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).VISUALSTUDIO_PAT }}
         uses: ./.github/actions/vsce-publish
 
+      - name: Attach artifact to GitHub release
+        if: success()
+        id: attach_artifact
+        env:
+          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ github.ref_name }} "$ARTIFACT_FILE"
+
   deploy_to_openvsx:
     permissions:
       id-token: write
