@@ -274,7 +274,7 @@ promote_task:
   <<: *NODE_MODULES_CACHE_TEMPLATE
   promote_script:
     - source cirrus-env PROMOTE
-    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
+    - export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|$|+${BUILD_NUMBER}|g")
     - cirrus_jfrog_promote
     - github-notify-promotion
   on_failure:
