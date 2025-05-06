@@ -2,8 +2,9 @@
 set -euo pipefail
 
 source cirrus-env QA
-export PROJECT_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+export VERSION_WITH_BUILDNUMBER=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT|+$BUILD_NUMBER|g")
+export BASE_VERSION=$(npm pkg get version | tr -d \" | sed "s|-SNAPSHOT||g")
 
-envsubst '$ARTIFACTORY_URL,$PROJECT_VERSION' <.cirrus/dogfood-template.json > dogfood.json
+envsubst '$ARTIFACTORY_URL,$VERSION_WITH_BUILDNUMBER,$BASE_VERSION' <.cirrus/dogfood-template.json > dogfood.json
 jfrog rt u dogfood.json sonarsource-public-builds/org/sonarsource/sonarlint/vscode/sonarlint-vscode/ \
       --url "${ARTIFACTORY_URL}" --access-token "${ARTIFACTORY_API_KEY}" --build-name "$CIRRUS_REPO_NAME" --build-number "$BUILD_NUMBER"

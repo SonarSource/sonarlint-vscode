@@ -1,4 +1,4 @@
 {
-  "version": "${PROJECT_VERSION}",
-  "url": "${ARTIFACTORY_URL}/sonarsource/org/sonarsource/sonarlint/vscode/sonarlint-vscode/${PROJECT_VERSION}/sonarlint-vscode-${PROJECT_VERSION}.vsix"
+  "version": "${VERSION_WITH_BUILDNUMBER}",
+  "url": "${ARTIFACTORY_URL}/sonarsource/org/sonarsource/sonarlint/vscode/sonarlint-vscode/${VERSION_WITH_BUILDNUMBER}/sonarlint-vscode-${BASE_VERSION}.vsix"
 }
