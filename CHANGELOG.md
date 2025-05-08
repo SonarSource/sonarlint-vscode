@@ -4,6 +4,7 @@
 * Update Go analyzer 1.21.1 -> [1.22](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2017946%20ORDER%20BY%20created%20ASC) -> [1.22.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019265%20ORDER%20BY%20created%20ASC)
 * Update IaC analyzer 1.45 -> [1.46](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2018473%20ORDER%20BY%20created%20ASC)
 * Update Java analyzer 8.12 -> [8.13](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2018374%20ORDER%20BY%20created%20ASC)
+* Update C# analyzer 10.8 -> [10.9](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.9.0.115408)
 
 ## 4.21
 
