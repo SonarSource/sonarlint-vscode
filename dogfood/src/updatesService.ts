@@ -55,10 +55,15 @@ async function checkUpdate(statusBar: StatusBar, context: vscode.ExtensionContex
 
 function reinstallationNeeded(dogfoodInfo: DogfoodInfo, installedSonarLint: vscode.Extension<any> | undefined) {
   if (dogfoodInfo.pinned) {
-    return installedSonarLint === undefined || semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) !== 0;
+    return installedSonarLint === undefined || semver.compareBuild(versionWithBuildNumber(installedSonarLint.packageJSON), dogfoodInfo.version) !== 0;
   }
   return installedSonarLint === undefined ||
-      semver.compareBuild(installedSonarLint.packageJSON.version, dogfoodInfo.version) < 0
+      semver.compareBuild(versionWithBuildNumber(installedSonarLint.packageJSON), dogfoodInfo.version) < 0
+}
+
+function versionWithBuildNumber(packageJSON: any): string {
+  const buildNumberSuffix = packageJSON.buildNumber ? `+${packageJSON.buildNumber}` : '';
+  return packageJSON.version + buildNumberSuffix;
 }
 
 async function getDogfoodInfo(context: vscode.ExtensionContext): Promise<DogfoodInfo | undefined> {
