@@ -985,13 +985,13 @@
     {
       "groupId": "org.sonarsource.java",
       "artifactId": "sonar-java-plugin",
-      "version": "8.12.0.38599",
+      "version": "8.13.0.38826",
       "output": "analyzers/sonarjava.jar"
     },
     {
       "groupId": "org.sonarsource.java",
       "artifactId": "sonar-java-symbolic-execution-plugin",
-      "version": "8.12.0.38599",
+      "version": "8.13.0.38826",
       "output": "analyzers/sonarjavasymbolicexecution.jar"
     },
     {
