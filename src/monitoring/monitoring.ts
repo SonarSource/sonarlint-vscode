@@ -50,7 +50,7 @@ export class MonitoringService implements vscode.TelemetrySender {
         stackParser: defaultStackParser,
         integrations,
         environment: 'dogfood',
-        release: util.packageJson.version,
+        release: util.extensionVersionWithBuildNumber(),
         beforeSend: (event, hint) => {
           event.tags = {
             productKey: 'vscode',

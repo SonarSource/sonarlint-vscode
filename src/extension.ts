@@ -190,7 +190,7 @@ export async function activate(context: VSCode.ExtensionContext) {
         productKey: 'vscode',
         telemetryStorage: Path.resolve(context.extensionPath, '..', 'sonarlint_usage'),
         productName: 'SonarLint VSCode',
-        productVersion: util.packageJson.version,
+        productVersion: util.extensionVersionWithBuildNumber(),
         workspaceName: VSCode.workspace.name,
         firstSecretDetected: isFirstSecretDetected(context),
         showVerboseLogs: VSCode.workspace.getConfiguration().get('sonarlint.output.showVerboseLogs', false),
