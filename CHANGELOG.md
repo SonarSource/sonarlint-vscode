@@ -1,3 +1,7 @@
+## 4.22
+
+* Update Python analyzer 5.3 -> [5.4](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2018803%20ORDER%20BY%20created%20ASC)
+
 ## 4.21
 
 * Update CFamily analyzer 6.65 -> [6.66](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=17914%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
