@@ -31,6 +31,11 @@ export const extension = vscode.extensions.getExtension('SonarSource.sonarlint-v
 export const packageJson = extension.packageJSON;
 export const HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT_BYTES = 500_000;
 
+export function extensionVersionWithBuildNumber(): string {
+  const { version, buildNumber } = packageJson;
+  return buildNumber ? `${version}+${buildNumber}` : version;
+}
+
 export let extensionPath: string;
 export let extensionContext: vscode.ExtensionContext;
 
