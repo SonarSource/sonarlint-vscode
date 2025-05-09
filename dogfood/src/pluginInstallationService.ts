@@ -7,7 +7,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as Progress from 'node-fetch-progress';
 import { StatusBar } from './statusBar';
 import { Status } from './status';
 import { getUserToken } from './authenticationService';
@@ -53,20 +52,30 @@ export async function downloadVsix(version: string, url: string, context: vscode
       },
       signal: fetchAbort.signal
     });
-    const fetchProgress = new Progress(fetchResult, { throttle: 100 });
-    let previousDone = 0;
-    fetchProgress.on('progress', () => {
-      const increment = 100 * (fetchProgress.done - previousDone) / fetchProgress.total;
-      previousDone = fetchProgress.done;
-      progress.report({ message: 'Downloading', increment });
-    });
-    fetchProgress.on('finish', () => {
-      progress.report({ message: 'Downloaded', increment: 1.0 });
-    });
+    const contentLength = parseInt(fetchResult.headers.get('content-length') ?? '0');
+    if (!contentLength) {
+      console.error('No content-length header found in response');
+    }
+
+    const chunks: Uint8Array[] = [];
+    const reader = fetchResult.body?.getReader();
+    while(true) {
+      const { done, value } = await reader?.read() ?? { done: true, value: undefined };
+      if (done || !value) {
+        break;
+      }
+      chunks.push(value);
+
+      const increment = 100 * value.length / contentLength;
+      progress.report({message: 'Downloading', increment});
+    }
+
+    progress.report({ message: 'Downloaded', increment: 1.0 });
+
     const fileName = fetchResult.headers.get('X-Artifactory-Filename') ?? `sonarlint-vscode-${version}.vsix`;
     const tempDir = fs.mkdtempSync(downloadDirectory);
     const vsixPath = path.join(tempDir, fileName);
-    fs.writeFileSync(vsixPath, Buffer.from(await fetchResult.arrayBuffer()));
+    fs.writeFileSync(vsixPath, Buffer.concat(chunks));
     console.debug('Created VSIX at ', vsixPath);
     return vscode.Uri.file(vsixPath);
   });
