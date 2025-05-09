@@ -14,5 +14,5 @@ export default function populateBuildNumber() {
   const buildNumber = process.env.BUILD_NUMBER;
   const packageJSON = getPackageJSON();
   packageJSON.buildNumber = buildNumber;
-  writeFileSync('./package.json', JSON.stringify(packageJSON));
+  writeFileSync('./package.json', JSON.stringify(packageJSON, null, 2));
 };
