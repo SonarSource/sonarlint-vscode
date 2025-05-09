@@ -372,7 +372,8 @@ export function isSonarQubeConnection(connection: BaseConnection): connection is
 }
 
 function getTokenStorageKey(connection: SonarQubeConnection | SonarCloudConnection) {
-  return isSonarQubeConnection(connection) ? connection.serverUrl : connection.organizationKey;
+  const regionPrefix = !isSonarQubeConnection(connection) && connection.region ? `${connection.region}_` : '';
+  return isSonarQubeConnection(connection) ? connection.serverUrl : regionPrefix + connection.organizationKey;
 }
 
 async function updateConfigIfNotEmpty(connections, configCategory) {
