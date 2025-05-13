@@ -381,3 +381,16 @@ async function updateConfigIfNotEmpty(connections, configCategory) {
     await VSCode.workspace.getConfiguration().update(configCategory, connections, VSCode.ConfigurationTarget.Global);
   }
 }
+
+export async function migrateSonarQubeCloudTokens() {
+  for (const sqcConnection of ConnectionSettingsService.instance.getSonarCloudConnections()) {
+    const oldTokenStorageKey = sqcConnection.organizationKey;
+    const existingToken = await ConnectionSettingsService.instance.getServerToken(oldTokenStorageKey);
+    if (existingToken) {
+      // store existing token with the new key (prefixed with region)
+      ConnectionSettingsService.instance.storeServerToken(getTokenStorageKey(sqcConnection), existingToken);
+      // delete old token record
+      ConnectionSettingsService.instance.deleteTokenForServer(oldTokenStorageKey);
+    }
+  }
+}
