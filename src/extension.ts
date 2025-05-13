@@ -50,7 +50,7 @@ import { showRuleDescription } from './rules/rulepanel';
 import { AllRulesTreeDataProvider, LanguageNode, RuleNode, setRulesViewMessage, toggleRule } from './rules/rules';
 import { initScm, isIgnoredByScm } from './scm/scm';
 import { isFirstSecretDetected, showNotificationForFirstSecretsIssue } from './secrets/secrets';
-import { ConnectionSettingsService, migrateConnectedModeSettings } from './settings/connectionsettings';
+import { ConnectionSettingsService, migrateConnectedModeSettings, migrateSonarQubeCloudTokens } from './settings/connectionsettings';
 import {
   enableVerboseLogs,
   getCurrentConfiguration,
@@ -232,6 +232,8 @@ export async function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(taintVulnerabilityCollection);
 
   ConnectionSettingsService.init(context, languageClient);
+  // SLVSCODE-1164; one time migration of SonarQube Cloud tokens to set region prefix
+  await migrateSonarQubeCloudTokens();
   NewCodeDefinitionService.init(context);
   FileSystemServiceImpl.init();
   SharedConnectedModeSettingsService.init(languageClient, FileSystemServiceImpl.instance, context);
