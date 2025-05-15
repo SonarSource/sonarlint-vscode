@@ -13,6 +13,9 @@
   "bugs": {
     "url": "https://community.sonarsource.com/c/sl/vs-code/36"
   },
+  "tags": [
+    "language-model-tools"
+  ],
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
     "vscode": "^1.75.0"
@@ -893,7 +896,31 @@
           "fontCharacter": "H"
         }
       }
-    }
+    },
+    "languageModelTools": [
+      {
+        "name": "sonarqube_list_potential_security_issues",
+        "displayName": "SonarQube: Security Hotspots",
+        "toolReferenceName": "sonarqube",
+        "canBeReferencedInPrompt": true,
+        "icon": "security-hotspot",
+        "modelDescription": "This tool returns a list of potential security issues (Security Hotspots) in a given file. It runs SonarQube analysis on the file and returns a list of Security Hotspots detected with their location and error message.",
+        "tags": [
+          "editors",
+          "security-analysis",
+          "linter"
+        ],
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "filePath": {
+              "type": "string",
+              "description": "The full path to the file for which the potential security issues are to be listed."
+            }
+          }
+        }
+      }
+    ]
   },
   "main": "./dist/extension",
   "scripts": {
@@ -933,7 +960,7 @@
     "supports-color": "^9.4.0",
     "tar": "^7.4.3",
     "underscore": "^1.13.6",
-    "vscode-languageclient": "^8.0.2",
+    "vscode-languageclient": "^9.0.1",
     "zlib": "^1.0.5"
   },
   "devDependencies": {
@@ -945,7 +972,7 @@
     "@types/luxon": "^3.2.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.9.3",
-    "@types/vscode": "^1.73.1",
+    "@types/vscode": "^1.100.0",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.3.2",
     "chai": "^4.3.10",
