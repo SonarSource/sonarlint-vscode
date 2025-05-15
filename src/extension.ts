@@ -639,8 +639,8 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
 }
 
 function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
-  new ListPotentialSecurityIssuesTool(context);
-  new ExcludeFileOrFolderTool(context);
+  context.subscriptions.push(VSCode.lm.registerTool('sonarqube_list_potential_security_issues', new ListPotentialSecurityIssuesTool()));
+  context.subscriptions.push(VSCode.lm.registerTool('sonarqube_exclude_file_or_folder_from_analysis', new ExcludeFileOrFolderTool()));
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
