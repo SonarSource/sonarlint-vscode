@@ -17,11 +17,6 @@ interface IHotspotCountParameters {
 }
 
 export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool<IHotspotCountParameters> {
-  constructor(context: vscode.ExtensionContext) {
-    context.subscriptions.push(vscode.lm.registerTool('sonarqube_list_potential_security_issues', this));
-	console.log(vscode.lm.tools);
-  }
-
   async invoke(
     options: vscode.LanguageModelToolInvocationOptions<IHotspotCountParameters>,
     _token: vscode.CancellationToken

@@ -15,9 +15,8 @@ interface IExcludeFileOrFolderParameters {
 }
 
 export class ExcludeFileOrFolderTool implements vscode.LanguageModelTool<IExcludeFileOrFolderParameters> {
-  constructor(context: vscode.ExtensionContext) {
-    context.subscriptions.push(vscode.lm.registerTool('sonarqube_exclude_file_or_folder_from_analysis', this));
-	console.log(vscode.lm.tools);
+  constructor() {
+	  console.log(vscode.lm.tools);
   }
 
   async invoke(
