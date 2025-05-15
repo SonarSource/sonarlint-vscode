@@ -77,6 +77,7 @@ import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
 import { ContextManager } from './contextManager';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
 import { ListPotentialSecurityIssuesTool } from './languageModelTools/listPotentialSecurityIssuesTool';
+import { ExcludeFileOrFolderTool } from './languageModelTools/excludeFileOrFolderTool';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -639,6 +640,7 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
 
 function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
   new ListPotentialSecurityIssuesTool(context);
+  new ExcludeFileOrFolderTool(context);
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
