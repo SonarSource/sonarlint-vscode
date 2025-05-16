@@ -1,3 +1,7 @@
+## 4.23
+
+* Update Go analyzer 1.22.1 -> [1.23](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2019232%20ORDER%20BY%20created%20ASC) -> [1.23.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019661%20ORDER%20BY%20created%20ASC)
+
 ## 4.22
 
 * Update Python analyzer 5.3 -> [5.4](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2018803%20ORDER%20BY%20created%20ASC)
