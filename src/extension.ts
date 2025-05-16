@@ -76,6 +76,9 @@ import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
 import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
 import { ContextManager } from './contextManager';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
+import { ListPotentialSecurityIssuesTool } from './languageModelTools/listPotentialSecurityIssuesTool';
+import { ExcludeFileOrFolderTool } from './languageModelTools/excludeFileOrFolderTool';
+import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeTool';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -246,6 +249,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   ContextManager.instance.setConnectedModeContext(context);
 
   installCustomRequestHandlers(context);
+  initializeLanguageModelTools(context);
 
   const referenceBranchStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 1);
   const scm = await initScm(languageClient, referenceBranchStatusItem);
@@ -343,7 +347,8 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  hotspotsTreeDataProvider = new AllHotspotsTreeDataProvider(ConnectionSettingsService.instance);
+  AllHotspotsTreeDataProvider.init(ConnectionSettingsService.instance);
+  hotspotsTreeDataProvider = AllHotspotsTreeDataProvider.instance;
   allHotspotsView = VSCode.window.createTreeView(HOTSPOTS_VIEW_ID, {
     treeDataProvider: hotspotsTreeDataProvider
   });
@@ -632,6 +637,12 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
     languageClient,
     getFilesForHotspotsAndLaunchScan
   );
+}
+
+function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
+  context.subscriptions.push(VSCode.lm.registerTool('sonarqube_listPotentialSecurityIssues', new ListPotentialSecurityIssuesTool()));
+  context.subscriptions.push(VSCode.lm.registerTool('sonarqube_excludeFilesOrFoldersFromAnalysis', new ExcludeFileOrFolderTool()));
+  context.subscriptions.push(VSCode.lm.registerTool('sonarqube_setUpConnectedMode', new SetUpConnectedModeTool(context)));
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
