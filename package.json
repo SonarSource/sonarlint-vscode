@@ -967,13 +967,13 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "3.22.0.76129",
+      "version": "3.23.0.76151",
       "output": "server/sonarlint-ls.jar"
     },
     {
       "groupId": "org.sonarsource.go",
       "artifactId": "sonar-go-plugin",
-      "version": "1.22.1.2620",
+      "version": "1.23.1.2838",
       "output": "analyzers/sonargo.jar"
     },
     {
