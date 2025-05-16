@@ -75,6 +75,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     this.sendNotification(protocol.HelpAndFeedbackLinkClicked.type, { id: itemId });
   }
 
+  toolCalled(toolName: string, success: boolean) {
+    this.sendNotification(protocol.ToolCalled.type, { toolName, success });
+  }
+
   scanFolderForHotspots(params: protocol.ScanFolderForHotspotsParams) {
     this.sendNotification(protocol.ScanFolderForHotspots.type, params);
   }

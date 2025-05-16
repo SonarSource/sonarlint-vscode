@@ -899,14 +899,14 @@
     },
     "languageModelTools": [
       {
-        "name": "sonarqube_list_potential_security_issues",
+        "name": "sonarqube_listPotentialSecurityIssues",
         "displayName": "SonarQube: Security Hotspots",
         "toolReferenceName": "sonarqube_getSecurityHotspots",
         "canBeReferencedInPrompt": true,
         "icon": "security-hotspot",
         "modelDescription": "This tool returns a list of potential security issues (Security Hotspots) in a given file. It runs SonarQube analysis on the file and returns a list of Security Hotspots detected with their location and error message.",
         "tags": [
-          "editors",
+          "sonarqube",
           "security-analysis",
           "linter"
         ],
@@ -921,15 +921,16 @@
         }
       },
       {
-        "name": "sonarqube_exclude_file_or_folder_from_analysis",
+        "name": "sonarqube_excludeFilesOrFoldersFromAnalysis",
         "displayName": "SonarQube: Exclude File or Folder from Analysis",
         "toolReferenceName": "sonarqube_excludeFiles",
         "canBeReferencedInPrompt": true,
         "icon": "exclude",
         "modelDescription": "This tool modifies the SonarQube for IDE configuration to exclude files matching a given glob pattern from analysis.",
         "tags": [
-          "editors",
-          "security-analysis",
+          "sonarqube",
+          "static-analysis",
+          "file-exclusion",
           "linter"
         ],
         "inputSchema": {
@@ -943,23 +944,41 @@
         }
       },
       {
-        "name": "sonarqube_exclude_file_or_folder_from_analysis",
-        "displayName": "SonarQube: Exclude File or Folder from Analysis",
-        "toolReferenceName": "sonarqube_excludeFiles",
+        "name": "sonarqube_setUpConnectedMode",
+        "displayName": "SonarQube: Set up Connected Mode",
+        "toolReferenceName": "sonarqube_connectedMode",
         "canBeReferencedInPrompt": true,
-        "icon": "exclude",
-        "modelDescription": "This tool modifies the SonarQube for IDE configuration to exclude files matching a given glob pattern from analysis.",
+        "icon": "link",
+        "modelDescription": "This tool guides the user through the process of setting up Connected Mode in SonarQube for IDE. It provides instructions and prompts and runs necessary commands to help the user connect their IDE to a SonarQube Server or Cloud.",
         "tags": [
-          "editors",
-          "security-analysis",
-          "linter"
+          "sonarqube",
+          "sonarqube-connected-mode",
+          "sonarcloud",
+          "linter",
+          "security-analysis"
         ],
         "inputSchema": {
           "type": "object",
           "properties": {
-            "globPattern": {
+            "workspaceFolder": {
               "type": "string",
-              "description": "Oracle glob pattern to exclude files or folders from analysis. For example, `**/test/**` to exclude all files in the test folder."
+              "description": "Path to the workspace folder in VS Code for which the user wants to set up Connected Mode. If only one workspace folder is open, it will be used by default."
+            },
+            "isSonarQubeCloud": {
+              "type": "boolean",
+              "description": "Indicates whether the user wants to connect to SonarQube Cloud. If true, the user will be prompted for the organization key. If false, the user will be prompted for the server URL of their SonarQube Server."
+            },
+            "serverUrl": {
+              "type": "string",
+              "description": "URL of the SonarQube Server instance to connect to. Required if user wants to connect to a SonarQube Server. Example: `https://sonarqube.example.com`."
+            },
+            "organizationKey": {
+              "type": "string",
+              "description": "Key of the SonarQube Cloud organization to connect to. Required if user wants to connect to a SonarQube Cloud. Example: `my-organization`."
+            },
+            "projectKey": {
+              "type": "string",
+              "description": "Key of the SonarQube Server or Cloud project to bind to the workspace folder. This is used to set up the project binding in Connected Mode."
             }
           }
         }
@@ -1016,7 +1035,7 @@
     "@types/luxon": "^3.2.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.9.3",
-    "@types/vscode": "^1.100.0",
+    "@types/vscode": "^1.73.1",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.3.2",
     "chai": "^4.3.10",

@@ -10,13 +10,17 @@
 import * as vscode from 'vscode';
 import { AllHotspotsTreeDataProvider } from '../hotspot/hotspotsTreeDataProvider';
 import { Diagnostic } from '../lsp/protocol';
-import { SONARLINT_CATEGORY } from '../settings/settings';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { BindingService } from '../connected/binding';
 
 interface IHotspotCountParameters {
   filePath: string;
 }
 
 export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool<IHotspotCountParameters> {
+  public static readonly toolName = 'sonarqube_listPotentialSecurityIssues';
+  constructor(readonly client: SonarLintExtendedLanguageClient) {
+  }
   async invoke(
     options: vscode.LanguageModelToolInvocationOptions<IHotspotCountParameters>,
     _token: vscode.CancellationToken
@@ -30,24 +34,24 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
       fileUri = activeFile ? activeFile.uri : null;
     }
 
-	  // TODO plug telemetry here
-
     // Check that the folder is using Connected Mode
 	  const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
-    const isBound = workspaceFolder && vscode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder).get('connectedMode.project') !== undefined;
-
+    const isBound = workspaceFolder && BindingService.instance.isBound(workspaceFolder);
+    const results: vscode.LanguageModelTextPart[] = [];
     if (!isBound) {
-      // TODO suggest calling another tool to bind the workspace
+      this.client.toolCalled(`lm.${ListPotentialSecurityIssuesTool.toolName}`, false);
+      throw new Error(`The workspace folder is not bound to a remote project on SonarQube (Cloud, Server).
+         SonarQube for IDE needs to be in Connected Mode to retrieve the detected Security Hotspots.`);
     }
     const hotspotsInFile: Diagnostic[] = AllHotspotsTreeDataProvider.instance.getAllHotspotsForFile(fileUri.toString());
 
-    const results: vscode.LanguageModelTextPart[] = [];
     for (const h of hotspotsInFile) {
       results.push(
         new vscode.LanguageModelTextPart(`There is a potential security issue with message ${h.message} on line ${h.range.start.line}`)
       );
     }
 
+    this.client.toolCalled(`lm.${ListPotentialSecurityIssuesTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
       new vscode.LanguageModelTextPart(`There are ${hotspotsInFile.length} potential security issues in the active file:`),
       ...results

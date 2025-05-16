@@ -78,6 +78,7 @@ import { ContextManager } from './contextManager';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
 import { ListPotentialSecurityIssuesTool } from './languageModelTools/listPotentialSecurityIssuesTool';
 import { ExcludeFileOrFolderTool } from './languageModelTools/excludeFileOrFolderTool';
+import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeTool';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -639,8 +640,9 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
 }
 
 function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
-  context.subscriptions.push(VSCode.lm.registerTool('sonarqube_list_potential_security_issues', new ListPotentialSecurityIssuesTool()));
-  context.subscriptions.push(VSCode.lm.registerTool('sonarqube_exclude_file_or_folder_from_analysis', new ExcludeFileOrFolderTool()));
+  context.subscriptions.push(VSCode.lm.registerTool(ListPotentialSecurityIssuesTool.toolName, new ListPotentialSecurityIssuesTool(languageClient)));
+  context.subscriptions.push(VSCode.lm.registerTool(ExcludeFileOrFolderTool.toolName, new ExcludeFileOrFolderTool(languageClient)));
+  context.subscriptions.push(VSCode.lm.registerTool(SetUpConnectedModeTool.toolName, new SetUpConnectedModeTool(context, languageClient)));
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
