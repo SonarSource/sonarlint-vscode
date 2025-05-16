@@ -5,10 +5,13 @@
         "target": "es6",
         "outDir": "out",
         "lib": [
-            "es6"
+            "es6",
         ],
         "sourceMap": true,
-        "rootDir": "."
+        "rootDir": ".",
+		"jsx": "react",
+		"jsxFactory": "vscpp",
+		"jsxFragmentFactory": "vscppf"
     },
     "exclude": [
         "node_modules",
