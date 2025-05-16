@@ -506,6 +506,15 @@ export namespace HelpAndFeedbackLinkClicked {
   );
 }
 
+export interface ToolCalledNotificationParams {
+  toolName: string;
+  success: boolean;
+}
+
+export namespace ToolCalled {
+  export const type = new lsp.NotificationType<ToolCalledNotificationParams>('sonarlint/toolCalled');
+}
+
 export interface ScanFolderForHotspotsParams {
   folderUri: string;
   documents: Array<lsp.TextDocumentItem>;
