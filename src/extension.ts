@@ -640,9 +640,13 @@ async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
 }
 
 function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
-  context.subscriptions.push(VSCode.lm.registerTool(ListPotentialSecurityIssuesTool.toolName, new ListPotentialSecurityIssuesTool(languageClient)));
-  context.subscriptions.push(VSCode.lm.registerTool(ExcludeFileOrFolderTool.toolName, new ExcludeFileOrFolderTool(languageClient)));
-  context.subscriptions.push(VSCode.lm.registerTool(SetUpConnectedModeTool.toolName, new SetUpConnectedModeTool(context, languageClient)));
+  try {
+    context.subscriptions.push(VSCode.lm.registerTool(ListPotentialSecurityIssuesTool.toolName, new ListPotentialSecurityIssuesTool(languageClient)));
+    context.subscriptions.push(VSCode.lm.registerTool(ExcludeFileOrFolderTool.toolName, new ExcludeFileOrFolderTool(languageClient)));
+    context.subscriptions.push(VSCode.lm.registerTool(SetUpConnectedModeTool.toolName, new SetUpConnectedModeTool(context, languageClient)));
+  } catch (e) {
+    console.log('SonarQube for IDE: Language Model Tools could not be registered; Will activate extension without it.');
+  }
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
