@@ -946,7 +946,7 @@
       {
         "name": "sonarqube_setUpConnectedMode",
         "displayName": "SonarQube: Set up Connected Mode",
-        "toolReferenceName": "sonarqube_connectedMode",
+        "toolReferenceName": "sonarqube_setUpConnectedMode",
         "canBeReferencedInPrompt": true,
         "icon": "link",
         "modelDescription": "This tool guides the user through the process of setting up Connected Mode in SonarQube for IDE. It provides instructions and prompts and runs necessary commands to help the user connect their IDE to a SonarQube Server or Cloud.",
