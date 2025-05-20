@@ -16,6 +16,7 @@ import { TextEncoder } from 'util';
 import * as path from 'path';
 import { selectFirstQuickPickItem } from './commons';
 import { sleep } from '../testutil';
+import { deduplicateSuggestions } from '../../src/util/connectionSuggestionUtils';
 
 const SHARED_CONNECTED_MODE_FILE_CONTENT = '{\n'
  + '    "sonarCloudOrganization": "sonarsource",\n'
@@ -160,7 +161,7 @@ suite('Shared Connected Mode service test suite', () => {
       }
     ];
 
-    const uniqueSuggestions1 = underTest.deduplicateSuggestions(suggestions1);
+    const uniqueSuggestions1 = deduplicateSuggestions(suggestions1);
 
     expect(uniqueSuggestions1.length).to.equal(3);
 
@@ -196,7 +197,7 @@ suite('Shared Connected Mode service test suite', () => {
       }
     ];
 
-    const uniqueSuggestions2 = underTest.deduplicateSuggestions(suggestions2);
+    const uniqueSuggestions2 = deduplicateSuggestions(suggestions2);
 
     expect(uniqueSuggestions2.length).to.equal(4);
 
@@ -231,7 +232,7 @@ suite('Shared Connected Mode service test suite', () => {
       }
     ];
 
-    const uniqueSuggestions3 = underTest.deduplicateSuggestions(suggestions3);
+    const uniqueSuggestions3 = deduplicateSuggestions(suggestions3);
 
     expect(uniqueSuggestions3.length).to.equal(1);
   });

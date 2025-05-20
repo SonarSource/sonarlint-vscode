@@ -33,13 +33,13 @@ export class ExcludeFileOrFolderTool implements vscode.LanguageModelTool<IExclud
     const isBound = workspaceFolder && BindingService.instance.isBound(workspaceFolder);
 
     if (isBound) {
-      this.client.toolCalled(`lm.${ExcludeFileOrFolderTool.toolName}`, false);
+      this.client.lmToolCalled(`lm.${ExcludeFileOrFolderTool.toolName}`, false);
       throw new Error(`The workspace folder **${workspaceFolder.name}** is bound to a remote project on SonarQube (Cloud, Server).
          Locally configured exclusions will not make a difference.`);
     }
     await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', params.globPattern, vscode.ConfigurationTarget.Global);
 
-    this.client.toolCalled(`lm.${ExcludeFileOrFolderTool.toolName}`, true);
+    this.client.lmToolCalled(`lm.${ExcludeFileOrFolderTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
       new vscode.LanguageModelTextPart(`SonarQube analysis configuration updated to exclude files matching the pattern: **${params.globPattern}**.
          Note that this change will only apply in case the folder is not bound to a remote project on SonarQube (Cloud, Server).`),
