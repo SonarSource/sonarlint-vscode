@@ -39,7 +39,7 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
     const isBound = workspaceFolder && BindingService.instance.isBound(workspaceFolder);
     const results: vscode.LanguageModelTextPart[] = [];
     if (!isBound) {
-      this.client.toolCalled(`lm.${ListPotentialSecurityIssuesTool.toolName}`, false);
+      this.client.lmToolCalled(`lm.${ListPotentialSecurityIssuesTool.toolName}`, false);
       throw new Error(`The workspace folder is not bound to a remote project on SonarQube (Cloud, Server).
          SonarQube for IDE needs to be in Connected Mode to retrieve the detected Security Hotspots.`);
     }
@@ -51,7 +51,7 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
       );
     }
 
-    this.client.toolCalled(`lm.${ListPotentialSecurityIssuesTool.toolName}`, true);
+    this.client.lmToolCalled(`lm.${ListPotentialSecurityIssuesTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
       new vscode.LanguageModelTextPart(`There are ${hotspotsInFile.length} potential security issues in the active file:`),
       ...results

@@ -19,6 +19,7 @@ import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 import { sonarCloudRegionToLabel } from '../util/util';
 import { shouldShowRegionSelection } from '../settings/settings';
+import { CustomQuickPickItem, deduplicateSuggestions } from '../util/connectionSuggestionUtils';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
@@ -27,11 +28,6 @@ const USE_CONFIGURATION_ACTION = 'Use Configuration';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 
 const SOLUTION_FILE_SUFFIX_LENGTH = -4;
-
-
-interface CustomQuickPickItem extends vscode.QuickPickItem {
-  data?: {region?: SonarCloudRegion};
-}
 
 export class SharedConnectedModeSettingsService implements FileSystemSubscriber {
   private static _instance: SharedConnectedModeSettingsService;
@@ -99,7 +95,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     } else {
       // multiple suggestions for the same config scope
       // deduplicate suggestions first
-      const uniqueSuggestions = this.deduplicateSuggestions(suggestions);
+      const uniqueSuggestions = deduplicateSuggestions(suggestions);
       if (uniqueSuggestions.length === 1) {
         this.suggestBindSingleOption({ connectionSuggestion: uniqueSuggestions[0] }, workspaceFolder);
       } else {
@@ -108,17 +104,11 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     }
   }
 
-  deduplicateSuggestions(suggestions: Array<ConnectionSuggestion>): Array<ConnectionSuggestion> {
-    return Array.from(new Set(suggestions.map(s => JSON.stringify(s.connectionSuggestion)))).map(s => JSON.parse(s));
-  }
-
-  private async suggestBindingMultiOption(uniqueSuggestions, workspaceFolder) {
-    const message = `Multiple Connected Mode
-       configuration files are available to bind folder '${workspaceFolder.name}'
-        to a Sonar server. Do you want to use the shared configuration?`;
-    const useConfigurationHandler = async () => {
+  serveralSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder) {
+    return async () => {
       const quickPickItems: CustomQuickPickItem[] = uniqueSuggestions.map(s => {
-        const regionPrefix = s.organization && shouldShowRegionSelection() ? `[${sonarCloudRegionToLabel(s.region)}] ` : '';
+        const regionPrefix =
+          s.organization && shouldShowRegionSelection() ? `[${sonarCloudRegionToLabel(s.region)}] ` : '';
         return {
           label: s.projectKey,
           description: s.organization || s.serverUrl,
@@ -130,12 +120,25 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         title: `Which project would you like to bind with the folder '${workspaceFolder.name}/'`
       });
       if (selectedConfig?.detail.includes('SonarQube Cloud')) {
-        connectToSonarCloud(this.context)(selectedConfig.description, selectedConfig.label, false, selectedConfig.data?.region, workspaceFolder.uri);
+        connectToSonarCloud(this.context)(
+          selectedConfig.description,
+          selectedConfig.label,
+          false,
+          selectedConfig.data?.region,
+          workspaceFolder.uri
+        );
       } else if (selectedConfig && selectedConfig.detail === 'SonarQube Server') {
         connectToSonarQube(this.context)(selectedConfig.description, selectedConfig.label, workspaceFolder.uri);
       }
     };
-    await this.suggestBinding(message, useConfigurationHandler);
+  }
+
+  private async suggestBindingMultiOption(uniqueSuggestions, workspaceFolder) {
+    const message = `Multiple Connected Mode
+       configuration files are available to bind folder '${workspaceFolder.name}'
+        to a Sonar server. Do you want to use the shared configuration?`;
+
+    await this.suggestBinding(message, this.serveralSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder));
   }
 
   private async suggestBindSingleOption(suggestion, workspaceFolder) {
@@ -148,7 +151,13 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         to project '${projectKey}' ${serverReference}. Do you want to use this configuration file to bind this project?`;
     const useConfigurationHandler = async () => {
       if (organization) {
-        connectToSonarCloud(this.context)(organization, projectKey, isFromSharedConfiguration, sonarCloudRegionToLabel(region), workspaceFolder.uri);
+        connectToSonarCloud(this.context)(
+          organization,
+          projectKey,
+          isFromSharedConfiguration,
+          sonarCloudRegionToLabel(region),
+          workspaceFolder.uri
+        );
       } else {
         connectToSonarQube(this.context)(serverUrl, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
       }
