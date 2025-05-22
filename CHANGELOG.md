@@ -3,6 +3,7 @@
 * Update Go analyzer 1.22.1 -> [1.23](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2019232%20ORDER%20BY%20created%20ASC) -> [1.23.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019661%20ORDER%20BY%20created%20ASC)
 * Update IaC analyzer 1.46 -> [1.47](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2019100%20ORDER%20BY%20created%20ASC)
 * Update PHP analyzer 3.45 -> [3.46](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2017781%20ORDER%20BY%20created%20ASC)
+* Update CFamily analyzer 6.66 -> [6.67](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=18836%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
 
 ## 4.22
 
