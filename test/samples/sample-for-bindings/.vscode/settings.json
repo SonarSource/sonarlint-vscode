@@ -1,2 +1,3 @@
 {
+  // This file is kept to restrict scope of binding tests to an empty workspace folder
 }
