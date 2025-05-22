@@ -121,7 +121,7 @@ export class SetUpConnectedModeTool implements vscode.LanguageModelTool<ISetUpCo
       if (uniqueSuggestions.length === 1) {
         this.setUpConnectedModeUsingSuggestions([uniqueSuggestions[0]], workspaceFolder);
       } else {
-        SharedConnectedModeSettingsService.instance.serveralSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder)();
+        SharedConnectedModeSettingsService.instance.severalSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder)();
       }
     }
   }
