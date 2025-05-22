@@ -7,6 +7,7 @@
 * Update Java analyzer 8.13 -> [8.14](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019001%20ORDER%20BY%20created%20ASC)
 * Update JS/TS/CSS analyzer 10.22 -> [10.23](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2018440%20ORDER%20BY%20created%20ASC)
 * Update Text analyzer 2.22 -> [2.23](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2018013%20ORDER%20BY%20created%20ASC)
+* Update C# analyzer 10.9 -> [10.10](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.10.0.116381) -> [10.10.1](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.10.1.116480)
 
 ## 4.22
 
