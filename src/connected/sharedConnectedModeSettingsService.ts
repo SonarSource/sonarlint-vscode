@@ -104,7 +104,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     }
   }
 
-  serveralSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder) {
+  severalSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder) {
     return async () => {
       const quickPickItems: CustomQuickPickItem[] = uniqueSuggestions.map(s => {
         const regionPrefix =
@@ -138,7 +138,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
        configuration files are available to bind folder '${workspaceFolder.name}'
         to a Sonar server. Do you want to use the shared configuration?`;
 
-    await this.suggestBinding(message, this.serveralSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder));
+    await this.suggestBinding(message, this.severalSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder));
   }
 
   private async suggestBindSingleOption(suggestion, workspaceFolder) {
