@@ -6,6 +6,7 @@
 * Update CFamily analyzer 6.66 -> [6.67](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=18836%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
 * Update Java analyzer 8.13 -> [8.14](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019001%20ORDER%20BY%20created%20ASC)
 * Update JS/TS/CSS analyzer 10.22 -> [10.23](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20=%2018440%20ORDER%20BY%20created%20ASC)
+* Update Text analyzer 2.22 -> [2.23](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2018013%20ORDER%20BY%20created%20ASC)
 
 ## 4.22
 
