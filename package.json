@@ -978,6 +978,23 @@
             }
           }
         }
+      },
+      {
+        "name": "sonarqube_analyzeFile",
+        "displayName": "SonarQube: Analyze File",
+        "toolReferenceName": "sonarqube_analyzeFile",
+        "canBeReferencedInPrompt": true,
+        "modelDescription": "This tool opens the requested file and runs SonarQube analysis on it. Detected code quality and security issues will be reported in the Problems view of the IDE. It can be used to analyze any file including those that are not part of a workspace or those that are excluded from the analysis. Do not call this method to analyze Jupyter Notebook.",
+        "icon": "$(play)",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "filePath": {
+              "type": "string",
+              "description": "The full path to the file that should be analyzed."
+            }
+          }
+        }
       }
     ]
   },
