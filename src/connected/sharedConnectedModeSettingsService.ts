@@ -24,7 +24,6 @@ const MAX_FOLDERS_TO_NOTIFY = 1;
 const DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE = 'doNotAskAboutConnectionSetupForWorkspace';
 
 const USE_CONFIGURATION_ACTION = 'Use Configuration';
-const NOT_NOW_ACTION = 'Not Now';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 
 const SOLUTION_FILE_SUFFIX_LENGTH = -4;
@@ -158,14 +157,12 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
   }
 
   private async suggestBinding(proposalMessage: string, useConfigurationAction: () => Promise<void>) {
-    const actions = [USE_CONFIGURATION_ACTION, NOT_NOW_ACTION, DONT_ASK_AGAIN_ACTION];
+    const actions = [USE_CONFIGURATION_ACTION, DONT_ASK_AGAIN_ACTION];
     const userAnswer = await vscode.window.showInformationMessage(proposalMessage, ...actions);
 
     switch (userAnswer) {
       case USE_CONFIGURATION_ACTION:
         await useConfigurationAction();
-        break;
-      case NOT_NOW_ACTION:
         break;
       case DONT_ASK_AGAIN_ACTION:
         this.context.workspaceState.update(DO_NOT_ASK_ABOUT_CONNECTION_SETUP_FOR_WORKSPACE, true);
