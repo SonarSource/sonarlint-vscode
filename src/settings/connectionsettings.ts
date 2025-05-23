@@ -49,11 +49,10 @@ async function suggestMigrationToSecureStorage(
   scConnections: SonarCloudConnection[],
   settingsService: ConnectionSettingsService
 ) {
-  const remindMeLaterAction = 'Ask me later';
   const migrateToSecureStorageAction = 'Migrate';
   const message = `SonarQube for VS Code found SonarQube (Server, Cloud) token in settings file.
    Do you want to migrate them to secure storage?`;
-  const selection = await VSCode.window.showWarningMessage(message, migrateToSecureStorageAction, remindMeLaterAction);
+  const selection = await VSCode.window.showWarningMessage(message, migrateToSecureStorageAction);
   if (selection === migrateToSecureStorageAction) {
     await settingsService.addTokensFromSettingsToSecureStorage(sqConnections, scConnections);
   }

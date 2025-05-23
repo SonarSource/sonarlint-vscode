@@ -286,11 +286,10 @@ export class BindingService {
   private async proposeSharingConfig(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder) {
     const SHARE_CONFIGURATION_ACTION = 'Share configuration';
     const LEARN_MORE_ACTION = 'Learn more';
-    const NOT_NOW_ACTION = 'Not now';
 
     VSCode.window.showInformationMessage(`Do you want to share this new SonarQube Connected Mode configuration?
     A configuration file will be created in this working directory. This will allow your team to reuse the binding configuration`,
-      SHARE_CONFIGURATION_ACTION, LEARN_MORE_ACTION, NOT_NOW_ACTION)
+      SHARE_CONFIGURATION_ACTION, LEARN_MORE_ACTION)
       .then(selection => {
         if (selection === SHARE_CONFIGURATION_ACTION) {
           this.sharedConnectedModeSettingsService.createSharedConnectedModeSettingsFile(workspaceFolder);
