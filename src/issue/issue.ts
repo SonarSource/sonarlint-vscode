@@ -9,7 +9,13 @@
 
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as VSCode from 'vscode';
-import { code2ProtocolConverter, getFileNameFromFullPath, getRelativePathWithFileNameFromFullPath, protocol2CodeConverter, pathExists } from '../util/uri';
+import {
+  code2ProtocolConverter,
+  getFileNameFromFullPath,
+  getRelativePathWithFileNameFromFullPath,
+  protocol2CodeConverter,
+  pathExists
+} from '../util/uri';
 import { showNoActiveFileOpenWarning, showNoFileWithUriError } from '../util/showMessage';
 import { AnalysisFile, CheckIssueStatusChangePermittedResponse } from '../lsp/protocol';
 import { isValidRange, LocationTreeItem, SecondaryLocationsTree } from '../location/locations';
@@ -39,7 +45,10 @@ export class IssueService {
     return IssueService._instance;
   }
 
-  checkIssueStatusChangePermitted(folderUri: string, issueKey: string): Promise<CheckIssueStatusChangePermittedResponse> {
+  checkIssueStatusChangePermitted(
+    folderUri: string,
+    issueKey: string
+  ): Promise<CheckIssueStatusChangePermittedResponse> {
     return this.languageClient.checkIssueStatusChangePermitted(folderUri, issueKey);
   }
 
@@ -66,14 +75,24 @@ export class IssueService {
     );
   }
 
-  analyseOpenFileIgnoringExcludes() {
+  analyseOpenFileIgnoringExcludes(textDocument?: VSCode.TextDocument) {
     const textEditor = VSCode.window.activeTextEditor;
     const notebookEditor = VSCode.window.activeNotebookEditor;
-    if (textEditor === undefined && notebookEditor === undefined) {
+    if (!textEditor && !notebookEditor && !textDocument) {
+      // No active editor and no input provided either
       showNoActiveFileOpenWarning();
       return Promise.resolve();
     }
-    if (notebookEditor) {
+    if (textEditor || textDocument) {
+      textDocument = textDocument ?? textEditor.document;
+      const uri = textDocument.uri;
+      return this.languageClient.analyseOpenFileIgnoringExcludes({
+        uri: code2ProtocolConverter(uri),
+        languageId: textDocument.languageId,
+        text: textDocument.getText(),
+        version: textDocument.version
+      });
+    } else if (notebookEditor) {
       const notebookDocument = notebookEditor.notebook;
       const cells: AnalysisFile[] = notebookDocument
         .getCells()
@@ -88,16 +107,7 @@ export class IssueService {
         });
       return this.languageClient.analyseOpenFileIgnoringExcludes(undefined, notebookDocument, cells);
     }
-    if (textEditor) {
-      const textDocument = textEditor.document;
-      const uri = textDocument.uri;
-      return this.languageClient.analyseOpenFileIgnoringExcludes({
-        uri: code2ProtocolConverter(uri),
-        languageId: textDocument.languageId,
-        text: textDocument.getText(),
-        version: textDocument.version
-      });
-    }
+
     return Promise.resolve();
   }
 
@@ -130,11 +140,7 @@ export class IssueService {
       }
 
       if (issue.shouldOpenRuleDescription) {
-        await VSCode.commands.executeCommand(
-          'SonarLint.OpenRuleDesc',
-          issue.ruleKey,
-          issue.fileUri,
-        );
+        await VSCode.commands.executeCommand('SonarLint.OpenRuleDesc', issue.ruleKey, issue.fileUri);
       }
     }
   }
