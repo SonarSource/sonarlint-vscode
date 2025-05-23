@@ -75,6 +75,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     this.sendNotification(protocol.HelpAndFeedbackLinkClicked.type, { id: itemId });
   }
 
+  lmToolCalled(toolName: string, success: boolean) {
+    this.sendNotification(protocol.LMToolCalled.type, { toolName, success });
+  }
+
   scanFolderForHotspots(params: protocol.ScanFolderForHotspotsParams) {
     this.sendNotification(protocol.ScanFolderForHotspots.type, params);
   }
@@ -97,6 +101,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   getSuggestedBinding(configScopeId: string, connectionId: string): Promise<protocol.GetSuggestedBindingResponse> {
     return this.sendRequest(protocol.GetSuggestedBinding.type, { configScopeId, connectionId });
+  }
+
+  getConnectionSuggestions(configurationScopeId: string): Promise<protocol.GetConnectionSuggestionsResponse> {
+    return this.sendRequest(protocol.GetSuggestedConnections.type, { configurationScopeId })
   }
 
   getSharedConnectedModeConfigFileContent(

@@ -101,6 +101,7 @@ export type HotspotTreeViewItem = HotspotNode | HotspotGroup | FileGroup;
 type ShowMode = 'Folder' | 'OpenFiles';
 
 export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<HotspotTreeViewItem> {
+  private static _instance: AllHotspotsTreeDataProvider;
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<HotspotTreeViewItem | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<HotspotTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   public fileHotspotsCache = new Map<string, Diagnostic[]>();
@@ -111,6 +112,14 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
   constructor(private readonly connectionSettingsService: ConnectionSettingsService) {
     this.refreshTimeout = null;
     this.updateContextShowMode('OpenFiles');
+  }
+
+  static init(connectionSettingsService: ConnectionSettingsService) {
+    this._instance = new AllHotspotsTreeDataProvider(connectionSettingsService);
+  }
+
+  static get instance(): AllHotspotsTreeDataProvider {
+    return AllHotspotsTreeDataProvider._instance;
   }
 
   async showHotspotsInFolder() {
@@ -208,8 +217,7 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
     if (!this.fileHotspotsCache.has(fileUri)) {
       return [];
     }
-    return this.fileHotspotsCache
-      .get(fileUri)
+    return this.getAllHotspotsForFile(fileUri)
       .filter(h => {
         if (contextValue === 'newHotspotsGroup') {
           return h.source === SONARLINT_SOURCE;
@@ -235,6 +243,13 @@ export class AllHotspotsTreeDataProvider implements VSCode.TreeDataProvider<Hots
         );
       })
       .sort((h1, h2) => h1.vulnerabilityProbability - h2.vulnerabilityProbability);
+  }
+
+  getAllHotspotsForFile(fileUri: string): Diagnostic[] {
+    if (!this.fileHotspotsCache.has(fileUri)) {
+      return [];
+    }
+    return this.fileHotspotsCache.get(fileUri);
   }
 
   getFiles(openDocuments = VSCode.workspace.textDocuments) {

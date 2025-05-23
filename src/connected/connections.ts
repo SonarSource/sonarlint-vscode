@@ -50,10 +50,10 @@ export class Connection extends VSCode.TreeItem {
     public readonly contextValue: 'sonarqubeConnection' | 'sonarcloudConnection',
     public status: ConnectionStatus
   ) {
-    super(label, VSCode.TreeItemCollapsibleState.Collapsed);
+    super(label, VSCode.TreeItemCollapsibleState.Expanded);
   }
 
-  collapsibleState = VSCode.TreeItemCollapsibleState.Collapsed;
+  collapsibleState = VSCode.TreeItemCollapsibleState.Expanded;
 
   iconPath = this.getIconPath();
 

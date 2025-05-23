@@ -506,6 +506,15 @@ export namespace HelpAndFeedbackLinkClicked {
   );
 }
 
+export interface LMToolCalledNotificationParams {
+  toolName: string;
+  success: boolean;
+}
+
+export namespace LMToolCalled {
+  export const type = new lsp.NotificationType<LMToolCalledNotificationParams>('sonarlint/lmToolCalled');
+}
+
 export interface ScanFolderForHotspotsParams {
   folderUri: string;
   documents: Array<lsp.TextDocumentItem>;
@@ -547,6 +556,20 @@ export interface GetSuggestedBindingResponse {
 export namespace GetSuggestedBinding {
   export const type = new lsp.RequestType<GetSuggestedBindingParams, GetSuggestedBindingResponse, null>(
     'sonarlint/getBindingSuggestion'
+  );
+}
+
+export interface GetSuggestedConnectionsParams {
+  configurationScopeId: string;
+}
+
+export interface GetConnectionSuggestionsResponse {
+  connectionSuggestions: ConnectionSuggestion[];
+}
+
+export namespace GetSuggestedConnections {
+  export const type = new lsp.RequestType<GetSuggestedConnectionsParams, GetConnectionSuggestionsResponse, null>(
+    'sonarlint/getConnectionSuggestions'
   );
 }
 
