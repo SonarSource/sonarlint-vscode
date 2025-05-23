@@ -17,7 +17,7 @@ import {
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan
 } from '../../src/hotspot/hotspots';
-import { HotspotProbability, HotspotStatus, RemoteHotspot } from '../../src/lsp/protocol';
+import { HotspotProbability, RemoteHotspot } from '../../src/lsp/protocol';
 import {
   AllHotspotsTreeDataProvider,
   FileGroup,
@@ -31,6 +31,7 @@ import * as path from 'path';
 import { HotspotAnalysisConfirmation } from '../../src/util/showMessage';
 import * as protocol from '../../src/lsp/protocol';
 import { getWorkspaceFolder } from '../testutil';
+import * as sinon from 'sinon';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',
@@ -61,7 +62,7 @@ const templateHotspotRange = new Selection(
 );
 
 function buildHotspot(filePath: string, vulnerabilityProbability: HotspotProbability = HotspotProbability.medium) {
-  const newHotspot = Object.assign({}, templateHotspot);
+  const newHotspot = { ...templateHotspot };
   newHotspot.ideFilePath = filePath;
   newHotspot.rule.vulnerabilityProbability = vulnerabilityProbability;
   return newHotspot;
@@ -99,13 +100,35 @@ suite('Hotspots Test Suite', async () => {
     await vscode.commands.executeCommand('workbench.action.output.toggleOutput');
   });
 
+  teardown(async () => {
+    sinon.restore();
+  });
+
   test('should show error when no file is found', async () => {
     const hotspot = buildHotspot('not/in/workspace');
+
+    // Create a spy for the showErrorMessage method
+    const showErrorMessageSpy = sinon.spy(vscode.window, 'showErrorMessage');
+
+    // Call the function that will trigger the error message
     await showSecurityHotspot(mockAllHotspotsView, mockHotspotsTreeDataProvider, hotspot);
 
-    // TODO Find a way to assert error messages?
+    // Assert that the notification was shown
+    expect(showErrorMessageSpy.calledOnce).to.be.true;
+    expect(
+      showErrorMessageSpy.calledWith(
+        `Could not find file '${hotspot.ideFilePath}' in the current workspace.
+Please make sure that the right folder is open and bound to the right project on the server,
+ and that the file has not been removed or renamed.`,
+        'Show Documentation'
+      )
+    ).to.be.true;
+
+    // Restore the original method
+    showErrorMessageSpy.restore();
+
     assert.strictEqual(vscode.window.activeTextEditor, undefined);
-  });
+  }).timeout(5_000);
 
   test('should show hotspot in found file', async () => {
     const hotspot = buildHotspot('main.js');
@@ -302,12 +325,15 @@ suite('Hotspots Test Suite', async () => {
       assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.low)), HotspotReviewPriority.Low);
     });
 
-    test('should not change hotspot status when not permitted', ()=>{
+    test('should not change hotspot status when not permitted', () => {
       const workspaceFolder = getWorkspaceFolder();
       let changeHotspotStatusBeenCalled = false;
       const fakeLanguageClient = {
-        getAllowedHotspotStatuses(hotspotKey: string, folderUri: string,
-                                  fileUri: string): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+        getAllowedHotspotStatuses(
+          hotspotKey: string,
+          folderUri: string,
+          fileUri: string
+        ): Promise<protocol.GetAllowedHotspotStatusesResponse> {
           return Promise.resolve({
             permitted: false,
             notPermittedReason: '',
@@ -320,20 +346,26 @@ suite('Hotspots Test Suite', async () => {
         }
       } as SonarLintExtendedLanguageClient;
 
-      doChangeHotspotStatus('serverKey',
+      doChangeHotspotStatus(
+        'serverKey',
         '/file/path',
         // @ts-ignore
-        workspaceFolder, fakeLanguageClient);
+        workspaceFolder,
+        fakeLanguageClient
+      );
 
       assert.strictEqual(changeHotspotStatusBeenCalled, false);
     });
 
-    test('should not change hotspot status when server is down', ()=>{
+    test('should not change hotspot status when server is down', () => {
       const workspaceFolder = getWorkspaceFolder();
       let changeHotspotStatusBeenCalled = false;
       const fakeLanguageClient = {
-        getAllowedHotspotStatuses(hotspotKey: string, folderUri: string,
-                                  fileUri: string): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+        getAllowedHotspotStatuses(
+          hotspotKey: string,
+          folderUri: string,
+          fileUri: string
+        ): Promise<protocol.GetAllowedHotspotStatusesResponse> {
           return null;
         },
         changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {
@@ -342,20 +374,26 @@ suite('Hotspots Test Suite', async () => {
         }
       } as SonarLintExtendedLanguageClient;
 
-      doChangeHotspotStatus('serverKey',
+      doChangeHotspotStatus(
+        'serverKey',
         '/file/path',
         // @ts-ignore
-        workspaceFolder, fakeLanguageClient);
+        workspaceFolder,
+        fakeLanguageClient
+      );
 
       assert.strictEqual(changeHotspotStatusBeenCalled, false);
     });
 
-    test('should not change hotspot status when no allowed statuses', ()=>{
+    test('should not change hotspot status when no allowed statuses', () => {
       const workspaceFolder = getWorkspaceFolder();
       let changeHotspotStatusBeenCalled = false;
       const fakeLanguageClient = {
-        getAllowedHotspotStatuses(hotspotKey: string, folderUri: string,
-                                  fileUri: string): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+        getAllowedHotspotStatuses(
+          hotspotKey: string,
+          folderUri: string,
+          fileUri: string
+        ): Promise<protocol.GetAllowedHotspotStatusesResponse> {
           return Promise.resolve({
             permitted: true,
             notPermittedReason: '',
@@ -368,10 +406,13 @@ suite('Hotspots Test Suite', async () => {
         }
       } as SonarLintExtendedLanguageClient;
 
-      doChangeHotspotStatus('serverKey',
+      doChangeHotspotStatus(
+        'serverKey',
         '/file/path',
         // @ts-ignore
-        workspaceFolder, fakeLanguageClient);
+        workspaceFolder,
+        fakeLanguageClient
+      );
 
       assert.strictEqual(changeHotspotStatusBeenCalled, false);
     });
