@@ -1,7 +1,7 @@
 {
   "name": "sonarlint-vscode",
   "displayName": "SonarQube for IDE",
-  "description": "Linter to detect & fix coding issues locally in JS/TS, Python, PHP, Java, C, C++, C#, Go, IaC. Use with SonarQube (Server, Cloud) for optimal team performance.",
+  "description": "Advanced linter to detect & fix coding issues locally in JS/TS, Python, Java, C#, C/C++, Go, PHP.  Use with SonarQube (Server, Cloud) for optimal team performance.",
   "version": "4.23.0",
   "icon": "images/sonarqube_for_ide_128px.png",
   "publisher": "SonarSource",
@@ -18,19 +18,31 @@
     "vscode": "^1.75.0"
   },
   "categories": [
-    "Linters"
+    "Linters",
+    "Education",
+    "Programming Languages",
+    "Notebooks",
+    "AI"
+  ],
+  "tags": [
+    "AI",
+    "Education",
+    "Vulnerability",
+    "Security",
+    "SonarQube",
+    "Static Code Analysis",
+    "Code Quality"
   ],
   "keywords": [
     "IaC",
-    "Code Quality",
     "Go",
     "C++",
     "Java",
     "JavaScript",
-    "PHP",
+    "C#",
     "Python",
     "TypeScript",
-    "Code Analysis"
+    "Jupyter"
   ],
   "activationEvents": [
     "onStartupFinished"
