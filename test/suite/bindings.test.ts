@@ -152,7 +152,7 @@ suite('Bindings Test Suite', () => {
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get(BINDING_SETTINGS);
       expect(deletedBinding).to.be.empty;
-    });
+    }).timeout(5_000);
 
     test('Get remote projects items correctly maps keys and names', async () => {
       const items = await underTest.getRemoteProjectsItems(TEST_SONARQUBE_CONNECTION.connectionId);

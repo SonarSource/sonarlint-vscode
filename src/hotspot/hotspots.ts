@@ -84,10 +84,10 @@ export const showSecurityHotspot = async (
   }
 };
 
-function handleFileForHotspotNotFound(hotspot) {
+function handleFileForHotspotNotFound(hotspot : RemoteHotspot) {
   vscode.window
     .showErrorMessage(
-      `Could not find file '${hotspot.filePath}' in the current workspace.
+      `Could not find file '${hotspot.ideFilePath}' in the current workspace.
 Please make sure that the right folder is open and bound to the right project on the server,
  and that the file has not been removed or renamed.`,
       'Show Documentation'
