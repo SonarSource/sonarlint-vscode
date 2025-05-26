@@ -40,7 +40,7 @@ export class AnalyzeFileTool implements vscode.LanguageModelTool<IAnalyzeFilePar
     // Focus on the problems view
     vscode.commands.executeCommand('workbench.panel.markers.view.focus');
    
-    this.client.lmToolCalled(`lm.${AnalyzeFileTool.toolName}`, true);
+    this.client.lmToolCalled(`lm_${AnalyzeFileTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
       new vscode.LanguageModelTextPart(`SonarQube analysis triggered for file: **${params.filePath}**.
          Detected code quality and security issues will be shown in the PROBLEMS view.`)
