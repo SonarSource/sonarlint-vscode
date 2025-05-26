@@ -29,7 +29,7 @@ export class ExcludeFileOrFolderTool implements vscode.LanguageModelTool<IExclud
 
     // Check that the folder is not using Connected Mode
     const currentlyActiveEditor = vscode.window.activeTextEditor;
-	  const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentlyActiveEditor?.document.uri);
+	  const workspaceFolder = currentlyActiveEditor ? vscode.workspace.getWorkspaceFolder(currentlyActiveEditor.document.uri) : undefined;
     const isBound = workspaceFolder && BindingService.instance.isBound(workspaceFolder);
 
     if (isBound) {
