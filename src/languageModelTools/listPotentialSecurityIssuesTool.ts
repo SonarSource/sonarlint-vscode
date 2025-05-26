@@ -38,7 +38,7 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
     const isBound = workspaceFolder && BindingService.instance.isBound(workspaceFolder);
     const results: vscode.LanguageModelTextPart[] = [];
     if (!isBound) {
-      this.client.lmToolCalled(`lm.${ListPotentialSecurityIssuesTool.toolName}`, false);
+      this.client.lmToolCalled(`lm_${ListPotentialSecurityIssuesTool.toolName}`, false);
       vscode.lm.invokeTool('sonarqube_setUpConnectedMode', {
         toolInvocationToken: options.toolInvocationToken,
         input: {
@@ -66,7 +66,7 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
       );
     }
 
-    this.client.lmToolCalled(`lm.${ListPotentialSecurityIssuesTool.toolName}`, true);
+    this.client.lmToolCalled(`lm_${ListPotentialSecurityIssuesTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
       new vscode.LanguageModelTextPart(
         `There are ${hotspotsInFile.length} potential security issues in the active file:`
