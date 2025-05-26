@@ -82,7 +82,7 @@ export function notifyMissingCompileCommands(context: vscode.ExtensionContext) {
             break;
           default:
             remindMeLaterAboutCompileCommandsFlag = true;
-            break;  
+            break;
         }
       });
   };
