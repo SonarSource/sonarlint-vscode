@@ -72,7 +72,7 @@ suite('util', () => {
 
     const files = await findFilesInFolder(folderUri, cancelToken);
 
-    expect(files.length).to.equal(9);
+    expect(files.length).to.equal(10);
   });
 
   test('should create analysis files from file uris', async () => {
@@ -80,7 +80,7 @@ suite('util', () => {
     const fileUris = await findFilesInFolder(folderUri, cancelToken);
     // @ts-ignore
     const openDocuments: vscode.TextDocument[] = [{
-      uri: fileUris[2],
+      uri: fileUris[3],
       version: 11,
       getText(): string {
         return 'text in editor';
@@ -89,18 +89,18 @@ suite('util', () => {
     }];
     const analysisFiles = await createAnalysisFilesFromFileUris(fileUris, openDocuments, progress, cancelToken);
 
-    expect(fileUris.length).to.equal(9);
-    expect(analysisFiles.length).to.equal(8);
+    expect(fileUris.length).to.equal(10);
+    expect(analysisFiles.length).to.equal(9);
     let inlineAnalysisResult = analysisFiles[0].text.replace(/(\r\n|\n|\r)/gm, '');
     expect(inlineAnalysisResult).to.equal('{    "sonarlint.testFilePattern": "**/test/samples/**/test/**",' +
       '    "telemetry.enableTelemetry": false}');
     expect(analysisFiles[0].uri.endsWith('settings.json')).to.be.true;
     expect(analysisFiles[0].languageId).to.equal('[unknown]');
     expect(analysisFiles[0].version).to.equal(1);
-    expect(analysisFiles[2].text).to.equal('text in editor');
-    expect(analysisFiles[2].uri.endsWith('main.js')).to.be.true;
-    expect(analysisFiles[2].languageId).to.equal('[unknown]');
-    expect(analysisFiles[2].version).to.equal(11);
+    expect(analysisFiles[3].text).to.equal('text in editor');
+    expect(analysisFiles[3].uri.endsWith('main.js')).to.be.true;
+    expect(analysisFiles[3].languageId).to.equal('[unknown]');
+    expect(analysisFiles[3].version).to.equal(11);
   });
 
   test('should generate items for quick pick list from workspace folders', async () => {

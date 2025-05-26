@@ -6,9 +6,9 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
+import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { assert, expect } from 'chai';
-import { ListPotentialSecurityIssuesTool } from '../../src/languageModelTools/listPotentialSecurityIssuesTool';
+import { ListPotentialSecurityIssuesTool } from '../../../src/languageModelTools/listPotentialSecurityIssuesTool';
 import * as sinon from 'sinon';
 
 let toolCalledCount = {
@@ -33,6 +33,7 @@ suite('List Security Hotspots Language Model Tool Test Suite', () => {
   setup(async () => {
     toolCalledCount.success = 0;
     toolCalledCount.failure = 0;
+    sinon.restore(); // Restore any previous stubs
   });
 
   test('Should prepare invocation with confirmation', async () => {
@@ -49,7 +50,6 @@ suite('List Security Hotspots Language Model Tool Test Suite', () => {
   });
 
   test('Should invoke Connected Mode tool when not bound', async () => {
-    sinon.restore(); // Restore any previous stubs
     const workspaceFolder = vscode.workspace.workspaceFolders[0];
 
     // Open file inside the bound workspace folder
