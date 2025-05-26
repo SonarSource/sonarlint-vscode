@@ -9,7 +9,7 @@ import * as vscode from 'vscode';
 import { ExcludeFileOrFolderTool } from '../../src/languageModelTools/excludeFileOrFolderTool';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { SONARLINT_CATEGORY } from '../../src/settings/settings';
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const BINDING_SETTINGS = 'connectedMode.project';
