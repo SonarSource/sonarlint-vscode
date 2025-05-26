@@ -6,9 +6,9 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { ExcludeFileOrFolderTool } from '../../src/languageModelTools/excludeFileOrFolderTool';
-import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
-import { SONARLINT_CATEGORY } from '../../src/settings/settings';
+import { ExcludeFileOrFolderTool } from '../../../src/languageModelTools/excludeFileOrFolderTool';
+import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
+import { SONARLINT_CATEGORY } from '../../../src/settings/settings';
 import { assert } from 'chai';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
@@ -35,7 +35,6 @@ const mockClient = {
     } else {
       toolCalledCount.failure++;
     }
-    console.log(`Tool called: ${name}, Success: ${success}`);
   }
 } as SonarLintExtendedLanguageClient;
 
@@ -48,22 +47,29 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
     toolCalledCount.failure = 0;
   });
 
+  teardown(async () => {
+    // Reset the configuration after tests
+    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined);
+    toolCalledCount.success = 0;
+    toolCalledCount.failure = 0;
+  });
+
   test('Should prepare invocation with confirmation', async () => {
     const confirmation = await underTest.prepareInvocation(
-      { input: { globPattern: '**/test/**' } }, // options
+      { input: { globPattern: '**/myTestFolder/**' } }, // options
       new vscode.CancellationTokenSource().token // token
     );
     assert.strictEqual(confirmation.invocationMessage, 'Updating SonarQube for IDE local analysis configuration...');
     assert.strictEqual(confirmation.confirmationMessages.title, 'Exclude files from local analysis');
     assert.strictEqual(
       confirmation.confirmationMessages.message.value,
-      'Update SonarQube for IDE analysis settings to exclude ****/test/****?'
+      'Update SonarQube for IDE analysis settings to exclude ****/myTestFolder/****?'
     );
   });
 
   test('Should exclude requested file when not bound', async () => {
     const result = await underTest.invoke(
-      { toolInvocationToken: undefined, input: { globPattern: '**/test/**' } }, // options
+      { toolInvocationToken: undefined, input: { globPattern: '**/myTestFolder/**' } }, // options
       new vscode.CancellationTokenSource().token // token
     );
     assert.strictEqual(toolCalledCount.success, 1);
@@ -71,11 +77,11 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
     const newExclusionSettings = vscode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
       .get<string>('analysisExcludesStandalone');
-    assert.strictEqual(newExclusionSettings, '**/test/**');
+    assert.strictEqual(newExclusionSettings, '**/myTestFolder/**');
     assert.strictEqual(result.content.length, 2);
     assert.strictEqual(
       (result.content[0] as vscode.LanguageModelTextPart).value,
-      `SonarQube analysis configuration updated to exclude files matching the pattern: ****/test/****.
+      `SonarQube analysis configuration updated to exclude files matching the pattern: ****/myTestFolder/****.
          Note that this change will only apply in case the folder is not bound to a remote project on SonarQube (Cloud, Server).`
     );
     assert.strictEqual(
@@ -103,7 +109,7 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
 
     underTest
       .invoke(
-        { toolInvocationToken: undefined, input: { globPattern: '**/test/**' } }, // options
+        { toolInvocationToken: undefined, input: { globPattern: '**/myTestFolder/**' } }, // options
         new vscode.CancellationTokenSource().token // token
       )
       .then(() => { throw new Error('was not supposed to succeed') })
