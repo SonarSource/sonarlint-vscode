@@ -81,7 +81,7 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
     assert.strictEqual(result.content.length, 2);
     assert.strictEqual(
       (result.content[0] as vscode.LanguageModelTextPart).value,
-      `SonarQube analysis configuration updated to exclude files matching the pattern: ****/myTestFolder/****.
+      `SonarQube analysis configuration updated to exclude files matching the pattern: '**/myTestFolder/**'.
          Note that this change will only apply in case the folder is not bound to a remote project on SonarQube (Cloud, Server).`
     );
     assert.strictEqual(
@@ -116,7 +116,7 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
       .catch((error: Error) => {
         assert.strictEqual(
           error.message,
-          `The workspace folder **${workspaceFolder.name}** is bound to a remote project on SonarQube (Cloud, Server).
+          `The workspace folder '${workspaceFolder.name}' is bound to a remote project on SonarQube (Cloud, Server).
          Locally configured exclusions will not make a difference.`
         );
       });
