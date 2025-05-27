@@ -26,7 +26,6 @@ export class AnalyzeFileTool implements vscode.LanguageModelTool<IAnalyzeFilePar
   ) {
     const params = options.input;
 
-    // Check that the folder is not using Connected Mode
     const fileUri = vscode.Uri.file(params.filePath);
     // Open file in the editor
     const textDocument = await vscode.workspace.openTextDocument(fileUri);
@@ -42,7 +41,7 @@ export class AnalyzeFileTool implements vscode.LanguageModelTool<IAnalyzeFilePar
    
     this.client.lmToolCalled(`lm_${AnalyzeFileTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
-      new vscode.LanguageModelTextPart(`SonarQube analysis triggered for file: **${params.filePath}**.
+      new vscode.LanguageModelTextPart(`SonarQube analysis triggered for file: '${params.filePath}'.
          Detected code quality and security issues will be shown in the PROBLEMS view.`)
     ]);
   }

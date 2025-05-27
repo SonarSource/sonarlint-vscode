@@ -41,7 +41,7 @@ export class ExcludeFileOrFolderTool implements vscode.LanguageModelTool<IExclud
 
     this.client.lmToolCalled(`lm_${ExcludeFileOrFolderTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
-      new vscode.LanguageModelTextPart(`SonarQube analysis configuration updated to exclude files matching the pattern: **${params.globPattern}**.
+      new vscode.LanguageModelTextPart(`SonarQube analysis configuration updated to exclude files matching the pattern: '${params.globPattern}'.
          Note that this change will only apply in case the folder is not bound to a remote project on SonarQube (Cloud, Server).`),
       new vscode.LanguageModelTextPart('You can check the configured local exclusions in `SonarLint.analysisExcludesStandalone` setting.'),
     ]);
