@@ -30,6 +30,11 @@ const mockClient = {
 } as SonarLintExtendedLanguageClient;
 
 suite('Exclude File or Folder Language Model Tool Test Suite', () => {
+  setup(() => {
+    toolCalledCount.failure = 0;
+    toolCalledCount.success = 0;
+  });
+
   const underTest = new AnalyzeFileTool(mockClient);
   test('Should prepare invocation with confirmation', async () => {
     const confirmation = await underTest.prepareInvocation(
@@ -70,12 +75,12 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
     expect(analyseOpenFileIgnoringExcludes.calledOnce).to.be.true;
     expect(executeCommand.calledOnce).to.be.true;
     expect(executeCommand.firstCall.args[0]).to.equal('workbench.panel.markers.view.focus');
-    expect(toolCalledCount.success).to.equal(1);
+    expect(toolCalledCount.success).to.equal(1, 'too many calls to lmToolCalled');
     expect(result.content.length).to.equal(1);
     expect((result.content[0] as vscode.LanguageModelTextPart).value).to
-      .equal(`SonarQube analysis triggered for file: **${sampleFileUri.fsPath}**.
+      .equal(`SonarQube analysis triggered for file: '${sampleFileUri.fsPath}'.
          Detected code quality and security issues will be shown in the PROBLEMS view.`);
 
-    sinon.restore();      
+    sinon.restore();
   });
 });

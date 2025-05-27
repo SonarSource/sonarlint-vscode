@@ -156,7 +156,7 @@ suite('Set up Connected Mode Language Model Tool Test Suite', () => {
     assert.strictEqual(result.content.length, 1);
     assert.strictEqual(
       (result.content[0] as vscode.LanguageModelTextPart).value,
-      `The workspace folder **${workspaceFolder.name}** is already bound to a remote project on SonarQube (Cloud, Server). Nothing more to do.`
+      `The workspace folder '${workspaceFolder.name}' is already bound to a remote project on SonarQube (Cloud, Server). Nothing more to do.`
     );
 
     // clean up

@@ -42,7 +42,7 @@ export class AnalyzeFileTool implements vscode.LanguageModelTool<IAnalyzeFilePar
    
     this.client.lmToolCalled(`lm_${AnalyzeFileTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
-      new vscode.LanguageModelTextPart(`SonarQube analysis triggered for file: **${params.filePath}**.
+      new vscode.LanguageModelTextPart(`SonarQube analysis triggered for file: '${params.filePath}'.
          Detected code quality and security issues will be shown in the PROBLEMS view.`)
     ]);
   }

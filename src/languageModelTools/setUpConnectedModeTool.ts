@@ -48,7 +48,7 @@ export class SetUpConnectedModeTool implements vscode.LanguageModelTool<ISetUpCo
     if (isBound) {
       this.client.lmToolCalled(`lm_${SetUpConnectedModeTool.toolName}`, true);
       return new vscode.LanguageModelToolResult([
-        new vscode.LanguageModelTextPart(`The workspace folder **${workspaceFolder.name}** is already bound to a remote project on SonarQube (Cloud, Server). Nothing more to do.`),
+        new vscode.LanguageModelTextPart(`The workspace folder '${workspaceFolder.name}' is already bound to a remote project on SonarQube (Cloud, Server). Nothing more to do.`),
       ]);
     }
 
