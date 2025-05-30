@@ -582,6 +582,14 @@
           "id": "SonarLint",
           "title": "SonarQube"
         }
+      ],
+      "panel": [
+        {
+          "icon": "images/sonarqube_for_ide.svg",
+          "id": "SonarQube_ExtendedFindings",
+          "title": "SonarQube Extended Findings",
+          "when": "sonarqube.someFoldersUseConnectedMode"
+        }
       ]
     },
     "views": {
@@ -590,6 +598,20 @@
           "id": "SonarLint.IssueLocations",
           "name": "SonarQube Issue Locations",
           "when": "sonarqube.hasExploredIssueLocations"
+        }
+      ],
+      "SonarQube_ExtendedFindings": [
+        {
+          "icon": "security-hotspot",
+          "id": "SonarLint.SecurityHotspots",
+          "name": "Security Hotspots",
+          "visibility": "visible"
+        },
+        {
+          "icon": "security-hotspot",
+          "id": "SonarLint.TaintVulnerabilities",
+          "name": "Injection Vulnerabilities",
+          "visibility": "visible"
         }
       ],
       "SonarLint": [
@@ -602,12 +624,6 @@
         {
           "id": "SonarLint.ConnectedMode",
           "name": "Connected Mode"
-        },
-        {
-          "id": "SonarLint.SecurityHotspots",
-          "name": "Security Hotspots",
-          "visibility": "collapsed",
-          "when": "sonarqube.someFoldersUseConnectedMode"
         },
         {
           "id": "SonarLint.AllRules",

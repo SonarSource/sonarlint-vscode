@@ -79,6 +79,7 @@ import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
 import { ListPotentialSecurityIssuesTool } from './languageModelTools/listPotentialSecurityIssuesTool';
 import { ExcludeFileOrFolderTool } from './languageModelTools/excludeFileOrFolderTool';
 import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeTool';
+import { InjectionVulnerabilitiesProvider } from './issue/InjectionVulnerabilitiesProvider';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -102,7 +103,7 @@ let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
-let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
+let problemsProvider: InjectionVulnerabilitiesProvider;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
@@ -231,8 +232,10 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   await languageClient.start();
 
-  taintVulnerabilityCollection = VSCode.languages.createDiagnosticCollection('SonarQube Taint Vulnerabilities');
-  context.subscriptions.push(taintVulnerabilityCollection);
+  problemsProvider = new InjectionVulnerabilitiesProvider();
+  context.subscriptions.push(
+    VSCode.window.registerTreeDataProvider('SonarLint.TaintVulnerabilities', problemsProvider)
+  );
 
   ConnectionSettingsService.init(context, languageClient);
   // SLVSCODE-1164; one time migration of SonarQube Cloud tokens to set region prefix
@@ -721,7 +724,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       d['data'] = diagnostic.data;
       return d;
     });
-    taintVulnerabilityCollection.set(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics);
+    problemsProvider.updateDiagnostics(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics)
   });
 
   languageClient.onRequest(
@@ -746,11 +749,12 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 
 function updateSonarLintViewContainerBadge() {
   const allHotspotsCount = hotspotsTreeDataProvider.countAllHotspots();
+  const allTaintsCount = problemsProvider.getBadgeNumber();
   allHotspotsView.badge =
-    allHotspotsCount > 0
+    allHotspotsCount > 0 || allTaintsCount > 0
       ? {
-          value: allHotspotsCount,
-          tooltip: `Total ${allHotspotsCount} Security Hotspots`
+          value: allHotspotsCount + allTaintsCount,
+          tooltip: `Total ${allHotspotsCount + allTaintsCount} Extended Findings`
         }
       : undefined;
 }
