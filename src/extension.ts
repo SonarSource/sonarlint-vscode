@@ -79,7 +79,8 @@ import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
 import { ListPotentialSecurityIssuesTool } from './languageModelTools/listPotentialSecurityIssuesTool';
 import { ExcludeFileOrFolderTool } from './languageModelTools/excludeFileOrFolderTool';
 import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeTool';
-import { InjectionVulnerabilitiesProvider } from './issue/InjectionVulnerabilitiesProvider';
+import { InjectionVulnerabilitiesProvider, ProblemNode } from './issue/InjectionVulnerabilitiesProvider';
+import { FindingsProvider } from './issue/FindingsProvider';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -103,7 +104,8 @@ let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
-let problemsProvider: InjectionVulnerabilitiesProvider;
+let problemsProvider: FindingsProvider;
+let taintProvider: InjectionVulnerabilitiesProvider;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
@@ -232,9 +234,11 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   await languageClient.start();
 
-  problemsProvider = new InjectionVulnerabilitiesProvider();
+  problemsProvider = new FindingsProvider();
+  InjectionVulnerabilitiesProvider.init();
+  taintProvider = InjectionVulnerabilitiesProvider.instance;
   context.subscriptions.push(
-    VSCode.window.registerTreeDataProvider('SonarLint.TaintVulnerabilities', problemsProvider)
+    VSCode.window.registerTreeDataProvider('SonarQube.Findings', problemsProvider)
   );
 
   ConnectionSettingsService.init(context, languageClient);
@@ -631,6 +635,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
       const targetConnection = connectionsOfType.find(c => c.id === connectionId) ?? connectionsOfType[0];
       allConnectionsView.reveal(targetConnection, {select: true, focus: true, expand: false});
   }));
+
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.DISPLAY_ISSUE, (issue: ProblemNode) => {
+    console.log('Displaying issue', issue);
+    VSCode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', issue.id, issue.fileUri);
+  }));
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
@@ -724,7 +733,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       d['data'] = diagnostic.data;
       return d;
     });
-    problemsProvider.updateDiagnostics(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics)
+    taintProvider.updateDiagnostics(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics)
   });
 
   languageClient.onRequest(

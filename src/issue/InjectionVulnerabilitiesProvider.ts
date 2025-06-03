@@ -8,51 +8,28 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
-
-export class FileGroup extends vscode.TreeItem {
-  public fileUri: string;
-  constructor(public readonly id: string) {
-    super(getFileNameFromFullPath(id), vscode.TreeItemCollapsibleState.Expanded);
-    this.contextValue = 'hotspotsFileGroup';
-    this.fileUri = id;
-    const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders.length > 1;
-    this.resourceUri = vscode.Uri.parse(this.fileUri);
-    this.description = getRelativePathFromFullPath(
-      id,
-      vscode.workspace.getWorkspaceFolder(this.resourceUri),
-      specifyWorkspaceFolderName
-    );
-    this.iconPath = vscode.ThemeIcon.File;
-  }
-}
+import { FileGroup } from './FindingsProvider';
+import { Commands } from '../util/commands';
 
 export class ProblemNode extends vscode.TreeItem {
   constructor(
     public readonly key: string,
-    // public readonly serverIssueKey: string,
-    // public readonly source: string,
     public readonly message: string,
-    public readonly ruleKey: string
-  ) // public readonly fileUri: string,
-  // public readonly status: number
+    public readonly ruleKey: string,
+    public readonly source: string,
+    public readonly fileUri: string
+  )
   {
     super(message, vscode.TreeItemCollapsibleState.None);
     this.id = key;
-    // if (source === OPEN_HOTSPOT_IN_IDE_SOURCE) {
-    //   this.command = {
-    //     command: Commands.HIGHLIGHT_REMOTE_HOTSPOT_LOCATION,
-    //     title: 'Show Hotspot Location',
-    //     arguments: [this]
-    //   };
-    // } else {
-    //   this.command = { command: Commands.SHOW_HOTSPOT_LOCATION, title: 'Show All Locations', arguments: [this] };
-    // }
-    this.description = `TAINT_(${ruleKey})`;
+    this.description = `${source} (${ruleKey})`;
+    this.iconPath = new vscode.ThemeIcon('error', new vscode.ThemeColor('editorError.foreground'));
+    this.command = { command: Commands.DISPLAY_ISSUE, title: 'Display Issue', arguments: [this] };
   }
 }
 
 export class InjectionVulnerabilitiesProvider implements vscode.TreeDataProvider<ProblemNode | FileGroup> {
+  private static _instance: InjectionVulnerabilitiesProvider;
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<ProblemNode | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
@@ -65,6 +42,14 @@ export class InjectionVulnerabilitiesProvider implements vscode.TreeDataProvider
     overviewRulerColor: new vscode.ThemeColor('editorWarning.foreground'),
     overviewRulerLane: vscode.OverviewRulerLane.Right
   });
+
+  static init() {
+    this._instance = new InjectionVulnerabilitiesProvider();
+  }
+
+  static get instance(): InjectionVulnerabilitiesProvider {
+    return InjectionVulnerabilitiesProvider._instance;
+  }
 
   constructor() {
     // Update decorations when the active editor changes
@@ -120,7 +105,15 @@ export class InjectionVulnerabilitiesProvider implements vscode.TreeDataProvider
 
     const decorations = diagnostics.map(diagnostic => ({
       range: diagnostic.range,
-      hoverMessage: diagnostic.message
+      hoverMessage: (() => {
+        // PoC that we can use a command link in hover messages
+        const md = new vscode.MarkdownString('$(lock)' + diagnostic.message + ' [call command](command:SonarLint.ConnectedMode.focus)');
+        md.isTrusted = true;
+        md.supportThemeIcons = true;
+        // PoC that we can use a code block in hover messages
+        md.appendCodeblock(`Rule: ${diagnostic.source}`, 'text');
+        return md;
+      })()
     }));
 
     editor.setDecorations(this.decorationType, decorations);
@@ -148,7 +141,7 @@ export class InjectionVulnerabilitiesProvider implements vscode.TreeDataProvider
     } else if (element instanceof FileGroup) {
       return this.diagnostics
         .get(element.fileUri)
-        .map(diag => new ProblemNode(diag['data'].entryKey, diag.message, diag.source));
+        .map(diag => new ProblemNode(diag['data'], diag.message, diag.code as string, diag.source, element.fileUri));
     }
     return [];
   }

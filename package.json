@@ -573,6 +573,63 @@
         "category": "SonarQube",
         "icon": "$(export)",
         "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.NewCodeDefinition",
+        "title": "Focus on New Code",
+        "category": "SonarQube",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "SonarLint.FilterFindings",
+        "title": "Filter Findings",
+        "category": "SonarQube",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "SonarLint.FilterByBugs",
+        "title": "Bugs",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarLint.FilterByVulnerabilities",
+        "title": "Vulnerabilities",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarLint.FilterByCodeSmells",
+        "title": "Code Smells",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarLint.FilterBySecurityHotspots",
+        "title": "Security Hotspots",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarLint.FilterByBlocker",
+        "title": "Blocker",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarLint.FilterByCritical",
+        "title": "Critical",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarLint.FilterByMajor",
+        "title": "Major",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarLint.FilterByMinor",
+        "title": "Minor",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarLint.FilterByInfo",
+        "title": "Info",
+        "category": "SonarQube"
       }
     ],
     "viewsContainers": {
@@ -586,9 +643,8 @@
       "panel": [
         {
           "icon": "images/sonarqube_for_ide.svg",
-          "id": "SonarQube_ExtendedFindings",
-          "title": "SonarQube Extended Findings",
-          "when": "sonarqube.someFoldersUseConnectedMode"
+          "id": "SonarQube",
+          "title": "SonarQube"
         }
       ]
     },
@@ -600,21 +656,21 @@
           "when": "sonarqube.hasExploredIssueLocations"
         }
       ],
-      "SonarQube_ExtendedFindings": [
+      "SonarQube": [
+        {
+          "icon": "images/sonarqube_for_ide.svg",
+          "id": "SonarQube.Findings",
+          "name": "SonarQube",
+          "visibility": "visible"
+        }
+      ],
+      "SonarLint": [
         {
           "icon": "security-hotspot",
           "id": "SonarLint.SecurityHotspots",
           "name": "Security Hotspots",
           "visibility": "visible"
         },
-        {
-          "icon": "security-hotspot",
-          "id": "SonarLint.TaintVulnerabilities",
-          "name": "Injection Vulnerabilities",
-          "visibility": "visible"
-        }
-      ],
-      "SonarLint": [
         {
           "type": "tree",
           "id": "SonarQube.GetStarted",
@@ -712,6 +768,13 @@
         ]
       }
     ],
+    "submenus": [
+      {
+        "id": "SonarLint.FilterFindings",
+        "label": "Filter Findings",
+        "icon": "$(filter)"
+      }
+    ],
     "menus": {
       "view/title": [
         {
@@ -757,6 +820,16 @@
           "command": "SonarLint.ConnectToSonarCloud",
           "when": "view == SonarLint.ConnectedMode",
           "group": "inline"
+        },
+        {
+          "command": "SonarLint.NewCodeDefinition",
+          "when": "view == SonarQube.Findings",
+          "group": "navigation"
+        },
+        {
+          "submenu": "SonarLint.FilterFindings",
+          "when": "view == SonarQube.Findings",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -852,6 +925,44 @@
           "title": "Hide Security Hotspot",
           "category": "SonarQube",
           "when": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
+        }
+      ],
+      "SonarLint.FilterFindings": [
+        {
+          "command": "SonarLint.FilterByBugs",
+          "group": "1_type@1"
+        },
+        {
+          "command": "SonarLint.FilterByVulnerabilities",
+          "group": "1_type@2"
+        },
+        {
+          "command": "SonarLint.FilterByCodeSmells",
+          "group": "1_type@3"
+        },
+        {
+          "command": "SonarLint.FilterBySecurityHotspots",
+          "group": "1_type@4"
+        },
+        {
+          "command": "SonarLint.FilterByBlocker",
+          "group": "2_severity@1"
+        },
+        {
+          "command": "SonarLint.FilterByCritical",
+          "group": "2_severity@2"
+        },
+        {
+          "command": "SonarLint.FilterByMajor",
+          "group": "2_severity@3"
+        },
+        {
+          "command": "SonarLint.FilterByMinor",
+          "group": "2_severity@4"
+        },
+        {
+          "command": "SonarLint.FilterByInfo",
+          "group": "2_severity@5"
         }
       ]
     },

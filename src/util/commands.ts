@@ -75,4 +75,6 @@ export namespace Commands {
   export const AUTO_BIND_WORKSPACE_FOLDERS = 'SonarLint.AutoBindWorkspaceFolders';
 
   export const FOCUS_ON_CONNECTION = 'SonarLint.FocusOnConnection';
+
+  export const DISPLAY_ISSUE = 'SonarLint.DisplayIssue';
 }
