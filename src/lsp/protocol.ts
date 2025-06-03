@@ -336,6 +336,10 @@ export namespace CanShowMissingRequirementNotification {
   export const type = new lsp.RequestType<string, boolean, void>('sonarlint/canShowMissingRequirementsNotification');
 }
 
+export namespace DoNotShowMissingRequirementsMessageAgain {
+  export const type = new lsp.NotificationType('sonarlint/doNotShowMissingRequirementsMessageAgain');
+}
+
 export namespace MaybeShowWiderLanguageSupportNotification {
   export const type = new lsp.NotificationType<string[]>('sonarlint/maybeShowWiderLanguageSupportNotification');
 }

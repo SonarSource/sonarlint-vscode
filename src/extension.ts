@@ -669,6 +669,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.CanShowMissingRequirementNotification.type, () => {
     return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true);
   });
+  languageClient.onNotification(protocol.DoNotShowMissingRequirementsMessageAgain.type, () => {
+    context.globalState.update(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, false);
+  })
   languageClient.onNotification(protocol.MaybeShowWiderLanguageSupportNotification.type, (language) => maybeShowWiderLanguageSupportNotification(context, language));
   languageClient.onNotification(protocol.RemoveBindingsForDeletedConnections.type, async (connectionIds) => {
     await BindingService.instance.removeBindingsForRemovedConnections(connectionIds);
