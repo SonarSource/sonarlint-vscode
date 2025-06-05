@@ -660,7 +660,7 @@
           {
             "id": "SonarLint.connectedModeIntro",
             "title": "$(shield) Taint Vulnerabilities and More",
-            "description": "Enable advanced analysis (including [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) and wider language support) by connecting to SonarQube (Server, Cloud). Also, benefit from the [AI CodeFix](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/ai-capabilities/) within your IDE.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)\n",
+            "description": "Enable advanced analysis (including [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) and wider language support) by connecting to SonarQube (Server, Cloud). Also, benefit from the [AI CodeFix](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/ai-capabilities/ai-codefix/) within your IDE.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)\n",
             "media": {
               "image": "walkthrough/taintVulnerabilities.svg",
               "altText": "SonarQube for IDE Taint Vulnerabilities"
