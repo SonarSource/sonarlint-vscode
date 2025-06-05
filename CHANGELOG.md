@@ -5,6 +5,7 @@
   * Exclude given file or folder from local analysis
   * List Security Hotspots detected in the file
   * Analyze a given file
+* Update Go analyzer 1.23 -> [1.24](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019628%20ORDER%20BY%20created%20ASC)
 
 ## 4.23
 
