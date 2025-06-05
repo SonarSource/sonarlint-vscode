@@ -94,8 +94,9 @@ export function showNoFileWithUriError(uri: vscode.Uri) {
   vscode.window
   .showErrorMessage(
     `Could not find file '${uri}' in the current workspace.
-Please make sure that the right folder is open and bound to the right project on the server,
-and that the file has not been removed or renamed.`,
+      Please make sure that the right folder is open and bound to the right project on the server,
+      the right branch is checked out,
+      and that the file has not been removed or renamed.`,
     'Show Documentation'
   )
   .then(action => {
