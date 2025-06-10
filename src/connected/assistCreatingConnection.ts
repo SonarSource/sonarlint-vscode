@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { AutomaticConnectionSetupCancellationError } from './automaticConnectionCancellationError';
 import { connectToSonarQube } from './connectionsetup';
 import { AssistCreatingConnectionParams } from '../lsp/protocol';
-import { ConnectionSettingsService, SonarCloudConnection, SonarCloudRegion, SonarQubeConnection } from '../settings/connectionsettings';
+import { ConnectionSettingsService, getTokenStorageKey, SonarCloudConnection, SonarCloudRegion, SonarQubeConnection } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
 import { sonarCloudRegionToLabel } from '../util/util';
 
@@ -71,15 +71,15 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
     const reply = await confirmConnection(isSonarCloud, serverUrlOrOrganizationKey, token);
     if (reply.confirmed) {
       if (isSonarCloud) {
-        const regionPrefix = region ? `${region}_` : '';
-        const sonarCloudToken = token || await ConnectionSettingsService.instance.getServerToken(regionPrefix + serverUrlOrOrganizationKey);
         const connection : SonarCloudConnection = {
-          token: sonarCloudToken,
           connectionId: serverUrlOrOrganizationKey,
           disableNotifications: false,
           organizationKey: serverUrlOrOrganizationKey,
           region
         };
+        const tokenStorageKey = getTokenStorageKey(connection);
+        const sonarCloudToken = token || await ConnectionSettingsService.instance.getServerToken(tokenStorageKey);
+        connection.token = sonarCloudToken;
 
         return await ConnectionSettingsService.instance.addSonarCloudConnection(connection);
       } else if (!isSonarCloud && token) {

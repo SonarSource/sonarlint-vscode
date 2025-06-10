@@ -210,7 +210,7 @@ export class ConnectionSettingsService {
       .getConfiguration()
       .update(SONARCLOUD_CONNECTIONS_CATEGORY, connections, VSCode.ConfigurationTarget.Global);
 
-    return newConnection.connectionId;  
+    return newConnection.connectionId;
   }
 
   async updateSonarCloudConnection(connection: SonarCloudConnection) {
@@ -251,7 +251,7 @@ export class ConnectionSettingsService {
     await updateConfigIfNotEmpty(scConnections, SONARCLOUD_CONNECTIONS_CATEGORY);
   }
 
-  async loadSonarQubeConnection(connectionId: string) : Promise<SonarQubeConnection> {
+  async loadSonarQubeConnection(connectionId: string): Promise<SonarQubeConnection> {
     const allSonarQubeConnections = this.getSonarQubeConnections();
     const loadedConnection = allSonarQubeConnections.find(c => c.connectionId === connectionId);
     if (loadedConnection) {
@@ -260,12 +260,12 @@ export class ConnectionSettingsService {
     return loadedConnection;
   }
 
-  async loadSonarCloudConnection(connectionId: string) : Promise<SonarCloudConnection> {
+  async loadSonarCloudConnection(connectionId: string): Promise<SonarCloudConnection> {
     const allSonarCloudConnections = this.getSonarCloudConnections();
     const loadedConnection = allSonarCloudConnections.find(c => c.connectionId === connectionId);
     if (loadedConnection) {
-      const regionPrefix = loadedConnection.region ? `${loadedConnection.region}_` : '';
-      loadedConnection.token = await this.getServerToken(regionPrefix + loadedConnection.organizationKey);
+      const tokenStorageKey = getTokenStorageKey(loadedConnection);
+      loadedConnection.token = await this.getServerToken(tokenStorageKey);
     }
     return loadedConnection;
   }
@@ -322,7 +322,12 @@ export class ConnectionSettingsService {
     return token;
   }
 
-  async checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean, region: SonarCloudRegion) {
+  async checkNewConnection(
+    token: string,
+    serverOrOrganization: string,
+    isSonarQube: boolean,
+    region: SonarCloudRegion
+  ) {
     return this.client.checkNewConnection(token, serverOrOrganization, isSonarQube, region);
   }
 
@@ -370,8 +375,7 @@ export interface SonarCloudConnection extends BaseConnection {
 export function isSonarQubeConnection(connection: BaseConnection): connection is SonarQubeConnection {
   return (connection as SonarQubeConnection).serverUrl !== undefined;
 }
-
-function getTokenStorageKey(connection: SonarQubeConnection | SonarCloudConnection) {
+export function getTokenStorageKey(connection: SonarQubeConnection | SonarCloudConnection) {
   const regionPrefix = !isSonarQubeConnection(connection) && connection.region ? `${connection.region}_` : '';
   return isSonarQubeConnection(connection) ? connection.serverUrl : regionPrefix + connection.organizationKey;
 }
