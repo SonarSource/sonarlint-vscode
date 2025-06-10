@@ -71,7 +71,8 @@ export function confirmConnectionDetailsAndSave(context: vscode.ExtensionContext
     const reply = await confirmConnection(isSonarCloud, serverUrlOrOrganizationKey, token);
     if (reply.confirmed) {
       if (isSonarCloud) {
-        const sonarCloudToken = token || await ConnectionSettingsService.instance.getServerToken(serverUrlOrOrganizationKey);
+        const regionPrefix = region ? `${region}_` : '';
+        const sonarCloudToken = token || await ConnectionSettingsService.instance.getServerToken(regionPrefix + serverUrlOrOrganizationKey);
         const connection : SonarCloudConnection = {
           token: sonarCloudToken,
           connectionId: serverUrlOrOrganizationKey,
