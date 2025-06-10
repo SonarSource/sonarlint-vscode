@@ -264,7 +264,8 @@ export class ConnectionSettingsService {
     const allSonarCloudConnections = this.getSonarCloudConnections();
     const loadedConnection = allSonarCloudConnections.find(c => c.connectionId === connectionId);
     if (loadedConnection) {
-      loadedConnection.token = await this.getServerToken(loadedConnection.organizationKey);
+      const regionPrefix = loadedConnection.region ? `${loadedConnection.region}_` : '';
+      loadedConnection.token = await this.getServerToken(regionPrefix + loadedConnection.organizationKey);
     }
     return loadedConnection;
   }
