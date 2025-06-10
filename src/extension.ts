@@ -759,6 +759,7 @@ function updateSonarLintViewContainerBadge() {
 }
 
 async function getTokenForServer(serverId: string): Promise<string> {
+  // serverId is either a server URL or a organizationKey prefixed with region (EU_ or US_)
   return ConnectionSettingsService.instance.getServerToken(serverId);
 }
 
