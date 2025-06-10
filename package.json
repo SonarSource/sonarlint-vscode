@@ -578,7 +578,15 @@
         {
           "icon": "images/sonarqube_for_ide.svg",
           "id": "SonarLint",
-          "title": "SonarQube"
+          "title": "SonarQube Setup"
+        }
+      ],
+      "panel": [
+        {
+          "icon": "images/sonarqube_for_ide.svg",
+          "id": "SonarQube",
+          "title": "SonarQube",
+          "when": "sonarqube.someFoldersUseConnectedMode"
         }
       ]
     },
@@ -617,6 +625,13 @@
           "id": "SonarLint.HelpAndFeedback",
           "name": "Help and Feedback"
         }
+      ],
+      "SonarQube": [
+        {
+          "id": "SonarQube.Findings",
+          "name": "SonarQube Findings",
+          "when": "sonarqube.someFoldersUseConnectedMode"
+        }
       ]
     },
     "viewsWelcome": [
@@ -635,6 +650,10 @@
       {
         "view": "SonarQube.GetStarted",
         "contents": "Automatically find and fix code quality and security issues as you write, using powerful linting tools built right into your code editor.\n\n[Get Started with SonarQube for IDE](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarLintWalkthrough%22) $(arrow-right)"
+      },
+      {
+        "view": "SonarQube.Findings",
+        "contents": "No [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/) or [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) found in this project."
       }
     ],
     "walkthroughs": [
