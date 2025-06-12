@@ -41,6 +41,7 @@ import {
   useProvidedFolderOrPickManuallyAndScan
 } from './hotspot/hotspots';
 import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
+import { FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
@@ -101,6 +102,8 @@ let allConnectionsView: VSCode.TreeView<ConnectionsNode>;
 let allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider;
 let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
 let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
+let findingsTreeDataProvider: FindingsTreeDataProvider;
+let findingsView: VSCode.TreeView<FindingsTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
@@ -355,6 +358,14 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
 
   context.subscriptions.push(allHotspotsView);
+
+  FindingsTreeDataProvider.init(ConnectionSettingsService.instance);
+  findingsTreeDataProvider = FindingsTreeDataProvider.instance;
+  findingsView = VSCode.window.createTreeView('SonarQube.Findings', {
+    treeDataProvider: findingsTreeDataProvider
+  });
+
+  context.subscriptions.push(findingsView);
 
   helpAndFeedbackTreeDataProvider = new HelpAndFeedbackTreeDataProvider();
   helpAndFeedbackView = VSCode.window.createTreeView('SonarLint.HelpAndFeedback', {
@@ -709,6 +720,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
   languageClient.onNotification(protocol.PublishHotspotsForFile.type, async hotspotsPerFile => {
     await hotspotsTreeDataProvider.refresh(hotspotsPerFile);
+    findingsTreeDataProvider.updateHotspots(hotspotsPerFile);
     updateSonarLintViewContainerBadge();
   });
   languageClient.onNotification(protocol.PublishTaintVulnerabilitiesForFile.type, async taintVulnerabilitiesPerFile => {
@@ -727,6 +739,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       return d;
     });
     taintVulnerabilityCollection.set(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics);
+    findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, diagnostics);
   });
 
   languageClient.onRequest(
@@ -756,6 +769,15 @@ function updateSonarLintViewContainerBadge() {
       ? {
           value: allHotspotsCount,
           tooltip: `Total ${allHotspotsCount} Security Hotspots`
+        }
+      : undefined;
+
+  const totalFindingsCount = findingsTreeDataProvider.getTotalFindingsCount();
+  findingsView.badge =
+    totalFindingsCount > 0
+      ? {
+          value: totalFindingsCount,
+          tooltip: `Total ${totalFindingsCount} Findings`
         }
       : undefined;
 }
