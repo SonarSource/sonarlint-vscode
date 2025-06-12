@@ -24,7 +24,7 @@
     "Notebooks",
     "AI"
   ],
-  "tags": [
+  "keywords": [
     "AI",
     "Education",
     "Vulnerability",
@@ -32,9 +32,7 @@
     "SonarQube",
     "Static Code Analysis",
     "Code Quality",
-    "language-model-tools"
-  ],
-  "keywords": [
+    "language-model-tools",
     "IaC",
     "Go",
     "C++",
