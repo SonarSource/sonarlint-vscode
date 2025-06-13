@@ -461,12 +461,12 @@
       {
         "command": "SonarLint.ClearLocations",
         "title": "Clear",
-        "enablement": "view == SonarLint.IssueLocations || view == SonarLint.SecurityHotspots"
+        "enablement": "view == SonarLint.IssueLocations || view == SonarQube.Findings"
       },
       {
         "command": "SonarLint.ClearHotspotLocations",
         "title": "Clear Highlighting",
-        "enablement": "view == SonarLint.SecurityHotspots"
+        "enablement": "view == SonarQube.Findings"
       },
       {
         "command": "SonarLint.ConnectToSonarQube",
@@ -526,31 +526,31 @@
         "command": "SonarLint.OpenHotspotOnServer",
         "title": "Review on Server",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == knownHotspotItem"
       },
       {
         "command": "SonarLint.ShowHotspotRuleDescription",
         "title": "Show Rule Description",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == newHotspotItem"
       },
       {
         "command": "SonarLint.ShowHotspotDetails",
         "title": "Show Hotspot Details",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
+        "enablement": "view == SonarQube.Findings && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
       },
       {
         "command": "SonarLint.HideHotspot",
         "title": "Hide Security Hotspot",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == remoteHotspotItem"
       },
       {
         "command": "SonarLint.ChangeHotspotStatus",
         "title": "Change Status",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == knownHotspotItem"
       },
       {
         "command": "SonarLint.HelpAndFeedbackLinkClicked",
@@ -828,33 +828,33 @@
         {
           "command": "SonarLint.ShowHotspotRuleDescription",
           "title": "Show Rule Description",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == newHotspotItem"
         },
         {
           "command": "SonarLint.ShowHotspotDetails",
           "title": "Show Hotspot Details",
-          "when": "view == SonarLint.SecurityHotspots && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
+          "when": "view == SonarQube.Findings && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
         },
         {
           "command": "SonarLint.ChangeHotspotStatus",
           "title": "Change Status",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == knownHotspotItem"
         },
         {
           "command": "SonarLint.OpenHotspotOnServer",
           "title": "Review on Server",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == knownHotspotItem"
         },
         {
           "command": "SonarLint.ClearHotspotLocations",
           "title": "Clear Highlighting",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == newHotspotItem || viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
         },
         {
           "command": "SonarLint.HideHotspot",
           "title": "Hide Security Hotspot",
           "category": "SonarQube",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == remoteHotspotItem"
         }
       ]
     },
