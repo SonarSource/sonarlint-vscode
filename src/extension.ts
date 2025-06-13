@@ -359,7 +359,7 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(allHotspotsView);
 
-  FindingsTreeDataProvider.init(ConnectionSettingsService.instance);
+  FindingsTreeDataProvider.init();
   findingsTreeDataProvider = FindingsTreeDataProvider.instance;
   findingsView = VSCode.window.createTreeView('SonarQube.Findings', {
     treeDataProvider: findingsTreeDataProvider
@@ -451,12 +451,6 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_LOCATION, (hotspot: HotspotNode) =>
       languageClient.showHotspotLocations(hotspot.key, hotspot.fileUri)
-    )
-  );
-
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.HIGHLIGHT_REMOTE_HOTSPOT_LOCATION, (hotspot: HotspotNode) =>
-      showSecurityHotspot(allHotspotsView, hotspotsTreeDataProvider)
     )
   );
 
@@ -713,7 +707,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
   languageClient.onNotification(protocol.ShowHotspotNotification.type, h =>
-    showSecurityHotspot(allHotspotsView, hotspotsTreeDataProvider, h)
+    showSecurityHotspot(allFindingsView, findingsTreeDataProvider, h)
   );
   languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
