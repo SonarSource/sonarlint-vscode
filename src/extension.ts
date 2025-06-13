@@ -345,7 +345,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  FindingsTreeDataProvider.init();
+  FindingsTreeDataProvider.init(context);
   findingsTreeDataProvider = FindingsTreeDataProvider.instance;
   findingsView = VSCode.window.createTreeView('SonarQube.Findings', {
     treeDataProvider: findingsTreeDataProvider
@@ -584,18 +584,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
     })
   );
 
-  // context.subscriptions.push(
-  //   VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER, async folder => {
-  //     await hotspotsTreeDataProvider.showHotspotsInFolder();
-  //     await scanFolderForHotspotsCommandHandler(folder);
-  //   })
-  // );
-  // context.subscriptions.push(
-  //   VSCode.commands.registerCommand(Commands.SHOW_HOTSPOTS_IN_OPEN_FILES, async () => {
-  //     await hotspotsTreeDataProvider.showHotspotsInOpenFiles();
-  //     languageClient.forgetFolderHotspots();
-  //   })
-  // );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER, async folder => {
+      await scanFolderForHotspotsCommandHandler(folder);
+    })
+  );
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.FORGET_FOLDER_HOTSPOTS, () => languageClient.forgetFolderHotspots())
@@ -711,8 +704,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       return d;
     });
     taintVulnerabilityCollection.set(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics);
-    findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, diagnostics);
-    updateFindingsViewContainerBadge();
+    // findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, diagnostics);
+    // updateFindingsViewContainerBadge();
   });
 
   languageClient.onRequest(
@@ -747,6 +740,8 @@ async function getTokenForServer(serverId: string): Promise<string> {
 }
 
 async function showAllLocations(issue: protocol.Issue) {
+  // make sure the view is visible
+  ContextManager.instance.setIssueLocationsContext();
   await secondaryLocationsTree.showAllLocations(issue);
   if (issue.creationDate) {
     const createdAgo = issue.creationDate

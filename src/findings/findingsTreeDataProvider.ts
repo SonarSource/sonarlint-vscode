@@ -50,23 +50,27 @@ export interface Finding {
 const SOURCE_CONFIG = {
   [FindingSource.SonarQube]: {
     icon: 'security-hotspot',
-    iconColor: 'editor.hint.foreground',
-    label: 'Local-only Security Hotspot'
+    iconColor: 'editorInfo.foreground',
+    label: 'Security Hotspot',
+    tooltipText: 'This Security Hotspot exists on remote project'
   },
   [FindingSource.Remote]: {
     icon: 'security-hotspot', 
-    iconColor: 'editor.hint.foreground',
-    label: 'Already known Security Hotspot'
+    iconColor: 'editorInfo.foreground',
+    label: 'Security Hotspot',
+    tooltipText: 'This Security Hotspot only exists locally'
   },
   [FindingSource.Latest_SonarQube]: {
     icon: 'use-severity', // Special marker to use severity-based icon
     iconColor: 'use-severity',
-    label: 'Taint Vulnerability from SonarQube Server'
+    label: 'Taint Vulnerability',
+    tooltipText: 'This Taint Vulnerability was detected by SonarQube Server'
   },
   [FindingSource.Latest_SonarCloud]: {
     icon: 'use-severity', // Special marker to use severity-based icon
     iconColor: 'use-severity', 
-    label: 'Taint Vulnerability from SonarQube Cloud'
+    label: 'Taint Vulnerability',
+    tooltipText: 'This Taint Vulnerability was detected by SonarQube Cloud'
   }
 };
 
@@ -121,9 +125,13 @@ export class FindingNode extends vscode.TreeItem {
     
     this.description = `${SOURCE_CONFIG[source]?.label} (${ruleKey})`;
     this.iconPath = this.getIconForFinding(source, severity);
+    this.tooltip = SOURCE_CONFIG[source]?.tooltipText;
     
-    // Set up command based on finding type
-    this.command = this.getCommandForFinding(findingType, key, fileUri);
+    this.command = {
+      command: Commands.SHOW_ALL_INFO_FOR_FINDING,
+      title: 'Show All Info For Finding',
+      arguments: [this]
+    };
   }
 
   private getIconForFinding(source: FindingSource, severity?: number): vscode.ThemeIcon {
@@ -141,29 +149,6 @@ export class FindingNode extends vscode.TreeItem {
     
     // Fallback to severity-based icon
     return severityToIcon.get(this.severity);
-  }
-
-  private getCommandForFinding(findingType: FindingType, key: string, fileUri: string): vscode.Command {
-    switch (findingType) {
-      case FindingType.SecurityHotspot:
-        return {
-          command: Commands.SHOW_HOTSPOT_LOCATION,
-          title: 'Show Hotspot Location',
-          arguments: [{ key, fileUri }]
-        };
-      case FindingType.TaintVulnerability:
-        return {
-          command: Commands.SHOW_ALL_LOCATIONS,
-          title: 'Show Taint Vulnerability Location', 
-          arguments: [{ key, fileUri }]
-        };
-      default:
-        return {
-          command: Commands.SHOW_ALL_LOCATIONS,
-          title: 'Show Finding Location',
-          arguments: [{ key, fileUri }]
-        };
-    }
   }
 }
 
@@ -183,15 +168,29 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   private static _instance: FindingsTreeDataProvider;
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<FindingsTreeViewItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<FindingsTreeViewItem | undefined> = this._onDidChangeTreeData.event;
-  
   private readonly findingsCache = new Map<string, FindingNode[]>();
 
-  static init() {
+  static init(context: vscode.ExtensionContext) {
     this._instance = new FindingsTreeDataProvider();
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_ALL_INFO_FOR_FINDING, (finding: FindingNode) => {
+        this._instance.showAllInfoForFinding(finding);
+      })
+    );
   }
 
   static get instance(): FindingsTreeDataProvider {
     return FindingsTreeDataProvider._instance;
+  }
+
+  private showAllInfoForFinding(finding: FindingNode) {
+    if (finding.findingType === FindingType.SecurityHotspot) {
+      vscode.commands.executeCommand(Commands.SHOW_HOTSPOT_LOCATION, finding);
+      const showRuleDescriptionCommand = finding.contextValue === 'newHotspotItem' ? Commands.SHOW_HOTSPOT_RULE_DESCRIPTION : Commands.SHOW_HOTSPOT_DETAILS;
+      vscode.commands.executeCommand(showRuleDescriptionCommand, finding);
+    } else if (finding.findingType === FindingType.TaintVulnerability) {
+      vscode.commands.executeCommand(Commands.SHOW_ALL_LOCATIONS, [finding.key, finding.fileUri]);
+    }
   }
 
   refresh() {
@@ -229,14 +228,14 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   private convertHotspotsToFindingNodes(hotspotsPerFile: PublishDiagnosticsParams): FindingNode[] {
     return hotspotsPerFile.diagnostics.map(diagnostic => new FindingNode(
       diagnostic['data'].entryKey ?? diagnostic.code as string,
-      (diagnostic as any).data?.serverIssueKey?.toString(),
+      diagnostic['data']?.serverIssueKey?.toString(),
       new vscode.Range(diagnostic.range.start.line, diagnostic.range.start.character, diagnostic.range.end.line, diagnostic.range.end.character),
       getContextValueForFinding(diagnostic.source as FindingSource),
       diagnostic.source as FindingSource, // Hotspots are typically detected locally
       diagnostic.message,
       diagnostic.code as string || 'unknown',
       hotspotsPerFile.uri,
-      (diagnostic as any).data?.status,
+      diagnostic['data']?.status,
       FindingType.SecurityHotspot,
       diagnostic.severity,
     ));
