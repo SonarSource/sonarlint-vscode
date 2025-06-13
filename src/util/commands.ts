@@ -40,7 +40,6 @@ export namespace Commands {
 
   export const INSTALL_MANAGED_JRE = 'SonarLint.InstallManagedJre';
 
-  export const HIDE_HOTSPOT = 'SonarLint.HideHotspot';
   export const SHOW_HOTSPOT_DESCRIPTION = 'SonarLint.ShowHotspotDescription';
   export const CONFIGURE_COMPILATION_DATABASE = 'SonarLint.ConfigureCompilationDatabase';
 

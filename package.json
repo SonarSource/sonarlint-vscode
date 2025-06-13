@@ -443,13 +443,7 @@
       },
       {
         "command": "SonarLint.ScanForHotspotsInFolder",
-        "title": "In Whole Folder",
-        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'OpenFiles'"
-      },
-      {
-        "command": "SonarLint.ShowHotspotsInOpenFiles",
-        "title": "In Open Files",
-        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'Folder'"
+        "title": "In Whole Folder"
       },
       {
         "command": "SonarLint.FindRuleByKey",
@@ -536,13 +530,7 @@
         "command": "SonarLint.ShowHotspotDetails",
         "title": "Show Hotspot Details",
         "category": "SonarQube",
-        "enablement": "view == SonarQube.Findings && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
-      },
-      {
-        "command": "SonarLint.HideHotspot",
-        "title": "Hide Security Hotspot",
-        "category": "SonarQube",
-        "enablement": "view == SonarQube.Findings && viewItem == remoteHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == knownHotspotItem"
       },
       {
         "command": "SonarLint.ChangeHotspotStatus",
@@ -610,12 +598,6 @@
           "name": "Connected Mode"
         },
         {
-          "id": "SonarLint.SecurityHotspots",
-          "name": "Security Hotspots",
-          "visibility": "collapsed",
-          "when": "sonarqube.someFoldersUseConnectedMode"
-        },
-        {
           "id": "SonarLint.AllRules",
           "name": "Rules",
           "visibility": "collapsed",
@@ -642,10 +624,6 @@
       {
         "view": "SonarLint.ConnectedMode",
         "contents": "[Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) links SonarQube for IDE to SonarQube Server or SonarQube Cloud projects. \n\n[Connect to SonarQube Server](command:SonarLint.ConnectToSonarQube)\n[Connect to SonarQube Cloud](command:SonarLint.ConnectToSonarCloud)\n\nAnalyze more languages, detect more issues on the whole project, receive notifications about the quality gate status, and more."
-      },
-      {
-        "view": "SonarLint.SecurityHotspots",
-        "contents": "Security Hotspots detected in open files will be displayed here. [Learn More](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
       },
       {
         "view": "SonarQube.GetStarted",
@@ -728,16 +706,6 @@
         {
           "command": "SonarLint.ShowInactiveRules",
           "when": "view == SonarLint.AllRules",
-          "group": "navigation"
-        },
-        {
-          "command": "SonarLint.ScanForHotspotsInFolder",
-          "when": "view == SonarLint.SecurityHotspots",
-          "group": "navigation"
-        },
-        {
-          "command": "SonarLint.ShowHotspotsInOpenFiles",
-          "when": "view == SonarLint.SecurityHotspots",
           "group": "navigation"
         },
         {
@@ -831,7 +799,7 @@
         {
           "command": "SonarLint.ShowHotspotDetails",
           "title": "Show Hotspot Details",
-          "when": "view == SonarQube.Findings && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
+          "when": "view == SonarQube.Findings && viewItem == knownHotspotItem"
         },
         {
           "command": "SonarLint.ChangeHotspotStatus",
@@ -846,13 +814,7 @@
         {
           "command": "SonarLint.ClearHotspotLocations",
           "title": "Clear Highlighting",
-          "when": "view == SonarQube.Findings && viewItem == newHotspotItem || viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
-        },
-        {
-          "command": "SonarLint.HideHotspot",
-          "title": "Hide Security Hotspot",
-          "category": "SonarQube",
-          "when": "view == SonarQube.Findings && viewItem == remoteHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == newHotspotItem || viewItem == knownHotspotItem"
         }
       ]
     },

@@ -18,9 +18,6 @@ import {
   useProvidedFolderOrPickManuallyAndScan
 } from '../../src/hotspot/hotspots';
 import { HotspotProbability, RemoteHotspot } from '../../src/lsp/protocol';
-import {
-  HotspotReviewPriority,
-} from '../../src/hotspot/hotspotsTreeDataProvider';
 import { Position, Selection } from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { expect } from 'chai';
@@ -29,7 +26,7 @@ import { HotspotAnalysisConfirmation } from '../../src/util/showMessage';
 import * as protocol from '../../src/lsp/protocol';
 import { getWorkspaceFolder } from '../testutil';
 import * as sinon from 'sinon';
-import { FindingsTreeDataProvider, FindingsTreeViewItem } from '../../src/findings/findingsTreeDataProvider';
+import { FindingsTreeDataProvider, FindingsTreeViewItem, HotspotReviewPriority } from '../../src/findings/findingsTreeDataProvider';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',

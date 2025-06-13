@@ -38,12 +38,7 @@ import {
   resolveExtensionFile
 } from '../util/util';
 import { computeHotspotContextPanelContent } from './hotspotContextPanel';
-import {
-  AllHotspotsTreeDataProvider,
-  HotspotNode,
-  HotspotReviewPriority
-} from './hotspotsTreeDataProvider';
-import { FindingsTreeDataProvider, FindingsTreeViewItem } from '../findings/findingsTreeDataProvider';
+import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem, HotspotReviewPriority } from '../findings/findingsTreeDataProvider';
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
@@ -94,17 +89,6 @@ Please make sure that the right folder is open and bound to the right project on
       }
     });
 }
-
-export const hideSecurityHotspot = async (hotspotsTreeDataProvider: AllHotspotsTreeDataProvider) => {
-  if (hotspotDescriptionPanel) {
-    hotspotDescriptionPanel.dispose();
-  }
-  if (!hotspotsTreeDataProvider.hasLocalHotspots()) {
-    hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
-  }
-  activeHotspot = null;
-  await hotspotsTreeDataProvider.refresh();
-};
 
 function revealFileInTreeView(
   hotspot: RemoteHotspot,
@@ -296,7 +280,7 @@ export function formatDetectedHotspotStatus(statusIndex: number) {
   return statusIndex === ExtendedHotspotStatus.ToReview ? 'To review' : ExtendedHotspotStatus[statusIndex].toString();
 }
 
-export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, hotspot: HotspotNode) {
+export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, hotspot: FindingNode) {
   if (!hotspotDetailsPanel) {
     hotspotDetailsPanel = vscode.window.createWebviewPanel(
       'sonarlint.DiagContext',
