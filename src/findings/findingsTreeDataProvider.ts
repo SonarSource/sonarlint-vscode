@@ -11,7 +11,12 @@ import { ProviderResult } from 'vscode';
 import { PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
-import { HotspotReviewPriority } from '../hotspot/hotspotsTreeDataProvider';
+
+export enum HotspotReviewPriority {
+  High = 1,
+  Medium = 2,
+  Low = 3
+}
 
 export enum FindingType {
   SecurityHotspot = 'hotspot',
