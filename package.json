@@ -443,7 +443,12 @@
       },
       {
         "command": "SonarLint.ScanForHotspotsInFolder",
-        "title": "In Whole Folder"
+        "title": "Scan for Hotspots in Folder",
+        "category": "SonarQube"
+      },
+      {
+        "command": "SonarQube.ShowAllInfoForFinding",
+        "title": "Show finding location and details"
       },
       {
         "command": "SonarLint.FindRuleByKey",
