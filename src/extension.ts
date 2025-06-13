@@ -707,7 +707,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
   languageClient.onNotification(protocol.ShowHotspotNotification.type, h =>
-    showSecurityHotspot(allFindingsView, findingsTreeDataProvider, h)
+    showSecurityHotspot(findingsView, findingsTreeDataProvider, h)
   );
   languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));

@@ -59,7 +59,6 @@ export namespace Commands {
   export const SHOW_HOTSPOT_RULE_DESCRIPTION = 'SonarLint.ShowHotspotRuleDescription';
   export const SHOW_HOTSPOT_DETAILS = 'SonarLint.ShowHotspotDetails';
   export const OPEN_HOTSPOT_ON_SERVER = 'SonarLint.OpenHotspotOnServer';
-  export const HIGHLIGHT_REMOTE_HOTSPOT_LOCATION = 'SonarLint.HighlightRemoteHotspotLocation';
   export const CLEAR_HOTSPOT_HIGHLIGHTING = 'SonarLint.ClearHotspotLocations';
   export const SHOW_HOTSPOTS_IN_OPEN_FILES = 'SonarLint.ShowHotspotsInOpenFiles';
   export const SCAN_FOR_HOTSPOTS_IN_FOLDER = 'SonarLint.ScanForHotspotsInFolder';

@@ -25,10 +25,12 @@ export enum FindingSource {
   Remote = 'remote', // hotspot that matched remote one; Still on-the-fly analysis
 }
 
+type FindingContextValue = 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem';
+
 export interface Finding {
   key: string;
   serverIssueKey?: string;
-  contextValue: 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem';
+  contextValue: FindingContextValue;
   type: FindingType;
   source: FindingSource;
   severity?: number;
@@ -210,8 +212,6 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     const allFindings = [...otherFindings, ...newFindings];
     
     if (allFindings.length > 0) {
-      // // Sort findings by priority: severity, then source, then type
-      // allFindings.sort(this.compareFindingsByPriority);
       this.findingsCache.set(fileUri, allFindings);
     } else {
       this.findingsCache.delete(fileUri);
@@ -219,26 +219,6 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     
     this.refresh();
   }
-
-  // private readonly compareFindingsByPriority = (a: Finding, b: Finding): number => {
-  //   const sourcePriority = {
-  //     [FindingSource.Latest_SonarQube]: 1,
-  //     [FindingSource.Latest_SonarCloud]: 2,
-  //     [FindingSource.SonarQube]: 3,
-  //     [FindingSource.Remote]: 4
-  //   };
-  //   const aPriority = sourcePriority[a.source] || 999;
-  //   const bPriority = sourcePriority[b.source] || 999;
-  //   if (aPriority !== bPriority) {
-  //     return aPriority - bPriority;
-  //   }
-    
-  //   const typePriority = {
-  //     [FindingType.TaintVulnerability]: 1,
-  //     [FindingType.SecurityHotspot]: 2
-  //   };
-  //   return (typePriority[a.type] || 999) - (typePriority[b.type] || 999);
-  // };
 
   private convertHotspotsToFindingNodes(hotspotsPerFile: PublishDiagnosticsParams): FindingNode[] {
     return hotspotsPerFile.diagnostics.map(diagnostic => new FindingNode(
@@ -287,7 +267,15 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     return [];
   }
 
-  private getRootFiles(): FindingsFileNode[] {
+  getParent(element: FindingsTreeViewItem): VSCode.ProviderResult<FindingsTreeViewItem> {
+    if (element instanceof FindingsFileNode) {
+      return null;
+    }
+
+    return this.getRootFiles().find(file => file.fileUri === element.fileUri);
+  }
+
+  getRootFiles(): FindingsFileNode[] {
     const files: FindingsFileNode[] = [];
     
     this.findingsCache.forEach((findings, fileUri) => {
@@ -296,7 +284,7 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
       }
     });
     
-    return files.sort((a, b) => a.label.toString().localeCompare(b.label.toString()));
+    return files;
   }
 
   private getFindingsForFile(fileUri: string): FindingNode[] {
