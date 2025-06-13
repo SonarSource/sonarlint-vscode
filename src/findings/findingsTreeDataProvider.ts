@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import * as VSCode from 'vscode';
+import * as vscode from 'vscode';
 import { ProviderResult } from 'vscode';
 import { PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
@@ -45,12 +45,12 @@ export interface Finding {
 const SOURCE_CONFIG = {
   [FindingSource.SonarQube]: {
     icon: 'security-hotspot',
-    iconColor: 'badge.background', // Yellow
+    iconColor: 'editor.hint.foreground',
     label: 'Local-only Security Hotspot'
   },
   [FindingSource.Remote]: {
     icon: 'security-hotspot', 
-    iconColor: 'badge.background', // Blue
+    iconColor: 'editor.hint.foreground',
     label: 'Already known Security Hotspot'
   },
   [FindingSource.Latest_SonarQube]: {
@@ -66,37 +66,38 @@ const SOURCE_CONFIG = {
 };
 
 const severityToIcon = new Map([
-  [1, new VSCode.ThemeIcon('error', new VSCode.ThemeColor('problemsErrorIcon.foreground'))],
-  [2, new VSCode.ThemeIcon('warning', new VSCode.ThemeColor('problemsWarningIcon.foreground'))],
-  [3, new VSCode.ThemeIcon('info', new VSCode.ThemeColor('problemsInfoIcon.foreground'))]
+  [1, new vscode.ThemeIcon('error', new vscode.ThemeColor('problemsErrorIcon.foreground'))],
+  [2, new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'))],
+  [3, new vscode.ThemeIcon('info', new vscode.ThemeColor('problemsInfoIcon.foreground'))]
 ]);
 
-export class FindingsFileNode extends VSCode.TreeItem {
+export class FindingsFileNode extends vscode.TreeItem {
   constructor(
     public readonly fileUri: string,
     public readonly findingsCount: number
   ) {
-    super(getFileNameFromFullPath(fileUri), VSCode.TreeItemCollapsibleState.Expanded);
+    super(getFileNameFromFullPath(fileUri), vscode.TreeItemCollapsibleState.Expanded);
     
     this.contextValue = 'findingsFileGroup';
     this.id = `file-${fileUri}`;
-    this.resourceUri = VSCode.Uri.parse(fileUri);
+    this.resourceUri = vscode.Uri.parse(fileUri);
     
-    const specifyWorkspaceFolderName = VSCode.workspace.workspaceFolders?.length > 1;
+    const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders?.length > 1;
     this.description = getRelativePathFromFullPath(
       fileUri,
-      VSCode.workspace.getWorkspaceFolder(this.resourceUri),
+      vscode.workspace.getWorkspaceFolder(this.resourceUri),
       specifyWorkspaceFolderName
     );
     
-    this.iconPath = VSCode.ThemeIcon.File;
+    this.iconPath = vscode.ThemeIcon.File;
     this.tooltip = `${findingsCount} SonarQube Security Finding(s)`;
   }
 }
 
-export class FindingNode extends VSCode.TreeItem {
+export class FindingNode extends vscode.TreeItem {
   constructor(public readonly key: string,
     public readonly serverIssueKey: string,
+    public readonly range: vscode.Range,
     public readonly contextValue: 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem',
     public readonly source: FindingSource,
     public readonly message: string,
@@ -107,7 +108,7 @@ export class FindingNode extends VSCode.TreeItem {
     public readonly vulnerabilityProbability?: HotspotReviewPriority,
     public readonly severity?: number,
   ) {
-    super(message, VSCode.TreeItemCollapsibleState.None);
+    super(message, vscode.TreeItemCollapsibleState.None);
     
     this.id = `${fileUri}-${key}`;
     this.key = key;
@@ -120,7 +121,7 @@ export class FindingNode extends VSCode.TreeItem {
     this.command = this.getCommandForFinding(findingType, key, fileUri);
   }
 
-  private getIconForFinding(source: FindingSource, severity?: number): VSCode.ThemeIcon {
+  private getIconForFinding(source: FindingSource, severity?: number): vscode.ThemeIcon {
     const sourceConfig = SOURCE_CONFIG[source];
     
     // For Latest_SonarQube and Latest_SonarCloud, use severity-based icons
@@ -130,14 +131,14 @@ export class FindingNode extends VSCode.TreeItem {
     
     // For other sources, use source-specific icons
     if (sourceConfig) {
-      return new VSCode.ThemeIcon(sourceConfig.icon, new VSCode.ThemeColor(sourceConfig.iconColor));
+      return new vscode.ThemeIcon(sourceConfig.icon, new vscode.ThemeColor(sourceConfig.iconColor));
     }
     
     // Fallback to severity-based icon
     return severityToIcon.get(this.severity);
   }
 
-  private getCommandForFinding(findingType: FindingType, key: string, fileUri: string): VSCode.Command {
+  private getCommandForFinding(findingType: FindingType, key: string, fileUri: string): vscode.Command {
     switch (findingType) {
       case FindingType.SecurityHotspot:
         return {
@@ -173,10 +174,10 @@ function getContextValueForFinding(source: FindingSource): 'newHotspotItem' | 'k
 
 export type FindingsTreeViewItem = FindingsFileNode | FindingNode;
 
-export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<FindingsTreeViewItem> {
+export class FindingsTreeDataProvider implements vscode.TreeDataProvider<FindingsTreeViewItem> {
   private static _instance: FindingsTreeDataProvider;
-  private readonly _onDidChangeTreeData = new VSCode.EventEmitter<FindingsTreeViewItem | undefined>();
-  readonly onDidChangeTreeData: VSCode.Event<FindingsTreeViewItem | undefined> = this._onDidChangeTreeData.event;
+  private readonly _onDidChangeTreeData = new vscode.EventEmitter<FindingsTreeViewItem | undefined>();
+  readonly onDidChangeTreeData: vscode.Event<FindingsTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   
   private readonly findingsCache = new Map<string, FindingNode[]>();
 
@@ -197,7 +198,7 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     this.updateFindingsForFile(hotspotsPerFile.uri, findingNodes, FindingType.SecurityHotspot);
   }
 
-  updateTaintVulnerabilities(fileUri: string, diagnostics: VSCode.Diagnostic[]) {
+  updateTaintVulnerabilities(fileUri: string, diagnostics: vscode.Diagnostic[]) {
     const findingNodes = this.convertTaintVulnerabilitiesToFindingNodes(fileUri, diagnostics);
     this.updateFindingsForFile(fileUri, findingNodes, FindingType.TaintVulnerability);
   }
@@ -224,6 +225,7 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     return hotspotsPerFile.diagnostics.map(diagnostic => new FindingNode(
       diagnostic['data'].entryKey ?? diagnostic.code as string,
       (diagnostic as any).data?.serverIssueKey?.toString(),
+      new vscode.Range(diagnostic.range.start.line, diagnostic.range.start.character, diagnostic.range.end.line, diagnostic.range.end.character),
       getContextValueForFinding(diagnostic.source as FindingSource),
       diagnostic.source as FindingSource, // Hotspots are typically detected locally
       diagnostic.message,
@@ -235,10 +237,11 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     ));
   }
 
-  private convertTaintVulnerabilitiesToFindingNodes(fileUri: string, diagnostics: VSCode.Diagnostic[]): FindingNode[] {
+  private convertTaintVulnerabilitiesToFindingNodes(fileUri: string, diagnostics: vscode.Diagnostic[]): FindingNode[] {
     return diagnostics.map(diagnostic => new FindingNode(
       diagnostic['data'] ?? diagnostic.code as string,
       diagnostic['data'] ?? diagnostic.code as string,
+      diagnostic.range,
       getContextValueForFinding(diagnostic.source as FindingSource),
       diagnostic.source as FindingSource,
       diagnostic.message,
@@ -251,7 +254,7 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     ));
   }
 
-  getTreeItem(element: FindingsTreeViewItem): VSCode.TreeItem {
+  getTreeItem(element: FindingsTreeViewItem): vscode.TreeItem {
     return element;
   }
 
@@ -267,7 +270,7 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     return [];
   }
 
-  getParent(element: FindingsTreeViewItem): VSCode.ProviderResult<FindingsTreeViewItem> {
+  getParent(element: FindingsTreeViewItem): vscode.ProviderResult<FindingsTreeViewItem> {
     if (element instanceof FindingsFileNode) {
       return null;
     }
@@ -292,6 +295,7 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
     return findings.map(finding => new FindingNode(
       finding.key,
       finding.serverIssueKey,
+      finding.range,
       finding.contextValue,
       finding.source,
       finding.message,
@@ -302,6 +306,10 @@ export class FindingsTreeDataProvider implements VSCode.TreeDataProvider<Finding
       finding.vulnerabilityProbability,
       finding.severity,
     ));
+  }
+
+  getHotspotsForFile(fileUri: string): FindingNode[] {
+    return this.findingsCache.get(fileUri)?.filter(finding => finding.findingType === FindingType.SecurityHotspot) || [];
   }
 
   hasFindings(): boolean {
