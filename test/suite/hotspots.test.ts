@@ -18,12 +18,6 @@ import {
   useProvidedFolderOrPickManuallyAndScan
 } from '../../src/hotspot/hotspots';
 import { HotspotProbability, RemoteHotspot } from '../../src/lsp/protocol';
-import {
-  AllHotspotsTreeDataProvider,
-  FileGroup,
-  HotspotReviewPriority,
-  HotspotTreeViewItem
-} from '../../src/hotspot/hotspotsTreeDataProvider';
 import { Position, Selection } from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { expect } from 'chai';
@@ -32,6 +26,7 @@ import { HotspotAnalysisConfirmation } from '../../src/util/showMessage';
 import * as protocol from '../../src/lsp/protocol';
 import { getWorkspaceFolder } from '../testutil';
 import * as sinon from 'sinon';
+import { FindingsTreeDataProvider, FindingsTreeViewItem, HotspotReviewPriority } from '../../src/findings/findingsTreeDataProvider';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',
@@ -68,19 +63,15 @@ function buildHotspot(filePath: string, vulnerabilityProbability: HotspotProbabi
   return newHotspot;
 }
 
-const mockAllHotspotsView = {
+const mockFindingsView = {
   reveal(_item, _options) {
     return null;
   }
-} as vscode.TreeView<HotspotTreeViewItem>;
+} as vscode.TreeView<FindingsTreeViewItem>;
 
-const mockHotspotsTreeDataProvider = {
-  hasLocalHotspots() {
-    return false;
-  },
-
-  getAllFilesWithHotspots() {
-    return new Map<string, FileGroup>();
+const mockFindingsTreeDataProvider = {
+  getRootFiles() {
+    return [];
   },
 
   refresh() {
@@ -90,7 +81,7 @@ const mockHotspotsTreeDataProvider = {
   getChildren() {
     return [];
   }
-} as AllHotspotsTreeDataProvider;
+} as FindingsTreeDataProvider;
 
 suite('Hotspots Test Suite', async () => {
   setup(async () => {
@@ -111,7 +102,7 @@ suite('Hotspots Test Suite', async () => {
     const showErrorMessageSpy = sinon.spy(vscode.window, 'showErrorMessage');
 
     // Call the function that will trigger the error message
-    await showSecurityHotspot(mockAllHotspotsView, mockHotspotsTreeDataProvider, hotspot);
+    await showSecurityHotspot(mockFindingsView, mockFindingsTreeDataProvider, hotspot);
 
     // Assert that the notification was shown
     expect(showErrorMessageSpy.calledOnce).to.be.true;
@@ -132,7 +123,7 @@ Please make sure that the right folder is open and bound to the right project on
 
   test('should show hotspot in found file', async () => {
     const hotspot = buildHotspot('main.js');
-    await showSecurityHotspot(mockAllHotspotsView, mockHotspotsTreeDataProvider, hotspot);
+    await showSecurityHotspot(mockFindingsView, mockFindingsTreeDataProvider, hotspot);
 
     assert.notStrictEqual(vscode.window.activeTextEditor, undefined, 'should open main.js in text editor');
 
@@ -160,7 +151,7 @@ Please make sure that the right folder is open and bound to the right project on
 
   test('should show hotspot when several files are found', async () => {
     const hotspot = buildHotspot('sample.js');
-    await showSecurityHotspot(mockAllHotspotsView, mockHotspotsTreeDataProvider, hotspot);
+    await showSecurityHotspot(mockFindingsView, mockFindingsTreeDataProvider, hotspot);
 
     assert.notStrictEqual(vscode.window.activeTextEditor, undefined, 'should open first sample.js in text editor');
 

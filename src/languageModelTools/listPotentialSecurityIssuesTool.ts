@@ -8,10 +8,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { AllHotspotsTreeDataProvider } from '../hotspot/hotspotsTreeDataProvider';
-import { Diagnostic } from '../lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { BindingService } from '../connected/binding';
+import { FindingNode, FindingsTreeDataProvider } from '../findings/findingsTreeDataProvider';
 
 interface IHotspotCountParameters {
   filePath: string;
@@ -56,12 +55,12 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
         new vscode.LanguageModelTextPart('I have initiated the binding process for you.'),
       ]);
     }
-    const hotspotsInFile: Diagnostic[] = AllHotspotsTreeDataProvider.instance.getAllHotspotsForFile(fileUri.toString());
+    const hotspotsInFile: FindingNode[] = FindingsTreeDataProvider.instance.getHotspotsForFile(fileUri.toString());
 
     for (const h of hotspotsInFile) {
       results.push(
         new vscode.LanguageModelTextPart(
-          `There is a potential security issue with message ${h.message} on line ${h.range.start.line}`
+          `There is a potential security issue with message ${h.message} on line ${h.range.start.line + 1}` // vscode line positions are 0-based
         )
       );
     }

@@ -33,14 +33,12 @@ import {
 import {
   changeHotspotStatus,
   getFilesForHotspotsAndLaunchScan,
-  hideSecurityHotspot,
-  HOTSPOTS_VIEW_ID,
   showHotspotDescription,
   showHotspotDetails,
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan
 } from './hotspot/hotspots';
-import { AllHotspotsTreeDataProvider, HotspotNode, HotspotTreeViewItem } from './hotspot/hotspotsTreeDataProvider';
+import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
@@ -98,8 +96,8 @@ let allRulesTreeDataProvider: AllRulesTreeDataProvider;
 let allRulesView: VSCode.TreeView<LanguageNode>;
 let allConnectionsView: VSCode.TreeView<ConnectionsNode>;
 let allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider;
-let hotspotsTreeDataProvider: AllHotspotsTreeDataProvider;
-let allHotspotsView: VSCode.TreeView<HotspotTreeViewItem>;
+let findingsTreeDataProvider: FindingsTreeDataProvider;
+let findingsView: VSCode.TreeView<FindingsTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
@@ -347,13 +345,13 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  AllHotspotsTreeDataProvider.init(ConnectionSettingsService.instance);
-  hotspotsTreeDataProvider = AllHotspotsTreeDataProvider.instance;
-  allHotspotsView = VSCode.window.createTreeView(HOTSPOTS_VIEW_ID, {
-    treeDataProvider: hotspotsTreeDataProvider
+  FindingsTreeDataProvider.init(context);
+  findingsTreeDataProvider = FindingsTreeDataProvider.instance;
+  findingsView = VSCode.window.createTreeView('SonarQube.Findings', {
+    treeDataProvider: findingsTreeDataProvider
   });
 
-  context.subscriptions.push(allHotspotsView);
+  context.subscriptions.push(findingsView);
 
   helpAndFeedbackTreeDataProvider = new HelpAndFeedbackTreeDataProvider();
   helpAndFeedbackView = VSCode.window.createTreeView('SonarLint.HelpAndFeedback', {
@@ -437,14 +435,8 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_LOCATION, (hotspot: HotspotNode) =>
+    VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_LOCATION, (hotspot: FindingNode) =>
       languageClient.showHotspotLocations(hotspot.key, hotspot.fileUri)
-    )
-  );
-
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.HIGHLIGHT_REMOTE_HOTSPOT_LOCATION, (hotspot: HotspotNode) =>
-      showSecurityHotspot(allHotspotsView, hotspotsTreeDataProvider)
     )
   );
 
@@ -493,12 +485,6 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.HIDE_HOTSPOT, async () => {
-      await hideSecurityHotspot(hotspotsTreeDataProvider);
-      updateSonarLintViewContainerBadge();
-    })
-  );
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_DESCRIPTION, showHotspotDescription)
   );
@@ -600,14 +586,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SCAN_FOR_HOTSPOTS_IN_FOLDER, async folder => {
-      await hotspotsTreeDataProvider.showHotspotsInFolder();
       await scanFolderForHotspotsCommandHandler(folder);
-    })
-  );
-  context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.SHOW_HOTSPOTS_IN_OPEN_FILES, async () => {
-      await hotspotsTreeDataProvider.showHotspotsInOpenFiles();
-      languageClient.forgetFolderHotspots();
     })
   );
 
@@ -700,14 +679,14 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
   languageClient.onNotification(protocol.ShowHotspotNotification.type, h =>
-    showSecurityHotspot(allHotspotsView, hotspotsTreeDataProvider, h)
+    showSecurityHotspot(findingsView, findingsTreeDataProvider, h)
   );
   languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
   languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
   languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
   languageClient.onNotification(protocol.PublishHotspotsForFile.type, async hotspotsPerFile => {
-    await hotspotsTreeDataProvider.refresh(hotspotsPerFile);
-    updateSonarLintViewContainerBadge();
+    findingsTreeDataProvider.updateHotspots(hotspotsPerFile);
+    updateFindingsViewContainerBadge();
   });
   languageClient.onNotification(protocol.PublishTaintVulnerabilitiesForFile.type, async taintVulnerabilitiesPerFile => {
     const diagnostics = taintVulnerabilitiesPerFile.diagnostics.map(diagnostic => {
@@ -725,6 +704,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       return d;
     });
     taintVulnerabilityCollection.set(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics);
+    // findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, diagnostics);
+    // updateFindingsViewContainerBadge();
   });
 
   languageClient.onRequest(
@@ -747,15 +728,11 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
 }
 
-function updateSonarLintViewContainerBadge() {
-  const allHotspotsCount = hotspotsTreeDataProvider.countAllHotspots();
-  allHotspotsView.badge =
-    allHotspotsCount > 0
-      ? {
-          value: allHotspotsCount,
-          tooltip: `Total ${allHotspotsCount} Security Hotspots`
-        }
-      : undefined;
+function updateFindingsViewContainerBadge() {
+  findingsView.badge = findingsTreeDataProvider.getTotalFindingsCount() > 0 ? {
+    value: findingsTreeDataProvider.getTotalFindingsCount(),
+    tooltip: `Total ${findingsTreeDataProvider.getTotalFindingsCount()} SonarQube Security Findings`
+  } : undefined;
 }
 
 async function getTokenForServer(serverId: string): Promise<string> {
@@ -764,6 +741,8 @@ async function getTokenForServer(serverId: string): Promise<string> {
 }
 
 async function showAllLocations(issue: protocol.Issue) {
+  // make sure the view is visible
+  ContextManager.instance.setIssueLocationsContext();
   await secondaryLocationsTree.showAllLocations(issue);
   if (issue.creationDate) {
     const createdAgo = issue.creationDate
