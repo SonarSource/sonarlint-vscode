@@ -14,7 +14,6 @@ import {
   Diagnostic,
   ExtendedHotspotStatus,
   HotspotProbability,
-  HotspotStatus,
   RemoteHotspot,
   ShowRuleDescriptionParams
 } from '../lsp/protocol';
@@ -42,9 +41,9 @@ import { computeHotspotContextPanelContent } from './hotspotContextPanel';
 import {
   AllHotspotsTreeDataProvider,
   HotspotNode,
-  HotspotReviewPriority,
-  HotspotTreeViewItem
+  HotspotReviewPriority
 } from './hotspotsTreeDataProvider';
+import { FindingsTreeDataProvider, FindingsTreeViewItem } from '../findings/findingsTreeDataProvider';
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
@@ -56,30 +55,24 @@ let hotspotDescriptionPanel: vscode.WebviewPanel;
 let hotspotDetailsPanel: vscode.WebviewPanel;
 
 export const showSecurityHotspot = async (
-  allHotspotsView: vscode.TreeView<HotspotTreeViewItem>,
-  hotspotsTreeDataProvider: AllHotspotsTreeDataProvider,
+  allFindingsView: vscode.TreeView<FindingsTreeViewItem>,
+  findingsTreeDataProvider: FindingsTreeDataProvider,
   remoteHotspot?: RemoteHotspot
 ) => {
-  const hotspot = remoteHotspot ? remoteHotspot : activeHotspot;
-  const foundUris = await vscode.workspace.findFiles(`**/${hotspot.ideFilePath}`);
+  const foundUris = await vscode.workspace.findFiles(`**/${remoteHotspot.ideFilePath}`);
   if (foundUris.length === 0) {
-    handleFileForHotspotNotFound(hotspot);
+    handleFileForHotspotNotFound(remoteHotspot);
   } else {
     const documentUri = foundUris[0];
     if (foundUris.length > 1) {
       verboseLogToSonarLintOutput(
-        `Multiple candidates found for '${hotspot.ideFilePath}', using first match '${documentUri}'`
+        `Multiple candidates found for '${remoteHotspot.ideFilePath}', using first match '${documentUri}'`
       );
     }
     const editor = await vscode.window.showTextDocument(documentUri);
-    if (hotspot instanceof HotspotNode) {
-      activeHotspot = hotspot ? hotspot : activeHotspot;
-      await highlightLocation(editor);
-    } else {
-      revealHotspotInTreeView(hotspot, allHotspotsView, hotspotsTreeDataProvider);
-      activeHotspot = hotspot ? hotspot : activeHotspot;
-      await highlightLocation(editor);
-    }
+    activeHotspot = remoteHotspot;
+    revealFileInTreeView(remoteHotspot, allFindingsView, findingsTreeDataProvider);
+    await highlightLocation(editor);
     vscode.commands.executeCommand(Commands.SHOW_HOTSPOT_DESCRIPTION);
   }
 };
@@ -113,44 +106,14 @@ export const hideSecurityHotspot = async (hotspotsTreeDataProvider: AllHotspotsT
   await hotspotsTreeDataProvider.refresh();
 };
 
-function revealHotspotInTreeView(
+function revealFileInTreeView(
   hotspot: RemoteHotspot,
-  allHotspotsView: vscode.TreeView<HotspotTreeViewItem>,
-  hotspotsTreeDataProvider: AllHotspotsTreeDataProvider
+  allFindingsView: vscode.TreeView<FindingsTreeViewItem>,
+  findingsTreeDataProvider: FindingsTreeDataProvider
 ) {
-  const { startLine, startLineOffset, endLine, endLineOffset } = hotspot.textRange;
-  // vscode line positions are 0-based
-  const start = new vscode.Position(startLine - 1, startLineOffset);
-  const end = { line: endLine - 1, character: endLineOffset };
-  const range = { start, end };
-
-  const hotspotDiag = {
-    range,
-    severity: diagnosticSeverity(hotspot),
-    message: hotspot.message,
-    code: hotspot.rule.key,
-    source: OPEN_HOTSPOT_IN_IDE_SOURCE,
-    flows: [],
-    data: 'remoteHotspotKey'
-  } as Diagnostic;
-  let fileToHighlight;
-  if (hotspotsTreeDataProvider.hasLocalHotspots()) {
-    fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.ideFilePath);
-  } else {
-    // reset local cache before opening each hotspot
-    hotspotsTreeDataProvider.fileHotspotsCache = new Map<string, Diagnostic[]>();
-    const hotspotUri = getUriFromRelativePath(hotspot.ideFilePath, vscode.workspace.workspaceFolders[0]);
-    hotspotsTreeDataProvider.fileHotspotsCache.set(hotspotUri, [hotspotDiag]);
-    fileToHighlight = hotspotsTreeDataProvider.getAllFilesWithHotspots().get(hotspot.ideFilePath);
-    hotspotsTreeDataProvider.refresh();
-  }
-  const knownHotspotGroup = hotspotsTreeDataProvider.getChildren(fileToHighlight).find(g => {
-    return g.contextValue === 'knownHotspotsGroup';
-  });
-  const hotspotToHighlight = hotspotsTreeDataProvider.getChildren(knownHotspotGroup).find(h => {
-    return h.label === hotspot.message;
-  });
-  allHotspotsView.reveal(hotspotToHighlight, { focus: true });
+  const fileUri = getUriFromRelativePath(hotspot.ideFilePath, vscode.workspace.workspaceFolders[0]);
+  const fileToHighlight = findingsTreeDataProvider.getRootFiles().find(fileNode => fileNode.fileUri === fileUri);
+  allFindingsView.reveal(fileToHighlight, { focus: true });
 }
 
 export function diagnosticSeverity(hotspot: RemoteHotspot) {
@@ -162,10 +125,6 @@ export function diagnosticSeverity(hotspot: RemoteHotspot) {
     default:
       return HotspotReviewPriority.Medium;
   }
-}
-
-function formatRemoteHotspotStatus(status: HotspotStatus) {
-  return status === HotspotStatus.ToReview ? 'To review' : 'Reviewed';
 }
 
 export const showHotspotDescription = () => {

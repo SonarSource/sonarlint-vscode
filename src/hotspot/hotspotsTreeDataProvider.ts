@@ -83,15 +83,7 @@ export class HotspotNode extends VSCode.TreeItem {
     super(message, VSCode.TreeItemCollapsibleState.None);
     this.id = key;
     this.iconPath = vulnerabilityProbabilityToIcon.get(vulnerabilityProbability);
-    if (source === OPEN_HOTSPOT_IN_IDE_SOURCE) {
-      this.command = {
-        command: Commands.HIGHLIGHT_REMOTE_HOTSPOT_LOCATION,
-        title: 'Show Hotspot Location',
-        arguments: [this]
-      };
-    } else {
-      this.command = { command: Commands.SHOW_HOTSPOT_LOCATION, title: 'Show All Locations', arguments: [this] };
-    }
+    this.command = { command: Commands.SHOW_HOTSPOT_LOCATION, title: 'Show All Locations', arguments: [this] };
     this.description = `${SONARLINT_SOURCE}(${ruleKey})`;
   }
 }
