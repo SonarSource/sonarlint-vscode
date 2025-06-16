@@ -230,9 +230,6 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   await languageClient.start();
 
-  taintVulnerabilityCollection = VSCode.languages.createDiagnosticCollection('SonarQube Taint Vulnerabilities');
-  context.subscriptions.push(taintVulnerabilityCollection);
-
   ConnectionSettingsService.init(context, languageClient);
   // SLVSCODE-1164; one time migration of SonarQube Cloud tokens to set region prefix
   await migrateSonarQubeCloudTokens();
@@ -705,9 +702,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       d['data'] = diagnostic.data;
       return d;
     });
-    taintVulnerabilityCollection.set(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri), diagnostics);
-    // findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, diagnostics);
-    // updateFindingsViewContainerBadge();
+    findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, diagnostics);
+    updateFindingsViewContainerBadge();
   });
 
   languageClient.onRequest(
