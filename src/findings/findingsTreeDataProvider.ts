@@ -12,6 +12,7 @@ import { PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { getConnectionIdForFile } from '../util/bindingUtils';
+import { Severity } from '../util/issue';
 
 export enum HotspotReviewPriority {
   High = 1,
@@ -26,8 +27,8 @@ export enum FindingType {
 
 export enum FindingSource {
   SonarQube = 'sonarqube', // on-the-fly analysis
-  Latest_SonarQube = 'Latest SonarQube Server Analysis',
-  Latest_SonarCloud = 'Latest SonarQube Cloud Analysis',
+  Latest_SonarQube = 'Latest SonarQube Server Analysis', // taint
+  Latest_SonarCloud = 'Latest SonarQube Cloud Analysis', // taint
   Remote = 'remote', // hotspot that matched remote one; Still on-the-fly analysis
 }
 
@@ -47,8 +48,12 @@ export interface Finding {
   status: number;
 }
 
-// Source configuration for visual representation
-const SOURCE_CONFIG = {
+const SOURCE_CONFIG: Record<FindingSource, {
+  icon?: string;
+  iconColor?: string;
+  label: string;
+  tooltipText: string;
+}> = {
   [FindingSource.SonarQube]: {
     icon: 'security-hotspot',
     iconColor: 'editorInfo.foreground',
@@ -62,23 +67,20 @@ const SOURCE_CONFIG = {
     tooltipText: 'This Security Hotspot only exists locally'
   },
   [FindingSource.Latest_SonarQube]: {
-    icon: 'use-severity', // Special marker to use severity-based icon
-    iconColor: 'use-severity',
     label: 'Taint Vulnerability',
     tooltipText: 'This Taint Vulnerability was detected by SonarQube Server'
   },
   [FindingSource.Latest_SonarCloud]: {
-    icon: 'use-severity', // Special marker to use severity-based icon
-    iconColor: 'use-severity', 
     label: 'Taint Vulnerability',
     tooltipText: 'This Taint Vulnerability was detected by SonarQube Cloud'
   }
 };
 
 const severityToIcon = new Map([
-  [1, new vscode.ThemeIcon('error', new vscode.ThemeColor('problemsErrorIcon.foreground'))],
-  [2, new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'))],
-  [3, new vscode.ThemeIcon('info', new vscode.ThemeColor('problemsInfoIcon.foreground'))]
+  [Severity.Error, new vscode.ThemeIcon('error', new vscode.ThemeColor('problemsErrorIcon.foreground'))],
+  [Severity.Warning, new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'))],
+  [Severity.Info, new vscode.ThemeIcon('info', new vscode.ThemeColor('problemsInfoIcon.foreground'))],
+  [Severity.Hint, new vscode.ThemeIcon('hint', new vscode.ThemeColor('editorHint.foreground'))] // issues on old code
 ]);
 
 export class FindingsFileNode extends vscode.TreeItem {
@@ -137,18 +139,12 @@ export class FindingNode extends vscode.TreeItem {
 
   private getIconForFinding(source: FindingSource, severity?: number): vscode.ThemeIcon {
     const sourceConfig = SOURCE_CONFIG[source];
-    
-    // For Latest_SonarQube and Latest_SonarCloud, use severity-based icons
-    if (sourceConfig?.icon === 'use-severity') {
-      return severityToIcon.get(severity);
-    }
-    
-    // For other sources, use source-specific icons
-    if (sourceConfig) {
+    // For security hotspots, use source-specific icons
+    if (sourceConfig.icon) {
       return new vscode.ThemeIcon(sourceConfig.icon, new vscode.ThemeColor(sourceConfig.iconColor));
     }
     
-    // Fallback to severity-based icon
+    // Fallback to severity-based icon for taint vulnerabilities
     return severityToIcon.get(this.severity);
   }
 }
@@ -239,7 +235,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       hotspotsPerFile.uri,
       diagnostic['data']?.status,
       FindingType.SecurityHotspot,
-      diagnostic.severity,
+      diagnostic.severity as HotspotReviewPriority,
     ));
   }
 
@@ -335,4 +331,4 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     return Array.from(this.findingsCache.values())
       .reduce((total, findings) => total + findings.length, 0);
   }
-} 
+}
