@@ -78,6 +78,7 @@ import { ListPotentialSecurityIssuesTool } from './languageModelTools/listPotent
 import { ExcludeFileOrFolderTool } from './languageModelTools/excludeFileOrFolderTool';
 import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeTool';
 import { AnalyzeFileTool } from './languageModelTools/analyzeFileTool';
+import { TaintVulnerabilityDecorator } from './issue/taintVulnerabilityDecorator';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -101,7 +102,6 @@ let findingsTreeDataProvider: FindingsTreeDataProvider;
 let findingsView: VSCode.TreeView<FindingsTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
-let taintVulnerabilityCollection: VSCode.DiagnosticCollection;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
@@ -356,6 +356,8 @@ export async function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: helpAndFeedbackTreeDataProvider
   });
   context.subscriptions.push(helpAndFeedbackView);
+
+  TaintVulnerabilityDecorator.init();
 
   context.subscriptions.push(onConfigurationChange());
 
@@ -704,6 +706,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     });
     findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, diagnostics);
     updateFindingsViewContainerBadge();
+    TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri));
   });
 
   languageClient.onRequest(
