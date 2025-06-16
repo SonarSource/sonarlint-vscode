@@ -11,6 +11,7 @@ import { ProviderResult } from 'vscode';
 import { PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
+import { getConnectionIdForFile } from '../util/bindingUtils';
 
 export enum HotspotReviewPriority {
   High = 1,
@@ -106,7 +107,7 @@ export class FindingsFileNode extends vscode.TreeItem {
 export class FindingNode extends vscode.TreeItem {
   constructor(public readonly key: string,
     public readonly serverIssueKey: string,
-    public readonly range: vscode.Range,
+    public range: vscode.Range,
     public readonly contextValue: 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem',
     public readonly source: FindingSource,
     public readonly message: string,
@@ -189,7 +190,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       const showRuleDescriptionCommand = finding.contextValue === 'newHotspotItem' ? Commands.SHOW_HOTSPOT_RULE_DESCRIPTION : Commands.SHOW_HOTSPOT_DETAILS;
       vscode.commands.executeCommand(showRuleDescriptionCommand, finding);
     } else if (finding.findingType === FindingType.TaintVulnerability) {
-      vscode.commands.executeCommand(Commands.SHOW_ALL_LOCATIONS, [finding.key, finding.fileUri]);
+      vscode.commands.executeCommand('SonarLint.ShowTaintVulnerabilityFlows', finding.serverIssueKey, getConnectionIdForFile(finding.fileUri));
+      vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
     }
   }
 
@@ -243,8 +245,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
 
   private convertTaintVulnerabilitiesToFindingNodes(fileUri: string, diagnostics: vscode.Diagnostic[]): FindingNode[] {
     return diagnostics.map(diagnostic => new FindingNode(
-      diagnostic['data'] ?? diagnostic.code as string,
-      diagnostic['data'] ?? diagnostic.code as string,
+      diagnostic['data'].entryKey ?? diagnostic.code as string,
+      diagnostic['data'].serverIssueKey ?? diagnostic.code as string,
       diagnostic.range,
       getContextValueForFinding(diagnostic.source as FindingSource),
       diagnostic.source as FindingSource,
@@ -314,6 +316,10 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
 
   getHotspotsForFile(fileUri: string): FindingNode[] {
     return this.findingsCache.get(fileUri)?.filter(finding => finding.findingType === FindingType.SecurityHotspot) || [];
+  }
+
+  getTaintVulnerabilitiesForFile(fileUri: string): FindingNode[] {
+    return this.findingsCache.get(fileUri)?.filter(finding => finding.findingType === FindingType.TaintVulnerability) || [];
   }
 
   hasFindings(): boolean {
