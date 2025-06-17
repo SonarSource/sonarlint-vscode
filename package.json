@@ -466,6 +466,21 @@
         "enablement": "view == SonarQube.Findings"
       },
       {
+        "command": "SonarLint.TriggerBrowseTaintCommand",
+        "title": "Open Taint Vulnerability on remote server",
+        "enablement": "view == SonarQube.Findings"
+      },
+      {
+        "command": "SonarQube.TriggerAiCodeFixCommand",
+        "title": "✧˖° Fix with AI CodeFix",
+        "enablement": "view == SonarQube.Findings"
+      },
+      {
+        "command": "SonarQube.TriggerResolveTaintCommand",
+        "title": "Resolve issue as...",
+        "enablement": "view == SonarQube.Findings"
+      },
+      {
         "command": "SonarLint.ConnectToSonarQube",
         "title": "Connect to SonarQube Server",
         "category": "SonarQube",
@@ -820,6 +835,21 @@
           "command": "SonarLint.ClearHotspotLocations",
           "title": "Clear Highlighting",
           "when": "view == SonarQube.Findings && viewItem == newHotspotItem || viewItem == knownHotspotItem"
+        },
+        {
+          "command": "SonarLint.TriggerBrowseTaintCommand",
+          "title": "Open Taint Vulnerability on remote server",
+          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintVulnerabilityItem"
+        },
+        {
+          "command": "SonarQube.TriggerAiCodeFixCommand",
+          "title": "✧˖° Fix with AI CodeFix",
+          "when": "view == SonarQube.Findings && viewItem == AICodeFixableTaintVulnerabilityItem"
+        },
+        {
+          "command": "SonarQube.TriggerResolveTaintCommand",
+          "title": "Resolve issue as...",
+          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintVulnerabilityItem"
         }
       ]
     },
