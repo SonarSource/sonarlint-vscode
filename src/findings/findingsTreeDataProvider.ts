@@ -32,8 +32,6 @@ export enum FindingSource {
   Remote = 'remote', // hotspot that matched remote one; Still on-the-fly analysis
 }
 
-type FindingContextValue = 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem';
-
 export interface Finding {
   key: string;
   serverIssueKey?: string;
@@ -110,13 +108,14 @@ export class FindingNode extends vscode.TreeItem {
   constructor(public readonly key: string,
     public readonly serverIssueKey: string,
     public range: vscode.Range,
-    public readonly contextValue: 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem',
+    public readonly contextValue: FindingContextValue,
     public readonly source: FindingSource,
     public readonly message: string,
     public readonly ruleKey: string,
     public readonly fileUri: string,
     public readonly status: number,
     public readonly findingType: FindingType,
+    public readonly isAiCodeFixable: boolean,
     public readonly vulnerabilityProbability?: HotspotReviewPriority,
     public readonly severity?: number,
   ) {
@@ -149,9 +148,13 @@ export class FindingNode extends vscode.TreeItem {
   }
 }
 
-function getContextValueForFinding(source: FindingSource): 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem' {
+export type FindingContextValue = 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem' | 'AICodeFixableTaintVulnerabilityItem';
+
+function getContextValueForFinding(source: FindingSource, isAiCodeFixable: boolean): FindingContextValue {
   if (source === FindingSource.Remote) {
     return 'knownHotspotItem';
+  } else if ((source === FindingSource.Latest_SonarCloud || source === FindingSource.Latest_SonarQube) && isAiCodeFixable) {
+    return 'AICodeFixableTaintVulnerabilityItem';
   } else if (source === FindingSource.Latest_SonarCloud || source === FindingSource.Latest_SonarQube) {
     return 'taintVulnerabilityItem';
   } else {
@@ -163,7 +166,7 @@ export type FindingsTreeViewItem = FindingsFileNode | FindingNode;
 
 export class FindingsTreeDataProvider implements vscode.TreeDataProvider<FindingsTreeViewItem> {
   private static _instance: FindingsTreeDataProvider;
-  private readonly _onDidChangeTreeData = new vscode.EventEmitter<FindingsTreeViewItem | undefined>();
+    private readonly _onDidChangeTreeData = new vscode.EventEmitter<FindingsTreeViewItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<FindingsTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   private readonly findingsCache = new Map<string, FindingNode[]>();
 
@@ -172,6 +175,31 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     context.subscriptions.push(
       vscode.commands.registerCommand(Commands.SHOW_ALL_INFO_FOR_FINDING, (finding: FindingNode) => {
         this._instance.showAllInfoForFinding(finding);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.TRIGGER_BROWSE_TAINT_COMMAND, (finding: FindingNode) => {
+        // call server-side command to open the taint vulnerability on the remote server
+        vscode.commands.executeCommand('SonarLint.BrowseTaintVulnerability', finding.serverIssueKey, finding.fileUri);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.TRIGGER_AI_CODE_FIX_COMMAND, (finding: FindingNode) => {
+        // call server-side command to to suggest fix
+        vscode.commands.executeCommand('SonarLint.SuggestTaintFix', finding.key, finding.fileUri);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.TRIGGER_RESOLVE_TAINT_COMMAND, (finding: FindingNode) => {
+        const fileUri = finding.fileUri;
+        const workspaceUri = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(fileUri)).uri.toString();
+        const issueKey = finding.serverIssueKey;
+        const isTaintIssue = true;
+        
+        vscode.commands.executeCommand(Commands.RESOLVE_ISSUE, workspaceUri, issueKey, fileUri, isTaintIssue);
       })
     );
   }
@@ -228,13 +256,14 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       diagnostic['data'].entryKey ?? diagnostic.code as string,
       diagnostic['data']?.serverIssueKey?.toString(),
       new vscode.Range(diagnostic.range.start.line, diagnostic.range.start.character, diagnostic.range.end.line, diagnostic.range.end.character),
-      getContextValueForFinding(diagnostic.source as FindingSource),
-      diagnostic.source as FindingSource, // Hotspots are typically detected locally
+      getContextValueForFinding(diagnostic.source as FindingSource, diagnostic['data']?.isAiCodeFixable ?? false),
+      diagnostic.source as FindingSource,
       diagnostic.message,
       diagnostic.code as string || 'unknown',
       hotspotsPerFile.uri,
       diagnostic['data']?.status,
       FindingType.SecurityHotspot,
+      false,
       diagnostic.severity as HotspotReviewPriority,
     ));
   }
@@ -244,13 +273,14 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       diagnostic['data'].entryKey ?? diagnostic.code as string,
       diagnostic['data'].serverIssueKey ?? diagnostic.code as string,
       diagnostic.range,
-      getContextValueForFinding(diagnostic.source as FindingSource),
+      getContextValueForFinding(diagnostic.source as FindingSource, diagnostic['data']?.isAiCodeFixable ?? false),
       diagnostic.source as FindingSource,
       diagnostic.message,
       diagnostic.code as string || 'unknown',
       fileUri,
       null,
       FindingType.TaintVulnerability,
+      diagnostic['data']?.isAiCodeFixable ?? false,
       null,
       diagnostic.severity,
     ));
@@ -305,6 +335,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       fileUri,
       finding.status,
       finding.findingType,
+      finding.isAiCodeFixable,
       finding.vulnerabilityProbability,
       finding.severity,
     ));

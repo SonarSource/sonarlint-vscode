@@ -75,4 +75,7 @@ export namespace Commands {
   export const FOCUS_ON_CONNECTION = 'SonarLint.FocusOnConnection';
 
   export const SHOW_ALL_INFO_FOR_FINDING = 'SonarQube.ShowAllInfoForFinding';
+  export const TRIGGER_BROWSE_TAINT_COMMAND = 'SonarLint.TriggerBrowseTaintCommand';
+  export const TRIGGER_AI_CODE_FIX_COMMAND = 'SonarQube.TriggerAiCodeFixCommand';
+  export const TRIGGER_RESOLVE_TAINT_COMMAND = 'SonarQube.TriggerResolveTaintCommand';
 }
