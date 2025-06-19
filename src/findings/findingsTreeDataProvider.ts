@@ -312,8 +312,11 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     ));
   }
 
-  getHotspotsForFile(fileUri: string): FindingNode[] {
-    return this.findingsCache.get(fileUri)?.filter(finding => finding.findingType === FindingType.SecurityHotspot) || [];
+  getHotspotsAndTaintsForFile(fileUri: string): FindingNode[] {
+    return this.findingsCache.get(fileUri)
+      ?.filter(finding => finding.findingType === FindingType.SecurityHotspot
+        || finding.findingType === FindingType.TaintVulnerability)
+      || [];
   }
 
   hasFindings(): boolean {
