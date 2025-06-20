@@ -1,6 +1,7 @@
 ## 4.25
 
 * Update Python analyzer 5.4 -> [5.5](https://sonarsource.atlassian.net/projects/SONARPY/versions/19335/tab/release-report-all-issues?isReleaseNoteModalOpen=true)
+* Update CFamily analyzer 6.67 -> [6.68](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=19763%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
 
 ## 4.24
 
