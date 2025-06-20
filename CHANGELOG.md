@@ -1,3 +1,7 @@
+## 4.25
+
+* Update Python analyzer 5.4 -> [5.5](https://sonarsource.atlassian.net/projects/SONARPY/versions/19335/tab/release-report-all-issues?isReleaseNoteModalOpen=true)
+
 ## 4.24
 
 * Contribute Language Model Tools for Copilot Agent. Currently available tools are:
