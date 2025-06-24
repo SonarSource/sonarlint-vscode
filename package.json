@@ -1028,7 +1028,7 @@
     "highlight.js": "^11.7.0",
     "inly": "^5.0.1",
     "luxon": "^3.2.1",
-    "openpgp": "^6.1.0",
+    "openpgp": "^6.1.1",
     "node-html-parser": "^6.1.5",
     "path-exists": "4.0.0",
     "properties": "1.2.1",
