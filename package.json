@@ -895,7 +895,7 @@
     },
     "languageModelTools": [
       {
-        "name": "sonarqube_listPotentialSecurityIssues",
+        "name": "sonarqube_list_potential_security_issues",
         "displayName": "SonarQube: Security Hotspots",
         "toolReferenceName": "sonarqube_getSecurityHotspots",
         "canBeReferencedInPrompt": true,
@@ -917,7 +917,7 @@
         }
       },
       {
-        "name": "sonarqube_excludeFilesOrFoldersFromAnalysis",
+        "name": "sonarqube_exclude_from_analysis",
         "displayName": "SonarQube: Exclude File or Folder from Analysis",
         "toolReferenceName": "sonarqube_excludeFiles",
         "canBeReferencedInPrompt": true,
@@ -940,7 +940,7 @@
         }
       },
       {
-        "name": "sonarqube_setUpConnectedMode",
+        "name": "sonarqube_setup_connected_mode",
         "displayName": "SonarQube: Set up Connected Mode",
         "toolReferenceName": "sonarqube_setUpConnectedMode",
         "canBeReferencedInPrompt": true,
@@ -980,7 +980,7 @@
         }
       },
       {
-        "name": "sonarqube_analyzeFile",
+        "name": "sonarqube_analyze_file",
         "displayName": "SonarQube: Analyze File",
         "toolReferenceName": "sonarqube_analyzeFile",
         "canBeReferencedInPrompt": true,

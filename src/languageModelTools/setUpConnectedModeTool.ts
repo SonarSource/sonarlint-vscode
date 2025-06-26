@@ -28,7 +28,7 @@ interface ISetUpConnectedModeParameters {
 }
 
 export class SetUpConnectedModeTool implements vscode.LanguageModelTool<ISetUpConnectedModeParameters> {
-  public static readonly toolName = 'sonarqube_setUpConnectedMode';
+  public static readonly toolName = 'sonarqube_setup_connected_mode';
   
   constructor(private readonly context: vscode.ExtensionContext, readonly client: SonarLintExtendedLanguageClient) {
   }

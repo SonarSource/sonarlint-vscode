@@ -16,7 +16,7 @@ interface IAnalyzeFileParameters {
 }
 
 export class AnalyzeFileTool implements vscode.LanguageModelTool<IAnalyzeFileParameters> {
-  public static readonly toolName = 'sonarqube_analyzeFile';
+  public static readonly toolName = 'sonarqube_analyze_file';
   constructor(readonly client: SonarLintExtendedLanguageClient) {
   }
 
