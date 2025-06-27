@@ -1,6 +1,7 @@
 import { SonarLintDocumentation } from '../commons';
 import { Command } from 'vscode';
 import { Commands } from '../util/commands';
+import { Utm } from '../util/utm';
 
 export interface HelpAndFeedbackItem {
   id: string;
@@ -9,6 +10,7 @@ export interface HelpAndFeedbackItem {
   icon?: string;
   viewItem: boolean;
   command?: Command;
+  utm?: Utm;
 }
 
 export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
@@ -46,12 +48,20 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   {
     id: 'sonarCloudProductPage',
     url: 'https://www.sonarsource.com/products/sonarcloud/',
-    viewItem: false
+    viewItem: false,
+    utm: {
+      content: 'settings-connected-mode',
+      term: 'bind-current-workspace-2'
+    }
   },
   {
     id: 'sonarqubeCloudFreeSignUp',
     url: 'https://www.sonarsource.com/products/sonarcloud/signup-free/',
-    viewItem: false
+    viewItem: false,
+    utm: {
+      content: 'create-new-sqc-connection',
+      term: 'explore-sonarqube-cloud-free-tier'
+    }
   },
   {
     id: 'sonarQubeProductPage',
