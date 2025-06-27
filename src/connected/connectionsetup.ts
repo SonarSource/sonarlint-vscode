@@ -362,7 +362,8 @@ export async function handleMessageWithConnectionSettingsService(
       break;
     case SONARCLOUD_FREE_SIGNUP_LINK_COMMAND:
       delete message.command;
-      vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarqubeCloudFreeSignUp');
+      vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK,
+        { id: 'sonarqubeCloudFreeSignUp', utm: { content: 'create-new-sqc-connection', term: 'explore-sonarqube-cloud-free-tier' }});
       break;
     case SONARQUBE_EDITIONS_DOWNLOAD_LINK_COMMAND:
       delete message.command;

@@ -15,7 +15,7 @@ export function getHelpAndFeedbackItemById(id: string): HelpAndFeedbackItem {
 }
 
 export class HelpAndFeedbackLink extends VSCode.TreeItem {
-  constructor(public readonly id) {
+  constructor(public readonly id: string) {
     const itemById = getHelpAndFeedbackItemById(id);
     super(itemById.label, VSCode.TreeItemCollapsibleState.None);
     this.iconPath = new VSCode.ThemeIcon(itemById.icon);

@@ -26,7 +26,6 @@ import {
   editSonarQubeConnection
 } from './connected/connectionsetup';
 import {
-  getHelpAndFeedbackItemById,
   HelpAndFeedbackLink,
   HelpAndFeedbackTreeDataProvider
 } from './help/helpAndFeedbackTreeDataProvider';
@@ -73,12 +72,12 @@ import { SharedConnectedModeSettingsService } from './connected/sharedConnectedM
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
 import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
 import { ContextManager } from './contextManager';
-import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
 import { ListPotentialSecurityIssuesTool } from './languageModelTools/listPotentialSecurityIssuesTool';
 import { ExcludeFileOrFolderTool } from './languageModelTools/excludeFileOrFolderTool';
 import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeTool';
 import { AnalyzeFileTool } from './languageModelTools/analyzeFileTool';
 import { TaintVulnerabilityDecorator } from './issue/taintVulnerabilityDecorator';
+import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -572,29 +571,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackItemOrId => {
-      let itemId: string;
-      if (!helpAndFeedbackItemOrId) {
-        itemId = 'getHelp';
-      } else if (typeof helpAndFeedbackItemOrId === 'string') {
-        itemId = helpAndFeedbackItemOrId;
-      } else {
-        itemId = helpAndFeedbackItemOrId.id;
-      }
-      const { command, url } = getHelpAndFeedbackItemById(itemId);
-      languageClient.helpAndFeedbackLinkClicked(itemId);
-      if (command) {
-        const args = command.arguments || [];
-        VSCode.commands.executeCommand(command.command, ...args);
-        // if the link clicked was the get started one, we update the global flag to not show it again
-        if (itemId === 'sonarLintWalkthrough') {
-          context.globalState.update(HAS_CLICKED_GET_STARTED_LINK, true);
-          ContextManager.instance.setGetStartedViewContext(context);
-        }
-      } else {
-        VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(url));
-      }
-    })
+    VSCode.commands.registerCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, helpAndFeedbackLinkClicked(languageClient))
   );
 
   context.subscriptions.push(
