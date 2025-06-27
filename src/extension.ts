@@ -483,6 +483,19 @@ function registerCommands(context: VSCode.ExtensionContext) {
     showLogOutput();
   }));
 
+  context.subscriptions.push(
+    VSCode.commands.registerCommand('SonarLint.NewCodeDefinition.Enable', () => {
+      VSCode.workspace.getConfiguration('sonarlint')
+              .update('focusOnNewCode', true, VSCode.ConfigurationTarget.Global);
+      NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(null);
+    }),
+    VSCode.commands.registerCommand('SonarLint.NewCodeDefinition.Disable', () => {
+      VSCode.workspace.getConfiguration('sonarlint')
+              .update('focusOnNewCode', false, VSCode.ConfigurationTarget.Global);
+      NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(null);
+    })
+  );
+
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.INSTALL_MANAGED_JRE, installManagedJre));
 
   context.subscriptions.push(
