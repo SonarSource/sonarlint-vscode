@@ -1,6 +1,7 @@
 import { SonarLintDocumentation } from '../commons';
 import { Command } from 'vscode';
 import { Commands } from '../util/commands';
+import { Utm } from '../util/utm';
 
 export interface HelpAndFeedbackItem {
   id: string;
@@ -9,6 +10,7 @@ export interface HelpAndFeedbackItem {
   icon?: string;
   viewItem: boolean;
   command?: Command;
+  utm?: Utm;
 }
 
 export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
