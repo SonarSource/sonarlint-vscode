@@ -443,13 +443,12 @@
       },
       {
         "command": "SonarLint.ScanForHotspotsInFolder",
-        "title": "In Whole Folder",
-        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'OpenFiles'"
+        "title": "Scan for Hotspots in Folder",
+        "category": "SonarQube"
       },
       {
-        "command": "SonarLint.ShowHotspotsInOpenFiles",
-        "title": "In Open Files",
-        "enablement": "view == SonarLint.SecurityHotspots && SonarLint.Hotspots.ShowMode == 'Folder'"
+        "command": "SonarQube.ShowAllInfoForFinding",
+        "title": "Show finding location and details"
       },
       {
         "command": "SonarLint.FindRuleByKey",
@@ -459,12 +458,27 @@
       {
         "command": "SonarLint.ClearLocations",
         "title": "Clear",
-        "enablement": "view == SonarLint.IssueLocations || view == SonarLint.SecurityHotspots"
+        "enablement": "view == SonarLint.IssueLocations || view == SonarQube.Findings"
       },
       {
         "command": "SonarLint.ClearHotspotLocations",
         "title": "Clear Highlighting",
-        "enablement": "view == SonarLint.SecurityHotspots"
+        "enablement": "view == SonarQube.Findings"
+      },
+      {
+        "command": "SonarLint.TriggerBrowseTaintCommand",
+        "title": "Open Taint Vulnerability on remote server",
+        "enablement": "view == SonarQube.Findings"
+      },
+      {
+        "command": "SonarQube.TriggerAiCodeFixCommand",
+        "title": "✧˖° Fix with AI CodeFix",
+        "enablement": "view == SonarQube.Findings"
+      },
+      {
+        "command": "SonarQube.TriggerResolveTaintCommand",
+        "title": "Resolve issue as...",
+        "enablement": "view == SonarQube.Findings"
       },
       {
         "command": "SonarLint.ConnectToSonarQube",
@@ -524,31 +538,25 @@
         "command": "SonarLint.OpenHotspotOnServer",
         "title": "Review on Server",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == knownHotspotItem"
       },
       {
         "command": "SonarLint.ShowHotspotRuleDescription",
         "title": "Show Rule Description",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == newHotspotItem"
       },
       {
         "command": "SonarLint.ShowHotspotDetails",
         "title": "Show Hotspot Details",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
-      },
-      {
-        "command": "SonarLint.HideHotspot",
-        "title": "Hide Security Hotspot",
-        "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == knownHotspotItem"
       },
       {
         "command": "SonarLint.ChangeHotspotStatus",
         "title": "Change Status",
         "category": "SonarQube",
-        "enablement": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+        "enablement": "view == SonarQube.Findings && viewItem == knownHotspotItem"
       },
       {
         "command": "SonarLint.HelpAndFeedbackLinkClicked",
@@ -571,6 +579,20 @@
         "category": "SonarQube",
         "icon": "$(export)",
         "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.NewCodeDefinition.Enable",
+        "title": "Focus on New Code",
+        "category": "SonarQube",
+        "icon": "$(eye)",
+        "enablement": "view == SonarQube.Findings && !config.sonarlint.focusOnNewCode"
+      },
+      {
+        "command": "SonarLint.NewCodeDefinition.Disable",
+        "title": "Focus on Overall Code",
+        "category": "SonarQube",
+        "icon": "$(eye-closed)",
+        "enablement": "view == SonarQube.Findings && config.sonarlint.focusOnNewCode"
       }
     ],
     "viewsContainers": {
@@ -578,7 +600,15 @@
         {
           "icon": "images/sonarqube_for_ide.svg",
           "id": "SonarLint",
-          "title": "SonarQube"
+          "title": "SonarQube Setup"
+        }
+      ],
+      "panel": [
+        {
+          "icon": "images/sonarqube_for_ide.svg",
+          "id": "SonarQube",
+          "title": "SonarQube",
+          "when": "sonarqube.someFoldersUseConnectedMode"
         }
       ]
     },
@@ -602,12 +632,6 @@
           "name": "Connected Mode"
         },
         {
-          "id": "SonarLint.SecurityHotspots",
-          "name": "Security Hotspots",
-          "visibility": "collapsed",
-          "when": "sonarqube.someFoldersUseConnectedMode"
-        },
-        {
           "id": "SonarLint.AllRules",
           "name": "Rules",
           "visibility": "collapsed",
@@ -616,6 +640,13 @@
         {
           "id": "SonarLint.HelpAndFeedback",
           "name": "Help and Feedback"
+        }
+      ],
+      "SonarQube": [
+        {
+          "id": "SonarQube.Findings",
+          "name": "SonarQube Findings",
+          "when": "sonarqube.someFoldersUseConnectedMode"
         }
       ]
     },
@@ -629,12 +660,12 @@
         "contents": "[Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) links SonarQube for IDE to SonarQube Server or SonarQube Cloud projects. \n\n[Connect to SonarQube Server](command:SonarLint.ConnectToSonarQube)\n[Connect to SonarQube Cloud](command:SonarLint.ConnectToSonarCloud)\n\nAnalyze more languages, detect more issues on the whole project, receive notifications about the quality gate status, and more."
       },
       {
-        "view": "SonarLint.SecurityHotspots",
-        "contents": "Security Hotspots detected in open files will be displayed here. [Learn More](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots).\n Using the In Whole Folder feature may consume excessive resources depending on the size of your project. Please check the [documentation](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/#reporting-security-hotspots-in-the-whole-folder) for recommendations to minimize the impact of a full project analysis."
-      },
-      {
         "view": "SonarQube.GetStarted",
         "contents": "Automatically find and fix code quality and security issues as you write, using powerful linting tools built right into your code editor.\n\n[Get Started with SonarQube for IDE](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarLintWalkthrough%22) $(arrow-right)"
+      },
+      {
+        "view": "SonarQube.Findings",
+        "contents": "No [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/) or [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) found in this project."
       }
     ],
     "walkthroughs": [
@@ -712,16 +743,6 @@
           "group": "navigation"
         },
         {
-          "command": "SonarLint.ScanForHotspotsInFolder",
-          "when": "view == SonarLint.SecurityHotspots",
-          "group": "navigation"
-        },
-        {
-          "command": "SonarLint.ShowHotspotsInOpenFiles",
-          "when": "view == SonarLint.SecurityHotspots",
-          "group": "navigation"
-        },
-        {
           "command": "SonarLint.FindRuleByKey",
           "when": "view == SonarLint.AllRules"
         },
@@ -739,6 +760,16 @@
           "command": "SonarLint.ConnectToSonarCloud",
           "when": "view == SonarLint.ConnectedMode",
           "group": "inline"
+        },
+        {
+          "command": "SonarLint.NewCodeDefinition.Enable",
+          "when": "view == SonarQube.Findings && !config.sonarlint.focusOnNewCode",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.NewCodeDefinition.Disable",
+          "when": "view == SonarQube.Findings && config.sonarlint.focusOnNewCode",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -807,33 +838,42 @@
         {
           "command": "SonarLint.ShowHotspotRuleDescription",
           "title": "Show Rule Description",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == newHotspotItem"
         },
         {
           "command": "SonarLint.ShowHotspotDetails",
           "title": "Show Hotspot Details",
-          "when": "view == SonarLint.SecurityHotspots && (viewItem == knownHotspotItem || viewItem == remoteHotspotItem)"
+          "when": "view == SonarQube.Findings && viewItem == knownHotspotItem"
         },
         {
           "command": "SonarLint.ChangeHotspotStatus",
           "title": "Change Status",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == knownHotspotItem"
         },
         {
           "command": "SonarLint.OpenHotspotOnServer",
           "title": "Review on Server",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == knownHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == knownHotspotItem"
         },
         {
           "command": "SonarLint.ClearHotspotLocations",
           "title": "Clear Highlighting",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == newHotspotItem || viewItem == knownHotspotItem || viewItem == remoteHotspotItem"
+          "when": "view == SonarQube.Findings && viewItem == newHotspotItem || viewItem == knownHotspotItem"
         },
         {
-          "command": "SonarLint.HideHotspot",
-          "title": "Hide Security Hotspot",
-          "category": "SonarQube",
-          "when": "view == SonarLint.SecurityHotspots && viewItem == remoteHotspotItem"
+          "command": "SonarLint.TriggerBrowseTaintCommand",
+          "title": "Open Taint Vulnerability on remote server",
+          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintVulnerabilityItem"
+        },
+        {
+          "command": "SonarQube.TriggerAiCodeFixCommand",
+          "title": "✧˖° Fix with AI CodeFix",
+          "when": "view == SonarQube.Findings && viewItem == AICodeFixableTaintVulnerabilityItem"
+        },
+        {
+          "command": "SonarQube.TriggerResolveTaintCommand",
+          "title": "Resolve issue as...",
+          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintVulnerabilityItem"
         }
       ]
     },

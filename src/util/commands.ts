@@ -40,7 +40,6 @@ export namespace Commands {
 
   export const INSTALL_MANAGED_JRE = 'SonarLint.InstallManagedJre';
 
-  export const HIDE_HOTSPOT = 'SonarLint.HideHotspot';
   export const SHOW_HOTSPOT_DESCRIPTION = 'SonarLint.ShowHotspotDescription';
   export const CONFIGURE_COMPILATION_DATABASE = 'SonarLint.ConfigureCompilationDatabase';
 
@@ -59,7 +58,6 @@ export namespace Commands {
   export const SHOW_HOTSPOT_RULE_DESCRIPTION = 'SonarLint.ShowHotspotRuleDescription';
   export const SHOW_HOTSPOT_DETAILS = 'SonarLint.ShowHotspotDetails';
   export const OPEN_HOTSPOT_ON_SERVER = 'SonarLint.OpenHotspotOnServer';
-  export const HIGHLIGHT_REMOTE_HOTSPOT_LOCATION = 'SonarLint.HighlightRemoteHotspotLocation';
   export const CLEAR_HOTSPOT_HIGHLIGHTING = 'SonarLint.ClearHotspotLocations';
   export const SHOW_HOTSPOTS_IN_OPEN_FILES = 'SonarLint.ShowHotspotsInOpenFiles';
   export const SCAN_FOR_HOTSPOTS_IN_FOLDER = 'SonarLint.ScanForHotspotsInFolder';
@@ -75,4 +73,9 @@ export namespace Commands {
   export const AUTO_BIND_WORKSPACE_FOLDERS = 'SonarLint.AutoBindWorkspaceFolders';
 
   export const FOCUS_ON_CONNECTION = 'SonarLint.FocusOnConnection';
+
+  export const SHOW_ALL_INFO_FOR_FINDING = 'SonarQube.ShowAllInfoForFinding';
+  export const TRIGGER_BROWSE_TAINT_COMMAND = 'SonarLint.TriggerBrowseTaintCommand';
+  export const TRIGGER_AI_CODE_FIX_COMMAND = 'SonarQube.TriggerAiCodeFixCommand';
+  export const TRIGGER_RESOLVE_TAINT_COMMAND = 'SonarQube.TriggerResolveTaintCommand';
 }

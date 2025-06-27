@@ -281,6 +281,9 @@ export class BindingService {
     if (creationMode === BindingCreationMode.MANUAL) {
       this.proposeSharingConfig(projectKey, workspaceFolder);
     }
+
+    // Focus on the Findings view
+    VSCode.commands.executeCommand('SonarQube.Findings.focus');
   }
 
   private async proposeSharingConfig(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder) {

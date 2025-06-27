@@ -31,6 +31,9 @@ export function showRuleDescription(context: VSCode.ExtensionContext) {
       dark: util.resolveExtensionFile('images', 'sonarqube_for_ide_dark.svg')
     };
     ruleDescriptionPanel.reveal();
+    
+    // Return focus to the first editor group after opening the rule description panel; This way, any new editor will be opened in the first group
+    VSCode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
   };
 }
 

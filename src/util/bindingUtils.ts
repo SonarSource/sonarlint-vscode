@@ -10,6 +10,8 @@
 import * as VSCode from 'vscode';
 import { ServerType } from '../connected/connections';
 import { BindingSuggestion } from '../lsp/protocol';
+import { ProjectBinding } from '../connected/binding';
+import { SONARLINT_CATEGORY } from '../settings/settings';
 
 export function serverProjectsToQuickPickItems(serverProjects: BindingSuggestion[], serverType: ServerType) {
   const itemsList: VSCode.QuickPickItem[] = [];
@@ -38,4 +40,11 @@ export function buildBaseServerUrl(serverType: ServerType, serverUrlOrOrganizati
 
 export interface AutoBindProjectQuickPickItem extends VSCode.QuickPickItem {
   connectionId?: string;
+}
+
+export function getConnectionIdForFile(fileUri: string) {
+  const workspaceFolder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.file(fileUri));
+  const bindingConfig = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder?.uri)
+    .get<ProjectBinding>('connectedMode.project');
+  return bindingConfig?.connectionId ?? '';
 }

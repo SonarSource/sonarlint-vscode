@@ -51,3 +51,10 @@ export function createDiagnosticFromIssue(issue: protocol.Issue) {
 export function isFileLevelIssue(textRange: TextRange) {
   return textRange.startLine === 0 || textRange.endLine === 0;
 }
+
+export enum Severity {
+  Error = 0,
+  Warning = 1,
+  Info = 2,
+  Hint = 3
+}
