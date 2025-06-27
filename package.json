@@ -579,6 +579,20 @@
         "category": "SonarQube",
         "icon": "$(export)",
         "enablement": "view == SonarLint.ConnectedMode"
+      },
+      {
+        "command": "SonarLint.NewCodeDefinition.Enable",
+        "title": "Focus on New Code",
+        "category": "SonarQube",
+        "icon": "$(eye)",
+        "enablement": "view == SonarQube.Findings && !config.sonarlint.focusOnNewCode"
+      },
+      {
+        "command": "SonarLint.NewCodeDefinition.Disable",
+        "title": "Focus on Overall Code",
+        "category": "SonarQube",
+        "icon": "$(eye-closed)",
+        "enablement": "view == SonarQube.Findings && config.sonarlint.focusOnNewCode"
       }
     ],
     "viewsContainers": {
@@ -746,6 +760,16 @@
           "command": "SonarLint.ConnectToSonarCloud",
           "when": "view == SonarLint.ConnectedMode",
           "group": "inline"
+        },
+        {
+          "command": "SonarLint.NewCodeDefinition.Enable",
+          "when": "view == SonarQube.Findings && !config.sonarlint.focusOnNewCode",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.NewCodeDefinition.Disable",
+          "when": "view == SonarQube.Findings && config.sonarlint.focusOnNewCode",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
