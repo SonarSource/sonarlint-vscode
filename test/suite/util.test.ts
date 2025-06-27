@@ -18,6 +18,7 @@ import {
   getMasterRegex,
   getQuickPickListItemsForWorkspaceFolders,
   globPatternToRegex,
+  isMeasureNameValid,
   isRunningAutoBuild,
   sanitizeSonarCloudRegionSetting,
   sonarCloudRegionToLabel,
@@ -232,4 +233,14 @@ suite('util', () => {
     expect(sanitizeSonarCloudRegionSetting('APJ')).to.equal('EU');
   });
 
+  test('should validate measure name', () => {
+    expect(isMeasureNameValid('valid_measure_name')).to.be.true;
+    expect(isMeasureNameValid('valid_measure_name_123')).to.be.true;
+    expect(isMeasureNameValid('1invalid_measure_name')).to.be.false;
+    expect(isMeasureNameValid('invalid-measure-name')).to.be.false;
+    expect(isMeasureNameValid('invalid-measure-Name')).to.be.false;
+    expect(isMeasureNameValid('invalid@measure#name')).to.be.false;
+    expect(isMeasureNameValid('a'.repeat(128))).to.be.false; // Too long
+    expect(isMeasureNameValid('myMeasureName')).to.be.false;
+  });
 });
