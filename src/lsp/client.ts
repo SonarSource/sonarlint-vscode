@@ -12,6 +12,7 @@ import { code2ProtocolConverter } from '../util/uri';
 import * as protocol from './protocol';
 import { AnalysisFile, Organization } from './protocol';
 import { SonarCloudRegion } from '../settings/connectionsettings';
+import { isMeasureNameValid } from '../util/util';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
   listAllRules(): Thenable<protocol.RulesResponse> {
@@ -76,7 +77,11 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   lmToolCalled(toolName: string, success: boolean) {
-    this.sendNotification(protocol.LMToolCalled.type, { toolName, success });
+    if (isMeasureNameValid(toolName)) {
+      this.sendNotification(protocol.LMToolCalled.type, { toolName, success });
+    } else {
+      throw new Error(`Invalid tool name: '${toolName}'.`);
+    }
   }
 
   scanFolderForHotspots(params: protocol.ScanFolderForHotspotsParams) {

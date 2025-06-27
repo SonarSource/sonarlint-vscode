@@ -345,3 +345,9 @@ export function sanitizeSonarCloudRegionSetting(region: string): SonarCloudRegio
     default: return 'EU';
   }
 }
+
+export function isMeasureNameValid(measureName: string): boolean {
+  // Tool names must be alphanumeric and can contain underscores, but cannot start with a number.
+  const measureNameRegex = /^[a-z_][a-z0-9_.]{1,126}$/;
+  return measureNameRegex.test(measureName);
+}
