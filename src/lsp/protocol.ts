@@ -464,14 +464,9 @@ export namespace GenerateToken {
   export const type = new lsp.RequestType<GenerateTokenParams, GenerateTokenResponse, null>('sonarlint/generateToken');
 }
 
-export interface Diagnostic extends lsp.Diagnostic {
-  creationDate?: string;
-  flows: Flow[];
-}
-
 export interface PublishDiagnosticsParams {
   uri: string;
-  diagnostics: Diagnostic[];
+  diagnostics: lsp.Diagnostic[];
 }
 
 export namespace PublishHotspotsForFile {
