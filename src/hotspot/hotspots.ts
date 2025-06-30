@@ -11,7 +11,6 @@ import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations'
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import {
   AnalysisFile,
-  Diagnostic,
   ExtendedHotspotStatus,
   HotspotProbability,
   RemoteHotspot,

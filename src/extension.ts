@@ -489,12 +489,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand('SonarLint.NewCodeDefinition.Enable', () => {
       VSCode.workspace.getConfiguration('sonarlint')
               .update('focusOnNewCode', true, VSCode.ConfigurationTarget.Global);
-      NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(null);
     }),
     VSCode.commands.registerCommand('SonarLint.NewCodeDefinition.Disable', () => {
       VSCode.workspace.getConfiguration('sonarlint')
               .update('focusOnNewCode', false, VSCode.ConfigurationTarget.Global);
-      NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(null);
     })
   );
 
@@ -705,21 +703,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     updateFindingsViewContainerBadge();
   });
   languageClient.onNotification(protocol.PublishTaintVulnerabilitiesForFile.type, async taintVulnerabilitiesPerFile => {
-    const diagnostics = taintVulnerabilitiesPerFile.diagnostics.map(diagnostic => {
-      const d = new VSCode.Diagnostic(
-        new VSCode.Range(
-          new VSCode.Position(diagnostic.range.start.line, diagnostic.range.start.character),
-          new VSCode.Position(diagnostic.range.end.line, diagnostic.range.end.character)
-        ),
-        diagnostic.message,
-        getSeverity(diagnostic.severity)
-      );
-      d.source = diagnostic.source;
-      d.code = diagnostic.code;
-      d['data'] = diagnostic.data;
-      return d;
-    });
-    findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, diagnostics);
+    findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, taintVulnerabilitiesPerFile.diagnostics);
     updateFindingsViewContainerBadge();
     TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri));
   });

@@ -7,13 +7,14 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { ProviderResult } from 'vscode';
+import { Diagnostic } from 'vscode-languageserver-types';
 import { PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { getConnectionIdForFile } from '../util/bindingUtils';
 import { Severity } from '../util/issue';
 import { isFocusingOnNewCode } from '../settings/settings';
+import { getSeverity } from '../util/util';
 
 export enum HotspotReviewPriority {
   High = 1,
@@ -134,36 +135,46 @@ export class OlderIssuesNode extends vscode.TreeItem {
 }
 
 export class FindingNode extends vscode.TreeItem {
-  constructor(public readonly key: string,
-    public readonly serverIssueKey: string,
-    public range: vscode.Range,
-    public readonly contextValue: FindingContextValue,
-    public readonly source: FindingSource,
-    public readonly message: string,
-    public readonly ruleKey: string,
-    public readonly fileUri: string,
-    public readonly status: number,
+  public readonly key: string;
+  public readonly serverIssueKey?: string;
+  public range: vscode.Range;
+  public readonly contextValue: FindingContextValue;
+  public readonly source: FindingSource;
+  public readonly message: string;
+  public readonly ruleKey: string;
+  public readonly status?: number;
+  public readonly isOnNewCode?: boolean;
+  public readonly vulnerabilityProbability?: HotspotReviewPriority;
+  public readonly severity?: number;
+
+  constructor(public readonly fileUri,
     public readonly findingType: FindingType,
-    public readonly isAiCodeFixable: boolean,
-    public readonly isOnNewCode: boolean,
-    public readonly vulnerabilityProbability?: HotspotReviewPriority,
-    public readonly severity?: number,
+    public readonly finding: Diagnostic
   ) {
-    super(message, vscode.TreeItemCollapsibleState.None);
-    
-    this.id = `${fileUri}-${key}`;
-    this.key = key;
-    this.fileUri = fileUri;
-    
-    this.description = `${SOURCE_CONFIG[source]?.label} (${ruleKey})`;
-    this.iconPath = this.getIconForFinding(source);
-    this.tooltip = SOURCE_CONFIG[source]?.tooltipText;
+    super(finding.message, vscode.TreeItemCollapsibleState.None);
+    this.key = finding['data'].entryKey;
+    this.serverIssueKey = finding['data'].serverIssueKey;
+    this.id = `${fileUri}-${this.key}`;
+    this.range = new vscode.Range(finding.range.start.line, finding.range.start.character, finding.range.end.line, finding.range.end.character);
+    this.contextValue = getContextValueForFinding(finding.source as FindingSource, finding['data']?.isAiCodeFixable ?? false);
+    this.source = finding.source as FindingSource;
+    this.message = finding.message;
+    this.ruleKey = finding.code as string || 'unknown';
+    this.status = finding['data']?.status;
+    this.isOnNewCode = finding['data']?.isOnNewCode;
+    this.vulnerabilityProbability = finding.severity as HotspotReviewPriority;
+    this.severity = getSeverity(finding.severity);
+
+    this.description = `${SOURCE_CONFIG[this.source]?.label} (${this.ruleKey})`;
+    this.iconPath = this.getIconForFinding(this.source);
+    this.tooltip = SOURCE_CONFIG[this.source]?.tooltipText;
+    this.tooltip = SOURCE_CONFIG[this.source]?.tooltipText;
     
     this.command = {
       command: Commands.SHOW_ALL_INFO_FOR_FINDING,
       title: 'Show All Info For Finding',
       arguments: [this]
-    };
+    }
   }
 
   private getIconForFinding(source: FindingSource): vscode.ThemeIcon {
@@ -258,7 +269,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.updateFindingsForFile(hotspotsPerFile.uri, findingNodes, FindingType.SecurityHotspot);
   }
 
-  updateTaintVulnerabilities(fileUri: string, diagnostics: vscode.Diagnostic[]) {
+  updateTaintVulnerabilities(fileUri: string, diagnostics: Diagnostic[]) {
     const findingNodes = this.convertTaintVulnerabilitiesToFindingNodes(fileUri, diagnostics);
     this.updateFindingsForFile(fileUri, findingNodes, FindingType.TaintVulnerability);
   }
@@ -282,47 +293,18 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   }
 
   private convertHotspotsToFindingNodes(hotspotsPerFile: PublishDiagnosticsParams): FindingNode[] {
-    return hotspotsPerFile.diagnostics.map(diagnostic => new FindingNode(
-      diagnostic['data'].entryKey ?? diagnostic.code as string,
-      diagnostic['data']?.serverIssueKey?.toString(),
-      new vscode.Range(diagnostic.range.start.line, diagnostic.range.start.character, diagnostic.range.end.line, diagnostic.range.end.character),
-      getContextValueForFinding(diagnostic.source as FindingSource, diagnostic['data']?.isAiCodeFixable ?? false),
-      diagnostic.source as FindingSource,
-      diagnostic.message,
-      diagnostic.code as string || 'unknown',
-      hotspotsPerFile.uri,
-      diagnostic['data']?.status,
-      FindingType.SecurityHotspot,
-      false,
-      diagnostic['data']?.isOnNewCode ?? false,
-      diagnostic.severity as HotspotReviewPriority,
-    ));
+    return hotspotsPerFile.diagnostics.map(diagnostic => new FindingNode(hotspotsPerFile.uri, FindingType.SecurityHotspot, diagnostic));
   }
 
-  private convertTaintVulnerabilitiesToFindingNodes(fileUri: string, diagnostics: vscode.Diagnostic[]): FindingNode[] {
-    return diagnostics.map(diagnostic => new FindingNode(
-      diagnostic['data'].entryKey ?? diagnostic.code as string,
-      diagnostic['data'].serverIssueKey ?? diagnostic.code as string,
-      diagnostic.range,
-      getContextValueForFinding(diagnostic.source as FindingSource, diagnostic['data']?.isAiCodeFixable ?? false),
-      diagnostic.source as FindingSource,
-      diagnostic.message,
-      diagnostic.code as string || 'unknown',
-      fileUri,
-      null,
-      FindingType.TaintVulnerability,
-      diagnostic['data']?.isAiCodeFixable ?? false,
-      diagnostic['data']?.isOnNewCode ?? false,
-      null,
-      diagnostic.severity,
-    ));
+  private convertTaintVulnerabilitiesToFindingNodes(fileUri: string, diagnostics: Diagnostic[]): FindingNode[] {
+    return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.TaintVulnerability, diagnostic));
   }
 
   getTreeItem(element: FindingsTreeViewItem): vscode.TreeItem {
     return element;
   }
 
-  getChildren(element?: FindingsTreeViewItem): ProviderResult<FindingsTreeViewItem[]> {
+  getChildren(element?: FindingsTreeViewItem): vscode.ProviderResult<FindingsTreeViewItem[]> {
     if (!element) {
       return this.getRootItems();
     }
@@ -438,22 +420,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       // looking for new and is new, or looking for older and is older
       return findings.filter(finding => finding.isOnNewCode === lookingForNew);
     }
-    return findings.map(finding => new FindingNode(
-      finding.key,
-      finding.serverIssueKey,
-      finding.range,
-      finding.contextValue,
-      finding.source,
-      finding.message,
-      finding.ruleKey,
-      fileUri,
-      finding.status,
-      finding.findingType,
-      finding.isAiCodeFixable,
-      finding.isOnNewCode,
-      finding.vulnerabilityProbability,
-      finding.severity,
-    ));
+    return findings.map(finding => new FindingNode(fileUri, finding.findingType, finding.finding));
   }
 
   getHotspotsAndTaintsForFile(fileUri: string): FindingNode[] {
