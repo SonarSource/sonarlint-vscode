@@ -13,6 +13,7 @@ import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { getConnectionIdForFile } from '../util/bindingUtils';
 import { Severity } from '../util/issue';
+import { isFocusingOnNewCode } from '../settings/settings';
 
 export enum HotspotReviewPriority {
   High = 1,
@@ -78,18 +79,20 @@ const severityToIcon = new Map([
   [Severity.Error, new vscode.ThemeIcon('error', new vscode.ThemeColor('problemsErrorIcon.foreground'))],
   [Severity.Warning, new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'))],
   [Severity.Info, new vscode.ThemeIcon('info', new vscode.ThemeColor('problemsInfoIcon.foreground'))],
-  [Severity.Hint, new vscode.ThemeIcon('hint', new vscode.ThemeColor('editorHint.foreground'))] // issues on old code
+  [Severity.Hint, new vscode.ThemeIcon('info', new vscode.ThemeColor('editorHint.foreground'))] // issues on old code
 ]);
 
 export class FindingsFileNode extends vscode.TreeItem {
   constructor(
     public readonly fileUri: string,
-    public readonly findingsCount: number
+    public readonly findingsCount: number,
+    public readonly category?: 'new' | 'older'
   ) {
     super(getFileNameFromFullPath(fileUri), vscode.TreeItemCollapsibleState.Expanded);
     
     this.contextValue = 'findingsFileGroup';
-    this.id = `file-${fileUri}`;
+    const categorySuffix = category ? `_${category}` : '';
+    this.id = `${fileUri}${categorySuffix}`;
     this.resourceUri = vscode.Uri.parse(fileUri);
     
     const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders?.length > 1;
@@ -100,7 +103,33 @@ export class FindingsFileNode extends vscode.TreeItem {
     );
     
     this.iconPath = vscode.ThemeIcon.File;
-    this.tooltip = `${findingsCount} SonarQube Security Finding(s)`;
+    
+    if (category) {
+      const categoryText = category === 'new' ? 'new code' : 'older code';
+      this.tooltip = `${findingsCount} SonarQube Security Finding(s) in ${categoryText}`;
+    } else {
+      this.tooltip = `${findingsCount} SonarQube Security Finding(s)`;
+    }
+  }
+}
+
+export class NewIssuesNode extends vscode.TreeItem {
+  constructor() {
+    super('New Findings', vscode.TreeItemCollapsibleState.Expanded);
+    this.contextValue = 'newIssuesGroup';
+    this.id = 'new-issues';
+    this.iconPath = new vscode.ThemeIcon('git-pull-request-new-changes');
+    this.tooltip = 'Findings in new code';
+  }
+}
+
+export class OlderIssuesNode extends vscode.TreeItem {
+  constructor() {
+    super('Older Findings', vscode.TreeItemCollapsibleState.Collapsed);
+    this.contextValue = 'olderIssuesGroup';
+    this.id = 'older-issues';
+    this.iconPath = new vscode.ThemeIcon('history');
+    this.tooltip = 'Findings in older code';
   }
 }
 
@@ -116,6 +145,7 @@ export class FindingNode extends vscode.TreeItem {
     public readonly status: number,
     public readonly findingType: FindingType,
     public readonly isAiCodeFixable: boolean,
+    public readonly isOnNewCode: boolean,
     public readonly vulnerabilityProbability?: HotspotReviewPriority,
     public readonly severity?: number,
   ) {
@@ -126,7 +156,7 @@ export class FindingNode extends vscode.TreeItem {
     this.fileUri = fileUri;
     
     this.description = `${SOURCE_CONFIG[source]?.label} (${ruleKey})`;
-    this.iconPath = this.getIconForFinding(source, severity);
+    this.iconPath = this.getIconForFinding(source);
     this.tooltip = SOURCE_CONFIG[source]?.tooltipText;
     
     this.command = {
@@ -136,7 +166,7 @@ export class FindingNode extends vscode.TreeItem {
     };
   }
 
-  private getIconForFinding(source: FindingSource, severity?: number): vscode.ThemeIcon {
+  private getIconForFinding(source: FindingSource): vscode.ThemeIcon {
     const sourceConfig = SOURCE_CONFIG[source];
     // For security hotspots, use source-specific icons
     if (sourceConfig.icon) {
@@ -162,7 +192,7 @@ function getContextValueForFinding(source: FindingSource, isAiCodeFixable: boole
   }
 }
 
-export type FindingsTreeViewItem = FindingsFileNode | FindingNode;
+export type FindingsTreeViewItem = FindingsFileNode | FindingNode | NewIssuesNode | OlderIssuesNode;
 
 export class FindingsTreeDataProvider implements vscode.TreeDataProvider<FindingsTreeViewItem> {
   private static _instance: FindingsTreeDataProvider;
@@ -264,6 +294,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       diagnostic['data']?.status,
       FindingType.SecurityHotspot,
       false,
+      diagnostic['data']?.isOnNewCode ?? false,
       diagnostic.severity as HotspotReviewPriority,
     ));
   }
@@ -281,6 +312,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       null,
       FindingType.TaintVulnerability,
       diagnostic['data']?.isAiCodeFixable ?? false,
+      diagnostic['data']?.isOnNewCode ?? false,
       null,
       diagnostic.severity,
     ));
@@ -292,22 +324,99 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
 
   getChildren(element?: FindingsTreeViewItem): ProviderResult<FindingsTreeViewItem[]> {
     if (!element) {
-      return this.getRootFiles();
+      return this.getRootItems();
+    }
+
+    if (element instanceof NewIssuesNode) {
+      return this.getNewIssuesFiles();
+    }
+
+    if (element instanceof OlderIssuesNode) {
+      return this.getOlderIssuesFiles();
     }
 
     if (element instanceof FindingsFileNode) {
-      return this.getFindingsForFile(element.fileUri);
+      return this.getFindingsForFile(element.fileUri, element.category);
     }
 
     return [];
   }
 
   getParent(element: FindingsTreeViewItem): vscode.ProviderResult<FindingsTreeViewItem> {
-    if (element instanceof FindingsFileNode) {
+    if (element instanceof NewIssuesNode || element instanceof OlderIssuesNode) {
       return null;
     }
 
-    return this.getRootFiles().find(file => file.fileUri === element.fileUri);
+    if (element instanceof FindingsFileNode) {
+      if (isFocusingOnNewCode()) {
+        // If the file node has a category, return the appropriate parent
+        if (element.category === 'new') {
+          return new NewIssuesNode();
+        } else if (element.category === 'older') {
+          return new OlderIssuesNode();
+        }
+        return null;
+      }
+      return null;
+    }
+
+    // For FindingNode, find the parent file
+    const parentFile = this.getRootFiles().find(file => file.fileUri === element.fileUri);
+    if (parentFile) {
+      if (isFocusingOnNewCode()) {
+        return element.isOnNewCode ? new NewIssuesNode() : new OlderIssuesNode();
+      }
+      return parentFile;
+    }
+
+    return null;
+  }
+
+  private getRootItems(): FindingsTreeViewItem[] {
+    if (isFocusingOnNewCode()) {
+      const newIssuesFiles = this.getNewIssuesFiles();
+      const olderIssuesFiles = this.getOlderIssuesFiles();
+      
+      const items: FindingsTreeViewItem[] = [];
+      
+      if (newIssuesFiles.length > 0) {
+        items.push(new NewIssuesNode());
+      }
+      
+      if (olderIssuesFiles.length > 0) {
+        items.push(new OlderIssuesNode());
+      }
+      
+      return items;
+    } else {
+      return this.getRootFiles();
+    }
+  }
+
+  private getNewIssuesFiles(): FindingsFileNode[] {
+    const files: FindingsFileNode[] = [];
+    
+    this.findingsCache.forEach((findings, fileUri) => {
+      const newFindings = findings.filter(finding => finding.isOnNewCode);
+      if (newFindings.length > 0) {
+        files.push(new FindingsFileNode(fileUri, newFindings.length, 'new'));
+      }
+    });
+    
+    return files;
+  }
+
+  private getOlderIssuesFiles(): FindingsFileNode[] {
+    const files: FindingsFileNode[] = [];
+    
+    this.findingsCache.forEach((findings, fileUri) => {
+      const olderFindings = findings.filter(finding => !finding.isOnNewCode);
+      if (olderFindings.length > 0) {
+        files.push(new FindingsFileNode(fileUri, olderFindings.length, 'older'));
+      }
+    });
+    
+    return files;
   }
 
   getRootFiles(): FindingsFileNode[] {
@@ -322,8 +431,13 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     return files;
   }
 
-  private getFindingsForFile(fileUri: string): FindingNode[] {
+  private getFindingsForFile(fileUri: string, category?: 'new' | 'older'): FindingNode[] {
     const findings = this.findingsCache.get(fileUri) || [];
+    if (category) {
+      const lookingForNew = category === 'new';
+      // looking for new and is new, or looking for older and is older
+      return findings.filter(finding => finding.isOnNewCode === lookingForNew);
+    }
     return findings.map(finding => new FindingNode(
       finding.key,
       finding.serverIssueKey,
@@ -336,6 +450,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       finding.status,
       finding.findingType,
       finding.isAiCodeFixable,
+      finding.isOnNewCode,
       finding.vulnerabilityProbability,
       finding.severity,
     ));
@@ -352,10 +467,6 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
 
   getTaintVulnerabilitiesForFile(fileUri: string): FindingNode[] {
     return this.findingsCache.get(fileUri)?.filter(finding => finding.findingType === FindingType.TaintVulnerability) || [];
-  }
-
-  hasFindings(): boolean {
-    return this.findingsCache.size > 0;
   }
 
   getTotalFindingsCount(): number {

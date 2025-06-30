@@ -70,3 +70,7 @@ function configKeyEquals(key, oldConfig, newConfig) {
 export function shouldShowRegionSelection() {
   return getSonarLintConfiguration().get("earlyAccess.showRegionSelection", false);
 }
+
+export function isFocusingOnNewCode(): boolean {
+  return getSonarLintConfiguration().get('focusOnNewCode', false);
+}
