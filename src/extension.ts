@@ -321,6 +321,8 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint.focusOnNewCode')) {
       NewCodeDefinitionService.instance.updateFocusOnNewCodeState();
+      findingsTreeDataProvider.refresh();
+      TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile();
     }
   });
 
