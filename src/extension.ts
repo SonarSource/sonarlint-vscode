@@ -61,7 +61,7 @@ import { getPlatform } from './util/platform';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
-import { filterOutFilesIgnoredForAnalysis, getSeverity, shouldAnalyseFile } from './util/util';
+import { filterOutFilesIgnoredForAnalysis, shouldAnalyseFile } from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { CAN_SHOW_MISSING_REQUIREMENT_NOTIF, showSslCertificateConfirmationDialog } from './util/showMessage';
@@ -176,6 +176,12 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
+    middleware: {
+      handleDiagnostics: (uri, diagnostics, next) => {
+        FindingsTreeDataProvider.instance.updateIssues(uri.toString(), diagnostics);
+        next(uri, diagnostics); // Call the default handler
+      }
+    },
     documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
       configurationSection: 'sonarlint',

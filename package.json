@@ -863,17 +863,17 @@
         {
           "command": "SonarLint.TriggerBrowseTaintCommand",
           "title": "Open Taint Vulnerability on remote server",
-          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintVulnerabilityItem"
+          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintItem"
         },
         {
           "command": "SonarQube.TriggerAiCodeFixCommand",
           "title": "✧˖° Fix with AI CodeFix",
-          "when": "view == SonarQube.Findings && viewItem == AICodeFixableTaintVulnerabilityItem"
+          "when": "view == SonarQube.Findings && (viewItem == AICodeFixableTaintItem || viewItem == AICodeFixableIssueItem)"
         },
         {
           "command": "SonarQube.TriggerResolveTaintCommand",
           "title": "Resolve issue as...",
-          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintVulnerabilityItem"
+          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintItem"
         }
       ]
     },
