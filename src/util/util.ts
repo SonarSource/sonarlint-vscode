@@ -16,6 +16,7 @@ import { code2ProtocolConverter } from './uri';
 import { verboseLogToSonarLintOutput } from './logging';
 import { BindingService } from '../connected/binding';
 import { SonarCloudRegion } from '../settings/connectionsettings';
+import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageclient';
 
 const ANALYSIS_EXCLUDES = 'sonarlint.analysisExcludesStandalone';
 
@@ -326,6 +327,16 @@ export function getSeverity(severity: number): vscode.DiagnosticSeverity {
   }
 }
 
+export function mapVscodeSeverityToLspSeverity(severity: vscode.DiagnosticSeverity): DiagnosticSeverity {
+  switch (severity) {
+    case vscode.DiagnosticSeverity.Error: return DiagnosticSeverity.Error;
+    case vscode.DiagnosticSeverity.Warning: return DiagnosticSeverity.Warning;
+    case vscode.DiagnosticSeverity.Information: return DiagnosticSeverity.Information;
+    case vscode.DiagnosticSeverity.Hint: return DiagnosticSeverity.Hint;
+    default: return DiagnosticSeverity.Warning;
+  }
+}
+
 export function sonarCloudRegionToLabel(region: number): SonarCloudRegion {
   switch (region) {
     case 0: return 'EU';
@@ -344,4 +355,23 @@ export function sanitizeSonarCloudRegionSetting(region: string): SonarCloudRegio
     case 'US': return 'US';
     default: return 'EU';
   }
+}
+
+export function convertVscodeDiagnosticToLspDiagnostic(diagnostic: vscode.Diagnostic): Diagnostic {
+    // Convert range
+    const range: Range = {
+      start: { line: diagnostic.range.start.line, character: diagnostic.range.start.character },
+      end: { line: diagnostic.range.end.line, character: diagnostic.range.end.character }
+    };
+  
+    const lspDiag = {
+      range,
+      message: diagnostic.message,
+      severity: mapVscodeSeverityToLspSeverity(diagnostic.severity),
+      code: diagnostic.code as string,
+      source: diagnostic.source,
+      data: diagnostic['data']
+    };
+  
+    return lspDiag;
 }
