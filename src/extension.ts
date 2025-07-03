@@ -37,7 +37,7 @@ import {
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan
 } from './hotspot/hotspots';
-import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
+import { FilterType, FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
@@ -355,6 +355,13 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
 
   context.subscriptions.push(findingsView);
+  
+  // Update badge when tree data changes
+  context.subscriptions.push(
+    findingsTreeDataProvider.onDidChangeTreeData(() => {
+      updateFindingsViewContainerBadge();
+    })
+  );
 
   helpAndFeedbackTreeDataProvider = new HelpAndFeedbackTreeDataProvider();
   helpAndFeedbackView = VSCode.window.createTreeView('SonarLint.HelpAndFeedback', {
@@ -710,10 +717,24 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 }
 
 function updateFindingsViewContainerBadge() {
-  findingsView.badge = findingsTreeDataProvider.getTotalFindingsCount() > 0 ? {
-    value: findingsTreeDataProvider.getTotalFindingsCount(),
-    tooltip: `Total ${findingsTreeDataProvider.getTotalFindingsCount()} SonarQube Security Findings`
-  } : undefined;
+  const totalCount = findingsTreeDataProvider.getTotalFindingsCount();
+  const filteredCount = findingsTreeDataProvider.getFilteredFindingsCount();
+  const activeFilter = findingsTreeDataProvider.getActiveFilter();
+  
+  if (totalCount > 0) { 
+    const badgeValue = activeFilter === FilterType.All ? totalCount : filteredCount;
+    const filterDisplayName = findingsTreeDataProvider.getFilterDisplayName();
+    
+    findingsView.badge = {
+      value: badgeValue,
+      tooltip: `${filterDisplayName}: ${filteredCount} of ${totalCount} SonarQube Findings`
+    };
+    
+    findingsView.title = `SonarQube Findings (${filterDisplayName})`;
+  } else {
+    findingsView.badge = undefined;
+    findingsView.title = 'SonarQube Findings';
+  }
 }
 
 async function getTokenForServer(serverId: string): Promise<string> {
