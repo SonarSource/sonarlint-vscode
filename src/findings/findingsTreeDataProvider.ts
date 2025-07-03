@@ -30,7 +30,8 @@ export enum FindingType {
 
 export enum FilterType {
   All = 'all',
-  Fix_Available = 'fix-available'
+  Fix_Available = 'fix-available',
+  Open_Files_Only = 'open-files-only'
 }
 
 export enum FindingSource {
@@ -271,6 +272,12 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       })
     );
 
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_OPEN_FILES_ONLY, () => {
+        this._instance.setFilter(FilterType.Open_Files_Only);
+      })
+    );
+
     // Initialize the context for the filter
     vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', this._instance.getFilterContextValue());
   }
@@ -461,8 +468,14 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       return true;
     } else if (this.activeFilter === FilterType.Fix_Available) {
       return finding.isAiCodeFixable || finding.hasQuickFix;
+    } else if (this.activeFilter === FilterType.Open_Files_Only) {
+      return this.isFileOpen(finding.fileUri);
     }
     return false;
+  }
+
+  private isFileOpen(fileUri: string): boolean {
+    return vscode.workspace.textDocuments.some(doc => doc.uri.toString() === fileUri);
   }
 
   private getFindingsForFile(fileUri: string, category?: 'new' | 'older'): FindingNode[] {
@@ -499,6 +512,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.activeFilter = filter;
     this.refresh();
     vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', this.getFilterContextValue());
+    // TODO add call to telemetry
   }
 
   getActiveFilter(): FilterType {
@@ -522,11 +536,12 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         return 'All Findings';
       case FilterType.Fix_Available:
         return 'Findings with Fix Available';
+      case FilterType.Open_Files_Only:
+        return 'Findings in Open Files';
       default:
         return 'All Findings';
     }
   }
-
 
   getFilterContextValue(): string {
     switch (this.activeFilter) {
@@ -534,6 +549,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         return 'filter-all';
       case FilterType.Fix_Available:
         return 'filter-fix-available';
+      case FilterType.Open_Files_Only:
+        return 'filter-open-files';
       default:
         return 'filter-all';
     }

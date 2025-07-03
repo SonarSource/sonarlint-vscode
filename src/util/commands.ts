@@ -82,4 +82,5 @@ export namespace Commands {
   // Filter commands
   export const SHOW_ALL_FINDINGS = 'SonarQube.ShowAllFindings';
   export const SHOW_FIXABLE_ISSUES_ONLY = 'SonarQube.ShowFixableIssuesOnly';
+  export const SHOW_OPEN_FILES_ONLY = 'SonarQube.ShowOpenFilesOnly';
 }
