@@ -493,6 +493,12 @@
         "enablement": "sonarqube.findingsFilter != filter-fix-available"
       },
       {
+        "command": "SonarQube.ShowOpenFilesOnly",
+        "title": "Findings in Open Files",
+        "category": "SonarQube",
+        "enablement": "sonarqube.findingsFilter != filter-open-files"
+      },
+      {
         "command": "SonarLint.ConnectToSonarQube",
         "title": "Connect to SonarQube Server",
         "category": "SonarQube",
@@ -686,7 +692,7 @@
         "title": "Welcome to SonarQube for IDE!",
         "description": "Start left and discover issues early.\nSonarQube for IDE empowers you to find & fix code issues in real time, in 15+ languages.",
         "steps": [
-      {
+          {
             "id": "SonarQube.getStarted",
             "title": "$(rocket) New to SonarQube?",
             "description": "Unlock more languages and security rules.\n[Create Free Account](command:SonarLint.HelpAndFeedbackLinkClicked?%5B%7B%22id%22%3A%22sonarqubeCloudFreeSignUp%22%2C%22utm%22%3A%7B%22content%22%3A%22walkthrough-welcome-sq-ide%22%2C%22term%22%3A%22create-free-account%22%7D%7D%5D)",
@@ -709,8 +715,8 @@
             "completionEvents": [
               "onView:SonarLint.ConnectedMode"
             ]
-      },
-      {
+          },
+          {
             "id": "SonarLint.reachOut",
             "title": "$(comment-discussion) Share feedback or ask for help",
             "description": "You'd like to learn more about SonarQube for IDE, or give us feedback? Check out the [Help and Feedback view](command:SonarLint.HelpAndFeedback.focus).\n",
@@ -804,6 +810,11 @@
           "command": "SonarQube.ShowFixableIssuesOnly",
           "when": "view == SonarQube.Findings",
           "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowOpenFilesOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
         }
       ],
       "SonarQube.FindingsFilterActive": [
@@ -814,6 +825,11 @@
         },
         {
           "command": "SonarQube.ShowFixableIssuesOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowOpenFilesOnly",
           "when": "view == SonarQube.Findings",
           "group": "1_filter"
         }
@@ -1081,6 +1097,18 @@
             }
           }
         }
+      }
+    ],
+    "submenus": [
+      {
+        "id": "SonarQube.FindingsFilter",
+        "label": "Filter Findings",
+        "icon": "$(filter)"
+      },
+      {
+        "id": "SonarQube.FindingsFilterActive",
+        "label": "Filter Findings",
+        "icon": "$(filter-filled)"
       }
     ]
   },

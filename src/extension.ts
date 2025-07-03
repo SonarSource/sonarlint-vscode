@@ -727,7 +727,7 @@ function updateFindingsViewContainerBadge() {
     
     findingsView.badge = {
       value: badgeValue,
-      tooltip: `${filterDisplayName}: ${filteredCount} of ${totalCount} SonarQube Findings`
+      tooltip: `${filterDisplayName}: ${filteredCount} of ${totalCount}`
     };
     
     findingsView.title = `SonarQube Findings (${filterDisplayName})`;
