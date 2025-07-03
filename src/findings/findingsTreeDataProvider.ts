@@ -28,6 +28,11 @@ export enum FindingType {
   Issue = 'issue'
 }
 
+export enum FilterType {
+  All = 'all',
+  Fix_Available = 'fix-available'
+}
+
 export enum FindingSource {
   SonarQube = 'sonarqube', // on-the-fly analysis
   Latest_SonarQube = 'Latest SonarQube Server Analysis', // taint
@@ -150,6 +155,8 @@ export class FindingNode extends vscode.TreeItem {
   public readonly isOnNewCode?: boolean;
   public readonly vulnerabilityProbability?: HotspotReviewPriority;
   public readonly severity?: number;
+  public readonly isAiCodeFixable: boolean;
+  public readonly hasQuickFix: boolean;
 
   constructor(public readonly fileUri,
     public readonly findingType: FindingType,
@@ -159,8 +166,10 @@ export class FindingNode extends vscode.TreeItem {
     this.key = finding['data'].entryKey;
     this.serverIssueKey = finding['data'].serverIssueKey;
     this.id = `${fileUri}-${this.key}`;
+    this.isAiCodeFixable = finding['data']?.isAiCodeFixable ?? false;
+    this.hasQuickFix = finding['data']?.hasQuickFix ?? false;
     this.range = new vscode.Range(finding.range.start.line, finding.range.start.character, finding.range.end.line, finding.range.end.character);
-    this.contextValue = getContextValueForFinding(finding.source as FindingSource, finding['data']?.isAiCodeFixable ?? false);
+    this.contextValue = getContextValueForFinding(finding.source as FindingSource, this.isAiCodeFixable);
     this.source = finding.source as FindingSource;
     this.message = finding.message;
     this.ruleKey = finding.code as string || 'unknown';
@@ -215,6 +224,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<FindingsTreeViewItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<FindingsTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   private readonly findingsCache = new Map<string, FindingNode[]>();
+  private activeFilter: FilterType = FilterType.All;
 
   static init(context: vscode.ExtensionContext) {
     this._instance = new FindingsTreeDataProvider();
@@ -248,6 +258,21 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         vscode.commands.executeCommand(Commands.RESOLVE_ISSUE, workspaceUri, issueKey, fileUri, isTaintIssue);
       })
     );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_ALL_FINDINGS, () => {
+        this._instance.setFilter(FilterType.All);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_FIXABLE_ISSUES_ONLY, () => {
+        this._instance.setFilter(FilterType.Fix_Available);
+      })
+    );
+
+    // Initialize the context for the filter
+    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', this._instance.getFilterContextValue());
   }
 
   static get instance(): FindingsTreeDataProvider {
@@ -396,7 +421,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     const files: FindingsFileNode[] = [];
     
     this.findingsCache.forEach((findings, fileUri) => {
-      const newFindings = findings.filter(finding => finding.isOnNewCode);
+      const newFindings = findings.filter(finding => finding.isOnNewCode && this.matchesFilter(finding));
       if (newFindings.length > 0) {
         files.push(new FindingsFileNode(fileUri, newFindings.length, 'new'));
       }
@@ -409,7 +434,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     const files: FindingsFileNode[] = [];
     
     this.findingsCache.forEach((findings, fileUri) => {
-      const olderFindings = findings.filter(finding => !finding.isOnNewCode);
+      const olderFindings = findings.filter(finding => !finding.isOnNewCode && this.matchesFilter(finding));
       if (olderFindings.length > 0) {
         files.push(new FindingsFileNode(fileUri, olderFindings.length, 'older'));
       }
@@ -422,22 +447,35 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     const files: FindingsFileNode[] = [];
     
     this.findingsCache.forEach((findings, fileUri) => {
-      if (findings.length > 0) {
-        files.push(new FindingsFileNode(fileUri, findings.length));
+      const filteredFindings = findings.filter(finding => this.matchesFilter(finding));
+      if (filteredFindings.length > 0) {
+        files.push(new FindingsFileNode(fileUri, filteredFindings.length));
       }
     });
     
     return files;
   }
 
+  private matchesFilter(finding: FindingNode): boolean {
+    if (this.activeFilter === FilterType.All) {
+      return true;
+    } else if (this.activeFilter === FilterType.Fix_Available) {
+      return finding.isAiCodeFixable || finding.hasQuickFix;
+    }
+    return false;
+  }
+
   private getFindingsForFile(fileUri: string, category?: 'new' | 'older'): FindingNode[] {
     const findings = this.findingsCache.get(fileUri) || [];
+    let filteredFindings = findings.filter(finding => this.matchesFilter(finding));
+    
     if (category) {
       const lookingForNew = category === 'new';
       // looking for new and is new, or looking for older and is older
-      return findings.filter(finding => finding.isOnNewCode === lookingForNew);
+      filteredFindings = filteredFindings.filter(finding => finding.isOnNewCode === lookingForNew);
     }
-    return findings.map(finding => new FindingNode(fileUri, finding.findingType, finding.finding));
+    
+    return filteredFindings.map(finding => new FindingNode(fileUri, finding.findingType, finding.finding));
   }
 
   getHotspotsForFile(fileUri: string): FindingNode[] {
@@ -455,5 +493,49 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   getTotalFindingsCount(): number {
     return Array.from(this.findingsCache.values())
       .reduce((total, findings) => total + findings.length, 0);
+  }
+
+  setFilter(filter: FilterType) {
+    this.activeFilter = filter;
+    this.refresh();
+    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', this.getFilterContextValue());
+  }
+
+  getActiveFilter(): FilterType {
+    return this.activeFilter;
+  }
+
+  getFilteredFindingsCount(): number {
+    if (this.activeFilter === FilterType.All) {
+      return this.getTotalFindingsCount();
+    }
+    
+    return Array.from(this.findingsCache.values())
+      .reduce((total, findings) => {
+        return total + findings.filter(finding => this.matchesFilter(finding)).length;
+      }, 0);
+  }
+
+  getFilterDisplayName(): string {
+    switch (this.activeFilter) {
+      case FilterType.All:
+        return 'All Findings';
+      case FilterType.Fix_Available:
+        return 'Findings with Fix Available';
+      default:
+        return 'All Findings';
+    }
+  }
+
+
+  getFilterContextValue(): string {
+    switch (this.activeFilter) {
+      case FilterType.All:
+        return 'filter-all';
+      case FilterType.Fix_Available:
+        return 'filter-fix-available';
+      default:
+        return 'filter-all';
+    }
   }
 }
