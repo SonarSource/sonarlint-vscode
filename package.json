@@ -481,6 +481,36 @@
         "enablement": "view == SonarQube.Findings"
       },
       {
+        "command": "SonarQube.ShowAllFindings",
+        "title": "All Findings",
+        "category": "SonarQube",
+        "enablement": "sonarqube.findingsFilter != filter-all"
+      },
+      {
+        "command": "SonarQube.ShowFixableIssuesOnly",
+        "title": "Findings with Fix Available",
+        "category": "SonarQube",
+        "enablement": "sonarqube.findingsFilter != filter-fix-available"
+      },
+      {
+        "command": "SonarQube.ShowOpenFilesOnly",
+        "title": "Findings in Open Files",
+        "category": "SonarQube",
+        "enablement": "sonarqube.findingsFilter != filter-open-files"
+      },
+      {
+        "command": "SonarQube.ShowHighSeverityOnly",
+        "title": "High Severity Findings",
+        "category": "SonarQube",
+        "enablement": "sonarqube.findingsFilter != filter-high-severity"
+      },
+      {
+        "command": "SonarQube.ShowCurrentFileOnly",
+        "title": "Findings in Current File",
+        "category": "SonarQube",
+        "enablement": "sonarqube.findingsFilter != filter-current-file"
+      },
+      {
         "command": "SonarLint.ConnectToSonarQube",
         "title": "Connect to SonarQube Server",
         "category": "SonarQube",
@@ -653,7 +683,7 @@
     "viewsWelcome": [
       {
         "view": "SonarLint.IssueLocations",
-        "contents": "No locations to show.\nUse \"Show all locations\" code action from a SonarQube for VS Code issue in the \"Problems\" view.\n[Show Problems](command:workbench.panel.markers.view.focus)"
+        "contents": "No locations to show.\nSelect a SonarQube issue in the \"SonarQube\" view.\n[Show Findings](command:SonarQube.Findings.focus)"
       },
       {
         "view": "SonarLint.ConnectedMode",
@@ -665,7 +695,7 @@
       },
       {
         "view": "SonarQube.Findings",
-        "contents": "No [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/) or [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) found in this project."
+        "contents": "No SonarQube issues to display."
       }
     ],
     "walkthroughs": [
@@ -770,6 +800,70 @@
           "command": "SonarLint.NewCodeDefinition.Disable",
           "when": "view == SonarQube.Findings && config.sonarlint.focusOnNewCode",
           "group": "navigation"
+        },
+        {
+          "submenu": "SonarQube.FindingsFilter",
+          "when": "view == SonarQube.Findings && sonarqube.findingsFilter == filter-all",
+          "group": "navigation"
+        },
+        {
+          "submenu": "SonarQube.FindingsFilterActive",
+          "when": "view == SonarQube.Findings && sonarqube.findingsFilter != filter-all",
+          "group": "navigation"
+        }
+      ],
+      "SonarQube.FindingsFilter": [
+        {
+          "command": "SonarQube.ShowAllFindings",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowFixableIssuesOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowOpenFilesOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowHighSeverityOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowCurrentFileOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        }
+      ],
+      "SonarQube.FindingsFilterActive": [
+        {
+          "command": "SonarQube.ShowAllFindings",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowFixableIssuesOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowOpenFilesOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowHighSeverityOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowCurrentFileOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
         }
       ],
       "view/item/context": [
@@ -863,17 +957,17 @@
         {
           "command": "SonarLint.TriggerBrowseTaintCommand",
           "title": "Open Taint Vulnerability on remote server",
-          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintVulnerabilityItem"
+          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintItem"
         },
         {
           "command": "SonarQube.TriggerAiCodeFixCommand",
           "title": "✧˖° Fix with AI CodeFix",
-          "when": "view == SonarQube.Findings && viewItem == AICodeFixableTaintVulnerabilityItem"
+          "when": "view == SonarQube.Findings && (viewItem == AICodeFixableTaintItem || viewItem == AICodeFixableIssueItem)"
         },
         {
           "command": "SonarQube.TriggerResolveTaintCommand",
           "title": "Resolve issue as...",
-          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintVulnerabilityItem"
+          "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintItem"
         }
       ]
     },
@@ -1036,6 +1130,18 @@
           }
         }
       }
+    ],
+    "submenus": [
+      {
+        "id": "SonarQube.FindingsFilter",
+        "label": "Filter Findings",
+        "icon": "$(filter)"
+      },
+      {
+        "id": "SonarQube.FindingsFilterActive",
+        "label": "Filter Findings",
+        "icon": "$(filter-filled)"
+      }
     ]
   },
   "main": "./dist/extension",
@@ -1122,7 +1228,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "3.26.0.76294",
+      "version": "3.26.0.76303",
       "output": "server/sonarlint-ls.jar"
     },
     {

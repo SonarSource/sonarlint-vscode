@@ -8,80 +8,25 @@
 
 import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
-import { PublishDiagnosticsParams } from '../lsp/protocol';
+import { ImpactSeverity, PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { getConnectionIdForFile } from '../util/bindingUtils';
-import { Severity } from '../util/issue';
 import { isFocusingOnNewCode } from '../settings/settings';
-import { getSeverity } from '../util/util';
-
-export enum HotspotReviewPriority {
-  High = 1,
-  Medium = 2,
-  Low = 3
-}
-
-export enum FindingType {
-  SecurityHotspot = 'hotspot',
-  TaintVulnerability = 'taint',
-}
-
-export enum FindingSource {
-  SonarQube = 'sonarqube', // on-the-fly analysis
-  Latest_SonarQube = 'Latest SonarQube Server Analysis', // taint
-  Latest_SonarCloud = 'Latest SonarQube Cloud Analysis', // taint
-  Remote = 'remote', // hotspot that matched remote one; Still on-the-fly analysis
-}
-
-export interface Finding {
-  key: string;
-  serverIssueKey?: string;
-  contextValue: FindingContextValue;
-  type: FindingType;
-  source: FindingSource;
-  severity?: number;
-  vulnerabilityProbability?: HotspotReviewPriority;
-  message: string;
-  ruleKey: string;
-  fileUri: string;
-  status: number;
-}
-
-const SOURCE_CONFIG: Record<FindingSource, {
-  icon?: string;
-  iconColor?: string;
-  label: string;
-  tooltipText: string;
-}> = {
-  [FindingSource.SonarQube]: {
-    icon: 'security-hotspot',
-    iconColor: 'editorInfo.foreground',
-    label: 'Security Hotspot',
-    tooltipText: 'This Security Hotspot exists on remote project'
-  },
-  [FindingSource.Remote]: {
-    icon: 'security-hotspot', 
-    iconColor: 'editorInfo.foreground',
-    label: 'Security Hotspot',
-    tooltipText: 'This Security Hotspot only exists locally'
-  },
-  [FindingSource.Latest_SonarQube]: {
-    label: 'Taint Vulnerability',
-    tooltipText: 'This Taint Vulnerability was detected by SonarQube Server'
-  },
-  [FindingSource.Latest_SonarCloud]: {
-    label: 'Taint Vulnerability',
-    tooltipText: 'This Taint Vulnerability was detected by SonarQube Cloud'
-  }
-};
-
-const severityToIcon = new Map([
-  [Severity.Error, new vscode.ThemeIcon('error', new vscode.ThemeColor('problemsErrorIcon.foreground'))],
-  [Severity.Warning, new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'))],
-  [Severity.Info, new vscode.ThemeIcon('info', new vscode.ThemeColor('problemsInfoIcon.foreground'))],
-  [Severity.Hint, new vscode.ThemeIcon('info', new vscode.ThemeColor('editorHint.foreground'))] // issues on old code
-]);
+import { convertVscodeDiagnosticToLspDiagnostic } from '../util/util';
+import {
+  FindingContextValue,
+  FindingSource,
+  FilterType,
+  FindingType,
+  HotspotReviewPriority,
+  SOURCE_CONFIG,
+  impactSeverityToIcon,
+  getContextValueForFinding,
+  isFileOpen,
+  isCurrentFile,
+  getFilterContextValue
+} from './findingsTreeDataProviderUtil';
 
 export class FindingsFileNode extends vscode.TreeItem {
   constructor(
@@ -99,6 +44,7 @@ export class FindingsFileNode extends vscode.TreeItem {
     const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders?.length > 1;
     this.description = getRelativePathFromFullPath(
       fileUri,
+      // TODO for jupyter notebooks the URI is vscode-notebook-cell:// and folder cannot be found
       vscode.workspace.getWorkspaceFolder(this.resourceUri),
       specifyWorkspaceFolderName
     );
@@ -146,6 +92,9 @@ export class FindingNode extends vscode.TreeItem {
   public readonly isOnNewCode?: boolean;
   public readonly vulnerabilityProbability?: HotspotReviewPriority;
   public readonly severity?: number;
+  public readonly isAiCodeFixable: boolean;
+  public readonly hasQuickFix: boolean;
+  public readonly impactSeverity: ImpactSeverity;
 
   constructor(public readonly fileUri,
     public readonly findingType: FindingType,
@@ -155,19 +104,21 @@ export class FindingNode extends vscode.TreeItem {
     this.key = finding['data'].entryKey;
     this.serverIssueKey = finding['data'].serverIssueKey;
     this.id = `${fileUri}-${this.key}`;
+    this.isAiCodeFixable = finding['data']?.isAiCodeFixable ?? false;
+    this.hasQuickFix = finding['data']?.hasQuickFix ?? false;
     this.range = new vscode.Range(finding.range.start.line, finding.range.start.character, finding.range.end.line, finding.range.end.character);
-    this.contextValue = getContextValueForFinding(finding.source as FindingSource, finding['data']?.isAiCodeFixable ?? false);
+    this.contextValue = getContextValueForFinding(finding.source as FindingSource, this.isAiCodeFixable);
     this.source = finding.source as FindingSource;
     this.message = finding.message;
     this.ruleKey = finding.code as string || 'unknown';
     this.status = finding['data']?.status;
     this.isOnNewCode = finding['data']?.isOnNewCode;
     this.vulnerabilityProbability = finding.severity as HotspotReviewPriority;
-    this.severity = getSeverity(finding.severity);
+    this.severity = finding.severity;
+    this.impactSeverity = finding['data']?.impactSeverity as ImpactSeverity;
 
-    this.description = `${SOURCE_CONFIG[this.source]?.label} (${this.ruleKey})`;
+    this.description = `${SOURCE_CONFIG[this.source]?.label || ''} (${this.ruleKey}) [Ln ${this.range.start.line + 1}, Col ${this.range.start.character}]`;
     this.iconPath = this.getIconForFinding(this.source);
-    this.tooltip = SOURCE_CONFIG[this.source]?.tooltipText;
     this.tooltip = SOURCE_CONFIG[this.source]?.tooltipText;
     
     this.command = {
@@ -177,7 +128,7 @@ export class FindingNode extends vscode.TreeItem {
     }
   }
 
-  private getIconForFinding(source: FindingSource): vscode.ThemeIcon {
+  private getIconForFinding(source: FindingSource): vscode.ThemeIcon | vscode.IconPath {
     const sourceConfig = SOURCE_CONFIG[source];
     // For security hotspots, use source-specific icons
     if (sourceConfig.icon) {
@@ -185,31 +136,17 @@ export class FindingNode extends vscode.TreeItem {
     }
     
     // Fallback to severity-based icon for taint vulnerabilities
-    return severityToIcon.get(this.severity);
-  }
-}
-
-export type FindingContextValue = 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem' | 'AICodeFixableTaintVulnerabilityItem';
-
-function getContextValueForFinding(source: FindingSource, isAiCodeFixable: boolean): FindingContextValue {
-  if (source === FindingSource.Remote) {
-    return 'knownHotspotItem';
-  } else if ((source === FindingSource.Latest_SonarCloud || source === FindingSource.Latest_SonarQube) && isAiCodeFixable) {
-    return 'AICodeFixableTaintVulnerabilityItem';
-  } else if (source === FindingSource.Latest_SonarCloud || source === FindingSource.Latest_SonarQube) {
-    return 'taintVulnerabilityItem';
-  } else {
-    return 'newHotspotItem';
+    return impactSeverityToIcon(this.impactSeverity);
   }
 }
 
 export type FindingsTreeViewItem = FindingsFileNode | FindingNode | NewIssuesNode | OlderIssuesNode;
-
 export class FindingsTreeDataProvider implements vscode.TreeDataProvider<FindingsTreeViewItem> {
   private static _instance: FindingsTreeDataProvider;
-    private readonly _onDidChangeTreeData = new vscode.EventEmitter<FindingsTreeViewItem | undefined>();
+  private readonly _onDidChangeTreeData = new vscode.EventEmitter<FindingsTreeViewItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<FindingsTreeViewItem | undefined> = this._onDidChangeTreeData.event;
   private readonly findingsCache = new Map<string, FindingNode[]>();
+  private activeFilter: FilterType = FilterType.All;
 
   static init(context: vscode.ExtensionContext) {
     this._instance = new FindingsTreeDataProvider();
@@ -229,7 +166,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     context.subscriptions.push(
       vscode.commands.registerCommand(Commands.TRIGGER_AI_CODE_FIX_COMMAND, (finding: FindingNode) => {
         // call server-side command to to suggest fix
-        vscode.commands.executeCommand('SonarLint.SuggestTaintFix', finding.key, finding.fileUri);
+        vscode.commands.executeCommand('SonarLint.SuggestFix', finding.key, finding.fileUri);
       })
     );
 
@@ -243,6 +180,39 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         vscode.commands.executeCommand(Commands.RESOLVE_ISSUE, workspaceUri, issueKey, fileUri, isTaintIssue);
       })
     );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_ALL_FINDINGS, () => {
+        this._instance.setFilter(FilterType.All);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_FIXABLE_ISSUES_ONLY, () => {
+        this._instance.setFilter(FilterType.Fix_Available);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_OPEN_FILES_ONLY, () => {
+        this._instance.setFilter(FilterType.Open_Files_Only);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_HIGH_SEVERITY_ONLY, () => {
+        this._instance.setFilter(FilterType.High_Severity_Only);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_CURRENT_FILE_ONLY, () => {
+        this._instance.setFilter(FilterType.Current_File_Only);
+      })
+    );
+
+    // Initialize the context for the filter
+    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', getFilterContextValue(this._instance.activeFilter));
   }
 
   static get instance(): FindingsTreeDataProvider {
@@ -256,6 +226,9 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       vscode.commands.executeCommand(showRuleDescriptionCommand, finding);
     } else if (finding.findingType === FindingType.TaintVulnerability) {
       vscode.commands.executeCommand('SonarLint.ShowTaintVulnerabilityFlows', finding.serverIssueKey, getConnectionIdForFile(finding.fileUri));
+      vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
+    } else if (finding.findingType === FindingType.Issue) {
+      vscode.commands.executeCommand('SonarLint.ShowIssueFlows', finding.key, finding.fileUri)
       vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
     }
   }
@@ -272,6 +245,11 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   updateTaintVulnerabilities(fileUri: string, diagnostics: Diagnostic[]) {
     const findingNodes = this.convertTaintVulnerabilitiesToFindingNodes(fileUri, diagnostics);
     this.updateFindingsForFile(fileUri, findingNodes, FindingType.TaintVulnerability);
+  }
+
+  updateIssues(fileUri: string, diagnostics: vscode.Diagnostic[]) {
+    const findingNodes = this.convertIssuesToFindingNodes(fileUri, diagnostics);
+    this.updateFindingsForFile(fileUri, findingNodes, FindingType.Issue);
   }
 
   private updateFindingsForFile(fileUri: string, newFindings: FindingNode[], findingType: FindingType) {
@@ -298,6 +276,10 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
 
   private convertTaintVulnerabilitiesToFindingNodes(fileUri: string, diagnostics: Diagnostic[]): FindingNode[] {
     return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.TaintVulnerability, diagnostic));
+  }
+
+  private convertIssuesToFindingNodes(fileUri: string, diagnostics: vscode.Diagnostic[]): FindingNode[] {
+    return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.Issue, convertVscodeDiagnosticToLspDiagnostic(diagnostic)));
   }
 
   getTreeItem(element: FindingsTreeViewItem): vscode.TreeItem {
@@ -379,7 +361,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     const files: FindingsFileNode[] = [];
     
     this.findingsCache.forEach((findings, fileUri) => {
-      const newFindings = findings.filter(finding => finding.isOnNewCode);
+      const newFindings = findings.filter(finding => finding.isOnNewCode && this.matchesFilter(finding));
       if (newFindings.length > 0) {
         files.push(new FindingsFileNode(fileUri, newFindings.length, 'new'));
       }
@@ -392,7 +374,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     const files: FindingsFileNode[] = [];
     
     this.findingsCache.forEach((findings, fileUri) => {
-      const olderFindings = findings.filter(finding => !finding.isOnNewCode);
+      const olderFindings = findings.filter(finding => !finding.isOnNewCode && this.matchesFilter(finding));
       if (olderFindings.length > 0) {
         files.push(new FindingsFileNode(fileUri, olderFindings.length, 'older'));
       }
@@ -405,22 +387,41 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     const files: FindingsFileNode[] = [];
     
     this.findingsCache.forEach((findings, fileUri) => {
-      if (findings.length > 0) {
-        files.push(new FindingsFileNode(fileUri, findings.length));
+      const filteredFindings = findings.filter(finding => this.matchesFilter(finding));
+      if (filteredFindings.length > 0) {
+        files.push(new FindingsFileNode(fileUri, filteredFindings.length));
       }
     });
     
     return files;
   }
 
+  private matchesFilter(finding: FindingNode): boolean {
+    if (this.activeFilter === FilterType.All) {
+      return true;
+    } else if (this.activeFilter === FilterType.Fix_Available) {
+      return finding.isAiCodeFixable || finding.hasQuickFix;
+    } else if (this.activeFilter === FilterType.Open_Files_Only) {
+      return isFileOpen(finding.fileUri);
+    } else if (this.activeFilter === FilterType.High_Severity_Only) {
+      return finding.impactSeverity === ImpactSeverity.HIGH || finding.impactSeverity === ImpactSeverity.BLOCKER;
+    } else if (this.activeFilter === FilterType.Current_File_Only) {
+      return isCurrentFile(finding.fileUri);
+    }
+    return false;
+  }
+
   private getFindingsForFile(fileUri: string, category?: 'new' | 'older'): FindingNode[] {
     const findings = this.findingsCache.get(fileUri) || [];
+    let filteredFindings = findings.filter(finding => this.matchesFilter(finding));
+    
     if (category) {
       const lookingForNew = category === 'new';
       // looking for new and is new, or looking for older and is older
-      return findings.filter(finding => finding.isOnNewCode === lookingForNew);
+      filteredFindings = filteredFindings.filter(finding => finding.isOnNewCode === lookingForNew);
     }
-    return findings.map(finding => new FindingNode(fileUri, finding.findingType, finding.finding));
+    
+    return filteredFindings.map(finding => new FindingNode(fileUri, finding.findingType, finding.finding));
   }
 
   getHotspotsAndTaintsForFile(fileUri: string): FindingNode[] {
@@ -439,5 +440,27 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   getTotalFindingsCount(): number {
     return Array.from(this.findingsCache.values())
       .reduce((total, findings) => total + findings.length, 0);
+  }
+
+  setFilter(filter: FilterType) {
+    this.activeFilter = filter;
+    this.refresh();
+    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', getFilterContextValue(filter));
+    // TODO add call to telemetry
+  }
+
+  getActiveFilter(): FilterType {
+    return this.activeFilter;
+  }
+
+  getFilteredFindingsCount(): number {
+    if (this.activeFilter === FilterType.All) {
+      return this.getTotalFindingsCount();
+    }
+    
+    return Array.from(this.findingsCache.values())
+      .reduce((total, findings) => {
+        return total + findings.filter(finding => this.matchesFilter(finding)).length;
+      }, 0);
   }
 }
