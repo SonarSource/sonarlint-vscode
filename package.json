@@ -505,6 +505,12 @@
         "enablement": "sonarqube.findingsFilter != filter-high-severity"
       },
       {
+        "command": "SonarQube.ShowCurrentFileOnly",
+        "title": "Findings in Current File",
+        "category": "SonarQube",
+        "enablement": "sonarqube.findingsFilter != filter-current-file"
+      },
+      {
         "command": "SonarLint.ConnectToSonarQube",
         "title": "Connect to SonarQube Server",
         "category": "SonarQube",
@@ -826,6 +832,11 @@
           "command": "SonarQube.ShowHighSeverityOnly",
           "when": "view == SonarQube.Findings",
           "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowCurrentFileOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
         }
       ],
       "SonarQube.FindingsFilterActive": [
@@ -846,6 +857,11 @@
         },
         {
           "command": "SonarQube.ShowHighSeverityOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowCurrentFileOnly",
           "when": "view == SonarQube.Findings",
           "group": "1_filter"
         }
