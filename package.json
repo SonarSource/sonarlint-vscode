@@ -695,7 +695,7 @@
       },
       {
         "view": "SonarQube.Findings",
-        "contents": "No [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/) or [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) found in this project."
+        "contents": "No SonarQube issues to display."
       }
     ],
     "walkthroughs": [

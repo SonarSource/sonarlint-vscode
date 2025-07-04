@@ -179,7 +179,10 @@ export async function activate(context: VSCode.ExtensionContext) {
   const clientOptions: LanguageClientOptions = {
     middleware: {
       handleDiagnostics: (uri, diagnostics, next) => {
-        FindingsTreeDataProvider.instance.updateIssues(uri.toString(), diagnostics);
+        if (uri.scheme === 'file') {
+          // ignore notebook issues for now
+          FindingsTreeDataProvider.instance.updateIssues(uri.toString(), diagnostics);
+        }
         next(uri, diagnostics); // Call the default handler
       }
     },
