@@ -26,7 +26,8 @@ export enum FilterType {
   All = 'all',
   Fix_Available = 'fix-available',
   Open_Files_Only = 'open-files-only',
-  High_Severity_Only = 'high-severity-only'
+  High_Severity_Only = 'high-severity-only',
+  Current_File_Only = 'current-file-only'
 }
 
 export enum FindingSource {
@@ -132,5 +133,48 @@ export function getContextValueForFinding(source: FindingSource, isAiCodeFixable
       return isAiCodeFixable ? 'AICodeFixableIssueItem' : 'issueItem';
     default:
       return 'issueItem';
+  }
+}
+
+export function isFileOpen(fileUri: string): boolean {
+  return vscode.workspace.textDocuments.some(doc => doc.uri.toString() === fileUri);
+}
+
+export function isCurrentFile(fileUri: string): boolean {
+  const activeEditor = vscode.window.activeTextEditor;
+  return activeEditor && activeEditor.document.uri.toString() === fileUri;
+}
+
+export function getFilterContextValue(filter: FilterType): string {
+  switch (filter) {
+    case FilterType.All:
+      return 'filter-all';
+    case FilterType.Fix_Available:
+      return 'filter-fix-available';
+    case FilterType.Open_Files_Only:
+      return 'filter-open-files';
+    case FilterType.High_Severity_Only:
+      return 'filter-high-severity';
+    case FilterType.Current_File_Only:
+      return 'filter-current-file';
+    default:
+      return 'filter-all';
+  }
+}
+
+export function getFilterDisplayName(filter: FilterType): string {
+  switch (filter) {
+    case FilterType.All:
+      return 'All Findings';
+    case FilterType.Fix_Available:
+      return 'Findings with Fix Available';
+    case FilterType.Open_Files_Only:
+      return 'Findings in Open Files';
+    case FilterType.High_Severity_Only:
+      return 'High Severity Findings';
+    case FilterType.Current_File_Only:
+      return 'Findings in Current File';
+    default:
+      return 'All Findings';
   }
 }
