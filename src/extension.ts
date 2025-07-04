@@ -37,7 +37,8 @@ import {
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan
 } from './hotspot/hotspots';
-import { FilterType, FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
+import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
+import { FilterType } from './findings/findingsTreeDataProviderUtil';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
