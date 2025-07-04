@@ -14,7 +14,19 @@ import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/ur
 import { getConnectionIdForFile } from '../util/bindingUtils';
 import { isFocusingOnNewCode } from '../settings/settings';
 import { convertVscodeDiagnosticToLspDiagnostic } from '../util/util';
-import { FindingContextValue, FindingSource, FilterType, FindingType, HotspotReviewPriority, SOURCE_CONFIG, impactSeverityToIcon, getContextValueForFinding } from './findingsTreeDataProviderUtil';
+import {
+  FindingContextValue,
+  FindingSource,
+  FilterType,
+  FindingType,
+  HotspotReviewPriority,
+  SOURCE_CONFIG,
+  impactSeverityToIcon,
+  getContextValueForFinding,
+  isFileOpen,
+  isCurrentFile,
+  getFilterContextValue
+} from './findingsTreeDataProviderUtil';
 
 export class FindingsFileNode extends vscode.TreeItem {
   constructor(
@@ -193,8 +205,14 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       })
     );
 
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_CURRENT_FILE_ONLY, () => {
+        this._instance.setFilter(FilterType.Current_File_Only);
+      })
+    );
+
     // Initialize the context for the filter
-    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', this._instance.getFilterContextValue());
+    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', getFilterContextValue(this._instance.activeFilter));
   }
 
   static get instance(): FindingsTreeDataProvider {
@@ -384,15 +402,13 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     } else if (this.activeFilter === FilterType.Fix_Available) {
       return finding.isAiCodeFixable || finding.hasQuickFix;
     } else if (this.activeFilter === FilterType.Open_Files_Only) {
-      return this.isFileOpen(finding.fileUri);
+      return isFileOpen(finding.fileUri);
     } else if (this.activeFilter === FilterType.High_Severity_Only) {
       return finding.impactSeverity === ImpactSeverity.HIGH || finding.impactSeverity === ImpactSeverity.BLOCKER;
+    } else if (this.activeFilter === FilterType.Current_File_Only) {
+      return isCurrentFile(finding.fileUri);
     }
     return false;
-  }
-
-  private isFileOpen(fileUri: string): boolean {
-    return vscode.workspace.textDocuments.some(doc => doc.uri.toString() === fileUri);
   }
 
   private getFindingsForFile(fileUri: string, category?: 'new' | 'older'): FindingNode[] {
@@ -428,7 +444,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   setFilter(filter: FilterType) {
     this.activeFilter = filter;
     this.refresh();
-    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', this.getFilterContextValue());
+    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', getFilterContextValue(filter));
     // TODO add call to telemetry
   }
 
@@ -445,35 +461,5 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       .reduce((total, findings) => {
         return total + findings.filter(finding => this.matchesFilter(finding)).length;
       }, 0);
-  }
-
-  getFilterDisplayName(): string {
-    switch (this.activeFilter) {
-      case FilterType.All:
-        return 'All Findings';
-      case FilterType.Fix_Available:
-        return 'Findings with Fix Available';
-      case FilterType.Open_Files_Only:
-        return 'Findings in Open Files';
-      case FilterType.High_Severity_Only:
-        return 'High Severity Findings';
-      default:
-        return 'All Findings';
-    }
-  }
-
-  getFilterContextValue(): string {
-    switch (this.activeFilter) {
-      case FilterType.All:
-        return 'filter-all';
-      case FilterType.Fix_Available:
-        return 'filter-fix-available';
-      case FilterType.Open_Files_Only:
-        return 'filter-open-files';
-      case FilterType.High_Severity_Only:
-        return 'filter-high-severity';
-      default:
-        return 'filter-all';
-    }
   }
 }

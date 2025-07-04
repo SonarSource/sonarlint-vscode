@@ -38,7 +38,7 @@ import {
   useProvidedFolderOrPickManuallyAndScan
 } from './hotspot/hotspots';
 import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
-import { FilterType } from './findings/findingsTreeDataProviderUtil';
+import { FilterType, getFilterDisplayName } from './findings/findingsTreeDataProviderUtil';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
@@ -263,6 +263,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   VSCode.window.onDidChangeActiveTextEditor(e => {
     scm.updateReferenceBranchStatusItem(e);
     NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(e);
+    FindingsTreeDataProvider.instance.refresh();
   });
 
   allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
@@ -724,7 +725,7 @@ function updateFindingsViewContainerBadge() {
   
   if (totalCount > 0) { 
     const badgeValue = activeFilter === FilterType.All ? totalCount : filteredCount;
-    const filterDisplayName = findingsTreeDataProvider.getFilterDisplayName();
+    const filterDisplayName = getFilterDisplayName(activeFilter);
     
     findingsView.badge = {
       value: badgeValue,
