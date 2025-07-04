@@ -814,6 +814,14 @@ export interface EndProgressNotificationParams {
 }
 
 
+export enum ImpactSeverity {
+  INFO,
+  LOW,
+  MEDIUM,
+  HIGH,
+  BLOCKER
+}
+
 
 
 //#endregion
