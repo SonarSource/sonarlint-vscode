@@ -695,7 +695,7 @@
       },
       {
         "view": "SonarQube.Findings",
-        "contents": "No [Security Hotspots](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/security-hotspots/) or [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) found in this project."
+        "contents": "No SonarQube issues to display."
       }
     ],
     "walkthroughs": [
@@ -1228,7 +1228,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "3.26.0.76313",
+      "version": "3.26.0.76304",
       "output": "server/sonarlint-ls.jar"
     },
     {

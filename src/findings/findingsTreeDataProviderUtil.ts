@@ -96,11 +96,6 @@ export const impactSeverityToIcon = (impactSeverity: ImpactSeverity): vscode.Ico
         light: resolveExtensionFile('images', 'impact', `low.svg`),
         dark: resolveExtensionFile('images', 'impact', `low_dark.svg`)
       };
-    case ImpactSeverity.MEDIUM:
-      return {
-        light: resolveExtensionFile('images', 'impact', `medium.svg`),
-        dark: resolveExtensionFile('images', 'impact', `medium_dark.svg`)
-      };
     case ImpactSeverity.HIGH:
       return {
         light: resolveExtensionFile('images', 'impact', `high.svg`),
@@ -110,6 +105,12 @@ export const impactSeverityToIcon = (impactSeverity: ImpactSeverity): vscode.Ico
       return {
         light: resolveExtensionFile('images', 'impact', `blocker.svg`),
         dark: resolveExtensionFile('images', 'impact', `blocker_dark.svg`)
+      };
+    case ImpactSeverity.MEDIUM:
+    default:
+      return {
+        light: resolveExtensionFile('images', 'impact', `medium.svg`),
+        dark: resolveExtensionFile('images', 'impact', `medium_dark.svg`)
       };
   }
 };
