@@ -499,6 +499,12 @@
         "enablement": "sonarqube.findingsFilter != filter-open-files"
       },
       {
+        "command": "SonarQube.ShowHighSeverityOnly",
+        "title": "High Severity Findings",
+        "category": "SonarQube",
+        "enablement": "sonarqube.findingsFilter != filter-high-severity"
+      },
+      {
         "command": "SonarLint.ConnectToSonarQube",
         "title": "Connect to SonarQube Server",
         "category": "SonarQube",
@@ -815,6 +821,11 @@
           "command": "SonarQube.ShowOpenFilesOnly",
           "when": "view == SonarQube.Findings",
           "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowHighSeverityOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
         }
       ],
       "SonarQube.FindingsFilterActive": [
@@ -830,6 +841,11 @@
         },
         {
           "command": "SonarQube.ShowOpenFilesOnly",
+          "when": "view == SonarQube.Findings",
+          "group": "1_filter"
+        },
+        {
+          "command": "SonarQube.ShowHighSeverityOnly",
           "when": "view == SonarQube.Findings",
           "group": "1_filter"
         }

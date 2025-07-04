@@ -8,13 +8,12 @@
 
 import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
-import { PublishDiagnosticsParams } from '../lsp/protocol';
+import { ImpactSeverity, PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { getConnectionIdForFile } from '../util/bindingUtils';
-import { Severity } from '../util/issue';
 import { isFocusingOnNewCode } from '../settings/settings';
-import { convertVscodeDiagnosticToLspDiagnostic, getSeverity } from '../util/util';
+import { convertVscodeDiagnosticToLspDiagnostic, resolveExtensionFile } from '../util/util';
 
 export enum HotspotReviewPriority {
   High = 1,
@@ -31,7 +30,8 @@ export enum FindingType {
 export enum FilterType {
   All = 'all',
   Fix_Available = 'fix-available',
-  Open_Files_Only = 'open-files-only'
+  Open_Files_Only = 'open-files-only',
+  High_Severity_Only = 'high-severity-only'
 }
 
 export enum FindingSource {
@@ -85,12 +85,20 @@ const SOURCE_CONFIG: Record<FindingSource, {
   }
 };
 
-const severityToIcon = new Map([
-  [Severity.Error, new vscode.ThemeIcon('error', new vscode.ThemeColor('problemsErrorIcon.foreground'))],
-  [Severity.Warning, new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'))],
-  [Severity.Info, new vscode.ThemeIcon('info', new vscode.ThemeColor('problemsInfoIcon.foreground'))],
-  [Severity.Hint, new vscode.ThemeIcon('info', new vscode.ThemeColor('editorHint.foreground'))] // issues on old code
-]);
+const impactSeverityToIcon = (impactSeverity: ImpactSeverity) => {
+  switch (impactSeverity) {
+    case ImpactSeverity.INFO:
+      return resolveExtensionFile('images', 'impact', `info.svg`);
+    case ImpactSeverity.LOW:
+      return resolveExtensionFile('images', 'impact', `low.svg`);
+    case ImpactSeverity.MEDIUM:
+      return resolveExtensionFile('images', 'impact', `medium.svg`);
+    case ImpactSeverity.HIGH:
+      return resolveExtensionFile('images', 'impact', `high.svg`);
+    case ImpactSeverity.BLOCKER:
+      return resolveExtensionFile('images', 'impact', `blocker.svg`);
+  }
+}
 
 export class FindingsFileNode extends vscode.TreeItem {
   constructor(
@@ -158,6 +166,7 @@ export class FindingNode extends vscode.TreeItem {
   public readonly severity?: number;
   public readonly isAiCodeFixable: boolean;
   public readonly hasQuickFix: boolean;
+  public readonly impactSeverity: ImpactSeverity;
 
   constructor(public readonly fileUri,
     public readonly findingType: FindingType,
@@ -177,7 +186,8 @@ export class FindingNode extends vscode.TreeItem {
     this.status = finding['data']?.status;
     this.isOnNewCode = finding['data']?.isOnNewCode;
     this.vulnerabilityProbability = finding.severity as HotspotReviewPriority;
-    this.severity = getSeverity(finding.severity);
+    this.severity = finding.severity;
+    this.impactSeverity = finding['data']?.impactSeverity as ImpactSeverity;
 
     this.description = `${SOURCE_CONFIG[this.source]?.label || ''} (${this.ruleKey}) [Ln ${this.range.start.line + 1}, Col ${this.range.start.character}]`;
     this.iconPath = this.getIconForFinding(this.source);
@@ -190,7 +200,7 @@ export class FindingNode extends vscode.TreeItem {
     }
   }
 
-  private getIconForFinding(source: FindingSource): vscode.ThemeIcon {
+  private getIconForFinding(source: FindingSource): vscode.ThemeIcon | vscode.IconPath {
     const sourceConfig = SOURCE_CONFIG[source];
     // For security hotspots, use source-specific icons
     if (sourceConfig.icon) {
@@ -198,7 +208,7 @@ export class FindingNode extends vscode.TreeItem {
     }
     
     // Fallback to severity-based icon for taint vulnerabilities
-    return severityToIcon.get(this.severity);
+    return impactSeverityToIcon(this.impactSeverity);
   }
 }
 
@@ -275,6 +285,12 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     context.subscriptions.push(
       vscode.commands.registerCommand(Commands.SHOW_OPEN_FILES_ONLY, () => {
         this._instance.setFilter(FilterType.Open_Files_Only);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.SHOW_HIGH_SEVERITY_ONLY, () => {
+        this._instance.setFilter(FilterType.High_Severity_Only);
       })
     );
 
@@ -470,6 +486,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       return finding.isAiCodeFixable || finding.hasQuickFix;
     } else if (this.activeFilter === FilterType.Open_Files_Only) {
       return this.isFileOpen(finding.fileUri);
+    } else if (this.activeFilter === FilterType.High_Severity_Only) {
+      return finding.impactSeverity === ImpactSeverity.HIGH || finding.impactSeverity === ImpactSeverity.BLOCKER;
     }
     return false;
   }
@@ -538,6 +556,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         return 'Findings with Fix Available';
       case FilterType.Open_Files_Only:
         return 'Findings in Open Files';
+      case FilterType.High_Severity_Only:
+        return 'High Severity Findings';
       default:
         return 'All Findings';
     }
@@ -551,6 +571,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         return 'filter-fix-available';
       case FilterType.Open_Files_Only:
         return 'filter-open-files';
+      case FilterType.High_Severity_Only:
+        return 'filter-high-severity';
       default:
         return 'filter-all';
     }
