@@ -13,107 +13,8 @@ import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { getConnectionIdForFile } from '../util/bindingUtils';
 import { isFocusingOnNewCode } from '../settings/settings';
-import { convertVscodeDiagnosticToLspDiagnostic, resolveExtensionFile } from '../util/util';
-
-export enum HotspotReviewPriority {
-  High = 1,
-  Medium = 2,
-  Low = 3
-}
-
-export enum FindingType {
-  SecurityHotspot = 'hotspot',
-  TaintVulnerability = 'taint',
-  Issue = 'issue'
-}
-
-export enum FilterType {
-  All = 'all',
-  Fix_Available = 'fix-available',
-  Open_Files_Only = 'open-files-only',
-  High_Severity_Only = 'high-severity-only'
-}
-
-export enum FindingSource {
-  SonarQube = 'sonarqube', // on-the-fly analysis
-  Latest_SonarQube = 'Latest SonarQube Server Analysis', // taint
-  Latest_SonarCloud = 'Latest SonarQube Cloud Analysis', // taint
-  Remote_Hotspot = 'remote-hotspot', // hotspot that matched remote one; Still on-the-fly analysis
-  Local_Hotspot = 'local-hotspot' // locally detected hotspot that has not matched with server one
-}
-
-export interface Finding {
-  key: string;
-  serverIssueKey?: string;
-  contextValue: FindingContextValue;
-  type: FindingType;
-  source: FindingSource;
-  severity?: number;
-  vulnerabilityProbability?: HotspotReviewPriority;
-  message: string;
-  ruleKey: string;
-  fileUri: string;
-  status: number;
-}
-
-const SOURCE_CONFIG: Record<FindingSource, {
-  icon?: string;
-  iconColor?: string;
-  label?: string;
-  tooltipText?: string;
-}> = {
-  [FindingSource.SonarQube]: {},
-  [FindingSource.Local_Hotspot]: {
-    icon: 'security-hotspot',
-    iconColor: 'descriptionForeground',
-    label: 'Security Hotspot',
-    tooltipText: 'This Security Hotspot only exists locally'
-  },
-  [FindingSource.Remote_Hotspot]: {
-    icon: 'security-hotspot', 
-    iconColor: 'descriptionForeground',
-    label: 'Security Hotspot',
-    tooltipText: 'This Security Hotspot exists on remote project'
-  },
-  [FindingSource.Latest_SonarQube]: {
-    label: 'Taint Vulnerability',
-    tooltipText: 'This Taint Vulnerability was detected by SonarQube Server'
-  },
-  [FindingSource.Latest_SonarCloud]: {
-    label: 'Taint Vulnerability',
-    tooltipText: 'This Taint Vulnerability was detected by SonarQube Cloud'
-  }
-};
-
-const impactSeverityToIcon = (impactSeverity: ImpactSeverity) : vscode.IconPath => {
-  switch (impactSeverity) {
-    case ImpactSeverity.INFO:
-      return {
-        light: resolveExtensionFile('images', 'impact', `info.svg`),
-        dark: resolveExtensionFile('images', 'impact', `info_dark.svg`)
-      };
-    case ImpactSeverity.LOW:
-      return {
-        light: resolveExtensionFile('images', 'impact', `low.svg`),
-        dark: resolveExtensionFile('images', 'impact', `low_dark.svg`)
-      };
-    case ImpactSeverity.MEDIUM:
-      return {
-        light: resolveExtensionFile('images', 'impact', `medium.svg`),
-        dark: resolveExtensionFile('images', 'impact', `medium_dark.svg`)
-      };
-    case ImpactSeverity.HIGH:
-      return {
-        light: resolveExtensionFile('images', 'impact', `high.svg`),
-        dark: resolveExtensionFile('images', 'impact', `high_dark.svg`)
-      };
-    case ImpactSeverity.BLOCKER:
-      return {
-        light: resolveExtensionFile('images', 'impact', `blocker.svg`),
-        dark: resolveExtensionFile('images', 'impact', `blocker_dark.svg`)
-      };
-  }
-}
+import { convertVscodeDiagnosticToLspDiagnostic } from '../util/util';
+import { FindingContextValue, FindingSource, FilterType, FindingType, HotspotReviewPriority, SOURCE_CONFIG, impactSeverityToIcon, getContextValueForFinding } from './findingsTreeDataProviderUtil';
 
 export class FindingsFileNode extends vscode.TreeItem {
   constructor(
@@ -227,24 +128,7 @@ export class FindingNode extends vscode.TreeItem {
   }
 }
 
-export type FindingContextValue = 'newHotspotItem' | 'knownHotspotItem' | 'taintVulnerabilityItem' | 'AICodeFixableTaintItem' | 'AICodeFixableIssueItem' | 'issueItem';
-
-function getContextValueForFinding(source: FindingSource, isAiCodeFixable: boolean): FindingContextValue {
-  switch(source) {
-    case FindingSource.Remote_Hotspot:
-      return 'knownHotspotItem';
-    case FindingSource.Latest_SonarCloud:
-    case FindingSource.Latest_SonarQube:
-      return isAiCodeFixable ? 'AICodeFixableTaintItem' : 'taintVulnerabilityItem';
-    case FindingSource.SonarQube:
-      return isAiCodeFixable ? 'AICodeFixableIssueItem' : 'issueItem';
-    default:
-      return 'issueItem';
-  }
-}
-
 export type FindingsTreeViewItem = FindingsFileNode | FindingNode | NewIssuesNode | OlderIssuesNode;
-
 export class FindingsTreeDataProvider implements vscode.TreeDataProvider<FindingsTreeViewItem> {
   private static _instance: FindingsTreeDataProvider;
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<FindingsTreeViewItem | undefined>();

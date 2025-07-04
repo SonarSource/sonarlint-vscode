@@ -37,7 +37,8 @@ import {
   resolveExtensionFile
 } from '../util/util';
 import { computeHotspotContextPanelContent } from './hotspotContextPanel';
-import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem, HotspotReviewPriority } from '../findings/findingsTreeDataProvider';
+import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from '../findings/findingsTreeDataProvider';
+import { HotspotReviewPriority } from '../findings/findingsTreeDataProviderUtil';
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 

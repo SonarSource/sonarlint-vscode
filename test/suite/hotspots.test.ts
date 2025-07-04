@@ -26,7 +26,8 @@ import { HotspotAnalysisConfirmation } from '../../src/util/showMessage';
 import * as protocol from '../../src/lsp/protocol';
 import { getWorkspaceFolder } from '../testutil';
 import * as sinon from 'sinon';
-import { FindingsTreeDataProvider, FindingsTreeViewItem, HotspotReviewPriority } from '../../src/findings/findingsTreeDataProvider';
+import { FindingsTreeDataProvider, FindingsTreeViewItem } from '../../src/findings/findingsTreeDataProvider';
+import { HotspotReviewPriority } from '../../src/findings/findingsTreeDataProviderUtil';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',
