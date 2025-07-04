@@ -85,18 +85,33 @@ const SOURCE_CONFIG: Record<FindingSource, {
   }
 };
 
-const impactSeverityToIcon = (impactSeverity: ImpactSeverity) => {
+const impactSeverityToIcon = (impactSeverity: ImpactSeverity) : vscode.IconPath => {
   switch (impactSeverity) {
     case ImpactSeverity.INFO:
-      return resolveExtensionFile('images', 'impact', `info.svg`);
+      return {
+        light: resolveExtensionFile('images', 'impact', `info.svg`),
+        dark: resolveExtensionFile('images', 'impact', `info_dark.svg`)
+      };
     case ImpactSeverity.LOW:
-      return resolveExtensionFile('images', 'impact', `low.svg`);
+      return {
+        light: resolveExtensionFile('images', 'impact', `low.svg`),
+        dark: resolveExtensionFile('images', 'impact', `low_dark.svg`)
+      };
     case ImpactSeverity.MEDIUM:
-      return resolveExtensionFile('images', 'impact', `medium.svg`);
+      return {
+        light: resolveExtensionFile('images', 'impact', `medium.svg`),
+        dark: resolveExtensionFile('images', 'impact', `medium_dark.svg`)
+      };
     case ImpactSeverity.HIGH:
-      return resolveExtensionFile('images', 'impact', `high.svg`);
+      return {
+        light: resolveExtensionFile('images', 'impact', `high.svg`),
+        dark: resolveExtensionFile('images', 'impact', `high_dark.svg`)
+      };
     case ImpactSeverity.BLOCKER:
-      return resolveExtensionFile('images', 'impact', `blocker.svg`);
+      return {
+        light: resolveExtensionFile('images', 'impact', `blocker.svg`),
+        dark: resolveExtensionFile('images', 'impact', `blocker_dark.svg`)
+      };
   }
 }
 
