@@ -83,7 +83,7 @@ export class NewCodeDefinitionService {
     }
     const newCodeDefinition = this.getNewCodeDefinition(code2ProtocolConverter(workspaceFolder.uri));
     this.updateStatusBarTooltip(newCodeDefinition);
-    this.updateStatusBarText(this.isSupportedForFile(newCodeDefinition));
+    this.updateStatusBarText();
     this.newCodeStatusBarItem.show();
   }
 
@@ -99,15 +99,8 @@ export class NewCodeDefinitionService {
     this.newCodeStatusBarItem.tooltip = `${newCodeDefinitionMessage}`;
   }
 
-  isSupportedForFile(newCodeDefinition: NewCodeDefinition) {
-    if (newCodeDefinition && this.focusOnNewCode) {
-      return newCodeDefinition.isSupported;
-    }
-    return false;
-  }
-
-  updateStatusBarText(isSupportedForFile: boolean) {
-    const enabledText = this.focusOnNewCode && isSupportedForFile ? 'new code' : 'overall code';
+  updateStatusBarText() {
+    const enabledText = this.focusOnNewCode ? 'new code' : 'overall code';
     this.newCodeStatusBarItem.text = `SonarQube focus: ${enabledText}`;
   }
 
