@@ -56,13 +56,13 @@ const SOURCE_CONFIG: Record<FindingSource, {
 }> = {
   [FindingSource.SonarQube]: {
     icon: 'security-hotspot',
-    iconColor: 'editorInfo.foreground',
+    iconColor: 'descriptionForeground',
     label: 'Security Hotspot',
     tooltipText: 'This Security Hotspot only exists locally'
   },
   [FindingSource.Remote]: {
     icon: 'security-hotspot', 
-    iconColor: 'editorInfo.foreground',
+    iconColor: 'descriptionForeground',
     label: 'Security Hotspot',
     tooltipText: 'This Security Hotspot exists on remote project'
   },
