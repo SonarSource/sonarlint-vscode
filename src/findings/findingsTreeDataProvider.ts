@@ -58,13 +58,13 @@ const SOURCE_CONFIG: Record<FindingSource, {
     icon: 'security-hotspot',
     iconColor: 'editorInfo.foreground',
     label: 'Security Hotspot',
-    tooltipText: 'This Security Hotspot exists on remote project'
+    tooltipText: 'This Security Hotspot only exists locally'
   },
   [FindingSource.Remote]: {
     icon: 'security-hotspot', 
     iconColor: 'editorInfo.foreground',
     label: 'Security Hotspot',
-    tooltipText: 'This Security Hotspot only exists locally'
+    tooltipText: 'This Security Hotspot exists on remote project'
   },
   [FindingSource.Latest_SonarQube]: {
     label: 'Taint Vulnerability',
