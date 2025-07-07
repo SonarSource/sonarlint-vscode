@@ -718,8 +718,6 @@ async function getTokenForServer(serverId: string): Promise<string> {
 }
 
 async function showAllLocations(issue: protocol.Issue) {
-  // make sure the view is visible
-  ContextManager.instance.setIssueLocationsContext();
   await secondaryLocationsTree.showAllLocations(issue);
   if (issue.creationDate) {
     const createdAgo = issue.creationDate
@@ -732,6 +730,8 @@ async function showAllLocations(issue: protocol.Issue) {
     issueLocationsView.message = null;
   }
   if (issue.flows.length > 0) {
+    // make sure the view is visible
+    ContextManager.instance.setIssueLocationsContext();
     issueLocationsView.reveal(secondaryLocationsTree.getChildren(null)[0]);
   }
 }
