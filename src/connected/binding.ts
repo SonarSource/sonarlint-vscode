@@ -13,7 +13,7 @@ import { Commands } from '../util/commands';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
-import { buildBaseServerUrl, serverProjectsToQuickPickItems } from '../util/bindingUtils';
+import { buildProjectOverviewBaseServerUrl, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 import { AssistBindingParams, BindingCreationMode, ShowSoonUnsupportedVersionMessageParams } from '../lsp/protocol';
@@ -181,11 +181,16 @@ export class BindingService {
   }
   
   async getBaseServerUrl(connectionId: string, serverType: ServerType): Promise<string> {
-    const serverUrlOrOrganizationKey =
-      serverType === 'SonarQube'
-        ? (await this.settingsService.loadSonarQubeConnection(connectionId)).serverUrl
-        : (await this.settingsService.loadSonarCloudConnection(connectionId)).organizationKey;
-    return buildBaseServerUrl(serverType, serverUrlOrOrganizationKey);
+    let serverUrlOrOrganizationKey: string;
+    let region = undefined;
+    if (serverType === 'SonarQube') {
+      serverUrlOrOrganizationKey = (await this.settingsService.loadSonarQubeConnection(connectionId)).serverUrl;
+    } else {
+      const sonarCloudConnection = await this.settingsService.loadSonarCloudConnection(connectionId);
+      serverUrlOrOrganizationKey = sonarCloudConnection.organizationKey;
+      region = sonarCloudConnection.region;
+    }
+    return buildProjectOverviewBaseServerUrl(serverType, serverUrlOrOrganizationKey, region);
   }
 
   private async pickRemoteProjectToBind(
