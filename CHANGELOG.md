@@ -1,3 +1,7 @@
+## 4.26
+
+* Update Java analyzer 8.15 -> [8.16](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019564%20ORDER%20BY%20created%20ASC) -> [8.17](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021056%20ORDER%20BY%20created%20ASC)
+
 ## 4.25
 
 * Update Python analyzer 5.4 -> [5.5](https://sonarsource.atlassian.net/projects/SONARPY/versions/19335/tab/release-report-all-issues?isReleaseNoteModalOpen=true)
