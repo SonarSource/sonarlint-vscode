@@ -41,11 +41,11 @@ suite('List Security Hotspots Language Model Tool Test Suite', () => {
       { input: { filePath: '/path/to/myFile.py' } }, // options
       new vscode.CancellationTokenSource().token // token
     );
-    assert.strictEqual(confirmation.invocationMessage, 'Fetching Security Hotspots for the file...');
-    assert.strictEqual(confirmation.confirmationMessages.title, 'Retrieve detected Security Hotspots for a file');
+    assert.strictEqual(confirmation.invocationMessage, 'Fetching Security Hotspots and Taint Vulnerabilities for the file...');
+    assert.strictEqual(confirmation.confirmationMessages.title, 'Retrieve detected Security Hotspots and Taint Vulnerabilities for a file');
     assert.strictEqual(
       confirmation.confirmationMessages.message.value,
-      `Retrieve the detected Security Hotspots for the file **/path/to/myFile.py**?`
+      `Retrieve the detected Security Hotspots and Taint Vulnerabilities for the file **/path/to/myFile.py**?`
     );
   });
 

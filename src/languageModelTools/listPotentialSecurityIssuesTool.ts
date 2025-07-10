@@ -79,14 +79,14 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
     _token: vscode.CancellationToken
   ) {
     const confirmationMessages = {
-      title: 'Retrieve detected Security Hotspots for a file',
+      title: 'Retrieve detected Security Hotspots and Taint Vulnerabilities for a file',
       message: new vscode.MarkdownString(
-        `Retrieve the detected Security Hotspots for the file **${options.input.filePath}**?`
+        `Retrieve the detected Security Hotspots and Taint Vulnerabilities for the file **${options.input.filePath}**?`
       )
     };
 
     return {
-      invocationMessage: 'Fetching Security Hotspots for the file...',
+      invocationMessage: 'Fetching Security Hotspots and Taint Vulnerabilities for the file...',
       confirmationMessages
     };
   }
