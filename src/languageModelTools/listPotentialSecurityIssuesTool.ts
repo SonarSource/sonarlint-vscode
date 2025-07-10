@@ -55,12 +55,21 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
         new vscode.LanguageModelTextPart('I have initiated the binding process for you.'),
       ]);
     }
-    const hotspotsAndTaintsInFile: FindingNode[] = FindingsTreeDataProvider.instance.getHotspotsAndTaintsForFile(fileUri.toString());
 
-    for (const h of hotspotsAndTaintsInFile) {
+    const hotspotInFile: FindingNode[] = FindingsTreeDataProvider.instance.getHotspotsForFile(fileUri.toString());
+    const taintsInFile: FindingNode[] = FindingsTreeDataProvider.instance.getTaintVulnerabilitiesForFile(fileUri.toString());
+
+    for (const h of hotspotInFile) {
       results.push(
         new vscode.LanguageModelTextPart(
           `There is a potential security issue with message ${h.message} on line ${h.range.start.line + 1}` // vscode line positions are 0-based
+        )
+      );
+    }
+    for (const t of taintsInFile) {
+      results.push(
+        new vscode.LanguageModelTextPart(
+          `There is a vulnerability with message ${t.message} on line ${t.range.start.line + 1}` // vscode line positions are 0-based
         )
       );
     }
@@ -68,7 +77,7 @@ export class ListPotentialSecurityIssuesTool implements vscode.LanguageModelTool
     this.client.lmToolCalled(`lm_${ListPotentialSecurityIssuesTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([
       new vscode.LanguageModelTextPart(
-        `There are ${hotspotsAndTaintsInFile.length} potential security issues in the active file:`
+        `There are ${hotspotInFile.length} potential security issues and ${taintsInFile.length} vulnerabilities in the active file:`
       ),
       ...results
     ]);

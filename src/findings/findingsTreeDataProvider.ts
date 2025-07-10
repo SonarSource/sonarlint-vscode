@@ -423,13 +423,12 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     return findings.map(finding => new FindingNode(fileUri, finding.findingType, finding.finding));
   }
 
-  getHotspotsAndTaintsForFile(fileUri: string): FindingNode[] {
-    return this.findingsCache.get(fileUri)?.filter(finding => this.isSecurityFinding(finding)) || [];
+  getHotspotsForFile(fileUri: string): FindingNode[] {
+    return this.findingsCache.get(fileUri)?.filter(finding => finding.findingType === FindingType.SecurityHotspot) || [];
   }
 
-  private isSecurityFinding(finding: FindingNode) {
-    return finding.findingType === FindingType.SecurityHotspot
-      || finding.findingType === FindingType.TaintVulnerability;
+  getTaintsForFile(fileUri: string): FindingNode[] {
+    return this.findingsCache.get(fileUri)?.filter(finding => finding.findingType === FindingType.TaintVulnerability) || [];
   }
 
   getTaintVulnerabilitiesForFile(fileUri: string): FindingNode[] {
