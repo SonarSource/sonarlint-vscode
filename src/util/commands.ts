@@ -78,4 +78,11 @@ export namespace Commands {
   export const TRIGGER_BROWSE_TAINT_COMMAND = 'SonarLint.TriggerBrowseTaintCommand';
   export const TRIGGER_AI_CODE_FIX_COMMAND = 'SonarQube.TriggerAiCodeFixCommand';
   export const TRIGGER_RESOLVE_TAINT_COMMAND = 'SonarQube.TriggerResolveTaintCommand';
+  
+  // Filter commands
+  export const SHOW_ALL_FINDINGS = 'SonarQube.ShowAllFindings';
+  export const SHOW_FIXABLE_ISSUES_ONLY = 'SonarQube.ShowFixableIssuesOnly';
+  export const SHOW_OPEN_FILES_ONLY = 'SonarQube.ShowOpenFilesOnly';
+  export const SHOW_HIGH_SEVERITY_ONLY = 'SonarQube.ShowHighSeverityOnly';
+  export const SHOW_CURRENT_FILE_ONLY = 'SonarQube.ShowCurrentFileOnly';
 }

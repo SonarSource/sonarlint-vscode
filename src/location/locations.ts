@@ -9,7 +9,7 @@
 import * as vscode from 'vscode';
 import { Commands } from '../util/commands';
 import { Flow, Issue, Location, TextRange } from '../lsp/protocol';
-import { formatIssueMessage, resolveExtensionFile } from '../util/util';
+import { formatIssueMessage } from '../util/util';
 
 /**
  * Base decoration type for secondary locations.

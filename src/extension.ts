@@ -38,6 +38,7 @@ import {
   useProvidedFolderOrPickManuallyAndScan
 } from './hotspot/hotspots';
 import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
+import { FilterType, getFilterDisplayName } from './findings/findingsTreeDataProviderUtil';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
@@ -61,7 +62,7 @@ import { getPlatform } from './util/platform';
 import { installManagedJre, JAVA_HOME_CONFIG, resolveRequirements } from './util/requirements';
 import { code2ProtocolConverter, protocol2CodeConverter } from './util/uri';
 import * as util from './util/util';
-import { filterOutFilesIgnoredForAnalysis, getSeverity, shouldAnalyseFile } from './util/util';
+import { filterOutFilesIgnoredForAnalysis, shouldAnalyseFile } from './util/util';
 import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { CAN_SHOW_MISSING_REQUIREMENT_NOTIF, showSslCertificateConfirmationDialog } from './util/showMessage';
@@ -176,6 +177,15 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
+    middleware: {
+      handleDiagnostics: (uri, diagnostics, next) => {
+        if (uri.scheme === 'file') {
+          // ignore notebook issues for now
+          FindingsTreeDataProvider.instance.updateIssues(uri.toString(), diagnostics);
+        }
+        next(uri, diagnostics); // Call the default handler
+      }
+    },
     documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
       configurationSection: 'sonarlint',
@@ -256,6 +266,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   VSCode.window.onDidChangeActiveTextEditor(e => {
     scm.updateReferenceBranchStatusItem(e);
     NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(e);
+    FindingsTreeDataProvider.instance.refresh();
   });
 
   allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
@@ -349,6 +360,13 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
 
   context.subscriptions.push(findingsView);
+  
+  // Update badge when tree data changes
+  context.subscriptions.push(
+    findingsTreeDataProvider.onDidChangeTreeData(() => {
+      updateFindingsViewContainerBadge();
+    })
+  );
 
   helpAndFeedbackTreeDataProvider = new HelpAndFeedbackTreeDataProvider();
   helpAndFeedbackView = VSCode.window.createTreeView('SonarLint.HelpAndFeedback', {
@@ -704,10 +722,24 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
 }
 
 function updateFindingsViewContainerBadge() {
-  findingsView.badge = findingsTreeDataProvider.getTotalFindingsCount() > 0 ? {
-    value: findingsTreeDataProvider.getTotalFindingsCount(),
-    tooltip: `Total ${findingsTreeDataProvider.getTotalFindingsCount()} SonarQube Security Findings`
-  } : undefined;
+  const totalCount = findingsTreeDataProvider.getTotalFindingsCount();
+  const filteredCount = findingsTreeDataProvider.getFilteredFindingsCount();
+  const activeFilter = findingsTreeDataProvider.getActiveFilter();
+  
+  if (totalCount > 0) { 
+    const badgeValue = activeFilter === FilterType.All ? totalCount : filteredCount;
+    const filterDisplayName = getFilterDisplayName(activeFilter);
+    
+    findingsView.badge = {
+      value: badgeValue,
+      tooltip: `${filterDisplayName}: ${filteredCount} of ${totalCount}`
+    };
+    
+    findingsView.title = `SonarQube Findings (${filterDisplayName})`;
+  } else {
+    findingsView.badge = undefined;
+    findingsView.title = 'SonarQube Findings';
+  }
 }
 
 async function getTokenForServer(serverId: string): Promise<string> {
