@@ -936,11 +936,11 @@
     "languageModelTools": [
       {
         "name": "sonarqube_list_potential_security_issues",
-        "displayName": "SonarQube: Security Hotspots",
-        "toolReferenceName": "sonarqube_getSecurityHotspots",
+        "displayName": "SonarQube: List Potential Security Issues",
+        "toolReferenceName": "sonarqube_getPotentialSecurityIssues",
         "canBeReferencedInPrompt": true,
-        "icon": "$(security-hotspot)",
-        "modelDescription": "This tool returns a list of potential security issues (Security Hotspots) in a given file. It runs SonarQube analysis on the file and returns a list of Security Hotspots detected with their location and error message.",
+        "icon": "$(unlock)",
+        "modelDescription": "This tool returns a list of potential security issues (Security Hotspots and Taint Vulnerabilities) in a given file. It runs SonarQube analysis on the file and returns a list of Security Hotspots detected with their location and error message. Additionally, it lists Taint Vulnerabilities detected by SonarQube Server or Cloud analysis.",
         "tags": [
           "sonarqube",
           "security-analysis",
