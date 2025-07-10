@@ -482,31 +482,31 @@
       },
       {
         "command": "SonarQube.ShowAllFindings",
-        "title": "All Findings",
+        "title": "All",
         "category": "SonarQube",
         "enablement": "sonarqube.findingsFilter != filter-all"
       },
       {
         "command": "SonarQube.ShowFixableIssuesOnly",
-        "title": "Findings with Fix Available",
+        "title": "Fix Available",
         "category": "SonarQube",
         "enablement": "sonarqube.findingsFilter != filter-fix-available"
       },
       {
         "command": "SonarQube.ShowOpenFilesOnly",
-        "title": "Findings in Open Files",
+        "title": "Open Files",
         "category": "SonarQube",
         "enablement": "sonarqube.findingsFilter != filter-open-files"
       },
       {
         "command": "SonarQube.ShowHighSeverityOnly",
-        "title": "High Severity Findings",
+        "title": "High Severity",
         "category": "SonarQube",
         "enablement": "sonarqube.findingsFilter != filter-high-severity"
       },
       {
         "command": "SonarQube.ShowCurrentFileOnly",
-        "title": "Findings in Current File",
+        "title": "Current File",
         "category": "SonarQube",
         "enablement": "sonarqube.findingsFilter != filter-current-file"
       },
