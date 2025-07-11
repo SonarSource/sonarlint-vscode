@@ -92,7 +92,7 @@ async function doNotAskAboutCompileCommandsFlag(context: vscode.ExtensionContext
   return context.workspaceState.get(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, false);
 }
 
-interface IndexQP extends vscode.QuickPickItem {
+export interface IndexQP extends vscode.QuickPickItem {
   index: number;
 }
 
