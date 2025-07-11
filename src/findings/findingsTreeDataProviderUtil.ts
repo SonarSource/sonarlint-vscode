@@ -9,6 +9,7 @@
 import * as vscode from 'vscode';
 import { ImpactSeverity } from '../lsp/protocol';
 import { resolveExtensionFile } from '../util/util';
+import { IndexQP } from '../cfamily/cfamily';
 
 export enum HotspotReviewPriority {
   High = 1,
@@ -127,6 +128,8 @@ export function getContextValueForFinding(source: FindingSource, isAiCodeFixable
   switch (source) {
     case FindingSource.Remote_Hotspot:
       return 'knownHotspotItem';
+    case FindingSource.Local_Hotspot:
+      return 'newHotspotItem';
     case FindingSource.Latest_SonarCloud:
     case FindingSource.Latest_SonarQube:
       return isAiCodeFixable ? 'AICodeFixableTaintItem' : 'taintVulnerabilityItem';
@@ -177,5 +180,37 @@ export function getFilterDisplayName(filter: FilterType): string {
       return 'Findings in Current File';
     default:
       return 'All Findings';
+  }
+}
+
+export async function selectAndApplyCodeAction(codeActions: vscode.CodeAction[]) {
+  const selection : IndexQP | undefined = await vscode.window.showQuickPick(codeActions.map((qf, index) => ({
+    label: qf.title,
+    detail: ``,
+    index: index
+  })), {
+    title: 'Select an Action to Apply',
+    placeHolder: 'What would you like to do?',
+  });
+
+  if (selection) {
+    const selectedAction = codeActions[selection.index];
+    
+    // If the code action has edits, it's a QuickFix. apply them
+    if (selectedAction.edit) {
+      try {
+        await vscode.workspace.applyEdit(selectedAction.edit);
+        await vscode.commands.executeCommand(selectedAction.command.command, ...(selectedAction.command.arguments || []));
+      } catch (error) {
+        console.error('Error applying quick fix:', error);
+        vscode.window.showErrorMessage(`Error applying quick fix: ${error.message}`);
+      }
+    }
+    else if (selectedAction.command) {
+      await vscode.commands.executeCommand(selectedAction.command.command, ...(selectedAction.command.arguments || []));
+    }
+    else {
+      vscode.window.showWarningMessage('Selected Code Action has no edit or command to execute.');
+    }
   }
 }
