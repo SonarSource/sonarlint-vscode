@@ -476,6 +476,11 @@
         "enablement": "view == SonarQube.Findings"
       },
       {
+        "command": "SonarQube.TriggerFetchCodeActionsCommand",
+        "title": "More Actions...",
+        "enablement": "view == SonarQube.Findings"
+      },
+      {
         "command": "SonarQube.TriggerResolveTaintCommand",
         "title": "Resolve issue as...",
         "enablement": "view == SonarQube.Findings"
@@ -963,6 +968,11 @@
           "command": "SonarQube.TriggerAiCodeFixCommand",
           "title": "✧˖° Fix with AI CodeFix",
           "when": "view == SonarQube.Findings && (viewItem == AICodeFixableTaintItem || viewItem == AICodeFixableIssueItem)"
+        },
+        {
+          "command": "SonarQube.TriggerFetchCodeActionsCommand",
+          "title": "Apply Quick Fix...",
+          "when": "view == SonarQube.Findings && (viewItem == AICodeFixableIssueItem || viewItem == issueItem)"
         },
         {
           "command": "SonarQube.TriggerResolveTaintCommand",

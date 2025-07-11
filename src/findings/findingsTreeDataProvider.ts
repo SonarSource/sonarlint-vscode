@@ -26,7 +26,8 @@ import {
   getContextValueForFinding,
   isFileOpen,
   isCurrentFile,
-  getFilterContextValue
+  getFilterContextValue,
+  selectAndApplyCodeAction
 } from './findingsTreeDataProviderUtil';
 
 export class FindingsFileNode extends vscode.TreeItem {
@@ -183,6 +184,19 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         const isTaintIssue = true;
         
         vscode.commands.executeCommand(Commands.RESOLVE_ISSUE, workspaceUri, issueKey, fileUri, isTaintIssue);
+      })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.TRIGGER_FETCH_CODE_ACTIONS_COMMAND, async (finding: FindingNode) => {
+        const codeActions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
+          'vscode.executeCodeActionProvider',
+          vscode.Uri.parse(finding.fileUri),
+          finding.range,
+          vscode.CodeActionKind.QuickFix.value
+        );
+        const codeActionsFromSonarQube = codeActions.filter(action => action.title.startsWith('SonarQube: '));
+        await selectAndApplyCodeAction(codeActionsFromSonarQube);
       })
     );
 
