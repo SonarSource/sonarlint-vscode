@@ -822,6 +822,12 @@ export enum ImpactSeverity {
   BLOCKER
 }
 
+export namespace FindingsFilteredNotification {
+  export const type = new lsp.NotificationType<FindingsFilteredParams>('sonarlint/findingsFiltered');
+}
 
+export interface FindingsFilteredParams {
+  filterType: string;
+}
 
 //#endregion

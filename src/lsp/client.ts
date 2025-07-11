@@ -182,4 +182,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   fixSuggestionResolved(suggestionId: string, accepted: boolean): Promise<void> {
     return this.sendNotification(protocol.FixSuggestionResolved.type, { suggestionId, accepted });
   }
+
+  findingsFiltered(filterType: string): Promise<void> {
+    return this.sendNotification(protocol.FindingsFilteredNotification.type, { filterType });
+  }
 }

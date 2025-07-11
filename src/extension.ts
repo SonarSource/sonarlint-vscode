@@ -353,7 +353,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  FindingsTreeDataProvider.init(context);
+  FindingsTreeDataProvider.init(context, languageClient);
   findingsTreeDataProvider = FindingsTreeDataProvider.instance;
   findingsView = VSCode.window.createTreeView('SonarQube.Findings', {
     treeDataProvider: findingsTreeDataProvider
