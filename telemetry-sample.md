@@ -1,3 +1,4 @@
+## Product telemetry
 
 ```json
 {
@@ -99,6 +100,44 @@
           }
       ]
     }
+  ]
+}
+```
+
+## Telemetry measures
+
+```json
+{
+  "message_uuid":"9d0cf582-219e-4bab-8311-d599c55c4ce2",
+  "os":"Linux",
+  "install_time":"2024-10-29T18:00:28.758+01:00",
+  "sonarlint_product":"SonarLint VSCode",
+  "dimension":"installation",
+  "metric_values": [
+    {"key":"shared_connected_mode.manual","value":"0","type":"integer","granularity":"daily"},
+    {"key":"shared_connected_mode.imported","value":"0","type":"integer","granularity":"daily"},
+    {"key":"shared_connected_mode.auto","value":"0","type":"integer","granularity":"daily"},
+    {"key":"shared_connected_mode.exported","value":"0","type":"integer","granularity":"daily"},
+    {"key":"bindings.child_count","value":"0","type":"integer","granularity":"daily"},
+    {"key":"bindings.server_count","value":"1","type":"integer","granularity":"daily"},
+    {"key":"bindings.cloud_eu_count","value":"0","type":"integer","granularity":"daily"},
+    {"key":"bindings.cloud_us_count","value":"0","type":"integer","granularity":"daily"},
+    {"key":"help_and_feedback.gethelp","value":"1","type":"integer","granularity":"daily"},
+    {"key":"quick_fix.applied_count","value":"2","type":"integer","granularity":"daily"},
+    {"key":"ide_issues.found","value":"3","type":"integer","granularity":"daily"},
+    {"key":"ide_issues.fixed","value":"3","type":"integer","granularity":"daily"},
+    {"key":"tools.lm_sonarqube_analyze_file_error_count","value":"1","type":"integer","granularity":"daily"},
+    {"key":"tools.lm_sonarqube_analyze_file_success_count","value":"7","type":"integer","granularity":"daily"},
+    {"key":"performance.largest_file_count","value":"26770","type":"integer","granularity":"daily"},
+    {"key":"performance.largest_file_count_ms","value":"5311","type":"integer","granularity":"daily"},
+    {"key":"performance.longest_file_count_ms","value":"8907","type":"integer","granularity":"daily"},
+    {"key":"performance.longest_file_count","value":"25802","type":"integer","granularity":"daily"},
+    {"key":"findings_investigation.taints_locally","value":"4","type":"integer","granularity":"daily"},
+    {"key":"findings_investigation.taints_remotely","value":"0","type":"integer","granularity":"daily"},
+    {"key":"findings_investigation.hotspots_locally","value":"0","type":"integer","granularity":"daily"},
+    {"key":"findings_investigation.hotspots_remotely","value":"0","type":"integer","granularity":"daily"},
+    {"key":"findings_investigation.issues_locally","value":"3","type":"integer","granularity":"daily"},
+    {"key":"fingings_filtered.fix_available","value":"1","type":"integer","granularity":"daily"}
   ]
 }
 ```
