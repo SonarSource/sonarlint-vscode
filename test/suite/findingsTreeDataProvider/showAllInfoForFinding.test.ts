@@ -13,6 +13,7 @@ import { Diagnostic } from 'vscode-languageserver-types';
 import { FindingsTreeDataProvider, FindingNode } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource } from '../../../src/findings/findingsTreeDataProviderUtil';
 import { ImpactSeverity } from '../../../src/lsp/protocol';
+import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 
 const TEST_FILE_URI = 'file:///test/file.js';
 const TEST_ISSUE_KEY = 'test-issue-key';
@@ -20,6 +21,10 @@ const TEST_KEY = 'test-key';
 const TEST_RULE = 'test-rule';
 const TEST_MESSAGE = 'Test finding';
 const SHOW_ISSUE_DETAILS_CODE_ACTION = 'SonarLint.ShowIssueDetailsCodeAction';
+
+const mockClient = {
+  findingsFiltered: sinon.stub()
+} as SonarLintExtendedLanguageClient;
 
 suite('Findings Tree Data Provider Test Suite', () => {
 
@@ -43,7 +48,7 @@ suite('Findings Tree Data Provider Test Suite', () => {
     } as vscode.ExtensionContext;
 
     // Initialize the provider
-    FindingsTreeDataProvider.init(mockContext);
+    FindingsTreeDataProvider.init(mockContext, mockClient);
     underTest = FindingsTreeDataProvider.instance;
   });
 
