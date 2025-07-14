@@ -28,7 +28,8 @@ import {
   isCurrentFile,
   getFilterContextValue,
   selectAndApplyCodeAction,
-  NOTEBOOK_CELL_URI_SCHEME
+  NOTEBOOK_CELL_URI_SCHEME,
+  isNotebookCellUri
 } from './findingsTreeDataProviderUtil';
 
 export class FindingsFileNode extends vscode.TreeItem {
@@ -305,7 +306,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   }
 
   private convertIssuesToFindingNodes(fileUri: string, diagnostics: vscode.Diagnostic[]): FindingNode[] {
-    return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.Issue, convertVscodeDiagnosticToLspDiagnostic(diagnostic)));
+    return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.Issue, convertVscodeDiagnosticToLspDiagnostic(diagnostic), isNotebookCellUri(fileUri)));
   }
 
   getTreeItem(element: FindingsTreeViewItem): vscode.TreeItem {

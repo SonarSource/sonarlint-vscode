@@ -222,3 +222,7 @@ export async function selectAndApplyCodeAction(codeActions: vscode.CodeAction[])
     }
   }
 }
+
+export function isNotebookCellUri(uri: string): boolean {
+  return uri.startsWith(NOTEBOOK_CELL_URI_SCHEME);
+}
