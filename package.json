@@ -680,8 +680,7 @@
       "SonarQube": [
         {
           "id": "SonarQube.Findings",
-          "name": "SonarQube Findings",
-          "when": "sonarqube.someFoldersUseConnectedMode"
+          "name": "SonarQube Findings"
         }
       ]
     },
