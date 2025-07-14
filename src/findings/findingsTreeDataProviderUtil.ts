@@ -11,6 +11,8 @@ import { ImpactSeverity } from '../lsp/protocol';
 import { resolveExtensionFile } from '../util/util';
 import { IndexQP } from '../cfamily/cfamily';
 
+export const NOTEBOOK_CELL_URI_SCHEME = 'vscode-notebook-cell';
+
 export enum HotspotReviewPriority {
   High = 1,
   Medium = 2,
@@ -122,9 +124,10 @@ export type FindingContextValue =
   | 'taintVulnerabilityItem'
   | 'AICodeFixableTaintItem'
   | 'AICodeFixableIssueItem'
-  | 'issueItem';
+  | 'issueItem'
+  | 'notebookIssueItem';
 
-export function getContextValueForFinding(source: FindingSource, isAiCodeFixable: boolean): FindingContextValue {
+export function getContextValueForFinding(source: FindingSource, isAiCodeFixable: boolean, isNotebookFinding: boolean): FindingContextValue {
   switch (source) {
     case FindingSource.Remote_Hotspot:
       return 'knownHotspotItem';
@@ -134,7 +137,11 @@ export function getContextValueForFinding(source: FindingSource, isAiCodeFixable
     case FindingSource.Latest_SonarQube:
       return isAiCodeFixable ? 'AICodeFixableTaintItem' : 'taintVulnerabilityItem';
     case FindingSource.SonarQube:
-      return isAiCodeFixable ? 'AICodeFixableIssueItem' : 'issueItem';
+      if (isNotebookFinding) {
+        return 'notebookIssueItem';
+      } else {
+        return isAiCodeFixable ? 'AICodeFixableIssueItem' : 'issueItem';
+      }
     default:
       return 'issueItem';
   }
