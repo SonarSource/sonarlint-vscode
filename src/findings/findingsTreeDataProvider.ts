@@ -27,27 +27,29 @@ import {
   isFileOpen,
   isCurrentFile,
   getFilterContextValue,
-  selectAndApplyCodeAction
+  selectAndApplyCodeAction,
+  NOTEBOOK_CELL_URI_SCHEME
 } from './findingsTreeDataProviderUtil';
 
 export class FindingsFileNode extends vscode.TreeItem {
   constructor(
-    public readonly fileUri: string,
+    public readonly fileOrNotebookUri: string,
     public readonly findingsCount: number,
-    public readonly category?: 'new' | 'older'
+    public readonly category?: 'new' | 'older',
+    public readonly isNotebook = false,
+    public readonly notebookCellUris?: string[]
   ) {
-    super(getFileNameFromFullPath(fileUri), vscode.TreeItemCollapsibleState.Expanded);
+    super(getFileNameFromFullPath(fileOrNotebookUri), vscode.TreeItemCollapsibleState.Expanded);
     
     this.contextValue = 'findingsFileGroup';
     const categorySuffix = category ? `_${category}` : '';
-    this.id = `${fileUri}${categorySuffix}`;
-    this.resourceUri = vscode.Uri.parse(fileUri);
+    this.id = `${fileOrNotebookUri}${categorySuffix}`;
+    this.resourceUri = vscode.Uri.parse(fileOrNotebookUri);
     
     const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders?.length > 1;
     // no need to compute relative path if file is outside any workspace folder
     this.description = vscode.workspace.workspaceFolders ? getRelativePathFromFullPath(
-      fileUri,
-      // TODO for jupyter notebooks the URI is vscode-notebook-cell:// and folder cannot be found
+      fileOrNotebookUri,
       vscode.workspace.getWorkspaceFolder(this.resourceUri),
       specifyWorkspaceFolderName
     ) : '';
@@ -99,9 +101,10 @@ export class FindingNode extends vscode.TreeItem {
   public readonly hasQuickFix: boolean;
   public readonly impactSeverity: ImpactSeverity;
 
-  constructor(public readonly fileUri,
+  constructor(public readonly fileUri: string,
     public readonly findingType: FindingType,
-    public readonly finding: Diagnostic
+    public readonly finding: Diagnostic,
+    public readonly isNotebookFinding = false
   ) {
     super(finding.message, vscode.TreeItemCollapsibleState.None);
     this.key = finding['data'].entryKey;
@@ -110,7 +113,7 @@ export class FindingNode extends vscode.TreeItem {
     this.isAiCodeFixable = finding['data']?.isAiCodeFixable ?? false;
     this.hasQuickFix = finding['data']?.hasQuickFix ?? false;
     this.range = new vscode.Range(finding.range.start.line, finding.range.start.character, finding.range.end.line, finding.range.end.character);
-    this.contextValue = getContextValueForFinding(finding.source as FindingSource, this.isAiCodeFixable);
+    this.contextValue = getContextValueForFinding(finding.source as FindingSource, this.isAiCodeFixable, this.isNotebookFinding);
     this.source = finding.source as FindingSource;
     this.message = finding.message;
     this.ruleKey = finding.code as string || 'unknown';
@@ -248,7 +251,10 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       vscode.commands.executeCommand('SonarLint.ShowTaintVulnerabilityFlows', finding.serverIssueKey, getConnectionIdForFile(finding.fileUri));
       vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
     } else if (finding.findingType === FindingType.Issue) {
-      vscode.commands.executeCommand('SonarLint.ShowIssueFlows', finding.key, finding.fileUri)
+      if (!finding.isNotebookFinding) {
+        // showing all locations for notebook cells is not supported
+        vscode.commands.executeCommand('SonarLint.ShowIssueFlows', finding.key, finding.fileUri);
+      }
       vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
     }
   }
@@ -320,7 +326,11 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     }
 
     if (element instanceof FindingsFileNode) {
-      return this.getFindingsForFile(element.fileUri, element.category);
+      if (element.isNotebook) {
+        return this.getFindingsForFile(element.fileOrNotebookUri, element.category, element.notebookCellUris);
+      } else {
+        return this.getFindingsForFile(element.fileOrNotebookUri, element.category);
+      }
     }
 
     return [];
@@ -345,7 +355,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     }
 
     // For FindingNode, find the parent file
-    const parentFile = this.getRootFiles().find(file => file.fileUri === element.fileUri);
+    const parentFile = this.getRootFiles().find(file => file.fileOrNotebookUri === element.fileUri);
     if (parentFile) {
       if (isFocusingOnNewCode()) {
         return element.isOnNewCode ? new NewIssuesNode() : new OlderIssuesNode();
@@ -383,7 +393,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.findingsCache.forEach((findings, fileUri) => {
       const newFindings = findings.filter(finding => finding.isOnNewCode && this.matchesFilter(finding));
       if (newFindings.length > 0) {
-        files.push(new FindingsFileNode(fileUri, newFindings.length, 'new'));
+        this.addFileNode(fileUri, files, newFindings.length, 'new');
       }
     });
     
@@ -396,7 +406,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.findingsCache.forEach((findings, fileUri) => {
       const olderFindings = findings.filter(finding => !finding.isOnNewCode && this.matchesFilter(finding));
       if (olderFindings.length > 0) {
-        files.push(new FindingsFileNode(fileUri, olderFindings.length, 'older'));
+        this.addFileNode(fileUri, files, olderFindings.length, 'older');
       }
     });
     
@@ -409,11 +419,28 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.findingsCache.forEach((findings, fileUri) => {
       const filteredFindings = findings.filter(finding => this.matchesFilter(finding));
       if (filteredFindings.length > 0) {
-        files.push(new FindingsFileNode(fileUri, filteredFindings.length));
+        this.addFileNode(fileUri, files, filteredFindings.length);
       }
     });
     
     return files;
+  }
+
+  private addFileNode(fileUri: string, existingFiles: FindingsFileNode[], findingsCount: number, category?: 'new' | 'older') {
+    let fileUriToUse = fileUri;
+    if (fileUri.startsWith(NOTEBOOK_CELL_URI_SCHEME)) {
+      const notebookCellUri = vscode.Uri.parse(fileUri);
+      // register only one notebook file for (possible) multiple cells
+      fileUriToUse = vscode.Uri.from({scheme: 'file', path: notebookCellUri.path}).toString();
+      const notebookFile = existingFiles.find(file => file.fileOrNotebookUri === fileUriToUse);
+      if (notebookFile) {
+        notebookFile.notebookCellUris.push(fileUri);
+        return;
+      }
+      existingFiles.push(new FindingsFileNode(fileUriToUse, findingsCount, category, true, [fileUriToUse]));
+    } else {
+      existingFiles.push(new FindingsFileNode(fileUri, findingsCount, category));
+    }
   }
 
   private matchesFilter(finding: FindingNode): boolean {
@@ -431,8 +458,17 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     return false;
   }
 
-  private getFindingsForFile(fileUri: string, category?: 'new' | 'older'): FindingNode[] {
-    const findings = this.findingsCache.get(fileUri) || [];
+  private getFindingsForFile(fileUriOrNotebookUri: string, category?: 'new' | 'older', notebookCellUris?: string[]): FindingNode[] {
+    let findings: FindingNode[] = [];
+
+    if (notebookCellUris) {
+      notebookCellUris.forEach(uri => {
+        findings = [...findings, ...(this.findingsCache.get(uri) || [])];
+      });
+    } else {
+      findings = this.findingsCache.get(fileUriOrNotebookUri) || [];
+    }
+
     let filteredFindings = findings.filter(finding => this.matchesFilter(finding));
     
     if (category) {
@@ -441,7 +477,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       filteredFindings = filteredFindings.filter(finding => finding.isOnNewCode === lookingForNew);
     }
     
-    return filteredFindings.map(finding => new FindingNode(fileUri, finding.findingType, finding.finding));
+    return filteredFindings.map(finding => new FindingNode(fileUriOrNotebookUri, finding.findingType, finding.finding, !!notebookCellUris));
   }
 
   getHotspotsAndTaintsForFile(fileUri: string): FindingNode[] {
