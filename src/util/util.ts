@@ -107,7 +107,7 @@ export function sleep(ms: number) {
 }
 
 export function formatIssueMessage(message: string, ruleKey: string) {
-  return new vscode.MarkdownString(`$(warning) ${message} \`sonarlint(${ruleKey})\``, true);
+  return new vscode.MarkdownString(`$(warning) ${message} \`sonarqube(${ruleKey})\``, true);
 }
 
 export async function findFilesInFolder(

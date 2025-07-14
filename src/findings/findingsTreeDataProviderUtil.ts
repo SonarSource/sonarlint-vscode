@@ -211,7 +211,6 @@ export async function selectAndApplyCodeAction(codeActions: vscode.CodeAction[])
         await vscode.workspace.applyEdit(selectedAction.edit);
         await vscode.commands.executeCommand(selectedAction.command.command, ...(selectedAction.command.arguments || []));
       } catch (error) {
-        console.error('Error applying quick fix:', error);
         vscode.window.showErrorMessage(`Error applying quick fix: ${error.message}`);
       }
     }
