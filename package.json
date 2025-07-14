@@ -970,7 +970,7 @@
         },
         {
           "command": "SonarQube.TriggerFetchCodeActionsCommand",
-          "title": "Apply Quick Fix...",
+          "title": "More Actions...",
           "when": "view == SonarQube.Findings && (viewItem == AICodeFixableIssueItem || viewItem == issueItem)"
         },
         {
