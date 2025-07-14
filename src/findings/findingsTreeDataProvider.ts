@@ -242,7 +242,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     return FindingsTreeDataProvider._instance;
   }
 
-  private showAllInfoForFinding(finding: FindingNode) {
+  showAllInfoForFinding(finding: FindingNode) {
     if (finding.findingType === FindingType.SecurityHotspot) {
       vscode.commands.executeCommand(Commands.SHOW_HOTSPOT_LOCATION, finding);
       const showRuleDescriptionCommand = finding.contextValue === 'newHotspotItem' ? Commands.SHOW_HOTSPOT_RULE_DESCRIPTION : Commands.SHOW_HOTSPOT_DETAILS;
