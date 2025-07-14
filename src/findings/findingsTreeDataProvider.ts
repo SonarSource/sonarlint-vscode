@@ -44,12 +44,13 @@ export class FindingsFileNode extends vscode.TreeItem {
     this.resourceUri = vscode.Uri.parse(fileUri);
     
     const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders?.length > 1;
-    this.description = getRelativePathFromFullPath(
+    // no need to compute relative path if file is outside any workspace folder
+    this.description = vscode.workspace.workspaceFolders ? getRelativePathFromFullPath(
       fileUri,
       // TODO for jupyter notebooks the URI is vscode-notebook-cell:// and folder cannot be found
       vscode.workspace.getWorkspaceFolder(this.resourceUri),
       specifyWorkspaceFolderName
-    );
+    ) : '';
     
     this.iconPath = vscode.ThemeIcon.File;
     

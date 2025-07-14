@@ -187,7 +187,7 @@ export async function selectAndApplyCodeAction(codeActions: vscode.CodeAction[])
   const selection : IndexQP | undefined = await vscode.window.showQuickPick(codeActions.map((qf, index) => ({
     label: qf.title,
     detail: ``,
-    index: index
+    index
   })), {
     title: 'Select an Action to Apply',
     placeHolder: 'What would you like to do?',
