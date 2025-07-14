@@ -37,7 +37,8 @@ export function protocol2CodeConverter(value: string) {
 }
 
 export function getFileNameFromFullPath(fullPath: string): string {
-  return fullPath.substring(fullPath.lastIndexOf('/') + 1);
+  const fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
+  return decodeURIComponent(fileName);
 }
 
 export function getRelativePathWithFileNameFromFullPath(fullPath: string, workspaceFolder: vscode.WorkspaceFolder,): string {

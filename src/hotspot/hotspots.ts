@@ -96,7 +96,7 @@ function revealFileInTreeView(
   findingsTreeDataProvider: FindingsTreeDataProvider
 ) {
   const fileUri = getUriFromRelativePath(hotspot.ideFilePath, vscode.workspace.workspaceFolders[0]);
-  const fileToHighlight = findingsTreeDataProvider.getRootFiles().find(fileNode => fileNode.fileUri === fileUri);
+  const fileToHighlight = findingsTreeDataProvider.getRootFiles().find(fileNode => fileNode.fileOrNotebookUri === fileUri);
   allFindingsView.reveal(fileToHighlight, { focus: true });
 }
 
