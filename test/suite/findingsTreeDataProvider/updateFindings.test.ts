@@ -75,7 +75,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that findings were added to cache
-      const findings = underTest.getFindingsForFile(TEST_FILE_URI);
+      const findings = (underTest as any).getFindingsForFile(TEST_FILE_URI);
       expect(findings).to.have.length(1);
       expect(findings[0].findingType).to.equal(FindingType.SecurityHotspot);
       expect(findings[0].key).to.equal(TEST_KEY);
@@ -117,7 +117,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that existing issues were preserved but hotspots were replaced
-      const findings = underTest.getFindingsForFile(TEST_FILE_URI);
+      const findings = (underTest as any).getFindingsForFile(TEST_FILE_URI);
       expect(findings).to.have.length(2);
       
       const issues = findings.filter(f => f.findingType === FindingType.Issue);
@@ -154,7 +154,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that file was removed from cache
-      const findings = underTest.getFindingsForFile(TEST_FILE_URI);
+      const findings = (underTest as any).getFindingsForFile(TEST_FILE_URI);
       expect(findings).to.be.empty;
     });
   });
@@ -176,7 +176,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that findings were added to cache
-      const findings = underTest.getFindingsForFile(TEST_FILE_URI);
+      const findings = (underTest as any).getFindingsForFile(TEST_FILE_URI);
       expect(findings).to.have.length(1);
       expect(findings[0].findingType).to.equal(FindingType.TaintVulnerability);
       expect(findings[0].key).to.equal(TEST_KEY);
@@ -218,7 +218,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that existing issues were preserved but taint vulnerabilities were replaced
-      const findings = underTest.getFindingsForFile(TEST_FILE_URI);
+      const findings = (underTest as any).getFindingsForFile(TEST_FILE_URI);
       expect(findings).to.have.length(2);
       
       const issues = findings.filter(f => f.findingType === FindingType.Issue);
@@ -249,7 +249,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that findings were added to cache
-      const findings = underTest.getFindingsForFile(TEST_FILE_URI);
+      const findings = (underTest as any).getFindingsForFile(TEST_FILE_URI);
       expect(findings).to.have.length(1);
       expect(findings[0].findingType).to.equal(FindingType.Issue);
       expect(findings[0].key).to.equal(TEST_KEY);
@@ -288,7 +288,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that existing hotspots were preserved but issues were replaced
-      const findings = underTest.getFindingsForFile(TEST_FILE_URI);
+      const findings = (underTest as any).getFindingsForFile(TEST_FILE_URI);
       expect(findings).to.have.length(2);
       
       const hotspots = findings.filter(f => f.findingType === FindingType.SecurityHotspot);
@@ -317,7 +317,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that findings were added to cache
-      const findings = underTest.getFindingsForFile(TEST_NOTEBOOK_FILE_URI, undefined, [TEST_NOTEBOOK_CELL_URI]);
+      const findings = (underTest as any).getFindingsForNotebook(TEST_NOTEBOOK_FILE_URI, [TEST_NOTEBOOK_CELL_URI], undefined);
       expect(findings).to.have.length(1);
       expect(findings[0].findingType).to.equal(FindingType.Issue);
       expect(findings[0].key).to.equal(TEST_KEY);
