@@ -24,10 +24,10 @@ export enum FindingType {
 
 export enum FilterType {
   All = 'all',
-  Fix_Available = 'fix-available',
-  Open_Files_Only = 'open-files-only',
-  High_Severity_Only = 'high-severity-only',
-  Current_File_Only = 'current-file-only'
+  Fix_Available = 'fix_available',
+  Open_Files_Only = 'open_files_only',
+  High_Severity_Only = 'high_severity_only',
+  Current_File_Only = 'current_file_only'
 }
 
 export enum FindingSource {

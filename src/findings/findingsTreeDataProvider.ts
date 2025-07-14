@@ -8,6 +8,7 @@
 
 import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ImpactSeverity, PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
@@ -148,8 +149,12 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   private readonly findingsCache = new Map<string, FindingNode[]>();
   private activeFilter: FilterType = FilterType.All;
 
-  static init(context: vscode.ExtensionContext) {
-    this._instance = new FindingsTreeDataProvider();
+  constructor(private readonly client: SonarLintExtendedLanguageClient) {
+    // NOP
+  }
+
+  static init(context: vscode.ExtensionContext, client: SonarLintExtendedLanguageClient) {
+    this._instance = new FindingsTreeDataProvider(client);
     context.subscriptions.push(
       vscode.commands.registerCommand(Commands.SHOW_ALL_INFO_FOR_FINDING, (finding: FindingNode) => {
         this._instance.showAllInfoForFinding(finding);
@@ -445,7 +450,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.activeFilter = filter;
     this.refresh();
     vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', getFilterContextValue(filter));
-    // TODO add call to telemetry
+    this.client.findingsFiltered(filter);
   }
 
   getActiveFilter(): FilterType {
