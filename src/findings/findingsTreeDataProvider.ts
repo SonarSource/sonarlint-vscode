@@ -287,7 +287,6 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     
     // Add new findings
     const allFindings = [...otherFindings, ...newFindings];
-    
     if (allFindings.length > 0) {
       this.findingsCache.set(fileUri, allFindings);
     } else {
@@ -327,11 +326,10 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     }
 
     if (element instanceof FindingsFileNode) {
-      if (element.isNotebook) {
-        return this.getFindingsForNotebook(element.fileUri, element.notebookCellUris, element.category);
-      } else {
-        return this.getFindingsForFile(element.fileUri, element.category);
-      }
+      const allFindings = element.isNotebook
+        ? this.getFindingsForNotebook(element.notebookCellUris)
+        : this.getFindingsForFile(element.fileUri);
+      return this.filterFindings(allFindings, element.category);
     }
 
     return [];
@@ -458,24 +456,14 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     return false;
   }
 
-  private getFindingsForNotebook(notebookUri: string, notebookCellUris: string[], category?: 'new' | 'older'): FindingNode[] {
-    let findings: FindingNode[] = [];
-
-    findings = notebookCellUris.flatMap(uri => this.findingsCache.get(uri) || []);
-
-    const filteredFindings = this.filterFindings(findings, category);
-    
-    return filteredFindings.map(finding => new FindingNode(notebookUri, finding.findingType, finding.finding, true));
+  private getFindingsForNotebook(notebookCellUris: string[]): FindingNode[] {
+    return Array.from(notebookCellUris)
+      .map(uri => this.findingsCache.get(uri) || [])
+      .reduce((acc, findings) => acc.concat(findings), []);
   }
 
-  private getFindingsForFile(fileUri: string, category?: 'new' | 'older'): FindingNode[] {
-    let findings: FindingNode[] = [];
-
-    findings = this.findingsCache.get(fileUri) || [];
-
-    const filteredFindings = this.filterFindings(findings, category);
-    
-    return filteredFindings.map(finding => new FindingNode(fileUri, finding.findingType, finding.finding, false));
+  private getFindingsForFile(fileUri: string): FindingNode[] {
+    return  this.findingsCache.get(fileUri) || [];
   }
 
   private filterFindings(findings: FindingNode[], category?: 'new' | 'older'): FindingNode[] {
