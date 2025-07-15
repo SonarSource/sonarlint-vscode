@@ -10,7 +10,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
-import { FindingsTreeDataProvider, FindingNode } from '../../../src/findings/findingsTreeDataProvider';
+import { FindingsTreeDataProvider, FindingNode, FindingsFileNode } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource } from '../../../src/findings/findingsTreeDataProviderUtil';
 import { ImpactSeverity, PublishDiagnosticsParams } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
@@ -18,6 +18,7 @@ import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 const TEST_FILE_URI = 'file:///test/file.js';
 const TEST_NOTEBOOK_CELL_URI = 'vscode-notebook-cell://test/notebook.ipynb#1234';
 const TEST_NOTEBOOK_FILE_URI = 'file:///test/notebook.ipynb';
+const TEST_WORKSPACE_FOLDER_URI = 'file:///test';
 const TEST_ISSUE_KEY = 'test-issue-key';
 const TEST_KEY = 'test-key';
 const TEST_RULE = 'test-rule';
@@ -310,6 +311,9 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
           isNotebookFinding: true
         })
       ];
+      const mockWorkspaceFolder = { uri: vscode.Uri.parse(TEST_WORKSPACE_FOLDER_URI) };
+      sinon.stub(vscode.workspace, 'getWorkspaceFolder').returns(mockWorkspaceFolder);
+      const fileNode = new FindingsFileNode(TEST_NOTEBOOK_FILE_URI, 1, undefined, true, [TEST_NOTEBOOK_CELL_URI]);
 
       underTest.updateIssues(TEST_NOTEBOOK_CELL_URI, diagnostics);
 
@@ -317,7 +321,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(refreshSpy.calledOnce).to.be.true;
       
       // Verify that findings were added to cache
-      const findings = (underTest as any).getFindingsForNotebook(TEST_NOTEBOOK_FILE_URI, [TEST_NOTEBOOK_CELL_URI], undefined);
+      const findings = underTest.getChildren(fileNode);
       expect(findings).to.have.length(1);
       expect(findings[0].findingType).to.equal(FindingType.Issue);
       expect(findings[0].key).to.equal(TEST_KEY);

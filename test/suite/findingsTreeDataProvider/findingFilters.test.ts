@@ -10,7 +10,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
-import { FindingsTreeDataProvider, FindingNode } from '../../../src/findings/findingsTreeDataProvider';
+import { FindingsTreeDataProvider, FindingNode, FindingsFileNode } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource, FilterType } from '../../../src/findings/findingsTreeDataProviderUtil';
 import { ImpactSeverity } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
@@ -373,7 +373,7 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
     });
   });
 
-  suite('getFindingsForFile with filtering', () => {
+  suite('getChildren with filtering', () => {
     test('should return filtered findings for a file', () => {
       const findings = [
         createMockFindingNode({ 
@@ -392,10 +392,12 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
           isAiCodeFixable: true 
         })
       ];
+      const fileNode = new FindingsFileNode(TEST_FILE_URI, 3, undefined, false);
+
       (underTest as any).findingsCache.set(TEST_FILE_URI, findings);
 
       underTest.setFilter(FilterType.Fix_Available);
-      const filteredFindings = (underTest as any).getFindingsForFile(TEST_FILE_URI);
+      const filteredFindings = underTest.getChildren(fileNode);
       
       expect(filteredFindings).to.have.length(2); // Only 2 findings have fixes
     });
@@ -423,12 +425,14 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
           isAiCodeFixable: true 
         })
       ];
-      
+      const newFindingsFileNode = new FindingsFileNode(TEST_FILE_URI, 3, 'new', false);
+      const olderFindingsFileNode = new FindingsFileNode(TEST_FILE_URI, 3, 'older', false);
       (underTest as any).findingsCache.set(TEST_FILE_URI, [...newFindings, ...olderFindings]);
 
       underTest.setFilter(FilterType.Fix_Available);
-      const newFilteredFindings = (underTest as any).getFindingsForFile(TEST_FILE_URI, 'new');
-      const olderFilteredFindings = (underTest as any).getFindingsForFile(TEST_FILE_URI, 'older');
+
+      const newFilteredFindings = underTest.getChildren(newFindingsFileNode);
+      const olderFilteredFindings = underTest.getChildren(olderFindingsFileNode);
       
       expect(newFilteredFindings).to.have.length(1); // Only 1 new finding has fix
       expect(olderFilteredFindings).to.have.length(1); // Only 1 older finding has fix
