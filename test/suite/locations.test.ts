@@ -64,7 +64,8 @@ suite('locations', () => {
         startLineOffset: 0,
         endLine: 1,
         endLineOffset: 9
-      }
+      },
+      isHotspot: true
     };
 
     await underTest.showAllLocations(issue);
@@ -168,7 +169,8 @@ suite('locations', () => {
         startLineOffset: 2,
         endLine: 2,
         endLineOffset: 5
-      }
+      },
+      isHotspot: false
     };
 
     await underTest.showAllLocations(issue);
@@ -235,7 +237,8 @@ suite('locations', () => {
         startLineOffset: 2,
         endLine: 2,
         endLineOffset: 5
-      }
+      },
+      isHotspot: false
     };
 
     await underTest.showAllLocations(issue);
@@ -351,7 +354,8 @@ suite('locations', () => {
         startLineOffset: 2,
         endLine: 2,
         endLineOffset: 12
-      }
+      },
+      isHotspot: false
     };
 
     await underTest.showAllLocations(issue);

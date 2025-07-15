@@ -24,7 +24,8 @@ suite('issues', () => {
           endLine: 1,
           endLineOffset: 5
         },
-        codeMatches: true
+        codeMatches: true,
+        isHotspot: false
       };
       const diagnostic = createDiagnosticFromIssue(issue);
 
@@ -50,7 +51,8 @@ suite('issues', () => {
           endLine: 0,
           endLineOffset: 0
         },
-        codeMatches: true
+        codeMatches: true,
+        isHotspot: false
       };
       const diagnostic = createDiagnosticFromIssue(issue);
 
@@ -106,7 +108,8 @@ suite('issues', () => {
         endLine: 1,
         endLineOffset: 5
       },
-      codeMatches: true
+      codeMatches: true,
+      isHotspot: false
     };
 
     const result = await adaptFlows(issue);
