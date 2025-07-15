@@ -247,6 +247,7 @@ export interface Issue {
   textRange: TextRange;
   codeMatches?: boolean;
   shouldOpenRuleDescription: boolean;
+  isHotspot: boolean;
 }
 
 export namespace ShowIssueOrHotspotNotification {

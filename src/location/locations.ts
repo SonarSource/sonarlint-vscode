@@ -184,19 +184,9 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
 
       const locations = issue.flows.map(f => f.locations).reduce((acc, cur) => acc.concat(cur), []);
       if (locations.length > 0) {
-        editor.setDecorations(
-          SECONDARY_LOCATION_DECORATIONS,
-          locations.map((l, i) => buildDecoration(new LocationItem(l, i + 1, this.rootItem), editor.document))
-        );
+        this.highlightSecondaryLocations(locations, editor);
       } else {
-        const range = vscodeRange(issue.textRange);
-        if (isValidRange(range, editor.document)) {
-          editor.selection = new vscode.Selection(range.start, range.end);
-          editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
-          editor.setDecorations(SINGLE_LOCATION_DECORATION, [
-            { range, hoverMessage: formatIssueMessage(issue.message, issue.ruleKey) }
-          ]);
-        }
+        this.highlightSingleLocation(issue, editor);
       }
     } else if (this.rootItem.children[0] instanceof LocationItem) {
       // Flattened locations: take the first one
@@ -207,6 +197,27 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
     } else {
       // Multiple file locations: take the first location of the first file of the first flow
       navigateToLocation(this.rootItem.children[0].children[0].children[0]);
+    }
+  }
+
+  private highlightSecondaryLocations(locations: Location[], editor: vscode.TextEditor) {
+    editor.setDecorations(
+      SECONDARY_LOCATION_DECORATIONS,
+      locations.map((l, i) => buildDecoration(new LocationItem(l, i + 1, this.rootItem), editor.document))
+    );
+  }
+
+  private highlightSingleLocation(issue: Issue, editor: vscode.TextEditor) {
+    const range = vscodeRange(issue.textRange);
+    if (isValidRange(range, editor.document)) {
+      editor.selection = new vscode.Selection(range.start, range.end);
+      editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+      if (issue.isHotspot) {
+        // only set decorations for hotspots. Regular findings & taints are highlighted differently
+        editor.setDecorations(SINGLE_LOCATION_DECORATION, [
+          { range, hoverMessage: formatIssueMessage(issue.message, issue.ruleKey) }
+        ]);
+      }
     }
   }
 
