@@ -139,8 +139,10 @@ export function getContextValueForFinding(source: FindingSource, isAiCodeFixable
     case FindingSource.SonarQube:
       if (isNotebookFinding) {
         return 'notebookIssueItem';
+      } else if (isAiCodeFixable) {
+        return 'AICodeFixableIssueItem';
       } else {
-        return isAiCodeFixable ? 'AICodeFixableIssueItem' : 'issueItem';
+        return 'issueItem';
       }
     default:
       return 'issueItem';
