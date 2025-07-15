@@ -59,9 +59,9 @@ export class FindingsFileNode extends vscode.TreeItem {
     
     if (category) {
       const categoryText = category === 'new' ? 'new code' : 'older code';
-      this.tooltip = `${findingsCount} SonarQube Security Finding(s) in ${categoryText}`;
+      this.tooltip = `${findingsCount} SonarQube Finding(s) in ${categoryText}`;
     } else {
-      this.tooltip = `${findingsCount} SonarQube Security Finding(s)`;
+      this.tooltip = `${findingsCount} SonarQube Finding(s)`;
     }
   }
 }
