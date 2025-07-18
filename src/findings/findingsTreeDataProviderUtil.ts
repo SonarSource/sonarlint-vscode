@@ -22,7 +22,8 @@ export enum HotspotReviewPriority {
 export enum FindingType {
   SecurityHotspot = 'hotspot',
   TaintVulnerability = 'taint',
-  Issue = 'issue'
+  Issue = 'issue',
+  ScaIssue = 'sca'
 }
 
 export enum FilterType {
@@ -35,8 +36,8 @@ export enum FilterType {
 
 export enum FindingSource {
   SonarQube = 'sonarqube', // on-the-fly analysis
-  Latest_SonarQube = 'Latest SonarQube Server Analysis', // taint
-  Latest_SonarCloud = 'Latest SonarQube Cloud Analysis', // taint
+  Latest_SonarQube = 'Latest SonarQube Server Analysis', // taint or sca
+  Latest_SonarCloud = 'Latest SonarQube Cloud Analysis', // taint or sca
   Remote_Hotspot = 'remote-hotspot', // hotspot that matched remote one; Still on-the-fly analysis
   Local_Hotspot = 'local-hotspot' // locally detected hotspot that has not matched with server one
 }
@@ -55,37 +56,40 @@ export interface Finding {
   status: number;
 }
 
-export const SOURCE_CONFIG: Record<
-  FindingSource,
-  {
-    icon?: string;
-    iconColor?: string;
-    label?: string;
-    tooltipText?: string;
+export function getFindingLabel(type: FindingType): string {
+  switch (type) {
+    case FindingType.ScaIssue:
+      return 'Dependency Risk';
+    case FindingType.TaintVulnerability:
+      return 'Taint Vulnerability';
+    case FindingType.SecurityHotspot:
+      return 'Security Hotspot';
+    default:
+      return 'Issue';
   }
-> = {
-  [FindingSource.SonarQube]: {},
-  [FindingSource.Local_Hotspot]: {
-    icon: 'security-hotspot',
-    iconColor: 'descriptionForeground',
-    label: 'Security Hotspot',
-    tooltipText: 'This Security Hotspot only exists locally'
-  },
-  [FindingSource.Remote_Hotspot]: {
-    icon: 'security-hotspot',
-    iconColor: 'descriptionForeground',
-    label: 'Security Hotspot',
-    tooltipText: 'This Security Hotspot exists on remote project'
-  },
-  [FindingSource.Latest_SonarQube]: {
-    label: 'Taint Vulnerability',
-    tooltipText: 'This Taint Vulnerability was detected by SonarQube Server'
-  },
-  [FindingSource.Latest_SonarCloud]: {
-    label: 'Taint Vulnerability',
-    tooltipText: 'This Taint Vulnerability was detected by SonarQube Cloud'
+}
+
+export function getFindingTooltip(source: FindingSource, type: FindingType): string {
+  const serverName = source === FindingSource.Latest_SonarCloud ? 'SonarQube Cloud' : 'SonarQube Server';
+  
+  switch (type) {
+    case FindingType.ScaIssue:
+      return `This Dependency Risk was detected by ${serverName}`;
+    case FindingType.TaintVulnerability:
+      return `This Taint Vulnerability was detected by ${serverName}`;
+    case FindingType.SecurityHotspot:
+      switch (source) {
+        case FindingSource.Local_Hotspot:
+          return 'This Security Hotspot only exists locally';
+        case FindingSource.Remote_Hotspot:
+          return 'This Security Hotspot exists on remote project';
+        default:
+          return '';
+      }
+    default:
+      return '';
   }
-};
+}
 
 export const impactSeverityToIcon = (impactSeverity: ImpactSeverity): { light: vscode.Uri; dark: vscode.Uri } => {
   switch (impactSeverity) {
@@ -125,9 +129,10 @@ export type FindingContextValue =
   | 'AICodeFixableTaintItem'
   | 'AICodeFixableIssueItem'
   | 'issueItem'
+  | 'scaIssueItem'
   | 'notebookIssueItem';
 
-export function getContextValueForFinding(source: FindingSource, isAiCodeFixable: boolean, isNotebookFinding: boolean): FindingContextValue {
+export function getContextValueForFinding(source: FindingSource, type: FindingType, isAiCodeFixable: boolean, isNotebookFinding: boolean): FindingContextValue {
   switch (source) {
     case FindingSource.Remote_Hotspot:
       return 'knownHotspotItem';
@@ -135,7 +140,11 @@ export function getContextValueForFinding(source: FindingSource, isAiCodeFixable
       return 'newHotspotItem';
     case FindingSource.Latest_SonarCloud:
     case FindingSource.Latest_SonarQube:
-      return isAiCodeFixable ? 'AICodeFixableTaintItem' : 'taintVulnerabilityItem';
+      if (type === FindingType.ScaIssue) {
+        return 'scaIssueItem';
+      } else {
+        return isAiCodeFixable ? 'AICodeFixableTaintItem' : 'taintVulnerabilityItem';
+      }
     case FindingSource.SonarQube:
       if (isNotebookFinding) {
         return 'notebookIssueItem';

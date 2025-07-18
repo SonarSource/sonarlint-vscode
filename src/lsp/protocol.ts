@@ -478,6 +478,10 @@ export namespace PublishTaintVulnerabilitiesForFile {
   export const type = new lsp.NotificationType<PublishDiagnosticsParams>('sonarlint/publishTaintVulnerabilities');
 }
 
+export namespace PublishScaIssuesForFolder {
+  export const type = new lsp.NotificationType<PublishDiagnosticsParams>('sonarlint/publishScaIssues');
+}
+
 export interface ShowHotspotLocationsParams {
   hotspotKey: string;
   fileUri: string;
@@ -494,6 +498,19 @@ export interface OpenHotspotParams {
 
 export namespace OpenHotspotOnServer {
   export const type = new lsp.NotificationType<OpenHotspotParams>('sonarlint/openHotspotInBrowser');
+}
+
+export interface OpenScaIssueParams {
+  folderUri: string;
+  issueId: string;
+}
+
+export namespace OpenScaIssueOnServer {
+  export const type = new lsp.NotificationType<OpenScaIssueParams>('sonarlint/openScaIssueInBrowser');
+}
+
+export namespace ScaIssueInvestigatedLocally {
+  export const type = new lsp.NotificationType('sonarlint/scaIssueInvestigatedLocally');
 }
 
 export interface HelpAndFeedbackLinkClickedNotificationParams {
