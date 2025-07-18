@@ -71,6 +71,14 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     this.sendNotification(protocol.OpenHotspotOnServer.type, { hotspotId, fileUri });
   }
 
+  openScaIssueOnServer(folderUri: string, issueId: string) {
+    this.sendNotification(protocol.OpenScaIssueOnServer.type, { folderUri, issueId });
+  }
+
+  scaIssueInvestigatedLocally() {
+    this.sendNotification(protocol.ScaIssueInvestigatedLocally.type);
+  }
+
   helpAndFeedbackLinkClicked(itemId: string) {
     this.sendNotification(protocol.HelpAndFeedbackLinkClicked.type, { id: itemId });
   }

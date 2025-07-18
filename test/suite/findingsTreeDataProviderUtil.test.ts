@@ -16,6 +16,7 @@ import {
   getFilterDisplayName,
   FilterType,
   selectAndApplyCodeAction,
+  FindingType,
 } from '../../src/findings/findingsTreeDataProviderUtil';
 
 suite('Findings Tree Data Provider Util Test Suite', () => {
@@ -38,7 +39,7 @@ suite('Findings Tree Data Provider Util Test Suite', () => {
       ];
 
       testCases.forEach(({ source, isAiCodeFixable, isNotebookFinding, expected }) => {
-        const result = getContextValueForFinding(source, isAiCodeFixable, isNotebookFinding);
+        const result = getContextValueForFinding(source, FindingType.Issue, isAiCodeFixable, isNotebookFinding);
         expect(result).to.equal(expected, 
           `Failed for source: ${source}, isAiCodeFixable: ${isAiCodeFixable}, isNotebookFinding: ${isNotebookFinding}`);
           });
