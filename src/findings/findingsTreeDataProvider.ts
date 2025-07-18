@@ -21,7 +21,6 @@ import {
   FilterType,
   FindingType,
   HotspotReviewPriority,
-  SOURCE_CONFIG,
   impactSeverityToIcon,
   getContextValueForFinding,
   isFileOpen,
@@ -29,7 +28,9 @@ import {
   getFilterContextValue,
   selectAndApplyCodeAction,
   NOTEBOOK_CELL_URI_SCHEME,
-  isNotebookCellUri
+  isNotebookCellUri,
+  getFindingLabel,
+  getFindingTooltip
 } from './findingsTreeDataProviderUtil';
 
 export class FindingsFileNode extends vscode.TreeItem {
@@ -114,8 +115,8 @@ export class FindingNode extends vscode.TreeItem {
     this.id = `${fileUri}-${this.key}`;
     this.isAiCodeFixable = finding['data']?.isAiCodeFixable ?? false;
     this.hasQuickFix = finding['data']?.hasQuickFix ?? false;
-    this.range = new vscode.Range(finding.range.start.line, finding.range.start.character, finding.range.end.line, finding.range.end.character);
-    this.contextValue = getContextValueForFinding(finding.source as FindingSource, this.isAiCodeFixable, this.isNotebookFinding);
+    this.range = finding.range ? new vscode.Range(finding.range.start.line, finding.range.start.character, finding.range.end.line, finding.range.end.character) : new vscode.Range(0, 0, 0, 0);
+    this.contextValue = getContextValueForFinding(finding.source as FindingSource, this.findingType, this.isAiCodeFixable, this.isNotebookFinding);
     this.source = finding.source as FindingSource;
     this.message = finding.message;
     this.ruleKey = finding.code as string || 'unknown';
@@ -125,9 +126,9 @@ export class FindingNode extends vscode.TreeItem {
     this.severity = finding.severity;
     this.impactSeverity = finding['data']?.impactSeverity as ImpactSeverity;
 
-    this.description = `${SOURCE_CONFIG[this.source]?.label || ''} (${this.ruleKey}) [Ln ${this.range.start.line + 1}, Col ${this.range.start.character}]`;
-    this.iconPath = this.getIconForFinding(this.source);
-    this.tooltip = SOURCE_CONFIG[this.source]?.tooltipText;
+    this.description = `${getFindingLabel(this.findingType)} (${this.ruleKey}) [Ln ${this.range.start.line + 1}, Col ${this.range.start.character}]`;
+    this.iconPath = this.getIconForFinding();
+    this.tooltip = getFindingTooltip(this.source, this.findingType);
     
     this.command = {
       command: Commands.SHOW_ALL_INFO_FOR_FINDING,
@@ -136,14 +137,12 @@ export class FindingNode extends vscode.TreeItem {
     }
   }
 
-  private getIconForFinding(source: FindingSource): vscode.ThemeIcon | { light: vscode.Uri; dark: vscode.Uri } {
-    const sourceConfig = SOURCE_CONFIG[source];
-    // For security hotspots, use source-specific icons
-    if (sourceConfig.icon) {
-      return new vscode.ThemeIcon(sourceConfig.icon, new vscode.ThemeColor(sourceConfig.iconColor));
+  private getIconForFinding(): vscode.ThemeIcon | vscode.IconPath {
+    if (this.findingType === FindingType.SecurityHotspot) {
+      return new vscode.ThemeIcon('security-hotspot', new vscode.ThemeColor('descriptionForeground'));
     }
     
-    // Fallback to severity-based icon for taint vulnerabilities
+    // Use severity icons for everything else
     return impactSeverityToIcon(this.impactSeverity);
   }
 }
@@ -258,6 +257,9 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         vscode.commands.executeCommand('SonarLint.ShowIssueFlows', finding.key, finding.fileUri);
       }
       vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
+    } else if (finding.findingType === FindingType.ScaIssue) {
+      this.client.scaIssueInvestigatedLocally();
+      this.client.openScaIssueOnServer(finding.fileUri, finding.key);
     }
   }
 
@@ -278,6 +280,11 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   updateIssues(fileUri: string, diagnostics: vscode.Diagnostic[]) {
     const findingNodes = this.convertIssuesToFindingNodes(fileUri, diagnostics);
     this.updateFindingsForFile(fileUri, findingNodes, FindingType.Issue);
+  }
+
+  updateScaIssues(scaIssuesPerFolder: PublishDiagnosticsParams) {
+    const findingNodes = this.convertScaIssuesToFindingNodes(scaIssuesPerFolder.uri, scaIssuesPerFolder.diagnostics);
+    this.updateFindingsForFile(scaIssuesPerFolder.uri, findingNodes, FindingType.ScaIssue);
   }
 
   private updateFindingsForFile(fileUri: string, newFindings: FindingNode[], findingType: FindingType) {
@@ -307,6 +314,10 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
 
   private convertIssuesToFindingNodes(fileUri: string, diagnostics: vscode.Diagnostic[]): FindingNode[] {
     return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.Issue, convertVscodeDiagnosticToLspDiagnostic(diagnostic), isNotebookCellUri(fileUri)));
+  }
+
+  private convertScaIssuesToFindingNodes(folderUri: string, diagnostics: Diagnostic[]): FindingNode[] {
+    return diagnostics.map(diagnostic => new FindingNode(folderUri, FindingType.ScaIssue, diagnostic));
   }
 
   getTreeItem(element: FindingsTreeViewItem): vscode.TreeItem {
