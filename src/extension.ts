@@ -696,6 +696,10 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri));
   });
 
+  languageClient.onNotification(protocol.PublishScaIssuesForFolder.type, async scaIssuesPerFolder => {
+    findingsTreeDataProvider.updateScaIssues(scaIssuesPerFolder);
+  });
+
   languageClient.onRequest(
     protocol.AssistBinding.type,
     async params => await BindingService.instance.assistBinding(params)
