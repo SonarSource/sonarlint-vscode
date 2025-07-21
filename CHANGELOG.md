@@ -1,10 +1,11 @@
 ## 4.27
 
 * In addition to the traditional PROBLEMS view, it is now possible to browse all SonarQube issues in a dedicated SonarQube view
+* Minimal supported Node.js version needed for JS/TS/CSS analysis is 18.20.0, 20.12.0, or 21.4.0
 * Update Java analyzer 8.17 -> [8.17.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021509%20ORDER%20BY%20created%20ASC)
 * Update text and secrets analyzer 2.24 -> [2.25](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019992%20ORDER%20BY%20created%20ASC)
 * Update Python analyzer 5.5 -> [5.6](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2020684%20ORDER%20BY%20created%20ASC)
-* Update C# analyzer 10.12 -> [10.13](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.13.0.120203) -> [10.14](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.14.0.120626)
+* Update C# analyzer 10.12 -> [10.13](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.13.0.120203) -> [10.14](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.14.0.120626)
 
 ## 4.26
 
