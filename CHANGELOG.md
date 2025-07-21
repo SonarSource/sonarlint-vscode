@@ -1,3 +1,7 @@
+## 4.27
+
+* Update Java analyzer 8.17 -> [8.17.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021509%20ORDER%20BY%20created%20ASC)
+
 ## 4.26
 
 * Move Taint Vulnerabilities and Security Hotspots to a new, SonarQube view
