@@ -1,5 +1,6 @@
 ## 4.27
 
+* In addition to the traditional PROBLEMS view, it is now possible to browse all SonarQube issues in a dedicated SonarQube view
 * Update Java analyzer 8.17 -> [8.17.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021509%20ORDER%20BY%20created%20ASC)
 * Update text and secrets analyzer 2.24 -> [2.25](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019992%20ORDER%20BY%20created%20ASC)
 * Update Python analyzer 5.5 -> [5.6](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2020684%20ORDER%20BY%20created%20ASC)
