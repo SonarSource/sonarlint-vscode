@@ -87,7 +87,7 @@ export const SOURCE_CONFIG: Record<
   }
 };
 
-export const impactSeverityToIcon = (impactSeverity: ImpactSeverity): vscode.IconPath => {
+export const impactSeverityToIcon = (impactSeverity: ImpactSeverity): { light: vscode.Uri; dark: vscode.Uri } => {
   switch (impactSeverity) {
     case ImpactSeverity.INFO:
       return {

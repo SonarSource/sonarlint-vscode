@@ -49,9 +49,10 @@ export class FindingsFileNode extends vscode.TreeItem {
     
     const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders?.length > 1;
     // no need to compute relative path if file is outside any workspace folder
-    this.description = vscode.workspace.workspaceFolders ? getRelativePathFromFullPath(
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(this.resourceUri);
+    this.description = vscode.workspace.workspaceFolders && workspaceFolder ? getRelativePathFromFullPath(
       fileUri,
-      vscode.workspace.getWorkspaceFolder(this.resourceUri),
+      workspaceFolder,
       specifyWorkspaceFolderName
     ) : '';
     
@@ -135,7 +136,7 @@ export class FindingNode extends vscode.TreeItem {
     }
   }
 
-  private getIconForFinding(source: FindingSource): vscode.ThemeIcon | vscode.IconPath {
+  private getIconForFinding(source: FindingSource): vscode.ThemeIcon | { light: vscode.Uri; dark: vscode.Uri } {
     const sourceConfig = SOURCE_CONFIG[source];
     // For security hotspots, use source-specific icons
     if (sourceConfig.icon) {
