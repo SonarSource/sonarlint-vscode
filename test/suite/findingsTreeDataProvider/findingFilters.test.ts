@@ -57,7 +57,17 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
     sinon.stub(vscode, 'workspace').value({
       textDocuments: [
         { uri: { toString: () => TEST_OPEN_FILE_URI } } as vscode.TextDocument
-      ]
+      ],
+      getWorkspaceFolder: sinon.stub().returns({
+        uri: vscode.Uri.parse('file:///test'),
+        name: 'test-workspace',
+        index: 0
+      }),
+      workspaceFolders: [{
+        uri: vscode.Uri.parse('file:///test'),
+        name: 'test-workspace',
+        index: 0
+      }]
     });
     sinon.stub(vscode, 'window').value({
       activeTextEditor: {
