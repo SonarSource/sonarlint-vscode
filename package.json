@@ -594,6 +594,12 @@
         "enablement": "view == SonarQube.Findings && viewItem == knownHotspotItem"
       },
       {
+        "command": "SonarLint.ChangeDependencyRiskStatus",
+        "title": "Change Status",
+        "category": "SonarQube",
+        "enablement": "view == SonarQube.Findings && viewItem == dependencyRiskItem"
+      },
+      {
         "command": "SonarLint.HelpAndFeedbackLinkClicked",
         "title": "Share feedback",
         "category": "SonarQube"
@@ -947,6 +953,11 @@
           "command": "SonarLint.ChangeHotspotStatus",
           "title": "Change Status",
           "when": "view == SonarQube.Findings && viewItem == knownHotspotItem"
+        },
+        {
+          "command": "SonarLint.ChangeDependencyRiskStatus",
+          "title": "Change Status",
+          "when": "view == SonarQube.Findings && viewItem == dependencyRiskItem"
         },
         {
           "command": "SonarLint.OpenHotspotOnServer",

@@ -52,6 +52,15 @@ export class IssueService {
     return this.languageClient.checkIssueStatusChangePermitted(folderUri, issueKey);
   }
 
+  async checkDependencyRiskStatusChangePermitted(issueKey: string): Promise<CheckIssueStatusChangePermittedResponse> {
+    const allowedTransitions = await this.languageClient.getDependencyRiskTransitions(issueKey);
+    return {
+      permitted: allowedTransitions.transitions.length > 0,
+      allowedStatuses: allowedTransitions.transitions,
+      notPermittedReason: 'You are not allowed to change the status of this dependency risk'
+    };
+  }
+
   changeIssueStatus(
     configScopeId: string,
     issueKey: string,
@@ -61,6 +70,15 @@ export class IssueService {
     isTaintIssue: boolean
   ): Promise<void> {
     return this.languageClient.changeIssueStatus(configScopeId, issueKey, newStatus, fileUri, comment, isTaintIssue);
+  }
+
+  changeDependencyRiskStatus(
+    configScopeId: string,
+    dependencyRiskKey: string,
+    transition: string,
+    comment: string
+  ): Promise<void> {
+    return this.languageClient.changeDependencyRiskStatus(configScopeId, dependencyRiskKey, transition, comment);
   }
 
   reopenLocalIssues() {
