@@ -30,8 +30,9 @@ import {
   NOTEBOOK_CELL_URI_SCHEME,
   isNotebookCellUri,
   getFindingLabel,
-  getFindingTooltip
+  getFindingTooltip,
 } from './findingsTreeDataProviderUtil';
+import { resolveIssueMultiStepInput } from '../issue/resolveIssue';
 
 export class FindingsFileNode extends vscode.TreeItem {
   constructor(
@@ -125,7 +126,6 @@ export class FindingNode extends vscode.TreeItem {
     this.vulnerabilityProbability = finding.severity as HotspotReviewPriority;
     this.severity = finding.severity;
     this.impactSeverity = finding['data']?.impactSeverity as ImpactSeverity;
-
     this.description = `${getFindingLabel(this.findingType)} (${this.ruleKey}) [Ln ${this.range.start.line + 1}, Col ${this.range.start.character}]`;
     this.iconPath = this.getIconForFinding();
     this.tooltip = getFindingTooltip(this.source, this.findingType);
@@ -235,6 +235,12 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       })
     );
 
+    context.subscriptions.push(
+      vscode.commands.registerCommand(Commands.CHANGE_DEPENDENCY_RISK_STATUS, (finding: FindingNode) => {
+        this._instance.changeDependencyRiskStatus(finding);
+      })
+    );
+
     // Initialize the context for the filter
     vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', getFilterContextValue(this._instance.activeFilter));
   }
@@ -257,9 +263,9 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         vscode.commands.executeCommand('SonarLint.ShowIssueFlows', finding.key, finding.fileUri);
       }
       vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
-    } else if (finding.findingType === FindingType.ScaIssue) {
-      this.client.scaIssueInvestigatedLocally();
-      this.client.openScaIssueOnServer(finding.fileUri, finding.key);
+    } else if (finding.findingType === FindingType.DependencyRisk) {
+      this.client.dependencyRiskInvestigatedLocally();
+      this.client.openDependencyRiskInBrowser(finding.fileUri, finding.key);
     }
   }
 
@@ -282,9 +288,9 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.updateFindingsForFile(fileUri, findingNodes, FindingType.Issue);
   }
 
-  updateScaIssues(scaIssuesPerFolder: PublishDiagnosticsParams) {
-    const findingNodes = this.convertScaIssuesToFindingNodes(scaIssuesPerFolder.uri, scaIssuesPerFolder.diagnostics);
-    this.updateFindingsForFile(scaIssuesPerFolder.uri, findingNodes, FindingType.ScaIssue);
+  updateDependencyRisks(dependencyRisksPerFolder: PublishDiagnosticsParams) {
+    const findingNodes = this.convertDependencyRisksToFindingNodes(dependencyRisksPerFolder.uri, dependencyRisksPerFolder.diagnostics);
+    this.updateFindingsForFile(dependencyRisksPerFolder.uri, findingNodes, FindingType.DependencyRisk);
   }
 
   private updateFindingsForFile(fileUri: string, newFindings: FindingNode[], findingType: FindingType) {
@@ -316,8 +322,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.Issue, convertVscodeDiagnosticToLspDiagnostic(diagnostic), isNotebookCellUri(fileUri)));
   }
 
-  private convertScaIssuesToFindingNodes(folderUri: string, diagnostics: Diagnostic[]): FindingNode[] {
-    return diagnostics.map(diagnostic => new FindingNode(folderUri, FindingType.ScaIssue, diagnostic));
+  private convertDependencyRisksToFindingNodes(folderUri: string, diagnostics: Diagnostic[]): FindingNode[] {
+    return diagnostics.map(diagnostic => new FindingNode(folderUri, FindingType.DependencyRisk, diagnostic));
   }
 
   getTreeItem(element: FindingsTreeViewItem): vscode.TreeItem {
@@ -527,5 +533,9 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       .reduce((total, findings) => {
         return total + findings.filter(finding => this.matchesFilter(finding)).length;
       }, 0);
+  }
+
+  async changeDependencyRiskStatus(finding: FindingNode) {
+    resolveIssueMultiStepInput(finding.fileUri, finding.key, finding.fileUri, false, true);
   }
 }

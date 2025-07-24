@@ -71,12 +71,17 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     this.sendNotification(protocol.OpenHotspotOnServer.type, { hotspotId, fileUri });
   }
 
-  openScaIssueOnServer(folderUri: string, issueId: string) {
-    this.sendNotification(protocol.OpenScaIssueOnServer.type, { folderUri, issueId });
+  openDependencyRiskInBrowser(folderUri: string, issueId: string) {
+    this.sendNotification(protocol.OpenDependencyRiskInBrowser.type, { folderUri, issueId });
   }
 
-  scaIssueInvestigatedLocally() {
-    this.sendNotification(protocol.ScaIssueInvestigatedLocally.type);
+  dependencyRiskInvestigatedLocally() {
+    this.sendNotification(protocol.DependencyRiskInvestigatedLocally.type);
+  }
+  
+
+  getDependencyRiskTransitions(dependencyRiskId: string): Promise<protocol.GetDependencyRiskTransitionsResponse> {
+    return this.sendRequest(protocol.GetDependencyRiskTransitions.type, { dependencyRiskId });
   }
 
   helpAndFeedbackLinkClicked(itemId: string) {
@@ -144,6 +149,15 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
       comment,
       isTaintIssue
     });
+  }
+
+  changeDependencyRiskStatus(
+    configurationScopeId: string,
+    dependencyRiskKey: string,
+    transition: string,
+    comment: string
+  ): Promise<void> {
+    return this.sendNotification(protocol.ChangeDependencyRiskStatus.type, { configurationScopeId, dependencyRiskKey, transition, comment });
   }
 
   reopenResolvedLocalIssues(configurationScopeId: string, relativePath: string, fileUri: string): Promise<void> {

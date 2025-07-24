@@ -478,8 +478,8 @@ export namespace PublishTaintVulnerabilitiesForFile {
   export const type = new lsp.NotificationType<PublishDiagnosticsParams>('sonarlint/publishTaintVulnerabilities');
 }
 
-export namespace PublishScaIssuesForFolder {
-  export const type = new lsp.NotificationType<PublishDiagnosticsParams>('sonarlint/publishScaIssues');
+export namespace PublishDependencyRisksForFolder {
+  export const type = new lsp.NotificationType<PublishDiagnosticsParams>('sonarlint/publishDependencyRisks');
 }
 
 export interface ShowHotspotLocationsParams {
@@ -500,17 +500,17 @@ export namespace OpenHotspotOnServer {
   export const type = new lsp.NotificationType<OpenHotspotParams>('sonarlint/openHotspotInBrowser');
 }
 
-export interface OpenScaIssueParams {
+export interface OpenDependencyRiskParams {
   folderUri: string;
   issueId: string;
 }
 
-export namespace OpenScaIssueOnServer {
-  export const type = new lsp.NotificationType<OpenScaIssueParams>('sonarlint/openScaIssueInBrowser');
+export namespace OpenDependencyRiskInBrowser {
+  export const type = new lsp.NotificationType<OpenDependencyRiskParams>('sonarlint/openDependencyRiskInBrowser');
 }
 
-export namespace ScaIssueInvestigatedLocally {
-  export const type = new lsp.NotificationType('sonarlint/scaIssueInvestigatedLocally');
+export namespace DependencyRiskInvestigatedLocally {
+  export const type = new lsp.NotificationType('sonarlint/dependencyRiskInvestigatedLocally');
 }
 
 export interface HelpAndFeedbackLinkClickedNotificationParams {
@@ -640,6 +640,31 @@ export interface SetIssueStatusParams {
   fileUri: string;
   comment: string;
   isTaintIssue: boolean;
+}
+
+export interface GetDependencyRiskTransitionsResponse {
+  transitions: string[];
+}
+
+export interface ChangeDependencyRiskStatusParams {
+  configurationScopeId: string;
+  dependencyRiskKey: string;
+  transition: string;
+  comment: string;
+}
+
+export interface GetDependencyRiskTransitionsParams {
+  dependencyRiskId: string;
+}
+
+export namespace GetDependencyRiskTransitions {
+  export const type = new lsp.RequestType<GetDependencyRiskTransitionsParams, GetDependencyRiskTransitionsResponse, null>(
+    'sonarlint/getDependencyRiskTransitions'
+  );
+}
+
+export namespace ChangeDependencyRiskStatus {
+  export const type = new lsp.NotificationType<ChangeDependencyRiskStatusParams>('sonarlint/changeDependencyRiskStatus');
 }
 
 export interface AssistCreatingConnectionParams {

@@ -10,7 +10,8 @@
 // Heavily inspired by https://github.com/microsoft/vscode-extension-samples/tree/main/quickinput-sample
 // Copyright (c) Microsoft Corporation.
 
-import { Disposable, QuickInput, QuickPickItem, window } from 'vscode';
+import { Disposable, QuickInput, window } from 'vscode';
+import { IndexQP } from '../cfamily/cfamily';
 
 export class MultiStepInput {
 
@@ -35,12 +36,12 @@ export class MultiStepInput {
     }
   }
 
-  async showQuickPick(params: QuickPickParameters): Promise<QuickPickItem> {
+  async showQuickPick(params: QuickPickParameters): Promise<IndexQP> {
     const disposables: Disposable[] = [];
     const { title, step, totalSteps, items, placeholder } = params;
     try {
-      return await new Promise<QuickPickItem>((resolve) => {
-        const input = window.createQuickPick<QuickPickItem>();
+      return await new Promise<IndexQP>((resolve) => {
+        const input = window.createQuickPick<IndexQP>();
         input.title = title;
         input.step = step;
         input.totalSteps = totalSteps;
@@ -98,7 +99,7 @@ interface QuickPickParameters {
   title: string;
   step: number;
   totalSteps: number;
-  items: QuickPickItem[];
+  items: IndexQP[];
   placeholder: string;
 }
 

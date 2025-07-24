@@ -23,7 +23,7 @@ export enum FindingType {
   SecurityHotspot = 'hotspot',
   TaintVulnerability = 'taint',
   Issue = 'issue',
-  ScaIssue = 'sca'
+  DependencyRisk = 'dependencyRisk'
 }
 
 export enum FilterType {
@@ -58,34 +58,29 @@ export interface Finding {
 
 export function getFindingLabel(type: FindingType): string {
   switch (type) {
-    case FindingType.ScaIssue:
+    case FindingType.DependencyRisk:
       return 'Dependency Risk';
     case FindingType.TaintVulnerability:
       return 'Taint Vulnerability';
     case FindingType.SecurityHotspot:
       return 'Security Hotspot';
     default:
-      return 'Issue';
+      return '';
   }
 }
 
 export function getFindingTooltip(source: FindingSource, type: FindingType): string {
   const serverName = source === FindingSource.Latest_SonarCloud ? 'SonarQube Cloud' : 'SonarQube Server';
-  
+
   switch (type) {
-    case FindingType.ScaIssue:
+    case FindingType.DependencyRisk:
       return `This Dependency Risk was detected by ${serverName}`;
     case FindingType.TaintVulnerability:
       return `This Taint Vulnerability was detected by ${serverName}`;
     case FindingType.SecurityHotspot:
-      switch (source) {
-        case FindingSource.Local_Hotspot:
-          return 'This Security Hotspot only exists locally';
-        case FindingSource.Remote_Hotspot:
-          return 'This Security Hotspot exists on remote project';
-        default:
-          return '';
-      }
+      return source === FindingSource.Local_Hotspot
+        ? 'This Security Hotspot only exists locally'
+        : 'This Security Hotspot exists on remote project';
     default:
       return '';
   }
@@ -129,10 +124,15 @@ export type FindingContextValue =
   | 'AICodeFixableTaintItem'
   | 'AICodeFixableIssueItem'
   | 'issueItem'
-  | 'scaIssueItem'
+  | 'dependencyRiskItem'
   | 'notebookIssueItem';
 
-export function getContextValueForFinding(source: FindingSource, type: FindingType, isAiCodeFixable: boolean, isNotebookFinding: boolean): FindingContextValue {
+export function getContextValueForFinding(
+  source: FindingSource,
+  type: FindingType,
+  isAiCodeFixable: boolean,
+  isNotebookFinding: boolean
+): FindingContextValue {
   switch (source) {
     case FindingSource.Remote_Hotspot:
       return 'knownHotspotItem';
@@ -140,8 +140,8 @@ export function getContextValueForFinding(source: FindingSource, type: FindingTy
       return 'newHotspotItem';
     case FindingSource.Latest_SonarCloud:
     case FindingSource.Latest_SonarQube:
-      if (type === FindingType.ScaIssue) {
-        return 'scaIssueItem';
+      if (type === FindingType.DependencyRisk) {
+        return 'dependencyRiskItem';
       } else {
         return isAiCodeFixable ? 'AICodeFixableTaintItem' : 'taintVulnerabilityItem';
       }
@@ -202,31 +202,35 @@ export function getFilterDisplayName(filter: FilterType): string {
 }
 
 export async function selectAndApplyCodeAction(codeActions: vscode.CodeAction[]) {
-  const selection : IndexQP | undefined = await vscode.window.showQuickPick(codeActions.map((qf, index) => ({
-    label: qf.title,
-    detail: ``,
-    index
-  })), {
-    title: 'Select an Action to Apply',
-    placeHolder: 'What would you like to do?',
-  });
+  const selection: IndexQP | undefined = await vscode.window.showQuickPick(
+    codeActions.map((qf, index) => ({
+      label: qf.title,
+      detail: ``,
+      index
+    })),
+    {
+      title: 'Select an Action to Apply',
+      placeHolder: 'What would you like to do?'
+    }
+  );
 
   if (selection) {
     const selectedAction = codeActions[selection.index];
-    
+
     // If the code action has edits, it's a QuickFix. apply them
     if (selectedAction.edit) {
       try {
         await vscode.workspace.applyEdit(selectedAction.edit);
-        await vscode.commands.executeCommand(selectedAction.command.command, ...(selectedAction.command.arguments || []));
+        await vscode.commands.executeCommand(
+          selectedAction.command.command,
+          ...(selectedAction.command.arguments || [])
+        );
       } catch (error) {
         vscode.window.showErrorMessage(`Error applying quick fix: ${error.message}`);
       }
-    }
-    else if (selectedAction.command) {
+    } else if (selectedAction.command) {
       await vscode.commands.executeCommand(selectedAction.command.command, ...(selectedAction.command.arguments || []));
-    }
-    else {
+    } else {
       vscode.window.showWarningMessage('Selected Code Action has no edit or command to execute.');
     }
   }
@@ -234,4 +238,11 @@ export async function selectAndApplyCodeAction(codeActions: vscode.CodeAction[])
 
 export function isNotebookCellUri(uri: string): boolean {
   return uri.startsWith(NOTEBOOK_CELL_URI_SCHEME);
+}
+
+export enum DependencyRiskTransition {
+  CONFIRM = 'Confirm',
+  REOPEN = 'Reopen',
+  SAFE = 'Safe',
+  ACCEPT = 'Accept'
 }

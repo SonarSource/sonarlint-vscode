@@ -544,8 +544,8 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(
       Commands.RESOLVE_ISSUE,
-      (workspaceUri: string, issueKey: string, fileUri: string, isTaintIssue: boolean) =>
-        resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue)
+      (workspaceUri: string, issueKey: string, fileUri: string, isTaintIssue: boolean, isDependencyRisk = false) =>
+        resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue, isDependencyRisk)
     )
   );
   context.subscriptions.push(
@@ -696,8 +696,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri));
   });
 
-  languageClient.onNotification(protocol.PublishScaIssuesForFolder.type, async scaIssuesPerFolder => {
-    findingsTreeDataProvider.updateScaIssues(scaIssuesPerFolder);
+  languageClient.onNotification(protocol.PublishDependencyRisksForFolder.type, async dependencyRisksPerFolder => {
+    findingsTreeDataProvider.updateDependencyRisks(dependencyRisksPerFolder);
   });
 
   languageClient.onRequest(
