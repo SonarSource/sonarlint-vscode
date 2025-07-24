@@ -256,6 +256,37 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       expect(findings[0].key).to.equal(TEST_KEY);
     });
 
+    test('should handle files outside workspace folders without crashing', () => {
+      const outsideWorkspaceUri = 'file:///outside/workspace/file.js';
+      const diagnostics: vscode.Diagnostic[] = [
+        createMockVscodeDiagnostic({
+          source: FindingSource.SonarQube,
+          key: TEST_KEY,
+          message: TEST_MESSAGE
+        })
+      ];
+
+      // Mock workspace folder lookup to return undefined (file outside workspace)
+      const getWorkspaceFolderStub = sinon.stub(vscode.workspace, 'getWorkspaceFolder');
+      getWorkspaceFolderStub.returns(undefined);
+
+      // This should not throw an error
+      expect(() => {
+        underTest.updateIssues(outsideWorkspaceUri, diagnostics);
+      }).to.not.throw();
+
+      // Verify that refresh was called
+      expect(refreshSpy.calledOnce).to.be.true;
+      
+      // Verify that findings were still added to cache
+      const findings = (underTest as any).getFindingsForFile(outsideWorkspaceUri);
+      expect(findings).to.have.length(1);
+      expect(findings[0].findingType).to.equal(FindingType.Issue);
+      expect(findings[0].key).to.equal(TEST_KEY);
+
+      getWorkspaceFolderStub.restore();
+    });
+
     test('should replace existing issues when updating', () => {
       // First, add some existing findings
       const existingFindings = [
