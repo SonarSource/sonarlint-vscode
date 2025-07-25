@@ -8,7 +8,6 @@
 
 import { capitalize } from 'lodash';
 import * as VSCode from 'vscode';
-import { SonarLintDocumentation } from '../commons';
 import { ShowRuleDescriptionParams } from '../lsp/protocol';
 import * as util from '../util/util';
 import { clean, escapeHtml, ResourceResolver } from '../util/webview';
@@ -99,7 +98,7 @@ function computeRuleDescPanelContent(
 function renderCleanCodeAttribute(rule: ShowRuleDescriptionParams) {
   const categoryLabel = escapeHtml(rule.severityDetails.cleanCodeAttributeCategory);
   const attributeLabel = escapeHtml(rule.severityDetails.cleanCodeAttribute);
-  return `<div class="clean-code-attribute capsule" title="Clean Code attributes are characteristics code needs to have to be considered clean.">
+  return `<div class="clean-code-attribute capsule" title="Coding attributes are characteristics that, when followed, ensure strong code quality and security.">
   <span class="attribute-category">${categoryLabel} issue</span>
   <span class="attribute">${attributeLabel}</span>
 </div>`;
@@ -151,14 +150,10 @@ function renderTaxonomyInfo(rule: ShowRuleDescriptionParams, resolver: ResourceR
     // Clean Code taxonomy
     const renderedImpacts = Object.entries(rule.severityDetails.impacts).map(([softwareQuality, severity]) => renderImpact(softwareQuality, severity, resolver));
     return `<div class="taxonomy">
-  ${renderCleanCodeAttribute(rule)}
-  &nbsp;
-  ${renderedImpacts.join('&nbsp;')}
-  &nbsp;
-  <a href="${SonarLintDocumentation.CLEAN_CODE_CONCEPTS}" class="capsule"
-    title="Check out the Clean Code concepts in the SonarQube for VS Code documentation"
-    rel="external glossary" target="_blank" referrerpolicy="no-referrer">What is clean code?</a>
-</div>`;
+      ${renderCleanCodeAttribute(rule)}
+      &nbsp;
+      ${renderedImpacts.join('&nbsp;')}
+    </div>`;
   } else {
     // Old type + severity taxonomy
     return `<div class="taxonomy">
