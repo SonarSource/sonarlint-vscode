@@ -35,14 +35,14 @@ const SAVE_CONNECTION_COMMAND = 'saveConnection';
 const ORGANIZATION_LIST_RECEIVED_COMMAND = 'organizationListReceived';
 
 const SONARQUBE_DESCRIPTION =
-  `An <b>open-source, self-managed</b> tool that easily integrates into the developers' CI/CD pipeline<br>
-  and DevOps platform to systematically help developers and organizations deliver Clean Code.
+  `A <b>self-managed</b> tool that easily integrates into the developers' CI/CD pipeline<br>
+  and DevOps platform to systematically help you deliver high-quality, secure code.
   <br><br>
   Discover which offer is better for your team <a id="sonarQubeEditionsDownloads" href="#">here</a>.`;
 
 const SONARCLOUD_DESCRIPTION =
   `A <b>Software-as-a-Service (SaaS)</b> tool that easily integrates into the cloud DevOps platforms<br>
-  and extends the CI/CD workflow to systematically help developers and organizations deliver Clean Code.
+  and extends the CI/CD workflow to systematically help you deliver high-quality, secure code.
   <br><br>
   Explore SonarQube Cloud with our <a id="sonarqubeCloudFreeSignUp" href="#">free tier</a>.`;
 

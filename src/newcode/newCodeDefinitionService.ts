@@ -47,18 +47,9 @@ export class NewCodeDefinitionService {
   }
 
   createNewCodeDefinitionStatusBarItem(context: VSCode.ExtensionContext) {
-    context.subscriptions.push(VSCode.commands.registerCommand(Commands.NEW_CODE_DEFINITION, () => {
-      const toggleLabel = `Focus on ${this.focusOnNewCode ? 'overall code' : 'new code'}`;
-      VSCode.window.showQuickPick([{ label: toggleLabel }, { label: `Learn how to deliver clean code with Clean as You Code` }])
-        .then(async item => {
-          if (item.label === toggleLabel) {
-            await VSCode.workspace.getConfiguration('sonarlint')
-              .update('focusOnNewCode', !this.focusOnNewCode, VSCode.ConfigurationTarget.Global);
-          }
-          if (item.label === `Learn how to deliver clean code with Clean as You Code`) {
-            VSCode.env.openExternal(VSCode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/investigating-issues/#focusing-on-new-code'));
-          }
-        });
+    context.subscriptions.push(VSCode.commands.registerCommand(Commands.NEW_CODE_DEFINITION, async () => {
+      await VSCode.workspace.getConfiguration('sonarlint')
+        .update('focusOnNewCode', !this.focusOnNewCode, VSCode.ConfigurationTarget.Global);
     }));
     this.focusOnNewCode = VSCode.workspace.getConfiguration().get('sonarlint.focusOnNewCode', false);
     this.newCodeStatusBarItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 0);
@@ -90,9 +81,9 @@ export class NewCodeDefinitionService {
   private updateStatusBarTooltip(newCodeDefinition: NewCodeDefinition) {
     let newCodeDefinitionMessage = '';
     if (newCodeDefinition && this.focusOnNewCode) {
-      newCodeDefinitionMessage = `Only issues in new code are highlighted.\n\nFocusing on new code helps you practice Clean as You Code.\n\nNew Code Definition: ${newCodeDefinition.newCodeDefinitionOrMessage}`;
+      newCodeDefinitionMessage = `Only issues in new code are highlighted.\n\nNew Code Definition: ${newCodeDefinition.newCodeDefinitionOrMessage}`;
     } else if (!this.focusOnNewCode) {
-      newCodeDefinitionMessage = 'All issues are shown.\n\nSet SonarQube focus on new code to see only issues in recently added or changed code. This will help you practice Clean as You Code.';
+      newCodeDefinitionMessage = 'All issues are shown.\n\nSet SonarQube focus on new code to see only issues in recently added or changed code.';
     } else if (!newCodeDefinition) {
       newCodeDefinitionMessage = 'There is no New Code Definition for the project';
     }
