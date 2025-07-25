@@ -1,3 +1,7 @@
+## 4.28
+
+* Update JS/TS/CSS analyzer 11.0 -> [11.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021477%20ORDER%20BY%20created%20ASC), Update Node.js min required versions to "^18.20.0 || ^20.12.0 || >=22.11.0"
+
 ## 4.27
 
 * In addition to the traditional PROBLEMS view, it is now possible to browse all SonarQube issues in a dedicated SonarQube view
