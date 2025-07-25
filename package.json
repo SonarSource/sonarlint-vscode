@@ -1266,7 +1266,7 @@
     {
       "groupId": "org.sonarsource.java",
       "artifactId": "sonar-java-plugin",
-      "version": "8.17.1.39878",
+      "version": "8.18.0.40025",
       "output": "analyzers/sonarjava.jar"
     },
     {
