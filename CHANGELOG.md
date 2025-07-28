@@ -2,6 +2,7 @@
 
 * Update JS/TS/CSS analyzer 11.0 -> [11.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021477%20ORDER%20BY%20created%20ASC), Update Node.js min required versions to "^18.20.0 || ^20.12.0 || >=22.11.0"
 * Update Java analyzer 8.17 -> [8.18](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021057%20ORDER%20BY%20created%20ASC)
+* Update Python analyzer 5.6 -> [5.7](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021676%20ORDER%20BY%20created%20ASC), Individual rules can be suppressed by NOSONAR comment
 
 ## 4.27
 
