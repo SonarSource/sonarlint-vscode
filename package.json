@@ -1206,7 +1206,7 @@
     "zlib": "^1.0.5"
   },
   "devDependencies": {
-    "@cyclonedx/cyclonedx-npm": "2.0.0",
+    "@cyclonedx/cyclonedx-npm": "^4.0.0",
     "@sentry/webpack-plugin": "^2.22.7",
     "@types/chai": "^4.3.9",
     "@types/follow-redirects": "^1.14.4",
