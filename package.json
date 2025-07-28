@@ -1181,7 +1181,7 @@
   },
   "dependencies": {
     "@openpgp/web-stream-tools": "^0.1.3",
-    "@sentry/node": "^8.44.0",
+    "@sentry/node": "^9.42.0",
     "@vscode/codicons": "^0.0.36",
     "@vscode/webview-ui-toolkit": "1.0.0",
     "@xmldom/xmldom": "^0.9.6",
@@ -1207,7 +1207,7 @@
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^4.0.0",
-    "@sentry/webpack-plugin": "^2.22.7",
+    "@sentry/webpack-plugin": "^4.0.1",
     "@types/chai": "^4.3.9",
     "@types/follow-redirects": "^1.14.4",
     "@types/lodash": "^4.14.194",
