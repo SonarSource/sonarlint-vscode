@@ -7,6 +7,7 @@
 * Update text and secrets analyzer 2.25 -> [2.26](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021543%20ORDER%20BY%20created%20ASC)
 * Update CFamily analyzer 6.68 -> [6.69](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D20783%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC) -> [6.70](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D21812%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC)
 * Update IaC analyzer 1.47 -> [1.48](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2019926%20ORDER%20BY%20created%20ASC)
+* Update C# analyzer 10.14 -> [10.15](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.15.0.120848)
 
 ## 4.27
 
