@@ -13,7 +13,7 @@ import { IssueService } from './issue';
 import { showChangeStatusConfirmationDialog } from '../util/showMessage';
 import { logToSonarLintOutput } from '../util/logging';
 import { IndexQP } from '../cfamily/cfamily';
-import { DependencyRiskTransition } from '../findings/findingsTreeDataProviderUtil';
+import { DependencyRiskTransition } from '../findings/findingTypes/dependencyRiskNode';
 
 
 export async function resolveIssueMultiStepInput(

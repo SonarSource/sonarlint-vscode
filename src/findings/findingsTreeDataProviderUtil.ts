@@ -13,11 +13,15 @@ import { IndexQP } from '../cfamily/cfamily';
 
 export const NOTEBOOK_CELL_URI_SCHEME = 'vscode-notebook-cell';
 
-export enum HotspotReviewPriority {
-  High = 1,
-  Medium = 2,
-  Low = 3
-}
+export type FindingContextValue =
+  | 'newHotspotItem'
+  | 'knownHotspotItem'
+  | 'taintVulnerabilityItem'
+  | 'AICodeFixableTaintItem'
+  | 'AICodeFixableIssueItem'
+  | 'issueItem'
+  | 'dependencyRiskItem'
+  | 'notebookIssueItem';
 
 export enum FindingType {
   SecurityHotspot = 'hotspot',
@@ -40,50 +44,6 @@ export enum FindingSource {
   Latest_SonarCloud = 'Latest SonarQube Cloud Analysis', // taint or sca
   Remote_Hotspot = 'remote-hotspot', // hotspot that matched remote one; Still on-the-fly analysis
   Local_Hotspot = 'local-hotspot' // locally detected hotspot that has not matched with server one
-}
-
-export interface Finding {
-  key: string;
-  serverIssueKey?: string;
-  contextValue: FindingContextValue;
-  type: FindingType;
-  source: FindingSource;
-  severity?: number;
-  vulnerabilityProbability?: HotspotReviewPriority;
-  message: string;
-  ruleKey: string;
-  fileUri: string;
-  status: number;
-}
-
-export function getFindingLabel(type: FindingType): string {
-  switch (type) {
-    case FindingType.DependencyRisk:
-      return 'Dependency Risk';
-    case FindingType.TaintVulnerability:
-      return 'Taint Vulnerability';
-    case FindingType.SecurityHotspot:
-      return 'Security Hotspot';
-    default:
-      return '';
-  }
-}
-
-export function getFindingTooltip(source: FindingSource, type: FindingType): string {
-  const serverName = source === FindingSource.Latest_SonarCloud ? 'SonarQube Cloud' : 'SonarQube Server';
-
-  switch (type) {
-    case FindingType.DependencyRisk:
-      return `This Dependency Risk was detected by ${serverName}`;
-    case FindingType.TaintVulnerability:
-      return `This Taint Vulnerability was detected by ${serverName}`;
-    case FindingType.SecurityHotspot:
-      return source === FindingSource.Local_Hotspot
-        ? 'This Security Hotspot only exists locally'
-        : 'This Security Hotspot exists on remote project';
-    default:
-      return '';
-  }
 }
 
 export const impactSeverityToIcon = (impactSeverity: ImpactSeverity): { light: vscode.Uri; dark: vscode.Uri } => {
@@ -116,47 +76,6 @@ export const impactSeverityToIcon = (impactSeverity: ImpactSeverity): { light: v
       };
   }
 };
-
-export type FindingContextValue =
-  | 'newHotspotItem'
-  | 'knownHotspotItem'
-  | 'taintVulnerabilityItem'
-  | 'AICodeFixableTaintItem'
-  | 'AICodeFixableIssueItem'
-  | 'issueItem'
-  | 'dependencyRiskItem'
-  | 'notebookIssueItem';
-
-export function getContextValueForFinding(
-  source: FindingSource,
-  type: FindingType,
-  isAiCodeFixable: boolean,
-  isNotebookFinding: boolean
-): FindingContextValue {
-  switch (source) {
-    case FindingSource.Remote_Hotspot:
-      return 'knownHotspotItem';
-    case FindingSource.Local_Hotspot:
-      return 'newHotspotItem';
-    case FindingSource.Latest_SonarCloud:
-    case FindingSource.Latest_SonarQube:
-      if (type === FindingType.DependencyRisk) {
-        return 'dependencyRiskItem';
-      } else {
-        return isAiCodeFixable ? 'AICodeFixableTaintItem' : 'taintVulnerabilityItem';
-      }
-    case FindingSource.SonarQube:
-      if (isNotebookFinding) {
-        return 'notebookIssueItem';
-      } else if (isAiCodeFixable) {
-        return 'AICodeFixableIssueItem';
-      } else {
-        return 'issueItem';
-      }
-    default:
-      return 'issueItem';
-  }
-}
 
 export function isFileOpen(fileUri: string): boolean {
   return vscode.workspace.textDocuments.some(doc => doc.uri.toString() === fileUri);
@@ -238,11 +157,4 @@ export async function selectAndApplyCodeAction(codeActions: vscode.CodeAction[])
 
 export function isNotebookCellUri(uri: string): boolean {
   return uri.startsWith(NOTEBOOK_CELL_URI_SCHEME);
-}
-
-export enum DependencyRiskTransition {
-  CONFIRM = 'Confirm',
-  REOPEN = 'Reopen',
-  SAFE = 'Safe',
-  ACCEPT = 'Accept'
 }

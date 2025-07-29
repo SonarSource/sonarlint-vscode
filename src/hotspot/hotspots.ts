@@ -37,8 +37,8 @@ import {
   resolveExtensionFile
 } from '../util/util';
 import { computeHotspotContextPanelContent } from './hotspotContextPanel';
-import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from '../findings/findingsTreeDataProvider';
-import { HotspotReviewPriority } from '../findings/findingsTreeDataProviderUtil';
+import { FindingsTreeDataProvider, FindingsTreeViewItem } from '../findings/findingsTreeDataProvider';
+import { HotspotNode, HotspotReviewPriority } from '../findings/findingTypes/hotspotNode';
 
 export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 
@@ -66,7 +66,7 @@ export const showSecurityHotspot = async (
     }
     const editor = await vscode.window.showTextDocument(documentUri);
     activeHotspot = remoteHotspot;
-    revealFileInTreeView(remoteHotspot, allFindingsView, findingsTreeDataProvider);
+    await revealFileInTreeView(remoteHotspot, allFindingsView, findingsTreeDataProvider);
     await highlightLocation(editor);
     vscode.commands.executeCommand(Commands.SHOW_HOTSPOT_DESCRIPTION);
   }
@@ -90,13 +90,14 @@ Please make sure that the right folder is open and bound to the right project on
     });
 }
 
-function revealFileInTreeView(
+async function revealFileInTreeView(
   hotspot: RemoteHotspot,
   allFindingsView: vscode.TreeView<FindingsTreeViewItem>,
   findingsTreeDataProvider: FindingsTreeDataProvider
 ) {
   const fileUri = getUriFromRelativePath(hotspot.ideFilePath, vscode.workspace.workspaceFolders[0]);
-  const fileToHighlight = findingsTreeDataProvider.getRootFiles().find(fileNode => fileNode.fileUri === fileUri);
+  const rootFiles = await findingsTreeDataProvider.getRootFiles();
+  const fileToHighlight = rootFiles.find(fileNode => fileNode.fileUri === fileUri);
   allFindingsView.reveal(fileToHighlight, { focus: true });
 }
 
@@ -280,7 +281,7 @@ export function formatDetectedHotspotStatus(statusIndex: number) {
   return statusIndex === ExtendedHotspotStatus.ToReview ? 'To review' : ExtendedHotspotStatus[statusIndex].toString();
 }
 
-export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, hotspot: FindingNode) {
+export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, hotspot: HotspotNode) {
   if (!hotspotDetailsPanel) {
     hotspotDetailsPanel = vscode.window.createWebviewPanel(
       'sonarlint.DiagContext',

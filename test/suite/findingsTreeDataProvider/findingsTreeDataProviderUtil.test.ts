@@ -9,39 +9,32 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
-import { 
-  getContextValueForFinding, 
+import {
   FindingSource,
   getFilterContextValue,
   getFilterDisplayName,
   FilterType,
   selectAndApplyCodeAction,
-  FindingType,
-} from '../../src/findings/findingsTreeDataProviderUtil';
+} from '../../../src/findings/findingsTreeDataProviderUtil';
+import { getContextValueForFinding } from '../../../src/findings/findingTypes/findingNode';
 
 suite('Findings Tree Data Provider Util Test Suite', () => {
 
   suite('getContextValueForFinding', () => {
     test('should handle boolean parameter combinations correctly', () => {
       const testCases = [
-        { source: FindingSource.SonarQube, isAiCodeFixable: false, isNotebookFinding: false, expected: 'issueItem' },
-        { source: FindingSource.SonarQube, isAiCodeFixable: true, isNotebookFinding: false, expected: 'AICodeFixableIssueItem' },
-        { source: FindingSource.SonarQube, isAiCodeFixable: false, isNotebookFinding: true, expected: 'notebookIssueItem' },
-        { source: FindingSource.SonarQube, isAiCodeFixable: true, isNotebookFinding: true, expected: 'notebookIssueItem' },
-        { source: FindingSource.Latest_SonarQube, isAiCodeFixable: false, isNotebookFinding: false, expected: 'taintVulnerabilityItem' },
-        { source: FindingSource.Latest_SonarQube, isAiCodeFixable: true, isNotebookFinding: false, expected: 'AICodeFixableTaintItem' },
-        { source: FindingSource.Latest_SonarCloud, isAiCodeFixable: false, isNotebookFinding: false, expected: 'taintVulnerabilityItem' },
-        { source: FindingSource.Latest_SonarCloud, isAiCodeFixable: true, isNotebookFinding: false, expected: 'AICodeFixableTaintItem' },
-        { source: FindingSource.Remote_Hotspot, isAiCodeFixable: false, isNotebookFinding: false, expected: 'knownHotspotItem' },
-        { source: FindingSource.Remote_Hotspot, isAiCodeFixable: true, isNotebookFinding: false, expected: 'knownHotspotItem' },
-        { source: FindingSource.Local_Hotspot, isAiCodeFixable: false, isNotebookFinding: false, expected: 'newHotspotItem' },
-        { source: FindingSource.Local_Hotspot, isAiCodeFixable: true, isNotebookFinding: false, expected: 'newHotspotItem' }
+        { source: FindingSource.SonarQube, isAiCodeFixable: false, expected: 'issueItem' },
+        { source: FindingSource.SonarQube, isAiCodeFixable: true, expected: 'AICodeFixableIssueItem' },
+        { source: FindingSource.Latest_SonarQube, isAiCodeFixable: false, expected: 'taintVulnerabilityItem' },
+        { source: FindingSource.Latest_SonarQube, isAiCodeFixable: true, expected: 'AICodeFixableTaintItem' },
+        { source: FindingSource.Latest_SonarCloud, isAiCodeFixable: false, expected: 'taintVulnerabilityItem' },
+        { source: FindingSource.Latest_SonarCloud, isAiCodeFixable: true, expected: 'AICodeFixableTaintItem' }
       ];
 
-      testCases.forEach(({ source, isAiCodeFixable, isNotebookFinding, expected }) => {
-        const result = getContextValueForFinding(source, FindingType.Issue, isAiCodeFixable, isNotebookFinding);
+      testCases.forEach(({ source, isAiCodeFixable, expected }) => {
+        const result = getContextValueForFinding(source, isAiCodeFixable);
         expect(result).to.equal(expected, 
-          `Failed for source: ${source}, isAiCodeFixable: ${isAiCodeFixable}, isNotebookFinding: ${isNotebookFinding}`);
+          `Failed for source: ${source}, isAiCodeFixable: ${isAiCodeFixable}`);
           });
   });
 

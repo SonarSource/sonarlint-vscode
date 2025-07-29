@@ -27,7 +27,7 @@ import * as protocol from '../../src/lsp/protocol';
 import { getWorkspaceFolder } from '../testutil';
 import * as sinon from 'sinon';
 import { FindingsTreeDataProvider, FindingsTreeViewItem } from '../../src/findings/findingsTreeDataProvider';
-import { HotspotReviewPriority } from '../../src/findings/findingsTreeDataProviderUtil';
+import { HotspotReviewPriority } from '../../src/findings/findingTypes/hotspotNode';
 
 const templateHotspot: RemoteHotspot = {
   message: 'Hotspot here!',
@@ -71,7 +71,7 @@ const mockFindingsView = {
 } as vscode.TreeView<FindingsTreeViewItem>;
 
 const mockFindingsTreeDataProvider = {
-  getRootFiles() {
+  async getRootFiles() {
     return [];
   },
 
@@ -79,7 +79,7 @@ const mockFindingsTreeDataProvider = {
     return null;
   },
 
-  getChildren() {
+  async getChildren() {
     return [];
   }
 } as FindingsTreeDataProvider;
