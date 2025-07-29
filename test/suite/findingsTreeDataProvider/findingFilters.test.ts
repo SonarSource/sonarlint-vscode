@@ -10,10 +10,12 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
-import { FindingsTreeDataProvider, FindingNode, FindingsFileNode } from '../../../src/findings/findingsTreeDataProvider';
+import { FindingsTreeDataProvider } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource, FilterType } from '../../../src/findings/findingsTreeDataProviderUtil';
 import { ImpactSeverity } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
+import { FindingNode } from '../../../src/findings/findingTypes/findingNode';
+import { FindingsFileNode } from '../../../src/findings/findingsFileNode';
 
 const TEST_FILE_URI = 'file:///test/file.js';
 const TEST_FILE_URI_2 = 'file:///test/file2.js';
@@ -44,6 +46,7 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
       dispose: sinon.stub()
     });
     
+
     mockContext = {
       subscriptions: [],
       workspaceState: {
@@ -54,6 +57,19 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
 
     // Stub VS Code API calls
     executeCommandStub = sinon.stub(vscode.commands, 'executeCommand');
+
+    const mockFs = {
+      stat: sinon.stub().resolves({
+        type: vscode.FileType.File
+      }),
+      readFile: sinon.stub().resolves(new Uint8Array()),
+      writeFile: sinon.stub().resolves(),
+      delete: sinon.stub().resolves(),
+      rename: sinon.stub().resolves(),
+      copy: sinon.stub().resolves(),
+      readDirectory: sinon.stub().resolves([])
+    };
+
     sinon.stub(vscode, 'workspace').value({
       textDocuments: [
         { uri: { toString: () => TEST_OPEN_FILE_URI } } as vscode.TextDocument
@@ -67,7 +83,8 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
         uri: vscode.Uri.parse('file:///test'),
         name: 'test-workspace',
         index: 0
-      }]
+      }],
+      fs: mockFs
     });
     sinon.stub(vscode, 'window').value({
       activeTextEditor: {
@@ -277,7 +294,7 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
   });
 
   suite('getRootFiles with filtering', () => {
-    test('should return only files with filtered findings', () => {
+    test('should return only files with filtered findings', async () => {
       // Add findings to multiple files
       const file1Findings = [
         createMockFindingNode({ findingType: FindingType.Issue, key: 'issue1', isAiCodeFixable: true }),
@@ -291,28 +308,28 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
       (underTest as any).findingsCache.set(TEST_FILE_URI_2, file2Findings);
 
       underTest.setFilter(FilterType.Fix_Available);
-      const rootFiles = underTest.getRootFiles();
-      
+      const rootFiles = await underTest.getRootFiles();
+
       expect(rootFiles).to.have.length(1); // Only file1 has findings with fixes
       expect(rootFiles[0].fileUri).to.equal(TEST_FILE_URI);
       expect(rootFiles[0].findingsCount).to.equal(1); // Only 1 finding matches filter
     });
 
-    test('should return empty array when no findings match filter', () => {
+    test('should return empty array when no findings match filter', async () => {
       const findings = [
         createMockFindingNode({ findingType: FindingType.Issue, key: 'issue1', isAiCodeFixable: false })
       ];
       (underTest as any).findingsCache.set(TEST_FILE_URI, findings);
 
       underTest.setFilter(FilterType.Fix_Available);
-      const rootFiles = underTest.getRootFiles();
+      const rootFiles = await underTest.getRootFiles();
       
       expect(rootFiles).to.have.length(0);
     });
   });
 
   suite('getNewIssuesFiles with filtering', () => {
-    test('should return only new issues files with filtered findings', () => {
+    test('should return only new issues files with filtered findings', async () => {
       const newFindings = [
         createMockFindingNode({ 
           findingType: FindingType.Issue, 
@@ -339,7 +356,7 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
       (underTest as any).findingsCache.set(TEST_FILE_URI, [...newFindings, ...olderFindings]);
 
       underTest.setFilter(FilterType.Fix_Available);
-      const newIssuesFiles = (underTest as any).getNewIssuesFiles();
+      const newIssuesFiles = await (underTest as any).getNewIssuesFiles();
       
       expect(newIssuesFiles).to.have.length(1);
       expect(newIssuesFiles[0].fileUri).to.equal(TEST_FILE_URI);
@@ -348,7 +365,7 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
   });
 
   suite('getOlderIssuesFiles with filtering', () => {
-    test('should return only older issues files with filtered findings', () => {
+    test('should return only older issues files with filtered findings', async () => {
       const newFindings = [
         createMockFindingNode({ 
           findingType: FindingType.Issue, 
@@ -375,7 +392,7 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
       (underTest as any).findingsCache.set(TEST_FILE_URI, [...newFindings, ...olderFindings]);
 
       underTest.setFilter(FilterType.Fix_Available);
-      const olderIssuesFiles = (underTest as any).getOlderIssuesFiles();
+      const olderIssuesFiles = await (underTest as any).getOlderIssuesFiles();
       
       expect(olderIssuesFiles).to.have.length(1);
       expect(olderIssuesFiles[0].fileUri).to.equal(TEST_FILE_URI);
@@ -384,7 +401,7 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
   });
 
   suite('getChildren with filtering', () => {
-    test('should return filtered findings for a file', () => {
+    test('should return filtered findings for a file', async () => {
       const findings = [
         createMockFindingNode({ 
           findingType: FindingType.Issue, 
@@ -402,17 +419,17 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
           isAiCodeFixable: true 
         })
       ];
-      const fileNode = new FindingsFileNode(TEST_FILE_URI, 3, undefined, false);
+      const fileNode = new FindingsFileNode(TEST_FILE_URI, 3, undefined);
 
       (underTest as any).findingsCache.set(TEST_FILE_URI, findings);
 
       underTest.setFilter(FilterType.Fix_Available);
-      const filteredFindings = underTest.getChildren(fileNode);
+      const filteredFindings = await underTest.getChildren(fileNode);
       
       expect(filteredFindings).to.have.length(2); // Only 2 findings have fixes
     });
 
-    test('should return filtered findings with category filter', () => {
+    test('should return filtered findings with category filter', async () => {
       const newFindings = [
         createMockFindingNode({ 
           findingType: FindingType.Issue, 
@@ -435,15 +452,15 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
           isAiCodeFixable: true 
         })
       ];
-      const newFindingsFileNode = new FindingsFileNode(TEST_FILE_URI, 3, 'new', false);
-      const olderFindingsFileNode = new FindingsFileNode(TEST_FILE_URI, 3, 'older', false);
+      const newFindingsFileNode = new FindingsFileNode(TEST_FILE_URI, 3, 'new');
+      const olderFindingsFileNode = new FindingsFileNode(TEST_FILE_URI, 3, 'older');
       (underTest as any).findingsCache.set(TEST_FILE_URI, [...newFindings, ...olderFindings]);
 
       underTest.setFilter(FilterType.Fix_Available);
 
-      const newFilteredFindings = underTest.getChildren(newFindingsFileNode);
-      const olderFilteredFindings = underTest.getChildren(olderFindingsFileNode);
-      
+      const newFilteredFindings = await underTest.getChildren(newFindingsFileNode);
+      const olderFilteredFindings = await underTest.getChildren(olderFindingsFileNode);
+
       expect(newFilteredFindings).to.have.length(1); // Only 1 new finding has fix
       expect(olderFilteredFindings).to.have.length(1); // Only 1 older finding has fix
     });

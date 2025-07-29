@@ -10,7 +10,8 @@
 import * as vscode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { BindingService } from '../connected/binding';
-import { FindingNode, FindingsTreeDataProvider } from '../findings/findingsTreeDataProvider';
+import { FindingsTreeDataProvider } from '../findings/findingsTreeDataProvider';
+import { FindingNode } from '../findings/findingTypes/findingNode';
 
 interface IHotspotCountParameters {
   filePath: string;

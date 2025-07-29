@@ -11,63 +11,28 @@ import { Diagnostic } from 'vscode-languageserver-types';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ImpactSeverity, PublishDiagnosticsParams } from '../lsp/protocol';
 import { Commands } from '../util/commands';
-import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { getConnectionIdForFile } from '../util/bindingUtils';
 import { isFocusingOnNewCode } from '../settings/settings';
 import { convertVscodeDiagnosticToLspDiagnostic } from '../util/util';
 import {
-  FindingContextValue,
-  FindingSource,
   FilterType,
   FindingType,
-  HotspotReviewPriority,
-  impactSeverityToIcon,
-  getContextValueForFinding,
   isFileOpen,
   isCurrentFile,
   getFilterContextValue,
   selectAndApplyCodeAction,
   NOTEBOOK_CELL_URI_SCHEME,
-  isNotebookCellUri,
-  getFindingLabel,
-  getFindingTooltip,
+  isNotebookCellUri
 } from './findingsTreeDataProviderUtil';
 import { resolveIssueMultiStepInput } from '../issue/resolveIssue';
-
-export class FindingsFileNode extends vscode.TreeItem {
-  constructor(
-    public readonly fileUri: string,
-    public readonly findingsCount: number,
-    public readonly category?: 'new' | 'older',
-    public readonly isNotebook = false,
-    public readonly notebookCellUris?: string[]
-  ) {
-    super(getFileNameFromFullPath(fileUri), vscode.TreeItemCollapsibleState.Expanded);
-    
-    this.contextValue = 'findingsFileGroup';
-    const categorySuffix = category ? `_${category}` : '';
-    this.id = `${fileUri}${categorySuffix}`;
-    this.resourceUri = vscode.Uri.parse(fileUri);
-    
-    const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders?.length > 1;
-    // no need to compute relative path if file is outside any workspace folder
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(this.resourceUri);
-    this.description = vscode.workspace.workspaceFolders && workspaceFolder ? getRelativePathFromFullPath(
-      fileUri,
-      workspaceFolder,
-      specifyWorkspaceFolderName
-    ) : '';
-    
-    this.iconPath = vscode.ThemeIcon.File;
-    
-    if (category) {
-      const categoryText = category === 'new' ? 'new code' : 'older code';
-      this.tooltip = `${findingsCount} SonarQube Finding(s) in ${categoryText}`;
-    } else {
-      this.tooltip = `${findingsCount} SonarQube Finding(s)`;
-    }
-  }
-}
+import { FindingNode } from './findingTypes/findingNode';
+import { NotebookFindingNode } from './findingTypes/notebookFindingNode';
+import { HotspotNode } from './findingTypes/hotspotNode';
+import { FindingsFileNode } from './findingsFileNode';
+import { NotebookNode } from './notebookNode';
+import { FindingsFolderNode } from './findingsFolderNode';
+import { DependencyRiskNode } from './findingTypes/dependencyRiskNode';
+import { TaintVulnerabilityNode } from './findingTypes/taintVulnerabilityNode';
 
 export class NewIssuesNode extends vscode.TreeItem {
   constructor() {
@@ -86,64 +51,6 @@ export class OlderIssuesNode extends vscode.TreeItem {
     this.id = 'older-issues';
     this.iconPath = new vscode.ThemeIcon('history');
     this.tooltip = 'Findings in older code';
-  }
-}
-
-export class FindingNode extends vscode.TreeItem {
-  public readonly key: string;
-  public readonly serverIssueKey?: string;
-  public range: vscode.Range;
-  public readonly contextValue: FindingContextValue;
-  public readonly source: FindingSource;
-  public readonly message: string;
-  public readonly ruleKey: string;
-  public readonly status?: number;
-  public readonly isOnNewCode?: boolean;
-  public readonly vulnerabilityProbability?: HotspotReviewPriority;
-  public readonly severity?: number;
-  public readonly isAiCodeFixable: boolean;
-  public readonly hasQuickFix: boolean;
-  public readonly impactSeverity: ImpactSeverity;
-
-  constructor(public readonly fileUri: string,
-    public readonly findingType: FindingType,
-    public readonly finding: Diagnostic,
-    public readonly isNotebookFinding = false
-  ) {
-    super(finding.message, vscode.TreeItemCollapsibleState.None);
-    this.key = finding['data'].entryKey;
-    this.serverIssueKey = finding['data'].serverIssueKey;
-    this.id = `${fileUri}-${this.key}`;
-    this.isAiCodeFixable = finding['data']?.isAiCodeFixable ?? false;
-    this.hasQuickFix = finding['data']?.hasQuickFix ?? false;
-    this.range = finding.range ? new vscode.Range(finding.range.start.line, finding.range.start.character, finding.range.end.line, finding.range.end.character) : new vscode.Range(0, 0, 0, 0);
-    this.contextValue = getContextValueForFinding(finding.source as FindingSource, this.findingType, this.isAiCodeFixable, this.isNotebookFinding);
-    this.source = finding.source as FindingSource;
-    this.message = finding.message;
-    this.ruleKey = finding.code as string || 'unknown';
-    this.status = finding['data']?.status;
-    this.isOnNewCode = finding['data']?.isOnNewCode;
-    this.vulnerabilityProbability = finding.severity as HotspotReviewPriority;
-    this.severity = finding.severity;
-    this.impactSeverity = finding['data']?.impactSeverity as ImpactSeverity;
-    this.description = `${getFindingLabel(this.findingType)} (${this.ruleKey}) [Ln ${this.range.start.line + 1}, Col ${this.range.start.character}]`;
-    this.iconPath = this.getIconForFinding();
-    this.tooltip = getFindingTooltip(this.source, this.findingType);
-    
-    this.command = {
-      command: Commands.SHOW_ALL_INFO_FOR_FINDING,
-      title: 'Show All Info For Finding',
-      arguments: [this]
-    }
-  }
-
-  private getIconForFinding(): vscode.ThemeIcon | vscode.IconPath {
-    if (this.findingType === FindingType.SecurityHotspot) {
-      return new vscode.ThemeIcon('security-hotspot', new vscode.ThemeColor('descriptionForeground'));
-    }
-    
-    // Use severity icons for everything else
-    return impactSeverityToIcon(this.impactSeverity);
   }
 }
 
@@ -258,7 +165,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       vscode.commands.executeCommand('SonarLint.ShowTaintVulnerabilityFlows', finding.serverIssueKey, getConnectionIdForFile(finding.fileUri));
       vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
     } else if (finding.findingType === FindingType.Issue) {
-      if (!finding.isNotebookFinding) {
+      if (!(finding instanceof NotebookFindingNode)) {
         // showing all locations for notebook cells is not supported
         vscode.commands.executeCommand('SonarLint.ShowIssueFlows', finding.key, finding.fileUri);
       }
@@ -311,32 +218,34 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   }
 
   private convertHotspotsToFindingNodes(hotspotsPerFile: PublishDiagnosticsParams): FindingNode[] {
-    return hotspotsPerFile.diagnostics.map(diagnostic => new FindingNode(hotspotsPerFile.uri, FindingType.SecurityHotspot, diagnostic));
+    return hotspotsPerFile.diagnostics.map(diagnostic => new HotspotNode(hotspotsPerFile.uri, diagnostic));
   }
 
   private convertTaintVulnerabilitiesToFindingNodes(fileUri: string, diagnostics: Diagnostic[]): FindingNode[] {
-    return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.TaintVulnerability, diagnostic));
+    return diagnostics.map(diagnostic => new TaintVulnerabilityNode(fileUri, diagnostic));
   }
 
   private convertIssuesToFindingNodes(fileUri: string, diagnostics: vscode.Diagnostic[]): FindingNode[] {
-    return diagnostics.map(diagnostic => new FindingNode(fileUri, FindingType.Issue, convertVscodeDiagnosticToLspDiagnostic(diagnostic), isNotebookCellUri(fileUri)));
+    return diagnostics.map(diagnostic => isNotebookCellUri(fileUri) ?
+     new NotebookFindingNode(fileUri, convertVscodeDiagnosticToLspDiagnostic(diagnostic)) :
+     new FindingNode(fileUri, FindingType.Issue, convertVscodeDiagnosticToLspDiagnostic(diagnostic)));
   }
 
   private convertDependencyRisksToFindingNodes(folderUri: string, diagnostics: Diagnostic[]): FindingNode[] {
-    return diagnostics.map(diagnostic => new FindingNode(folderUri, FindingType.DependencyRisk, diagnostic));
+    return diagnostics.map(diagnostic => new DependencyRiskNode(folderUri, diagnostic));
   }
 
   getTreeItem(element: FindingsTreeViewItem): vscode.TreeItem {
     return element;
   }
 
-  getChildren(element?: FindingsTreeViewItem): vscode.ProviderResult<FindingsTreeViewItem[]> {
+  async getChildren(element?: FindingsTreeViewItem): Promise<FindingsTreeViewItem[]> {
     if (!element) {
-      return this.getRootItems();
+      return await this.getRootItems();
     }
 
     if (element instanceof NewIssuesNode) {
-      return this.getNewIssuesFiles();
+      return await this.getNewIssuesFiles();
     }
 
     if (element instanceof OlderIssuesNode) {
@@ -344,16 +253,16 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     }
 
     if (element instanceof FindingsFileNode) {
-      const allFindings = element.isNotebook
-        ? this.getFindingsForNotebook(element.notebookCellUris)
-        : this.getFindingsForFile(element.fileUri);
+      const allFindings = element instanceof NotebookNode ? 
+        this.getFindingsForNotebook(element.notebookCellUris) :
+        this.getFindingsForFile(element.fileUri);
       return this.filterFindings(allFindings, element.category);
     }
 
     return [];
   }
 
-  getParent(element: FindingsTreeViewItem): vscode.ProviderResult<FindingsTreeViewItem> {
+  async getParent(element: FindingsTreeViewItem): Promise<FindingsTreeViewItem> {
     if (element instanceof NewIssuesNode || element instanceof OlderIssuesNode) {
       return null;
     }
@@ -371,8 +280,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       return null;
     }
 
-    // For FindingNode, find the parent file
-    const parentFile = this.getRootFiles().find(file => file.fileUri === element.fileUri);
+    const rootFiles = await this.getRootFiles();
+    const parentFile = rootFiles.find(file => file.fileUri === element.fileUri);
     if (parentFile) {
       if (isFocusingOnNewCode()) {
         return element.isOnNewCode ? new NewIssuesNode() : new OlderIssuesNode();
@@ -383,10 +292,10 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     return null;
   }
 
-  private getRootItems(): FindingsTreeViewItem[] {
+  private async getRootItems(): Promise<FindingsTreeViewItem[]> {
     if (isFocusingOnNewCode()) {
-      const newIssuesFiles = this.getNewIssuesFiles();
-      const olderIssuesFiles = this.getOlderIssuesFiles();
+      const newIssuesFiles = await this.getNewIssuesFiles();
+      const olderIssuesFiles = await this.getOlderIssuesFiles();
       
       const items: FindingsTreeViewItem[] = [];
       
@@ -400,62 +309,68 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       
       return items;
     } else {
-      return this.getRootFiles();
+      return await this.getRootFiles();
     }
   }
 
-  private getNewIssuesFiles(): FindingsFileNode[] {
+  private async getNewIssuesFiles(): Promise<FindingsFileNode[]> {
     const files: FindingsFileNode[] = [];
-    
-    this.findingsCache.forEach((findings, fileUri) => {
+
+    for (const [fileUri, findings] of this.findingsCache.entries()) {
       const newFindings = findings.filter(finding => finding.isOnNewCode && this.matchesFilter(finding));
       if (newFindings.length > 0) {
-        this.addFileNode(fileUri, files, newFindings.length, 'new');
+        await this.addFileNode(fileUri, files, newFindings.length, 'new');
       }
-    });
+    }
     
     return files;
   }
 
-  private getOlderIssuesFiles(): FindingsFileNode[] {
+  private async getOlderIssuesFiles(): Promise<FindingsFileNode[]> {
     const files: FindingsFileNode[] = [];
-    
-    this.findingsCache.forEach((findings, fileUri) => {
+
+    for (const [fileUri, findings] of this.findingsCache.entries()) {
       const olderFindings = findings.filter(finding => !finding.isOnNewCode && this.matchesFilter(finding));
       if (olderFindings.length > 0) {
-        this.addFileNode(fileUri, files, olderFindings.length, 'older');
+        await this.addFileNode(fileUri, files, olderFindings.length, 'older');
       }
-    });
+    }
     
     return files;
   }
 
-  getRootFiles(): FindingsFileNode[] {
+  async getRootFiles(): Promise<FindingsFileNode[]> {
     const files: FindingsFileNode[] = [];
-    
-    this.findingsCache.forEach((findings, fileUri) => {
+
+    for (const [fileUri, findings] of this.findingsCache.entries()) {
       const filteredFindings = findings.filter(finding => this.matchesFilter(finding));
       if (filteredFindings.length > 0) {
-        this.addFileNode(fileUri, files, filteredFindings.length);
+        await this.addFileNode(fileUri, files, filteredFindings.length);
       }
-    });
+    }
     
     return files;
   }
 
-  private addFileNode(fileOrCellUri: string, existingFiles: FindingsFileNode[], findingsCount: number, category?: 'new' | 'older') {
+  private async addFileNode(fileOrCellUri: string, existingFiles: (FindingsFileNode | NotebookNode)[], findingsCount: number, category?: 'new' | 'older') {
     if (fileOrCellUri.startsWith(NOTEBOOK_CELL_URI_SCHEME)) {
       const notebookCellUri = vscode.Uri.parse(fileOrCellUri);
       // register only one notebook file for (possible) multiple cells
       const notebookUri = vscode.Uri.from({scheme: 'file', path: notebookCellUri.path}).toString();
       const notebookFile = existingFiles.find(file => file.fileUri === notebookUri);
       if (notebookFile) {
-        notebookFile.notebookCellUris.push(fileOrCellUri);
+        (notebookFile as NotebookNode).notebookCellUris.push(fileOrCellUri);
         return;
       }
-      existingFiles.push(new FindingsFileNode(notebookUri, findingsCount, category, true, [fileOrCellUri]));
+      existingFiles.push(new NotebookNode(notebookUri, findingsCount, category, [fileOrCellUri]));
     } else {
-      existingFiles.push(new FindingsFileNode(fileOrCellUri, findingsCount, category));
+      const uri = vscode.Uri.parse(fileOrCellUri);
+      const stat = await vscode.workspace.fs.stat(uri);
+      if (stat.type & vscode.FileType.Directory) {
+        existingFiles.push(new FindingsFolderNode(fileOrCellUri, findingsCount, category));
+      } else {
+        existingFiles.push(new FindingsFileNode(fileOrCellUri, findingsCount, category));
+      }
     }
   }
 
