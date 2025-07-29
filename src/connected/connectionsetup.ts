@@ -151,7 +151,7 @@ export async function handleInvalidTokenNotification(connectionId: string) {
 
   const editConnectionAction = 'Edit Connection';
   const reply = await vscode.window.showErrorMessage(
-    `Error in ${connectionId} connection: Please verify your connection token.`,
+    `Connection to '${connectionId}' failed: Please verify your token.`,
     editConnectionAction
   );
   if (reply === editConnectionAction) {
@@ -160,6 +160,7 @@ export async function handleInvalidTokenNotification(connectionId: string) {
     } else if (isSonarCloud) {
       vscode.commands.executeCommand(Commands.EDIT_SONARCLOUD_CONNECTION, connectionId);
     }
+    vscode.commands.executeCommand('SonarLint.ConnectedMode.focus');
   }
 }
 

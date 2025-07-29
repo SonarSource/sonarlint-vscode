@@ -313,7 +313,7 @@ suite('handleInvalidTokenNotification', () => {
     sinon.restore();
   });
 
-  test('should execute EDIT_SONARQUBE_CONNECTION when connectionId exists in SonarQube connections and user clicks Edit', async () => {
+  test('should execute EDIT_SONARQUBE_CONNECTION and focus ConnectedMode view when connectionId exists in SonarQube connections and user clicks Edit', async () => {
     const connectionId = 'my-sonarqube-connection';
     const mockSonarQubeConnections = [
       { connectionId: 'other-connection', serverUrl: 'https://other.example' },
@@ -329,14 +329,15 @@ suite('handleInvalidTokenNotification', () => {
 
     assert.isTrue(showErrorMessageStub.calledOnce);
     assert.isTrue(showErrorMessageStub.calledWith(
-      `Error in ${connectionId} connection: Please verify your connection token.`,
+      `Connection to '${connectionId}' failed: Please verify your token.`,
       'Edit Connection'
     ));
-    assert.isTrue(executeCommandStub.calledOnce);
+    assert.isTrue(executeCommandStub.calledTwice);
     assert.isTrue(executeCommandStub.calledWith(Commands.EDIT_SONARQUBE_CONNECTION, connectionId));
+    assert.isTrue(executeCommandStub.calledWith('SonarLint.ConnectedMode.focus'));
   });
 
-  test('should execute EDIT_SONARCLOUD_CONNECTION when connectionId exists in SonarCloud connections and user clicks Edit', async () => {
+  test('should execute EDIT_SONARCLOUD_CONNECTION and focus ConnectedMode view when connectionId exists in SonarCloud connections and user clicks Edit', async () => {
     const connectionId = 'my-sonarcloud-connection';
     const mockSonarQubeConnections = [];
     const mockSonarCloudConnections = [
@@ -352,11 +353,12 @@ suite('handleInvalidTokenNotification', () => {
 
     assert.isTrue(showErrorMessageStub.calledOnce);
     assert.isTrue(showErrorMessageStub.calledWith(
-      `Error in ${connectionId} connection: Please verify your connection token.`,
+      `Connection to '${connectionId}' failed: Please verify your token.`,
       'Edit Connection'
     ));
-    assert.isTrue(executeCommandStub.calledOnce);
+    assert.isTrue(executeCommandStub.calledTwice);
     assert.isTrue(executeCommandStub.calledWith(Commands.EDIT_SONARCLOUD_CONNECTION, connectionId));
+    assert.isTrue(executeCommandStub.calledWith('SonarLint.ConnectedMode.focus'));
   });
 
   test('should not execute any command when user dismisses the error dialog', async () => {
@@ -374,7 +376,7 @@ suite('handleInvalidTokenNotification', () => {
 
     assert.isTrue(showErrorMessageStub.calledOnce);
     assert.isTrue(showErrorMessageStub.calledWith(
-      `Error in ${connectionId} connection: Please verify your connection token.`,
+      `Connection to '${connectionId}' failed: Please verify your token.`,
       'Edit Connection'
     ));
     assert.isFalse(executeCommandStub.called);
