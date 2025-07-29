@@ -23,7 +23,8 @@ import {
   connectToSonarCloud,
   connectToSonarQube,
   editSonarCloudConnection,
-  editSonarQubeConnection
+  editSonarQubeConnection,
+  handleInvalidTokenNotification
 } from './connected/connectionsetup';
 import {
   HelpAndFeedbackLink,
@@ -694,6 +695,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.PublishTaintVulnerabilitiesForFile.type, async taintVulnerabilitiesPerFile => {
     findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, taintVulnerabilitiesPerFile.diagnostics);
     TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri));
+  });
+  languageClient.onNotification(protocol.NotifyInvalidToken.type, async params => {
+    await handleInvalidTokenNotification(params.connectionId);
   });
 
   languageClient.onNotification(protocol.PublishDependencyRisksForFolder.type, async dependencyRisksPerFolder => {

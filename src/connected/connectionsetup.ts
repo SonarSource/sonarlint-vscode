@@ -142,6 +142,27 @@ export async function reportConnectionCheckResult(result: ConnectionCheckResult)
   }
 }
 
+export async function handleInvalidTokenNotification(connectionId: string) {
+  const isSonarQube = ConnectionSettingsService.instance.getSonarQubeConnections()?.findIndex(c => c.connectionId === connectionId) !== -1;
+  const isSonarCloud = ConnectionSettingsService.instance.getSonarCloudConnections()?.findIndex(c => c.connectionId === connectionId) !== -1;
+  if (!isSonarCloud && !isSonarQube) {
+    return;
+  }
+
+  const editConnectionAction = 'Edit Connection';
+  const reply = await vscode.window.showErrorMessage(
+    `Error in ${connectionId} connection: Please verify your connection token.`,
+    editConnectionAction
+  );
+  if (reply === editConnectionAction) {
+    if (isSonarQube) {
+      vscode.commands.executeCommand(Commands.EDIT_SONARQUBE_CONNECTION, connectionId);
+    } else if (isSonarCloud) {
+      vscode.commands.executeCommand(Commands.EDIT_SONARCLOUD_CONNECTION, connectionId);
+    }
+  }
+}
+
 function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, serverProductName) {
   if (!connectionSetupPanel) {
     connectionSetupPanel = vscode.window.createWebviewPanel(
