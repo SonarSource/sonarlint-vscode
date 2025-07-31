@@ -52,10 +52,10 @@ import { isFirstSecretDetected, showNotificationForFirstSecretsIssue } from './s
 import { ConnectionSettingsService, migrateConnectedModeSettings } from './settings/connectionsettings';
 import {
   enableVerboseLogs,
-  getCurrentConfiguration,
+  getCurrentConfiguration, getSonarLintConfiguration,
   isVerboseEnabled,
   loadInitialSettings,
-  onConfigurationChange
+  onConfigurationChange, REPORT_ISSUES_AS_ERROR_OVERRIDES
 } from './settings/settings';
 import { Commands } from './util/commands';
 import { getLogOutput, initLogOutput, logToSonarLintOutput, showLogOutput } from './util/logging';
@@ -431,6 +431,9 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')));
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')));
 
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.REPORT_ISSUES_AS_ERROR, setReportIssuesAsOverride('Error')));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.REPORT_ISSUES_AS_WARNING, setReportIssuesAsOverride('Warning')));
+
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.SHOW_HOTSPOT_RULE_DESCRIPTION, hotspot =>
       languageClient.showHotspotRuleDescription(hotspot.key, hotspot.fileUri)
@@ -781,4 +784,17 @@ export function deactivate(): Thenable<void> {
   }
   ContextManager.instance.resetAllContexts();
   return languageClient.stop();
+}
+
+export type SeverityLevel = 'Error' | 'Warning';
+
+export function setReportIssuesAsOverride(level: SeverityLevel) {
+  return async (ruleKey: string) => {
+    const configuration = getSonarLintConfiguration();
+    const overrides: Record<string, SeverityLevel> = configuration.get(REPORT_ISSUES_AS_ERROR_OVERRIDES, {});
+
+    overrides[ruleKey] = level;
+    configuration.update(REPORT_ISSUES_AS_ERROR_OVERRIDES, overrides, VSCode.ConfigurationTarget.Global);
+    await VSCode.window.showInformationMessage(`Rule ${ruleKey} will be reported as ${level}`);
+  };
 }

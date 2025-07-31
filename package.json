@@ -380,6 +380,47 @@
           "default": false,
           "markdownDescription": "Show region selection while creating SonarQube Cloud Connection _(Early Access)_",
           "scope": "machine"
+        },
+        "sonarlint.reportIssuesAsError.level": {
+          "order": 101,
+          "type": "string",
+          "default": "None",
+          "enum": [
+            "None",
+            "Medium severity and above",
+            "All"
+          ],
+          "enumDescriptions": [
+            "Report all issues as warnings (except overrides)",
+            "Report medium severity and above issues as errors, others as warnings",
+            "Report all issues as errors"
+          ],
+          "markdownDescription": "Configure how SonarQube for IDE issues are reported in VS Code. Choose which severity levels should be reported as errors vs warnings in the Problems panel.",
+          "scope": "window"
+        },
+        "sonarlint.reportIssuesAsError.overrides": {
+          "order": 102,
+          "type": "object",
+          "scope": "window",
+          "default": {},
+          "markdownDescription": "Override the severity level for specific rules. Set individual rules to be reported as either 'Error' or 'Warning', regardless of the reportIssuesAsError.level setting.\n\n**Format:** Use the rule key (in format `repo:key`) as the property name and set the value to either `Error` or `Warning`.\n\n**Example:**\n```json\n{\n  \"java:S1234\": \"Error\",\n  \"javascript:S5678\": \"Warning\"\n}\n```",
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "Error",
+              "Warning"
+            ],
+            "markdownDescription": "Severity level for this rule"
+          },
+          "patternProperties": {
+            "^[^:]+:[^:]+$": {
+              "type": "string",
+              "enum": [
+                "Error",
+                "Warning"
+              ]
+            }
+          }
         }
       }
     },
@@ -419,6 +460,16 @@
         "command": "SonarLint.ActivateRule",
         "title": "Activate",
         "icon": "$(check)",
+        "enablement": "view == SonarLint.AllRules"
+      },
+      {
+        "command": "SonarQube.ReportIssuesAsError",
+        "title": "Report Issues as Error",
+        "enablement": "view == SonarLint.AllRules"
+      },
+      {
+        "command": "SonarQube.ReportIssuesAsWarning",
+        "title": "Report Issues as Warning",
         "enablement": "view == SonarLint.AllRules"
       },
       {

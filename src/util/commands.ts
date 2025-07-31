@@ -87,4 +87,8 @@ export namespace Commands {
   export const SHOW_HIGH_SEVERITY_ONLY = 'SonarQube.ShowHighSeverityOnly';
   export const SHOW_CURRENT_FILE_ONLY = 'SonarQube.ShowCurrentFileOnly';
   export const CHANGE_DEPENDENCY_RISK_STATUS = 'SonarLint.ChangeDependencyRiskStatus';
+
+  // Report issue severity commands
+  export const REPORT_ISSUES_AS_ERROR = 'SonarQube.ReportIssuesAsError';
+  export const REPORT_ISSUES_AS_WARNING = 'SonarQube.ReportIssuesAsWarning';
 }

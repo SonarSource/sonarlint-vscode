@@ -13,6 +13,7 @@ let currentConfig: vscode.WorkspaceConfiguration;
 
 export const SONARLINT_CATEGORY = 'sonarlint';
 export const VERBOSE_LOGS = 'output.showVerboseLogs';
+export const REPORT_ISSUES_AS_ERROR_OVERRIDES = 'reportIssuesAsError.overrides';
 
 export function getSonarLintConfiguration(): vscode.WorkspaceConfiguration {
   return vscode.workspace.getConfiguration(SONARLINT_CATEGORY);
