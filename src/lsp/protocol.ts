@@ -873,4 +873,12 @@ export interface FindingsFilteredParams {
   filterType: string;
 }
 
+export interface NotifyInvalidTokenParams {
+  connectionId: string;
+}
+
+export namespace NotifyInvalidToken {
+  export const type = new lsp.NotificationType<NotifyInvalidTokenParams>('sonarlint/notifyInvalidToken');
+}
+
 //#endregion

@@ -6,11 +6,13 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import * as sinon from 'sinon';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
 import {
   getDefaultConnectionId,
-  handleMessageWithConnectionSettingsService
+  handleMessageWithConnectionSettingsService,
+  handleInvalidTokenNotification
 } from '../../src/connected/connectionsetup';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
@@ -280,6 +282,137 @@ suite('Connection Setup', () => {
 
     assert.deepStrictEqual(getSonarQubeConnections(), [{ serverUrl, connectionId }]);
   }).timeout(TEN_SECONDS);
+});
+
+suite('handleInvalidTokenNotification', () => {
+  let connectionServiceInstanceStub: sinon.SinonStub;
+  let getSonarQubeConnectionsStub: sinon.SinonStub;
+  let getSonarCloudConnectionsStub: sinon.SinonStub;
+  let showErrorMessageStub: sinon.SinonStub;
+  let executeCommandStub: sinon.SinonStub;
+
+  setup(() => {
+    // Create individual stubs for the methods
+    getSonarQubeConnectionsStub = sinon.stub();
+    getSonarCloudConnectionsStub = sinon.stub();
+    
+    // Create a mock instance with the stubbed methods
+    const mockInstance = {
+      getSonarQubeConnections: getSonarQubeConnectionsStub,
+      getSonarCloudConnections: getSonarCloudConnectionsStub
+    };
+    
+    // Stub the static instance property
+    connectionServiceInstanceStub = sinon.stub(ConnectionSettingsService, 'instance').get(() => mockInstance);
+    
+    showErrorMessageStub = sinon.stub(vscode.window, 'showErrorMessage');
+    executeCommandStub = sinon.stub(vscode.commands, 'executeCommand');
+  });
+
+  teardown(() => {
+    sinon.restore();
+  });
+
+  test('should execute EDIT_SONARQUBE_CONNECTION and focus ConnectedMode view when connectionId exists in SonarQube connections and user clicks Edit', async () => {
+    const connectionId = 'my-sonarqube-connection';
+    const mockSonarQubeConnections = [
+      { connectionId: 'other-connection', serverUrl: 'https://other.example' },
+      { connectionId: connectionId, serverUrl: 'https://sonarqube.example' }
+    ];
+    const mockSonarCloudConnections = [];
+
+    getSonarQubeConnectionsStub.returns(mockSonarQubeConnections);
+    getSonarCloudConnectionsStub.returns(mockSonarCloudConnections);
+    showErrorMessageStub.resolves('Edit Connection');
+
+    await handleInvalidTokenNotification(connectionId);
+
+    assert.isTrue(showErrorMessageStub.calledOnce);
+    assert.isTrue(showErrorMessageStub.calledWith(
+      `Connection to '${connectionId}' failed: Please verify your token.`,
+      'Edit Connection'
+    ));
+    assert.isTrue(executeCommandStub.calledTwice);
+    assert.isTrue(executeCommandStub.calledWith(Commands.EDIT_SONARQUBE_CONNECTION, connectionId));
+    assert.isTrue(executeCommandStub.calledWith('SonarLint.ConnectedMode.focus'));
+  });
+
+  test('should execute EDIT_SONARCLOUD_CONNECTION and focus ConnectedMode view when connectionId exists in SonarCloud connections and user clicks Edit', async () => {
+    const connectionId = 'my-sonarcloud-connection';
+    const mockSonarQubeConnections = [];
+    const mockSonarCloudConnections = [
+      { connectionId: 'other-connection', organizationKey: 'other-org' },
+      { connectionId: connectionId, organizationKey: 'my-org' }
+    ];
+
+    getSonarQubeConnectionsStub.returns(mockSonarQubeConnections);
+    getSonarCloudConnectionsStub.returns(mockSonarCloudConnections);
+    showErrorMessageStub.resolves('Edit Connection');
+
+    await handleInvalidTokenNotification(connectionId);
+
+    assert.isTrue(showErrorMessageStub.calledOnce);
+    assert.isTrue(showErrorMessageStub.calledWith(
+      `Connection to '${connectionId}' failed: Please verify your token.`,
+      'Edit Connection'
+    ));
+    assert.isTrue(executeCommandStub.calledTwice);
+    assert.isTrue(executeCommandStub.calledWith(Commands.EDIT_SONARCLOUD_CONNECTION, connectionId));
+    assert.isTrue(executeCommandStub.calledWith('SonarLint.ConnectedMode.focus'));
+  });
+
+  test('should not execute any command when user dismisses the error dialog', async () => {
+    const connectionId = 'my-sonarqube-connection';
+    const mockSonarQubeConnections = [
+      { connectionId: connectionId, serverUrl: 'https://sonarqube.example' }
+    ];
+    const mockSonarCloudConnections = [];
+
+    getSonarQubeConnectionsStub.returns(mockSonarQubeConnections);
+    getSonarCloudConnectionsStub.returns(mockSonarCloudConnections);
+    showErrorMessageStub.resolves(undefined);
+
+    await handleInvalidTokenNotification(connectionId);
+
+    assert.isTrue(showErrorMessageStub.calledOnce);
+    assert.isTrue(showErrorMessageStub.calledWith(
+      `Connection to '${connectionId}' failed: Please verify your token.`,
+      'Edit Connection'
+    ));
+    assert.isFalse(executeCommandStub.called);
+  });
+
+  test('should return early and not show error message when connectionId was not found', async () => {
+    const connectionId = 'non-existent-connection';
+    const mockSonarQubeConnections = [
+      { connectionId: 'sonarqube-connection', serverUrl: 'https://sonarqube.example' }
+    ];
+    const mockSonarCloudConnections = [
+      { connectionId: 'sonarcloud-connection', organizationKey: 'my-org' }
+    ];
+
+    getSonarQubeConnectionsStub.returns(mockSonarQubeConnections);
+    getSonarCloudConnectionsStub.returns(mockSonarCloudConnections);
+
+    await handleInvalidTokenNotification(connectionId);
+
+    // Should return early without showing error message or executing commands
+    assert.isFalse(showErrorMessageStub.called);
+    assert.isFalse(executeCommandStub.called);
+  });
+
+  test('should handle empty connections lists correctly', async () => {
+    const connectionId = 'my-connection';
+
+    getSonarQubeConnectionsStub.returns([]);
+    getSonarCloudConnectionsStub.returns([]);
+
+    await handleInvalidTokenNotification(connectionId);
+
+    // Should return early without showing error message
+    assert.isFalse(showErrorMessageStub.called);
+    assert.isFalse(executeCommandStub.called);
+  });
 });
 
 function getSonarQubeConnections() {
