@@ -38,7 +38,7 @@ import {
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan
 } from './hotspot/hotspots';
-import { FindingNode, FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
+import { FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
 import { FilterType, getFilterDisplayName } from './findings/findingsTreeDataProviderUtil';
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
@@ -80,6 +80,7 @@ import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeT
 import { AnalyzeFileTool } from './languageModelTools/analyzeFileTool';
 import { TaintVulnerabilityDecorator } from './issue/taintVulnerabilityDecorator';
 import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
+import { FindingNode } from './findings/findingTypes/findingNode';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },

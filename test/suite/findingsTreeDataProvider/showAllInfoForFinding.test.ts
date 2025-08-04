@@ -10,10 +10,12 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
-import { FindingsTreeDataProvider, FindingNode } from '../../../src/findings/findingsTreeDataProvider';
+import { FindingsTreeDataProvider } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource } from '../../../src/findings/findingsTreeDataProviderUtil';
 import { ImpactSeverity } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
+import { NotebookFindingNode } from '../../../src/findings/findingTypes/notebookFindingNode';
+import { FindingNode } from '../../../src/findings/findingTypes/findingNode';
 
 const TEST_FILE_URI = 'file:///test/file.js';
 const TEST_ISSUE_KEY = 'test-issue-key';
@@ -185,11 +187,13 @@ function createMockFindingNode(options: {
     }
   };
 
-  const findingNode = new FindingNode(
+  const findingNode = options.isNotebookFinding ? new NotebookFindingNode(
+    options.fileUri || TEST_FILE_URI,
+    mockDiagnostic
+  ) : new FindingNode(
     options.fileUri || TEST_FILE_URI,
     options.findingType,
-    mockDiagnostic,
-    options.isNotebookFinding || false
+    mockDiagnostic
   );
 
   // Override the contextValue to test different scenarios
