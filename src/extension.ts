@@ -331,6 +331,12 @@ export async function activate(context: VSCode.ExtensionContext) {
       findingsTreeDataProvider.refresh();
       TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile();
     }
+    if (event.affectsConfiguration('sonarlint.reportIssuesAsError.level')) {
+      const level = getSonarLintConfiguration().get('reportIssuesAsError.level');
+      if (level) {
+        languageClient.reportIssuesAsErrorLevel(level as string);
+      }
+    }
   });
 
   VSCode.workspace.onDidChangeWorkspaceFolders(async event => {
@@ -795,6 +801,7 @@ export function setReportIssuesAsOverride(level: SeverityLevel) {
 
     overrides[ruleKey] = level;
     configuration.update(REPORT_ISSUES_AS_ERROR_OVERRIDES, overrides, VSCode.ConfigurationTarget.Global);
+    await languageClient.reportIssuesAsErrorOverrides(ruleKey, level);
     await VSCode.window.showInformationMessage(`Rule ${ruleKey} will be reported as ${level}`);
   };
 }

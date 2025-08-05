@@ -373,6 +373,20 @@ export namespace FixSuggestionResolved {
   export const type = new lsp.NotificationType<FixSuggestionResolvedParams>('sonarlint/fixSuggestionResolved');
 }
 
+export namespace ReportIssuesAsErrorLevel {
+  export const type = new lsp.NotificationType<string>('sonarlint/reportIssuesAsErrorLevel');
+}
+
+interface ReportIssuesAsOverrideParams {
+  ruleKey: string;
+  level: string;
+}
+
+export namespace ReportIssuesAsOverride {
+  export const type = new lsp.NotificationType<ReportIssuesAsOverrideParams>('sonarlint/reportIssuesAsOverride');
+}
+
+
 //#endregion
 
 //#region Server side extensions to LSP

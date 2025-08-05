@@ -205,6 +205,14 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendNotification(protocol.FixSuggestionResolved.type, { suggestionId, accepted });
   }
 
+  reportIssuesAsErrorLevel(level: string) {
+    return this.sendNotification(protocol.ReportIssuesAsErrorLevel.type, level);
+  }
+
+  reportIssuesAsErrorOverrides(ruleKey: string, level: string): Promise<void> {
+    return this.sendNotification(protocol.ReportIssuesAsOverride.type, { ruleKey, level });
+  }
+
   findingsFiltered(filterType: string): Promise<void> {
     return this.sendNotification(protocol.FindingsFilteredNotification.type, { filterType });
   }
