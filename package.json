@@ -301,13 +301,6 @@
           "description": "Enable verbose log level in the SonarQube for IDE output.",
           "scope": "window"
         },
-        "sonarlint.output.showAnalyzerLogs": {
-          "order": 91,
-          "type": "boolean",
-          "default": false,
-          "description": "Show analyzer's logs in the SonarQube for IDE output.",
-          "scope": "window"
-        },
         "sonarlint.analyzerProperties": {
           "order": 92,
           "type": "object",
@@ -1248,7 +1241,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "3.28.0.76421",
+      "version": "3.29.0.76437",
       "output": "server/sonarlint-ls.jar"
     },
     {
