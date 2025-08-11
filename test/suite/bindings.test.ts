@@ -16,12 +16,13 @@ import {
 
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
-import { Connection, WorkspaceFolderItem } from '../../src/connected/connections';
+import { Connection, ServerType, WorkspaceFolderItem } from '../../src/connected/connections';
 import * as protocol from '../../src/lsp/protocol';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 import { sleep } from '../testutil';
 import { SharedConnectedModeSettingsService } from '../../src/connected/sharedConnectedModeSettingsService';
 import { selectFirstQuickPickItem } from './commons';
+import { Server } from 'http';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -145,7 +146,7 @@ suite('Bindings Test Suite', () => {
       expect(updatedBinding).to.deep.equal(TEST_BINDING);
 
       await underTest.deleteBinding(
-        new WorkspaceFolderItem('name', workspaceFolder, TEST_BINDING.connectionId, 'SonarQube')
+        new WorkspaceFolderItem('name', workspaceFolder, TEST_BINDING.connectionId, ServerType.SonarQube)
       );
 
       const deletedBinding = VSCode.workspace
@@ -338,10 +339,10 @@ suite('Bindings Test Suite', () => {
     });
 
     test('should get base server url', async () => {
-      expect(await underTest.getBaseServerUrl('connectionId', 'SonarQube')).to.be.equal(
+      expect(await underTest.getBaseServerUrl('connectionId', ServerType.SonarQube)).to.be.equal(
         'https://next.sonarqube.com/sonarqube/dashboard'
       );
-      expect(await underTest.getBaseServerUrl('connectionId', 'SonarCloud')).to.be.equal(
+      expect(await underTest.getBaseServerUrl('connectionId', ServerType.SonarCloud)).to.be.equal(
         'https://sonarcloud.io/project/overview'
       );
     });
