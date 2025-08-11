@@ -42,7 +42,7 @@ export function serverProjectsToQuickPickItems(serverProjects: BindingSuggestion
 }
 
 export function buildProjectOverviewBaseServerUrl(serverType: ServerType, serverUrlOrOrganizationKey: string, region?: SonarCloudRegion) {
-  if (serverType === 'SonarCloud') {
+  if (serverType === ServerType.SonarCloud) {
    const cloudUrl = region ? SONARCLOUD_REGION_URL_MAP[region] : SONARCLOUD_REGION_URL_MAP['EU'];
     return `${cloudUrl}/project/overview`;
   }

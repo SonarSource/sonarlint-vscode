@@ -24,6 +24,7 @@ import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
 import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl'
 import { code2ProtocolConverter } from '../util/uri';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { ServerType } from './connections';
 
 const AUTOBINDING_THRESHOLD = 1;
 const BIND_ACTION = 'Configure Binding';
@@ -154,14 +155,14 @@ export class AutoBindingService implements FileSystemSubscriber {
     let targetConnection;
     if (sonarCloudConnections.length === 0 && sonarQubeConnections.length === 1) {
       targetConnection = {
-        label: this.computeItemLabel('SonarQube', sonarQubeConnections[0]),
+        label: this.computeItemLabel(ServerType.SonarQube, sonarQubeConnections[0]),
         description: 'SonarQube Server',
         connectionId: this.computeConnectionId(sonarQubeConnections[0]),
         contextValue: 'sonarqubeConnection'
       };
     } else if (sonarQubeConnections.length === 0 && sonarCloudConnections.length === 1) {
       targetConnection = {
-        label: this.computeItemLabel('SonarCloud', sonarCloudConnections[0]),
+        label: this.computeItemLabel(ServerType.SonarCloud, sonarCloudConnections[0]),
         description: 'SonarQube Cloud',
         connectionId: this.computeConnectionId(sonarCloudConnections[0]),
         contextValue: 'sonarcloudConnection'
@@ -170,7 +171,7 @@ export class AutoBindingService implements FileSystemSubscriber {
       const connectionNames = [];
       sonarQubeConnections.forEach(c => {
         connectionNames.push({
-          label: this.computeItemLabel('SonarQube', c),
+          label: this.computeItemLabel(ServerType.SonarQube, c),
           description: 'SonarQube Server',
           connectionId: this.computeConnectionId(c),
           contextValue: 'sonarqubeConnection'
@@ -178,7 +179,7 @@ export class AutoBindingService implements FileSystemSubscriber {
       });
       sonarCloudConnections.forEach(c => {
         connectionNames.push({
-          label: this.computeItemLabel('SonarCloud', c),
+          label: this.computeItemLabel(ServerType.SonarCloud, c),
           description: 'SonarQube Cloud',
           connectionId: this.computeConnectionId(c),
           contextValue: 'sonarcloudConnection'
@@ -192,8 +193,8 @@ export class AutoBindingService implements FileSystemSubscriber {
     return targetConnection;
   }
 
-  private computeItemLabel(serverType: 'SonarQube' | 'SonarCloud', connection) {
-    if (serverType === 'SonarQube') {
+  private computeItemLabel(serverType: ServerType, connection) {
+    if (serverType === ServerType.SonarQube) {
       return connection.connectionId ? connection.connectionId : connection.serverUrl;
     }
     return connection.connectionId ? connection.connectionId : connection.organizationKey;

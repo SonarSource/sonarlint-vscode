@@ -164,7 +164,7 @@ export class BindingService {
     }
 
     if (!serverType) {
-      serverType = contextValue === 'sonarqubeConnection' ? 'SonarQube' : 'SonarCloud';
+      serverType = contextValue === 'sonarqubeConnection' ? ServerType.SonarQube : ServerType.SonarCloud;
     }
     let selectedFolderName;
     if (workspaceFolder) {
@@ -183,7 +183,7 @@ export class BindingService {
   async getBaseServerUrl(connectionId: string, serverType: ServerType): Promise<string> {
     let serverUrlOrOrganizationKey: string;
     let region = undefined;
-    if (serverType === 'SonarQube') {
+    if (serverType === ServerType.SonarQube) {
       serverUrlOrOrganizationKey = (await this.settingsService.loadSonarQubeConnection(connectionId)).serverUrl;
     } else {
       const sonarCloudConnection = await this.settingsService.loadSonarCloudConnection(connectionId);

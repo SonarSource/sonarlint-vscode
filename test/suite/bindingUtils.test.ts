@@ -8,13 +8,14 @@
 
 import { expect } from 'chai';
 import { buildProjectOverviewBaseServerUrl } from '../../src/util/bindingUtils';
+import { ServerType } from '../../src/connected/connections';
 
 suite('Binding Utils Test Suite', () => {
 
   test('should build base server url', () => {
-    const sqBaseServerUrl = buildProjectOverviewBaseServerUrl('SonarQube', 'serverUrl');
-    const scBaseServerUrl = buildProjectOverviewBaseServerUrl('SonarCloud', 'orgKey');
-    const scBaseServerUrlUS = buildProjectOverviewBaseServerUrl('SonarCloud', 'orgKey', 'US');
+    const sqBaseServerUrl = buildProjectOverviewBaseServerUrl(ServerType.SonarQube, 'serverUrl');
+    const scBaseServerUrl = buildProjectOverviewBaseServerUrl(ServerType.SonarCloud, 'orgKey');
+    const scBaseServerUrlUS = buildProjectOverviewBaseServerUrl(ServerType.SonarCloud, 'orgKey', 'US');
 
     expect(sqBaseServerUrl).to.be.equal('serverUrl/dashboard');
     expect(scBaseServerUrl).to.be.equal('https://sonarcloud.io/project/overview');

@@ -157,7 +157,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
       return this.getConnections('__sonarcloud__');
     } else if (element.contextValue === 'sonarqubeConnection' || element.contextValue === 'sonarcloudConnection') {
       const connection = element as Connection;
-      const serverType = element.contextValue === 'sonarqubeConnection' ? 'SonarQube' : 'SonarCloud';
+      const serverType = element.contextValue === 'sonarqubeConnection' ? ServerType.SonarQube : ServerType.SonarCloud;
       return this.getBoundProjects(connection.id, serverType);
     } else if (element.contextValue === 'remoteProject') {
       const project = element as RemoteProject;
@@ -175,7 +175,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return null;
   }
 
-  async getBoundProjects(connectionId, serverType) {
+  async getBoundProjects(connectionId, serverType: ServerType) {
     const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
     if (!boundProjects) {
       return [];
@@ -185,7 +185,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
     return allKeys.map(k => new RemoteProject(connectionId, k, serverType, keysToNames[k]));
   }
 
-  getWorkspaceFoldersBoundTo(connectionId, projectKey, serverType) {
+  getWorkspaceFoldersBoundTo(connectionId, projectKey, serverType: ServerType) {
     const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
     if (!boundProjects) {
       return [];
@@ -220,4 +220,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 }
 
-export type ServerType = 'SonarQube' | 'SonarCloud';
+export enum ServerType {
+  SonarQube = 'SonarQube Server',
+  SonarCloud = 'SonarQube Cloud'
+}
