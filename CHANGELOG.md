@@ -1,3 +1,7 @@
+## 4.29
+
+* Update PHP analyzer 3.46 -> [3.47](https://sonarsource.atlassian.net/issues/?jql=fixversion%20%3D%203.47%20ORDER%20BY%20created%20ASC) -> [3.48](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2022080%20ORDER%20BY%20created%20ASC)
+
 ## 4.28
 
 * Improve accuracy of automatic binding suggestions
