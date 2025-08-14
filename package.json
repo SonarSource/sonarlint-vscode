@@ -1295,7 +1295,7 @@
     {
       "groupId": "org.sonarsource.text",
       "artifactId": "sonar-text-plugin",
-      "version": "2.26.0.7517",
+      "version": "2.27.0.7705",
       "output": "analyzers/sonartext.jar"
     },
     {
