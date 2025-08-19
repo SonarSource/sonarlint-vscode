@@ -187,7 +187,6 @@ export async function activate(context: VSCode.ExtensionContext) {
     },
     documentSelector: DOCUMENT_SELECTOR,
     synchronize: {
-      configurationSection: 'sonarlint',
       fileEvents: [pythonWatcher, helmWatcher, sharedConnectedModeConfigurationWatcher]
     },
     uriConverters: {
@@ -220,11 +219,14 @@ export async function activate(context: VSCode.ExtensionContext) {
         eslintBridgeServerPath: Path.resolve(context.extensionPath, 'eslint-bridge'),
         omnisharpDirectory: Path.resolve(context.extensionPath, 'omnisharp'),
         csharpOssPath: Path.resolve(context.extensionPath, 'analyzers', 'sonarcsharp.jar'),
-        csharpEnterprisePath: Path.resolve(context.extensionPath, 'analyzers', 'csharpenterprise.jar')
+        csharpEnterprisePath: Path.resolve(context.extensionPath, 'analyzers', 'csharpenterprise.jar'),
+        connections: VSCode.workspace.getConfiguration('sonarlint.connectedMode').get('connections', {"sonarqube": [], "sonarcloud": []}),
+        rules: VSCode.workspace.getConfiguration('sonarlint').get('rules', {}),
+        focusOnNewCode: VSCode.workspace.getConfiguration('sonarlint').get('focusOnNewCode', false)
       };
     },
     outputChannel: getLogOutput(),
-    revealOutputChannelOn: 4 // never
+    revealOutputChannelOn: 4, // never
   };
 
   // Create the language client and start the client.
@@ -330,6 +332,10 @@ export async function activate(context: VSCode.ExtensionContext) {
       NewCodeDefinitionService.instance.updateFocusOnNewCodeState();
       findingsTreeDataProvider.refresh();
       TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile();
+    }
+    if (event.affectsConfiguration('sonarlint')) {
+      // only send notification to let language server pull the latest settings when the change is relevant
+      languageClient.sendNotification('workspace/didChangeConfiguration', { settings: null })
     }
   });
 
