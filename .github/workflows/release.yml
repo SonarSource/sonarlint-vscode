@@ -23,7 +23,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    runs-on: ubuntu-latest-large
+    runs-on: github-ubuntu-latest-s
     name: Deploy to Visual Studio marketplace
     needs: release
     strategy:
@@ -107,7 +107,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    runs-on: ubuntu-latest-large
+    runs-on: github-ubuntu-latest-s
     name: Deploy to OpenVSX
     needs: release
     env:
