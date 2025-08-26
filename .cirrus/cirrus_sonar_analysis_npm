@@ -14,7 +14,6 @@ if [ -n "${GITHUB_BASE_BRANCH}" ]; then
 fi
 
 PROJECT_VERSION=$(npm pkg get version | tr -d \")
-SONAR_PROJECT_KEY="org.sonarsource.sonarlint.vscode:sonarlint-vscode"
 SONAR_ORGANIZATION="sonarsource"
 SONAR_PROJECT_NAME="SonarLint for VSCode"
 
@@ -32,8 +31,8 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$PULL_REQUEST" == "false" ]; then
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
       -Dsonar.projectVersion="$PROJECT_VERSION" \
-      -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
-      -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
+      -Dsonar.host.url="$SONAR_URL" \
+      -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
@@ -55,8 +54,8 @@ elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; t
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
-      -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
-      -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
+      -Dsonar.host.url="$SONAR_URL" \
+      -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
@@ -70,8 +69,8 @@ elif [ "$PULL_REQUEST" != "false" ]; then
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
-      -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
-      -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
+      -Dsonar.host.url="$SONAR_URL" \
+      -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
@@ -85,8 +84,8 @@ elif [[ "$GITHUB_BRANCH" == "feature/long/"* ]] && [ "$PULL_REQUEST" == "false" 
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
-      -Dsonar.host.url="$SONARQUBE_NEXT_URL" \
-      -Dsonar.token="$SONARQUBE_NEXT_TOKEN" \
+      -Dsonar.host.url="$SONAR_URL" \
+      -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
