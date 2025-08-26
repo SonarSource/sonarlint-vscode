@@ -154,7 +154,7 @@ test_linux_task:
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
-    memory: 4G
+    memory: 6G
   env:
     DISPLAY: ":10"
     SONAR_URL: VAULT[development/kv/data/next data.url]
@@ -185,7 +185,7 @@ sonarqube_eu_analysis_task:
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
-    memory: 4G
+    memory: 6G
   env:
     DISPLAY: ":10"
     SONAR_URL: VAULT[development/kv/data/sonarcloud data.url]
@@ -213,7 +213,7 @@ sonarqube_us_analysis_task:
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
-    memory: 4G
+    memory: 6G
   env:
     DISPLAY: ":10"
     SONAR_URL: VAULT[development/kv/data/sonarqube-us data.url]
