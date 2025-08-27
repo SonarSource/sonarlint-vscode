@@ -42,31 +42,8 @@ ec2_instance_definition: &WINVM_DEFINITION
   region: eu-central-1
   type: t3.xlarge
 
-skip_master_branch_and_allvsix_branch: &SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" 
-    && ($CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH && $CIRRUS_BRANCH !=~ ".*allvsix")
-
-only_master_or_allvsix_branch: &ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" 
-    && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ ".*allvsix")
-
-
-only_if_with_nightly: &ONLY_IF_WITH_NIGHTLY
+skip_docs: &SKIP_DOCS
   skip: "changesIncludeOnly('docs/*', '**/README.md')"
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
-
-only_if_except_nightly: &ONLY_IF_EXCEPT_NIGHTLY
-  skip: "changesIncludeOnly('docs/*', '**/README.md')"
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BUILD_SOURCE != "cron"
-
-only_pr_and_maintained_branches: &ONLY_PR_AND_MAINTAINED_BRANCHES
-  skip: "changesIncludeOnly('docs/*', '**/README.md')"
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BUILD_SOURCE != "cron"
-    && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*")
-
-only_main_branches: &ONLY_MAIN_BRANCHES
-  skip: "changesIncludeOnly('docs/*', '**/README.md')"
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*")
 
 node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
   node_modules_cache:
@@ -77,7 +54,8 @@ node_modules_cache_template: &NODE_MODULES_CACHE_TEMPLATE
     populate_script: npm ci
 
 build_task:
-  <<: *ONLY_IF_WITH_NIGHTLY
+  <<: *SKIP_DOCS
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
@@ -94,7 +72,7 @@ build_task:
 
 universal_vsix_task:
   depends_on: build
-  <<: *SKIP_MASTER_BRANCH_AND_ALLVSIX_BRANCH
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH != $CIRRUS_DEFAULT_BRANCH && $CIRRUS_BRANCH !=~ ".*allvsix"
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
@@ -108,8 +86,8 @@ universal_vsix_task:
       source slack-failure-notification
 
 all_vsix_task:
-  <<: *ONLY_MASTER_BUILD_OR_ALLVSIX_BRANCH
   depends_on: build
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ ".*allvsix") && ($CIRRUS_BUILD_SOURCE != "cron" || $CIRRUS_CRON == "nightly")
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
@@ -126,7 +104,8 @@ test_windows_task:
   # name: Run tests on Windows
   depends_on:
     - build
-  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  <<: *SKIP_DOCS
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BUILD_SOURCE != "cron"
   ec2_instance:
     <<: *WINVM_DEFINITION
   <<: *NODE_MODULES_CACHE_TEMPLATE
@@ -150,7 +129,8 @@ test_linux_task:
   #  name: Run tests, Sonarqube analysis on Linux
   depends_on:
     - build
-  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  <<: *SKIP_DOCS
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BUILD_SOURCE != "cron" || $CIRRUS_CRON == "secondary-platform")
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
@@ -181,7 +161,7 @@ test_linux_task:
 sonarqube_eu_analysis_task:
   depends_on:
     - build
-  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_CRON == "secondary-platform"
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
@@ -209,7 +189,7 @@ sonarqube_eu_analysis_task:
 sonarqube_us_analysis_task:
   depends_on:
     - build
-  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_CRON == "secondary-platform"
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
@@ -239,6 +219,7 @@ run_iris_task:
     - test_linux
     - sonarqube_eu_analysis
     - sonarqube_us_analysis
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_CRON == "secondary-platform"
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 1
@@ -261,7 +242,8 @@ run_iris_task:
 mend_scan_task:
   depends_on:
     - build
-  <<: *ONLY_MAIN_BRANCHES
+  <<: *SKIP_DOCS
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*") && ($CIRRUS_BUILD_SOURCE != "cron" || $CIRRUS_CRON == "nightly")
   eks_container:
     <<: *CONTAINER_DEFINITION
   <<: *NODE_MODULES_CACHE_TEMPLATE
@@ -286,7 +268,8 @@ qa_task:
   depends_on:
     - universal_vsix
     - all_vsix
-  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  <<: *SKIP_DOCS
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BUILD_SOURCE != "cron"
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 4
@@ -346,7 +329,8 @@ promote_task:
     - qa
     - test_windows
     - test_linux
-  <<: *ONLY_PR_AND_MAINTAINED_BRANCHES
+  <<: *SKIP_DOCS
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_PR != "" || $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*" || $CIRRUS_BRANCH =~ "dogfood-on-.*") && $CIRRUS_BUILD_SOURCE != "cron"
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
