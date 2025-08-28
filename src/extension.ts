@@ -222,7 +222,8 @@ export async function activate(context: VSCode.ExtensionContext) {
         csharpEnterprisePath: Path.resolve(context.extensionPath, 'analyzers', 'csharpenterprise.jar'),
         connections: VSCode.workspace.getConfiguration('sonarlint.connectedMode').get('connections', {"sonarqube": [], "sonarcloud": []}),
         rules: VSCode.workspace.getConfiguration('sonarlint').get('rules', {}),
-        focusOnNewCode: VSCode.workspace.getConfiguration('sonarlint').get('focusOnNewCode', false)
+        focusOnNewCode: VSCode.workspace.getConfiguration('sonarlint').get('focusOnNewCode', false),
+        automaticAnalysis: VSCode.workspace.getConfiguration('sonarlint').get('automaticAnalysis', true)
       };
     },
     outputChannel: getLogOutput(),
@@ -256,6 +257,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   initializeLanguageModelTools(context);
 
   const referenceBranchStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 1);
+  const automaticAnalysisStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 2);
   const scm = await initScm(languageClient, referenceBranchStatusItem);
   context.subscriptions.push(scm);
   context.subscriptions.push(
@@ -264,6 +266,11 @@ export async function activate(context: VSCode.ExtensionContext) {
     })
   );
   context.subscriptions.push(referenceBranchStatusItem);
+  context.subscriptions.push(automaticAnalysisStatusItem);
+  
+  // Initialize and show the automatic analysis status bar item
+  updateAutomaticAnalysisStatusBar(automaticAnalysisStatusItem);
+  automaticAnalysisStatusItem.show();
   VSCode.window.onDidChangeActiveTextEditor(e => {
     scm.updateReferenceBranchStatusItem(e);
     NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(e);
@@ -332,6 +339,9 @@ export async function activate(context: VSCode.ExtensionContext) {
       NewCodeDefinitionService.instance.updateFocusOnNewCodeState();
       findingsTreeDataProvider.refresh();
       TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile();
+    }
+    if (event.affectsConfiguration('sonarlint.automaticAnalysis')) {
+      updateAutomaticAnalysisStatusBar(automaticAnalysisStatusItem);
     }
     if (event.affectsConfiguration('sonarlint')) {
       // only send notification to let language server pull the latest settings when the change is relevant
@@ -513,6 +523,17 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand('SonarLint.NewCodeDefinition.Disable', () => {
       VSCode.workspace.getConfiguration('sonarlint')
               .update('focusOnNewCode', false, VSCode.ConfigurationTarget.Global);
+    })
+  );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand('SonarLint.AutomaticAnalysis.Enable', () => {
+      VSCode.workspace.getConfiguration('sonarlint')
+              .update('automaticAnalysis', true, VSCode.ConfigurationTarget.Global);
+    }),
+    VSCode.commands.registerCommand('SonarLint.AutomaticAnalysis.Disable', () => {
+      VSCode.workspace.getConfiguration('sonarlint')
+              .update('automaticAnalysis', false, VSCode.ConfigurationTarget.Global);
     })
   );
 
@@ -779,6 +800,18 @@ async function showAllLocations(issue: protocol.Issue) {
 function clearLocations() {
   secondaryLocationsTree.hideLocations();
   issueLocationsView.message = null;
+}
+
+function updateAutomaticAnalysisStatusBar(statusBarItem: VSCode.StatusBarItem) {
+  const isEnabled = VSCode.workspace.getConfiguration('sonarlint').get('automaticAnalysis', true);
+  const icon = isEnabled ? '$(debug-pause)' : '$(play)';
+  const status = isEnabled ? 'enabled' : 'disabled';
+  const action = isEnabled ? 'disable' : 'enable';
+  const command = isEnabled ? 'SonarLint.AutomaticAnalysis.Disable' : 'SonarLint.AutomaticAnalysis.Enable';
+  
+  statusBarItem.text = `${icon} SonarQube`;
+  statusBarItem.tooltip = `On-the-fly analysis is ${status}. Click to ${action}.`;
+  statusBarItem.command = command;
 }
 
 export function deactivate(): Thenable<void> {
