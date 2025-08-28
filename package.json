@@ -256,6 +256,13 @@
           ],
           "scope": "resource"
         },
+        "sonarlint.automaticAnalysis": {
+          "order": 5,
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable or disable on-the-fly analysis of files you work on. When enabled, SonarQube for IDE will automatically analyze open files and show findings in real-time.",
+          "scope": "application"
+        },
         "sonarlint.pathToNodeExecutable": {
           "order": 10,
           "type": "string",
@@ -627,6 +634,20 @@
         "category": "SonarQube",
         "icon": "$(eye-closed)",
         "enablement": "view == SonarQube.Findings && config.sonarlint.focusOnNewCode"
+      },
+      {
+        "command": "SonarLint.AutomaticAnalysis.Enable",
+        "title": "Enable Automatic Analysis",
+        "category": "SonarQube",
+        "icon": "$(sync)",
+        "enablement": "!config.sonarlint.automaticAnalysis"
+      },
+      {
+        "command": "SonarLint.AutomaticAnalysis.Disable",
+        "title": "Disable Automatic Analysis",
+        "category": "SonarQube",
+        "icon": "$(sync-ignored)",
+        "enablement": "config.sonarlint.automaticAnalysis"
       }
     ],
     "viewsContainers": {
@@ -802,6 +823,16 @@
         {
           "command": "SonarLint.NewCodeDefinition.Disable",
           "when": "view == SonarQube.Findings && config.sonarlint.focusOnNewCode",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.AutomaticAnalysis.Enable",
+          "when": "view == SonarQube.Findings && !config.sonarlint.automaticAnalysis",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.AutomaticAnalysis.Disable",
+          "when": "view == SonarQube.Findings && config.sonarlint.automaticAnalysis",
           "group": "navigation"
         },
         {
@@ -1241,7 +1272,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "3.30.0.76582",
+      "version": "3.30.0.76612",
       "output": "server/sonarlint-ls.jar"
     },
     {
