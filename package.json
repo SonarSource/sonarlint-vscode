@@ -639,15 +639,15 @@
         "command": "SonarLint.AutomaticAnalysis.Enable",
         "title": "Enable Automatic Analysis",
         "category": "SonarQube",
-        "icon": "$(play)",
-        "enablement": "view == SonarQube.Findings && !config.sonarlint.automaticAnalysis"
+        "icon": "$(debug-line-by-line)",
+        "enablement": "!config.sonarlint.automaticAnalysis"
       },
       {
         "command": "SonarLint.AutomaticAnalysis.Disable",
         "title": "Disable Automatic Analysis",
         "category": "SonarQube",
         "icon": "$(debug-pause)",
-        "enablement": "view == SonarQube.Findings && config.sonarlint.automaticAnalysis"
+        "enablement": "config.sonarlint.automaticAnalysis"
       }
     ],
     "viewsContainers": {
@@ -1272,7 +1272,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "3.30.0.76586",
+      "version": "3.30-SNAPSHOT",
       "output": "server/sonarlint-ls.jar"
     },
     {
