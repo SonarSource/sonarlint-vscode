@@ -2,6 +2,7 @@
 
 * Update CFamily analyzer 6.70 -> [6.71](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D21832%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC)
 * Update Java Symbolic Execution analyzer 8.16 -> [8.16.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2022339%20ORDER%20BY%20created%20ASC)
+* Update Go analyzer 1.26 -> [1.27](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021831%20ORDER%20BY%20created%20ASC)
 
 ## 4.29
 
