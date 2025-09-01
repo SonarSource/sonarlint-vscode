@@ -1,3 +1,7 @@
+## 4.30
+
+* Update CFamily analyzer 6.70 -> [6.71](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D21832%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC)
+
 ## 4.29
 
 * Enable analysis of GitHub Actions workflow files in Connected Mode
