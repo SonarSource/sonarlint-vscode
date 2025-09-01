@@ -15,7 +15,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.82.0"
+    "vscode": "^1.99.3"
   },
   "categories": [
     "Linters",
