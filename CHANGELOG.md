@@ -4,6 +4,7 @@
 * Update Java Symbolic Execution analyzer 8.16 -> [8.16.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2022339%20ORDER%20BY%20created%20ASC)
 * Update Go analyzer 1.26 -> [1.27](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021831%20ORDER%20BY%20created%20ASC)
 * Update JS/TS/CSS analyzer 11.2 -> [11.3](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2021975%20ORDER%20BY%20created%20ASC)
+* Update PHP analyzer 3.48 -> [3.49](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2022169%20ORDER%20BY%20created%20ASC)
 
 ## 4.29
 
