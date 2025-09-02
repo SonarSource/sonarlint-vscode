@@ -40,8 +40,11 @@ suite('AutomaticAnalysisService Test Suite', () => {
       .update('automaticAnalysis', undefined, vscode.ConfigurationTarget.Global);
   });
 
-  teardown(() => {
+  teardown(async () => {
     statusBarItem.dispose();
+    await vscode.workspace
+      .getConfiguration('sonarlint')
+      .update('automaticAnalysis', undefined, vscode.ConfigurationTarget.Global);
   });
 
 

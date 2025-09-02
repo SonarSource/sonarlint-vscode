@@ -105,7 +105,6 @@ let findingsTreeDataProvider: FindingsTreeDataProvider;
 let findingsView: VSCode.TreeView<FindingsTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
-let automaticAnalysisService: AutomaticAnalysisService;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
@@ -255,6 +254,13 @@ export async function activate(context: VSCode.ExtensionContext) {
   FixSuggestionService.init(languageClient);
   ContextManager.instance.setConnectedModeContext(context);
 
+  FindingsTreeDataProvider.init(context, languageClient);
+  findingsTreeDataProvider = FindingsTreeDataProvider.instance;
+  findingsView = VSCode.window.createTreeView('SonarQube.Findings', {
+    treeDataProvider: findingsTreeDataProvider
+  });
+  context.subscriptions.push(findingsView);
+
   installCustomRequestHandlers(context);
   initializeLanguageModelTools(context);
 
@@ -325,6 +331,9 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
   }));
 
+  const automaticAnalysisService = new AutomaticAnalysisService(automaticAnalysisStatusItem, findingsView);
+  automaticAnalysisService.updateAutomaticAnalysisStatusBarAndFindingsViewMessage();
+
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
       allRulesTreeDataProvider.refresh();
@@ -367,15 +376,6 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  FindingsTreeDataProvider.init(context, languageClient);
-  findingsTreeDataProvider = FindingsTreeDataProvider.instance;
-  findingsView = VSCode.window.createTreeView('SonarQube.Findings', {
-    treeDataProvider: findingsTreeDataProvider
-  });
-  context.subscriptions.push(findingsView);
-
-  automaticAnalysisService = new AutomaticAnalysisService(automaticAnalysisStatusItem, findingsView);
-  automaticAnalysisService.updateAutomaticAnalysisStatusBarAndFindingsViewMessage();
   automaticAnalysisStatusItem.show();
   
   // Update badge when tree data changes
