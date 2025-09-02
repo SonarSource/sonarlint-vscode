@@ -82,6 +82,7 @@ import { TaintVulnerabilityDecorator } from './issue/taintVulnerabilityDecorator
 import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
 import { FindingNode } from './findings/findingTypes/findingNode';
 import { AutomaticAnalysisService } from './settings/automaticAnalysis';
+import { FlightRecorderService } from './monitoring/flightrecorder';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -266,6 +267,7 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   const referenceBranchStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 1);
   const automaticAnalysisStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 2);
+
   const scm = await initScm(languageClient, referenceBranchStatusItem);
   context.subscriptions.push(scm);
   context.subscriptions.push(
@@ -275,7 +277,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   );
   context.subscriptions.push(referenceBranchStatusItem);
   context.subscriptions.push(automaticAnalysisStatusItem);
-  
+
   VSCode.window.onDidChangeActiveTextEditor(e => {
     scm.updateReferenceBranchStatusItem(e);
     NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(e);
@@ -641,6 +643,12 @@ function registerCommands(context: VSCode.ExtensionContext) {
       const targetConnection = connectionsOfType.find(c => c.id === connectionId) ?? connectionsOfType[0];
       allConnectionsView.reveal(targetConnection, {select: true, focus: true, expand: false});
   }));
+
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.SHOW_FLIGHT_RECORDING_MENU, () => FlightRecorderService.instance.showFlightRecordingMenu()));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.COPY_FLIGHT_RECORDER_SESSION_ID, () => FlightRecorderService.instance.copySessionIdToClipboard()));
+  context.subscriptions.push(VSCode.commands.registerCommand(Commands.DUMP_BACKEND_THREADS, () => {
+    languageClient.dumpThreads();
+  }));
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
@@ -751,6 +759,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(protocol.SuggestConnection.type, (params) => SharedConnectedModeSettingsService.instance.handleSuggestConnectionNotification(params.suggestionsByConfigScopeId));
   languageClient.onRequest(protocol.IsOpenInEditor.type, fileUri => {
     return VSCode.workspace.textDocuments.some(doc => code2ProtocolConverter(doc.uri) === fileUri);
+  });
+  languageClient.onNotification(protocol.FlightRecorderStartedNotification.type, (params) => {
+    FlightRecorderService.instance.onFlightRecorderStarted(params.sessionId);
   });
 }
 

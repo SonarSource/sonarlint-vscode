@@ -380,6 +380,12 @@
           "default": false,
           "markdownDescription": "Show region selection while creating SonarQube Cloud Connection _(Early Access)_",
           "scope": "machine"
+        },
+        "sonarlint.startFlightRecorder": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Start the language server's flight recorder mode.\n\n⚠ **This feature shares detailed information with SonarSource (logs, telemetry events) that may include _confidential_ data, only enable if requested to help investigate an issue.**",
+          "scope": "machine"
         }
       }
     },
@@ -648,6 +654,12 @@
         "category": "SonarQube",
         "icon": "$(sync-ignored)",
         "enablement": "config.sonarlint.automaticAnalysis"
+      },
+      {
+        "command": "SonarQube.DumpBackendThreads",
+        "title": "Dump Backend Threads",
+        "category": "SonarQube",
+        "enablement": "sonarqube.flightRecorderRunning"
       }
     ],
     "viewsContainers": {
@@ -1272,7 +1284,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.0.0.76618",
+      "version": "4.1.0.76652",
       "output": "server/sonarlint-ls.jar"
     },
     {

@@ -16,6 +16,7 @@ const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
 const SOME_STANDALONE_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseStandaloneMode';
 const HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY = 'sonarqube.hasExploredIssueLocations';
 const SHOULD_SHOW_GET_STARTED_VIEW = 'sonarqube.shouldShowGetStartedView';
+const FLIGHT_RECORDER_RUNNING = 'sonarqube.flightRecorderRunning';
 
 export class ContextManager {
   private static _instance: ContextManager;
@@ -56,11 +57,16 @@ export class ContextManager {
     vscode.commands.executeCommand('setContext', SHOULD_SHOW_GET_STARTED_VIEW, !hasConnectionConfigured && !hasClickedGetStartedLink);
   }
 
+  setFlightRecorderRunningContext() {
+    vscode.commands.executeCommand('setContext', FLIGHT_RECORDER_RUNNING, true);
+  }
+
   resetAllContexts() {
     vscode.commands.executeCommand('setContext', SOME_CONNECTED_MODE_CONTEXT_KEY, undefined);
     vscode.commands.executeCommand('setContext', SOME_STANDALONE_MODE_CONTEXT_KEY, undefined);
     vscode.commands.executeCommand('setContext', HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY, undefined);
     vscode.commands.executeCommand('setContext', SHOULD_SHOW_GET_STARTED_VIEW, undefined);
+    vscode.commands.executeCommand('setContext', FLIGHT_RECORDER_RUNNING, undefined);
   }
 
 }
