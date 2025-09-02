@@ -79,7 +79,11 @@ export namespace Commands {
   export const TRIGGER_AI_CODE_FIX_COMMAND = 'SonarQube.TriggerAiCodeFixCommand';
   export const TRIGGER_RESOLVE_TAINT_COMMAND = 'SonarQube.TriggerResolveTaintCommand';
   export const TRIGGER_FETCH_CODE_ACTIONS_COMMAND = 'SonarQube.TriggerFetchCodeActionsCommand';
-  
+
+  export const SHOW_FLIGHT_RECORDING_MENU = 'SonarQube.ShowFlightRecordingMenu';
+  export const DUMP_BACKEND_THREADS = 'SonarQube.DumpBackendThreads';
+  export const COPY_FLIGHT_RECORDER_SESSION_ID = 'SonarQube.CopyFlightRecorderSessionId';
+
   // Filter commands
   export const SHOW_ALL_FINDINGS = 'SonarQube.ShowAllFindings';
   export const SHOW_FIXABLE_ISSUES_ONLY = 'SonarQube.ShowFixableIssuesOnly';
