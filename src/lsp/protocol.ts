@@ -881,4 +881,16 @@ export namespace NotifyInvalidToken {
   export const type = new lsp.NotificationType<NotifyInvalidTokenParams>('sonarlint/notifyInvalidToken');
 }
 
+export interface FlightRecorderStartedParams {
+  sessionId: string;
+}
+
+export namespace FlightRecorderStartedNotification {
+  export const type = new lsp.NotificationType<FlightRecorderStartedParams>('sonarlint/flightRecorderStarted');
+}
+
+export namespace DumpThreadsNotification {
+  export const type = new lsp.NotificationType('sonarlint/dumpThreads');
+}
+
 //#endregion

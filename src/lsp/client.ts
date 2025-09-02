@@ -208,4 +208,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   findingsFiltered(filterType: string): Promise<void> {
     return this.sendNotification(protocol.FindingsFilteredNotification.type, { filterType });
   }
+
+  dumpThreads(): Promise<void> {
+    return this.sendNotification(protocol.DumpThreadsNotification.type);
+  }
 }
