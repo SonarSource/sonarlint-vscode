@@ -18,7 +18,6 @@ import * as vsce from '@vscode/vsce';
 
 const {
   ARTIFACT_FILE,
-  TARGET_PLATFORM,
   VSCE_TOKEN
 } = process.env;
 
