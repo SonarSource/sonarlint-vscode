@@ -8,6 +8,6 @@
   "license": "SEE LICENSE IN ../../../LICENSE.txt",
   "type": "module",
   "dependencies": {
-    "ovsx": "0.8.0"
+    "ovsx": "^0.10.5"
   }
 }
