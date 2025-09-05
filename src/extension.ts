@@ -631,9 +631,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()));
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () =>
-      IssueService.instance.analyseOpenFileIgnoringExcludes()
-    )
+    VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () => {
+      IssueService.instance.analyseOpenFileIgnoringExcludes(true);
+      VSCode.commands.executeCommand('SonarQube.Findings.focus');
+    })
   );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.FOCUS_ON_CONNECTION, async (connectionType: ConnectionType, connectionId?: string) => {
