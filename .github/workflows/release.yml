@@ -110,6 +110,11 @@ jobs:
     runs-on: github-ubuntu-latest-s
     name: Deploy to OpenVSX
     needs: release
+    strategy:
+      # Deployment jobs are executed sequentially to make sure that the universal package is the last one deployed
+      max-parallel: 1
+      matrix:
+        platform: ['linux-x64', 'darwin-x64', 'darwin-arm64', 'universal']
     env:
       ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
@@ -144,12 +149,16 @@ jobs:
           tagName = '${{ github.ref_name }}'
           # tagName = <version>+<buildId>
           version = tagName.split('+')[0]
-          
+          platform = '${{ matrix.platform }}'
+
           artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases'
           slvscodeBaseUrl = f'{artifactoryPublicRepo}/org/sonarsource/sonarlint/vscode/sonarlint-vscode'
-          artifactName = f'sonarlint-vscode-{version}.vsix'
+          if platform == 'universal':
+            artifactName = f'sonarlint-vscode-{version}.vsix'
+          else:
+            artifactName = f'sonarlint-vscode-{platform}-{version}.vsix'
           artifactUrl = f'{slvscodeBaseUrl}/{tagName}/{artifactName}'
-          
+
           with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:
             print(f'artifactUrl={artifactUrl}', file=githubOutput)
             print(f'artifactName={artifactName}', file=githubOutput)
@@ -164,5 +173,6 @@ jobs:
         id: ovsx_publish
         env:
           ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
+          TARGET_PLATFORM: ${{ matrix.platform }}
           OPENVSX_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).OPENVSX_TOKEN }}
         uses: ./.github/actions/ovsx-publish
