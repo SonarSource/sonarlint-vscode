@@ -169,11 +169,13 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   analyseOpenFileIgnoringExcludes(
+    triggeredByUser: boolean,
     textDocument?: AnalysisFile,
     notebookDocument?: VSCode.NotebookDocument,
     notebookCells?: AnalysisFile[]
   ): Promise<void> {
     return this.sendNotification(protocol.AnalyseOpenFileIgnoringExcludes.type, {
+      triggeredByUser,
       textDocument,
       notebookUri: notebookDocument ? notebookDocument.uri.toString() : null,
       notebookVersion: notebookDocument ? notebookDocument.version : null,
