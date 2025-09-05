@@ -29,8 +29,14 @@ export async function languageServerCommand(
     params.push('-Dsonarlint.telemetry.disabled=true');
     params.push('-Dsonarlint.monitoring.disabled=true');
   }
-  const vmargs = getSonarLintConfiguration().get('ls.vmargs', '');
+
+  const sonarLintConfiguration = getSonarLintConfiguration();
+  const vmargs = sonarLintConfiguration.get('ls.vmargs', '');
   parseVMargs(params, vmargs);
+  if (sonarLintConfiguration.get('startFlightRecorder', false)) {
+    params.push('-Dsonarlint.flightrecorder.enabled=true');
+  }
+
   params.push('-jar', serverJar);
   params.push('-stdio');
   params.push('-analyzers');
