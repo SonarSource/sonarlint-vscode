@@ -750,6 +750,7 @@ export namespace SslCertificateConfirmation {
 }
 
 export interface AnalyseOpenFileIgnoringExcludesParams {
+  triggeredByUser: boolean;
   textDocument?: AnalysisFile;
   notebookUri?: string;
   notebookVersion?: number;
