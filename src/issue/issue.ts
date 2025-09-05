@@ -92,7 +92,7 @@ export class IssueService {
     );
   }
 
-  analyseOpenFileIgnoringExcludes(textDocument?: VSCode.TextDocument) {
+  analyseOpenFileIgnoringExcludes(triggeredByUser: boolean, textDocument?: VSCode.TextDocument) {
     const textEditor = VSCode.window.activeTextEditor;
     const notebookEditor = VSCode.window.activeNotebookEditor;
     if (!textEditor && !notebookEditor && !textDocument) {
@@ -103,7 +103,7 @@ export class IssueService {
     if (textEditor || textDocument) {
       textDocument = textDocument ?? textEditor.document;
       const uri = textDocument.uri;
-      return this.languageClient.analyseOpenFileIgnoringExcludes({
+      return this.languageClient.analyseOpenFileIgnoringExcludes(triggeredByUser, {
         uri: code2ProtocolConverter(uri),
         languageId: textDocument.languageId,
         text: textDocument.getText(),
@@ -122,7 +122,7 @@ export class IssueService {
             text: cell.document.getText()
           };
         });
-      return this.languageClient.analyseOpenFileIgnoringExcludes(undefined, notebookDocument, cells);
+      return this.languageClient.analyseOpenFileIgnoringExcludes(triggeredByUser, undefined, notebookDocument, cells);
     }
 
     return Promise.resolve();

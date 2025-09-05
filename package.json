@@ -402,8 +402,9 @@
       },
       {
         "command": "SonarLint.AnalyseOpenFile",
-        "title": "Analyse current file ignoring excludes",
-        "category": "SonarQube"
+        "title": "Analyze Current File with SonarQube",
+        "category": "SonarQube",
+        "icon": "$(play-circle)"
       },
       {
         "command": "SonarLint.ConfigureCompilationDatabase",
@@ -792,6 +793,12 @@
       }
     ],
     "menus": {
+      "editor/title": [
+        {
+          "command": "SonarLint.AnalyseOpenFile",
+          "group": "navigation"
+        }
+      ],
       "view/title": [
         {
           "command": "SonarLint.ShowAllRules",
