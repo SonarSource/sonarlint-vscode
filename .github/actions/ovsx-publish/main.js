@@ -18,15 +18,10 @@ import * as ovsx from 'ovsx';
 
 const {
   ARTIFACT_FILE,
-  TARGET_PLATFORM,
   OPENVSX_TOKEN
 } = process.env;
 
-let message = `Publishing ${ARTIFACT_FILE} to OpenVSX`;
-if (TARGET_PLATFORM && TARGET_PLATFORM !== 'universal') {
-  message += ` for platform ${TARGET_PLATFORM}`;
-}
-console.log(message);
+console.log(`Publishing ${ARTIFACT_FILE} to OpenVSX`);
 
 (async () => {
   /**
@@ -36,11 +31,6 @@ console.log(message);
     extensionFile: ARTIFACT_FILE,
     pat: OPENVSX_TOKEN
   };
-
-  // Add target platform for platform-specific publishing (skip for universal)
-  if (TARGET_PLATFORM && TARGET_PLATFORM !== 'universal') {
-    options.targets = [TARGET_PLATFORM];
-  }
   const [ publicationResult ] = await ovsx.publish(options);
   if (publicationResult.status === 'rejected') {
     throw new Error(`Impossible to publish ${ARTIFACT_FILE} to OpenVSX`, { cause: publicationResult.reason });
