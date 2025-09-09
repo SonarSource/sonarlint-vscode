@@ -74,7 +74,7 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
     expect(showOptions.preview).to.be.true;
     expect(analyseOpenFileIgnoringExcludes.calledOnce).to.be.true;
     expect(executeCommand.calledOnce).to.be.true;
-    expect(executeCommand.firstCall.args[0]).to.equal('workbench.panel.markers.view.focus');
+    expect(executeCommand.firstCall.args[0]).to.equal('SonarQube.Findings.focus');
     expect(toolCalledCount.success).to.equal(1, 'too many calls to lmToolCalled');
     expect(result.content.length).to.equal(1);
     expect((result.content[0] as vscode.LanguageModelTextPart).value).to
