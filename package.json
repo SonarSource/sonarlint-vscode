@@ -404,7 +404,7 @@
         "command": "SonarLint.AnalyseOpenFile",
         "title": "Analyze Current File with SonarQube",
         "category": "SonarQube",
-        "icon": "$(play-circle)"
+        "icon": "$(sonarqube-analysis)"
       },
       {
         "command": "SonarLint.ConfigureCompilationDatabase",
@@ -1087,6 +1087,13 @@
         "default": {
           "fontPath": "icons/sonarlint.woff",
           "fontCharacter": "H"
+        }
+      },
+      "sonarqube-analysis":{
+        "description": "Run SonarQube Analysis",
+        "default": {
+          "fontPath": "icons/sonarlint.woff",
+          "fontCharacter": "A"
         }
       }
     },
