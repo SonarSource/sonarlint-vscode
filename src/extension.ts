@@ -630,7 +630,8 @@ function registerCommands(context: VSCode.ExtensionContext) {
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()));
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () => {
+    VSCode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, (params: VSCode.SourceControlResourceGroup) => {
+      console.log('URIs in the change list:', params.resourceStates.map(r => r.resourceUri.toString()));
       IssueService.instance.analyseOpenFileIgnoringExcludes(true);
       VSCode.commands.executeCommand('SonarQube.Findings.focus');
     })

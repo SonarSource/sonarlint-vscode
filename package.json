@@ -787,6 +787,12 @@
           "group": "navigation"
         }
       ],
+      "scm/resourceGroup/context": [
+        {
+          "command": "SonarLint.AnalyseOpenFile",
+          "group": "inline"
+        }
+      ],
       "view/title": [
         {
           "command": "SonarLint.ShowAllRules",
