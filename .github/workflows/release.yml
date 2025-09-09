@@ -162,7 +162,6 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:
             print(f'artifactUrl={artifactUrl}', file=githubOutput)
             print(f'artifactName={artifactName}', file=githubOutput)
-
       - name: Download promoted file
         id: download_artifact
         run: |
@@ -173,6 +172,5 @@ jobs:
         id: ovsx_publish
         env:
           ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
-          TARGET_PLATFORM: ${{ matrix.platform }}
           OPENVSX_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).OPENVSX_TOKEN }}
         uses: ./.github/actions/ovsx-publish
