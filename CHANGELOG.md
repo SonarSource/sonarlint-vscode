@@ -1,6 +1,7 @@
 ## 4.31
 
 * SonarQube Cloud US region is now generally available
+* Update Python analyzer 5.8 -> 5.9
 
 ## 4.30
 
