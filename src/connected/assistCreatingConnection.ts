@@ -10,13 +10,13 @@ import * as vscode from 'vscode';
 
 import { AutomaticConnectionSetupCancellationError } from './automaticConnectionCancellationError';
 import { connectToSonarQube } from './connectionsetup';
-import { AssistCreatingConnectionParams } from '../lsp/protocol';
+import { ExtendedClient } from '../lsp/protocol';
 import { ConnectionSettingsService, getTokenStorageKey, SonarCloudConnection, SonarCloudRegion, SonarQubeConnection } from '../settings/connectionsettings';
 import { Commands } from '../util/commands';
 import { sonarCloudRegionToLabel } from '../util/util';
 
 export function assistCreatingConnection(context: vscode.ExtensionContext) {
-  return async (assistCreatingConnectionParams: AssistCreatingConnectionParams) => {
+  return async (assistCreatingConnectionParams: ExtendedClient.AssistCreatingConnectionParams) => {
     let newConnectionId: string | null;
     try {
       newConnectionId = await confirmConnectionDetailsAndSave(context)(

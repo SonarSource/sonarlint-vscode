@@ -7,7 +7,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { ImpactSeverity } from '../lsp/protocol';
+import { ExtendedServer } from '../lsp/protocol';
 import { resolveExtensionFile } from '../util/util';
 import { IndexQP } from '../cfamily/cfamily';
 
@@ -46,29 +46,29 @@ export enum FindingSource {
   Local_Hotspot = 'local-hotspot' // locally detected hotspot that has not matched with server one
 }
 
-export const impactSeverityToIcon = (impactSeverity: ImpactSeverity): { light: vscode.Uri; dark: vscode.Uri } => {
+export const impactSeverityToIcon = (impactSeverity: ExtendedServer.ImpactSeverity): { light: vscode.Uri; dark: vscode.Uri } => {
   switch (impactSeverity) {
-    case ImpactSeverity.INFO:
+    case ExtendedServer.ImpactSeverity.INFO:
       return {
         light: resolveExtensionFile('images', 'impact', `info.svg`),
         dark: resolveExtensionFile('images', 'impact', `info_dark.svg`)
       };
-    case ImpactSeverity.LOW:
+    case ExtendedServer.ImpactSeverity.LOW:
       return {
         light: resolveExtensionFile('images', 'impact', `low.svg`),
         dark: resolveExtensionFile('images', 'impact', `low_dark.svg`)
       };
-    case ImpactSeverity.HIGH:
+    case ExtendedServer.ImpactSeverity.HIGH:
       return {
         light: resolveExtensionFile('images', 'impact', `high.svg`),
         dark: resolveExtensionFile('images', 'impact', `high_dark.svg`)
       };
-    case ImpactSeverity.BLOCKER:
+    case ExtendedServer.ImpactSeverity.BLOCKER:
       return {
         light: resolveExtensionFile('images', 'impact', `blocker.svg`),
         dark: resolveExtensionFile('images', 'impact', `blocker_dark.svg`)
       };
-    case ImpactSeverity.MEDIUM:
+    case ExtendedServer.ImpactSeverity.MEDIUM:
     default:
       return {
         light: resolveExtensionFile('images', 'impact', `medium.svg`),

@@ -8,7 +8,7 @@
 
 import * as vscode from 'vscode';
 import { Commands } from '../util/commands';
-import { Flow, Issue, Location, TextRange } from '../lsp/protocol';
+import { ExtendedClient } from '../lsp/protocol';
 import { formatIssueMessage } from '../util/util';
 
 /**
@@ -52,7 +52,7 @@ export const SINGLE_LOCATION_DECORATION = vscode.window.createTextEditorDecorati
 export class IssueItem extends vscode.TreeItem {
   readonly children: FlowItem[] | LocationItem[];
 
-  constructor(issueOrHotspot: Issue) {
+  constructor(issueOrHotspot: ExtendedClient.Issue) {
     const highlightOnly = issueOrHotspot.flows.every(f => f.locations.every(l => !l.message || l.message === ''));
     const collapsibleState = highlightOnly
       ? vscode.TreeItemCollapsibleState.None
@@ -76,7 +76,7 @@ export class FlowItem extends vscode.TreeItem {
   readonly parent: LocationTreeItem;
   readonly children: (LocationItem | FileItem)[];
 
-  constructor(flow: Flow, index: number, parent: LocationTreeItem) {
+  constructor(flow: ExtendedClient.Flow, index: number, parent: LocationTreeItem) {
     // Only first flow is expanded by default
     const collapsibleState =
       index === 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed;
@@ -115,7 +115,7 @@ export class FileItem extends vscode.TreeItem {
   readonly children: LocationItem[];
   readonly parent: FlowItem;
 
-  constructor(uri: string | null, filePath: string, lastIndex: number, locations: Location[], parent: FlowItem) {
+  constructor(uri: string | null, filePath: string, lastIndex: number, locations: ExtendedClient.Location[], parent: FlowItem) {
     const label = uri ? uri.substring(uri.lastIndexOf('/') + 1) : filePath.substring(filePath.lastIndexOf('/') + 1);
     super(label, vscode.TreeItemCollapsibleState.Expanded);
     this.children = locations.map((l, i) => new LocationItem(l, lastIndex + 1 - locations.length + i, this));
@@ -130,10 +130,11 @@ export class FileItem extends vscode.TreeItem {
 }
 
 export class LocationItem extends vscode.TreeItem {
-  readonly parent: LocationParentItem;
-  readonly location: Location;
-  readonly index: number;
-  constructor(location: Location, index: number, parent: LocationParentItem) {
+  constructor(
+    readonly location: ExtendedClient.Location,
+    readonly index: number,
+    readonly parent: LocationParentItem
+  ) {
     super(`${index}: ${location.message}`, vscode.TreeItemCollapsibleState.None);
     this.index = index;
     if (location.uri) {
@@ -174,7 +175,7 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
     this.rootItem = null;
   }
 
-  async showAllLocations(issue: Issue) {
+  async showAllLocations(issue: ExtendedClient.Issue) {
     this.rootItem = new IssueItem(issue);
     this.notifyRootChanged();
     if (this.rootItem.children.length === 0) {
@@ -200,14 +201,14 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
     }
   }
 
-  private highlightSecondaryLocations(locations: Location[], editor: vscode.TextEditor) {
+  private highlightSecondaryLocations(locations: ExtendedClient.Location[], editor: vscode.TextEditor) {
     editor.setDecorations(
       SECONDARY_LOCATION_DECORATIONS,
       locations.map((l, i) => buildDecoration(new LocationItem(l, i + 1, this.rootItem), editor.document))
     );
   }
 
-  private highlightSingleLocation(issue: Issue, editor: vscode.TextEditor) {
+  private highlightSingleLocation(issue: ExtendedClient.Issue, editor: vscode.TextEditor) {
     const range = vscodeRange(issue.textRange);
     if (isValidRange(range, editor.document)) {
       editor.selection = new vscode.Selection(range.start, range.end);
@@ -323,7 +324,7 @@ function buildDecoration(item: LocationItem, document: vscode.TextDocument) {
   };
 }
 
-function vscodeRange(textRange: TextRange) {
+function vscodeRange(textRange: ExtendedClient.TextRange) {
   const startPosition = new vscode.Position(textRange.startLine - 1, textRange.startLineOffset);
   const endPosition = new vscode.Position(textRange.endLine - 1, textRange.endLineOffset);
   return new vscode.Range(startPosition, endPosition);

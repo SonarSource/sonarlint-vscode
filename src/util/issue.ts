@@ -6,12 +6,12 @@
  * ------------------------------------------------------------------------------------------ */
 
 'use strict';
-import { Flow, Issue, TextRange } from '../lsp/protocol';
-import * as vscode from 'vscode';
-import * as protocol from '../lsp/protocol';
-import { DiagnosticSeverity } from 'vscode';
 
-export async function adaptFlows(issue: Issue) {
+import * as vscode from 'vscode';
+
+import { ExtendedClient } from '../lsp/protocol';
+
+export async function adaptFlows(issue: ExtendedClient.Issue) {
   return Promise.all(
     issue.flows.map(async flow => {
       flow.locations = await adaptLocations(flow);
@@ -20,7 +20,7 @@ export async function adaptFlows(issue: Issue) {
   );
 }
 
-export async function adaptLocations(flow: Flow) {
+export async function adaptLocations(flow: ExtendedClient.Flow) {
   return Promise.all(
     flow.locations.map(async location => {
       location.filePath = location.uri;
@@ -29,7 +29,7 @@ export async function adaptLocations(flow: Flow) {
   );
 }
 
-export function createDiagnosticFromIssue(issue: protocol.Issue) {
+export function createDiagnosticFromIssue(issue: ExtendedClient.Issue) {
   const { startLine, startLineOffset, endLine, endLineOffset } = issue.textRange;
   let startPosition = new vscode.Position(0, 0);
   let endPosition = new vscode.Position(0, 0);
@@ -41,20 +41,13 @@ export function createDiagnosticFromIssue(issue: protocol.Issue) {
     endPosition = new vscode.Position(endLine - 1, endLineOffset);
     range = new vscode.Range(startPosition, endPosition);
   }
-  const issueDiag = new vscode.Diagnostic(range, 'params.message', DiagnosticSeverity.Warning);
+  const issueDiag = new vscode.Diagnostic(range, 'params.message', vscode.DiagnosticSeverity.Warning);
   issueDiag.code = issue.ruleKey;
   issueDiag.source = `sonarqube(${issue.ruleKey})`;
   issueDiag.message = issue.message;
   return issueDiag;
 }
 
-export function isFileLevelIssue(textRange: TextRange) {
+export function isFileLevelIssue(textRange: ExtendedClient.TextRange) {
   return textRange.startLine === 0 || textRange.endLine === 0;
-}
-
-export enum Severity {
-  Error = 0,
-  Warning = 1,
-  Info = 2,
-  Hint = 3
 }

@@ -10,7 +10,7 @@
 
 import * as vscode from 'vscode';
 import { window } from 'vscode';
-import { SslCertificateConfirmationParams } from '../lsp/protocol';
+import { ExtendedClient } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 
 const OPEN_FOLDER_ACTION = 'Open Folder';
@@ -63,7 +63,7 @@ export function showChangeStatusConfirmationDialog(changeStatusType: ChangeStatu
     'Yes');
 }
 
-export async function showSslCertificateConfirmationDialog(cert: SslCertificateConfirmationParams) {
+export async function showSslCertificateConfirmationDialog(cert: ExtendedClient.SslCertificateConfirmationParams) {
   const trust = 'Trust';
   const dontTrust = 'Don\'t trust';
   const fingerprints = cert.sha256Fingerprint === '' ? '' :

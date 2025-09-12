@@ -5,14 +5,14 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import { Flow, Issue, TextRange } from '../../src/lsp/protocol';
+import { ExtendedClient } from '../../src/lsp/protocol';
 import { adaptFlows, createDiagnosticFromIssue, isFileLevelIssue } from '../../src/util/issue';
 import { expect } from 'chai';
 
 suite('issues', () => {
   suite('createDiagnosticFromIssue', () => {
     test('should create diagnostic from regular issue', () => {
-      const issue: Issue = {
+      const issue: ExtendedClient.Issue = {
         fileUri: 'fileUri',
         message: 'Fix this',
         ruleKey: 'myRuleKey',
@@ -39,7 +39,7 @@ suite('issues', () => {
     });
 
     test('should create diagnostic from file-level issue', () => {
-      const issue: Issue = {
+      const issue: ExtendedClient.Issue = {
         fileUri: 'fileUri',
         message: 'Fix this',
         ruleKey: 'myRuleKey',
@@ -66,7 +66,7 @@ suite('issues', () => {
     });
   });
   test('should adaptFlows', async () => {
-    const flow: Flow = {
+    const flow: ExtendedClient.Flow = {
       locations: [
         {
           uri: 'file:///my/file',
@@ -96,7 +96,7 @@ suite('issues', () => {
         }
       ]
     };
-    const issue: Issue = {
+    const issue: ExtendedClient.Issue = {
       fileUri: 'fileUri',
       message: 'Fix this',
       ruleKey: 'myRuleKey',
@@ -119,28 +119,28 @@ suite('issues', () => {
   });
 
   test('isFileLevelIssue', () => {
-    const textRange1: TextRange = {
+    const textRange1: ExtendedClient.TextRange = {
       startLine: 0,
       startLineOffset: 0,
       endLine: 0,
       endLineOffset: 0
     };
 
-    const textRange2: TextRange = {
+    const textRange2: ExtendedClient.TextRange = {
       startLine: 0,
       startLineOffset: 0,
       endLine: 1,
       endLineOffset: 2
     };
 
-    const textRange3: TextRange = {
+    const textRange3: ExtendedClient.TextRange = {
       startLine: 2,
       startLineOffset: 0,
       endLine: 0,
       endLineOffset: 0
     };
 
-    const textRange4: TextRange = {
+    const textRange4: ExtendedClient.TextRange = {
       startLine: 1,
       startLineOffset: 2,
       endLine: 3,

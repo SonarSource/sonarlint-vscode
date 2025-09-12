@@ -17,7 +17,7 @@ import {
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { assert } from 'chai';
-import { Organization } from '../../src/lsp/protocol';
+import { ExtendedServer } from '../../src/lsp/protocol';
 
 const TEN_SECONDS = 10_000;
 
@@ -38,7 +38,7 @@ const mockClient = {
   onTokenUpdate(connectionId, token) {
     // NOP
   },
-  async listUserOrganizations(token: string, region: string) : Promise<Organization[]> {
+  async listUserOrganizations(token: string, region: string) : Promise<ExtendedServer.Organization[]> {
     return Promise.resolve([]);
   }
 } as SonarLintExtendedLanguageClient;

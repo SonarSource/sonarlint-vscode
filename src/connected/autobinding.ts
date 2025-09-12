@@ -11,11 +11,8 @@ import { BindingService } from './binding';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import {
   BindingSuggestion,
-  FolderUriParams,
-  FoundFileDto,
-  ListFilesInScopeResponse,
-  SuggestBindingParams,
-  BindingCreationMode
+  ExtendedClient,
+  ExtendedServer
 } from '../lsp/protocol';
 import { DEFAULT_CONNECTION_ID, SonarLintDocumentation } from '../commons';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
@@ -43,7 +40,7 @@ const CONFIGURE_BINDING_MANUALLY_PROMPT_MESSAGE = `SonarQube for IDE could not f
 
 export class AutoBindingService implements FileSystemSubscriber {
   private static _instance: AutoBindingService;
-  private readonly filesPerConfigScope : Map<string, FoundFileDto[]> = new Map<string, FoundFileDto[]>();
+  private readonly filesPerConfigScope = new Map<string, ExtendedClient.FoundFileDto[]>();
 
   static init(
     bindingService: BindingService,
@@ -67,7 +64,7 @@ export class AutoBindingService implements FileSystemSubscriber {
     return AutoBindingService._instance;
   }
 
-  async checkConditionsAndAttemptAutobinding(params: SuggestBindingParams) {
+  async checkConditionsAndAttemptAutobinding(params: ExtendedClient.SuggestBindingParams) {
     const bindingSuggestionsPerConfigScope = params.suggestions;
     if (!this.isConnectionConfigured() || // no connections
      this.workspaceState.get(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG) // don't ask again
@@ -271,8 +268,8 @@ export class AutoBindingService implements FileSystemSubscriber {
       DONT_ASK_AGAIN_ACTION
     );
     const bindingCreationMode = bindingSuggestion.isFromSharedConfiguration ?
-      BindingCreationMode.IMPORTED :
-      BindingCreationMode.AUTOMATIC;
+      ExtendedServer.BindingCreationMode.IMPORTED :
+      ExtendedServer.BindingCreationMode.AUTOMATIC;
 
     switch (result) {
       case BIND_ACTION:
@@ -336,10 +333,10 @@ export class AutoBindingService implements FileSystemSubscriber {
     this.filesPerConfigScope.set(workspaceFolderUri.toString(), []);
   }
 
-  async listAutobindingFilesInFolder(params: FolderUriParams): Promise<ListFilesInScopeResponse> {
+  async listAutobindingFilesInFolder(params: ExtendedClient.FolderUriParams): Promise<ExtendedClient.ListFilesInScopeResponse> {
     const baseFolderUri = vscode.Uri.parse(params.folderUri);
     await this.getContentOfAutobindingFiles(params.folderUri);
-    const foundFiles: Array<FoundFileDto> = [
+    const foundFiles: Array<ExtendedClient.FoundFileDto> = [
       ...await this.listJsonFilesInDotSonarLint(baseFolderUri),
       ...this.filesPerConfigScope.get(baseFolderUri.toString()) || []
     ];
@@ -364,7 +361,7 @@ export class AutoBindingService implements FileSystemSubscriber {
         return [];
       }
       const baseFiles = await vscode.workspace.fs.readDirectory(dotSonarLintUri);
-      const foundFiles: Array<FoundFileDto> = [];
+      const foundFiles: Array<ExtendedClient.FoundFileDto> = [];
       for (const [name, type] of baseFiles) {
         const fullFileUri = vscode.Uri.joinPath(dotSonarLintUri, name);
 
@@ -378,7 +375,7 @@ export class AutoBindingService implements FileSystemSubscriber {
     }
   }
 
-  private async readJsonFiles(name: string, fullFileUri: vscode.Uri, foundFiles: Array<FoundFileDto>) {
+  private async readJsonFiles(name: string, fullFileUri: vscode.Uri, foundFiles: Array<ExtendedClient.FoundFileDto>) {
     let content: string = null;
     if (name.endsWith('.json')) {
       content = (await vscode.workspace.fs.readFile(fullFileUri)).toString();

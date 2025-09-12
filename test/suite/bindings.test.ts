@@ -17,7 +17,7 @@ import {
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from '../../src/connected/connections';
-import * as protocol from '../../src/lsp/protocol';
+import { ExtendedClient, ConnectionCheckResult } from '../../src/lsp/protocol';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 import { sleep } from '../testutil';
 import { SharedConnectedModeSettingsService } from '../../src/connected/sharedConnectedModeSettingsService';
@@ -55,7 +55,7 @@ const mockClient = {
   async checkConnection(connectionId: string) {
     return Promise.resolve({ connectionId, success: true });
   },
-  async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<protocol.SuggestBindingParams> {
+  async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<ExtendedClient.SuggestBindingParams> {
     return Promise.resolve({suggestions:{}});
   },
   async didCreateBinding(mode) {
@@ -70,7 +70,7 @@ const mockSettingsService = {
   async loadSonarCloudConnection(connectionId: string): Promise<SonarCloudConnection> {
     return { organizationKey: 'orgKey', connectionId };
   },
-  getStatusForConnection: (connectionId: string): protocol.ConnectionCheckResult => {
+  getStatusForConnection: (connectionId: string): ConnectionCheckResult => {
     console.log('Checking connection', connectionId)
     if (connectionId === 'test') {
       return { connectionId, success: true };

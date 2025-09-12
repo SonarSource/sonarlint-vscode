@@ -12,7 +12,7 @@ import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
 import { FindingsTreeDataProvider } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource } from '../../../src/findings/findingsTreeDataProviderUtil';
-import { ImpactSeverity } from '../../../src/lsp/protocol';
+import { ExtendedServer } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { NotebookFindingNode } from '../../../src/findings/findingTypes/notebookFindingNode';
 import { FindingNode } from '../../../src/findings/findingTypes/findingNode';
@@ -183,7 +183,7 @@ function createMockFindingNode(options: {
       isAiCodeFixable: false,
       hasQuickFix: false,
       isOnNewCode: false,
-      impactSeverity: ImpactSeverity.MEDIUM
+      impactSeverity: ExtendedServer.ImpactSeverity.MEDIUM
     }
   };
 

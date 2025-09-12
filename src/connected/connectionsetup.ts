@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { BindingService } from './binding';
 import { Connection } from './connections';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import { BindingCreationMode, ConnectionCheckResult, Organization } from '../lsp/protocol';
+import { ExtendedServer, ConnectionCheckResult } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -191,7 +191,7 @@ interface RenderOptions {
 
 interface WebviewInitialState {
   conn: SonarQubeConnection | SonarCloudConnection;
-  userOrganizations?: Organization[];
+  userOrganizations?: ExtendedServer.Organization[];
 }
 
 function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: vscode.Webview, options: RenderOptions) {
@@ -457,7 +457,7 @@ async function saveConnection(
   if (connection.projectKey && connection.folderUri) {
     const folderUri = vscode.Uri.parse(connection.folderUri);
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
-    const bindingCreationMode = connection.isFromSharedConfiguration ? BindingCreationMode.IMPORTED : BindingCreationMode.AUTOMATIC;
+    const bindingCreationMode = connection.isFromSharedConfiguration ? ExtendedServer.BindingCreationMode.IMPORTED : ExtendedServer.BindingCreationMode.AUTOMATIC;
     await BindingService.instance.saveBinding(connection.projectKey, workspaceFolder, bindingCreationMode, connection.connectionId);
   }
 

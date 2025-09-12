@@ -7,15 +7,15 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { HotspotProbability } from '../lsp/protocol';
+import { ExtendedClient } from '../lsp/protocol';
 import { renderRuleDescription } from '../rules/rulepanel';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
 
 export function formatProbability(vulnerabilityProbability: string) {
-  const enumValues = Object.keys(HotspotProbability).filter(v => isNaN(Number(v)));
+  const enumValues = Object.keys(ExtendedClient.HotspotProbability).filter(v => Number.isNaN(Number(v)));
   const enumIndex = enumValues.indexOf(vulnerabilityProbability.toLowerCase());
-  const probabilityName = HotspotProbability[enumIndex];
+  const probabilityName = ExtendedClient.HotspotProbability[enumIndex];
   return `<span class="hotspot-probability hotspot-probability-${probabilityName}">${probabilityName}</span>`;
 }
 

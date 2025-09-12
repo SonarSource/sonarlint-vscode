@@ -11,7 +11,7 @@ import { assert, expect } from 'chai';
 import { SONARLINT_CATEGORY } from '../../../src/settings/settings';
 import * as sinon from 'sinon';
 import { SetUpConnectedModeTool } from '../../../src/languageModelTools/setUpConnectedModeTool';
-import { GetConnectionSuggestionsResponse } from '../../../src/lsp/protocol';
+import { ExtendedServer } from '../../../src/lsp/protocol';
 import * as connectionSetup from '../../../src/connected/connectionsetup';
 import { Commands } from '../../../src/util/commands';
 
@@ -53,7 +53,7 @@ const mockClient = {
     console.log(`Tool called: ${name}, Success: ${success}`);
   },
 
-  getConnectionSuggestions: async (_workspaceFolder: string): Promise<GetConnectionSuggestionsResponse> => {
+  getConnectionSuggestions: async (_workspaceFolder: string): Promise<ExtendedServer.GetConnectionSuggestionsResponse> => {
     return {
       connectionSuggestions: [
         {

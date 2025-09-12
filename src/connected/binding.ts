@@ -16,7 +16,7 @@ import { Connection, ServerType, WorkspaceFolderItem } from './connections';
 import { buildProjectOverviewBaseServerUrl, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import { AssistBindingParams, BindingCreationMode, ShowSoonUnsupportedVersionMessageParams } from '../lsp/protocol';
+import { ExtendedClient, ExtendedServer } from '../lsp/protocol';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
 import { SharedConnectedModeSettingsService } from './sharedConnectedModeSettingsService';
 import OPEN_BROWSER = Commands.OPEN_BROWSER;
@@ -35,7 +35,7 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId: '', projectKey: '' });
-    await this.languageClient.didCreateBinding(BindingCreationMode.MANUAL);
+    await this.languageClient.didCreateBinding(ExtendedServer.BindingCreationMode.MANUAL);
   }
   VSCode.commands.executeCommand('workbench.action.openFolderSettingsFile');
 }
@@ -125,7 +125,7 @@ export class BindingService {
     return bindingStatePerFolder;
   }
 
-  async assistBinding(params: AssistBindingParams) {
+  async assistBinding(params: ExtendedClient.AssistBindingParams) {
     const workspaceFolders = VSCode.workspace.workspaceFolders;
     const selectedWorkspaceFolderName = await this.showFolderSelectionQuickPickOrReturnDefaultSelection(
       workspaceFolders
@@ -135,7 +135,7 @@ export class BindingService {
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
       .update(BINDING_SETTINGS, { connectionId: params.connectionId, projectKey: params.projectKey });
-    await this.languageClient.didCreateBinding(params.isFromSharedConfiguration ? BindingCreationMode.IMPORTED : BindingCreationMode.AUTOMATIC);
+    await this.languageClient.didCreateBinding(params.isFromSharedConfiguration ? ExtendedServer.BindingCreationMode.IMPORTED : ExtendedServer.BindingCreationMode.AUTOMATIC);
 
     return { configurationScopeId: workspaceFolder.uri.toString() };
   }
@@ -232,7 +232,7 @@ export class BindingService {
       remoteProjectsQuickPick.onDidChangeSelection(selection => {
         selectedRemoteProject = selection[0];
 
-        this.saveBinding(selectedRemoteProject.description, workspaceFolder, BindingCreationMode.MANUAL, connectionId);
+        this.saveBinding(selectedRemoteProject.description, workspaceFolder, ExtendedServer.BindingCreationMode.MANUAL, connectionId);
         remoteProjectsQuickPick.dispose();
       });
 
@@ -274,7 +274,7 @@ export class BindingService {
         );
   }
 
-  async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, creationMode: BindingCreationMode, connectionId?: string) {
+  async saveBinding(projectKey: string, workspaceFolder: VSCode.WorkspaceFolder, creationMode: ExtendedServer.BindingCreationMode, connectionId?: string) {
     connectionId = connectionId || DEFAULT_CONNECTION_ID;
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY, workspaceFolder)
@@ -283,7 +283,7 @@ export class BindingService {
 
     VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/' has been bound with project '${projectKey}'`);
 
-    if (creationMode === BindingCreationMode.MANUAL) {
+    if (creationMode === ExtendedServer.BindingCreationMode.MANUAL) {
       this.proposeSharingConfig(projectKey, workspaceFolder);
     }
 
@@ -369,7 +369,7 @@ export class BindingService {
   }
 }
 
-export function showSoonUnsupportedVersionMessage(params: ShowSoonUnsupportedVersionMessageParams, workspaceState: Memento){
+export function showSoonUnsupportedVersionMessage(params: ExtendedClient.ShowSoonUnsupportedVersionMessageParams, workspaceState: Memento){
   const hasBeenShown = workspaceState.get<boolean>(params.doNotShowAgainId, false);
   if (!hasBeenShown) {
     VSCode.window.showWarningMessage(params.text, DONT_ASK_AGAIN_ACTION).then(async action => {
