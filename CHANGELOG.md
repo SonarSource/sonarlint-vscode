@@ -1,3 +1,7 @@
+## 4.31
+
+* SonarQube Cloud US region is now generally available
+
 ## 4.30
 
 * Increase minimal supported VSCode version to 1.99.3

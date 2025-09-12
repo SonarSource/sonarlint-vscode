@@ -378,7 +378,7 @@
         "sonarlint.earlyAccess.showRegionSelection": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Show region selection while creating SonarQube Cloud Connection _(Early Access)_",
+          "markdownDescription": "Show region selection while creating SonarQube Cloud Connection",
           "scope": "machine"
         },
         "sonarlint.startFlightRecorder": {
