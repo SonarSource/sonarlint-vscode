@@ -1,3 +1,9 @@
+## 4.31
+
+* SonarQube Cloud US region is now generally available
+* Update Python analyzer 5.8 -> 5.9
+* Update Text & Secrets analyzer 2.27 -> 2.28
+
 ## 4.30
 
 * Increase minimal supported VSCode version to 1.99.3

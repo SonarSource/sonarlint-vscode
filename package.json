@@ -378,7 +378,7 @@
         "sonarlint.earlyAccess.showRegionSelection": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Show region selection while creating SonarQube Cloud Connection _(Early Access)_",
+          "markdownDescription": "Show region selection while creating SonarQube Cloud Connection",
           "scope": "machine"
         },
         "sonarlint.startFlightRecorder": {
@@ -1320,7 +1320,7 @@
     {
       "groupId": "org.sonarsource.python",
       "artifactId": "sonar-python-plugin",
-      "version": "5.8.0.24785",
+      "version": "5.9.0.25193",
       "output": "analyzers/sonarpython.jar"
     },
     {
@@ -1338,7 +1338,7 @@
     {
       "groupId": "org.sonarsource.text",
       "artifactId": "sonar-text-plugin",
-      "version": "2.27.0.7705",
+      "version": "2.28.0.7967",
       "output": "analyzers/sonartext.jar"
     },
     {
