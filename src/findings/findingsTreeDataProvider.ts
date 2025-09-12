@@ -9,7 +9,7 @@
 import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { ImpactSeverity, PublishDiagnosticsParams } from '../lsp/protocol';
+import { ExtendedClient, ExtendedServer } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { getConnectionIdForFile } from '../util/bindingUtils';
 import { isFocusingOnNewCode } from '../settings/settings';
@@ -180,7 +180,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this._onDidChangeTreeData.fire(null);
   }
 
-  updateHotspots(hotspotsPerFile: PublishDiagnosticsParams) {
+  updateHotspots(hotspotsPerFile: ExtendedClient.PublishDiagnosticsParams) {
     const findingNodes = this.convertHotspotsToFindingNodes(hotspotsPerFile);
     this.updateFindingsForFile(hotspotsPerFile.uri, findingNodes, FindingType.SecurityHotspot);
   }
@@ -195,7 +195,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.updateFindingsForFile(fileUri, findingNodes, FindingType.Issue);
   }
 
-  updateDependencyRisks(dependencyRisksPerFolder: PublishDiagnosticsParams) {
+  updateDependencyRisks(dependencyRisksPerFolder: ExtendedClient.PublishDiagnosticsParams) {
     const findingNodes = this.convertDependencyRisksToFindingNodes(dependencyRisksPerFolder.uri, dependencyRisksPerFolder.diagnostics);
     this.updateFindingsForFile(dependencyRisksPerFolder.uri, findingNodes, FindingType.DependencyRisk);
   }
@@ -217,7 +217,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     this.refresh();
   }
 
-  private convertHotspotsToFindingNodes(hotspotsPerFile: PublishDiagnosticsParams): FindingNode[] {
+  private convertHotspotsToFindingNodes(hotspotsPerFile: ExtendedClient.PublishDiagnosticsParams): FindingNode[] {
     return hotspotsPerFile.diagnostics.map(diagnostic => new HotspotNode(hotspotsPerFile.uri, diagnostic));
   }
 
@@ -382,7 +382,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     } else if (this.activeFilter === FilterType.Open_Files_Only) {
       return isFileOpen(finding.fileUri);
     } else if (this.activeFilter === FilterType.High_Severity_Only) {
-      return finding.impactSeverity === ImpactSeverity.HIGH || finding.impactSeverity === ImpactSeverity.BLOCKER;
+      return finding.impactSeverity === ExtendedServer.ImpactSeverity.HIGH ||
+        finding.impactSeverity === ExtendedServer.ImpactSeverity.BLOCKER;
     } else if (this.activeFilter === FilterType.Current_File_Only) {
       return isCurrentFile(finding.fileUri);
     }

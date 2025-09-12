@@ -8,7 +8,7 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { SubmitNewCodeDefinitionParams } from '../lsp/protocol';
+import { ExtendedClient } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { code2ProtocolConverter } from '../util/uri';
 
@@ -33,7 +33,7 @@ export class NewCodeDefinitionService {
     return NewCodeDefinitionService._instance;
   }
 
-  updateNewCodeDefinitionForFolderUri(params: SubmitNewCodeDefinitionParams) {
+  updateNewCodeDefinitionForFolderUri(params: ExtendedClient.SubmitNewCodeDefinitionParams) {
     this.newCodeDefinitionByFolderUriCache.set(params.folderUri,
       {
         isSupported: params.isSupported,

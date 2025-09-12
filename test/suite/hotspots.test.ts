@@ -17,7 +17,7 @@ import {
   showSecurityHotspot,
   useProvidedFolderOrPickManuallyAndScan
 } from '../../src/hotspot/hotspots';
-import { HotspotProbability, RemoteHotspot } from '../../src/lsp/protocol';
+import { ExtendedClient, ExtendedServer } from '../../src/lsp/protocol';
 import { Position, Selection } from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { expect } from 'chai';
@@ -29,7 +29,7 @@ import * as sinon from 'sinon';
 import { FindingsTreeDataProvider, FindingsTreeViewItem } from '../../src/findings/findingsTreeDataProvider';
 import { HotspotReviewPriority } from '../../src/findings/findingTypes/hotspotNode';
 
-const templateHotspot: RemoteHotspot = {
+const templateHotspot: ExtendedClient.RemoteHotspot = {
   message: 'Hotspot here!',
   ideFilePath: '',
   key: '',
@@ -45,7 +45,7 @@ const templateHotspot: RemoteHotspot = {
     key: 'java:S4242',
     name: 'Life, The Universe and Everything',
     securityCategory: 'dos',
-    vulnerabilityProbability: HotspotProbability.high,
+    vulnerabilityProbability: ExtendedClient.HotspotProbability.high,
     riskDescription: 'Answering to this question might require building a huge planet-sized computer',
     vulnerabilityDescription: 'If it is built on the path of a galactic highway, you might never get the answer',
     fixRecommendations: 'Build it somewhere else'
@@ -57,7 +57,7 @@ const templateHotspotRange = new Selection(
   new Position(templateHotspot.textRange.endLine - 1, templateHotspot.textRange.endLineOffset)
 );
 
-function buildHotspot(filePath: string, vulnerabilityProbability: HotspotProbability = HotspotProbability.medium) {
+function buildHotspot(filePath: string, vulnerabilityProbability = ExtendedClient.HotspotProbability.medium) {
   const newHotspot = { ...templateHotspot };
   newHotspot.ideFilePath = filePath;
   newHotspot.rule.vulnerabilityProbability = vulnerabilityProbability;
@@ -303,18 +303,18 @@ Please make sure that the right folder is open and bound to the right project on
 
   suite('diagnosticSeverity', () => {
     test('High probability maps to Error severity', () => {
-      assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.high)), HotspotReviewPriority.High);
+      assert.strictEqual(diagnosticSeverity(buildHotspot('file', ExtendedClient.HotspotProbability.high)), HotspotReviewPriority.High);
     });
 
     test('Medium probability maps to Warning severity', () => {
       assert.strictEqual(
-        diagnosticSeverity(buildHotspot('file', HotspotProbability.medium)),
+        diagnosticSeverity(buildHotspot('file', ExtendedClient.HotspotProbability.medium)),
         HotspotReviewPriority.Medium
       );
     });
 
     test('Low probability maps to Info severity', () => {
-      assert.strictEqual(diagnosticSeverity(buildHotspot('file', HotspotProbability.low)), HotspotReviewPriority.Low);
+      assert.strictEqual(diagnosticSeverity(buildHotspot('file', ExtendedClient.HotspotProbability.low)), HotspotReviewPriority.Low);
     });
 
     test('should not change hotspot status when not permitted', () => {
@@ -325,7 +325,7 @@ Please make sure that the right folder is open and bound to the right project on
           hotspotKey: string,
           folderUri: string,
           fileUri: string
-        ): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+        ): Promise<ExtendedServer.GetAllowedHotspotStatusesResponse> {
           return Promise.resolve({
             permitted: false,
             notPermittedReason: '',
@@ -357,7 +357,7 @@ Please make sure that the right folder is open and bound to the right project on
           hotspotKey: string,
           folderUri: string,
           fileUri: string
-        ): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+        ): Promise<ExtendedServer.GetAllowedHotspotStatusesResponse> {
           return null;
         },
         changeHotspotStatus(hotspotKey: string, newStatus: string, fileUri: string): Promise<void> {
@@ -385,7 +385,7 @@ Please make sure that the right folder is open and bound to the right project on
           hotspotKey: string,
           folderUri: string,
           fileUri: string
-        ): Promise<protocol.GetAllowedHotspotStatusesResponse> {
+        ): Promise<ExtendedServer.GetAllowedHotspotStatusesResponse> {
           return Promise.resolve({
             permitted: true,
             notPermittedReason: '',

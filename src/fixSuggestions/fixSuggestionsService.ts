@@ -1,4 +1,4 @@
-import { ShowFixSuggestionParams } from "../lsp/protocol";
+import { ExtendedClient } from "../lsp/protocol";
 import * as vscode from "vscode";
 import { logToSonarLintOutput } from "../util/logging";
 import { SonarLintExtendedLanguageClient } from "../lsp/client";
@@ -18,7 +18,7 @@ export class FixSuggestionService {
 		return FixSuggestionService._instance;
 	}
 
-	showFixSuggestion = async (params : ShowFixSuggestionParams) => {
+	showFixSuggestion = async (params : ExtendedClient.ShowFixSuggestionParams) => {
 		try {
 			const fileUri = vscode.Uri.parse(params.fileUri);
 			if (!(await pathExists(fileUri))) {

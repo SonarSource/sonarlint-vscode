@@ -11,7 +11,7 @@ import * as path from 'path';
 import * as process from 'process';
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
-import { AnalysisFile, FileUris, ShouldAnalyseFileCheckResult } from '../lsp/protocol';
+import { AnalysisFile, ExtendedClient } from '../lsp/protocol';
 import { code2ProtocolConverter } from './uri';
 import { verboseLogToSonarLintOutput } from './logging';
 import { BindingService } from '../connected/binding';
@@ -263,7 +263,7 @@ export function getIdeFileExclusions(excludes): string[] {
   return excludedPatterns;
 }
 
-export function shouldAnalyseFile(fileUriStr: string): ShouldAnalyseFileCheckResult {
+export function shouldAnalyseFile(fileUriStr: string): ExtendedClient.ShouldAnalyseFileCheckResult {
   const isOpen = isOpenInEditor(fileUriStr);
   if (!isOpen) {
     return { shouldBeAnalysed: false, reason: 'Skipping analysis for the file preview: ' };
@@ -285,7 +285,7 @@ export function shouldAnalyseFile(fileUriStr: string): ShouldAnalyseFileCheckRes
   return { shouldBeAnalysed: filteredFile.length === 1, reason: 'Skipping analysis for the excluded file: ' };
 }
 
-export function filterOutFilesIgnoredForAnalysis(fileUris: string[]): FileUris {
+export function filterOutFilesIgnoredForAnalysis(fileUris: string[]): ExtendedClient.FileUris {
   // assuming non-empty and all files from the same workspace
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(fileUris[0]));
   let scope = null;

@@ -9,15 +9,15 @@
 import * as VSCode from 'vscode';
 import { identity, negate } from 'lodash';
 import { BindingService } from '../connected/binding';
-import { ConfigLevel, Rule, RulesResponse } from '../lsp/protocol';
+import { ExtendedServer } from '../lsp/protocol';
 import { getSonarLintConfiguration } from '../settings/settings';
 import { Commands } from '../util/commands';
 
-function isActive(rule: Rule) {
+function isActive(rule: ExtendedServer.Rule) {
   return (rule.activeByDefault && rule.levelFromConfig !== 'off') || rule.levelFromConfig === 'on';
 }
 
-function actualLevel(rule: Rule) {
+function actualLevel(rule: ExtendedServer.Rule) {
   return isActive(rule) ? 'on' : 'off';
 }
 
@@ -29,7 +29,7 @@ export class LanguageNode extends VSCode.TreeItem {
 }
 
 export class RuleNode extends VSCode.TreeItem {
-  constructor(public readonly rule: Rule) {
+  constructor(public readonly rule: ExtendedServer.Rule) {
     super(`${rule.name}`);
     this.contextValue = `rule-${actualLevel(rule)}`;
     this.id = rule.key.toUpperCase();
@@ -47,10 +47,10 @@ export type AllRulesNode = LanguageNode | RuleNode;
 export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRulesNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<AllRulesNode | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<AllRulesNode | undefined> = this._onDidChangeTreeData.event;
-  private levelFilter?: ConfigLevel;
-  private allRules: RulesResponse;
+  private levelFilter?: ExtendedServer.ConfigLevel;
+  private allRules: ExtendedServer.RulesResponse;
 
-  constructor(private readonly allRulesProvider: () => Thenable<RulesResponse>) {}
+  constructor(private readonly allRulesProvider: () => Thenable<ExtendedServer.RulesResponse>) {}
 
   async getChildren(node: AllRulesNode) {
     const localRuleConfig = VSCode.workspace.getConfiguration('sonarlint.rules');
@@ -111,7 +111,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
     this._onDidChangeTreeData.fire(null);
   }
 
-  filter(level?: ConfigLevel) {
+  filter(level?: ExtendedServer.ConfigLevel) {
     this.levelFilter = level;
     this.refresh();
   }
@@ -126,7 +126,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
   }
 }
 
-function byName(r1: Rule, r2: Rule) {
+function byName(r1: ExtendedServer.Rule, r2: ExtendedServer.Rule) {
   return r1.name.toLowerCase().localeCompare(r2.name.toLowerCase());
 }
 
@@ -147,7 +147,7 @@ export function allFalse(values: boolean[]) {
   return values.length === 0 || values.every(negate(identity));
 }
 
-export function toggleRule(level: ConfigLevel) {
+export function toggleRule(level: ExtendedServer.ConfigLevel) {
   return async (ruleKey: string | RuleNode) => {
     const configuration = getSonarLintConfiguration();
     const rules = configuration.get('rules') || {};

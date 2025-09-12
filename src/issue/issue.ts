@@ -17,9 +17,8 @@ import {
   pathExists
 } from '../util/uri';
 import { showNoActiveFileOpenWarning, showNoFileWithUriError } from '../util/showMessage';
-import { AnalysisFile, CheckIssueStatusChangePermittedResponse } from '../lsp/protocol';
+import { AnalysisFile, ExtendedClient, ExtendedServer } from '../lsp/protocol';
 import { isValidRange, LocationTreeItem, SecondaryLocationsTree } from '../location/locations';
-import * as protocol from '../lsp/protocol';
 import { DateTime } from 'luxon';
 import { adaptFlows, createDiagnosticFromIssue } from '../util/issue';
 import { ContextManager } from '../contextManager';
@@ -48,11 +47,11 @@ export class IssueService {
   checkIssueStatusChangePermitted(
     folderUri: string,
     issueKey: string
-  ): Promise<CheckIssueStatusChangePermittedResponse> {
+  ): Promise<ExtendedServer.CheckIssueStatusChangePermittedResponse> {
     return this.languageClient.checkIssueStatusChangePermitted(folderUri, issueKey);
   }
 
-  async checkDependencyRiskStatusChangePermitted(issueKey: string): Promise<CheckIssueStatusChangePermittedResponse> {
+  async checkDependencyRiskStatusChangePermitted(issueKey: string): Promise<ExtendedServer.CheckIssueStatusChangePermittedResponse> {
     const allowedTransitions = await this.languageClient.getDependencyRiskTransitions(issueKey);
     return {
       permitted: allowedTransitions.transitions.length > 0,
@@ -129,7 +128,7 @@ export class IssueService {
     return Promise.resolve();
   }
 
-  static async showIssue(issue: protocol.Issue) {
+  static async showIssue(issue: ExtendedClient.Issue) {
     const documentUri = protocol2CodeConverter(issue.fileUri);
     const exists = await pathExists(documentUri);
     if (documentUri == null || !exists) {
@@ -163,7 +162,7 @@ export class IssueService {
     }
   }
 
-  static async showAllLocations(issue: protocol.Issue) {
+  static async showAllLocations(issue: ExtendedClient.Issue) {
     // make sure the view is visible
     ContextManager.instance.setIssueLocationsContext();
     await IssueService._instance.secondaryLocationsTree.showAllLocations(issue);

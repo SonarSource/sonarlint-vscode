@@ -43,7 +43,6 @@ import { FilterType, getFilterDisplayName } from './findings/findingsTreeDataPro
 import { getJavaConfig, installClasspathListener } from './java/java';
 import { LocationTreeItem, navigateToLocation, SecondaryLocationsTree } from './location/locations';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
-import * as protocol from './lsp/protocol';
 import { languageServerCommand } from './lsp/server';
 import { showRuleDescription } from './rules/rulepanel';
 import { AllRulesTreeDataProvider, LanguageNode, RuleNode, setRulesViewMessage, toggleRule } from './rules/rules';
@@ -68,7 +67,7 @@ import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { IssueService } from './issue/issue';
 import { CAN_SHOW_MISSING_REQUIREMENT_NOTIF, showSslCertificateConfirmationDialog } from './util/showMessage';
 import { NewCodeDefinitionService } from './newcode/newCodeDefinitionService';
-import { ShowIssueNotification } from './lsp/protocol';
+import { ExtendedClient, ExtendedServer } from './lsp/protocol';
 import { maybeShowWiderLanguageSupportNotification } from './promotions/promotionalNotifications';
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
@@ -271,7 +270,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   const scm = await initScm(languageClient, referenceBranchStatusItem);
   context.subscriptions.push(scm);
   context.subscriptions.push(
-    languageClient.onNotification(protocol.SetReferenceBranchNameForFolderNotification.type, params => {
+    languageClient.onNotification(ExtendedClient.SetReferenceBranchNameForFolderNotification.type, params => {
       scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
     })
   );
@@ -299,9 +298,9 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   IssueService.init(languageClient, secondaryLocationsTree, issueLocationsView);
 
-  context.subscriptions.push(languageClient.onNotification(ShowIssueNotification.type, IssueService.showIssue));
+  context.subscriptions.push(languageClient.onNotification(ExtendedClient.ShowIssueNotification.type, IssueService.showIssue));
   
-  context.subscriptions.push(languageClient.onNotification(protocol.StartProgressNotification.type, (params: protocol.StartProgressNotificationParams) => {
+  context.subscriptions.push(languageClient.onNotification(ExtendedClient.StartProgressNotification.type, (params: ExtendedClient.StartProgressNotificationParams) => {
     const taskId = params.taskId;
     if (currentProgress[taskId]) {
       // If there's an existing progress, resolve it first
@@ -325,7 +324,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     );
   }));
 
-  context.subscriptions.push(languageClient.onNotification(protocol.EndProgressNotification.type, (params: protocol.EndProgressNotificationParams) => {
+  context.subscriptions.push(languageClient.onNotification(ExtendedClient.EndProgressNotification.type, (params: ExtendedClient.EndProgressNotificationParams) => {
     const taskId = params.taskId
     if (currentProgress[taskId]) {
       currentProgress[taskId].resolve();
@@ -427,7 +426,7 @@ function cleanRemoteName(remoteName?: string): string {
   return ret;
 }
 
-function suggestBinding(params: protocol.SuggestBindingParams) {
+function suggestBinding(params: ExtendedClient.SuggestBindingParams) {
   logToSonarLintOutput(`Received binding suggestions: ${JSON.stringify(params)}`);
   AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
@@ -495,7 +494,7 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     VSCode.commands.registerCommand(Commands.OPEN_RULE_BY_KEY, async (ruleKey: string) => {
       await VSCode.commands.executeCommand(Commands.SHOW_ALL_RULES);
-      await allRulesView.reveal(new RuleNode({ key: ruleKey.toUpperCase() } as protocol.Rule), {
+      await allRulesView.reveal(new RuleNode({ key: ruleKey.toUpperCase() } as ExtendedServer.Rule), {
         focus: true,
         expand: true
       });
@@ -672,95 +671,95 @@ function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
-  languageClient.onNotification(protocol.ShowFixSuggestion.type, params => FixSuggestionService.instance.showFixSuggestion(params))
-  languageClient.onNotification(protocol.ShowRuleDescriptionNotification.type, showRuleDescription(context));
-  languageClient.onNotification(protocol.SuggestBindingNotification.type, params => suggestBinding(params));
-  languageClient.onRequest(protocol.ListFilesInFolderRequest.type, async (params) => {
+  languageClient.onNotification(ExtendedClient.ShowFixSuggestion.type, params => FixSuggestionService.instance.showFixSuggestion(params))
+  languageClient.onNotification(ExtendedClient.ShowRuleDescriptionNotification.type, showRuleDescription(context));
+  languageClient.onNotification(ExtendedClient.SuggestBindingNotification.type, params => suggestBinding(params));
+  languageClient.onRequest(ExtendedClient.ListFilesInFolderRequest.type, async (params) => {
     await FileSystemServiceImpl.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
     return AutoBindingService.instance.listAutobindingFilesInFolder(params);
   }
   );
-  languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
+  languageClient.onRequest(ExtendedClient.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
-  languageClient.onRequest(protocol.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
-  languageClient.onRequest(protocol.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
-  languageClient.onRequest(protocol.ShouldAnalyseFileCheck.type, params => shouldAnalyseFile(params.uri));
-  languageClient.onRequest(protocol.FilterOutExcludedFiles.type, params =>
+  languageClient.onRequest(ExtendedClient.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
+  languageClient.onRequest(ExtendedClient.ScmCheckRequest.type, fileUri => isIgnoredByScm(fileUri));
+  languageClient.onRequest(ExtendedClient.ShouldAnalyseFileCheck.type, params => shouldAnalyseFile(params.uri));
+  languageClient.onRequest(ExtendedClient.FilterOutExcludedFiles.type, params =>
     filterOutFilesIgnoredForAnalysis(params.fileUris)
   );
-  languageClient.onRequest(protocol.CanShowMissingRequirementNotification.type, () => {
+  languageClient.onRequest(ExtendedClient.CanShowMissingRequirementNotification.type, () => {
     return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true);
   });
-  languageClient.onNotification(protocol.DoNotShowMissingRequirementsMessageAgain.type, () => {
+  languageClient.onNotification(ExtendedClient.DoNotShowMissingRequirementsMessageAgain.type, () => {
     context.globalState.update(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, false);
   })
-  languageClient.onNotification(protocol.MaybeShowWiderLanguageSupportNotification.type, (language) => maybeShowWiderLanguageSupportNotification(context, language));
-  languageClient.onNotification(protocol.RemoveBindingsForDeletedConnections.type, async (connectionIds) => {
+  languageClient.onNotification(ExtendedClient.MaybeShowWiderLanguageSupportNotification.type, (language) => maybeShowWiderLanguageSupportNotification(context, language));
+  languageClient.onNotification(ExtendedClient.RemoveBindingsForDeletedConnections.type, async (connectionIds) => {
     await BindingService.instance.removeBindingsForRemovedConnections(connectionIds);
   });
-  languageClient.onNotification(protocol.ReportConnectionCheckResult.type, checkResult => {
+  languageClient.onNotification(ExtendedClient.ReportConnectionCheckResult.type, checkResult => {
     ConnectionSettingsService.instance.reportConnectionCheckResult(checkResult);
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
   });
-  languageClient.onNotification(protocol.ShowNotificationForFirstSecretsIssueNotification.type, () =>
+  languageClient.onNotification(ExtendedClient.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
   );
-  languageClient.onNotification(protocol.ShowSonarLintOutputNotification.type, () =>
+  languageClient.onNotification(ExtendedClient.ShowSonarLintOutputNotification.type, () =>
     VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
   );
-  languageClient.onNotification(protocol.OpenJavaHomeSettingsNotification.type, () =>
+  languageClient.onNotification(ExtendedClient.OpenJavaHomeSettingsNotification.type, () =>
     VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
   );
-  languageClient.onNotification(protocol.OpenPathToNodeSettingsNotification.type, () =>
+  languageClient.onNotification(ExtendedClient.OpenPathToNodeSettingsNotification.type, () =>
     VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
   );
-  languageClient.onNotification(protocol.BrowseToNotification.type, browseTo =>
+  languageClient.onNotification(ExtendedClient.BrowseToNotification.type, browseTo =>
     VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(browseTo))
   );
-  languageClient.onNotification(protocol.OpenConnectionSettingsNotification.type, isSonarCloud => {
+  languageClient.onNotification(ExtendedClient.OpenConnectionSettingsNotification.type, isSonarCloud => {
     const targetSection = `sonarlint.connectedMode.connections.${isSonarCloud ? 'sonarcloud' : 'sonarqube'}`;
     return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
-  languageClient.onNotification(protocol.ShowHotspotNotification.type, h =>
+  languageClient.onNotification(ExtendedClient.ShowHotspotNotification.type, h =>
     showSecurityHotspot(findingsView, findingsTreeDataProvider, h)
   );
-  languageClient.onNotification(protocol.ShowIssueOrHotspotNotification.type, showAllLocations);
-  languageClient.onNotification(protocol.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
-  languageClient.onRequest(protocol.GetTokenForServer.type, serverId => getTokenForServer(serverId));
-  languageClient.onNotification(protocol.PublishHotspotsForFile.type, async hotspotsPerFile => {
+  languageClient.onNotification(ExtendedClient.ShowIssueOrHotspotNotification.type, showAllLocations);
+  languageClient.onNotification(ExtendedClient.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
+  languageClient.onRequest(ExtendedClient.GetTokenForServer.type, serverId => getTokenForServer(serverId));
+  languageClient.onNotification(ExtendedClient.PublishHotspotsForFile.type, async hotspotsPerFile => {
     findingsTreeDataProvider.updateHotspots(hotspotsPerFile);
   });
-  languageClient.onNotification(protocol.PublishTaintVulnerabilitiesForFile.type, async taintVulnerabilitiesPerFile => {
+  languageClient.onNotification(ExtendedClient.PublishTaintVulnerabilitiesForFile.type, async taintVulnerabilitiesPerFile => {
     findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, taintVulnerabilitiesPerFile.diagnostics);
     TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri));
   });
-  languageClient.onNotification(protocol.NotifyInvalidToken.type, async params => {
+  languageClient.onNotification(ExtendedClient.NotifyInvalidToken.type, async params => {
     await handleInvalidTokenNotification(params.connectionId);
   });
 
-  languageClient.onNotification(protocol.PublishDependencyRisksForFolder.type, async dependencyRisksPerFolder => {
+  languageClient.onNotification(ExtendedClient.PublishDependencyRisksForFolder.type, async dependencyRisksPerFolder => {
     findingsTreeDataProvider.updateDependencyRisks(dependencyRisksPerFolder);
   });
 
   languageClient.onRequest(
-    protocol.AssistBinding.type,
+    ExtendedClient.AssistBinding.type,
     async params => await BindingService.instance.assistBinding(params)
   );
-  languageClient.onRequest(protocol.SslCertificateConfirmation.type, cert =>
+  languageClient.onRequest(ExtendedClient.SslCertificateConfirmation.type, cert =>
     showSslCertificateConfirmationDialog(cert)
   );
-  languageClient.onRequest(protocol.AssistCreatingConnection.type, assistCreatingConnection(context));
-  languageClient.onNotification(protocol.ShowSoonUnsupportedVersionMessage.type, params =>
+  languageClient.onRequest(ExtendedClient.AssistCreatingConnection.type, assistCreatingConnection(context));
+  languageClient.onNotification(ExtendedClient.ShowSoonUnsupportedVersionMessage.type, params =>
     showSoonUnsupportedVersionMessage(params, context.workspaceState)
   );
-  languageClient.onNotification(protocol.SubmitNewCodeDefinition.type, newCodeDefinitionForFolderUri => {
+  languageClient.onNotification(ExtendedClient.SubmitNewCodeDefinition.type, newCodeDefinitionForFolderUri => {
     NewCodeDefinitionService.instance.updateNewCodeDefinitionForFolderUri(newCodeDefinitionForFolderUri);
   });
-  languageClient.onNotification(protocol.SuggestConnection.type, (params) => SharedConnectedModeSettingsService.instance.handleSuggestConnectionNotification(params.suggestionsByConfigScopeId));
-  languageClient.onRequest(protocol.IsOpenInEditor.type, fileUri => {
+  languageClient.onNotification(ExtendedClient.SuggestConnection.type, (params) => SharedConnectedModeSettingsService.instance.handleSuggestConnectionNotification(params.suggestionsByConfigScopeId));
+  languageClient.onRequest(ExtendedClient.IsOpenInEditor.type, fileUri => {
     return VSCode.workspace.textDocuments.some(doc => code2ProtocolConverter(doc.uri) === fileUri);
   });
-  languageClient.onNotification(protocol.FlightRecorderStartedNotification.type, (params) => {
+  languageClient.onNotification(ExtendedClient.FlightRecorderStartedNotification.type, (params) => {
     FlightRecorderService.instance.onFlightRecorderStarted(params.sessionId);
   });
 }
@@ -791,7 +790,7 @@ async function getTokenForServer(serverId: string): Promise<string> {
   return ConnectionSettingsService.instance.getServerToken(serverId);
 }
 
-async function showAllLocations(issue: protocol.Issue) {
+async function showAllLocations(issue: ExtendedClient.Issue) {
   await secondaryLocationsTree.showAllLocations(issue);
   if (issue.creationDate) {
     const createdAgo = issue.creationDate

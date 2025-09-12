@@ -19,7 +19,7 @@ import * as VSCode from 'vscode';
 import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
 import { TextEncoder } from 'util';
-import { FolderUriParams, ListFilesInScopeResponse, SuggestBindingParams } from '../../src/lsp/protocol';
+import { ExtendedClient } from '../../src/lsp/protocol';
 import { FileSystemServiceImpl } from '../../src/fileSystem/fileSystemServiceImpl';
 import { sleep } from '../testutil';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
@@ -42,7 +42,7 @@ const mockClient = {
   async checkConnection(connectionId: string) {
     return Promise.resolve({ connectionId, success: true });
   },
-  async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<SuggestBindingParams> {
+  async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<ExtendedClient.SuggestBindingParams> {
     return Promise.resolve({suggestions: {
       [configScopeId]: [{
         connectionId: connectionId,
@@ -213,7 +213,7 @@ suite('Auto Binding Test Suite', () => {
     });
 
     test('Nothing crashes when folder does not exist', async () => {
-      let params: FolderUriParams = {
+      let params = {
         folderUri: 'nonExistentFolder'
       };
       const p = await underTest.listAutobindingFilesInFolder(params);
@@ -235,7 +235,7 @@ suite('Auto Binding Test Suite', () => {
       // wait for the file to be actually created and reflected in the fs
       sleep(2000);
 
-      const params: FolderUriParams = {
+      const params = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
 
@@ -245,7 +245,7 @@ suite('Auto Binding Test Suite', () => {
       // make sure results get in place
       await sleep(500);
 
-      const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
+      const foundFiles = await underTest.listAutobindingFilesInFolder(params);
 
       expect(foundFiles.foundFiles).to.not.be.empty;
       expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(propsFileName);
@@ -269,10 +269,10 @@ suite('Auto Binding Test Suite', () => {
       await VSCode.workspace.fs.writeFile(connectedModeJsonUri, new TextEncoder().encode(fileContent));
       tempFiles.push(connectedModeJsonUri);
 
-      const params: FolderUriParams = {
+      const params = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
-      const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
+      const foundFiles = await underTest.listAutobindingFilesInFolder(params);
 
       expect(foundFiles.foundFiles).to.not.be.empty;
       expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(connectedModeJson);
@@ -296,11 +296,11 @@ suite('Auto Binding Test Suite', () => {
       await VSCode.workspace.fs.writeFile(connectedModeJsonUri, new TextEncoder().encode(fileContent));
       tempFiles.push(connectedModeJsonUri);
 
-      const params: FolderUriParams = {
+      const params = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
 
-      const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
+      const foundFiles = await underTest.listAutobindingFilesInFolder(params);
 
       expect(foundFiles.foundFiles).to.not.be.empty;
       expect(foundFiles.foundFiles.map(value => value.fileName)).to.contain(connectedModeJson);
@@ -317,14 +317,14 @@ suite('Auto Binding Test Suite', () => {
 
       await VSCode.workspace.fs.writeFile(javaFileUri, new TextEncoder().encode(fileContent));
       tempFiles.push(javaFileUri);
-      const params: FolderUriParams = {
+      const params = {
         folderUri: VSCode.Uri.parse(workspaceFolder1.uri.path).toString()
       };
 
       // crawl the directory
       await FileSystemServiceImpl.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
 
-      const foundFiles: ListFilesInScopeResponse = await underTest.listAutobindingFilesInFolder(params);
+      const foundFiles = await underTest.listAutobindingFilesInFolder(params);
 
       const filesMatchingJavaFileName = foundFiles.foundFiles.filter(file => file.fileName === javaFileName);
       expect(filesMatchingJavaFileName).to.not.be.empty;

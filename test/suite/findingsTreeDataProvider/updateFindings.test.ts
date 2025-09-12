@@ -12,7 +12,7 @@ import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
 import { FindingsTreeDataProvider } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource } from '../../../src/findings/findingsTreeDataProviderUtil';
-import { ImpactSeverity, PublishDiagnosticsParams } from '../../../src/lsp/protocol';
+import { ExtendedClient, ExtendedServer } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { NotebookFindingNode } from '../../../src/findings/findingTypes/notebookFindingNode';
 import { NotebookNode } from '../../../src/findings/notebookNode';
@@ -62,7 +62,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
 
   suite('updateHotspots', () => {
     test('should update hotspots for a file', () => {
-      const hotspotsPerFile: PublishDiagnosticsParams = {
+      const hotspotsPerFile: ExtendedClient.PublishDiagnosticsParams = {
         uri: TEST_FILE_URI,
         diagnostics: [
           createMockDiagnostic({
@@ -104,7 +104,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       (underTest as any).findingsCache.set(TEST_FILE_URI, existingFindings);
 
       // Update with new hotspots
-      const hotspotsPerFile: PublishDiagnosticsParams = {
+      const hotspotsPerFile: ExtendedClient.PublishDiagnosticsParams = {
         uri: TEST_FILE_URI,
         diagnostics: [
           createMockDiagnostic({
@@ -147,7 +147,7 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
       (underTest as any).findingsCache.set(TEST_FILE_URI, existingHotspots);
 
       // Update with empty diagnostics
-      const hotspotsPerFile: PublishDiagnosticsParams = {
+      const hotspotsPerFile: ExtendedClient.PublishDiagnosticsParams = {
         uri: TEST_FILE_URI,
         diagnostics: []
       };
@@ -372,7 +372,7 @@ function createMockDiagnostic(options: {
   isAiCodeFixable?: boolean;
   hasQuickFix?: boolean;
   isOnNewCode?: boolean;
-  impactSeverity?: ImpactSeverity;
+  impactSeverity?: ExtendedServer.ImpactSeverity;
 }): Diagnostic {
   const diagnostic = {
     range: { start: { line: 0, character: 0 }, end: { line: 0, character: 10 } },
@@ -386,7 +386,7 @@ function createMockDiagnostic(options: {
       isAiCodeFixable: options.isAiCodeFixable ?? false,
       hasQuickFix: options.hasQuickFix ?? false,
       isOnNewCode: options.isOnNewCode ?? false,
-      impactSeverity: options.impactSeverity ?? ImpactSeverity.MEDIUM
+      impactSeverity: options.impactSeverity ?? ExtendedServer.ImpactSeverity.MEDIUM
     }
   };
   return diagnostic as Diagnostic;
@@ -410,7 +410,7 @@ function createMockVscodeDiagnostic(options: {
     isAiCodeFixable: false,
     hasQuickFix: false,
     isOnNewCode: false,
-    impactSeverity: ImpactSeverity.MEDIUM,
+    impactSeverity: ExtendedServer.ImpactSeverity.MEDIUM,
   }
   return diag as vscode.Diagnostic;
 }
@@ -436,7 +436,7 @@ function createMockFindingNode(options: {
       isAiCodeFixable: false,
       hasQuickFix: false,
       isOnNewCode: false,
-      impactSeverity: ImpactSeverity.MEDIUM
+      impactSeverity: ExtendedServer.ImpactSeverity.MEDIUM
     }
   } as Diagnostic;
 

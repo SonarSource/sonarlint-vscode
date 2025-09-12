@@ -9,7 +9,7 @@ import * as CompareVersions from 'compare-versions';
 import * as VSCode from 'vscode';
 import { Disposable } from 'vscode-languageclient';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { GetJavaConfigResponse } from '../lsp/protocol';
+import { ExtendedClient } from '../lsp/protocol';
 import { logToSonarLintOutput } from '../util/logging';
 
 let classpathChangeListener: Disposable;
@@ -89,7 +89,7 @@ function isJavaApiRecentEnough(apiVersion: string): boolean {
 export async function getJavaConfig(
   languageClient: SonarLintExtendedLanguageClient,
   fileUri: string
-): Promise<GetJavaConfigResponse> {
+): Promise<ExtendedClient.GetJavaConfigResponse> {
   const extension = getJavaExtension();
   try {
     const extensionApi = await extension?.activate();

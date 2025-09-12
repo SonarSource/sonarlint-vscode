@@ -13,7 +13,7 @@ import {
   FindingType,
   impactSeverityToIcon
 } from '../findingsTreeDataProviderUtil';
-import { ImpactSeverity } from '../../lsp/protocol';
+import { ExtendedServer } from '../../lsp/protocol';
 import { Commands } from '../../util/commands';
 import { Diagnostic } from 'vscode-languageserver-types';
 
@@ -30,7 +30,7 @@ export class FindingNode extends vscode.TreeItem {
   public readonly severity?: number;
   public readonly isAiCodeFixable: boolean;
   public readonly hasQuickFix: boolean;
-  public readonly impactSeverity: ImpactSeverity;
+  public readonly impactSeverity: ExtendedServer.ImpactSeverity;
 
   constructor(
     public readonly fileUri: string,
@@ -62,7 +62,7 @@ export class FindingNode extends vscode.TreeItem {
     this.status = finding['data']?.status;
     this.isOnNewCode = finding['data']?.isOnNewCode;
     this.severity = finding.severity;
-    this.impactSeverity = finding['data']?.impactSeverity as ImpactSeverity;
+    this.impactSeverity = finding['data']?.impactSeverity as ExtendedServer.ImpactSeverity;
     this.description = `${findingLabel} (${this.ruleKey}) [Ln ${this.range.start.line + 1}, Col ${
       this.range.start.character
     }]`;

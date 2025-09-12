@@ -12,7 +12,7 @@ import * as vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
 import { FindingsTreeDataProvider } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource, FilterType } from '../../../src/findings/findingsTreeDataProviderUtil';
-import { ImpactSeverity } from '../../../src/lsp/protocol';
+import { ExtendedServer } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { FindingNode } from '../../../src/findings/findingTypes/findingNode';
 import { FindingsFileNode } from '../../../src/findings/findingsFileNode';
@@ -254,17 +254,17 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
       const highSeverityFinding = createMockFindingNode({ 
         findingType: FindingType.Issue, 
         key: 'test',
-        impactSeverity: ImpactSeverity.HIGH 
+        impactSeverity: ExtendedServer.ImpactSeverity.HIGH
       });
       const blockerFinding = createMockFindingNode({ 
         findingType: FindingType.Issue, 
         key: 'test2',
-        impactSeverity: ImpactSeverity.BLOCKER 
+        impactSeverity: ExtendedServer.ImpactSeverity.BLOCKER
       });
       const mediumSeverityFinding = createMockFindingNode({ 
         findingType: FindingType.Issue, 
         key: 'test3',
-        impactSeverity: ImpactSeverity.MEDIUM 
+        impactSeverity: ExtendedServer.ImpactSeverity.MEDIUM
       });
       
       underTest.setFilter(FilterType.High_Severity_Only);
@@ -494,7 +494,7 @@ function createMockFindingNode(options: {
   isAiCodeFixable?: boolean;
   hasQuickFix?: boolean;
   isOnNewCode?: boolean;
-  impactSeverity?: ImpactSeverity;
+  impactSeverity?: ExtendedServer.ImpactSeverity;
 }): FindingNode {
   const mockDiagnostic = {
     range: { start: { line: 0, character: 0 }, end: { line: 0, character: 10 } },
@@ -507,7 +507,7 @@ function createMockFindingNode(options: {
       isAiCodeFixable: options.isAiCodeFixable ?? false,
       hasQuickFix: options.hasQuickFix ?? false,
       isOnNewCode: options.isOnNewCode ?? false,
-      impactSeverity: options.impactSeverity ?? ImpactSeverity.MEDIUM
+      impactSeverity: options.impactSeverity ?? ExtendedServer.ImpactSeverity.MEDIUM
     }
   } as Diagnostic;
 

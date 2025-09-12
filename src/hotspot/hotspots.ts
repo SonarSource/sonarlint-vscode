@@ -9,13 +9,7 @@
 import * as vscode from 'vscode';
 import { isValidRange, SINGLE_LOCATION_DECORATION } from '../location/locations';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import {
-  AnalysisFile,
-  ExtendedHotspotStatus,
-  HotspotProbability,
-  RemoteHotspot,
-  ShowRuleDescriptionParams
-} from '../lsp/protocol';
+import { AnalysisFile, ExtendedClient, ShowRuleDescriptionParams } from '../lsp/protocol';
 import { filterIgnored, filterOutScmIgnoredFiles } from '../scm/scm';
 import { Commands } from '../util/commands';
 import { verboseLogToSonarLintOutput } from '../util/logging';
@@ -45,14 +39,14 @@ export const HOTSPOTS_VIEW_ID = 'SonarLint.SecurityHotspots';
 export const OPEN_HOTSPOT_IN_IDE_SOURCE = 'openInIde';
 
 const FILE_COUNT_LIMIT_FOR_FULL_PROJECT_ANALYSIS = 1000;
-let activeHotspot: RemoteHotspot;
+let activeHotspot: ExtendedClient.RemoteHotspot;
 let hotspotDescriptionPanel: vscode.WebviewPanel;
 let hotspotDetailsPanel: vscode.WebviewPanel;
 
 export const showSecurityHotspot = async (
   allFindingsView: vscode.TreeView<FindingsTreeViewItem>,
   findingsTreeDataProvider: FindingsTreeDataProvider,
-  remoteHotspot?: RemoteHotspot
+  remoteHotspot?: ExtendedClient.RemoteHotspot
 ) => {
   const foundUris = await vscode.workspace.findFiles(`**/${remoteHotspot.ideFilePath}`);
   if (foundUris.length === 0) {
@@ -72,7 +66,7 @@ export const showSecurityHotspot = async (
   }
 };
 
-function handleFileForHotspotNotFound(hotspot : RemoteHotspot) {
+function handleFileForHotspotNotFound(hotspot : ExtendedClient.RemoteHotspot) {
   vscode.window
     .showErrorMessage(
       `Could not find file '${hotspot.ideFilePath}' in the current workspace.
@@ -91,7 +85,7 @@ Please make sure that the right folder is open and bound to the right project on
 }
 
 async function revealFileInTreeView(
-  hotspot: RemoteHotspot,
+  hotspot: ExtendedClient.RemoteHotspot,
   allFindingsView: vscode.TreeView<FindingsTreeViewItem>,
   findingsTreeDataProvider: FindingsTreeDataProvider
 ) {
@@ -101,11 +95,11 @@ async function revealFileInTreeView(
   allFindingsView.reveal(fileToHighlight, { focus: true });
 }
 
-export function diagnosticSeverity(hotspot: RemoteHotspot) {
+export function diagnosticSeverity(hotspot: ExtendedClient.RemoteHotspot) {
   switch (hotspot.rule.vulnerabilityProbability) {
-    case HotspotProbability.high:
+    case ExtendedClient.HotspotProbability.high:
       return HotspotReviewPriority.High;
-    case HotspotProbability.low:
+    case ExtendedClient.HotspotProbability.low:
       return HotspotReviewPriority.Low;
     default:
       return HotspotReviewPriority.Medium;
@@ -188,7 +182,7 @@ export async function useProvidedFolderOrPickManuallyAndScan(
   languageClient: SonarLintExtendedLanguageClient,
   scan: (folderUri: vscode.Uri, languageClient: SonarLintExtendedLanguageClient) => Promise<void>
 ) {
-  if (!folderUri || !folderUri.path) {
+  if (!folderUri?.path) {
     if (!workspaceFolders || workspaceFolders.length === 0) {
       noWorkspaceFolderToScanMessage();
       return;
@@ -278,7 +272,7 @@ export async function getFilesForHotspotsScan(
 }
 
 export function formatDetectedHotspotStatus(statusIndex: number) {
-  return statusIndex === ExtendedHotspotStatus.ToReview ? 'To review' : ExtendedHotspotStatus[statusIndex].toString();
+  return statusIndex === ExtendedClient.ExtendedHotspotStatus.ToReview ? 'To review' : ExtendedClient.ExtendedHotspotStatus[statusIndex].toString();
 }
 
 export function showHotspotDetails(hotspotDetails: ShowRuleDescriptionParams, hotspot: HotspotNode) {
