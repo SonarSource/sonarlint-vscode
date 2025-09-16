@@ -1,6 +1,7 @@
 ## 4.31
 
 * SonarQube Cloud US region is now generally available
+* Support displaying Dependency Risks in the IDE when connected to SonarQube Cloud for eligible organizations
 * Update Python analyzer 5.8 -> 5.9
 * Update Text & Secrets analyzer 2.27 -> 2.28
 
