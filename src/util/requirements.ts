@@ -159,7 +159,7 @@ export function parseMajorVersion(content: string): number {
   match = regexp.exec(version);
   let javaVersion = 0;
   if (match) {
-    javaVersion = parseInt(match[0]);
+    javaVersion = Number.parseInt(match[0]);
   }
   return javaVersion;
 }
