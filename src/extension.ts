@@ -82,6 +82,7 @@ import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
 import { FindingNode } from './findings/findingTypes/findingNode';
 import { AutomaticAnalysisService } from './settings/automaticAnalysis';
 import { FlightRecorderService } from './monitoring/flightrecorder';
+import { configureMCPServer } from './mcpServerConfig';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -649,6 +650,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DUMP_BACKEND_THREADS, () => {
     languageClient.dumpThreads();
   }));
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, (connection) => configureMCPServer(connection, languageClient))
+  );
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
