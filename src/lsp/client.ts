@@ -126,6 +126,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetSharedConnectedModeConfigFileContents.type, { configScopeId });
   }
 
+  getMCPServerSettings(connectionId: string, token: string): Promise<ExtendedServer.GetMCPServerSettingsResponse> {
+    return this.sendRequest(ExtendedServer.GetMCPServerSettings.type, { connectionId, token });
+  }
+
   checkIssueStatusChangePermitted(
     folderUri: string,
     issueKey: string
