@@ -1113,7 +1113,7 @@
         "description": "MCP Server Configuration",
         "default": {
           "fontPath": "icons/sonarlint.woff",
-          "fontCharacter": "H"
+          "fontCharacter": "M"
         }
       }
     },
