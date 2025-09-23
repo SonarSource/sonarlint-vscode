@@ -36,14 +36,19 @@ enum IDE {
   VSCODE_INSIDERS = 'vscode-insiders'
 }
 
+function isCopilotInstalledAndActive(): boolean {
+  const copilotExtension = vscode.extensions.getExtension('GitHub.copilot');
+  return copilotExtension?.isActive;
+}
+
 export function getCurrentSupportedIDE(): IDE {
   if (vscode.env.appName.toLowerCase().includes('cursor')) {
     return IDE.CURSOR;
   } else if (vscode.env.appName.toLowerCase().includes('windsurf')) {
     return IDE.WINDSURF;
-  } else if (vscode.env.appName.toLowerCase().includes('insiders')) {
+  } else if (vscode.env.appName.toLowerCase().includes('insiders') && isCopilotInstalledAndActive()) {
     return IDE.VSCODE_INSIDERS;
-  } else if (vscode.env.appName.toLowerCase().includes('visual studio code')) {
+  } else if (vscode.env.appName.toLowerCase().includes('visual studio code') && isCopilotInstalledAndActive()) {
     return IDE.VSCODE;
   }
   return undefined;
