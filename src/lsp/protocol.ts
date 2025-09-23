@@ -717,18 +717,18 @@ export namespace ExtendedServer {
       new lsp.RequestType<GetSharedConnectedModeConfigFileParams, GetSharedConnectedModeConfigFileResponse, null>("sonarlint/getSharedConnectedModeFileContent")
   }
 
-  export interface GetMCPServerSettingsParams {
+  export interface GetMCPServerConfigurationParams {
     connectionId: string;
     token: string;
   }
 
-  export interface GetMCPServerSettingsResponse {
-    jsonSettings: string;
+  export interface GetMCPServerConfigurationResponse {
+    jsonConfiguration: string;
   }
 
-  export namespace GetMCPServerSettings {
-    export const type = new lsp.RequestType<GetMCPServerSettingsParams, GetMCPServerSettingsResponse, null>(
-      'sonarlint/getMCPServerSettings'
+  export namespace GetMCPServerConfiguration {
+    export const type = new lsp.RequestType<GetMCPServerConfigurationParams, GetMCPServerConfigurationResponse, null>(
+      'sonarlint/getMCPServerConfiguration'
     );
   }
 

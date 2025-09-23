@@ -253,7 +253,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     /* ignored */
   });
   FixSuggestionService.init(languageClient);
-  ContextManager.instance.setConnectedModeContext(context);
+  ContextManager.instance.initializeContext(context);
 
   FindingsTreeDataProvider.init(context, languageClient);
   findingsTreeDataProvider = FindingsTreeDataProvider.instance;
@@ -343,7 +343,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint.connectedMode')) {
       allConnectionsTreeDataProvider.refresh();
-      ContextManager.instance.setConnectedModeContext(context);
+      ContextManager.instance.initializeContext(context);
     }
     if (event.affectsConfiguration('sonarlint.focusOnNewCode')) {
       NewCodeDefinitionService.instance.updateFocusOnNewCodeState();

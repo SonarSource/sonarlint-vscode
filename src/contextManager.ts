@@ -11,12 +11,14 @@ import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
+import { getCurrentSupportedIDE } from './mcpServerConfig';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
 const SOME_STANDALONE_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseStandaloneMode';
 const HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY = 'sonarqube.hasExploredIssueLocations';
 const SHOULD_SHOW_GET_STARTED_VIEW = 'sonarqube.shouldShowGetStartedView';
 const FLIGHT_RECORDER_RUNNING = 'sonarqube.flightRecorderRunning';
+const MCP_SERVER_SUPPORTED_IDE = 'sonarqube.mcpServerSupportedIDE';
 
 export class ContextManager {
   private static _instance: ContextManager;
@@ -28,8 +30,9 @@ export class ContextManager {
     return ContextManager._instance;
   }
 
-  setConnectedModeContext(context: vscode.ExtensionContext) {
+  initializeContext(context: vscode.ExtensionContext) {
     this.setGetStartedViewContext(context);
+    this.setMCPServerSupportedIDEContext();
     const folderBindingStates = [...BindingService.instance.bindingStatePerFolder().values()];
     if (allTrue(folderBindingStates)) {
       // All folders are bound; Show hotspots view and hide rules view
@@ -44,6 +47,11 @@ export class ContextManager {
       vscode.commands.executeCommand('setContext', SOME_CONNECTED_MODE_CONTEXT_KEY, true);
       vscode.commands.executeCommand('setContext', SOME_STANDALONE_MODE_CONTEXT_KEY, true);
     }
+  }
+
+  setMCPServerSupportedIDEContext() {
+    const isSupportedIDE = getCurrentSupportedIDE() !== undefined;
+    vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_IDE, isSupportedIDE);
   }
 
   setIssueLocationsContext() {
@@ -67,6 +75,7 @@ export class ContextManager {
     vscode.commands.executeCommand('setContext', HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY, undefined);
     vscode.commands.executeCommand('setContext', SHOULD_SHOW_GET_STARTED_VIEW, undefined);
     vscode.commands.executeCommand('setContext', FLIGHT_RECORDER_RUNNING, undefined);
+    vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_IDE, undefined);
   }
 
 }
