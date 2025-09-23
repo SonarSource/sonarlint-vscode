@@ -477,6 +477,14 @@ export namespace ExtendedClient {
   export namespace FlightRecorderStartedNotification {
     export const type = new lsp.NotificationType<FlightRecorderStartedParams>('sonarlint/flightRecorderStarted');
   }
+
+  export interface EmbeddedServerStartedParams {
+    port: number;
+  }
+
+  export namespace EmbeddedServerStartedNotification {
+    export const type = new lsp.NotificationType<EmbeddedServerStartedParams>('sonarlint/embeddedServerStarted');
+  }
 }
 
 /**

@@ -202,6 +202,8 @@ export async function configureMCPServer(
         writeMCPConfig(configPath, config);
 
         progress.report({ increment: 20, message: 'Configuration complete!' });
+
+        openMCPServersListIfCursor();
       }
     );
 
@@ -222,4 +224,25 @@ export async function configureMCPServer(
     logToSonarLintOutput(errorMessage);
     throw error;
   }
+}
+
+function openMCPServersListIfCursor() {
+  const currentIDE = getCurrentSupportedIDE();
+  if (currentIDE === IDE.CURSOR) {
+    vscode.commands.executeCommand('workbench.action.openMCPSettings');
+  }
+}
+
+export function onEmbeddedServerStarted(port: number): void {
+  // need to get MCP config and replace the SONARQUBE_IDE_PORT env variable with the new port
+  const currentIDE = getCurrentSupportedIDE();
+  const configPath = getMCPConfigPath();
+  const config = readMCPConfig(configPath);
+  if (currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS) {
+    (config as MCPConfigurationVSCode).servers.sonarqube.env.SONARQUBE_IDE_PORT = port.toString();
+  } else {
+    (config as MCPConfigurationOthers).mcpServers.sonarqube.env.SONARQUBE_IDE_PORT = port.toString();
+  }
+  writeMCPConfig(configPath, config);
+  logToSonarLintOutput(`Embedded server started on port: ${port}`);
 }

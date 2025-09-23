@@ -82,7 +82,7 @@ import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
 import { FindingNode } from './findings/findingTypes/findingNode';
 import { AutomaticAnalysisService } from './settings/automaticAnalysis';
 import { FlightRecorderService } from './monitoring/flightrecorder';
-import { configureMCPServer } from './mcpServerConfig';
+import { configureMCPServer, onEmbeddedServerStarted } from './mcpServerConfig';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -767,6 +767,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(ExtendedClient.FlightRecorderStartedNotification.type, (params) => {
     FlightRecorderService.instance.onFlightRecorderStarted(params.sessionId);
+  });
+  languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, (params) => {
+    onEmbeddedServerStarted(params.port);
   });
 }
 
