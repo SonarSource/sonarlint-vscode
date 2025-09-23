@@ -667,7 +667,7 @@
         "title": "Configure MCP Server",
         "category": "SonarQube",
         "icon": "$(mcp-server)",
-        "enablement": "view == SonarLint.ConnectedMode"
+        "enablement": "view == SonarLint.ConnectedMode && sonarqube.mcpServerSupportedIDE"
       }
     ],
     "viewsContainers": {
@@ -1042,7 +1042,7 @@
         {
           "command": "SonarLint.ConfigureMCPServer",
           "title": "Configure MCP Server",
-          "when": "view == SonarLint.ConnectedMode && viewItem == sonarcloudConnection || viewItem == sonarqubeConnection",
+          "when": "sonarqube.mcpServerSupportedIDE && view == SonarLint.ConnectedMode && (viewItem == sonarcloudConnection || viewItem == sonarqubeConnection)",
           "group": "inline"
         }
       ]
@@ -1318,7 +1318,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.1.0.76681",
+      "version": "4.2.0.76740",
       "output": "server/sonarlint-ls.jar"
     },
     {

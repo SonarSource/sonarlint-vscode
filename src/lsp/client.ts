@@ -126,8 +126,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetSharedConnectedModeConfigFileContents.type, { configScopeId });
   }
 
-  getMCPServerSettings(connectionId: string, token: string): Promise<ExtendedServer.GetMCPServerSettingsResponse> {
-    return this.sendRequest(ExtendedServer.GetMCPServerSettings.type, { connectionId, token });
+  getMCPServerConfiguration(connectionId: string, token: string): Promise<ExtendedServer.GetMCPServerConfigurationResponse> {
+    return this.sendRequest(ExtendedServer.GetMCPServerConfiguration.type, { connectionId, token });
   }
 
   checkIssueStatusChangePermitted(
