@@ -270,6 +270,23 @@ export class ConnectionSettingsService {
     return loadedConnection;
   }
 
+  async getTokenForConnection(connection: Connection): Promise<{ token: string }> {
+    try {
+      const isSonarQube = connection.contextValue === 'sonarqubeConnection';
+      const connectionDetail = isSonarQube
+        ? await ConnectionSettingsService.instance.loadSonarQubeConnection(connection.id)
+        : await ConnectionSettingsService.instance.loadSonarCloudConnection(connection.id);
+      if (!connectionDetail) {
+        throw new Error(`Could not find SonarQube Server connection with ID: ${connection.id}`);
+      }
+
+      return { token: connectionDetail.token || '' };
+    } catch (error) {
+      logToSonarLintOutput(`Error getting connection details: ${error.message}`);
+      throw error;
+    }
+  }
+
   async removeConnection(connectionItem: Promise<Connection>) {
     const connection = await connectionItem;
 

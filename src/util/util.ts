@@ -17,6 +17,7 @@ import { verboseLogToSonarLintOutput } from './logging';
 import { BindingService } from '../connected/binding';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageclient';
+import * as os from 'node:os';
 
 const ANALYSIS_EXCLUDES = 'sonarlint.analysisExcludesStandalone';
 
@@ -374,4 +375,17 @@ export function convertVscodeDiagnosticToLspDiagnostic(diagnostic: vscode.Diagno
     };
   
     return lspDiag;
+}
+
+export function getVSCodeSettingsBaseDir(): string {
+  const currentPlatform = os.platform();
+  switch (currentPlatform) {
+    case 'win32':
+      return process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
+    case 'darwin':
+      return path.join(os.homedir(), 'Library', 'Application Support');
+    default:
+      // linux and others
+      return path.join(os.homedir(), '.config');
+  }
 }
