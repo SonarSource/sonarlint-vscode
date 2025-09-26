@@ -9,12 +9,12 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { logToSonarLintOutput } from './util/logging';
-import { Connection } from './connected/connections';
-import { ConnectionSettingsService } from './settings/connectionsettings';
-import { SonarLintExtendedLanguageClient } from './lsp/client';
+import { logToSonarLintOutput } from '../util/logging';
+import { AllConnectionsTreeDataProvider, Connection } from '../connected/connections';
+import { ConnectionSettingsService } from '../settings/connectionsettings';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as os from 'node:os';
-import { getVSCodeSettingsBaseDir } from './util/util';
+import { getVSCodeSettingsBaseDir } from '../util/util';
 
 interface MCPServerConfig {
   command: string;
@@ -131,15 +131,52 @@ function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
 }
 
 export async function configureMCPServer(
-  connection: Connection,
-  languageClient: SonarLintExtendedLanguageClient
+  languageClient: SonarLintExtendedLanguageClient,
+  allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
+  connection?: Connection
 ): Promise<void> {
   try {
-    const token = await ConnectionSettingsService.instance.getTokenForConnection(connection);
+    let selectedConnection = connection;
+
+    // If no connection is provided, get all available connections and let user choose
+    if (!selectedConnection) {
+      const allConnections = [
+        ...(await allConnectionsTreeDataProvider.getConnections('__sonarqube__')),
+        ...(await allConnectionsTreeDataProvider.getConnections('__sonarcloud__'))
+      ];
+
+      if (allConnections.length === 0) {
+        configureSonarQubeMCPServerWithoutConnection();
+        return;
+      }
+
+      if (allConnections.length === 1) {
+        selectedConnection = allConnections[0];
+      } else {
+        const connectionItems = allConnections.map(conn => ({
+          label: conn.label,
+          description: conn.contextValue === 'sonarqubeConnection' ? 'SonarQube Server' : 'SonarQube Cloud',
+          connection: conn
+        }));
+
+        const selectedItem = await vscode.window.showQuickPick(connectionItems, {
+          placeHolder: 'Select a SonarQube connection for MCP server configuration',
+          matchOnDescription: true
+        });
+
+        if (!selectedItem) {
+          return;
+        }
+
+        selectedConnection = selectedItem.connection;
+      }
+    }
+
+    const token = await ConnectionSettingsService.instance.getTokenForConnection(selectedConnection);
 
     if (!token) {
       const proceed = await vscode.window.showWarningMessage(
-        `The SonarQube connection "${connection.label}" doesn't have a token configured. The MCP server will be created but may not function properly without a valid token.`,
+        `The SonarQube connection "${selectedConnection.label}" doesn't have a token configured. The MCP server will be created but may not function properly without a valid token.`,
         'Proceed Anyway',
         'Cancel'
       );
@@ -149,14 +186,14 @@ export async function configureMCPServer(
       }
     }
 
-    const sonarQubeMCPConfig = await languageClient.getMCPServerConfiguration(connection.id, token);
+    const sonarQubeMCPConfig = await languageClient.getMCPServerConfiguration(selectedConnection.id, token);
 
     writeSonarQubeMCPConfig(JSON.parse(sonarQubeMCPConfig.jsonConfiguration));
 
     openMCPServersListIfCursor();
 
     const openFile = await vscode.window.showInformationMessage(
-      `SonarQube MCP Server configured for "${connection.label}"`,
+      `SonarQube MCP server configured for "${selectedConnection.label}"`,
       'Open Configuration File'
     );
 
@@ -165,13 +202,27 @@ export async function configureMCPServer(
       await vscode.window.showTextDocument(uri);
     }
 
-    logToSonarLintOutput(`SonarQube MCP Server configured successfully for connection: ${connection.label}`);
+    logToSonarLintOutput(`SonarQube MCP server configured successfully for connection: ${selectedConnection.label}`);
   } catch (error) {
-    const errorMessage = `Failed to configure SonarQube MCP Server for "${connection.label}": ${error.message}`;
+    const connectionLabel = connection?.label || 'unknown connection';
+    const errorMessage = `Failed to configure SonarQube MCP server for "${connectionLabel}": ${error.message}`;
     vscode.window.showErrorMessage(errorMessage);
     logToSonarLintOutput(errorMessage);
     throw error;
   }
+}
+
+function configureSonarQubeMCPServerWithoutConnection() {
+  vscode.window
+    .showWarningMessage(
+      'No SonarQube (Server or Cloud) connections found. Please set up a connection first.',
+      'Set up Connection'
+    )
+    .then(action => {
+      if (action === 'Set up Connection') {
+        vscode.commands.executeCommand('SonarLint.ConnectedMode.focus');
+      }
+    });
 }
 
 function openMCPServersListIfCursor() {
