@@ -9,8 +9,8 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
-import { getCurrentIdeWithMCPSupport, getMCPConfigPath, IDE, configureMCPServer, onEmbeddedServerStarted } from '../../src/mcpServerConfig';
-import { Connection } from '../../src/connected/connections';
+import { getCurrentIdeWithMCPSupport, getMCPConfigPath, IDE, configureMCPServer, onEmbeddedServerStarted } from '../../src/aiAgentsConfiguration/mcpServerConfig';
+import { AllConnectionsTreeDataProvider, Connection } from '../../src/connected/connections';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 
@@ -23,6 +23,10 @@ const getMCPConfigStub = sinon.stub().resolves({
 const mockLanguageClient = ({
   getMCPServerConfiguration: getMCPConfigStub
 } as unknown) as SonarLintExtendedLanguageClient;
+
+const mockAllConnectionsTreeDataProvider = ({
+  getConnections: sinon.stub().resolves([mockConnection])
+} as unknown as AllConnectionsTreeDataProvider);
 
 suite('mcpServerConfig', () => {
   test('should detect supported IDEs based on app name', () => {
@@ -119,7 +123,7 @@ suite('mcpServerConfig', () => {
     const writeFileStub = sinon.stub(fs, 'writeFileSync');
 
       try {
-        await configureMCPServer(mockConnection, mockLanguageClient);
+        await configureMCPServer(mockLanguageClient, mockAllConnectionsTreeDataProvider, mockConnection);
 
         expect(connectionServiceStub.calledWith(mockConnection)).to.be.true;
         expect(getMCPConfigStub.calledWith('test-connection-id', 'valid-test-token')).to.be.true;
