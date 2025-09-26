@@ -30,7 +30,7 @@ interface MCPConfigurationVSCode {
   servers: Record<string, MCPServerConfig>;
 }
 
-enum IDE {
+export enum IDE {
   VSCODE = 'vscode',
   CURSOR = 'cursor',
   WINDSURF = 'windsurf',
@@ -42,7 +42,7 @@ function isCopilotInstalledAndActive(): boolean {
   return copilotExtension?.isActive;
 }
 
-export function getCurrentAgentSupportedIDE(): IDE {
+export function getCurrentIdeWithMCPSupport(): IDE | undefined {
   if (vscode.env.appName.toLowerCase().includes('cursor')) {
     return IDE.CURSOR;
   } else if (vscode.env.appName.toLowerCase().includes('windsurf')) {
@@ -55,8 +55,8 @@ export function getCurrentAgentSupportedIDE(): IDE {
   return undefined;
 }
 
-function getMCPConfigPath(): string {
-  const currentIDE = getCurrentAgentSupportedIDE();
+export function getMCPConfigPath(): string {
+  const currentIDE = getCurrentIdeWithMCPSupport();
   switch (currentIDE) {
     case IDE.CURSOR:
       return path.join(os.homedir(), '.cursor', 'mcp.json');
@@ -71,6 +71,18 @@ function getMCPConfigPath(): string {
   }
 }
 
+function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefined {
+  const currentIDE = getCurrentIdeWithMCPSupport();
+  if (!currentIDE) {
+    return undefined;
+  }
+  const configPath = getMCPConfigPath();
+  const config = readMCPConfig(configPath);
+  return currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS
+    ? (config as MCPConfigurationVSCode).servers.sonarqube
+    : (config as MCPConfigurationOthers).mcpServers.sonarqube;
+}
+
 function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigurationVSCode {
   try {
     if (fs.existsSync(configPath)) {
@@ -81,7 +93,7 @@ function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigur
     logToSonarLintOutput(`Error reading MCP config: ${error.message}`);
   }
 
-  const currentIDE = getCurrentAgentSupportedIDE();
+  const currentIDE = getCurrentIdeWithMCPSupport();
   return currentIDE === 'vscode' || currentIDE === 'vscode-insiders'
     ? {
         servers: {}
@@ -91,8 +103,18 @@ function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigur
       };
 }
 
-function writeMCPConfig(configPath: string, config: MCPConfigurationOthers | MCPConfigurationVSCode): void {
+function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
   try {
+    const currentIDE = getCurrentIdeWithMCPSupport();
+    const configPath = getMCPConfigPath();
+    const config = readMCPConfig(configPath);
+
+    if (currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS) {
+      (config as MCPConfigurationVSCode).servers.sonarqube = sonarQubeMCPConfig;
+    } else {
+      (config as MCPConfigurationOthers).mcpServers.sonarqube = sonarQubeMCPConfig;
+    }
+
     const configDir = path.dirname(configPath);
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
@@ -113,11 +135,9 @@ export async function configureMCPServer(
   languageClient: SonarLintExtendedLanguageClient
 ): Promise<void> {
   try {
-    const configPath = getMCPConfigPath();
-    const config = readMCPConfig(configPath);
-    const connectionDetails = await ConnectionSettingsService.instance.getTokenForConnection(connection);
+    const token = await ConnectionSettingsService.instance.getTokenForConnection(connection);
 
-    if (!connectionDetails.token) {
+    if (!token) {
       const proceed = await vscode.window.showWarningMessage(
         `The SonarQube connection "${connection.label}" doesn't have a token configured. The MCP server will be created but may not function properly without a valid token.`,
         'Proceed Anyway',
@@ -129,32 +149,25 @@ export async function configureMCPServer(
       }
     }
 
-    const sonarQubeMCPConfig = await languageClient.getMCPServerConfiguration(connection.id, connectionDetails.token);
+    const sonarQubeMCPConfig = await languageClient.getMCPServerConfiguration(connection.id, token);
 
-    const currentIDE = getCurrentAgentSupportedIDE();
-    if (currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS) {
-      (config as MCPConfigurationVSCode).servers.sonarqube = JSON.parse(sonarQubeMCPConfig.jsonConfiguration);
-    } else {
-      (config as MCPConfigurationOthers).mcpServers.sonarqube = JSON.parse(sonarQubeMCPConfig.jsonConfiguration);
-    }
-
-    writeMCPConfig(configPath, config);
+    writeSonarQubeMCPConfig(JSON.parse(sonarQubeMCPConfig.jsonConfiguration));
 
     openMCPServersListIfCursor();
 
     const openFile = await vscode.window.showInformationMessage(
-      `SonarQube MCP server configured for "${connection.label}"\n\nConfiguration saved to: ${configPath}`,
+      `SonarQube MCP Server configured for "${connection.label}"`,
       'Open Configuration File'
     );
 
     if (openFile === 'Open Configuration File') {
-      const uri = vscode.Uri.file(configPath);
+      const uri = vscode.Uri.file(getMCPConfigPath());
       await vscode.window.showTextDocument(uri);
     }
 
-    logToSonarLintOutput(`SonarQube MCP server configured successfully for connection: ${connection.label}`);
+    logToSonarLintOutput(`SonarQube MCP Server configured successfully for connection: ${connection.label}`);
   } catch (error) {
-    const errorMessage = `Failed to configure SonarQube MCP server for "${connection.label}": ${error.message}`;
+    const errorMessage = `Failed to configure SonarQube MCP Server for "${connection.label}": ${error.message}`;
     vscode.window.showErrorMessage(errorMessage);
     logToSonarLintOutput(errorMessage);
     throw error;
@@ -162,22 +175,19 @@ export async function configureMCPServer(
 }
 
 function openMCPServersListIfCursor() {
-  const currentIDE = getCurrentAgentSupportedIDE();
+  const currentIDE = getCurrentIdeWithMCPSupport();
   if (currentIDE === IDE.CURSOR) {
     vscode.commands.executeCommand('workbench.action.openMCPSettings');
   }
 }
 
 export function onEmbeddedServerStarted(port: number): void {
-  // need to get MCP config and replace the SONARQUBE_IDE_PORT env variable with the new port
-  const currentIDE = getCurrentAgentSupportedIDE();
-  const configPath = getMCPConfigPath();
-  const config = readMCPConfig(configPath);
-  if (currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS) {
-    (config as MCPConfigurationVSCode).servers.sonarqube.env.SONARQUBE_IDE_PORT = port.toString();
-  } else {
-    (config as MCPConfigurationOthers).mcpServers.sonarqube.env.SONARQUBE_IDE_PORT = port.toString();
+  const currentSonarQubeMCPConfig = getCurrentSonarQubeMCPServerConfig();
+  if (!currentSonarQubeMCPConfig) {
+    // if the MCP server is not configured, we don't need to update the config
+    return;
   }
-  writeMCPConfig(configPath, config);
-  logToSonarLintOutput(`Embedded server started on port: ${port}`);
+  currentSonarQubeMCPConfig.env.SONARQUBE_IDE_PORT = port.toString();
+
+  writeSonarQubeMCPConfig(currentSonarQubeMCPConfig);
 }

@@ -11,7 +11,7 @@ import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
-import { getCurrentAgentSupportedIDE } from './mcpServerConfig';
+import { getCurrentIdeWithMCPSupport } from './mcpServerConfig';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
 const SOME_STANDALONE_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseStandaloneMode';
@@ -50,7 +50,7 @@ export class ContextManager {
   }
 
   setMCPServerSupportedIDEContext() {
-    const isSupportedIDE = getCurrentAgentSupportedIDE() !== undefined;
+    const isSupportedIDE = getCurrentIdeWithMCPSupport() !== undefined;
     vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_IDE, isSupportedIDE);
   }
 

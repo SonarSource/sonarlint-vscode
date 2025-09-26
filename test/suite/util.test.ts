@@ -9,6 +9,8 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as os from 'node:os';
+import * as sinon from 'sinon';
 import {
   createAnalysisFilesFromFileUris,
   findFilesInFolder,
@@ -17,6 +19,7 @@ import {
   getIdeFileExclusions,
   getMasterRegex,
   getQuickPickListItemsForWorkspaceFolders,
+  getVSCodeSettingsBaseDir,
   globPatternToRegex,
   isRunningAutoBuild,
   sanitizeSonarCloudRegionSetting,
@@ -230,6 +233,53 @@ suite('util', () => {
     expect(sanitizeSonarCloudRegionSetting('US')).to.equal('US');
     expect(sanitizeSonarCloudRegionSetting('us')).to.equal('US');
     expect(sanitizeSonarCloudRegionSetting('APJ')).to.equal('EU');
+  });
+
+  test('should return correct VSCode settings base directory for each platform', () => {
+    // Store original values to restore later
+    const originalAppData = process.env.APPDATA;
+
+    // Mock os.platform, os.homedir, and path.join functions
+    const osPlatformStub = sinon.stub(os, 'platform');
+    const osHomedirStub = sinon.stub(os, 'homedir');
+    const pathJoinStub = sinon.stub(path, 'join');
+
+    try {
+      // Test Windows with APPDATA environment variable
+      osPlatformStub.returns('win32');
+      osHomedirStub.returns('C:\\Users\\User');
+      process.env.APPDATA = 'C:\\Users\\User\\AppData\\Roaming';
+      expect(getVSCodeSettingsBaseDir()).to.equal('C:\\Users\\User\\AppData\\Roaming');
+
+      // Test Windows without APPDATA environment variable
+      delete process.env.APPDATA;
+      osHomedirStub.returns('C:\\Users\\User');
+      pathJoinStub.withArgs('C:\\Users\\User', 'AppData', 'Roaming').returns('C:\\Users\\User\\AppData\\Roaming');
+      expect(getVSCodeSettingsBaseDir()).to.equal('C:\\Users\\User\\AppData\\Roaming');
+
+      // Test macOS (darwin)
+      osPlatformStub.returns('darwin');
+      osHomedirStub.returns('/Users/user');
+      pathJoinStub.withArgs('/Users/user', 'Library', 'Application Support').returns('/Users/user/Library/Application Support');
+      expect(getVSCodeSettingsBaseDir()).to.equal('/Users/user/Library/Application Support');
+
+      // Test Linux
+      osPlatformStub.returns('linux');
+      osHomedirStub.returns('/home/user');
+      pathJoinStub.withArgs('/home/user', '.config').returns('/home/user/.config');
+      expect(getVSCodeSettingsBaseDir()).to.equal('/home/user/.config');
+
+    } finally {
+      // Restore original values
+      osPlatformStub.restore();
+      osHomedirStub.restore();
+      pathJoinStub.restore();
+      if (originalAppData !== undefined) {
+        process.env.APPDATA = originalAppData;
+      } else {
+        delete process.env.APPDATA;
+      }
+    }
   });
 
 });

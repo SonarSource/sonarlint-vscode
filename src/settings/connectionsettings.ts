@@ -270,7 +270,7 @@ export class ConnectionSettingsService {
     return loadedConnection;
   }
 
-  async getTokenForConnection(connection: Connection): Promise<{ token: string }> {
+  async getTokenForConnection(connection: Connection): Promise<string | undefined> {
     try {
       const isSonarQube = connection.contextValue === 'sonarqubeConnection';
       const connectionDetail = isSonarQube
@@ -280,7 +280,7 @@ export class ConnectionSettingsService {
         throw new Error(`Could not find SonarQube Server connection with ID: ${connection.id}`);
       }
 
-      return { token: connectionDetail.token || '' };
+      return connectionDetail.token;
     } catch (error) {
       logToSonarLintOutput(`Error getting connection details: ${error.message}`);
       throw error;

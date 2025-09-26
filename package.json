@@ -1102,7 +1102,7 @@
           "fontCharacter": "H"
         }
       },
-      "sonarqube-analysis":{
+      "sonarqube-analysis": {
         "description": "Run SonarQube Analysis",
         "default": {
           "fontPath": "icons/sonarlint.woff",
@@ -1318,7 +1318,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.2.0.77734",
+      "version": "4.2.0.77736",
       "output": "server/sonarlint-ls.jar"
     },
     {
