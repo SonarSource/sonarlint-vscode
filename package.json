@@ -667,7 +667,19 @@
         "title": "Configure MCP Server",
         "category": "SonarQube",
         "icon": "$(mcp-server)",
-        "enablement": "view == SonarLint.ConnectedMode && sonarqube.mcpServerSupportedIDE"
+        "enablement": "sonarqube.mcpServerSupportedIDE"
+      },
+      {
+        "command": "SonarLint.IntroduceSonarQubeRulesFile",
+        "title": "Introduce SonarQube Rules File",
+        "category": "SonarQube",
+        "icon": "$(file-text)"
+      },
+      {
+        "command": "SonarLint.OpenSonarQubeRulesFile",
+        "title": "Open SonarQube Rules File",
+        "category": "SonarQube",
+        "icon": "$(file-text)"
       }
     ],
     "viewsContainers": {
@@ -707,6 +719,11 @@
           "name": "Connected Mode"
         },
         {
+          "id": "SonarLint.AIAgentsConfiguration",
+          "name": "AI Agents Configuration",
+          "when": "sonarqube.mcpServerSupportedIDE"
+        },
+        {
           "id": "SonarLint.AllRules",
           "name": "Rules",
           "visibility": "collapsed",
@@ -732,6 +749,10 @@
       {
         "view": "SonarLint.ConnectedMode",
         "contents": "[Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) links SonarQube for IDE to SonarQube Server or SonarQube Cloud projects. \n\n[Connect to SonarQube Server](command:SonarLint.ConnectToSonarQube)\n[Connect to SonarQube Cloud](command:SonarLint.ConnectToSonarCloud)\n\nAnalyze more languages, detect more issues on the whole project, receive notifications about the quality gate status, and more."
+      },
+      {
+        "view": "SonarLint.AIAgentsConfiguration",
+        "contents": "Configure SonarQube integration with AI agents to enhance your development experience.\n\n[Configure SonarQube MCP Server](command:SonarLint.ConfigureMCPServer)\n\n[Introduce SonarQube Rules File](command:SonarLint.IntroduceSonarQubeRulesFile)\n\nHow does it work? [Read more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/ai-capabilities/ai-agents/)"
       },
       {
         "view": "SonarQube.GetStarted",
