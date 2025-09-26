@@ -82,6 +82,7 @@ import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
 import { FindingNode } from './findings/findingTypes/findingNode';
 import { AutomaticAnalysisService } from './settings/automaticAnalysis';
 import { FlightRecorderService } from './monitoring/flightrecorder';
+import { configureMCPServer, onEmbeddedServerStarted } from './mcpServerConfig';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -252,7 +253,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     /* ignored */
   });
   FixSuggestionService.init(languageClient);
-  ContextManager.instance.setConnectedModeContext(context);
+  ContextManager.instance.initializeContext(context);
 
   FindingsTreeDataProvider.init(context, languageClient);
   findingsTreeDataProvider = FindingsTreeDataProvider.instance;
@@ -342,7 +343,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint.connectedMode')) {
       allConnectionsTreeDataProvider.refresh();
-      ContextManager.instance.setConnectedModeContext(context);
+      ContextManager.instance.initializeContext(context);
     }
     if (event.affectsConfiguration('sonarlint.focusOnNewCode')) {
       NewCodeDefinitionService.instance.updateFocusOnNewCodeState();
@@ -649,6 +650,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.DUMP_BACKEND_THREADS, () => {
     languageClient.dumpThreads();
   }));
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, (connection) => configureMCPServer(connection, languageClient))
+  );
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
@@ -762,6 +767,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(ExtendedClient.FlightRecorderStartedNotification.type, (params) => {
     FlightRecorderService.instance.onFlightRecorderStarted(params.sessionId);
+  });
+  languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, (params) => {
+    onEmbeddedServerStarted(params.port);
   });
 }
 

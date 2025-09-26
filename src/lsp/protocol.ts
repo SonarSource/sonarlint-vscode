@@ -477,6 +477,14 @@ export namespace ExtendedClient {
   export namespace FlightRecorderStartedNotification {
     export const type = new lsp.NotificationType<FlightRecorderStartedParams>('sonarlint/flightRecorderStarted');
   }
+
+  export interface EmbeddedServerStartedParams {
+    port: number;
+  }
+
+  export namespace EmbeddedServerStartedNotification {
+    export const type = new lsp.NotificationType<EmbeddedServerStartedParams>('sonarlint/embeddedServerStarted');
+  }
 }
 
 /**
@@ -715,6 +723,21 @@ export namespace ExtendedServer {
   export namespace GetSharedConnectedModeConfigFileContents {
     export const type =
       new lsp.RequestType<GetSharedConnectedModeConfigFileParams, GetSharedConnectedModeConfigFileResponse, null>("sonarlint/getSharedConnectedModeFileContent")
+  }
+
+  export interface GetMCPServerConfigurationParams {
+    connectionId: string;
+    token: string;
+  }
+
+  export interface GetMCPServerConfigurationResponse {
+    jsonConfiguration: string;
+  }
+
+  export namespace GetMCPServerConfiguration {
+    export const type = new lsp.RequestType<GetMCPServerConfigurationParams, GetMCPServerConfigurationResponse, null>(
+      'sonarlint/getMCPServerConfiguration'
+    );
   }
 
   export namespace ReopenResolvedLocalIssues {

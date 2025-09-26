@@ -661,6 +661,13 @@
         "title": "Dump Backend Threads",
         "category": "SonarQube",
         "enablement": "sonarqube.flightRecorderRunning"
+      },
+      {
+        "command": "SonarLint.ConfigureMCPServer",
+        "title": "Configure MCP Server",
+        "category": "SonarQube",
+        "icon": "$(mcp-server)",
+        "enablement": "view == SonarLint.ConnectedMode && sonarqube.mcpServerSupportedIDE"
       }
     ],
     "viewsContainers": {
@@ -1031,6 +1038,12 @@
           "command": "SonarQube.TriggerResolveTaintCommand",
           "title": "Resolve issue as...",
           "when": "view == SonarQube.Findings && viewItem == taintVulnerabilityItem || viewItem == AICodeFixableTaintItem"
+        },
+        {
+          "command": "SonarLint.ConfigureMCPServer",
+          "title": "Configure MCP Server",
+          "when": "sonarqube.mcpServerSupportedIDE && view == SonarLint.ConnectedMode && (viewItem == sonarcloudConnection || viewItem == sonarqubeConnection)",
+          "group": "inline"
         }
       ]
     },
@@ -1089,11 +1102,18 @@
           "fontCharacter": "H"
         }
       },
-      "sonarqube-analysis":{
+      "sonarqube-analysis": {
         "description": "Run SonarQube Analysis",
         "default": {
           "fontPath": "icons/sonarlint.woff",
           "fontCharacter": "A"
+        }
+      },
+      "mcp-server": {
+        "description": "MCP Server Configuration",
+        "default": {
+          "fontPath": "icons/sonarlint.woff",
+          "fontCharacter": "M"
         }
       }
     },
@@ -1298,7 +1318,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.1.0.76681",
+      "version": "4.2.0.77736",
       "output": "server/sonarlint-ls.jar"
     },
     {
