@@ -15,6 +15,7 @@ import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as os from 'node:os';
 import { getVSCodeSettingsBaseDir } from '../util/util';
+import { getCurrentIdeWithMCPSupport, IDE } from './aiAgentUtils';
 
 interface MCPServerConfig {
   command: string;
@@ -28,31 +29,6 @@ interface MCPConfigurationOthers {
 
 interface MCPConfigurationVSCode {
   servers: Record<string, MCPServerConfig>;
-}
-
-export enum IDE {
-  VSCODE = 'vscode',
-  CURSOR = 'cursor',
-  WINDSURF = 'windsurf',
-  VSCODE_INSIDERS = 'vscode-insiders'
-}
-
-function isCopilotInstalledAndActive(): boolean {
-  const copilotExtension = vscode.extensions.getExtension('GitHub.copilot');
-  return copilotExtension?.isActive;
-}
-
-export function getCurrentIdeWithMCPSupport(): IDE | undefined {
-  if (vscode.env.appName.toLowerCase().includes('cursor')) {
-    return IDE.CURSOR;
-  } else if (vscode.env.appName.toLowerCase().includes('windsurf')) {
-    return IDE.WINDSURF;
-  } else if (vscode.env.appName.toLowerCase().includes('insiders') && isCopilotInstalledAndActive()) {
-    return IDE.VSCODE_INSIDERS;
-  } else if (vscode.env.appName.toLowerCase().includes('visual studio code') && isCopilotInstalledAndActive()) {
-    return IDE.VSCODE;
-  }
-  return undefined;
 }
 
 export function getMCPConfigPath(): string {
@@ -71,7 +47,7 @@ export function getMCPConfigPath(): string {
   }
 }
 
-function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefined {
+export function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefined {
   const currentIDE = getCurrentIdeWithMCPSupport();
   if (!currentIDE) {
     return undefined;
@@ -136,40 +112,10 @@ export async function configureMCPServer(
   connection?: Connection
 ): Promise<void> {
   try {
-    let selectedConnection = connection;
+    const selectedConnection = await getSelectedConnection(allConnectionsTreeDataProvider, connection);
 
-    // If no connection is provided, get all available connections and let user choose
     if (!selectedConnection) {
-      const allConnections = [
-        ...(await allConnectionsTreeDataProvider.getConnections('__sonarqube__')),
-        ...(await allConnectionsTreeDataProvider.getConnections('__sonarcloud__'))
-      ];
-
-      if (allConnections.length === 0) {
-        configureSonarQubeMCPServerWithoutConnection();
-        return;
-      }
-
-      if (allConnections.length === 1) {
-        selectedConnection = allConnections[0];
-      } else {
-        const connectionItems = allConnections.map(conn => ({
-          label: conn.label,
-          description: conn.contextValue === 'sonarqubeConnection' ? 'SonarQube Server' : 'SonarQube Cloud',
-          connection: conn
-        }));
-
-        const selectedItem = await vscode.window.showQuickPick(connectionItems, {
-          placeHolder: 'Select a SonarQube connection for MCP server configuration',
-          matchOnDescription: true
-        });
-
-        if (!selectedItem) {
-          return;
-        }
-
-        selectedConnection = selectedItem.connection;
-      }
+      return;
     }
 
     const token = await ConnectionSettingsService.instance.getTokenForConnection(selectedConnection);
@@ -212,7 +158,45 @@ export async function configureMCPServer(
   }
 }
 
-function configureSonarQubeMCPServerWithoutConnection() {
+async function getSelectedConnection(
+  allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
+  connection?: Connection
+): Promise<Connection | undefined> {
+  if (connection) {
+    return connection;
+  }
+
+  const allConnections = [
+    ...(await allConnectionsTreeDataProvider.getConnections('__sonarqube__')),
+    ...(await allConnectionsTreeDataProvider.getConnections('__sonarcloud__'))
+  ];
+
+  if (allConnections.length === 0) {
+    warnNoConnectionConfigured();
+    return undefined;
+  } else if (allConnections.length === 1) {
+    return allConnections[0];
+  } else {
+    const connectionItems = allConnections.map(conn => ({
+      label: conn.label,
+      description: conn.contextValue === 'sonarqubeConnection' ? 'SonarQube Server' : 'SonarQube Cloud',
+      connection: conn
+    }));
+
+    const selectedItem = await vscode.window.showQuickPick(connectionItems, {
+      placeHolder: 'Select a SonarQube connection for MCP server configuration',
+      matchOnDescription: true
+    });
+
+    if (!selectedItem) {
+      return undefined;
+    }
+
+    return selectedItem.connection;
+  }
+}
+
+function warnNoConnectionConfigured() {
   vscode.window
     .showWarningMessage(
       'No SonarQube (Server or Cloud) connections found. Please set up a connection first.',

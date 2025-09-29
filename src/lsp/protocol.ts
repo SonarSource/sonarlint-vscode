@@ -740,6 +740,14 @@ export namespace ExtendedServer {
     );
   }
 
+  export interface GetMCPRulesFileContentResponse {
+    content: string;
+  }
+
+  export namespace GetMCPRulesFileContent {
+    export const type = new lsp.RequestType<string, GetMCPRulesFileContentResponse, null>('sonarlint/getMCPRuleFileContent');
+  }
+
   export namespace ReopenResolvedLocalIssues {
     export const type = new lsp.NotificationType<ReopenAllIssuesForFileParams>('sonarlint/reopenResolvedLocalIssues');
   }

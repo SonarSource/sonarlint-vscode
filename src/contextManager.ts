@@ -11,7 +11,7 @@ import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
-import { getCurrentAgentSupportedIDE } from './aiAgentsConfiguration/mcpServerConfig';
+import { getCurrentIdeWithMCPSupport } from './aiAgentsConfiguration/aiAgentUtils';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
 const SOME_STANDALONE_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseStandaloneMode';

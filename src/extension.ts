@@ -84,6 +84,7 @@ import { FindingNode } from './findings/findingTypes/findingNode';
 import { AutomaticAnalysisService } from './settings/automaticAnalysis';
 import { FlightRecorderService } from './monitoring/flightrecorder';
 import { configureMCPServer, onEmbeddedServerStarted } from './aiAgentsConfiguration/mcpServerConfig';
+import { introduceSonarQubeRulesFile, openSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -372,26 +373,6 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
   });
 
-  // Watch for changes to MCP config files that might affect AI agents configuration
-  const mcpConfigWatcher = VSCode.workspace.createFileSystemWatcher('**/{mcp.json,mcp_config.json}');
-  
-  mcpConfigWatcher.onDidChange(() => {
-    aiAgentsConfigurationTreeDataProvider.refresh();
-    updateAIAgentsConfigurationContext();
-  });
-  
-  mcpConfigWatcher.onDidCreate(() => {
-    aiAgentsConfigurationTreeDataProvider.refresh();
-    updateAIAgentsConfigurationContext();
-  });
-  
-  mcpConfigWatcher.onDidDelete(() => {
-    aiAgentsConfigurationTreeDataProvider.refresh();
-    updateAIAgentsConfigurationContext();
-  });
-  
-  context.subscriptions.push(mcpConfigWatcher);
-
   registerCommands(context);
 
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
@@ -421,9 +402,6 @@ export async function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: aiAgentsConfigurationTreeDataProvider
   });
   context.subscriptions.push(aiAgentsConfigurationView);
-
-  // Update AI agents configuration context
-  updateAIAgentsConfigurationContext();
 
   TaintVulnerabilityDecorator.init();
 
@@ -684,7 +662,14 @@ function registerCommands(context: VSCode.ExtensionContext) {
   }));
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, (connection) => configureMCPServer(languageClient, allConnectionsTreeDataProvider, connection))
+    VSCode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, (connection) => {
+      configureMCPServer(languageClient, allConnectionsTreeDataProvider, connection);
+      aiAgentsConfigurationTreeDataProvider.refresh();
+    })
+  );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () => aiAgentsConfigurationTreeDataProvider.refresh())
   );
 
   context.subscriptions.push(
@@ -692,130 +677,8 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand('SonarLint.IntroduceSonarQubeRulesFile', () => introduceSonarQubeRulesFile())
+    VSCode.commands.registerCommand('SonarLint.IntroduceSonarQubeRulesFile', () => introduceSonarQubeRulesFile(languageClient))
   );
-}
-
-async function openSonarQubeRulesFile(): Promise<void> {
-  try {
-    const workspaceFolder = VSCode.workspace.workspaceFolders?.[0];
-    if (!workspaceFolder) {
-      VSCode.window.showErrorMessage('No workspace folder found. Please open a folder first.');
-      return;
-    }
-
-    const settingsUri = VSCode.Uri.joinPath(workspaceFolder.uri, '.vscode', 'settings.json');
-    
-    try {
-      // Check if file exists
-      await VSCode.workspace.fs.stat(settingsUri);
-      // Open the existing file
-      const document = await VSCode.workspace.openTextDocument(settingsUri);
-      await VSCode.window.showTextDocument(document);
-    } catch {
-      // File doesn't exist, offer to create it
-      const action = await VSCode.window.showWarningMessage(
-        'SonarQube rules file not found. Would you like to create one?',
-        'Create Rules File',
-        'Cancel'
-      );
-      
-      if (action === 'Create Rules File') {
-        VSCode.commands.executeCommand('SonarLint.IntroduceSonarQubeRulesFile');
-      }
-    }
-  } catch (error: any) {
-    VSCode.window.showErrorMessage(`Error opening SonarQube rules file: ${error.message}`);
-  }
-}
-
-async function introduceSonarQubeRulesFile(): Promise<void> {
-  try {
-    // Show information message about the SonarQube rules file
-    const action = await VSCode.window.showInformationMessage(
-      'Create a SonarQube rules configuration file to customize rule settings for your project.',
-      'Create Rules File',
-      'Learn More',
-      'Cancel'
-    );
-
-    if (action === 'Create Rules File') {
-      // Get the current workspace folder
-      const workspaceFolder = VSCode.workspace.workspaceFolders?.[0];
-      if (!workspaceFolder) {
-        VSCode.window.showErrorMessage('No workspace folder found. Please open a folder first.');
-        return;
-      }
-
-      // Write the rules file to .vscode/settings.json
-      const settingsUri = VSCode.Uri.joinPath(workspaceFolder.uri, '.vscode', 'settings.json');
-      
-      try {
-        // Check if .vscode folder exists
-        const vscodeUri = VSCode.Uri.joinPath(workspaceFolder.uri, '.vscode');
-        try {
-          await VSCode.workspace.fs.stat(vscodeUri);
-        } catch {
-          // Create .vscode folder if it doesn't exist
-          await VSCode.workspace.fs.createDirectory(vscodeUri);
-        }
-
-        // Check if settings.json exists
-        let existingSettings = {};
-        try {
-          const existingContent = await VSCode.workspace.fs.readFile(settingsUri);
-          const contentStr = Buffer.from(existingContent).toString('utf8');
-          existingSettings = JSON.parse(contentStr);
-        } catch {
-          // File doesn't exist or is invalid JSON, start with empty object
-        }
-
-        // Merge with existing settings
-        const mergedSettings = {
-          ...existingSettings,
-          "sonarlint.rules": {
-            ...((existingSettings as any)["sonarlint.rules"] || {}),
-            "// Example rule configuration": "// Remove this comment and add your rules below",
-            "// javascript:S1481": {
-              "//   level": "off"
-            },
-            "// javascript:S103": {
-              "//   level": "on",
-              "//   parameters": {
-                "//     maximumLineLength": "120"
-              }
-            }
-          }
-        };
-
-        const content = JSON.stringify(mergedSettings, null, 2);
-        await VSCode.workspace.fs.writeFile(settingsUri, Buffer.from(content, 'utf8'));
-
-        // Open the file for editing
-        const document = await VSCode.workspace.openTextDocument(settingsUri);
-        await VSCode.window.showTextDocument(document);
-
-        VSCode.window.showInformationMessage('SonarQube rules configuration added to workspace settings.');
-      } catch (error: any) {
-        VSCode.window.showErrorMessage(`Failed to create rules file: ${error.message}`);
-      }
-    } else if (action === 'Learn More') {
-      VSCode.commands.executeCommand('SonarLint.HelpAndFeedbackLinkClicked', 'rulesDocs');
-    }
-  } catch (error: any) {
-    VSCode.window.showErrorMessage(`Error introducing SonarQube rules file: ${error.message}`);
-  }
-}
-
-function updateAIAgentsConfigurationContext(): void {
-  try {
-    // Check if any AI agent configurations exist
-    const hasConfigurations = aiAgentsConfigurationTreeDataProvider.getChildren().length > 0;
-    VSCode.commands.executeCommand('setContext', 'sonarqube.aiAgentsHasConfigurations', hasConfigurations);
-  } catch (error: any) {
-    // If there's an error getting configurations, assume none exist
-    VSCode.commands.executeCommand('setContext', 'sonarqube.aiAgentsHasConfigurations', false);
-  }
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {

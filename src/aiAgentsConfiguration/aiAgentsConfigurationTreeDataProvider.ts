@@ -7,7 +7,9 @@
 'use strict';
 
 import * as VSCode from 'vscode';
+import { getCurrentIdeWithMCPSupport } from './aiAgentUtils';
 import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
+import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 
 export class AIAgentsConfigurationItem extends VSCode.TreeItem {
   constructor(
@@ -53,7 +55,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
     this._onDidChangeTreeData.fire(null);
   }
 
-  getChildren(element?: AIAgentsConfigurationItem): AIAgentsConfigurationItem[] {
+  async getChildren(element?: AIAgentsConfigurationItem): Promise<AIAgentsConfigurationItem[]> {
     if (element) {
       return [];
     }
@@ -61,7 +63,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
     const items: AIAgentsConfigurationItem[] = [];
 
     const sonarQubeMCPServerConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
-    const rulesFileConfigured = false;
+    const rulesFileConfigured = await isSonarQubeRulesFileConfigured();
 
     if (!sonarQubeMCPServerConfigured && !rulesFileConfigured) {
       return [];
@@ -76,14 +78,17 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
         'SonarLint.ConfigureMCPServer'
     ));
 
-    items.push(new AIAgentsConfigurationItem(
-      'rulesFile',
-      'SonarQube Rules File',
-      rulesFileConfigured,
-      'Custom rule settings',
-      'SonarLint.IntroduceSonarQubeRulesFile',
-      'SonarLint.OpenSonarQubeRulesFile'
-    ));
+    if (getCurrentIdeWithMCPSupport() === 'cursor') {
+      // rule file creation is only supported for cursor
+      items.push(new AIAgentsConfigurationItem(
+        'rulesFile',
+        'SonarQube Rules File',
+        rulesFileConfigured,
+        'Custom rule settings',
+        'SonarLint.IntroduceSonarQubeRulesFile',
+        'SonarLint.OpenSonarQubeRulesFile'
+      ));
+    }
 
     return items;
   }
