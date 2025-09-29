@@ -302,7 +302,7 @@ export class BindingService {
         if (selection === SHARE_CONFIGURATION_ACTION) {
           this.sharedConnectedModeSettingsService.createSharedConnectedModeSettingsFile(workspaceFolder);
         } else if (selection === LEARN_MORE_ACTION) {
-          VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode-setup/#reuse-the-binding-configuration'));
+          VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-vs-code/team-features/connected-mode-setup/#reuse-the-binding-configuration'));
         }
       });
   }

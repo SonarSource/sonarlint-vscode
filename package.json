@@ -116,7 +116,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Connect SonarQube for IDE to SonarQube Server to apply the same code quality and security standards as your team. Analyze more languages, detect more issues **on the whole project**, receive notifications about the quality gate status, and more. Quality Profiles and file exclusion settings defined on the server are shared between all connected users. Please find the documentation [here](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/)",
+          "markdownDescription": "Connect SonarQube for IDE to SonarQube Server to apply the same code quality and security standards as your team. Analyze more languages, detect more issues **on the whole project**, receive notifications about the quality gate status, and more. Quality Profiles and file exclusion settings defined on the server are shared between all connected users. Please find the documentation [here](https://docs.sonarsource.com/sonarqube-for-vs-code/team-features/connected-mode/)",
           "items": {
             "type": "object",
             "properties": {
@@ -158,7 +158,7 @@
           "type": "array",
           "scope": "application",
           "default": [],
-          "markdownDescription": "Connect SonarQube for IDE to SonarQube Cloud to apply the same code quality and security standards as your team. Analyze more languages, detect more issues **on the whole project**, receive notifications about the quality gate status, and more. Quality Profiles and file exclusion settings defined on the server are shared between all connected users. Please find the documentation [here](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/)",
+          "markdownDescription": "Connect SonarQube for IDE to SonarQube Cloud to apply the same code quality and security standards as your team. Analyze more languages, detect more issues **on the whole project**, receive notifications about the quality gate status, and more. Quality Profiles and file exclusion settings defined on the server are shared between all connected users. Please find the documentation [here](https://docs.sonarsource.com/sonarqube-for-vs-code/team-features/connected-mode/)",
           "items": {
             "type": "object",
             "properties": {
@@ -372,7 +372,7 @@
           "order": 100,
           "type": "boolean",
           "default": false,
-          "markdownDescription": "If enabled, by default, [focusing on new code](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/investigating-issues/#focusing-on-new-code) shows issues introduced in the last 30 days.\n\nFor the most accurate and customizable new code definition, use [Connected Mode](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/) with SonarQube (Server, Cloud).",
+          "markdownDescription": "If enabled, by default, [focusing on new code](https://docs.sonarsource.com/sonarqube-for-vs-code/using/investigating-issues/#focusing-on-new-code) shows issues introduced in the last 30 days.\n\nFor the most accurate and customizable new code definition, use [Connected Mode](https://docs.sonarsource.com/sonarqube-for-vs-code/team-features/connected-mode) with SonarQube (Server, Cloud).",
           "scope": "machine"
         },
         "sonarlint.earlyAccess.showRegionSelection": {
@@ -763,7 +763,7 @@
           {
             "id": "SonarLint.connectedModeIntro",
             "title": "$(shield) Taint Vulnerabilities and More",
-            "description": "Enable advanced analysis (including [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/using/taint-vulnerabilities/) and wider language support) by connecting to SonarQube (Server, Cloud). Also, benefit from the [AI CodeFix](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/ai-capabilities/ai-codefix/) within your IDE.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)\n",
+            "description": "Enable advanced analysis (including [Taint Vulnerabilities](https://docs.sonarsource.com/sonarqube-for-vs-code/using/taint-vulnerabilities/) and wider language support) by connecting to SonarQube (Server, Cloud). Also, benefit from the [AI CodeFix](https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/ai-codefix) within your IDE.\n[Set up Connection](command:SonarLint.ConnectedMode.focus)\n",
             "media": {
               "image": "walkthrough/taintVulnerabilities.svg",
               "altText": "SonarQube for IDE Taint Vulnerabilities"
