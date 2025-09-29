@@ -5,6 +5,7 @@
 * Update Go analyzer 1.27 -> 1.28
 * Update Text & Secrets analyzer 2.28 -> 2.29
 * Update Python analyzer 5.9 -> 5.10
+* Update CFamily analyzer 6.71 -> [6.72](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=22307%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
 
 ## 4.31
 
