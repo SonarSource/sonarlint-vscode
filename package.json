@@ -266,7 +266,7 @@
         "sonarlint.pathToNodeExecutable": {
           "order": 10,
           "type": "string",
-          "markdownDescription": "Path to a Node.js executable (versions above 18.20.0, 20.12.0, or 22.11.0) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\20-lts\\\\bin\\\\node.exe`",
+          "markdownDescription": "Path to a Node.js executable (versions above 20.12.0, or 22.11.0) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\20-lts\\\\bin\\\\node.exe`",
           "scope": "machine"
         },
         "sonarlint.pathToCompileCommands": {
@@ -1330,7 +1330,7 @@
     {
       "groupId": "org.sonarsource.javascript",
       "artifactId": "sonar-javascript-plugin",
-      "version": "11.3.0.34350",
+      "version": "11.4.1.34873",
       "output": "analyzers/sonarjs.jar"
     },
     {
