@@ -427,7 +427,7 @@ suite('Auto Binding Test Suite', () => {
       // Assert that the notification was shown
       expect(showInformationMessage.called).to.be.true;
       expect(showInformationMessage.getCall(0).args[0]).to.equal("Do you want to bind folder 'sample-for-bindings' to project 'myProjectKey' of SonarQube Server 'undefined'?\n" +
-        '      [Learn More](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/team-features/connected-mode/)');
+        '      [Learn More](https://docs.sonarsource.com/sonarqube-for-vs-code/team-features/connected-mode/)');
       expect(showInformationMessage.getCall(0).args[1]).to.equal('Configure Binding');
       expect(showInformationMessage.getCall(0).args[2]).to.equal('Choose Manually');
       expect(showInformationMessage.getCall(0).args[3]).to.equal("Don't Ask Again");
