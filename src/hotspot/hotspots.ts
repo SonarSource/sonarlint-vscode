@@ -78,7 +78,7 @@ Please make sure that the right folder is open and bound to the right project on
       if (action === 'Show Documentation') {
         vscode.commands.executeCommand(
           Commands.OPEN_BROWSER,
-          vscode.Uri.parse('https://docs.sonarsource.com/sonarqube-server/latest/user-guide/security-hotspots/')
+          vscode.Uri.parse('https://docs.sonarsource.com/sonarqube-server/user-guide/security-hotspots/')
         );
       }
     });

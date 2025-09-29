@@ -26,7 +26,7 @@ import { shouldShowRegionSelection } from '../settings/settings';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
-const sonarQubeNotificationsDocUrl = 'https://docs.sonarsource.com/sonarqube-server/latest/user-guide/connected-mode/';
+const sonarQubeNotificationsDocUrl = 'https://docs.sonarsource.com/sonarqube-server/user-guide/connected-mode/';
 const sonarCloudNotificationsDocUrl =
   'https://docs.sonarsource.com/sonarqube-cloud/improving/connected-mode/#smart-notifications';
 const TOKEN_RECEIVED_COMMAND = 'tokenReceived';
