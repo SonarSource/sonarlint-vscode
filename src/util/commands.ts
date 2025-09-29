@@ -50,6 +50,7 @@ export namespace Commands {
   export const SHARE_CONNECTED_MODE_CONFIG = "SonarLint.ShareConnectedModeConfiguration";
   export const REMOVE_CONNECTION = 'SonarLint.RemoveConnection';
   export const CONFIGURE_MCP_SERVER = 'SonarLint.ConfigureMCPServer';
+  export const REFRESH_AI_AGENTS_CONFIGURATION = 'SonarLint.RefreshAIAgentsConfiguration';
 
   export const ADD_PROJECT_BINDING = 'SonarLint.AddProjectBinding';
   export const EDIT_PROJECT_BINDING = 'SonarLint.EditProjectBinding';

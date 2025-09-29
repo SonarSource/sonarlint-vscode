@@ -412,6 +412,12 @@
         "category": "SonarQube"
       },
       {
+        "command": "SonarLint.RefreshAIAgentsConfiguration",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "category": "SonarQube"
+      },
+      {
         "command": "SonarLint.AutoBindWorkspaceFolders",
         "title": "Bind all workspace folders to SonarQube (Server, Cloud)",
         "category": "SonarQube"
@@ -752,7 +758,7 @@
       },
       {
         "view": "SonarLint.AIAgentsConfiguration",
-        "contents": "Configure SonarQube integration with AI agents to enhance your development experience.\n\n[Configure SonarQube MCP Server](command:SonarLint.ConfigureMCPServer)\n\n[Introduce SonarQube Rules File](command:SonarLint.IntroduceSonarQubeRulesFile)\n\nHow does it work? [Read more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/ai-capabilities/ai-agents/)"
+        "contents": "Configure SonarQube integration with AI agents to enhance your development experience.\n\n[Configure SonarQube MCP Server](command:SonarLint.ConfigureMCPServer)\n\nHow does it work? [Read more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/ai-capabilities/ai-agents/)"
       },
       {
         "view": "SonarQube.GetStarted",
@@ -861,6 +867,11 @@
           "command": "SonarLint.ConnectToSonarCloud",
           "when": "view == SonarLint.ConnectedMode",
           "group": "inline"
+        },
+        {
+          "command": "SonarLint.RefreshAIAgentsConfiguration",
+          "when": "view == SonarLint.AIAgentsConfiguration",
+          "group": "navigation"
         },
         {
           "command": "SonarLint.NewCodeDefinition.Enable",
@@ -1339,7 +1350,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.2.0.77736",
+      "version": "4.2.0.77752",
       "output": "server/sonarlint-ls.jar"
     },
     {

@@ -130,6 +130,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetMCPServerConfiguration.type, { connectionId, token });
   }
 
+  getMCPRulesFileContent(aiAssistedIde: string): Promise<ExtendedServer.GetMCPRulesFileContentResponse> {
+    return this.sendRequest(ExtendedServer.GetMCPRulesFileContent.type, aiAssistedIde);
+  }
+
   checkIssueStatusChangePermitted(
     folderUri: string,
     issueKey: string

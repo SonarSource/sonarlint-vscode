@@ -9,7 +9,8 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
-import { getCurrentIdeWithMCPSupport, getMCPConfigPath, IDE, configureMCPServer, onEmbeddedServerStarted } from '../../src/aiAgentsConfiguration/mcpServerConfig';
+import { getMCPConfigPath, configureMCPServer, onEmbeddedServerStarted } from '../../src/aiAgentsConfiguration/mcpServerConfig';
+import { getCurrentIdeWithMCPSupport, IDE } from '../../src/aiAgentsConfiguration/aiAgentUtils';
 import { AllConnectionsTreeDataProvider, Connection } from '../../src/connected/connections';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
