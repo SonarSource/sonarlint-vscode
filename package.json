@@ -676,6 +676,13 @@
         "enablement": "sonarqube.mcpServerSupportedIDE"
       },
       {
+        "command": "SonarLint.OpenMCPServerConfiguration",
+        "title": "Open MCP Server Configuration",
+        "category": "SonarQube",
+        "icon": "$(mcp-server)",
+        "enablement": "sonarqube.mcpServerSupportedIDE"
+      },
+      {
         "command": "SonarLint.IntroduceSonarQubeRulesFile",
         "title": "Introduce SonarQube Rules File",
         "category": "SonarQube",

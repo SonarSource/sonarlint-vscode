@@ -35,7 +35,9 @@ export async function introduceSonarQubeRulesFile(languageClient: SonarLintExten
       if (overwrite !== 'Overwrite') {
         return;
       }
-    } catch {}
+    } catch {
+      // file does not exist, proceed to create it
+    }
 
     const rulesFileResponse = await languageClient.getMCPRulesFileContent('cursor');
 

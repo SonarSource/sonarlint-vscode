@@ -83,7 +83,7 @@ import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
 import { FindingNode } from './findings/findingTypes/findingNode';
 import { AutomaticAnalysisService } from './settings/automaticAnalysis';
 import { FlightRecorderService } from './monitoring/flightrecorder';
-import { configureMCPServer, onEmbeddedServerStarted } from './aiAgentsConfiguration/mcpServerConfig';
+import { configureMCPServer, onEmbeddedServerStarted, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
 import { introduceSonarQubeRulesFile, openSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
 
 const DOCUMENT_SELECTOR = [
@@ -666,6 +666,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
       configureMCPServer(languageClient, allConnectionsTreeDataProvider, connection);
       aiAgentsConfigurationTreeDataProvider.refresh();
     })
+  );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, () => openMCPServerConfigurationFile())
   );
 
   context.subscriptions.push(

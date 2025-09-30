@@ -144,8 +144,7 @@ export async function configureMCPServer(
     );
 
     if (openFile === 'Open Configuration File') {
-      const uri = vscode.Uri.file(getMCPConfigPath());
-      await vscode.window.showTextDocument(uri);
+      openMCPServerConfigurationFile();
     }
 
     logToSonarLintOutput(`SonarQube MCP server configured successfully for connection: ${selectedConnection.label}`);
@@ -225,4 +224,9 @@ export function onEmbeddedServerStarted(port: number): void {
   currentSonarQubeMCPConfig.env.SONARQUBE_IDE_PORT = port.toString();
 
   writeSonarQubeMCPConfig(currentSonarQubeMCPConfig);
+}
+
+export async function openMCPServerConfigurationFile(): Promise<void> {
+  const uri = vscode.Uri.file(getMCPConfigPath());
+  await vscode.window.showTextDocument(uri);
 }
