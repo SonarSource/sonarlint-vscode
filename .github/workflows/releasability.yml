@@ -12,15 +12,13 @@ jobs:
       statuses: write
       contents: read
     if: >-
-      (contains(fromJSON('["main", "master"]'),
-      github.event.check_suite.head_branch) ||
+      (contains(fromJSON('["main", "master"]'), github.event.check_suite.head_branch) ||
       startsWith(github.event.check_suite.head_branch, 'dogfood-') ||
       startsWith(github.event.check_suite.head_branch, 'branch-')) &&
       github.event.check_suite.conclusion == 'success' &&
       github.event.check_suite.app.slug == 'cirrus-ci'
     steps:
-      - uses: >-
-          SonarSource/gh-action_releasability/releasability-status@v2
+      - uses: SonarSource/gh-action_releasability/releasability-status@v3
         with:
           optional_checks: "Jira,CheckDependencies"
         env:
