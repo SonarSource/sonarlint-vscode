@@ -10,6 +10,7 @@ import * as VSCode from 'vscode';
 import { getCurrentIdeWithMCPSupport } from './aiAgentUtils';
 import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
+import { Commands } from '../util/commands';
 
 export class AIAgentsConfigurationItem extends VSCode.TreeItem {
   constructor(
@@ -74,8 +75,8 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
         'SonarQube MCP Server',
         sonarQubeMCPServerConfigured,
         'AI agent integration',
-        'SonarLint.ConfigureMCPServer',
-        'SonarLint.ConfigureMCPServer'
+        Commands.CONFIGURE_MCP_SERVER,
+        Commands.OPEN_MCP_SERVER_CONFIGURATION
     ));
 
     if (getCurrentIdeWithMCPSupport() === 'cursor') {
@@ -85,8 +86,8 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
         'SonarQube Rules File',
         rulesFileConfigured,
         'Custom rule settings',
-        'SonarLint.IntroduceSonarQubeRulesFile',
-        'SonarLint.OpenSonarQubeRulesFile'
+        Commands.INTRODUCE_SONARQUBE_RULES_FILE,
+        Commands.OPEN_SONARQUBE_RULES_FILE
       ));
     }
 
