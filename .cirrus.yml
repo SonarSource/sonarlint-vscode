@@ -239,30 +239,6 @@ run_iris_task:
     chmod +x .cirrus/run-iris.sh
     .cirrus/run-iris.sh
 
-mend_scan_task:
-  depends_on:
-    - build
-  <<: *SKIP_DOCS
-  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*") && ($CIRRUS_BUILD_SOURCE != "cron" || $CIRRUS_CRON == "nightly")
-  eks_container:
-    <<: *CONTAINER_DEFINITION
-  <<: *NODE_MODULES_CACHE_TEMPLATE
-  env:
-    WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
-    JDK_VERSION: "17"
-  whitesource_script:
-    - source cirrus-env QA # read build number
-    - export PROJECT_VERSION=$(npm pkg get version | tr -d \")
-    - export WS_PROJECTNAME="${CIRRUS_REPO_FULL_NAME} ${PROJECT_VERSION}"
-    - source ws_scan.sh
-  allow_failures: "true"
-  always:
-    ws_artifacts:
-      path: "whitesource/**/*"
-  on_failure:
-    slack_notification_script: |
-      source slack-failure-notification
-
 qa_task:
   #  name: Run ITs
   depends_on:
