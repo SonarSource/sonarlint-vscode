@@ -765,7 +765,7 @@
       },
       {
         "view": "SonarLint.AIAgentsConfiguration",
-        "contents": "Configure SonarQube integration with AI agents to enhance your development experience.\n\n[Configure SonarQube MCP Server](command:SonarLint.ConfigureMCPServer)\n\nHow does it work? [Read more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/ai-capabilities/ai-agents/)"
+        "contents": "Configure SonarQube integration with AI agents to enhance your development experience.\n\n[Configure SonarQube MCP Server](command:SonarLint.ConfigureMCPServer)\n\nHow does it work? [Read more](https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/sonarqube-mcp-server)"
       },
       {
         "view": "SonarQube.GetStarted",
