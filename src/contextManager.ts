@@ -20,6 +20,8 @@ const SHOULD_SHOW_GET_STARTED_VIEW = 'sonarqube.shouldShowGetStartedView';
 const FLIGHT_RECORDER_RUNNING = 'sonarqube.flightRecorderRunning';
 const MCP_SERVER_SUPPORTED_IDE = 'sonarqube.mcpServerSupportedIDE';
 
+const COPILOT_ACTIVATION_DELAY_MS = 10000;
+
 export class ContextManager {
   private static _instance: ContextManager;
 
@@ -32,7 +34,6 @@ export class ContextManager {
 
   initializeContext(context: vscode.ExtensionContext) {
     this.setGetStartedViewContext(context);
-    this.setMCPServerSupportedIDEContext();
     const folderBindingStates = [...BindingService.instance.bindingStatePerFolder().values()];
     if (allTrue(folderBindingStates)) {
       // All folders are bound; Show hotspots view and hide rules view
@@ -47,6 +48,10 @@ export class ContextManager {
       vscode.commands.executeCommand('setContext', SOME_CONNECTED_MODE_CONTEXT_KEY, true);
       vscode.commands.executeCommand('setContext', SOME_STANDALONE_MODE_CONTEXT_KEY, true);
     }
+
+    setTimeout(() => {
+      this.setMCPServerSupportedIDEContext();
+    }, COPILOT_ACTIVATION_DELAY_MS);
   }
 
   setMCPServerSupportedIDEContext() {
