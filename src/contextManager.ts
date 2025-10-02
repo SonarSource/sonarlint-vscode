@@ -32,7 +32,6 @@ export class ContextManager {
 
   initializeContext(context: vscode.ExtensionContext) {
     this.setGetStartedViewContext(context);
-    this.setMCPServerSupportedIDEContext();
     const folderBindingStates = [...BindingService.instance.bindingStatePerFolder().values()];
     if (allTrue(folderBindingStates)) {
       // All folders are bound; Show hotspots view and hide rules view
@@ -47,10 +46,13 @@ export class ContextManager {
       vscode.commands.executeCommand('setContext', SOME_CONNECTED_MODE_CONTEXT_KEY, true);
       vscode.commands.executeCommand('setContext', SOME_STANDALONE_MODE_CONTEXT_KEY, true);
     }
+
+    this.setMCPServerSupportedIDEContext();
   }
 
-  setMCPServerSupportedIDEContext() {
-    const isSupportedIDE = getCurrentIdeWithMCPSupport() !== undefined;
+  async setMCPServerSupportedIDEContext() {
+    const supportedIDE = await getCurrentIdeWithMCPSupport();
+    const isSupportedIDE = supportedIDE !== undefined;
     vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_IDE, isSupportedIDE);
   }
 

@@ -30,32 +30,32 @@ const mockAllConnectionsTreeDataProvider = ({
 } as unknown as AllConnectionsTreeDataProvider);
 
 suite('mcpServerConfig', () => {
-  test('should detect supported IDEs based on app name', () => {
+  test('should detect supported IDEs based on app name', async () => {
     const envStub = sinon.stub(vscode.env, 'appName');
     const extensionsStub = sinon.stub(vscode.extensions, 'getExtension');
 
     try {
       envStub.value('Cursor');
-      expect(getCurrentIdeWithMCPSupport()).to.equal(IDE.CURSOR);
+      expect(await getCurrentIdeWithMCPSupport()).to.equal(IDE.CURSOR);
 
       envStub.value('Windsurf');
-      expect(getCurrentIdeWithMCPSupport()).to.equal(IDE.WINDSURF);
+      expect(await getCurrentIdeWithMCPSupport()).to.equal(IDE.WINDSURF);
 
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
-      expect(getCurrentIdeWithMCPSupport()).to.equal(IDE.VSCODE);
+      expect(await getCurrentIdeWithMCPSupport()).to.equal(IDE.VSCODE);
 
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('GitHub.copilot').returns({ isActive: false });
-      expect(getCurrentIdeWithMCPSupport()).to.be.undefined;
+      expect(await getCurrentIdeWithMCPSupport()).to.be.undefined;
 
       envStub.value('Visual Studio Code - Insiders');
       extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
-      expect(getCurrentIdeWithMCPSupport()).to.equal(IDE.VSCODE_INSIDERS);
+      expect(await getCurrentIdeWithMCPSupport()).to.equal(IDE.VSCODE_INSIDERS);
 
       envStub.value('Unknown IDE');
       extensionsStub.withArgs('GitHub.copilot').returns(undefined);
-      expect(getCurrentIdeWithMCPSupport()).to.be.undefined;
+      expect(await getCurrentIdeWithMCPSupport()).to.be.undefined;
     } finally {
       envStub.restore();
       extensionsStub.restore();

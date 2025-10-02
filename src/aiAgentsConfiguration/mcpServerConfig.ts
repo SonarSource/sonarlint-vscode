@@ -31,8 +31,8 @@ interface MCPConfigurationVSCode {
   servers: Record<string, MCPServerConfig>;
 }
 
-export function getMCPConfigPath(): string {
-  const currentIDE = getCurrentIdeWithMCPSupport();
+export async function getMCPConfigPath(): Promise<string> {
+  const currentIDE = await getCurrentIdeWithMCPSupport();
   switch (currentIDE) {
     case IDE.CURSOR:
       return path.join(os.homedir(), '.cursor', 'mcp.json');
@@ -47,19 +47,19 @@ export function getMCPConfigPath(): string {
   }
 }
 
-export function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefined {
-  const currentIDE = getCurrentIdeWithMCPSupport();
+export async function getCurrentSonarQubeMCPServerConfig(): Promise<MCPServerConfig | undefined> {
+  const currentIDE = await getCurrentIdeWithMCPSupport();
   if (!currentIDE) {
     return undefined;
   }
-  const configPath = getMCPConfigPath();
-  const config = readMCPConfig(configPath);
+  const configPath = await getMCPConfigPath();
+  const config = await readMCPConfig(configPath);
   return currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS
     ? (config as MCPConfigurationVSCode).servers.sonarqube
     : (config as MCPConfigurationOthers).mcpServers.sonarqube;
 }
 
-function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigurationVSCode {
+async function readMCPConfig(configPath: string): Promise<MCPConfigurationOthers | MCPConfigurationVSCode> {
   try {
     if (fs.existsSync(configPath)) {
       const content = fs.readFileSync(configPath, 'utf8');
@@ -69,7 +69,7 @@ function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigur
     logToSonarLintOutput(`Error reading MCP config: ${error.message}`);
   }
 
-  const currentIDE = getCurrentIdeWithMCPSupport();
+  const currentIDE = await getCurrentIdeWithMCPSupport();
   return currentIDE === 'vscode' || currentIDE === 'vscode-insiders'
     ? {
         servers: {}
@@ -79,11 +79,11 @@ function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigur
       };
 }
 
-function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
+async function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): Promise<void> {
   try {
-    const currentIDE = getCurrentIdeWithMCPSupport();
-    const configPath = getMCPConfigPath();
-    const config = readMCPConfig(configPath);
+    const currentIDE = await getCurrentIdeWithMCPSupport();
+    const configPath = await getMCPConfigPath();
+    const config = await readMCPConfig(configPath);
 
     if (currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS) {
       (config as MCPConfigurationVSCode).servers.sonarqube = sonarQubeMCPConfig;
@@ -144,7 +144,7 @@ export async function configureMCPServer(
     );
 
     if (openFile === 'Open Configuration File') {
-      openMCPServerConfigurationFile();
+      await openMCPServerConfigurationFile();
     }
 
     logToSonarLintOutput(`SonarQube MCP server configured successfully for connection: ${selectedConnection.label}`);
@@ -208,15 +208,15 @@ function warnNoConnectionConfigured() {
     });
 }
 
-function openMCPServersListIfCursor() {
-  const currentIDE = getCurrentIdeWithMCPSupport();
+async function openMCPServersListIfCursor() {
+  const currentIDE = await getCurrentIdeWithMCPSupport();
   if (currentIDE === IDE.CURSOR) {
     vscode.commands.executeCommand('workbench.action.openMCPSettings');
   }
 }
 
-export function onEmbeddedServerStarted(port: number): void {
-  const currentSonarQubeMCPConfig = getCurrentSonarQubeMCPServerConfig();
+export async function onEmbeddedServerStarted(port: number): Promise<void> {
+  const currentSonarQubeMCPConfig = await getCurrentSonarQubeMCPServerConfig();
   if (!currentSonarQubeMCPConfig) {
     // if the MCP server is not configured, we don't need to update the config
     return;
@@ -227,6 +227,6 @@ export function onEmbeddedServerStarted(port: number): void {
 }
 
 export async function openMCPServerConfigurationFile(): Promise<void> {
-  const uri = vscode.Uri.file(getMCPConfigPath());
+  const uri = vscode.Uri.file(await getMCPConfigPath());
   await vscode.window.showTextDocument(uri);
 }

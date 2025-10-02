@@ -19,3 +19,4 @@ omnisharp
 .vs
 eslint-bridge
 .vscode/settings.json
+.pre-commit-config.yaml

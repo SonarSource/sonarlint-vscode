@@ -7,7 +7,7 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { getCurrentIdeWithMCPSupport } from './aiAgentUtils';
+import { getCurrentIdeWithMCPSupport, IDE } from './aiAgentUtils';
 import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import { Commands } from '../util/commands';
@@ -63,7 +63,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
 
     const items: AIAgentsConfigurationItem[] = [];
 
-    const sonarQubeMCPServerConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
+    const sonarQubeMCPServerConfigured = await getCurrentSonarQubeMCPServerConfig() !== undefined;
     const rulesFileConfigured = await isSonarQubeRulesFileConfigured();
 
     if (!sonarQubeMCPServerConfigured && !rulesFileConfigured) {
@@ -79,8 +79,8 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
         Commands.OPEN_MCP_SERVER_CONFIGURATION
     ));
 
-    if (getCurrentIdeWithMCPSupport() === 'cursor') {
-      // rule file creation is only supported for cursor
+    if (await getCurrentIdeWithMCPSupport() === IDE.CURSOR) {
+      // rule file creation is only supported for Cursor
       items.push(new AIAgentsConfigurationItem(
         'rulesFile',
         'SonarQube Rules File',
