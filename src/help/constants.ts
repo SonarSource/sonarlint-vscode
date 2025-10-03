@@ -84,4 +84,9 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
       arguments: ['SonarSource.sonarlint-vscode#SonarLint.walkthrough', false]
     }
   },
+  {
+    id: 'aiAgentsConfigurationDoc',
+    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/sonarqube-mcp-server',
+    viewItem: false
+  }
 ];

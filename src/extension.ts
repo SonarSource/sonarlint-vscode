@@ -677,6 +677,12 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.OPEN_AIAGENTS_CONFIGURATION_DOC, () => {
+      VSCode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'aiAgentsConfigurationDoc');
+    })
+  );
+
+  context.subscriptions.push(
     VSCode.commands.registerCommand('SonarLint.OpenSonarQubeRulesFile', () => openSonarQubeRulesFile())
   );
 
