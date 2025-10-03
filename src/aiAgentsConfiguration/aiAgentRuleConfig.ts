@@ -9,7 +9,14 @@
 import * as vscode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 
+const SONARQUBE_MCP_INSTRUCTIONS_FILE = 'sonarqube_mcp_instructions.mdc';
+
 export async function introduceSonarQubeRulesFile(languageClient: SonarLintExtendedLanguageClient): Promise<void> {
+  const userConfirmed = await askUserForConfirmation();
+  if (!userConfirmed) {
+    return;
+  }
+
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
   if (!workspaceFolder) {
     vscode.window.showErrorMessage('No workspace folder found. Please open a folder first.');
@@ -17,7 +24,7 @@ export async function introduceSonarQubeRulesFile(languageClient: SonarLintExten
   }
 
   const cursorRulesUri = vscode.Uri.joinPath(workspaceFolder.uri, '.cursor', 'rules');
-  const rulesFileUri = vscode.Uri.joinPath(cursorRulesUri, 'sonarqube_rules.mdc');
+  const rulesFileUri = vscode.Uri.joinPath(cursorRulesUri, SONARQUBE_MCP_INSTRUCTIONS_FILE);
 
   try {
     try {
@@ -29,7 +36,7 @@ export async function introduceSonarQubeRulesFile(languageClient: SonarLintExten
     try {
       await vscode.workspace.fs.stat(rulesFileUri);
       const overwrite = await vscode.window.showWarningMessage(
-        'The sonarqube_rules.mdc file already exists. Do you want to overwrite it?',
+        `The ${SONARQUBE_MCP_INSTRUCTIONS_FILE} file already exists. Do you want to overwrite it?`,
         'Overwrite'
       );
       if (overwrite !== 'Overwrite') {
@@ -97,5 +104,14 @@ export async function isSonarQubeRulesFileConfigured(): Promise<boolean> {
 }
 
 function getCursorRulesFileUri(workspaceFolderUri: vscode.Uri): vscode.Uri {
-  return vscode.Uri.joinPath(workspaceFolderUri, '.cursor', 'rules', 'sonarqube_rules.mdc');
+  return vscode.Uri.joinPath(workspaceFolderUri, '.cursor', 'rules', SONARQUBE_MCP_INSTRUCTIONS_FILE);
+}
+
+async function askUserForConfirmation(): Promise<boolean> {
+  const result = await vscode.window.showInformationMessage(
+    "Would you like to create a SonarQube MCP Server instructions for AI agents?",
+    { modal: true, detail: `This will create a '${SONARQUBE_MCP_INSTRUCTIONS_FILE}' file in your workspace folder.` },
+    'OK'
+  );
+  return result === 'OK';
 }

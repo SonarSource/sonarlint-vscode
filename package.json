@@ -415,7 +415,15 @@
         "command": "SonarLint.RefreshAIAgentsConfiguration",
         "title": "Refresh",
         "icon": "$(refresh)",
-        "category": "SonarQube"
+        "category": "SonarQube",
+        "when": "view == SonarLint.AIAgentsConfiguration"
+      },
+      {
+        "command": "SonarLint.OpenAIAgentsConfigurationDoc",
+        "title": "Open AI Agents Configuration Documentation",
+        "icon": "$(book)",
+        "category": "SonarQube",
+        "when": "view == SonarLint.AIAgentsConfiguration"
       },
       {
         "command": "SonarLint.AutoBindWorkspaceFolders",
@@ -765,7 +773,7 @@
       },
       {
         "view": "SonarLint.AIAgentsConfiguration",
-        "contents": "Configure SonarQube integration with AI agents to enhance your development experience.\n\n[Configure SonarQube MCP Server](command:SonarLint.ConfigureMCPServer)\n\nHow does it work? [Read more](https://docs.sonarsource.com/sonarqube-for-ide/vs-code/ai-capabilities/ai-agents/)"
+        "contents": "Configure SonarQube integration with AI agents to enhance your development experience.\n\n[Configure SonarQube MCP Server](command:SonarLint.ConfigureMCPServer)\n\nHow does it work? [Read more](command:SonarLint.HelpAndFeedbackLinkClicked?%22aiAgentsConfigurationDoc%22)"
       },
       {
         "view": "SonarQube.GetStarted",
@@ -877,6 +885,11 @@
         },
         {
           "command": "SonarLint.RefreshAIAgentsConfiguration",
+          "when": "view == SonarLint.AIAgentsConfiguration",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.OpenAIAgentsConfigurationDoc",
           "when": "view == SonarLint.AIAgentsConfiguration",
           "group": "navigation"
         },
