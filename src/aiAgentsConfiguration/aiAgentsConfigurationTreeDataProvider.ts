@@ -17,13 +17,13 @@ export class AIAgentsConfigurationItem extends VSCode.TreeItem {
     public readonly id: string,
     public readonly label: string,
     public readonly isConfigured: boolean,
-    public readonly description?: string,
+    public readonly tooltipText?: string,
     public readonly configureCommand?: string,
     public readonly reconfigureCommand?: string
   ) {
     super(label, VSCode.TreeItemCollapsibleState.None);
     this.id = id;
-    this.description = this.getStatusDescription();
+    this.tooltip = this.getTooltip();
     this.iconPath = this.getStatusIcon();
     this.contextValue = 'aiAgentsConfigurationItem';
     this.command = {
@@ -33,11 +33,11 @@ export class AIAgentsConfigurationItem extends VSCode.TreeItem {
     };
   }
 
-  private getStatusDescription(): string {
+  private getTooltip(): string {
     if (this.isConfigured) {
-      return this.description ? `${this.description} • Configured` : 'Configured';
+      return this.tooltipText ? `${this.tooltipText} • Configured` : 'Configured';
     }
-    return this.description || 'Not configured';
+    return this.tooltipText || 'Not configured';
   }
 
   private getStatusIcon(): VSCode.ThemeIcon {
@@ -72,7 +72,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
 
     items.push(new AIAgentsConfigurationItem(
         'mcpServer',
-        'SonarQube MCP Server',
+        'Configure SonarQube MCP Server',
         sonarQubeMCPServerConfigured,
         'AI agent integration',
         Commands.CONFIGURE_MCP_SERVER,
@@ -83,9 +83,9 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
       // rule file creation is only supported for cursor
       items.push(new AIAgentsConfigurationItem(
         'rulesFile',
-        'SonarQube Rules File',
+        'Create Instructions for AI agents',
         rulesFileConfigured,
-        'Custom rule settings',
+        'SonarQube MCP Server guide',
         Commands.INTRODUCE_SONARQUBE_RULES_FILE,
         Commands.OPEN_SONARQUBE_RULES_FILE
       ));

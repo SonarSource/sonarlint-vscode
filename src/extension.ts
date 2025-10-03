@@ -683,11 +683,11 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand('SonarLint.OpenSonarQubeRulesFile', () => openSonarQubeRulesFile())
+    VSCode.commands.registerCommand(Commands.OPEN_SONARQUBE_RULES_FILE, () => openSonarQubeRulesFile())
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand('SonarLint.IntroduceSonarQubeRulesFile', () => introduceSonarQubeRulesFile(languageClient))
+    VSCode.commands.registerCommand(Commands.INTRODUCE_SONARQUBE_RULES_FILE, () => introduceSonarQubeRulesFile(languageClient))
   );
 }
 
