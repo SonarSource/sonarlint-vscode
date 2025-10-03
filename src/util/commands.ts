@@ -54,6 +54,7 @@ export namespace Commands {
   export const INTRODUCE_SONARQUBE_RULES_FILE = 'SonarLint.IntroduceSonarQubeRulesFile';
   export const OPEN_SONARQUBE_RULES_FILE = 'SonarLint.OpenSonarQubeRulesFile';
   export const REFRESH_AI_AGENTS_CONFIGURATION = 'SonarLint.RefreshAIAgentsConfiguration';
+  export const OPEN_AIAGENTS_CONFIGURATION_DOC = 'SonarLint.OpenAIAgentsConfigurationDoc';
 
   export const ADD_PROJECT_BINDING = 'SonarLint.AddProjectBinding';
   export const EDIT_PROJECT_BINDING = 'SonarLint.EditProjectBinding';

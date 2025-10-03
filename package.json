@@ -415,7 +415,15 @@
         "command": "SonarLint.RefreshAIAgentsConfiguration",
         "title": "Refresh",
         "icon": "$(refresh)",
-        "category": "SonarQube"
+        "category": "SonarQube",
+        "when": "view == SonarLint.AIAgentsConfiguration"
+      },
+      {
+        "command": "SonarLint.OpenAIAgentsConfigurationDoc",
+        "title": "Open AI Agents Configuration Documentation",
+        "icon": "$(book)",
+        "category": "SonarQube",
+        "when": "view == SonarLint.AIAgentsConfiguration"
       },
       {
         "command": "SonarLint.AutoBindWorkspaceFolders",
@@ -877,6 +885,11 @@
         },
         {
           "command": "SonarLint.RefreshAIAgentsConfiguration",
+          "when": "view == SonarLint.AIAgentsConfiguration",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.OpenAIAgentsConfigurationDoc",
           "when": "view == SonarLint.AIAgentsConfiguration",
           "group": "navigation"
         },
