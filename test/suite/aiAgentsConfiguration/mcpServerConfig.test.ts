@@ -9,11 +9,11 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
-import { getMCPConfigPath, configureMCPServer, onEmbeddedServerStarted } from '../../src/aiAgentsConfiguration/mcpServerConfig';
-import { getCurrentIdeWithMCPSupport, IDE } from '../../src/aiAgentsConfiguration/aiAgentUtils';
-import { AllConnectionsTreeDataProvider, Connection } from '../../src/connected/connections';
-import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
-import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
+import { getMCPConfigPath, configureMCPServer, onEmbeddedServerStarted } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
+import { getCurrentIdeWithMCPSupport, IDE } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { AllConnectionsTreeDataProvider, Connection } from '../../../src/connected/connections';
+import { ConnectionSettingsService } from '../../../src/settings/connectionsettings';
+import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 
 const mockConnection: Connection = new Connection('test-connection-id', 'Test SonarQube', 'sonarqubeConnection', 'ok');
 
