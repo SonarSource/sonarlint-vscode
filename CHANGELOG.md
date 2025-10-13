@@ -4,7 +4,7 @@
 * Update IaC analyzer 1.49 -> [1.50](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2022306%20ORDER%20BY%20created%20ASC)
 * Update Go analyzer 1.27 -> 1.28
 * Update Text & Secrets analyzer 2.28 -> 2.29 -> 2.30
-* Update Python analyzer 5.9 -> 5.10
+* Update Python analyzer 5.9 -> 5.10 -> 5.11
 * Update CFamily analyzer 6.71 -> [6.72](https://sonarsource.atlassian.net/issues/?jql=project%20=%2010166%20AND%20fixVersion=22307%20ORDER%20BY%20priority%20DESC,%20key%20ASC)
 
 ## 4.31
