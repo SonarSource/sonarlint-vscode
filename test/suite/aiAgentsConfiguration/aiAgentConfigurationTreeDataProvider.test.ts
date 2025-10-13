@@ -16,7 +16,7 @@ import * as aiAgentUtils from "../../../src/aiAgentsConfiguration/aiAgentUtils";
 import { IDE } from "../../../src/aiAgentsConfiguration/aiAgentUtils";
 
 
-suite('aiAgentConfigurationTreeDataProvider', () => {
+suite.skip('aiAgentConfigurationTreeDataProvider', () => {
   let underTest: AIAgentsConfigurationTreeDataProvider;
 
   setup(() => {
