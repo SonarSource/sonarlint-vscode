@@ -845,7 +845,8 @@
       "editor/title": [
         {
           "command": "SonarLint.AnalyseOpenFile",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "resourceScheme == file"
         }
       ],
       "view/title": [
