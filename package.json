@@ -510,31 +510,31 @@
         "command": "SonarQube.ShowAllFindings",
         "title": "All",
         "category": "SonarQube",
-        "enablement": "sonarqube.findingsFilter != filter-all"
+        "enablement": "sonarqube.findingsFilter != filter-all && view == SonarQube.Findings"
       },
       {
         "command": "SonarQube.ShowFixableIssuesOnly",
         "title": "Fix Available",
         "category": "SonarQube",
-        "enablement": "sonarqube.findingsFilter != filter-fix-available"
+        "enablement": "sonarqube.findingsFilter != filter-fix-available && view == SonarQube.Findings"
       },
       {
         "command": "SonarQube.ShowOpenFilesOnly",
         "title": "Open Files",
         "category": "SonarQube",
-        "enablement": "sonarqube.findingsFilter != filter-open-files"
+        "enablement": "sonarqube.findingsFilter != filter-open-files && view == SonarQube.Findings"
       },
       {
         "command": "SonarQube.ShowHighSeverityOnly",
         "title": "High Severity",
         "category": "SonarQube",
-        "enablement": "sonarqube.findingsFilter != filter-high-severity"
+        "enablement": "sonarqube.findingsFilter != filter-high-severity && view == SonarQube.Findings"
       },
       {
         "command": "SonarQube.ShowCurrentFileOnly",
         "title": "Current File",
         "category": "SonarQube",
-        "enablement": "sonarqube.findingsFilter != filter-current-file"
+        "enablement": "sonarqube.findingsFilter != filter-current-file && view == SonarQube.Findings"
       },
       {
         "command": "SonarLint.ConnectToSonarQube",
