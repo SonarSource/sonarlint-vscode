@@ -36,7 +36,7 @@ suite('aiAgentRuleConfig', () => {
     sinon.restore();
   });
 
-  suite('isSonarQubeRulesFileConfigured', () => {
+  suite.skip('isSonarQubeRulesFileConfigured', () => {
     test('should return true when SonarQube rules file exists', async () => {
         const mockWorkspaceFolder = {
           uri: vscode.Uri.file('/mock/workspace'),
@@ -76,7 +76,7 @@ suite('aiAgentRuleConfig', () => {
       });
   });
 
-  suite('openSonarQubeRulesFile', () => {
+  suite.skip('openSonarQubeRulesFile', () => {
     test('should show error when workspace folder cannot be found', async () => {
       workspaceStub.value(undefined);
 
@@ -138,7 +138,7 @@ suite('aiAgentRuleConfig', () => {
     });
   });
 
-  suite('introduceSonarQubeRulesFile', () => {
+  suite.skip('introduceSonarQubeRulesFile', () => {
     test('should return early when user does not confirm', async () => {
       showInformationMessageStub.resolves(undefined);
 

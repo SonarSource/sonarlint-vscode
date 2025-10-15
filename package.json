@@ -694,13 +694,15 @@
         "command": "SonarLint.IntroduceSonarQubeRulesFile",
         "title": "Introduce SonarQube Rules File",
         "category": "SonarQube",
-        "icon": "$(file-text)"
+        "icon": "$(file-text)",
+        "enablement": "sonarqube.mcpServerSupportedIDE"
       },
       {
         "command": "SonarLint.OpenSonarQubeRulesFile",
         "title": "Open SonarQube Rules File",
         "category": "SonarQube",
-        "icon": "$(file-text)"
+        "icon": "$(file-text)",
+        "enablement": "sonarqube.mcpServerSupportedIDE"
       }
     ],
     "viewsContainers": {
