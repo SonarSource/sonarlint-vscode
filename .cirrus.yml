@@ -40,7 +40,7 @@ ec2_instance_definition: &WINVM_DEFINITION
   image: base-windows-jdk17-v*
   platform: windows
   region: eu-central-1
-  type: t3.xlarge
+  type: t3.2xlarge
 
 skip_docs: &SKIP_DOCS
   skip: "changesIncludeOnly('docs/*', '**/README.md')"
