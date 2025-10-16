@@ -29,7 +29,7 @@ const mockAllConnectionsTreeDataProvider = ({
   getConnections: sinon.stub().resolves([mockConnection])
 } as unknown as AllConnectionsTreeDataProvider);
 
-suite.skip('mcpServerConfig', () => {
+suite('mcpServerConfig', () => {
   test('should detect supported IDEs based on app name', () => {
     const envStub = sinon.stub(vscode.env, 'appName');
     const extensionsStub = sinon.stub(vscode.extensions, 'getExtension');
