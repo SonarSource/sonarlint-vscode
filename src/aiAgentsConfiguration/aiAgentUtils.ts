@@ -21,5 +21,14 @@ function isCopilotInstalledAndActive(): boolean {
 }
 
 export function getCurrentIdeWithMCPSupport(): IDE | undefined {
+  if (vscode.env.appName.toLowerCase().includes('cursor')) {
+    return IDE.CURSOR;
+  } else if (vscode.env.appName.toLowerCase().includes('windsurf')) {
+    return IDE.WINDSURF;
+  } else if (vscode.env.appName.toLowerCase().includes('insiders') && isCopilotInstalledAndActive()) {
+    return IDE.VSCODE_INSIDERS;
+  } else if (vscode.env.appName.toLowerCase().includes('visual studio code') && isCopilotInstalledAndActive()) {
+    return IDE.VSCODE;
+  }
   return undefined;
 }

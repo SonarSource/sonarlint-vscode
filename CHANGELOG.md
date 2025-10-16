@@ -1,3 +1,8 @@
+## 4.33
+
+* Allow one-click installation of SonarQube MCP Server
+
+
 ## 4.32
 
 * Update JS/TS/CSS analyzer 11.3 -> [11.4](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2022537%20ORDER%20BY%20created%20ASC) -> [11.4.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023259%20ORDER%20BY%20created%20ASC), Update Node.js min required versions to "^20.12.0 || >=22.11.0"
