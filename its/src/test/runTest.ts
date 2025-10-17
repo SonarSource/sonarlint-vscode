@@ -69,13 +69,15 @@ async function main() {
     await runTestSuite('./pythonSuite', 'workspace-python.code-workspace');
     await runTestSuite('./cfamilySuite', 'workspace-cfamily.code-workspace');
 
-    ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
-      cp.spawnSync(cliPath, [`--extensions-dir=${extensionsDir}`, '--install-extension', requiredExtensionId], {
-        encoding: 'utf-8',
-        stdio: 'inherit'
+    if (vscodeVersion !== 'insiders') {
+      ['redhat.java', 'vscjava.vscode-maven'].forEach(requiredExtensionId => {
+        cp.spawnSync(cliPath, [`--extensions-dir=${extensionsDir}`, '--install-extension', requiredExtensionId], {
+          encoding: 'utf-8',
+          stdio: 'inherit'
+        });
       });
-    });
-    await runTestSuite('./javaSuite', 'workspace-java.code-workspace');
+      await runTestSuite('./javaSuite', 'workspace-java.code-workspace');
+    }
     await runTestSuite('./csharpsuite', 'workspace-csharp.code-workspace');
 
     if (testErrors.length > 0) {
