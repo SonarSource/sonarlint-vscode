@@ -47,7 +47,7 @@ export namespace Commands {
   export const CONNECT_TO_SONARCLOUD = 'SonarLint.ConnectToSonarCloud';
   export const EDIT_SONARQUBE_CONNECTION = 'SonarLint.EditSonarQubeConnection';
   export const EDIT_SONARCLOUD_CONNECTION = 'SonarLint.EditSonarCloudConnection';
-  export const SHARE_CONNECTED_MODE_CONFIG = "SonarLint.ShareConnectedModeConfiguration";
+  export const SHARE_CONNECTED_MODE_CONFIG = 'SonarLint.ShareConnectedModeConfiguration';
   export const REMOVE_CONNECTION = 'SonarLint.RemoveConnection';
   export const CONFIGURE_MCP_SERVER = 'SonarLint.ConfigureMCPServer';
   export const OPEN_MCP_SERVER_CONFIGURATION = 'SonarLint.OpenMCPServerConfiguration';
