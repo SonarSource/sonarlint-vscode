@@ -85,6 +85,7 @@ import { AutomaticAnalysisService } from './settings/automaticAnalysis';
 import { FlightRecorderService } from './monitoring/flightrecorder';
 import { configureMCPServer, onEmbeddedServerStarted, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
 import { introduceSonarQubeRulesFile, openSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
+import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -257,6 +258,8 @@ export async function activate(context: VSCode.ExtensionContext) {
     /* ignored */
   });
   FixSuggestionService.init(languageClient);
+  IdeLabsFlagManagementService.init(context);
+  
   ContextManager.instance.initializeContext(context);
 
   FindingsTreeDataProvider.init(context, languageClient);
@@ -443,10 +446,6 @@ function suggestBinding(params: ExtendedClient.SuggestBindingParams) {
 }
 
 function registerCommands(context: VSCode.ExtensionContext) {
-  function checkMonitoring () {
-    throw new Error('Test from a command handler');
-  }
-
   context.subscriptions.push(
     VSCode.commands.registerCommand('SonarLint.OpenSample', async () => {
       const sampleFileUri = VSCode.Uri.joinPath(context.extensionUri, 'walkthrough', 'sample.py');

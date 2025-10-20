@@ -12,6 +12,7 @@ import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
 import { getCurrentIdeWithMCPSupport } from './aiAgentsConfiguration/aiAgentUtils';
+import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
 const SOME_STANDALONE_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseStandaloneMode';
@@ -19,7 +20,7 @@ const HAS_EXPLORED_ISSUE_LOCATIONS_CONTEXT_KEY = 'sonarqube.hasExploredIssueLoca
 const SHOULD_SHOW_GET_STARTED_VIEW = 'sonarqube.shouldShowGetStartedView';
 const FLIGHT_RECORDER_RUNNING = 'sonarqube.flightRecorderRunning';
 const MCP_SERVER_SUPPORTED_IDE = 'sonarqube.mcpServerSupportedIDE';
-
+const IDE_LABS_ENABLED_FLAG_KEY = 'sonarqube.ideLabsEnabled';
 const COPILOT_ACTIVATION_DELAY_MS = 10000;
 
 export class ContextManager {
@@ -49,6 +50,8 @@ export class ContextManager {
       vscode.commands.executeCommand('setContext', SOME_STANDALONE_MODE_CONTEXT_KEY, true);
     }
 
+    this.initializeIdeLabsContext();
+
     setTimeout(() => {
       this.setMCPServerSupportedIDEContext();
     }, COPILOT_ACTIVATION_DELAY_MS);
@@ -72,6 +75,15 @@ export class ContextManager {
 
   setFlightRecorderRunningContext() {
     vscode.commands.executeCommand('setContext', FLIGHT_RECORDER_RUNNING, true);
+  }
+
+  initializeIdeLabsContext() {
+    const enabled = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
+    this.setIdeLabsContext(enabled);
+  }
+
+  setIdeLabsContext(enabled: boolean) {
+    vscode.commands.executeCommand('setContext', IDE_LABS_ENABLED_FLAG_KEY, enabled);
   }
 
   resetAllContexts() {
