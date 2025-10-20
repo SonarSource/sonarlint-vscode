@@ -182,4 +182,9 @@ export class IssueService {
       );
     }
   }
+
+  static clearLocations() {
+    IssueService._instance.secondaryLocationsTree.hideLocations();
+    IssueService._instance.issueLocationsView.message = null;
+  }
 }
