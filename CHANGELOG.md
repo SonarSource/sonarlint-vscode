@@ -2,6 +2,7 @@
 
 * Update IaC analyzer 1.50 -> [1.51](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023078%20ORDER%20BY%20created%20ASC)
 * Update PHP analyzer 3.49 -> [3.50](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2022544%20ORDER%20BY%20created%20ASC)
+* Update Text & Secrets analyzer 2.30 -> 2.31
 
 ## 4.33
 
