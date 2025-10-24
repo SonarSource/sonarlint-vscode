@@ -22,6 +22,7 @@ const TEST_FILE_URI_2 = 'file:///test/file2.js';
 const TEST_CURRENT_FILE_URI = 'file:///test/current.js';
 const TEST_OPEN_FILE_URI = 'file:///test/open.js';
 const TEST_CLOSED_FILE_URI = 'file:///test/closed.js';
+const TEST_NON_EXISTING_FILE_URI = 'file:///non/existing/file.js';
 const TEST_KEY = 'test-key';
 const TEST_RULE = 'test-rule';
 const TEST_MESSAGE = 'Test finding';
@@ -59,8 +60,11 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
     executeCommandStub = sinon.stub(vscode.commands, 'executeCommand');
 
     const mockFs = {
-      stat: sinon.stub().resolves({
-        type: vscode.FileType.File
+      stat: sinon.stub().callsFake(async (uri: vscode.Uri) => {
+        if (uri.toString() === TEST_NON_EXISTING_FILE_URI) {
+          throw new Error('File does not exist');
+        }
+        return { type: vscode.FileType.File };
       }),
       readFile: sinon.stub().resolves(new Uint8Array()),
       writeFile: sinon.stub().resolves(),
@@ -313,6 +317,28 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
       expect(rootFiles).to.have.length(1); // Only file1 has findings with fixes
       expect(rootFiles[0].fileUri).to.equal(TEST_FILE_URI);
       expect(rootFiles[0].findingsCount).to.equal(1); // Only 1 finding matches filter
+    });
+
+    test('should not include non-existing files', async () => {
+      const nonExistentFileFindings = [
+        createMockFindingNode({ findingType: FindingType.Issue, key: 'issue1', isAiCodeFixable: true })
+      ];
+      const file1Findings = [
+        createMockFindingNode({ findingType: FindingType.Issue, key: 'issue2', isAiCodeFixable: true }),
+        createMockFindingNode({ findingType: FindingType.Issue, key: 'issue3', isAiCodeFixable: false })
+      ];
+      const file2Findings = [
+        createMockFindingNode({ findingType: FindingType.Issue, key: 'issue4', isAiCodeFixable: false })
+      ];
+      
+      (underTest as any).findingsCache.set(TEST_FILE_URI, file1Findings);
+      (underTest as any).findingsCache.set(TEST_FILE_URI_2, file2Findings);
+      (underTest as any).findingsCache.set(TEST_NON_EXISTING_FILE_URI, nonExistentFileFindings);
+
+      underTest.setFilter(FilterType.All);
+      const rootFiles = await underTest.getRootFiles();
+      
+      expect(rootFiles).to.have.length(2);
     });
 
     test('should return empty array when no findings match filter', async () => {
