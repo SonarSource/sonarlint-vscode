@@ -33,6 +33,7 @@ import { NotebookNode } from './notebookNode';
 import { FindingsFolderNode } from './findingsFolderNode';
 import { DependencyRiskNode } from './findingTypes/dependencyRiskNode';
 import { TaintVulnerabilityNode } from './findingTypes/taintVulnerabilityNode';
+import { logToSonarLintOutput } from '../util/logging';
 
 export class NewIssuesNode extends vscode.TreeItem {
   constructor() {
@@ -365,11 +366,17 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       existingFiles.push(new NotebookNode(notebookUri, findingsCount, category, [fileOrCellUri]));
     } else {
       const uri = vscode.Uri.parse(fileOrCellUri);
-      const stat = await vscode.workspace.fs.stat(uri);
-      if (stat.type & vscode.FileType.Directory) {
-        existingFiles.push(new FindingsFolderNode(fileOrCellUri, findingsCount, category));
-      } else {
-        existingFiles.push(new FindingsFileNode(fileOrCellUri, findingsCount, category));
+      try {
+        const stat = await vscode.workspace.fs.stat(uri);
+        if (stat.type & vscode.FileType.Directory) {
+          existingFiles.push(new FindingsFolderNode(fileOrCellUri, findingsCount, category));
+        } else {
+          existingFiles.push(new FindingsFileNode(fileOrCellUri, findingsCount, category));
+        }
+      } catch {
+        // skip files that do not exist
+        logToSonarLintOutput(`Skipping non-existing file in findings tree: ${fileOrCellUri}`);
+        return;
       }
     }
   }
