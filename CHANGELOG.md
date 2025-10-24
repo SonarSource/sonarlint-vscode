@@ -1,7 +1,10 @@
+## 4.34
+
+* Update IaC analyzer 1.50 -> [1.51](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023078%20ORDER%20BY%20created%20ASC)
+
 ## 4.33
 
 * Allow one-click installation of SonarQube MCP Server
-
 
 ## 4.32
 
