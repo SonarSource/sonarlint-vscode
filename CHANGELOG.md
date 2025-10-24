@@ -4,6 +4,7 @@
 * Update PHP analyzer 3.49 -> [3.50](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2022544%20ORDER%20BY%20created%20ASC) -> [3.51](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023890%20ORDER%20BY%20created%20ASC)
 * Update Text & Secrets analyzer 2.30 -> 2.31
 * Update HTML analyzer 3.19 -> [3.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2017120%20ORDER%20BY%20created%20ASC)
+* Update Python analyzer 5.11 -> [5.12](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023495%20ORDER%20BY%20created%20ASC)
 
 ## 4.33
 
