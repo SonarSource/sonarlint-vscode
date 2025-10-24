@@ -5,6 +5,7 @@
 * Update Text & Secrets analyzer 2.30 -> 2.31
 * Update HTML analyzer 3.19 -> [3.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2017120%20ORDER%20BY%20created%20ASC)
 * Update Python analyzer 5.11 -> [5.12](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023495%20ORDER%20BY%20created%20ASC)
+* Update JS/TS/CSS analyzer 11.4 -> [11.5](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023071%20ORDER%20BY%20created%20ASC), 58 new QuickFixes
 
 ## 4.33
 
