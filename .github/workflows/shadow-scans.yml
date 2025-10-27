@@ -1,0 +1,107 @@
+name: Shadow scans
+on:
+  schedule:
+    # Run the workflow every day at 04:00 UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  scan:
+    runs-on: github-ubuntu-latest-s
+    name: Scan on shadow platforms
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.7.12
+
+      - name: Fetch vault secrets
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@v3
+        with:
+          secrets: |
+            development/kv/data/repox url | ARTIFACTORY_URL;
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader username | ARTIFACTORY_USER;
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
+            development/kv/data/next url | SONAR_NEXT_URL;
+            development/kv/data/sonarcloud url | SONAR_SQC_EU_URL;
+            development/kv/data/sonarqube-us url | SONAR_SQC_US_URL;
+            development/kv/data/iris next | SONAR_IRIS_NEXT_TOKEN;
+            development/kv/data/iris sqc-eu | SONAR_IRIS_SQC_EU_TOKEN;
+            development/kv/data/iris sqc-us | SONAR_IRIS_SQC_US_TOKEN;
+
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+
+      - name: Cache NPM dependencies
+        uses: SonarSource/ci-github-actions/cache@v1
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}
+
+      - name: Prepare project
+        env:
+          ARTIFACTORY_URL: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_URL }}
+          ARTIFACTORY_PRIVATE_READER_USERNAME: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_USER }}
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+          NPM_CONFIG_registry: https://repox.jfrog.io/artifactory/api/npm/npm
+          NPM_CONFIG_//repox.jfrog.io/artifactory/api/npm/:_authToken: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+        run: |
+          npm ci
+          npm run compile
+          npm run prepare
+
+      - name: Prepare xvfb and ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb x11-utils ffmpeg libxrandr2 libglu1-mesa
+
+      - name: Run tests with coverage
+        env:
+          DISPLAY: ":10"
+          VIDEO_FILE: "vscode_test-linux_${{ github.run_id }}.mp4"
+          SCREEN_SIZE: "1280x960"
+        run: .github/scripts/run-with-video.sh npm run test-cov
+
+      - name: Analyze on SonarQubeServerNext
+        env:
+          SONAR_URL: ${{ fromJSON(steps.secrets.outputs.vault).SONAR_NEXT_URL }}
+          SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SONAR_IRIS_NEXT_TOKEN }}
+          SONAR_PROJECT_KEY: "org.sonarsource.sonarlint.vscode:sonarlint-vscode"
+        run: .github/scripts/sonarqube-analysis.sh
+
+      - name: Analyze on SonarQubeCloudEU
+        env:
+          SONAR_URL: ${{ fromJSON(steps.secrets.outputs.vault).SONAR_SQC_EU_URL }}
+          SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SONAR_IRIS_SQC_EU_TOKEN }}
+          SONAR_PROJECT_KEY: "SonarSource_sonarlint-vscode"
+        run: .github/scripts/sonarqube-analysis.sh
+
+      - name: Analyze on SonarQubeCloudUS
+        env:
+          SONAR_URL: ${{ fromJSON(steps.secrets.outputs.vault).SONAR_SQC_US_URL }}
+          SONAR_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SONAR_IRIS_SQC_US_TOKEN }}
+          SONAR_PROJECT_KEY: "SonarSource_sonarlint-vscode"
+        run: .github/scripts/sonarqube-analysis.sh
+
+
+  iris-analysis:
+    runs-on: github-ubuntu-latest-s
+    name: Run IRIS Analysis
+    needs: scan
+    if: ${{ !cancelled() }}
+    steps:
+      - name: Run IRIS Analysis
+        uses: SonarSource/unified-dogfooding-actions/run-iris@v1
+        with:
+          primary_project_key: "org.sonarsource.sonarlint.vscode:sonarlint-vscode"
+          primary_platform: "Next"
+          shadow1_project_key: "SonarSource_sonarlint-vscode"
+          shadow1_platform: "SQC-EU"
+          shadow2_project_key: "SonarSource_sonarlint-vscode"
+          shadow2_platform: "SQC-US"
