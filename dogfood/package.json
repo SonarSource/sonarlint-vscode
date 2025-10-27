@@ -7,7 +7,7 @@
   },
   "displayName": "SonarLint Dogfood",
   "description": "Streamline dogfooding of SonarLint for VSCode",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "icon": "sonarlint-dogfood.png",
   "engines": {
     "vscode": "^1.86.0"
