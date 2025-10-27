@@ -54,11 +54,14 @@ async function checkUpdate(statusBar: StatusBar, context: vscode.ExtensionContex
 }
 
 function reinstallationNeeded(dogfoodInfo: DogfoodInfo, installedSonarLint: vscode.Extension<any> | undefined) {
+  const currentVersionWithBuildNumber = installedSonarLint ? versionWithBuildNumber(installedSonarLint.packageJSON) : 'not installed';
+  console.log(`SonarQube for IDE Dogfood info: version=${dogfoodInfo.version}, url=${dogfoodInfo.url}, pinned=${dogfoodInfo.pinned}`);
+  console.log(`SonarQube for IDE Dogfood currently installed version: ${currentVersionWithBuildNumber}`);
   if (dogfoodInfo.pinned) {
-    return installedSonarLint === undefined || semver.compareBuild(versionWithBuildNumber(installedSonarLint.packageJSON), dogfoodInfo.version) !== 0;
+    return installedSonarLint === undefined || semver.compareBuild(currentVersionWithBuildNumber, dogfoodInfo.version) !== 0;
   }
   return installedSonarLint === undefined ||
-      semver.compareBuild(versionWithBuildNumber(installedSonarLint.packageJSON), dogfoodInfo.version) < 0
+      semver.compareBuild(currentVersionWithBuildNumber, dogfoodInfo.version) < 0
 }
 
 function versionWithBuildNumber(packageJSON: any): string {
