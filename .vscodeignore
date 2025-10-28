@@ -17,7 +17,4 @@ dogfood/
 scripts/
 .github/
 .idea/
-.cirrus/
-.cirrus.star
-.cirrus.yml
 build-sonarlint/

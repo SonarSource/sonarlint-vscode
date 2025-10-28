@@ -1,6 +1,29 @@
 #!/bin/bash
 
 set -euo pipefail
+
+echo '======= Starting GitHub Actions SonarQube Analysis'
+
+# Determine if this is a pull request
+if [ "${GITHUB_EVENT_NAME}" == "pull_request" ]; then
+    export PULL_REQUEST="${GITHUB_REF##refs/pull/}"
+    export PULL_REQUEST="${PULL_REQUEST%/merge}"
+    export GITHUB_BRANCH="${GITHUB_HEAD_REF}"
+    export GITHUB_BASE_BRANCH="${GITHUB_BASE_REF}"
+else
+    export PULL_REQUEST="false"
+    export GITHUB_BRANCH="${GITHUB_REF_NAME}"
+    export GITHUB_BASE_BRANCH="${GITHUB_BASE_REF:-}"
+fi
+
+echo "Environment variables set:"
+echo "BUILD_NUMBER: $BUILD_NUMBER"
+echo "GITHUB_SHA: $GITHUB_SHA"
+echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+echo "PULL_REQUEST: $PULL_REQUEST"
+echo "GITHUB_BRANCH: $GITHUB_BRANCH"
+echo "GITHUB_BASE_BRANCH: $GITHUB_BASE_BRANCH"
+
 # Fetch all commit history so that SonarQube has exact blame information
 # for issue auto-assignment
 # This command can fail with "fatal: --unshallow on a complete repository does not make sense"
@@ -40,9 +63,9 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$PULL_REQUEST" == "false" ]; then
       -Dsonar.host.url="$SONAR_URL" \
       -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
-      -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
+      -Dsonar.analysis.pipeline="$GITHUB_RUN_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
-      -Dsonar.analysis.repository="$GITHUB_REPO" \
+      -Dsonar.analysis.repository="$GITHUB_REPOSITORY" \
       $SONAR_REGION_PARAM
 
 elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; then
@@ -64,9 +87,9 @@ elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; t
       -Dsonar.host.url="$SONAR_URL" \
       -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
-      -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
+      -Dsonar.analysis.pipeline="$GITHUB_RUN_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
-      -Dsonar.analysis.repository="$GITHUB_REPO" \
+      -Dsonar.analysis.repository="$GITHUB_REPOSITORY" \
       -Dsonar.branch.name="$GITHUB_BRANCH" \
       $SONAR_REGION_PARAM
 
@@ -80,9 +103,9 @@ elif [ "$PULL_REQUEST" != "false" ]; then
       -Dsonar.host.url="$SONAR_URL" \
       -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
-      -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
-      -Dsonar.analysis.sha1="$GIT_SHA1"  \
-      -Dsonar.analysis.repository="$GITHUB_REPO" \
+      -Dsonar.analysis.pipeline="$GITHUB_RUN_ID" \
+      -Dsonar.analysis.sha1="$GITHUB_SHA"  \
+      -Dsonar.analysis.repository="$GITHUB_REPOSITORY" \
       -Dsonar.analysis.prNumber="$PULL_REQUEST" \
       $SONAR_REGION_PARAM
 
@@ -96,9 +119,9 @@ elif [[ "$GITHUB_BRANCH" == "feature/long/"* ]] && [ "$PULL_REQUEST" == "false" 
       -Dsonar.host.url="$SONAR_URL" \
       -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
-      -Dsonar.analysis.pipeline="$CIRRUS_BUILD_ID" \
-      -Dsonar.analysis.sha1="$GIT_SHA1"  \
-      -Dsonar.analysis.repository="$GITHUB_REPO" \
+      -Dsonar.analysis.pipeline="$GITHUB_RUN_ID" \
+      -Dsonar.analysis.sha1="$GITHUB_SHA"  \
+      -Dsonar.analysis.repository="$GITHUB_REPOSITORY" \
       -Dsonar.analysis.prNumber="$PULL_REQUEST" \
       -Dsonar.branch.name="$GITHUB_BRANCH" \
       $SONAR_REGION_PARAM
@@ -106,3 +129,5 @@ elif [[ "$GITHUB_BRANCH" == "feature/long/"* ]] && [ "$PULL_REQUEST" == "false" 
 else
   echo '======= No analysis'
 fi
+
+echo '======= GitHub Actions SonarQube Analysis Complete'

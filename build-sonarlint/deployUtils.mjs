@@ -7,7 +7,7 @@
 'use strict';
 import { error, info } from 'fancy-log';
 import { getPackageJSON } from './fsUtils.mjs';
-import { join, extname, basename } from 'path';
+import { basename, extname, join } from 'path';
 import dateformat from 'dateformat';
 import { computeDependencyHashes, fileHashsum } from './hashes.mjs';
 import { createReadStream } from 'fs';
@@ -17,7 +17,7 @@ export async function deployBuildInfo() {
   info('Starting task "deployBuildInfo"');
   const packageJSON = getPackageJSON();
   const { version, name, jarDependencies } = packageJSON;
-  const buildNumber = process.env.BUILD_ID;
+  const buildNumber = process.env.BUILD_NUMBER;
   const json = buildInfo(name, version, buildNumber, jarDependencies);
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
@@ -47,10 +47,10 @@ export function deployVsix() {
     ARTIFACTORY_DEPLOY_REPO,
     ARTIFACTORY_DEPLOY_USERNAME,
     ARTIFACTORY_DEPLOY_PASSWORD,
-    BUILD_SOURCEVERSION,
+    GITHUB_SHA,
     GITHUB_BRANCH,
     BUILD_NUMBER,
-    CIRRUS_BASE_BRANCH
+    GITHUB_BASE_REF
   } = process.env;
   const packageJSON = getPackageJSON();
   const { version, name } = packageJSON;
@@ -64,8 +64,8 @@ export function deployVsix() {
       username: ARTIFACTORY_DEPLOY_USERNAME,
       password: ARTIFACTORY_DEPLOY_PASSWORD,
       properties: {
-        'vcs.revision': BUILD_SOURCEVERSION,
-        'vcs.branch': CIRRUS_BASE_BRANCH || GITHUB_BRANCH,
+        'vcs.revision': GITHUB_SHA,
+        'vcs.branch': GITHUB_BASE_REF || GITHUB_BRANCH,
         'build.name': name,
         'build.number': BUILD_NUMBER
       },
@@ -103,14 +103,7 @@ function artifactoryUpload(readStream, url, fileName, options) {
 }
 
 function buildInfo(name, version, buildNumber, jarDependencies) {
-  const {
-    CIRRUS_BUILD_ID,
-    BUILD_ID,
-    BUILD_REPOSITORY_NAME,
-    BUILD_SOURCEVERSION,
-    CIRRUS_BASE_BRANCH,
-    GITHUB_BRANCH
-  } = process.env;
+  const { GITHUB_RUN_ID, BUILD_NUMBER, GITHUB_REPOSITORY, GITHUB_SHA, GITHUB_BASE_REF, GITHUB_BRANCH } = process.env;
 
   const dependencies = jarDependencies.map(dep => {
     const id = `${dep.groupId}:${dep.artifactId}:${dep.version}`;
@@ -123,7 +116,7 @@ function buildInfo(name, version, buildNumber, jarDependencies) {
     };
   });
 
-  const fixedBranch = (CIRRUS_BASE_BRANCH || GITHUB_BRANCH).replace('refs/heads/', '');
+  const fixedBranch = (GITHUB_BASE_REF || GITHUB_BRANCH).replace('refs/heads/', '');
 
   const vsixPaths = globbySync(join('*.vsix'));
   const additionalPaths = globbySync(join('*{-cyclonedx.json,.asc}'));
@@ -133,9 +126,9 @@ function buildInfo(name, version, buildNumber, jarDependencies) {
     name,
     number: buildNumber,
     started: dateformat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.lo"),
-    url: `https://cirrus-ci.com/build/${CIRRUS_BUILD_ID}`,
-    vcsRevision: BUILD_SOURCEVERSION,
-    vcsUrl: `https://github.com/${BUILD_REPOSITORY_NAME}.git`,
+    url: `https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`,
+    vcsRevision: GITHUB_SHA,
+    vcsUrl: `https://github.com/${GITHUB_REPOSITORY}.git`,
     modules: [
       {
         id: `org.sonarsource.sonarlint.vscode:${name}:${version}`,
@@ -158,10 +151,10 @@ function buildInfo(name, version, buildNumber, jarDependencies) {
       'java.specification.version': '1.8', // Workaround for https://jira.sonarsource.com/browse/RA-115
       'buildInfo.env.PROJECT_VERSION': version,
       'buildInfo.env.ARTIFACTORY_DEPLOY_REPO': 'sonarsource-public-qa',
-      'buildInfo.env.BUILD_BUILDID': BUILD_ID,
-      'buildInfo.env.BUILD_SOURCEVERSION': BUILD_SOURCEVERSION,
+      'buildInfo.env.BUILD_BUILDID': BUILD_NUMBER,
+      'buildInfo.env.BUILD_SOURCEVERSION': GITHUB_SHA,
       'buildInfo.env.GITHUB_BRANCH': fixedBranch,
-      'buildInfo.env.GIT_SHA1': BUILD_SOURCEVERSION
+      'buildInfo.env.GIT_SHA1': GITHUB_SHA
     }
   };
 }
