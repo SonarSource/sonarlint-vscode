@@ -113,9 +113,6 @@ jobs:
           GPG_SIGNING_PASSPHRASE: ${{ fromJSON(steps.secrets.outputs.vault).PGP_PASSPHRASE }}
           SENTRY_UPLOAD_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SENTRY_UPLOAD_TOKEN }}
           GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }}
-          BUILD_SOURCEVERSION: ${{ github.sha }}
-          BUILD_ID: ${{ env.BUILD_NUMBER }}
-          CIRRUS_BASE_BRANCH: ${{ github.base_ref }}
         run: npm run deploy-universal
 
       - name: Deploy all VSIX
@@ -134,9 +131,6 @@ jobs:
           GPG_SIGNING_PASSPHRASE: ${{ fromJSON(steps.secrets.outputs.vault).PGP_PASSPHRASE }}
           SENTRY_UPLOAD_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SENTRY_UPLOAD_TOKEN }}
           GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }}
-          BUILD_SOURCEVERSION: ${{ github.sha }}
-          BUILD_ID: ${{ env.BUILD_NUMBER }}
-          CIRRUS_BASE_BRANCH: ${{ github.base_ref }}
         run: npm run deploy-all
 
   test-linux:
