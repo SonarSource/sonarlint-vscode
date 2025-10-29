@@ -1,2 +1,6 @@
 [tools]
 node = '20'
+jfrog-cli = "2.77.0"
+
+[tasks.install-system-deps]
+run = "sudo apt-get update && sudo apt-get install -y xvfb x11-utils ffmpeg libxrandr2 libglu1-mesa"
