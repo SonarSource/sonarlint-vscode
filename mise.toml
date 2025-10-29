@@ -1,2 +1,7 @@
 [tools]
 node = '20'
+jfrog-cli = "2.77.0"
+
+[tasks.install-system-deps]
+# Install system dependences and disable man-db auto-update to prevent it from hanging during installation
+run = "echo 'man-db man-db/auto-update boolean false' | sudo debconf-set-selections && sudo dpkg-reconfigure man-db && sudo apt-get update && sudo apt-get install -y xvfb x11-utils ffmpeg libxrandr2 libglu1-mesa"
