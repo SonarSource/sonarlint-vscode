@@ -385,6 +385,7 @@ jobs:
     name: Dogfood
     needs:
       - prepare
+      - build
       - promote
     if: ${{ github.ref_name == github.event.repository.default_branch }}
     steps:
