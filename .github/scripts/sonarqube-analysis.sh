@@ -64,7 +64,7 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$PULL_REQUEST" == "false" ]; then
       -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$GITHUB_RUN_ID" \
-      -Dsonar.analysis.sha1="$GIT_SHA1"  \
+      -Dsonar.analysis.sha1="$GITHUB_SHA"  \
       -Dsonar.analysis.repository="$GITHUB_REPOSITORY" \
       $SONAR_REGION_PARAM
 
@@ -88,7 +88,7 @@ elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; t
       -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$GITHUB_RUN_ID" \
-      -Dsonar.analysis.sha1="$GIT_SHA1"  \
+      -Dsonar.analysis.sha1="$GITHUB_SHA"  \
       -Dsonar.analysis.repository="$GITHUB_REPOSITORY" \
       -Dsonar.branch.name="$GITHUB_BRANCH" \
       $SONAR_REGION_PARAM
