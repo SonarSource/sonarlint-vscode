@@ -789,6 +789,11 @@
         {
           "id": "SonarQube.Findings",
           "name": "SonarQube Findings"
+        },
+        {
+          "id": "SonarQube.LabsSignup",
+          "name": "SonarQube for IDE Labs",
+          "type": "webview"
         }
       ]
     },
