@@ -86,6 +86,7 @@ import { FlightRecorderService } from './monitoring/flightrecorder';
 import { configureMCPServer, onEmbeddedServerStarted, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
 import { introduceSonarQubeRulesFile, openSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
+import { LabsSignupWebviewProvider } from './labs/labsSignupWebviewProvider';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -405,6 +406,11 @@ export async function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: aiAgentsConfigurationTreeDataProvider
   });
   context.subscriptions.push(aiAgentsConfigurationView);
+
+  const labsSignupWebviewProvider = new LabsSignupWebviewProvider(context);
+  context.subscriptions.push(
+    VSCode.window.registerWebviewViewProvider('SonarQube.LabsSignup', labsSignupWebviewProvider)
+  );
 
   TaintVulnerabilityDecorator.init();
 
