@@ -1,0 +1,168 @@
+body {
+    padding: 16px;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    color: var(--vscode-foreground);
+    margin: 0;
+}
+
+h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    color: var(--vscode-foreground);
+}
+
+.hero-section {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+.mascot {
+    flex-shrink: 0;
+    font-size: 80px;
+    line-height: 1;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.features-box {
+    flex: 1;
+    background: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 4px;
+    padding: 12px;
+    position: relative;
+}
+
+.features-box::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 20px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid var(--vscode-panel-border);
+}
+
+.features-box::after {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 20px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid var(--vscode-editor-background);
+}
+
+.features-box h2 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: var(--vscode-foreground);
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 8px 0;
+}
+
+.features-list li {
+    margin: 4px 0;
+}
+
+.features-list a {
+    color: var(--vscode-textLink-foreground);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.features-list a:hover {
+    text-decoration: underline;
+}
+
+.features-more {
+    font-size: 12px;
+    color: var(--vscode-descriptionForeground);
+    margin: 0;
+}
+
+.description {
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: var(--vscode-descriptionForeground);
+    font-size: 13px;
+}
+
+.input-group {
+    margin-bottom: 12px;
+}
+
+input[type="email"] {
+    width: 100%;
+    padding: 6px 8px;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 2px;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    box-sizing: border-box;
+}
+
+input[type="email"]:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+}
+
+input[type="email"]::placeholder {
+    color: var(--vscode-input-placeholderForeground);
+}
+
+.join-button {
+    width: 100%;
+    padding: 8px 16px;
+    background: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+.join-button:hover {
+    background: #106ebe;
+}
+
+.legal-text {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--vscode-descriptionForeground);
+    margin: 0;
+}
+
+.legal-text a {
+    color: var(--vscode-textLink-foreground);
+    text-decoration: none;
+}
+
+.legal-text a:hover {
+    text-decoration: underline;
+}
