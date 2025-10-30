@@ -731,6 +731,20 @@ export namespace ExtendedServer {
       new lsp.RequestType<GetSharedConnectedModeConfigFileParams, GetSharedConnectedModeConfigFileResponse, null>("sonarlint/getSharedConnectedModeFileContent")
   }
 
+  export interface JoinIdeLabsProgramParams {
+    email: string;
+    ide: string;
+  }
+
+  export interface JoinIdeLabsProgramResponse {
+    success: boolean;
+    message: string;
+  }
+
+  export namespace JoinIdeLabsProgram {
+    export const type = new lsp.RequestType<JoinIdeLabsProgramParams, JoinIdeLabsProgramResponse, null>('sonarlint/joinIdeLabsProgram');
+  }
+
   export interface GetMCPServerConfigurationParams {
     connectionId: string;
     token: string;
