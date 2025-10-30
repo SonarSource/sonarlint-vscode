@@ -201,3 +201,196 @@ input[type="email"]::placeholder {
     display: inline-flex;
     align-items: center;
 }
+
+
+/* Labs Main View Styles */
+.labs-main-view {
+    padding: 10px 20px;
+}
+
+.labs-header {
+    margin-bottom: 15px;
+}
+
+.feature-count {
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--vscode-descriptionForeground);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-bottom: 45px;
+}
+
+.feature-card {
+    background: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0;
+    transition: box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.feature-image {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background: var(--vscode-editor-background);
+    overflow: hidden;
+}
+
+.feature-tags {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    z-index: 10;
+}
+
+.feature-tag {
+    padding: 2px 4px;
+    border-radius: .25rem;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.feature-tag-feedback {
+    background: #f7fbe6;
+    border: 1px solid #f1fad2;
+    color: #3f681d;
+}
+
+.feature-tag-experimental {
+    background: #f4eeff;
+    border: 1px solid #ede2ff;
+    color: #7934c7;
+}
+
+.feature-tag-connected-mode {
+    background: #f5fbff;
+    border: 1px solid #e9f4fb;
+    color: #316c92;
+}
+
+.feature-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.feature-content {
+    padding: 10px 16px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-title {
+    font-size: calc(var(--vscode-font-size) + 2px);
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: var(--vscode-foreground);
+}
+
+.feature-description {
+    font-size: var(--vscode-font-size);
+    line-height: 1.5;
+    color: var(--vscode-descriptionForeground);
+    margin: 0 0 8px 0;
+    flex: 1;
+}
+
+.feature-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: auto;
+}
+
+.learn-more-link {
+    color: var(--vscode-textLink-foreground);
+    text-decoration: none;
+    font-size: var(--vscode-font-size);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.learn-more-link:hover {
+    text-decoration: underline;
+}
+
+.feedback-button {
+    width: 100%;
+    padding: 0.5rem 16px;
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    transition: background 0.2s ease;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    box-sizing: border-box;
+}
+
+.feedback-button:hover {
+    background: var(--vscode-button-hoverBackground);
+    text-decoration: none;
+}
+
+.feedback-button:active {
+    background: var(--vscode-button-activeBackground);
+}
+
+.labs-footer {
+    background: var(--vscode-activityBar-background);
+    bottom: 0;
+    position: fixed;
+    padding: 10px 20px;
+    margin-left: -20px;
+    border-top: 1px solid var(--vscode-panel-border);
+    width: 100%;
+}
+
+.labs-footer p {
+    font-size: 13px;
+    color: var(--vscode-descriptionForeground);
+    margin: 0;
+}
+
+.labs-footer a {
+    color: var(--vscode-textLink-foreground);
+    text-decoration: none;
+}
+
+.labs-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .labs-main-view {
+        padding: 12px;
+    }
+}
