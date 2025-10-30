@@ -407,7 +407,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(aiAgentsConfigurationView);
 
-  const labsSignupWebviewProvider = new LabsSignupWebviewProvider(context);
+  const labsSignupWebviewProvider = new LabsSignupWebviewProvider(context, languageClient);
   context.subscriptions.push(
     VSCode.window.registerWebviewViewProvider('SonarQube.LabsSignup', labsSignupWebviewProvider)
   );
