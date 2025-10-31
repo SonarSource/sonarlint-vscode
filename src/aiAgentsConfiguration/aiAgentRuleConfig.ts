@@ -8,6 +8,7 @@
 
 import * as vscode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { Commands } from '../util/commands';
 
 const SONARQUBE_MCP_INSTRUCTIONS_FILE = 'sonarqube_mcp_instructions.mdc';
 
@@ -54,6 +55,8 @@ export async function introduceSonarQubeRulesFile(languageClient: SonarLintExten
     await vscode.window.showTextDocument(document);
 
     vscode.window.showInformationMessage('SonarQube MCP Server rules file created.');
+    // Refresh the AI agents configuration tree
+    vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to create rules file: ${error.message}`);
   }

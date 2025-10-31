@@ -16,6 +16,7 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as os from 'node:os';
 import { getVSCodeSettingsBaseDir } from '../util/util';
 import { getCurrentIdeWithMCPSupport, IDE } from './aiAgentUtils';
+import { Commands } from '../util/commands';
 
 interface MCPServerConfig {
   command: string;
@@ -100,6 +101,8 @@ function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
     fs.writeFileSync(configPath, content, 'utf8');
 
     logToSonarLintOutput(`MCP configuration updated: ${configPath}`);
+    // Refresh the AI agents configuration tree
+    vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
   } catch (error) {
     logToSonarLintOutput(`Error writing MCP config: ${error.message}`);
     throw error;
