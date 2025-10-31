@@ -136,8 +136,8 @@ input[type="email"]::placeholder {
 .join-button {
     width: 100%;
     padding: 8px 16px;
-    background: #0078d4;
-    color: white;
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
     border: none;
     border-radius: 2px;
     cursor: pointer;
@@ -148,7 +148,7 @@ input[type="email"]::placeholder {
 }
 
 .join-button:hover {
-    background: #106ebe;
+    background: var(--vscode-button-hoverBackground);
 }
 
 .legal-text {
@@ -165,4 +165,39 @@ input[type="email"]::placeholder {
 
 .legal-text a:hover {
     text-decoration: underline;
+}
+
+.error-message {
+    color: var(--vscode-activityErrorBadge-background);
+    background-color: var(--vscode-diffEditor-removedTextBackground);
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    border-left: 3px solid var(--vscode-activityErrorBadge-background);
+    font-size: 13px;
+}
+
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    border: 2px solid var(--vscode-button-foreground);
+    border-top-color: var(--vscode-button-foreground);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.join-button.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.join-button .button-text {
+    display: inline-flex;
+    align-items: center;
 }
