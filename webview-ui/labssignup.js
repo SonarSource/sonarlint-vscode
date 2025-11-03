@@ -32,7 +32,7 @@ function setLoading(loading) {
       joinBtn.disabled = true;
       joinBtn.classList.add('loading');
       if (buttonText) {
-        buttonText.innerHTML = '<span class="spinner"></span>...';
+        buttonText.innerHTML = '<span class="spinner"></span>';
       }
     } else {
       joinBtn.disabled = false;
