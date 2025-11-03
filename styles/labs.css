@@ -70,7 +70,7 @@ h1 {
 }
 
 .features-box h2 {
-    font-size: 13px;
+    font-size: var(--vscode-font-size);
     font-weight: 600;
     margin: 0 0 8px 0;
     color: var(--vscode-foreground);
