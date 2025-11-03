@@ -765,6 +765,7 @@
         {
           "id": "SonarQube.LabsSignup",
           "name": "SonarQube for IDE Labs",
+          "icon": "$(beaker)",
           "type": "webview"
         }
       ]
@@ -1378,7 +1379,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.5.0.77813",
+      "version": "4.5-SNAPSHOT",
       "output": "server/sonarlint-ls.jar"
     },
     {
