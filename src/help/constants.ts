@@ -101,17 +101,17 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   },
   {
     id: 'preCommitAnalysisLink',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis/#analyze-changed-files',
+    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis/#analyze-changed-files/',
     viewItem: false
   },
   {
     id: 'mcpIntegrationLink',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server',
+    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server/',
     viewItem: false
   },
   {
     id: 'dependencyRiskManagementLink',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/dependency-risks',
+    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/dependency-risks/',
     viewItem: false
   }
 ];
