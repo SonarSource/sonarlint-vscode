@@ -12,6 +12,7 @@ import { ResourceResolver } from '../util/webview';
 import * as util from '../util/util';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Commands } from '../util/commands';
+import * as fs from 'node:fs';
 
 export class LabsSignupWebviewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -75,8 +76,10 @@ export class LabsSignupWebviewProvider implements vscode.WebviewViewProvider {
 
   private handleOpenLink(linkId: string) {
     const utmContent = 'ide-labs-signup';
-    vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK,
-        { id: linkId, utm: { content: utmContent, term: linkId }});
+    vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, {
+      id: linkId,
+      utm: { content: utmContent, term: linkId }
+    });
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
@@ -84,54 +87,12 @@ export class LabsSignupWebviewProvider implements vscode.WebviewViewProvider {
     const styleSrc = resolver.resolve('styles', 'labs.css');
     const webviewMainUri = resolver.resolve('webview-ui', 'labssignup.js');
 
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" 
-          content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline';"/>
-    <link rel="stylesheet" type="text/css" href="${styleSrc}" />
-    <script type="module" src="${webviewMainUri}"></script>
-    <title>SonarQube for IDE Labs</title>
-</head>
-<body>
-    <h1>Be a Sonar Insider</h1>
-    
-    <div class="hero-section">
-        <div class="mascot">🦑</div>
-        <div class="features-box">
-            <h2>Features for Feedback:</h2>
-            <ul class="features-list">
-                <li>• <a href="#" id="preCommitAnalysisLink">Pre-commit Analysis</a></li>
-                <li>• <a href="#" id="mcpIntegrationLink">AI Agents Integration</a></li>
-                <li>• <a href="#" id="dependencyRiskManagementLink">Dependency Risk Management</a></li>
-            </ul>
-            <p class="features-more">... and more to come!</p>
-        </div>
-    </div>
+    const templatePath = util.resolveExtensionFile('webview-ui', 'labssignup.html');
+    const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
 
-    <p class="description">
-        Get early access to our newest features and help shape the future of SonarQube for IDE. 
-        Sign up for Labs to test new functionality and provide feedback directly to our team.
-    </p>
-
-    <div class="input-group">
-        <div id="errorMessage" class="error-message" style="display: none;"></div>
-        <input type="email" id="email" placeholder="Enter your email" />
-    </div>
-
-    <button id="joinBtn" class="join-button">
-        <span class="button-text">Join SonarQube for IDE Labs</span>
-    </button>
-
-    <p class="legal-text">
-        By selecting "Join SonarQube for IDE Labs", you agree to take part in SonarQube for IDE 
-        Labs activities and accept the SonarQube Cloud 
-        <a href="#" id="termsLink">Terms of Service</a> and 
-        <a href="#" id="privacyLink">Privacy Policy</a>
-    </p>
-    </body>
-</html>`;
+    return template
+      .replace(/\{\{cspSource\}\}/g, webview.cspSource)
+      .replace('{{styleSrc}}', styleSrc)
+      .replace('{{webviewMainUri}}', webviewMainUri);
   }
 }
