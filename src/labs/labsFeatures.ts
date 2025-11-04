@@ -7,7 +7,11 @@
 
 'use strict';
 
-export type FeatureTag = 'feedback' | 'experimental' | 'connected-mode';
+export enum FeatureTag {
+  STABLE = 'stable',
+  EXPERIMENTAL = 'experimental',
+  CONNECTED_MODE = 'connected-mode'
+}
 
 export interface LabsFeature {
   id: string;
@@ -24,9 +28,9 @@ export const LABS_FEATURES: LabsFeature[] = [
     id: 'preCommitAnalysis',
     title: 'Pre-Commit Analysis',
     description:
-      'Analyze your code for issues before committing, ensuring higher code quality and fewer bugs in your main branches.',
-    imageFile: 'labs/placeholder.jpg',
-    tags: ['experimental'],
+      'Trigger analysis on all files changed since the last commit to ensure fewer issues reach your remote repository. This is especially useful if automatic analysis is disabled for your development project.',
+    imageFile: 'labs/pre_commit_analysis.png',
+    tags: [FeatureTag.EXPERIMENTAL],
     learnMoreUrl:
       'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis/#analyze-changed-files/',
     feedbackUrl: 'https://forms.gle/zSyznTQAWfhrGZp49'
@@ -34,18 +38,18 @@ export const LABS_FEATURES: LabsFeature[] = [
   {
     id: 'aiAgentsIntegration',
     title: 'AI Agents Integration',
-    description: 'Integrate AI agents into your workflow for smarter code analysis and suggestions.',
-    imageFile: 'labs/placeholder.jpg',
-    tags: ['feedback', 'connected-mode'],
+    description: 'Seamlessly integrate AI agents from your favorite IDE with the SonarQube platform. You can automatically configure the SonarQube MCP Server and define a custom rules file for your active agents.',
+    imageFile: 'labs/ai_agents_integration.png',
+    tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server/',
     feedbackUrl: 'https://forms.gle/zSyznTQAWfhrGZp49'
   },
   {
     id: 'dependencyRiskManagement',
     title: 'Dependency Risk Management',
-    description: 'Identify and mitigate risks in your project dependencies with advanced analysis tools.',
-    imageFile: 'labs/placeholder.jpg',
-    tags: ['feedback', 'connected-mode'],
+    description: 'Synchronize Software Composition Analysis (SCA) results from SonarQube (Server, Cloud) analysis with your IDE. You can manage and change the status of identified dependency risks directly in the IDE.',
+    imageFile: 'labs/dependency_risk_management.png',
+    tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/dependency-risks/',
     feedbackUrl: 'https://forms.gle/zSyznTQAWfhrGZp49'
   },
@@ -53,10 +57,10 @@ export const LABS_FEATURES: LabsFeature[] = [
     id: 'connectedMode',
     title: 'Connected Mode',
     description:
-      "Sync your local IDE with SonarQube Cloud or Server for unified quality tracking across your entire team's workflow.",
-    imageFile: 'labs/placeholder.jpg',
-    tags: ['feedback', 'connected-mode'],
-    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/team-features/connected-mode/',
+      "Link SonarQube for IDE to your SonarQube Server or Cloud projects. This enables broader language analysis, comprehensive issue detection across the whole project, and quality gate status notifications.",
+    imageFile: 'labs/connected_mode.png',
+    tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
+    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/connected-mode',
     feedbackUrl: 'https://forms.gle/zSyznTQAWfhrGZp49'
   }
 ];
