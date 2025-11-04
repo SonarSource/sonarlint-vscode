@@ -1,21 +1,22 @@
 name: Releasability status
-'on':
-  check_suite:
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Build]  # Name must match the build workflow
     types:
       - completed
+    branches:
+      - master
+      - branch-*
+
 jobs:
   update_releasability_status:
-    runs-on: github-ubuntu-latest-s
+    runs-on: sonar-xs
     name: Releasability status
     permissions:
       id-token: write
       statuses: write
       contents: read
-    if: >-
-      (contains(fromJSON('["main", "master"]'), github.event.check_suite.head_branch) ||
-      startsWith(github.event.check_suite.head_branch, 'dogfood-') ||
-      startsWith(github.event.check_suite.head_branch, 'branch-')) &&
-      github.event.check_suite.conclusion == 'success'
     steps:
       - uses: SonarSource/gh-action_releasability/releasability-status@v3
         with:
