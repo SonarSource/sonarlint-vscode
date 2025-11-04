@@ -719,6 +719,11 @@
           "id": "SonarQube",
           "title": "SonarQube",
           "when": "sonarqube.someFoldersUseConnectedMode"
+        },
+        {
+          "icon": "images/sonarqube_for_ide.svg",
+          "id": "SonarQubeLabs",
+          "title": "Labs"
         }
       ]
     },
@@ -766,6 +771,13 @@
           "id": "SonarQube.LabsSignup",
           "name": "SonarQube for IDE Labs",
           "icon": "$(beaker)",
+          "type": "webview"
+        }
+      ],
+      "SonarQubeLabs": [
+        {
+          "id": "SonarQube.LabsFeatures",
+          "name": "SonarQube for IDE Labs",
           "type": "webview"
         }
       ]
