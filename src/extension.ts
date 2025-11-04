@@ -753,7 +753,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     filterOutFilesIgnoredForAnalysis(params.fileUris)
   );
   languageClient.onRequest(ExtendedClient.CanShowMissingRequirementNotification.type, () => {
-    return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true);
+    return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true) ? ExtendedClient.CanShowMissingRequirementNotificationResult.Full :
+     ExtendedClient.CanShowMissingRequirementNotificationResult.DoNotShowAgain;
   });
   languageClient.onNotification(ExtendedClient.DoNotShowMissingRequirementsMessageAgain.type, () => {
     context.globalState.update(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, false);
