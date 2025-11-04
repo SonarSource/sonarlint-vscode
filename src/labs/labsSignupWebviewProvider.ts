@@ -91,7 +91,7 @@ export class LabsSignupWebviewProvider implements vscode.WebviewViewProvider {
     const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
 
     return template
-      .replace(/\{\{cspSource\}\}/g, webview.cspSource)
+      .replaceAll('{{cspSource}}', webview.cspSource)
       .replace('{{styleSrc}}', styleSrc)
       .replace('{{webviewMainUri}}', webviewMainUri);
   }
