@@ -305,8 +305,14 @@ export namespace ExtendedClient {
     export const type = new lsp.NotificationType<ConnectionCheckResult>('sonarlint/reportConnectionCheckResult');
   }
 
+  export enum CanShowMissingRequirementNotificationResult {
+    Full = "full",
+    ErrorOnly = "error_only",
+    DoNotShowAgain = "never_again"
+  }
+
   export namespace CanShowMissingRequirementNotification {
-    export const type = new lsp.RequestType<string, boolean, void>('sonarlint/canShowMissingRequirementsNotification');
+    export const type = new lsp.RequestType<string, CanShowMissingRequirementNotificationResult, void>('sonarlint/canShowMissingRequirementsNotification');
   }
 
   export namespace DoNotShowMissingRequirementsMessageAgain {
