@@ -19,3 +19,5 @@ omnisharp
 .vs
 eslint-bridge
 .vscode/settings.json
+.env
+.idea
