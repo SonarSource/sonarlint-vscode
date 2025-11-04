@@ -63,7 +63,7 @@ function init() {
         hideError();
         vscode.postMessage({
           command: 'signup',
-          email: email
+          email
         });
       } else {
         showError('Please enter a valid email address');
