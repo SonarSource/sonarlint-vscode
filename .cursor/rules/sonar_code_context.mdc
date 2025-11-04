@@ -1,0 +1,34 @@
+---
+alwaysApply: true
+---
+
+**ALWAYS CONSULT [.sonar-code-context/SONAR.md](.sonar-code-context/SONAR.md) BEFORE GENERATING OR MODIFYING CODE.**
+
+This file contains project-specific SonarQube analysis including guidelines, architecture, and dependencies that must guide all development.
+
+## Development Requirements
+
+**MANDATORY ACTIONS:**
+1. **READ** .sonar-code-context/SONAR.md before any development task
+2. **FOLLOW** all documented quality rules and standards  
+3. **MAINTAIN** architectural consistency per documentation
+4. **RESPECT** all dependency constraints documented
+5. **VALIDATE** code against documented quality rules
+
+## Guidelines Section
+Contains SonarQube rules, coding standards, compliance examples, and severity classifications.
+
+**APPLY** recommended patterns, **AVOID** documented anti-patterns, **PRIORITIZE** fixes by severity.
+
+## Architecture Section  
+Documents project structure, component relationships, design patterns, and technology stack.
+
+**PRESERVE** established patterns, **FOLLOW** documented organization.
+
+## Dependencies Section
+Lists dependency constraints, version requirements, security considerations, and management practices.
+
+**VERIFY** compatibility, **AVOID** conflicting dependencies.
+
+**FAILURE TO CONSULT SONAR.md RESULTS IN NON-COMPLIANT CODE.**
+
