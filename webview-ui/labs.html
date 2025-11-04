@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; style-src {{cspSource}}; img-src {{cspSource}} https: data:; script-src {{cspSource}}" />
+  <link rel="stylesheet" type="text/css" href="{{styleSrc}}" />
+  <title>SonarQube for IDE Labs</title>
+</head>
+<body class="labs-main-view">
+<div class="labs-header">
+  <h1>SonarQube for IDE Labs <span class="feature-count">({{featureCount}} features ready for feedback)</span></h1>
+</div>
+
+<div class="features-grid">
+  <!-- Features will be dynamically rendered here -->
+</div>
+
+<div class="labs-footer">
+  <p>Help us improve! Share issues, ideas or feedback on <a href="https://community.sonarsource.com/c/sl/vs-code/36" target="_blank">Sonar Community</a></p>
+</div>
+
+<script type="application/json" id="labs-features-data">
+  {{featuresJson}}
+</script>
+<script type="module" src="{{scriptSrc}}"></script>
+</body>
+</html>
+
