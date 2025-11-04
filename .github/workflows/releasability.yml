@@ -11,7 +11,7 @@ on:
 
 jobs:
   update_releasability_status:
-    runs-on: sonar-xs
+    runs-on: github-ubuntu-latest-s
     name: Releasability status
     permissions:
       id-token: write
