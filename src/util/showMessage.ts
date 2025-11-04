@@ -101,7 +101,7 @@ export function showNoFileWithUriError(uri: vscode.Uri) {
   )
   .then(action => {
     if (action === 'Show Documentation') {
-      vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-vs-code/troubleshooting/#no-matching-issue-found'));
+      vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-vs-code/resources/troubleshooting/#no-matching-issue-found'));
     }
   });
 }

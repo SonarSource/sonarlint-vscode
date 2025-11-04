@@ -4,8 +4,7 @@ export namespace SonarLintDocumentation {
   export const BASE_DOCS_URL = "https://docs.sonarsource.com/sonarqube-for-vs-code/";
 
   export const C_CPP_ANALYSIS = BASE_DOCS_URL + "getting-started/running-an-analysis/#analyze-c-and-cpp-code";
-  export const CONNECTED_MODE = BASE_DOCS_URL + "team-features/connected-mode/";
-  export const LANGUAGES_AND_RULES = BASE_DOCS_URL + "using-sonarlint/rules";
+  export const CONNECTED_MODE = BASE_DOCS_URL + "connect-your-ide/connected-mode/";
   export const CLEAN_CODE_CONCEPTS = BASE_DOCS_URL + "using/software-qualities/";
 }
 

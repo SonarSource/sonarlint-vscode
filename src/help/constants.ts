@@ -62,7 +62,7 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   },
   {
     id: 'connectedModeDocs',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/team-features/connected-mode/',
+    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/connected-mode/',
     viewItem: false
   },
   {
