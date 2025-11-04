@@ -19,3 +19,8 @@ omnisharp
 .vs
 eslint-bridge
 .vscode/settings.json
+jre/
+
+# Sonar Code Context configuration (may contain sensitive tokens)
+.sonar-code-context
+!.sonar-code-context/settings.json
