@@ -6,9 +6,125 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-window.addEventListener('load', init);
+const vscode = acquireVsCodeApi();
+let errorMessageElement;
+let emailInput;
+let joinBtn;
+let currentView = 'signup'; // 'signup' or 'features'
+
+// Use DOMContentLoaded for more reliable initialization
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  // DOM is already loaded
+  init();
+}
+window.addEventListener('message', handleMessage);
 
 function init() {
+  console.log('Labs view initializing...');
+  
+  // Load state from embedded JSON
+  const stateElement = document.getElementById('labs-state');
+  let isSignedUp = false;
+  
+  if (stateElement) {
+    try {
+      const state = JSON.parse(stateElement.textContent);
+      isSignedUp = state.isSignedUp;
+      console.log('Labs signup state:', isSignedUp);
+    } catch (error) {
+      console.error('Failed to parse state data:', error);
+    }
+  } else {
+    console.error('labs-state element not found');
+  }
+
+  // Show appropriate view based on signup state
+  if (isSignedUp) {
+    showFeaturesView();
+  } else {
+    showSignupView();
+  }
+}
+
+function showSignupView() {
+  currentView = 'signup';
+  const signupView = document.getElementById('signup-view');
+  const featuresView = document.getElementById('features-view');
+  
+  if (signupView) {
+    signupView.style.display = 'block';
+  }
+  if (featuresView) {
+    featuresView.style.display = 'none';
+  }
+  initSignupView();
+}
+
+function showFeaturesView(showCelebration = false) {
+  currentView = 'features';
+  const signupView = document.getElementById('signup-view');
+  const featuresView = document.getElementById('features-view');
+  
+  if (signupView) {
+    signupView.style.display = 'none';
+  }
+  if (featuresView) {
+    featuresView.style.display = 'block';
+  }
+  
+  initFeaturesView();
+}
+
+function initSignupView() {
+  errorMessageElement = document.getElementById('errorMessage');
+  emailInput = document.getElementById('email');
+  joinBtn = document.getElementById('joinBtn');
+
+  // Clear error when user starts typing
+  if (emailInput) {
+    emailInput.addEventListener('input', () => {
+      hideError();
+    });
+  }
+
+  if (joinBtn) {
+    joinBtn.addEventListener('click', () => {
+      const email = emailInput ? emailInput.value : '';
+      if (email && email.includes('@')) {
+        hideError();
+        vscode.postMessage({
+          command: 'signup',
+          email
+        });
+      } else {
+        showError('Please enter a valid email address');
+      }
+    });
+  }
+
+  // Links
+  const links = {
+    preCommitAnalysisLink: 'preCommitAnalysisLink',
+    mcpIntegrationLink: 'mcpIntegrationLink',
+    dependencyRiskManagementLink: 'dependencyRiskManagementLink',
+    termsLink: 'earlyAccessTerms',
+    privacyLink: 'privacyNotice'
+  };
+
+  for (const [elementId, linkId] of Object.entries(links)) {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.addEventListener('click', e => {
+        e.preventDefault();
+        vscode.postMessage({ command: 'openLink', linkId });
+      });
+    }
+  }
+}
+
+function initFeaturesView() {
   const dataElement = document.getElementById('labs-features-data');
   if (!dataElement) {
     console.error('No features data element found');
@@ -31,39 +147,49 @@ function renderFeatures(features) {
     return;
   }
 
-  grid.innerHTML = features.map(feature => `
+  grid.innerHTML = features.map((feature, index) => `
     <div class="feature-card">
       <div class="feature-image">
         <div class="feature-tags">
           ${feature.tags.map(tag => renderTag(tag)).join('')}
         </div>
-        <img src="${escapeHtml(feature.imageUrl)}" alt="${escapeHtml(feature.title)}" />
+        <img src="${escapeHtml(feature.imageUrl)}" 
+             alt="${escapeHtml(feature.title)}" 
+             class="clickable-image"
+             data-full-image="${escapeHtml(feature.imageUrl)}" />
       </div>
       <div class="feature-content">
-        <h3 class="feature-title">${escapeHtml(feature.title)}</h3>
-        <p class="feature-description">${escapeHtml(feature.description)}</p>
-        <div class="feature-actions">
+        <div class="feature-header">
+          <button class="feature-toggle" aria-expanded="false" aria-controls="feature-details-${index}">
+            <span class="toggle-icon">›</span>
+            <h3 class="feature-title">${escapeHtml(feature.title)}</h3>
+          </button>
+          <a href="${escapeHtml(feature.feedbackUrl)}" target="_blank" class="feedback-button">
+            Feedback
+          </a>
+        </div>
+        <div class="feature-details" id="feature-details-${index}" hidden>
+          <p class="feature-description">${escapeHtml(feature.description)}</p>
           <a href="${escapeHtml(feature.learnMoreUrl)}" target="_blank" class="learn-more-link">
             Learn More
-          </a>
-          <a href="${escapeHtml(feature.feedbackUrl)}" target="_blank" class="feedback-button">
-            Give Feedback
           </a>
         </div>
       </div>
     </div>
   `).join('');
+  
+  setupFeatureToggles();
 }
 
 function renderTag(tag) {
   const tagLabels = {
-    'feedback': 'Feedback',
+    'stable': 'Stable',
     'experimental': 'Experimental',
     'connected-mode': 'Connected Mode'
   };
 
   const tagTooltips = {
-    'feedback': 'This feature is live for all users. We welcome your feedback to help improve it.',
+    'stable': 'This feature is live for all users. We welcome your feedback to help improve it.',
     'experimental': 'Exclusive Labs feature. May be unstable as we test and refine functionality.',
     'connected-mode': 'This feature requires Connected Mode to be enabled.'
   }
@@ -82,3 +208,76 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function setupFeatureToggles() {
+  const toggleButtons = document.querySelectorAll('.feature-toggle');
+  
+  for (const button of toggleButtons) {
+    button.addEventListener('click', () => {
+      const isExpanded = button.getAttribute('aria-expanded') === 'true';
+      const detailsId = button.getAttribute('aria-controls');
+      const detailsElement = document.getElementById(detailsId);
+      
+      if (detailsElement) {
+        button.setAttribute('aria-expanded', !isExpanded);
+        detailsElement.hidden = isExpanded;
+        button.classList.toggle('expanded', !isExpanded);
+      }
+    });
+  }
+}
+
+// Signup form helpers
+function showError(message) {
+  if (errorMessageElement) {
+    errorMessageElement.textContent = message;
+    errorMessageElement.style.display = 'block';
+  }
+}
+
+function hideError() {
+  if (errorMessageElement) {
+    errorMessageElement.style.display = 'none';
+    errorMessageElement.textContent = '';
+  }
+}
+
+function setLoading(loading) {
+  if (joinBtn) {
+    const buttonText = joinBtn.querySelector('.button-text');
+    if (loading) {
+      joinBtn.disabled = true;
+      joinBtn.classList.add('loading');
+      if (buttonText) {
+        buttonText.innerHTML = '<span class="spinner"></span>';
+      }
+    } else {
+      joinBtn.disabled = false;
+      joinBtn.classList.remove('loading');
+      if (buttonText) {
+        buttonText.innerHTML = 'Join SonarQube for IDE Labs';
+      }
+    }
+  }
+}
+
+function handleMessage(event) {
+  const message = event.data;
+  switch (message.command) {
+    case 'signupLoading':
+      setLoading(true);
+      break;
+    case 'signupError':
+      setLoading(false);
+      showError(message.message);
+      break;
+    case 'signupSuccess':
+      setLoading(false);
+      hideError();
+      if (emailInput) {
+        emailInput.value = '';
+      }
+      // Switch to features view on successful signup
+      showFeaturesView();
+      break;
+  }
+}
