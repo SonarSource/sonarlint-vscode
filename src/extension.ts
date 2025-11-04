@@ -73,6 +73,7 @@ import { FlightRecorderService } from './monitoring/flightrecorder';
 import { onEmbeddedServerStarted } from './aiAgentsConfiguration/mcpServerConfig';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 import { LabsSignupWebviewProvider } from './labs/labsSignupWebviewProvider';
+import { LabsWebviewProvider } from './labs/labsWebviewProvider';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -397,6 +398,11 @@ export async function activate(context: VSCode.ExtensionContext) {
   const labsSignupWebviewProvider = new LabsSignupWebviewProvider(context, languageClient);
   context.subscriptions.push(
     VSCode.window.registerWebviewViewProvider('SonarQube.LabsSignup', labsSignupWebviewProvider)
+  );
+
+  const labsWebviewProvider = new LabsWebviewProvider(context);
+  context.subscriptions.push(
+    VSCode.window.registerWebviewViewProvider('SonarQube.LabsFeatures', labsWebviewProvider)
   );
 
   TaintVulnerabilityDecorator.init();
