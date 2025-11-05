@@ -10,6 +10,8 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { introduceSonarQubeRulesFile, isSonarQubeRulesFileConfigured, openSonarQubeRulesFile } from '../../../src/aiAgentsConfiguration/aiAgentRuleConfig';
+import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { IDE } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 
 suite('aiAgentRuleConfig', () => {
   let workspaceStub: sinon.SinonStub;
@@ -20,6 +22,7 @@ suite('aiAgentRuleConfig', () => {
   let showTextDocumentStub: sinon.SinonStub;
   let openTextDocumentStub: sinon.SinonStub;
   let executeCommandStub: sinon.SinonStub;
+  let getCurrentIdeStub: sinon.SinonStub;
 
   setup(() => {
     workspaceStub = sinon.stub(vscode.workspace, 'workspaceFolders');
@@ -30,6 +33,7 @@ suite('aiAgentRuleConfig', () => {
     showTextDocumentStub = sinon.stub(vscode.window, 'showTextDocument');
     openTextDocumentStub = sinon.stub(vscode.workspace, 'openTextDocument');
     executeCommandStub = sinon.stub(vscode.commands, 'executeCommand');
+    getCurrentIdeStub = sinon.stub(aiAgentUtils, 'getCurrentIdeWithMCPSupport');
   });
 
   teardown(() => {
@@ -37,7 +41,8 @@ suite('aiAgentRuleConfig', () => {
   });
 
   suite('isSonarQubeRulesFileConfigured', () => {
-    test('should return true when SonarQube rules file exists', async () => {
+    test('should return true when SonarQube rules file exists for Cursor', async () => {
+        getCurrentIdeStub.returns(IDE.CURSOR);
         const mockWorkspaceFolder = {
           uri: vscode.Uri.file('/mock/workspace'),
           name: 'test-workspace',
@@ -54,9 +59,56 @@ suite('aiAgentRuleConfig', () => {
     
         expect(result).to.be.true;
         expect(mockFs.stat.calledOnce).to.be.true;
+        const callArg = mockFs.stat.getCall(0).args[0];
+        expect(callArg.path).to.include('.cursor/rules');
+      });
+
+    test('should return true when SonarQube rules file exists for Windsurf', async () => {
+        getCurrentIdeStub.returns(IDE.WINDSURF);
+        const mockWorkspaceFolder = {
+          uri: vscode.Uri.file('/mock/workspace'),
+          name: 'test-workspace',
+          index: 0
+        };
+        workspaceStub.value([mockWorkspaceFolder]);
+        
+        const mockFs = {
+          stat: sinon.stub().resolves({ type: vscode.FileType.File, ctime: 0, mtime: 0, size: 100 })
+        };
+        fsStub.value(mockFs);
+    
+        const result = await isSonarQubeRulesFileConfigured();
+    
+        expect(result).to.be.true;
+        expect(mockFs.stat.calledOnce).to.be.true;
+        const callArg = mockFs.stat.getCall(0).args[0];
+        expect(callArg.path).to.include('.windsurf/rules');
+      });
+
+    test('should return true when SonarQube rules file exists for VSCode', async () => {
+        getCurrentIdeStub.returns(IDE.VSCODE);
+        const mockWorkspaceFolder = {
+          uri: vscode.Uri.file('/mock/workspace'),
+          name: 'test-workspace',
+          index: 0
+        };
+        workspaceStub.value([mockWorkspaceFolder]);
+        
+        const mockFs = {
+          stat: sinon.stub().resolves({ type: vscode.FileType.File, ctime: 0, mtime: 0, size: 100 })
+        };
+        fsStub.value(mockFs);
+    
+        const result = await isSonarQubeRulesFileConfigured();
+    
+        expect(result).to.be.true;
+        expect(mockFs.stat.calledOnce).to.be.true;
+        const callArg = mockFs.stat.getCall(0).args[0];
+        expect(callArg.path).to.include('.github/instructions');
       });
     
       test('should return false when SonarQube rules file does not exist', async () => {
+        getCurrentIdeStub.returns(IDE.CURSOR);
         const mockWorkspaceFolder = {
           uri: vscode.Uri.file('/mock/workspace'),
           name: 'test-workspace',
@@ -74,10 +126,35 @@ suite('aiAgentRuleConfig', () => {
         expect(result).to.be.false;
         expect(mockFs.stat.calledOnce).to.be.true;
       });
+
+      test('should return false when IDE is not supported', async () => {
+        getCurrentIdeStub.returns(undefined);
+        const mockWorkspaceFolder = {
+          uri: vscode.Uri.file('/mock/workspace'),
+          name: 'test-workspace',
+          index: 0
+        };
+        workspaceStub.value([mockWorkspaceFolder]);
+    
+        const result = await isSonarQubeRulesFileConfigured();
+    
+        expect(result).to.be.false;
+      });
   });
 
   suite('openSonarQubeRulesFile', () => {
+    test('should show error when IDE is not supported', async () => {
+      getCurrentIdeStub.returns(undefined);
+      workspaceStub.value([{ uri: vscode.Uri.file('/mock/workspace'), name: 'test-workspace', index: 0 }]);
+
+      await openSonarQubeRulesFile();
+
+      expect(showErrorMessageStub.calledOnce).to.be.true;
+      expect(showErrorMessageStub.calledWith('Current IDE does not support MCP Server configuration.')).to.be.true;
+    });
+
     test('should show error when workspace folder cannot be found', async () => {
+      getCurrentIdeStub.returns(IDE.CURSOR);
       workspaceStub.value(undefined);
 
       await openSonarQubeRulesFile();
@@ -87,6 +164,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should show warning and offer to create file when rules file does not exist', async () => {
+      getCurrentIdeStub.returns(IDE.CURSOR);
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
         name: 'test-workspace',
@@ -112,7 +190,8 @@ suite('aiAgentRuleConfig', () => {
       expect(executeCommandStub.calledWith('SonarLint.IntroduceSonarQubeRulesFile')).to.be.true;
     });
 
-    test('should open and show text document when rules file exists', async () => {
+    test('should open and show text document when rules file exists for Cursor', async () => {
+      getCurrentIdeStub.returns(IDE.CURSOR);
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
         name: 'test-workspace',
@@ -136,10 +215,47 @@ suite('aiAgentRuleConfig', () => {
       expect(showTextDocumentStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.calledWith(mockDocument)).to.be.true;
     });
+
+    test('should open and show text document when rules file exists for VSCode', async () => {
+      getCurrentIdeStub.returns(IDE.VSCODE);
+      const mockWorkspaceFolder = {
+        uri: vscode.Uri.file('/mock/workspace'),
+        name: 'test-workspace',
+        index: 0
+      };
+      workspaceStub.value([mockWorkspaceFolder]);
+      
+      const mockFs = {
+        stat: sinon.stub().resolves({ type: vscode.FileType.File, ctime: 0, mtime: 0, size: 100 })
+      };
+      fsStub.value(mockFs);
+      
+      const mockDocument = { uri: vscode.Uri.file('/mock/workspace/.github/instructions/sonarqube_mcp.instructions.md') };
+      openTextDocumentStub.resolves(mockDocument);
+      showTextDocumentStub.resolves();
+
+      await openSonarQubeRulesFile();
+
+      expect(mockFs.stat.calledOnce).to.be.true;
+      expect(openTextDocumentStub.calledOnce).to.be.true;
+      expect(showTextDocumentStub.calledOnce).to.be.true;
+      expect(showTextDocumentStub.calledWith(mockDocument)).to.be.true;
+    });
   });
 
   suite('introduceSonarQubeRulesFile', () => {
+    test('should show error when IDE is not supported', async () => {
+      getCurrentIdeStub.returns(undefined);
+
+      const mockLanguageClient = {} as any;
+      await introduceSonarQubeRulesFile(mockLanguageClient);
+
+      expect(showErrorMessageStub.calledOnce).to.be.true;
+      expect(showErrorMessageStub.calledWith('Current IDE does not support MCP Server configuration.')).to.be.true;
+    });
+
     test('should return early when user does not confirm', async () => {
+      getCurrentIdeStub.returns(IDE.CURSOR);
       showInformationMessageStub.resolves(undefined);
 
       const mockLanguageClient = {} as any;
@@ -151,6 +267,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should show error when workspace folder does not exist', async () => {
+      getCurrentIdeStub.returns(IDE.CURSOR);
       showInformationMessageStub.resolves('OK');
       workspaceStub.value(undefined);
 
@@ -162,7 +279,8 @@ suite('aiAgentRuleConfig', () => {
       expect(showErrorMessageStub.calledWith('No workspace folder found. Please open a folder first.')).to.be.true;
     });
 
-    test('should create file when user confirms and folder exists', async () => {
+    test('should create file for Cursor when user confirms and folder exists', async () => {
+      getCurrentIdeStub.returns(IDE.CURSOR);
       showInformationMessageStub.resolves('OK');
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
@@ -194,6 +312,73 @@ suite('aiAgentRuleConfig', () => {
       expect(mockFs.writeFile.calledOnce).to.be.true;
       expect(openTextDocumentStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.calledOnce).to.be.true;
+      expect(mockLanguageClient.getMCPRulesFileContent.calledWith('cursor')).to.be.true;
+    });
+
+    test('should create file for Windsurf with correct path', async () => {
+      getCurrentIdeStub.returns(IDE.WINDSURF);
+      showInformationMessageStub.resolves('OK');
+      const mockWorkspaceFolder = {
+        uri: vscode.Uri.file('/mock/workspace'),
+        name: 'test-workspace',
+        index: 0
+      };
+      workspaceStub.value([mockWorkspaceFolder]);
+
+      const mockFs = {
+        stat: sinon.stub().rejects(new Error('Directory not found')),
+        createDirectory: sinon.stub().resolves(),
+        writeFile: sinon.stub().resolves()
+      };
+      fsStub.value(mockFs);
+
+      const mockDocument = { uri: vscode.Uri.file('/mock/workspace/.windsurf/rules/sonarqube_mcp_instructions.mdc') };
+      openTextDocumentStub.resolves(mockDocument);
+      showTextDocumentStub.resolves();
+
+      const mockLanguageClient = {
+        getMCPRulesFileContent: sinon.stub().resolves({ content: 'test content' })
+      } as any;
+
+      await introduceSonarQubeRulesFile(mockLanguageClient);
+
+      expect(mockLanguageClient.getMCPRulesFileContent.calledWith('windsurf')).to.be.true;
+      const createDirCall = mockFs.createDirectory.getCall(0);
+      expect(createDirCall.args[0].path).to.include('.windsurf/rules');
+    });
+
+    test('should create file for VSCode with correct path and extension', async () => {
+      getCurrentIdeStub.returns(IDE.VSCODE);
+      showInformationMessageStub.resolves('OK');
+      const mockWorkspaceFolder = {
+        uri: vscode.Uri.file('/mock/workspace'),
+        name: 'test-workspace',
+        index: 0
+      };
+      workspaceStub.value([mockWorkspaceFolder]);
+
+      const mockFs = {
+        stat: sinon.stub().rejects(new Error('Directory not found')),
+        createDirectory: sinon.stub().resolves(),
+        writeFile: sinon.stub().resolves()
+      };
+      fsStub.value(mockFs);
+
+      const mockDocument = { uri: vscode.Uri.file('/mock/workspace/.github/instructions/sonarqube_mcp.instructions.md') };
+      openTextDocumentStub.resolves(mockDocument);
+      showTextDocumentStub.resolves();
+
+      const mockLanguageClient = {
+        getMCPRulesFileContent: sinon.stub().resolves({ content: 'test content' })
+      } as any;
+
+      await introduceSonarQubeRulesFile(mockLanguageClient);
+
+      expect(mockLanguageClient.getMCPRulesFileContent.calledWith('vscode')).to.be.true;
+      const createDirCall = mockFs.createDirectory.getCall(0);
+      expect(createDirCall.args[0].path).to.include('.github/instructions');
+      const writeFileCall = mockFs.writeFile.getCall(0);
+      expect(writeFileCall.args[0].path).to.include('.instructions.md');
     });
   });
 

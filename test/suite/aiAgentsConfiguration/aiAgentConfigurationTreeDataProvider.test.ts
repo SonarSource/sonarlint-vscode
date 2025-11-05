@@ -28,6 +28,9 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
   });
 
   test('getChildren should return empty list when no MCP server is configured', async () => {
+    sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns(undefined);
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
+
     const children = await underTest.getChildren();
 
     expect(children.length).to.equal(0);
@@ -51,14 +54,66 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
       ]);
   });
 
-  test('getChildren should return MCP server item only when not in Cursor', async () => {
+  test('getChildren should return both items for VS Code', async () => {
     sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns({
       command: 'test-command',
       args: ['test-arg'],
       env: {}
     });
 
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(true);
     sinon.stub(aiAgentUtils, 'getCurrentIdeWithMCPSupport').returns(IDE.VSCODE);
+
+    const children = await underTest.getChildren();
+    expect(children.map(c => [ c.label, c.tooltip, c.command.command ])).to.deep.equal([
+        [ 'Configure SonarQube MCP Server', 'AI agent integration • Configured', Commands.OPEN_MCP_SERVER_CONFIGURATION ],
+        [ 'Create Instructions for AI agents', 'SonarQube MCP Server guide • Configured', Commands.OPEN_SONARQUBE_RULES_FILE ]
+    ]);
+  });
+
+  test('getChildren should return both items for Windsurf', async () => {
+    sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns({
+      command: 'test-command',
+      args: ['test-arg'],
+      env: {}
+    });
+
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(true);
+    sinon.stub(aiAgentUtils, 'getCurrentIdeWithMCPSupport').returns(IDE.WINDSURF);
+
+    const children = await underTest.getChildren();
+    expect(children.map(c => [ c.label, c.tooltip, c.command.command ])).to.deep.equal([
+        [ 'Configure SonarQube MCP Server', 'AI agent integration • Configured', Commands.OPEN_MCP_SERVER_CONFIGURATION ],
+        [ 'Create Instructions for AI agents', 'SonarQube MCP Server guide • Configured', Commands.OPEN_SONARQUBE_RULES_FILE ]
+    ]);
+  });
+
+  test('getChildren should return both items for VSCode Insiders', async () => {
+    sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns({
+      command: 'test-command',
+      args: ['test-arg'],
+      env: {}
+    });
+
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(true);
+    sinon.stub(aiAgentUtils, 'getCurrentIdeWithMCPSupport').returns(IDE.VSCODE_INSIDERS);
+
+    const children = await underTest.getChildren();
+    expect(children.map(c => [ c.label, c.tooltip, c.command.command ])).to.deep.equal([
+        [ 'Configure SonarQube MCP Server', 'AI agent integration • Configured', Commands.OPEN_MCP_SERVER_CONFIGURATION ],
+        [ 'Create Instructions for AI agents', 'SonarQube MCP Server guide • Configured', Commands.OPEN_SONARQUBE_RULES_FILE ]
+    ]);
+  });
+
+  test('getChildren should return only MCP server item when IDE is not supported', async () => {
+    sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns({
+      command: 'test-command',
+      args: ['test-arg'],
+      env: {}
+    });
+
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
+    sinon.stub(aiAgentUtils, 'getCurrentIdeWithMCPSupport').returns(undefined);
 
     const children = await underTest.getChildren();
     expect(children.map(c => [ c.label, c.tooltip, c.command.command ])).to.deep.equal([
