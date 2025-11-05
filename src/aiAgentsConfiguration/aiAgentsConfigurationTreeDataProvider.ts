@@ -7,10 +7,10 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { getCurrentIdeWithMCPSupport } from './aiAgentUtils';
 import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import { Commands } from '../util/commands';
+import { getCurrentIdeWithMCPSupport } from './aiAgentUtils';
 
 export class AIAgentsConfigurationItem extends VSCode.TreeItem {
   constructor(
@@ -62,6 +62,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
     }
 
     const items: AIAgentsConfigurationItem[] = [];
+    const isSupportingMCP = getCurrentIdeWithMCPSupport();
 
     const sonarQubeMCPServerConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
     const rulesFileConfigured = await isSonarQubeRulesFileConfigured();
@@ -70,25 +71,28 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
       return [];
     }
 
-    items.push(new AIAgentsConfigurationItem(
+    items.push(
+      new AIAgentsConfigurationItem(
         'mcpServer',
         'Configure SonarQube MCP Server',
         sonarQubeMCPServerConfigured,
         'AI agent integration',
         Commands.CONFIGURE_MCP_SERVER,
         Commands.OPEN_MCP_SERVER_CONFIGURATION
-    ));
+      )
+    );
 
-    if (getCurrentIdeWithMCPSupport() === 'cursor') {
-      // rule file creation is only supported for cursor
-      items.push(new AIAgentsConfigurationItem(
-        'rulesFile',
-        'Create Instructions for AI agents',
-        rulesFileConfigured,
-        'SonarQube MCP Server guide',
-        Commands.INTRODUCE_SONARQUBE_RULES_FILE,
-        Commands.OPEN_SONARQUBE_RULES_FILE
-      ));
+    if (isSupportingMCP) {
+      items.push(
+        new AIAgentsConfigurationItem(
+          'rulesFile',
+          'Create Instructions for AI agents',
+          rulesFileConfigured,
+          'SonarQube MCP Server guide',
+          Commands.INTRODUCE_SONARQUBE_RULES_FILE,
+          Commands.OPEN_SONARQUBE_RULES_FILE
+        )
+      );
     }
 
     return items;
