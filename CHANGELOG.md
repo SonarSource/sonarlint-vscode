@@ -3,6 +3,7 @@
 * Update IaC analyzer 1.51 -> [1.52](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023819%20ORDER%20BY%20created%20ASC)
 * Update Go analyzer 1.28 -> [1.29](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023070%20ORDER%20BY%20created%20ASC)
 * Update Java analyzer 8.19 -> [8.20](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023492%20ORDER%20BY%20created%20ASC)
+* Update Text & Secrets analyzer 2.31 -> 2.32
 
 ## 4.34
 
