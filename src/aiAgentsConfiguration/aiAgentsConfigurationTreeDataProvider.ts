@@ -10,7 +10,7 @@ import * as VSCode from 'vscode';
 import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import { Commands } from '../util/commands';
-import { getCurrentIdeWithMCPSupport } from './aiAgentUtils';
+import { getCurrentAgentWithMCPSupport } from './aiAgentUtils';
 
 export class AIAgentsConfigurationItem extends VSCode.TreeItem {
   constructor(
@@ -62,7 +62,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
     }
 
     const items: AIAgentsConfigurationItem[] = [];
-    const isSupportingMCP = getCurrentIdeWithMCPSupport();
+    const isSupportingMCP = getCurrentAgentWithMCPSupport();
 
     const sonarQubeMCPServerConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
     const rulesFileConfigured = await isSonarQubeRulesFileConfigured();

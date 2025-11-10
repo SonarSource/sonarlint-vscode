@@ -681,28 +681,28 @@
         "title": "Configure MCP Server",
         "category": "SonarQube",
         "icon": "$(mcp-server)",
-        "enablement": "sonarqube.mcpServerSupportedIDE"
+        "enablement": "sonarqube.mcpServerSupportedAgent"
       },
       {
         "command": "SonarLint.OpenMCPServerConfiguration",
         "title": "Open MCP Server Configuration",
         "category": "SonarQube",
         "icon": "$(mcp-server)",
-        "enablement": "sonarqube.mcpServerSupportedIDE"
+        "enablement": "sonarqube.mcpServerSupportedAgent"
       },
       {
         "command": "SonarLint.IntroduceSonarQubeRulesFile",
         "title": "Introduce SonarQube Rules File",
         "category": "SonarQube",
         "icon": "$(file-text)",
-        "enablement": "sonarqube.mcpServerSupportedIDE"
+        "enablement": "sonarqube.mcpServerSupportedAgent"
       },
       {
         "command": "SonarLint.OpenSonarQubeRulesFile",
         "title": "Open SonarQube Rules File",
         "category": "SonarQube",
         "icon": "$(file-text)",
-        "enablement": "sonarqube.mcpServerSupportedIDE"
+        "enablement": "sonarqube.mcpServerSupportedAgent"
       }
     ],
     "viewsContainers": {
@@ -744,7 +744,7 @@
         {
           "id": "SonarLint.AIAgentsConfiguration",
           "name": "AI Agents Configuration",
-          "when": "sonarqube.mcpServerSupportedIDE"
+          "when": "sonarqube.mcpServerSupportedAgent"
         },
         {
           "id": "SonarLint.AllRules",
@@ -1097,7 +1097,7 @@
         {
           "command": "SonarLint.ConfigureMCPServer",
           "title": "Configure MCP Server",
-          "when": "sonarqube.mcpServerSupportedIDE && view == SonarLint.ConnectedMode && (viewItem == sonarcloudConnection || viewItem == sonarqubeConnection)",
+          "when": "sonarqube.mcpServerSupportedAgent && view == SonarLint.ConnectedMode && (viewItem == sonarcloudConnection || viewItem == sonarqubeConnection)",
           "group": "inline"
         }
       ]
@@ -1373,7 +1373,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.5.0.77816",
+      "version": "4.5.0.77833",
       "output": "server/sonarlint-ls.jar"
     },
     {

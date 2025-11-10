@@ -8,11 +8,10 @@
 
 import * as vscode from 'vscode';
 
-export enum IDE {
-  VSCODE = 'vscode',
+export enum AGENT {
+  GITHUB_COPILOT = 'github_copilot',
   CURSOR = 'cursor',
-  WINDSURF = 'windsurf',
-  VSCODE_INSIDERS = 'vscode-insiders'
+  WINDSURF = 'windsurf'
 }
 
 function isCopilotInstalledAndActive(): boolean {
@@ -20,15 +19,13 @@ function isCopilotInstalledAndActive(): boolean {
   return copilotExtension?.isActive;
 }
 
-export function getCurrentIdeWithMCPSupport(): IDE | undefined {
+export function getCurrentAgentWithMCPSupport(): AGENT | undefined {
   if (vscode.env.appName.toLowerCase().includes('cursor')) {
-    return IDE.CURSOR;
+    return AGENT.CURSOR;
   } else if (vscode.env.appName.toLowerCase().includes('windsurf')) {
-    return IDE.WINDSURF;
-  } else if (vscode.env.appName.toLowerCase().includes('insiders') && isCopilotInstalledAndActive()) {
-    return IDE.VSCODE_INSIDERS;
+    return AGENT.WINDSURF;
   } else if (vscode.env.appName.toLowerCase().includes('visual studio code') && isCopilotInstalledAndActive()) {
-    return IDE.VSCODE;
+    return AGENT.GITHUB_COPILOT;
   }
   return undefined;
 }
