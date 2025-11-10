@@ -34,6 +34,7 @@ import { FindingsFolderNode } from './findingsFolderNode';
 import { DependencyRiskNode } from './findingTypes/dependencyRiskNode';
 import { TaintVulnerabilityNode } from './findingTypes/taintVulnerabilityNode';
 import { logToSonarLintOutput } from '../util/logging';
+import { code2ProtocolConverter } from '../util/uri';
 
 export class NewIssuesNode extends vscode.TreeItem {
   constructor() {
@@ -168,7 +169,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     } else if (finding.findingType === FindingType.Issue) {
       if (!(finding instanceof NotebookFindingNode)) {
         // showing all locations for notebook cells is not supported
-        vscode.commands.executeCommand('SonarLint.ShowIssueFlows', finding.key, finding.fileUri);
+        const vscodeUri = vscode.Uri.parse(finding.fileUri);
+        vscode.commands.executeCommand('SonarLint.ShowIssueFlows', finding.key, code2ProtocolConverter(vscodeUri));
       }
       vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
     } else if (finding.findingType === FindingType.DependencyRisk) {
