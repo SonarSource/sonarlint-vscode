@@ -15,7 +15,7 @@ import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as os from 'node:os';
 import { getVSCodeSettingsBaseDir } from '../util/util';
-import { getCurrentIdeWithMCPSupport, IDE } from './aiAgentUtils';
+import { getCurrentAgentWithMCPSupport, AGENT } from './aiAgentUtils';
 import { Commands } from '../util/commands';
 
 interface MCPServerConfig {
@@ -33,29 +33,32 @@ interface MCPConfigurationVSCode {
 }
 
 export function getMCPConfigPath(): string {
-  const currentIDE = getCurrentIdeWithMCPSupport();
-  switch (currentIDE) {
-    case IDE.CURSOR:
+  const currentAgent = getCurrentAgentWithMCPSupport();
+  switch (currentAgent) {
+    case AGENT.CURSOR:
       return path.join(os.homedir(), '.cursor', 'mcp.json');
-    case IDE.WINDSURF:
+    case AGENT.WINDSURF:
       return path.join(os.homedir(), '.codeium', 'windsurf', 'mcp_config.json');
-    case IDE.VSCODE_INSIDERS:
-      return path.join(getVSCodeSettingsBaseDir(), 'Code - Insiders', 'User', 'mcp.json');
-    case IDE.VSCODE:
-      return path.join(getVSCodeSettingsBaseDir(), 'Code', 'User', 'mcp.json');
+    case AGENT.GITHUB_COPILOT:
+      // For GitHub Copilot, detect if it's VSCode or VSCode Insiders
+      if (vscode.env.appName.toLowerCase().includes('insiders')) {
+        return path.join(getVSCodeSettingsBaseDir(), 'Code - Insiders', 'User', 'mcp.json');
+      } else {
+        return path.join(getVSCodeSettingsBaseDir(), 'Code', 'User', 'mcp.json');
+      }
     default:
-      throw new Error(`Unsupported IDE: ${currentIDE}`);
+      throw new Error(`Unsupported agent: ${currentAgent}`);
   }
 }
 
 export function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefined {
-  const currentIDE = getCurrentIdeWithMCPSupport();
-  if (!currentIDE) {
+  const currentAgent = getCurrentAgentWithMCPSupport();
+  if (!currentAgent) {
     return undefined;
   }
   const configPath = getMCPConfigPath();
   const config = readMCPConfig(configPath);
-  return currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS
+  return currentAgent === AGENT.GITHUB_COPILOT
     ? (config as MCPConfigurationVSCode).servers.sonarqube
     : (config as MCPConfigurationOthers).mcpServers.sonarqube;
 }
@@ -70,8 +73,8 @@ function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigur
     logToSonarLintOutput(`Error reading MCP config: ${error.message}`);
   }
 
-  const currentIDE = getCurrentIdeWithMCPSupport();
-  return currentIDE === 'vscode' || currentIDE === 'vscode-insiders'
+  const currentAgent = getCurrentAgentWithMCPSupport();
+  return currentAgent === AGENT.GITHUB_COPILOT
     ? {
         servers: {}
       }
@@ -82,11 +85,11 @@ function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigur
 
 function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
   try {
-    const currentIDE = getCurrentIdeWithMCPSupport();
+    const currentAgent = getCurrentAgentWithMCPSupport();
     const configPath = getMCPConfigPath();
     const config = readMCPConfig(configPath);
 
-    if (currentIDE === IDE.VSCODE || currentIDE === IDE.VSCODE_INSIDERS) {
+    if (currentAgent === AGENT.GITHUB_COPILOT) {
       (config as MCPConfigurationVSCode).servers.sonarqube = sonarQubeMCPConfig;
     } else {
       (config as MCPConfigurationOthers).mcpServers.sonarqube = sonarQubeMCPConfig;
@@ -212,8 +215,8 @@ function warnNoConnectionConfigured() {
 }
 
 function openMCPServersListIfCursor() {
-  const currentIDE = getCurrentIdeWithMCPSupport();
-  if (currentIDE === IDE.CURSOR) {
+  const currentAgent = getCurrentAgentWithMCPSupport();
+  if (currentAgent === AGENT.CURSOR) {
     vscode.commands.executeCommand('workbench.action.openMCPSettings');
   }
 }

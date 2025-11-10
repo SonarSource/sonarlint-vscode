@@ -10,7 +10,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import { getMCPConfigPath, configureMCPServer, onEmbeddedServerStarted } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
-import { getCurrentIdeWithMCPSupport, IDE } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { getCurrentAgentWithMCPSupport, AGENT } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { AllConnectionsTreeDataProvider, Connection } from '../../../src/connected/connections';
 import { ConnectionSettingsService } from '../../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
@@ -36,26 +36,26 @@ suite('mcpServerConfig', () => {
 
     try {
       envStub.value('Cursor');
-      expect(getCurrentIdeWithMCPSupport()).to.equal(IDE.CURSOR);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.CURSOR);
 
       envStub.value('Windsurf');
-      expect(getCurrentIdeWithMCPSupport()).to.equal(IDE.WINDSURF);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.WINDSURF);
 
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
-      expect(getCurrentIdeWithMCPSupport()).to.equal(IDE.VSCODE);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.GITHUB_COPILOT);
 
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('GitHub.copilot').returns({ isActive: false });
-      expect(getCurrentIdeWithMCPSupport()).to.be.undefined;
+      expect(getCurrentAgentWithMCPSupport()).to.be.undefined;
 
       envStub.value('Visual Studio Code - Insiders');
       extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
-      expect(getCurrentIdeWithMCPSupport()).to.equal(IDE.VSCODE_INSIDERS);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.GITHUB_COPILOT);
 
       envStub.value('Unknown IDE');
       extensionsStub.withArgs('GitHub.copilot').returns(undefined);
-      expect(getCurrentIdeWithMCPSupport()).to.be.undefined;
+      expect(getCurrentAgentWithMCPSupport()).to.be.undefined;
     } finally {
       envStub.restore();
       extensionsStub.restore();
@@ -94,15 +94,15 @@ suite('mcpServerConfig', () => {
     }
   });
 
-  test('should throw error for unsupported IDE', () => {
+  test('should throw error for unsupported agent', () => {
     const envStub = sinon.stub(vscode.env, 'appName');
     const extensionsStub = sinon.stub(vscode.extensions, 'getExtension');
 
     try {
-      envStub.value('Unsupported IDE');
+      envStub.value('Unsupported agent');
       extensionsStub.withArgs('GitHub.copilot').returns(undefined);
 
-      expect(() => getMCPConfigPath()).to.throw('Unsupported IDE');
+      expect(() => getMCPConfigPath()).to.throw('Unsupported agent');
     } finally {
       envStub.restore();
       extensionsStub.restore();
