@@ -7,7 +7,7 @@
 'use strict';
 import { createVSIX } from '@vscode/vsce';
 import { cleanJreDir, cleanOmnisharpDir, getPackageJSON } from './fsUtils.mjs';
-import { renameSync } from 'fs';
+import { renameSync } from 'node:fs';
 import { info } from 'fancy-log';
 import downloadJre from './jreDownload.mjs';
 import { executeWithDurationLog } from './common.mjs';
@@ -21,7 +21,7 @@ const { LATEST_JRE, OMNISHARP_VERSION, TARGETED_PLATFORMS } = _default;
 
 export async function deployAllOpenVSX() {
   await buildOpenVSXPackages();
-  await renameOpenVSXPackages();
+  renameOpenVSXPackages();
   await signAndDeployOpenVSXPackages();
 }
 

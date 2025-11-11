@@ -12,14 +12,12 @@ import { cleanJreDir } from './fsUtils.mjs';
 import { createVSIX } from '@vscode/vsce';
 import { downloadOmnisharpAllPlatformDistributions } from './omnisharpDownload.mjs';
 
-(async () => {
-  // Build platform-specific packages WITHOUT OmniSharp
-  for (const platform of TARGETED_PLATFORMS) {
-    await downloadJre(platform, LATEST_JRE);
-    await createVSIX({ target: platform });
-  }
-  cleanJreDir();
-  // Build universal package WITH OmniSharp
-  await downloadOmnisharpAllPlatformDistributions(OMNISHARP_VERSION);
-  await createVSIX();
-})();
+// Build platform-specific packages WITHOUT OmniSharp
+for (const platform of TARGETED_PLATFORMS) {
+  await downloadJre(platform, LATEST_JRE);
+  await createVSIX({ target: platform });
+}
+cleanJreDir();
+// Build universal package WITH OmniSharp
+await downloadOmnisharpAllPlatformDistributions(OMNISHARP_VERSION);
+await createVSIX();

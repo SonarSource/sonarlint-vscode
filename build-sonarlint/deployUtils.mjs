@@ -61,7 +61,7 @@ export function deployVsixWithPattern(pattern) {
   const packagePath = 'org/sonarsource/sonarlint/vscode';
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}+${BUILD_NUMBER}`;
   info(`Artifactory target URL: ${artifactoryTargetUrl}`);
-  globbySync(join(pattern)).map(fileName => {
+  globbySync(join(pattern)).forEach(fileName => {
     const [sha1, md5] = fileHashsum(fileName);
     const fileReadStream = createReadStream(fileName);
     artifactoryUpload(fileReadStream, artifactoryTargetUrl, fileName, {
@@ -85,7 +85,7 @@ export function deployVsixWithPattern(pattern) {
 
 function artifactoryUpload(readStream, url, fileName, options) {
   let destinationUrl = `${url}/${fileName}`;
-  destinationUrl += Object.keys(options.properties).reduce(function (str, key) {
+  destinationUrl += Object.keys(options.properties).reduce((str, key) => {
     return `${str};${key}=${options.properties[key]}`;
   }, '');
 
