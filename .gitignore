@@ -21,3 +21,6 @@ eslint-bridge
 .vscode/settings.json
 .env
 .idea
+.sonar-code-context/
+.cursor/rules/
+jre/

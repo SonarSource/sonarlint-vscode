@@ -13,12 +13,28 @@ import { computeDependencyHashes, fileHashsum } from './hashes.mjs';
 import { createReadStream } from 'fs';
 import { globbySync } from 'globby';
 
-export async function deployBuildInfo() {
+export function collectArtifactInfo(pattern = '*') {
+  info(`Collecting artifact information for pattern: ${pattern}`);
+  const vsixPaths = globbySync(join(`${pattern}.vsix`));
+  const additionalPaths = globbySync(join(`${pattern}{-cyclonedx.json,.asc}`));
+  
+  return [...vsixPaths, ...additionalPaths].map(filePath => {
+    const [sha1, md5] = fileHashsum(filePath);
+    return {
+      type: extname(filePath).slice(1),
+      sha1,
+      md5,
+      name: basename(filePath)
+    };
+  });
+}
+
+export async function deployBuildInfo(microsoftArtifacts = [], openvsxArtifacts = []) {
   info('Starting task "deployBuildInfo"');
   const packageJSON = getPackageJSON();
   const { version, name, jarDependencies } = packageJSON;
   const buildNumber = process.env.BUILD_NUMBER;
-  const json = buildInfo(name, version, buildNumber, jarDependencies);
+  const json = buildInfo(name, version, buildNumber, jarDependencies, microsoftArtifacts, openvsxArtifacts);
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   headers.append(
@@ -41,7 +57,11 @@ export async function deployBuildInfo() {
 }
 
 export function deployVsix() {
-  info('Starting task "deployVsix');
+  return deployVsixWithPattern('*{.vsix,-cyclonedx.json,.asc}');
+}
+
+export function deployVsixWithPattern(pattern) {
+  info('Starting task "deployVsix"');
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -57,7 +77,7 @@ export function deployVsix() {
   const packagePath = 'org/sonarsource/sonarlint/vscode';
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}+${BUILD_NUMBER}`;
   info(`Artifactory target URL: ${artifactoryTargetUrl}`);
-  globbySync(join('*{.vsix,-cyclonedx.json,.asc}')).map(fileName => {
+  for (const fileName of globbySync(join(pattern))) {
     const [sha1, md5] = fileHashsum(fileName);
     const fileReadStream = createReadStream(fileName);
     artifactoryUpload(fileReadStream, artifactoryTargetUrl, fileName, {
@@ -76,14 +96,16 @@ export function deployVsix() {
         }
       }
     });
-  });
+  }
 }
 
 function artifactoryUpload(readStream, url, fileName, options) {
   let destinationUrl = `${url}/${fileName}`;
-  destinationUrl += Object.keys(options.properties).reduce(function (str, key) {
+  destinationUrl += Object.keys(options.properties).reduce((str, key) => {
     return `${str};${key}=${options.properties[key]}`;
   }, '');
+
+  info(`Uploading ${fileName} to ${destinationUrl}`);
 
   fetch(destinationUrl, {
     headers: {
@@ -102,7 +124,7 @@ function artifactoryUpload(readStream, url, fileName, options) {
     .catch(err => error(`Failed to upload ${fileName} to ${destinationUrl}, ${err}`));
 }
 
-function buildInfo(name, version, buildNumber, jarDependencies) {
+function buildInfo(name, version, buildNumber, jarDependencies, microsoftArtifacts = [], openvsxArtifacts = []) {
   const { GITHUB_RUN_ID, BUILD_NUMBER, GITHUB_REPOSITORY, GITHUB_SHA, GITHUB_BASE_REF, GITHUB_BRANCH } = process.env;
 
   const dependencies = jarDependencies.map(dep => {
@@ -118,8 +140,10 @@ function buildInfo(name, version, buildNumber, jarDependencies) {
 
   const fixedBranch = (GITHUB_BASE_REF || GITHUB_BRANCH).replace('refs/heads/', '');
 
-  const vsixPaths = globbySync(join('*.vsix'));
-  const additionalPaths = globbySync(join('*{-cyclonedx.json,.asc}'));
+  // Merge Microsoft and OpenVSX artifacts
+  // Microsoft artifacts include: universal VSIX + platform-specific VSIXs + all associated files
+  // OpenVSX artifacts include: platform-specific VSIXs + all associated files  
+  const allArtifacts = [...microsoftArtifacts, ...openvsxArtifacts];
 
   return {
     version: '1.0.1',
@@ -135,15 +159,7 @@ function buildInfo(name, version, buildNumber, jarDependencies) {
         properties: {
           artifactsToDownload: `org.sonarsource.sonarlint.vscode:${name}:vsix`
         },
-        artifacts: [...vsixPaths, ...additionalPaths].map(filePath => {
-          const [sha1, md5] = fileHashsum(filePath);
-          return {
-            type: extname(filePath).slice(1),
-            sha1,
-            md5,
-            name: basename(filePath)
-          };
-        }),
+        artifacts: allArtifacts,
         dependencies
       }
     ],
