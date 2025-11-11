@@ -41,6 +41,10 @@ export async function deployBuildInfo() {
 }
 
 export function deployVsix() {
+  return deployVsixWithPattern('*{.vsix,-cyclonedx.json,.asc}');
+}
+
+export function deployVsixWithPattern(pattern) {
   info('Starting task "deployVsix');
   const {
     ARTIFACTORY_URL,
@@ -57,7 +61,7 @@ export function deployVsix() {
   const packagePath = 'org/sonarsource/sonarlint/vscode';
   const artifactoryTargetUrl = `${ARTIFACTORY_URL}/${ARTIFACTORY_DEPLOY_REPO}/${packagePath}/${name}/${version}+${BUILD_NUMBER}`;
   info(`Artifactory target URL: ${artifactoryTargetUrl}`);
-  globbySync(join('*{.vsix,-cyclonedx.json,.asc}')).map(fileName => {
+  globbySync(join(pattern)).map(fileName => {
     const [sha1, md5] = fileHashsum(fileName);
     const fileReadStream = createReadStream(fileName);
     artifactoryUpload(fileReadStream, artifactoryTargetUrl, fileName, {
