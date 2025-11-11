@@ -114,7 +114,7 @@ jobs:
       # Deployment jobs are executed sequentially to make sure that the universal package is the last one deployed
       max-parallel: 1
       matrix:
-        platform: [ 'win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal' ]
+        platform: [ 'linux-x64', 'darwin-x64', 'darwin-arm64', 'win32-x64', 'universal' ]
     if: always()
     env:
       ARTIFACTORY_URL: https://repox.jfrog.io/artifactory

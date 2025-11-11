@@ -5,13 +5,13 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import { executeWithDurationLog, deployAll } from './common.mjs';
+import { executeWithDurationLog, deployAllMicrosoft } from './common.mjs';
 import { deployAllOpenVSX } from './deployAllOpenVSX.mjs';
 import { deployBuildInfo } from './deployUtils.mjs';
 
 // First deploy Microsoft marketplace variants (with OmniSharp in all packages)
 await executeWithDurationLog(async () => {
-  await deployAll();
+  await deployAllMicrosoft();
 }, 'Deploy-all-microsoft');
 
 // Then deploy OpenVSX variants (without OmniSharp in platform-specific packages)

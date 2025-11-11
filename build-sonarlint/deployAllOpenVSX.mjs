@@ -10,12 +10,10 @@ import { cleanJreDir, cleanOmnisharpDir, getPackageJSON } from './fsUtils.mjs';
 import { renameSync } from 'node:fs';
 import { info } from 'fancy-log';
 import downloadJre from './jreDownload.mjs';
-import { executeWithDurationLog } from './common.mjs';
-import signVsix from './sign.mjs';
+import { executeWithDurationLog, signAndDeployPackages } from './common.mjs';
 import _default from './constants.mjs';
 import { downloadOmnisharpAllPlatformDistributions } from './omnisharpDownload.mjs';
 import { globbySync } from 'globby';
-import { deployVsixWithPattern } from './deployUtils.mjs';
 
 const { LATEST_JRE, OMNISHARP_VERSION, TARGETED_PLATFORMS } = _default;
 
@@ -63,18 +61,13 @@ function renameOpenVSXPackages() {
 }
 
 async function signAndDeployOpenVSXPackages() {
-  // Sign OpenVSX packages
   info('Starting task "sign-openvsx"');
   const files = globbySync('*-openvsx*.vsix');
   
-  await signVsix({
-    privateKeyArmored: process.env.GPG_SIGNING_KEY,
-    passphrase: process.env.GPG_SIGNING_PASSPHRASE
-  }, files);
-  
-  // Deploy OpenVSX packages
-  await executeWithDurationLog(async () => {
-    await deployVsixWithPattern('*-openvsx*{.vsix,-cyclonedx.json,.asc}');
-  }, 'Deploy-openvsx-vsix');
+  await signAndDeployPackages({
+    signFiles: files,
+    deployPattern: '*-openvsx*{.vsix,-cyclonedx.json,.asc}',
+    taskSuffix: 'openvsx-vsix'
+  });
 }
 
