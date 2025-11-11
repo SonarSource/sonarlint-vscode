@@ -6,16 +6,15 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import { createVSIX } from '@vscode/vsce';
-import { cleanJreDir, cleanOmnisharpDir, getPackageJSON } from './fsUtils.mjs';
+import { getPackageJSON } from './fsUtils.mjs';
 import { renameSync } from 'node:fs';
 import { info } from 'fancy-log';
 import downloadJre from './jreDownload.mjs';
 import { executeWithDurationLog, signAndDeployPackages } from './common.mjs';
 import _default from './constants.mjs';
-import { downloadOmnisharpAllPlatformDistributions } from './omnisharpDownload.mjs';
 import { globbySync } from 'globby';
 
-const { LATEST_JRE, OMNISHARP_VERSION, TARGETED_PLATFORMS } = _default;
+const { LATEST_JRE, TARGETED_PLATFORMS } = _default;
 
 export async function deployAllOpenVSX() {
   await buildOpenVSXPackages();
@@ -31,14 +30,6 @@ async function buildOpenVSXPackages() {
       await createVSIX({ target: platform });
     }, `Build-openvsx-${platform}`);
   }
-  cleanJreDir();
-
-  // Build universal package WITH OmniSharp
-  await executeWithDurationLog(async () => {
-    await downloadOmnisharpAllPlatformDistributions(OMNISHARP_VERSION);
-    await createVSIX();
-    cleanOmnisharpDir();
-  }, 'Build-openvsx-universal');
 }
 
 function renameOpenVSXPackages() {
@@ -52,12 +43,6 @@ function renameOpenVSXPackages() {
     renameSync(originalName, newName);
     info(`Renamed ${originalName} to ${newName}`);
   }
-  
-  // Rename universal package
-  const originalUniversal = `sonarlint-vscode-${version}.vsix`;
-  const newUniversal = `sonarlint-vscode-openvsx-${version}.vsix`;
-  renameSync(originalUniversal, newUniversal);
-  info(`Renamed ${originalUniversal} to ${newUniversal}`);
 }
 
 async function signAndDeployOpenVSXPackages() {

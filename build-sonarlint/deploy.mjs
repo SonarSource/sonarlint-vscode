@@ -7,10 +7,8 @@
 'use strict';
 import { deployUniversal, executeWithDurationLog } from './common.mjs';
 
-(async () => {
-  await executeWithDurationLog(
-    async () => {
-      await deployUniversal();
-    }, 'Deploy-universal'
-  );
-})();
+await executeWithDurationLog(
+  async () => {
+    await deployUniversal();
+  }, 'Deploy-universal'
+);

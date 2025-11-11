@@ -155,7 +155,7 @@ jobs:
           artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases'
           slvscodeBaseUrl = f'{artifactoryPublicRepo}/org/sonarsource/sonarlint/vscode/sonarlint-vscode'
           if platform == 'universal':
-            artifactName = f'sonarlint-vscode-openvsx-{version}.vsix'
+            artifactName = f'sonarlint-vscode-{version}.vsix'
           else:
             artifactName = f'sonarlint-vscode-openvsx-{platform}-{version}.vsix'
           artifactUrl = f'{slvscodeBaseUrl}/{tagName}/{artifactName}'
