@@ -7,15 +7,15 @@
 'use strict';
 
 import { decryptKey, readPrivateKey, createMessage, sign as _sign } from 'openpgp';
-import { createReadStream, writeFileSync } from 'fs';
-import { join } from 'path';
+import { createReadStream, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { info } from 'fancy-log';
 import { globbySync } from 'globby';
 import { Readable } from 'node:stream';
 
-export default async function signVsix(opts = {}) {
+export default async function signVsix(opts = {}, specificFiles = null) {
   info('Starting task "sign"');
-  const files = globbySync(join('*{.vsix,-cyclonedx.json}'));
+  const files = specificFiles || globbySync(join('*{.vsix,-cyclonedx.json}'));
 
   for (const file of files) {
     const fileReadStream = Readable.toWeb(createReadStream(`./${file}`));

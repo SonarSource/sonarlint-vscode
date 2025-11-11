@@ -1299,10 +1299,11 @@
     "test-cov": "node out/test/runTest.js --coverage",
     "prepare": "node build-sonarlint/prepare.mjs",
     "cyclonedx-run": "cyclonedx-npm",
-    "deploy-all": "node build-sonarlint/deployAll.mjs",
+    "deploy-all-marketplaces": "node build-sonarlint/deployAllMarketplaces.mjs",
     "deploy-universal": "node build-sonarlint/deploy.mjs",
     "package": "node build-sonarlint/package.mjs",
-    "package-all": "node build-sonarlint/package-all.mjs"
+    "package-all-microsoft": "node build-sonarlint/package-all-microsoft.mjs",
+    "package-all-ovsx": "node build-sonarlint/package-all-ovsx.mjs"
   },
   "dependencies": {
     "@openpgp/web-stream-tools": "^0.1.3",

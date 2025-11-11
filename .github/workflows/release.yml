@@ -114,7 +114,7 @@ jobs:
       # Deployment jobs are executed sequentially to make sure that the universal package is the last one deployed
       max-parallel: 1
       matrix:
-        platform: [ 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal' ]
+        platform: [ 'linux-x64', 'darwin-x64', 'darwin-arm64', 'win32-x64', 'universal' ]
     env:
       ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
@@ -156,7 +156,7 @@ jobs:
           if platform == 'universal':
             artifactName = f'sonarlint-vscode-{version}.vsix'
           else:
-            artifactName = f'sonarlint-vscode-{platform}-{version}.vsix'
+            artifactName = f'sonarlint-vscode-openvsx-{platform}-{version}.vsix'
           artifactUrl = f'{slvscodeBaseUrl}/{tagName}/{artifactName}'
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:

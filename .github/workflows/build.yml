@@ -131,7 +131,7 @@ jobs:
           GPG_SIGNING_PASSPHRASE: ${{ fromJSON(steps.secrets.outputs.vault).PGP_PASSPHRASE }}
           SENTRY_UPLOAD_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SENTRY_UPLOAD_TOKEN }}
           GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }}
-        run: npm run deploy-all
+        run: npm run deploy-all-marketplaces
 
   test-linux:
     runs-on: github-ubuntu-latest-m
