@@ -26,6 +26,7 @@ export async function deployUniversal() {
   commonPreBuildTasks();
   await buildUniversal();
   await commonPostBuildTasks();
+  await deployBuildInfo();
 }
 
 export async function deployAll() {
@@ -68,7 +69,6 @@ async function commonPostBuildTasks() {
     privateKeyArmored: process.env.GPG_SIGNING_KEY,
     passphrase: process.env.GPG_SIGNING_PASSPHRASE
   });
-  await deployBuildInfo();
   await executeWithDurationLog(async () => {
     await deployVsix();
   }, 'Deploy-vsix');

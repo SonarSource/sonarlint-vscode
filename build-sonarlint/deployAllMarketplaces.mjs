@@ -7,6 +7,7 @@
 'use strict';
 import { executeWithDurationLog, deployAll } from './common.mjs';
 import { deployAllOpenVSX } from './deployAllOpenVSX.mjs';
+import { deployBuildInfo } from './deployUtils.mjs';
 
 // First deploy Microsoft marketplace variants (with OmniSharp in all packages)
 await executeWithDurationLog(async () => {
@@ -17,5 +18,10 @@ await executeWithDurationLog(async () => {
 await executeWithDurationLog(async () => {
   await deployAllOpenVSX();
 }, 'Deploy-all-openvsx');
+
+// Finally, deploy build info with ALL artifacts (Microsoft + OpenVSX)
+await executeWithDurationLog(async () => {
+  await deployBuildInfo();
+}, 'Deploy-build-info');
 
 

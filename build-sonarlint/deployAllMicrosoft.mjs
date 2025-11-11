@@ -6,9 +6,12 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import { deployAll, executeWithDurationLog } from './common.mjs';
+import { deployBuildInfo } from './deployUtils.mjs';
 
-(async () => {
-  await executeWithDurationLog(async () => {
-    await deployAll();
-  }, 'Deploy-all');
-})();
+await executeWithDurationLog(async () => {
+  await deployAll();
+}, 'Deploy-all');
+
+await executeWithDurationLog(async () => {
+  await deployBuildInfo();
+}, 'Deploy-build-info');
