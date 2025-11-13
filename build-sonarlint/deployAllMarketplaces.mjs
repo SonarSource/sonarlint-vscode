@@ -7,21 +7,28 @@
 'use strict';
 import { executeWithDurationLog, deployAllMicrosoft } from './common.mjs';
 import { deployAllOpenVSX } from './deployAllOpenVSX.mjs';
-import { deployBuildInfo } from './deployUtils.mjs';
+import { deployBuildInfo, collectArtifactInfo } from './deployUtils.mjs';
 
-// First deploy Microsoft marketplace variants (with OmniSharp in all packages)
+// Deploy Microsoft marketplace variants (with OmniSharp in all packages)
 await executeWithDurationLog(async () => {
   await deployAllMicrosoft();
 }, 'Deploy-all-microsoft');
 
-// Then deploy OpenVSX variants (without OmniSharp in platform-specific packages)
+// Collect Microsoft artifact information (universal + platform-specific VSIXs)
+const microsoftArtifacts = collectArtifactInfo();
+
+// Deploy OpenVSX variants (without OmniSharp in platform-specific packages)
+// This overwrites the platform-specific VSIXs, but we've already captured Microsoft metadata
 await executeWithDurationLog(async () => {
   await deployAllOpenVSX();
 }, 'Deploy-all-openvsx');
 
-// Finally, deploy build info with ALL artifacts (Microsoft + OpenVSX)
+// Collect OpenVSX artifact information (platform-specific VSIXs only)
+const openvsxArtifacts = collectArtifactInfo();
+
+// Deploy build info with ALL artifacts from both Microsoft and OpenVSX deployments
 await executeWithDurationLog(async () => {
-  await deployBuildInfo();
+  await deployBuildInfo(microsoftArtifacts, openvsxArtifacts);
 }, 'Deploy-build-info');
 
 
