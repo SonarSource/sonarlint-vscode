@@ -156,6 +156,17 @@ input[type="email"]::placeholder {
     background: var(--vscode-button-hoverBackground);
 }
 
+button.success {
+    animation: .2s linear success;
+    animation-fill-mode: forwards;
+}
+  
+@keyframes success { 
+    from { width: 120px; }
+    50% { width: 170px; }
+    to { width: 120px; } 
+}
+
 .legal-text {
     font-size: calc(var(--vscode-font-size) - 2px);
     line-height: 1.4;
@@ -180,6 +191,17 @@ input[type="email"]::placeholder {
     border-radius: 4px;
     border-left: 3px solid var(--vscode-activityErrorBadge-background);
     font-size: var(--vscode-font-size);
+}
+
+.success-message {
+    color: #0f3b1f;
+    background-color: #d4edda;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    border-left: 3px solid #28a745;
+    font-size: var(--vscode-font-size);
+    font-weight: 500;
 }
 
 .spinner {
@@ -425,6 +447,7 @@ input[type="email"]::placeholder {
     border-top: 1px solid var(--vscode-panel-border);
     width: 100%;
     background: var(--vscode-editor-background);
+    z-index: 20;
 }
 
 .labs-footer p {
