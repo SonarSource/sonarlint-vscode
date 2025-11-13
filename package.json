@@ -402,7 +402,7 @@
       },
       {
         "command": "SonarLint.AnalyseOpenFile",
-        "title": "Analyze Changed Files with SonarQube",
+        "title": "Analyze Current File with SonarQube",
         "category": "SonarQube",
         "icon": "$(sonarqube-analysis)"
       },
@@ -855,12 +855,6 @@
           "command": "SonarLint.AnalyseOpenFile",
           "group": "navigation",
           "when": "resourceScheme == file"
-        }
-      ],
-      "scm/resourceGroup/context": [
-        {
-          "command": "SonarLint.AnalyseOpenFile",
-          "group": "inline"
         }
       ],
       "view/title": [

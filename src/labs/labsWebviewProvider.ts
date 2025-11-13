@@ -16,8 +16,11 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Commands } from '../util/commands';
 import { IdeLabsFlagManagementService } from './ideLabsFlagManagementService';
 
+const WEBVIEW_UI_DIR = 'webview-ui';
+
 export class LabsWebviewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
+  private _resolver: ResourceResolver;
 
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
@@ -42,6 +45,9 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(
       message => {
         switch (message.command) {
+          case 'ready':
+            this.sendInitialState();
+            break;
           case 'signup':
             this.handleSignup(message.email);
             break;
@@ -53,6 +59,21 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
       undefined,
       this.extensionContext.subscriptions
     );
+  }
+
+  private sendInitialState() {
+    const featuresWithImages = LABS_FEATURES.map(feature => ({
+      ...feature,
+      imageUrl: this._resolver.resolve('images', feature.imageFile)
+    }));
+    
+    const isSignedUp = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
+    
+    this._view?.webview.postMessage({
+      command: 'initialState',
+      isSignedUp,
+      features: featuresWithImages
+    });
   }
 
   private async handleSignup(email: string) {
@@ -88,32 +109,21 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview): string {
     IdeLabsFlagManagementService.instance.disableIdeLabs();
-    // Load HTML template
-    const templatePath = util.resolveExtensionFile('webview-ui', 'labs.html');
+    this._resolver = new ResourceResolver(this.extensionContext, webview);
+    const templatePath = util.resolveExtensionFile(WEBVIEW_UI_DIR, 'labs.html');
     const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
 
-    const resolver = new ResourceResolver(this.extensionContext, webview);
+    this._resolver = new ResourceResolver(this.extensionContext, webview);
 
-    // Resolve resource paths
-    const styleSrc = resolver.resolve('styles', 'labs.css');
-    const scriptSrc = resolver.resolve('webview-ui', 'labs.js');
+    const styleSrc = this._resolver.resolve('styles', 'labs.css');
+    const confettiSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'confetti.js');
+    const scriptSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'labs.js');
 
-    // Prepare features with resolved image paths
-    const featuresWithImages = LABS_FEATURES.map(feature => ({
-      ...feature,
-      imageUrl: resolver.resolve('images', feature.imageFile)
-    }));
-
-    // Check if user has already signed up
-    const isSignedUp = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
-
-    // Replace placeholders in template
     return template
       .replaceAll('{{cspSource}}', webview.cspSource)
       .replace('{{styleSrc}}', styleSrc)
+      .replace('{{confettiSrc}}', confettiSrc)
       .replace('{{scriptSrc}}', scriptSrc)
-      .replace('{{featuresJson}}', JSON.stringify(featuresWithImages, null, 2))
-      .replace('{{featureCount}}', LABS_FEATURES.length.toString())
-      .replace('{{isSignedUp}}', isSignedUp.toString());
+      .replace('{{featureCount}}', LABS_FEATURES.length.toString());
   }
 }
