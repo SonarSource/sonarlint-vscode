@@ -1,74 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; img-src {{cspSource}} https: data:; script-src {{cspSource}}" />
-  <link rel="stylesheet" type="text/css" href="{{styleSrc}}" />
-  <title>SonarQube for IDE Labs</title>
-</head>
-<body>
-<!-- Signup View -->
-<div id="signup-view" class="view-container">
-  <h1>Be a Sonar Insider</h1>
-  
-  <div class="hero-section">
-    <div class="mascot">🦑</div>
-    <div class="features-box">
-      <h2>Features for Feedback:</h2>
-      <ul class="features-list">
-        <li>• <a href="#" id="preCommitAnalysisLink">Pre-commit Analysis</a></li>
-        <li>• <a href="#" id="mcpIntegrationLink">AI Agents Integration</a></li>
-        <li>• <a href="#" id="dependencyRiskManagementLink">Dependency Risk Management</a></li>
-      </ul>
-      <p class="features-more">... and more to come!</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; img-src {{cspSource}} https: data:; script-src {{cspSource}} https://cdn.jsdelivr.net; worker-src blob:"
+    />
+    <link rel="stylesheet" type="text/css" href="{{styleSrc}}" />
+    <title>SonarQube for IDE Labs</title>
+  </head>
+  <body>
+    <!-- Signup View -->
+    <div id="signup-view" class="view-container">
+      <h1>Be a Sonar Insider</h1>
+
+      <div class="hero-section">
+        <div class="mascot">🦑</div>
+        <div class="features-box">
+          <h2>Features for Feedback:</h2>
+          <ul class="features-list">
+            <li>• <a href="#" id="vcsChangedFilesAnalysisLink">Analysis of VCS Changed Files</a></li>
+            <li>• <a href="#" id="mcpIntegrationLink">AI Agents Integration</a></li>
+            <li>• <a href="#" id="dependencyRiskManagementLink">Dependency Risk Management</a></li>
+          </ul>
+          <p class="features-more">... and more to come!</p>
+        </div>
+      </div>
+
+      <p class="description">
+        Get early access to our newest features and help shape the future of SonarQube for IDE. Sign up for Labs to test
+        new functionality and provide feedback directly to our team.
+      </p>
+
+      <div class="input-group">
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        <div id="successMessage" class="success-message" style="display: none;"></div>
+        <input type="email" id="email" placeholder="Enter your email" />
+      </div>
+
+      <button id="joinBtn" class="join-button">
+        <span class="button-text">Join SonarQube for IDE Labs</span>
+      </button>
+
+      <p class="legal-text">
+        By selecting "Join SonarQube for IDE Labs", you agree to take part in SonarQube for IDE Labs activities and
+        accept the SonarQube Cloud
+        <a href="#" id="termsLink">Terms of Service</a> and
+        <a href="#" id="privacyLink">Privacy Policy</a>
+      </p>
     </div>
-  </div>
 
-  <p class="description">
-    Get early access to our newest features and help shape the future of SonarQube for IDE. 
-    Sign up for Labs to test new functionality and provide feedback directly to our team.
-  </p>
+    <!-- Features View -->
+    <div id="features-view" class="view-container labs-main-view">
+      <div class="labs-header">
+        <h1>
+          SonarQube for IDE Labs <span class="feature-count">({{featureCount}} features ready for feedback)</span>
+        </h1>
+      </div>
 
-  <div class="input-group">
-    <div id="errorMessage" class="error-message" style="display: none;"></div>
-    <input type="email" id="email" placeholder="Enter your email" />
-  </div>
+      <div class="features-grid">
+        <!-- Features will be dynamically rendered here -->
+      </div>
 
-  <button id="joinBtn" class="join-button">
-    <span class="button-text">Join SonarQube for IDE Labs</span>
-  </button>
+      <div class="labs-footer">
+        <p>
+          Help us improve! Share issues, ideas or feedback on
+          <a href="https://community.sonarsource.com/c/sl/vs-code/36" target="_blank">Sonar Community</a>
+        </p>
+      </div>
+    </div>
 
-  <p class="legal-text">
-    By selecting "Join SonarQube for IDE Labs", you agree to take part in SonarQube for IDE 
-    Labs activities and accept the SonarQube Cloud 
-    <a href="#" id="termsLink">Terms of Service</a> and 
-    <a href="#" id="privacyLink">Privacy Policy</a>
-  </p>
-</div>
-
-<!-- Features View -->
-<div id="features-view" class="view-container labs-main-view">
-  <div class="labs-header">
-    <h1>SonarQube for IDE Labs <span class="feature-count">({{featureCount}} features ready for feedback)</span></h1>
-  </div>
-
-  <div class="features-grid">
-    <!-- Features will be dynamically rendered here -->
-  </div>
-
-  <div class="labs-footer">
-    <p>Help us improve! Share issues, ideas or feedback on <a href="https://community.sonarsource.com/c/sl/vs-code/36" target="_blank">Sonar Community</a></p>
-  </div>
-</div>
-
-<script type="application/json" id="labs-features-data">
-  {{featuresJson}}
-</script>
-<script type="application/json" id="labs-state">
-  {"isSignedUp": {{isSignedUp}}}
-</script>
-<script type="module" src="{{scriptSrc}}"></script>
-</body>
+    <script
+      src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"
+      integrity="sha384-0esPaJH+F9evp2lsJYN36SW7XkRbaYviuyF+PpnbjDXBC9i1CWGiJyGrXCyiyGqZ"
+      crossorigin="anonymous"
+    ></script>
+    <script src="{{confettiSrc}}"></script>
+    <script src="{{scriptSrc}}"></script>
+  </body>
 </html>
