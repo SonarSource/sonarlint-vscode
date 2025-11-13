@@ -45,7 +45,7 @@ export function deployVsix() {
 }
 
 export function deployVsixWithPattern(pattern) {
-  info('Starting task "deployVsix');
+  info('Starting task "deployVsix"');
   const {
     ARTIFACTORY_URL,
     ARTIFACTORY_DEPLOY_REPO,
@@ -88,6 +88,8 @@ function artifactoryUpload(readStream, url, fileName, options) {
   destinationUrl += Object.keys(options.properties).reduce((str, key) => {
     return `${str};${key}=${options.properties[key]}`;
   }, '');
+
+  info(`Uploading ${fileName} to ${destinationUrl}`);
 
   fetch(destinationUrl, {
     headers: {
