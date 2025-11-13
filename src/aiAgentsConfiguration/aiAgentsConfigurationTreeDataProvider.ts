@@ -11,6 +11,7 @@ import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import { Commands } from '../util/commands';
 import { getCurrentAgentWithMCPSupport } from './aiAgentUtils';
+import { getCurrentAgentWithHookSupport, isHookInstalled } from './aiAgentHooks';
 
 export class AIAgentsConfigurationItem extends VSCode.TreeItem {
   constructor(
@@ -63,11 +64,13 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
 
     const items: AIAgentsConfigurationItem[] = [];
     const isSupportingMCP = getCurrentAgentWithMCPSupport();
+    const agentWithHookSupport = getCurrentAgentWithHookSupport();
 
     const sonarQubeMCPServerConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
     const rulesFileConfigured = await isSonarQubeRulesFileConfigured();
+    const hookScriptInstalled = agentWithHookSupport ? await isHookInstalled(agentWithHookSupport) : false;
 
-    if (!sonarQubeMCPServerConfigured && !rulesFileConfigured) {
+    if (!sonarQubeMCPServerConfigured && !rulesFileConfigured && !hookScriptInstalled && !agentWithHookSupport) {
       return [];
     }
 
@@ -91,6 +94,19 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
           'SonarQube MCP Server guide',
           Commands.INTRODUCE_SONARQUBE_RULES_FILE,
           Commands.OPEN_SONARQUBE_RULES_FILE
+        )
+      );
+    }
+
+    if (agentWithHookSupport) {
+      items.push(
+        new AIAgentsConfigurationItem(
+          'hookScript',
+          'Install Hook for Code Analysis',
+          hookScriptInstalled,
+          'Automatically analyze code after AI generation',
+          Commands.INSTALL_HOOK_SCRIPT,
+          Commands.OPEN_HOOK_SCRIPT
         )
       );
     }

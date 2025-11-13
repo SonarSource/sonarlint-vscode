@@ -85,6 +85,7 @@ import { AutomaticAnalysisService } from './settings/automaticAnalysis';
 import { FlightRecorderService } from './monitoring/flightrecorder';
 import { configureMCPServer, onEmbeddedServerStarted, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
 import { introduceSonarQubeRulesFile, openSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
+import { getCurrentAgentWithHookSupport, installHook, uninstallHook, openHookScript, regenerateHooks } from './aiAgentsConfiguration/aiAgentHooks';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 const DOCUMENT_SELECTOR = [
@@ -685,6 +686,27 @@ function registerCommands(context: VSCode.ExtensionContext) {
     VSCode.commands.registerCommand(Commands.OPEN_SONARQUBE_RULES_FILE, () => openSonarQubeRulesFile()),
     VSCode.commands.registerCommand(Commands.INTRODUCE_SONARQUBE_RULES_FILE, () => introduceSonarQubeRulesFile(languageClient))
   );
+
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.INSTALL_HOOK_SCRIPT, () => {
+      const agent = getCurrentAgentWithHookSupport();
+      if (agent) {
+        installHook(languageClient, agent);
+      }
+    }),
+    VSCode.commands.registerCommand(Commands.UNINSTALL_HOOK_SCRIPT, () => {
+      const agent = getCurrentAgentWithHookSupport();
+      if (agent) {
+        uninstallHook(agent);
+      }
+    }),
+    VSCode.commands.registerCommand(Commands.OPEN_HOOK_SCRIPT, () => {
+      const agent = getCurrentAgentWithHookSupport();
+      if (agent) {
+        openHookScript(agent);
+      }
+    })
+  );
 }
 
 async function scanFolderForHotspotsCommandHandler(folderUri: VSCode.Uri) {
@@ -801,6 +823,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, (params) => {
     onEmbeddedServerStarted(params.port);
+    regenerateHooks(languageClient);
   });
 }
 
