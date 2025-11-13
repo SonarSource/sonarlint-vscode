@@ -8,44 +8,24 @@
 
 const vscode = acquireVsCodeApi();
 let errorMessageElement;
+let successMessageElement;
 let emailInput;
 let joinBtn;
-let currentView = 'signup'; // 'signup' or 'features'
+let currentView = 'signup';
+let labsFeatures = [];
 
-// Use DOMContentLoaded for more reliable initialization
+const CONFETTI_TO_FEATURES_DELAY = 2000;
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
-  // DOM is already loaded
   init();
 }
 window.addEventListener('message', handleMessage);
 
 function init() {
   console.log('Labs view initializing...');
-  
-  // Load state from embedded JSON
-  const stateElement = document.getElementById('labs-state');
-  let isSignedUp = false;
-  
-  if (stateElement) {
-    try {
-      const state = JSON.parse(stateElement.textContent);
-      isSignedUp = state.isSignedUp;
-      console.log('Labs signup state:', isSignedUp);
-    } catch (error) {
-      console.error('Failed to parse state data:', error);
-    }
-  } else {
-    console.error('labs-state element not found');
-  }
-
-  // Show appropriate view based on signup state
-  if (isSignedUp) {
-    showFeaturesView();
-  } else {
-    showSignupView();
-  }
+  vscode.postMessage({ command: 'ready' });
 }
 
 function showSignupView() {
@@ -79,6 +59,7 @@ function showFeaturesView(showCelebration = false) {
 
 function initSignupView() {
   errorMessageElement = document.getElementById('errorMessage');
+  successMessageElement = document.getElementById('successMessage');
   emailInput = document.getElementById('email');
   joinBtn = document.getElementById('joinBtn');
 
@@ -92,7 +73,7 @@ function initSignupView() {
   if (joinBtn) {
     joinBtn.addEventListener('click', () => {
       const email = emailInput ? emailInput.value : '';
-      if (email && email.includes('@')) {
+      if (email?.includes('@')) {
         hideError();
         vscode.postMessage({
           command: 'signup',
@@ -106,7 +87,7 @@ function initSignupView() {
 
   // Links
   const links = {
-    preCommitAnalysisLink: 'preCommitAnalysisLink',
+    vcsChangedFilesAnalysisLink: 'vcsChangedFilesAnalysisLink',
     mcpIntegrationLink: 'mcpIntegrationLink',
     dependencyRiskManagementLink: 'dependencyRiskManagementLink',
     termsLink: 'earlyAccessTerms',
@@ -125,17 +106,10 @@ function initSignupView() {
 }
 
 function initFeaturesView() {
-  const dataElement = document.getElementById('labs-features-data');
-  if (!dataElement) {
-    console.error('No features data element found');
-    return;
-  }
-
-  try {
-    const features = JSON.parse(dataElement.textContent);
-    renderFeatures(features);
-  } catch (error) {
-    console.error('Failed to parse features data:', error);
+  if (labsFeatures.length > 0) {
+    renderFeatures(labsFeatures);
+  } else {
+    console.error('No labs features available');
   }
 }
 
@@ -234,6 +208,13 @@ function showError(message) {
   }
 }
 
+function showSuccess(message) {
+  if (successMessageElement) {
+    successMessageElement.textContent = message;
+    successMessageElement.style.display = 'block';
+  }
+}
+
 function hideError() {
   if (errorMessageElement) {
     errorMessageElement.style.display = 'none';
@@ -263,6 +244,14 @@ function setLoading(loading) {
 function handleMessage(event) {
   const message = event.data;
   switch (message.command) {
+    case 'initialState':
+      labsFeatures = message.features || [];
+      if (message.isSignedUp) {
+        showFeaturesView();
+      } else {
+        showSignupView();
+      }
+      break;
     case 'signupLoading':
       setLoading(true);
       break;
@@ -276,8 +265,13 @@ function handleMessage(event) {
       if (emailInput) {
         emailInput.value = '';
       }
-      // Switch to features view on successful signup
-      showFeaturesView();
+      if (typeof triggerConfettiAnimation === 'function') {
+        triggerConfettiAnimation();
+      }
+      showSuccess('Successfully joined SonarQube for IDE Labs!');
+      setTimeout(() => {
+        showFeaturesView();
+      }, CONFETTI_TO_FEATURES_DELAY);
       break;
   }
 }
