@@ -23,8 +23,8 @@ await executeWithDurationLog(async () => {
   await deployAllOpenVSX();
 }, 'Deploy-all-openvsx');
 
-// Collect OpenVSX artifact information (platform-specific VSIXs only)
-const openvsxArtifacts = collectArtifactInfo();
+// Collect OpenVSX artifact information (only -openvsx- prefixed files)
+const openvsxArtifacts = collectArtifactInfo('*-openvsx-*');
 
 // Deploy build info with ALL artifacts from both Microsoft and OpenVSX deployments
 await executeWithDurationLog(async () => {

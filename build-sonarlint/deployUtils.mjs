@@ -13,10 +13,10 @@ import { computeDependencyHashes, fileHashsum } from './hashes.mjs';
 import { createReadStream } from 'fs';
 import { globbySync } from 'globby';
 
-export function collectArtifactInfo() {
-  info('Collecting artifact information');
-  const vsixPaths = globbySync(join('*.vsix'));
-  const additionalPaths = globbySync(join('*{-cyclonedx.json,.asc}'));
+export function collectArtifactInfo(pattern = '*') {
+  info(`Collecting artifact information for pattern: ${pattern}`);
+  const vsixPaths = globbySync(join(`${pattern}.vsix`));
+  const additionalPaths = globbySync(join(`${pattern}{-cyclonedx.json,.asc}`));
   
   return [...vsixPaths, ...additionalPaths].map(filePath => {
     const [sha1, md5] = fileHashsum(filePath);
