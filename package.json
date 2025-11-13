@@ -402,7 +402,7 @@
       },
       {
         "command": "SonarLint.AnalyseOpenFile",
-        "title": "Analyze Changed Files with SonarQube",
+        "title": "Analyze Current File with SonarQube",
         "category": "SonarQube",
         "icon": "$(sonarqube-analysis)"
       },
@@ -763,8 +763,8 @@
           "name": "SonarQube Findings"
         },
         {
-          "id": "SonarQube.LabsSignup",
-          "name": "SonarQube for IDE Labs",
+          "id": "SonarQube.Labs",
+          "name": "Labs",
           "icon": "$(beaker)",
           "type": "webview"
         }
@@ -855,12 +855,6 @@
           "command": "SonarLint.AnalyseOpenFile",
           "group": "navigation",
           "when": "resourceScheme == file"
-        }
-      ],
-      "scm/resourceGroup/context": [
-        {
-          "command": "SonarLint.AnalyseOpenFile",
-          "group": "inline"
         }
       ],
       "view/title": [
