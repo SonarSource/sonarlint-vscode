@@ -25,11 +25,11 @@ export interface LabsFeature {
 
 export const LABS_FEATURES: LabsFeature[] = [
   {
-    id: 'preCommitAnalysis',
-    title: 'Pre-Commit Analysis',
+    id: 'changedFilesAnalysis',
+    title: 'Analysis of VCS Changed Files',
     description:
       'Trigger analysis on all files changed since the last commit to ensure fewer issues reach your remote repository. This is especially useful if automatic analysis is disabled for your development project.',
-    imageFile: 'labs/pre_commit_analysis.png',
+    imageFile: 'labs/analyze_vcs_changed_files.png',
     tags: [FeatureTag.EXPERIMENTAL],
     learnMoreUrl:
       'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis/#analyze-changed-files/',

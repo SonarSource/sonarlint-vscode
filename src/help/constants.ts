@@ -100,7 +100,7 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     viewItem: false
   },
   {
-    id: 'preCommitAnalysisLink',
+    id: 'vcsChangedFilesAnalysisLink',
     url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis/#analyze-changed-files/',
     viewItem: false
   },

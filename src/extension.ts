@@ -396,7 +396,7 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   const labsWebviewProvider = new LabsWebviewProvider(context, languageClient);
   context.subscriptions.push(
-    VSCode.window.registerWebviewViewProvider('SonarQube.LabsSignup', labsWebviewProvider)
+    VSCode.window.registerWebviewViewProvider('SonarQube.Labs', labsWebviewProvider)
   );
 
   TaintVulnerabilityDecorator.init();
