@@ -1,3 +1,7 @@
+## 4.35.1
+
+* Platform-specific packages downloaded from OpenVSX marketplace no longer support C# analysis. Download & install packages directly from [our releases page](https://github.com/SonarSource/sonarlint-vscode/releases) to keep C# analysis on non-Microsoft IDEs.
+
 ## 4.35
 
 * Update IaC analyzer 1.51 -> [1.52](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2023819%20ORDER%20BY%20created%20ASC)
