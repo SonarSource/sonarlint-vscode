@@ -876,13 +876,12 @@ export namespace ExtendedServer {
     );
   }
 
-  export interface AnalyzeFilesListParams {
-    configScopeId: string;
-    fileUris: string[];
+  export interface AnalyzeVCSChangedFilesParams {
+    configScopeIds: string[];
   }
 
-  export namespace AnalyzeFilesList {
-    export const type = new lsp.NotificationType<AnalyzeFilesListParams>('sonarlint/analyzeFilesList');
+  export namespace AnalyzeVCSChangedFiles {
+    export const type = new lsp.NotificationType<AnalyzeVCSChangedFilesParams>('sonarlint/analyzeVCSChangedFiles');
   }
 
   export enum BindingCreationMode {
