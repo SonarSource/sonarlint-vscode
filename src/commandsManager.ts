@@ -43,6 +43,7 @@ import { installManagedJre } from './util/requirements';
 import { AIAgentsConfigurationTreeDataProvider } from './aiAgentsConfiguration/aiAgentsConfigurationTreeDataProvider';
 import { Commands } from './util/commands';
 import { getCurrentAgentWithHookSupport, installHook, openHookConfiguration, openHookScript, uninstallHook } from './aiAgentsConfiguration/aiAgentHooks';
+import { code2ProtocolConverter } from './util/uri';
 
 export class CommandsManager {
   constructor(
@@ -182,6 +183,16 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()),
       vscode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () => {
         IssueService.instance.analyseOpenFileIgnoringExcludes(true);
+        vscode.commands.executeCommand('SonarQube.Findings.focus');
+      }),
+      vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, (params: vscode.SourceControlResourceGroup) => {
+        const fileUris =  params.resourceStates.map(r => code2ProtocolConverter(r.resourceUri));
+        // TODO what if changed files belong to multiple workspace folders?
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        this.languageClient.sendNotification(ExtendedServer.AnalyzeFilesList.type, {
+          configScopeId: workspaceFolder.uri.toString(),
+          fileUris
+        });
         vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
       vscode.commands.registerCommand(
