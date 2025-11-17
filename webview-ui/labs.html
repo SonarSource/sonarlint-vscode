@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; img-src {{cspSource}} https: data:; script-src {{cspSource}} https://cdn.jsdelivr.net; worker-src blob:"
+      content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; img-src {{cspSource}} https: data:; script-src {{cspSource}}"
     />
     <link rel="stylesheet" type="text/css" href="{{styleSrc}}" />
     <title>SonarQube for IDE Labs</title>
@@ -71,12 +71,7 @@
       </div>
     </div>
 
-    <!-- TODO fix integrity parsing-->
-    <script
-      src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"
-      integrity="sha384-0esPaJH+F9evp2lsJYN36SW7XkRbaYviuyF+PpnbjDXBC9i1CWGiJyGrXCyiyGqZ"
-      crossorigin="anonymous"
-    ></script>
+    <script src="{{canvasConfettiSrc}}"></script>
     <script src="{{confettiSrc}}"></script>
     <script src="{{scriptSrc}}"></script>
   </body>

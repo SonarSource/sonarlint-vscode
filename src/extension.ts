@@ -9,9 +9,9 @@
 // Must be kept at the top for Node instrumentation to work correctly
 import { MonitoringService } from './monitoring/monitoring';
 
-import * as ChildProcess from 'child_process';
+import * as ChildProcess from 'node:child_process';
 import { DateTime } from 'luxon';
-import * as Path from 'path';
+import * as Path from 'node:path';
 import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { configureCompilationDatabase, notifyMissingCompileCommands } from './cfamily/cfamily';
@@ -653,13 +653,10 @@ function registerCommands(context: VSCode.ExtensionContext) {
     })
   );
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, (params: VSCode.SourceControlResourceGroup) => {
-      var fileUris =  params.resourceStates.map(r => code2ProtocolConverter(r.resourceUri));
-      // TODO what if changed files belong to multiple workspace folders?
-      var workspaceFolder = VSCode.workspace.workspaceFolders?.[0];
-      languageClient.sendNotification(ExtendedServer.AnalyzeFilesList.type, {
-        configScopeId: workspaceFolder.uri.toString(),
-        fileUris
+    VSCode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
+      const workspaceFolderUris = VSCode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));
+      languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
+        configScopeIds: workspaceFolderUris
       });
       VSCode.commands.executeCommand('SonarQube.Findings.focus');
     })
