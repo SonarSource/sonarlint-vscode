@@ -652,6 +652,18 @@ function registerCommands(context: VSCode.ExtensionContext) {
       VSCode.commands.executeCommand('SonarQube.Findings.focus');
     })
   );
+  context.subscriptions.push(
+    VSCode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, (params: VSCode.SourceControlResourceGroup) => {
+      var fileUris =  params.resourceStates.map(r => code2ProtocolConverter(r.resourceUri));
+      // TODO what if changed files belong to multiple workspace folders?
+      var workspaceFolder = VSCode.workspace.workspaceFolders?.[0];
+      languageClient.sendNotification(ExtendedServer.AnalyzeFilesList.type, {
+        configScopeId: workspaceFolder.uri.toString(),
+        fileUris
+      });
+      VSCode.commands.executeCommand('SonarQube.Findings.focus');
+    })
+  );
 
   context.subscriptions.push(VSCode.commands.registerCommand(Commands.FOCUS_ON_CONNECTION, async (connectionType: ConnectionType, connectionId?: string) => {
       const connectionsOfType = await allConnectionsTreeDataProvider.getConnections(connectionType)
