@@ -108,7 +108,6 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {
-    IdeLabsFlagManagementService.instance.disableIdeLabs();
     this._resolver = new ResourceResolver(this.extensionContext, webview);
     const templatePath = util.resolveExtensionFile(WEBVIEW_UI_DIR, 'labs.html');
     const template = fs.readFileSync(templatePath.fsPath, 'utf-8');

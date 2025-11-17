@@ -407,6 +407,13 @@
         "icon": "$(sonarqube-analysis)"
       },
       {
+        "command": "SonarLint.AnalyzeVCSChangedFiles",
+        "title": "Analyze Changed Files with SonarQube",
+        "category": "SonarQube",
+        "icon": "$(sonarqube-analysis)",
+        "enablement": "sonarqube.ideLabsEnabled"
+      },
+      {
         "command": "SonarLint.ConfigureCompilationDatabase",
         "title": "Configure the compilation database for C and C++ analysis",
         "category": "SonarQube"
@@ -1106,6 +1113,13 @@
           "when": "sonarqube.mcpServerSupportedIDE && view == SonarLint.ConnectedMode && (viewItem == sonarcloudConnection || viewItem == sonarqubeConnection)",
           "group": "inline"
         }
+      ],
+      "scm/resourceGroup/context": [
+        {
+          "command": "SonarLint.AnalyzeVCSChangedFiles",
+          "when": "sonarqube.ideLabsEnabled",
+          "group": "inline"
+        }
       ]
     },
     "colors": [
@@ -1379,7 +1393,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.5.0.77813",
+      "version": "4.6-SNAPSHOT",
       "output": "server/sonarlint-ls.jar"
     },
     {
