@@ -185,13 +185,10 @@ export class CommandsManager {
         IssueService.instance.analyseOpenFileIgnoringExcludes(true);
         vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
-      vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, (params: vscode.SourceControlResourceGroup) => {
-        const fileUris =  params.resourceStates.map(r => code2ProtocolConverter(r.resourceUri));
-        // TODO what if changed files belong to multiple workspace folders?
-        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-        this.languageClient.sendNotification(ExtendedServer.AnalyzeFilesList.type, {
-          configScopeId: workspaceFolder.uri.toString(),
-          fileUris
+      vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
+        const workspaceFolderUris = vscode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));
+        this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
+          configScopeIds: workspaceFolderUris
         });
         vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),

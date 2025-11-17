@@ -9,8 +9,14 @@
 // Must be kept at the top for Node instrumentation to work correctly
 import { MonitoringService } from './monitoring/monitoring';
 
+<<<<<<< HEAD
 import * as ChildProcess from 'child_process';
 import * as Path from 'path';
+=======
+import * as ChildProcess from 'node:child_process';
+import { DateTime } from 'luxon';
+import * as Path from 'node:path';
+>>>>>>> 763c524b (SLVSCODE-1448 include load script via npm)
 import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';
 import { notifyMissingCompileCommands } from './cfamily/cfamily';

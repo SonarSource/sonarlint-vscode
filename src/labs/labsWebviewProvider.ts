@@ -115,12 +115,14 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
     this._resolver = new ResourceResolver(this.extensionContext, webview);
 
     const styleSrc = this._resolver.resolve('styles', 'labs.css');
+    const canvasConfettiSrc = this._resolver.resolve('node_modules', 'canvas-confetti', 'dist', 'confetti.browser.js');
     const confettiSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'confetti.js');
     const scriptSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'labs.js');
 
     return template
       .replaceAll('{{cspSource}}', webview.cspSource)
       .replace('{{styleSrc}}', styleSrc)
+      .replace('{{canvasConfettiSrc}}', canvasConfettiSrc)
       .replace('{{confettiSrc}}', confettiSrc)
       .replace('{{scriptSrc}}', scriptSrc)
       .replace('{{featureCount}}', LABS_FEATURES.length.toString());
