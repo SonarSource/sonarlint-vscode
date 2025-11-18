@@ -26,10 +26,16 @@ h1 {
 }
 
 .mascot {
-    flex-shrink: 0;
-    font-size: 80px;
+    width: 130px;
+    height: 130px;
     line-height: 1;
     animation: float 3s ease-in-out infinite;
+}
+
+.mascot img {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 @keyframes float {
