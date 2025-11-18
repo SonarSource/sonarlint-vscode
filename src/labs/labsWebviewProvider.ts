@@ -108,6 +108,7 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {
+    IdeLabsFlagManagementService.instance.disableIdeLabs();
     this._resolver = new ResourceResolver(this.extensionContext, webview);
     const templatePath = util.resolveExtensionFile(WEBVIEW_UI_DIR, 'labs.html');
     const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
@@ -118,6 +119,7 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
     const canvasConfettiSrc = this._resolver.resolve('node_modules', 'canvas-confetti', 'dist', 'confetti.browser.js');
     const confettiSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'confetti.js');
     const scriptSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'labs.js');
+    const squidWavingSrc = this._resolver.resolve('images', 'labs', 'waving_squide.svg');
 
     return template
       .replaceAll('{{cspSource}}', webview.cspSource)
@@ -125,6 +127,7 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
       .replace('{{canvasConfettiSrc}}', canvasConfettiSrc)
       .replace('{{confettiSrc}}', confettiSrc)
       .replace('{{scriptSrc}}', scriptSrc)
+      .replace('{{squidWavingSrc}}', squidWavingSrc)
       .replace('{{featureCount}}', LABS_FEATURES.length.toString());
   }
 }
