@@ -33,7 +33,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     tags: [FeatureTag.EXPERIMENTAL],
     learnMoreUrl:
       'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis/#analyze-changed-files/',
-    feedbackUrl: 'https://forms.gle/zSyznTQAWfhrGZp49'
+    feedbackUrl: 'https://forms.gle/HQQSotdcMhwinTwFA'
   },
   {
     id: 'aiAgentsIntegration',
@@ -42,7 +42,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     imageFile: 'labs/ai_agents_integration.png',
     tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server/',
-    feedbackUrl: 'https://forms.gle/zSyznTQAWfhrGZp49'
+    feedbackUrl: 'https://forms.gle/z37tYGFmYNPBavXJ7'
   },
   {
     id: 'dependencyRiskManagement',
@@ -51,7 +51,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     imageFile: 'labs/dependency_risk_management.png',
     tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/dependency-risks/',
-    feedbackUrl: 'https://forms.gle/zSyznTQAWfhrGZp49'
+    feedbackUrl: 'https://forms.gle/WiTXUuVWE2F8SuRw5'
   },
   {
     id: 'connectedMode',
@@ -61,6 +61,6 @@ export const LABS_FEATURES: LabsFeature[] = [
     imageFile: 'labs/connected_mode.png',
     tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/connected-mode',
-    feedbackUrl: 'https://forms.gle/zSyznTQAWfhrGZp49'
+    feedbackUrl: 'https://forms.gle/iAqwRbpmpznThEd58'
   }
 ];
