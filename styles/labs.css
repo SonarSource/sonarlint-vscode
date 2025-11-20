@@ -274,6 +274,26 @@ button.success {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.feature-card-disabled .feature-image {
+    opacity: 0.5;
+}
+
+.feature-card-disabled .feature-title {
+    opacity: 0.5;
+}
+
+.feature-card-disabled .feature-description {
+    opacity: 0.5;
+}
+
+.feature-card-disabled .learn-more-link {
+    opacity: 0.5;
+}
+
+.feature-card-disabled .toggle-icon {
+    opacity: 0.5;
+}
+
 .feature-image {
     position: relative;
     width: 100%;

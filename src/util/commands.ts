@@ -102,4 +102,7 @@ export namespace Commands {
   export const SHOW_HIGH_SEVERITY_ONLY = 'SonarQube.ShowHighSeverityOnly';
   export const SHOW_CURRENT_FILE_ONLY = 'SonarQube.ShowCurrentFileOnly';
   export const CHANGE_DEPENDENCY_RISK_STATUS = 'SonarLint.ChangeDependencyRiskStatus';
+
+  export const ENABLE_LABS = 'SonarQube.EnableLabs';
+  export const DISABLE_LABS = 'SonarQube.DisableLabs';
 }
