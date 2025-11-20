@@ -134,6 +134,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetMCPRulesFileContent.type, aiAssistedIde);
   }
 
+  getAiAgentHookScriptContent(aiAgent: string): Promise<ExtendedServer.GetHookScriptContentResponse> {
+    return this.sendRequest(ExtendedServer.GetAiAgentHookScriptContent.type, aiAgent);
+  }
+
   checkIssueStatusChangePermitted(
     folderUri: string,
     issueKey: string
