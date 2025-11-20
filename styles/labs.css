@@ -399,7 +399,7 @@ button.success {
     font-size: var(--vscode-font-size);
     line-height: 1.5;
     color: var(--vscode-descriptionForeground);
-    margin: 0 0 12px 0;
+    margin: 10px 0 12px 0;
 }
 
 .learn-more-link {
