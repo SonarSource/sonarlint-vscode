@@ -54,35 +54,6 @@
       "type": "object",
       "title": "SonarLint",
       "properties": {
-        "sonarlint.rules": {
-          "order": 1,
-          "type": "object",
-          "scope": "application",
-          "default": {},
-          "markdownDescription": "Customize applied rule set. This property contains a list of rules whose activation level or parameter values differ from the one provided by default. In [Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22), this configuration is overridden by the projects's Quality Profile, as configured on server side and can be **shared among contributors**. See [SonarLint Rules](command:SonarLint.AllRules.focus) view for the list of **locally** available rules.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:S1481\": {\n            \"level\": \"off\",\n         },\n        \"javascript:S103\": {\n            \"level\": \"on\",\n            \"parameters\": {\n                \"maximumLineLength\": \"120\"\n            }\n        }\n    }\n",
-          "patternProperties": {
-            "^[^:]+:[^:]+$": {
-              "type": "object",
-              "markdownDescription": "Property names are rule keys in the form: `repo:key`",
-              "properties": {
-                "level": {
-                  "type": "string",
-                  "enum": [
-                    "off",
-                    "on"
-                  ],
-                  "markdownDescription": "When set to `off`, disable the rule. When set to `on`, enable the rule."
-                },
-                "parameters": {
-                  "type": "object",
-                  "markdownDescription": "Rule parameters. See rule description for accepted parameters. E.g `{ \"intParam\": \"123\" }`."
-                },
-                "additionalProperties": false
-              }
-            }
-          },
-          "additionalProperties": false
-        },
         "sonarlint.connectedMode.servers": {
           "deprecationMessage": "The setting is deprecated. Use `sonarlint.connectedMode.connections.sonarqube` or `sonarlint.connectedMode.connections.sonarcloud` instead.",
           "type": "array",
@@ -112,7 +83,7 @@
           }
         },
         "sonarlint.connectedMode.connections.sonarqube": {
-          "order": 2,
+          "order": 1,
           "type": "array",
           "scope": "application",
           "default": [],
@@ -154,7 +125,7 @@
           }
         },
         "sonarlint.connectedMode.connections.sonarcloud": {
-          "order": 3,
+          "order": 2,
           "type": "array",
           "scope": "application",
           "default": [],
@@ -204,7 +175,7 @@
           }
         },
         "sonarlint.connectedMode.project": {
-          "order": 4,
+          "order": 3,
           "markdownDescription": "Bind the current workspace folder to a [SonarQube Server](command:SonarLint.HelpAndFeedbackLinkClicked?%22sonarQubeProductPage%22) or [SonarQube Cloud](command:SonarLint.HelpAndFeedbackLinkClicked?%5B%7B%22id%22%3A%22sonarCloudProductPage%22%2C%22utm%22%3A%7B%22content%22%3A%22settings-connected-mode%22%2C%22term%22%3A%22bind-current-workspace%22%7D%7D%5D) project. Requires connection details to be defined in the setting `#sonarlint.connectedMode.connections.sonarqube#` or `#sonarlint.connectedMode.connections.sonarcloud#`.\n\nBinding a workspace folder to a server project allows SonarQube for VS Code to match, as much as possible, the same rules and settings as found on the server, and hence share the analysis configuration with other contributors.\n\nExample:\n\n    \"sonarlint.connectedMode.project\": {\n      \"projectKey\": \"my_project\",\n      \"connectionId\":\"my_connection_id\"\n    }\n\n",
           "examples": [
             {
@@ -257,11 +228,68 @@
           "scope": "resource"
         },
         "sonarlint.automaticAnalysis": {
-          "order": 5,
+          "order": 4,
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable or disable on-the-fly analysis of files you work on. When enabled, SonarQube for IDE will automatically analyze open files and show findings in real-time.",
           "scope": "application"
+        },
+        "sonarlint.ideLabsEnabled": {
+          "order": 5,
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable or disable [**SonarQube for IDE Labs**](command:SonarQube.Labs.focus) experimental features. Only takes effect after joining SonarQube for IDE Labs.",
+          "when": "sonarqube.ideLabsJoined",
+          "scope": "application"
+        },
+        "sonarlint.rules": {
+          "order": 6,
+          "type": "object",
+          "scope": "application",
+          "default": {},
+          "markdownDescription": "Customize applied rule set. This property contains a list of rules whose activation level or parameter values differ from the one provided by default. In [Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22), this configuration is overridden by the projects's Quality Profile, as configured on server side and can be **shared among contributors**. See [SonarLint Rules](command:SonarLint.AllRules.focus) view for the list of **locally** available rules.\n\nExample:\n\n    \"sonarlint.rules\": {\n        \"javascript:S1481\": {\n            \"level\": \"off\",\n         },\n        \"javascript:S103\": {\n            \"level\": \"on\",\n            \"parameters\": {\n                \"maximumLineLength\": \"120\"\n            }\n        }\n    }\n",
+          "patternProperties": {
+            "^[^:]+:[^:]+$": {
+              "type": "object",
+              "markdownDescription": "Property names are rule keys in the form: `repo:key`",
+              "properties": {
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "off",
+                    "on"
+                  ],
+                  "markdownDescription": "When set to `off`, disable the rule. When set to `on`, enable the rule."
+                },
+                "parameters": {
+                  "type": "object",
+                  "markdownDescription": "Rule parameters. See rule description for accepted parameters. E.g `{ \"intParam\": \"123\" }`."
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "sonarlint.pathToCompileCommands": {
+          "order": 7,
+          "type": "string",
+          "markdownDescription": "Path to the active compilation database, e.g. `C:\\\\Repos\\\\MyProject\\\\compile_commands.json`",
+          "scope": "resource"
+        },
+        "sonarlint.testFilePattern": {
+          "order": 8,
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files.\n\nIn [Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22), this setting is configured **on the server-side** and shared among all contributors.\n\nExample: `**/test/**,**/*test*,**/*Test*`",
+          "scope": "resource"
+        },
+        "sonarlint.analysisExcludesStandalone": {
+          "order": 9,
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) will not be processed by analyzers. In [Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) with SonarQube Server or SonarQube Cloud, this property will be ignored and the server's exclusion settings will be applied. No rules are evaluated on excluded files. Example: `**/lib/**,**/*generated*`",
+          "scope": "resource"
         },
         "sonarlint.pathToNodeExecutable": {
           "order": 10,
@@ -269,36 +297,30 @@
           "markdownDescription": "Path to a Node.js executable (versions above 20.12.0, or 22.11.0) used to analyze JavaScript and TypeScript code. \nOn Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\NodeJS\\\\20-lts\\\\bin\\\\node.exe`",
           "scope": "machine"
         },
-        "sonarlint.pathToCompileCommands": {
-          "order": 11,
-          "type": "string",
-          "markdownDescription": "Path to the active compilation database, e.g. `C:\\\\Repos\\\\MyProject\\\\compile_commands.json`",
-          "scope": "resource"
-        },
-        "sonarlint.testFilePattern": {
-          "order": 12,
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) are considered as test files by analyzers. Most rules are *not* evaluated on test files.\n\nIn [Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22), this setting is configured **on the server-side** and shared among all contributors.\n\nExample: `**/test/**,**/*test*,**/*Test*`",
-          "scope": "resource"
-        },
-        "sonarlint.analysisExcludesStandalone": {
-          "order": 13,
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Files whose name match this [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob) will not be processed by analyzers. In [Connected Mode](command:SonarLint.HelpAndFeedbackLinkClicked?%22connectedModeDocs%22) with SonarQube Server or SonarQube Cloud, this property will be ignored and the server's exclusion settings will be applied. No rules are evaluated on excluded files. Example: `**/lib/**,**/*generated*`",
-          "scope": "resource"
-        },
         "sonarlint.ls.javaHome": {
-          "order": 20,
+          "order": 11,
           "type": "string",
           "markdownDescription": "Path to a Java Runtime Environment (17 or more recent) used to launch the SonarQube for VS Code Language Server.\n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-17` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/corretto-17.0.5/Contents/Home`",
           "scope": "machine"
         },
         "sonarlint.ls.vmargs": {
-          "order": 21,
+          "order": 12,
           "type": "string",
           "markdownDescription": "Extra JVM arguments used to launch the SonarLint Language Server. e.g. `-Xmx1024m`",
+          "scope": "machine"
+        },
+        "sonarlint.focusOnNewCode": {
+          "order": 13,
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "If enabled, by default, [focusing on new code](https://docs.sonarsource.com/sonarqube-for-vs-code/using/investigating-issues/#focusing-on-new-code) shows issues introduced in the last 30 days.\n\nFor the most accurate and customizable new code definition, use [Connected Mode](https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/connected-mode) with SonarQube (Server, Cloud).",
+          "scope": "machine"
+        },
+        "sonarlint.earlyAccess.showRegionSelection": {
+          "order": 14,
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Show region selection while creating SonarQube Cloud Connection",
           "scope": "machine"
         },
         "sonarlint.output.showVerboseLogs": {
@@ -361,31 +383,19 @@
             }
           ]
         },
-        "sonarlint.disableTelemetry": {
-          "order": 99,
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Disable sending anonymous usage statistics to SonarSource. Click [here](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md) to see a sample of the data that are collected.",
-          "scope": "window"
-        },
-        "sonarlint.focusOnNewCode": {
-          "order": 100,
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "If enabled, by default, [focusing on new code](https://docs.sonarsource.com/sonarqube-for-vs-code/using/investigating-issues/#focusing-on-new-code) shows issues introduced in the last 30 days.\n\nFor the most accurate and customizable new code definition, use [Connected Mode](https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/connected-mode) with SonarQube (Server, Cloud).",
-          "scope": "machine"
-        },
-        "sonarlint.earlyAccess.showRegionSelection": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Show region selection while creating SonarQube Cloud Connection",
-          "scope": "machine"
-        },
         "sonarlint.startFlightRecorder": {
+          "order": 99,
           "type": "boolean",
           "default": false,
           "markdownDescription": "Start the language server's flight recorder mode.\n\n⚠ **This feature shares detailed information with SonarSource (logs, telemetry events) that may include _confidential_ data, only enable if requested to help investigate an issue.**",
           "scope": "machine"
+        },
+        "sonarlint.disableTelemetry": {
+          "order": 100,
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Disable sending anonymous usage statistics to SonarSource. Click [here](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md) to see a sample of the data that are collected.",
+          "scope": "window"
         }
       }
     },
@@ -738,6 +748,20 @@
         "category": "SonarQube",
         "icon": "$(json)",
         "enablement": "sonarqube.hookScriptSupportedAgent"
+      },
+      {
+        "command": "SonarQube.EnableLabs",
+        "title": "Enable Labs",
+        "category": "SonarQube",
+        "icon": "$(settings-gear)",
+        "enablement": "view == SonarQube.Labs && !sonarqube.ideLabsEnabled"
+      },
+      {
+        "command": "SonarQube.DisableLabs",
+        "title": "Disable Labs",
+        "category": "SonarQube",
+        "icon": "$(settings-gear)",
+        "enablement": "view == SonarQube.Labs && sonarqube.ideLabsEnabled"
       }
     ],
     "viewsContainers": {
@@ -966,6 +990,11 @@
           "submenu": "SonarQube.FindingsFilterActive",
           "when": "view == SonarQube.Findings && sonarqube.findingsFilter != filter-all",
           "group": "navigation"
+        },
+        {
+          "submenu": "SonarQube.Labs",
+          "when": "view == SonarQube.Labs && sonarqube.ideLabsJoined",
+          "group": "navigation"
         }
       ],
       "SonarQube.FindingsFilter": [
@@ -1020,6 +1049,18 @@
           "command": "SonarQube.ShowCurrentFileOnly",
           "when": "view == SonarQube.Findings",
           "group": "1_filter"
+        }
+      ],
+      "SonarQube.Labs": [
+        {
+          "command": "SonarQube.EnableLabs",
+          "title": "Enable Labs",
+          "when": "view == SonarQube.Labs && !sonarqube.ideLabsEnabled"
+        },
+        {
+          "command": "SonarQube.DisableLabs",
+          "title": "Disable Labs",
+          "when": "view == SonarQube.Labs && sonarqube.ideLabsEnabled"
         }
       ],
       "view/item/context": [
@@ -1334,6 +1375,11 @@
         "id": "SonarQube.FindingsFilterActive",
         "label": "Filter Findings",
         "icon": "$(filter-filled)"
+      },
+      {
+        "id": "SonarQube.Labs",
+        "label": "Enable / Disable IDE Labs",
+        "icon": "$(settings-gear)"
       }
     ]
   },
