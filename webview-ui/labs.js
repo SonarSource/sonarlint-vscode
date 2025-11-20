@@ -13,6 +13,7 @@ let emailInput;
 let joinBtn;
 let currentView = 'signup';
 let labsFeatures = [];
+let isIdeLabsEnabled = false;
 
 const CONFETTI_TO_FEATURES_DELAY = 2000;
 
@@ -121,8 +122,13 @@ function renderFeatures(features) {
     return;
   }
 
-  grid.innerHTML = features.map((feature, index) => `
-    <div class="feature-card">
+  grid.innerHTML = features.map((feature, index) => {
+    const hasExperimentalTag = feature.tags.includes('experimental');
+    const isDisabled = !isIdeLabsEnabled && hasExperimentalTag;
+    const disabledClass = isDisabled ? ' feature-card-disabled' : '';
+    
+    return `
+    <div class="feature-card${disabledClass}">
       <div class="feature-image">
         <div class="feature-tags">
           ${feature.tags.map(tag => renderTag(tag)).join('')}
@@ -150,7 +156,8 @@ function renderFeatures(features) {
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
   
   setupFeatureToggles();
 }
@@ -246,6 +253,7 @@ function handleMessage(event) {
   switch (message.command) {
     case 'initialState':
       labsFeatures = message.features || [];
+      isIdeLabsEnabled = message.isIdeLabsEnabled || false;
       if (message.isSignedUp) {
         showFeaturesView();
       } else {
@@ -270,8 +278,21 @@ function handleMessage(event) {
       }
       showSuccess('Successfully joined SonarQube for IDE Labs!');
       setTimeout(() => {
+        isIdeLabsEnabled = true;
         showFeaturesView();
       }, CONFETTI_TO_FEATURES_DELAY);
+      break;
+    case 'ideLabsEnabled':
+      isIdeLabsEnabled = true;
+      if (currentView === 'features' && labsFeatures.length > 0) {
+        renderFeatures(labsFeatures);
+      }
+      break;
+    case 'ideLabsDisabled':
+      isIdeLabsEnabled = false;
+      if (currentView === 'features' && labsFeatures.length > 0) {
+        renderFeatures(labsFeatures);
+      }
       break;
   }
 }

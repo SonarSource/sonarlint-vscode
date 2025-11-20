@@ -25,7 +25,18 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
     private readonly languageClient: SonarLintExtendedLanguageClient
-  ) {}
+  ) {
+    extensionContext.subscriptions.push(
+      vscode.commands.registerCommand(Commands.ENABLE_LABS, () => {
+        IdeLabsFlagManagementService.instance.enableIdeLabs();
+        this._view?.webview.postMessage({ command: 'ideLabsEnabled' });
+      }),
+      vscode.commands.registerCommand(Commands.DISABLE_LABS, () => {
+        IdeLabsFlagManagementService.instance.disableIdeLabs();
+        this._view?.webview.postMessage({ command: 'ideLabsDisabled' });
+      })
+    );
+  }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -67,11 +78,13 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
       imageUrl: this._resolver.resolve('images', feature.imageFile)
     }));
     
-    const isSignedUp = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
+    const isSignedUp = IdeLabsFlagManagementService.instance.isIdeLabsJoined();
+    const isIdeLabsEnabled = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
     
     this._view?.webview.postMessage({
       command: 'initialState',
       isSignedUp,
+      isIdeLabsEnabled,
       features: featuresWithImages
     });
   }
@@ -81,7 +94,7 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
       this._view?.webview.postMessage({ command: 'signupLoading' });
       const response = await this.languageClient.joinIdeLabsProgram(email, vscode.env.appName);
       if (response.success) {
-        await IdeLabsFlagManagementService.instance.enableIdeLabs();
+        await IdeLabsFlagManagementService.instance.joinIdeLabs();
         
         vscode.window.showInformationMessage('Congratulations! You have joined SonarQube for IDE Labs!');
         this._view?.webview.postMessage({ command: 'signupSuccess' });
@@ -108,7 +121,6 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {
-    IdeLabsFlagManagementService.instance.disableIdeLabs();
     this._resolver = new ResourceResolver(this.extensionContext, webview);
     const templatePath = util.resolveExtensionFile(WEBVIEW_UI_DIR, 'labs.html');
     const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
