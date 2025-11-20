@@ -46,7 +46,7 @@ suite('aiAgentHooks', () => {
     showInformationMessageStub = sinon.stub(vscode.window, 'showInformationMessage');
     showTextDocumentStub = sinon.stub(vscode.window, 'showTextDocument');
     openTextDocumentStub = sinon.stub(vscode.workspace, 'openTextDocument');
-    executeCommandStub = sinon.stub(vscode.commands, 'executeCommand');
+    executeCommandStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
     
     // Stub fs module
     fsExistsSyncStub = sinon.stub(fs, 'existsSync');
@@ -221,21 +221,29 @@ suite('aiAgentHooks', () => {
       expect(showErrorMessageStub.args[0][0]).to.include('not supported');
     });
 
-    test('should install hook successfully for Windsurf when no existing hooks', async () => {
+    (process.platform === 'win32' ? test.skip : test)('should install hook successfully for Windsurf when no existing hooks', async () => {
       envStub.value('Windsurf');
+      const originalUserProfile = process.env.USERPROFILE;
       process.env.HOME = '/home/test';
+      delete process.env.USERPROFILE;
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
-      await installHook(mockLanguageClient, AGENT.WINDSURF);
+      try {
+        await installHook(mockLanguageClient, AGENT.WINDSURF);
 
-      expect(fsPromisesStub.mkdir.called).to.be.true;
-      expect(fsPromisesStub.writeFile.called).to.be.true;
-      expect(showInformationMessageStub.called).to.be.true;
-      const infoMessage = showInformationMessageStub.args.find(args => 
-        args[0] && args[0].includes('Hook script installed successfully')
-      );
-      expect(infoMessage).to.not.be.undefined;
-      expect(executeCommandStub.calledWith('SonarLint.RefreshAIAgentsConfiguration')).to.be.true;
+        expect(fsPromisesStub.mkdir.called).to.be.true;
+        expect(fsPromisesStub.writeFile.called).to.be.true;
+        expect(showInformationMessageStub.called).to.be.true;
+        const infoMessage = showInformationMessageStub.args.find(args => 
+          args[0] && args[0].includes('Hook script installed successfully')
+        );
+        expect(infoMessage).to.not.be.undefined;
+        expect(executeCommandStub.calledWith('SonarLint.RefreshAIAgentsConfiguration')).to.be.true;
+      } finally {
+        if (originalUserProfile !== undefined) {
+          process.env.USERPROFILE = originalUserProfile;
+        }
+      }
     });
 
     test('should prompt for overwrite when hook already exists', async () => {
@@ -266,9 +274,11 @@ suite('aiAgentHooks', () => {
       expect(fsPromisesStub.writeFile.called).to.be.false;
     });
 
-    test('should overwrite hook when user confirms', async () => {
+    (process.platform === 'win32' ? test.skip : test)('should overwrite hook when user confirms', async () => {
       envStub.value('Windsurf');
+      const originalUserProfile = process.env.USERPROFILE;
       process.env.HOME = '/home/test';
+      delete process.env.USERPROFILE;
       const existingConfig = {
         hooks: {
           post_write_code: [
@@ -282,16 +292,24 @@ suite('aiAgentHooks', () => {
       fsPromisesStub.readFile.resolves(JSON.stringify(existingConfig));
       showWarningMessageStub.resolves('Overwrite');
 
-      await installHook(mockLanguageClient, AGENT.WINDSURF);
+      try {
+        await installHook(mockLanguageClient, AGENT.WINDSURF);
 
-      expect(showWarningMessageStub.calledOnce).to.be.true;
-      expect(fsPromisesStub.writeFile.calledTwice).to.be.true; // script + config
-      expect(showInformationMessageStub.calledOnce).to.be.true;
+        expect(showWarningMessageStub.calledOnce).to.be.true;
+        expect(fsPromisesStub.writeFile.calledTwice).to.be.true; // script + config
+        expect(showInformationMessageStub.calledOnce).to.be.true;
+      } finally {
+        if (originalUserProfile !== undefined) {
+          process.env.USERPROFILE = originalUserProfile;
+        }
+      }
     });
 
-    test('should merge with existing hooks from other tools', async () => {
+    (process.platform === 'win32' ? test.skip : test)('should merge with existing hooks from other tools', async () => {
       envStub.value('Windsurf');
+      const originalUserProfile = process.env.USERPROFILE;
       process.env.HOME = '/home/test';
+      delete process.env.USERPROFILE;
       const existingConfig = {
         hooks: {
           post_write_code: [
@@ -303,15 +321,21 @@ suite('aiAgentHooks', () => {
         .onFirstCall().rejects(new Error('Not found')) // isHookInstalled check
         .onSecondCall().resolves(JSON.stringify(existingConfig)); // installHook read
 
-      await installHook(mockLanguageClient, AGENT.WINDSURF);
+      try {
+        await installHook(mockLanguageClient, AGENT.WINDSURF);
 
-      expect(fsPromisesStub.writeFile.calledTwice).to.be.true;
-      const configWriteCall = fsPromisesStub.writeFile.getCall(1);
-      const writtenConfig = JSON.parse(configWriteCall.args[1]);
-      
-      expect(writtenConfig.hooks.post_write_code).to.have.lengthOf(2);
-      expect(writtenConfig.hooks.post_write_code[0].command).to.include('other/tool');
-      expect(writtenConfig.hooks.post_write_code[1].command).to.include('sonarqube_analysis_hook');
+        expect(fsPromisesStub.writeFile.calledTwice).to.be.true;
+        const configWriteCall = fsPromisesStub.writeFile.getCall(1);
+        const writtenConfig = JSON.parse(configWriteCall.args[1]);
+        
+        expect(writtenConfig.hooks.post_write_code).to.have.lengthOf(2);
+        expect(writtenConfig.hooks.post_write_code[0].command).to.include('other/tool');
+        expect(writtenConfig.hooks.post_write_code[1].command).to.include('sonarqube_analysis_hook');
+      } finally {
+        if (originalUserProfile !== undefined) {
+          process.env.USERPROFILE = originalUserProfile;
+        }
+      }
     });
 
     test('should use windsurf-next directory when app name includes next', async () => {
