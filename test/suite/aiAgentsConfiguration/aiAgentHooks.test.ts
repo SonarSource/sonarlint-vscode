@@ -74,24 +74,29 @@ suite('aiAgentHooks', () => {
   });
 
   suite('getCurrentAgentWithHookSupport', () => {
-    test('should return WINDSURF when app name contains windsurf', () => {
+    test('should return WINDSURF when app name contains windsurf next', () => {
+      envStub.value('Windsurf Next');
+      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
+    });
+
+    test('should return WINDSURF when app name contains windsurf next (case insensitive)', () => {
+      envStub.value('WINDSURF NEXT Editor');
+      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
+    });
+
+    test('should return undefined for regular Windsurf (not windsurf-next)', () => {
       envStub.value('Windsurf');
-      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
+      expect(getCurrentAgentWithHookSupport()).to.be.undefined;
     });
 
-    test('should return WINDSURF when app name contains windsurf (case insensitive)', () => {
-      envStub.value('WINDSURF Editor');
-      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
-    });
-
-    test('should return CURSOR when app name contains cursor', () => {
+    test('should return undefined for Cursor (not yet supported)', () => {
       envStub.value('Cursor');
-      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.CURSOR);
+      expect(getCurrentAgentWithHookSupport()).to.be.undefined;
     });
 
-    test('should return CURSOR when app name contains cursor (case insensitive)', () => {
+    test('should return undefined for Cursor (case insensitive)', () => {
       envStub.value('CURSOR IDE');
-      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.CURSOR);
+      expect(getCurrentAgentWithHookSupport()).to.be.undefined;
     });
 
     test('should return undefined for Visual Studio Code', () => {
@@ -112,7 +117,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should return false when hooks.json does not exist', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
@@ -122,7 +127,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should return false when hooks.json exists but no SonarQube hook is installed', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       const config = {
         hooks: {
@@ -179,7 +184,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should handle Windows paths correctly', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.USERPROFILE = 'C:\\Users\\test';
       delete process.env.HOME;
       const config = {
@@ -222,7 +227,7 @@ suite('aiAgentHooks', () => {
     });
 
     (process.platform === 'win32' ? test.skip : test)('should install hook successfully for Windsurf when no existing hooks', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       const originalUserProfile = process.env.USERPROFILE;
       process.env.HOME = '/home/test';
       delete process.env.USERPROFILE;
@@ -247,7 +252,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should prompt for overwrite when hook already exists', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       const existingConfig = {
         hooks: {
@@ -275,7 +280,7 @@ suite('aiAgentHooks', () => {
     });
 
     (process.platform === 'win32' ? test.skip : test)('should overwrite hook when user confirms', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       const originalUserProfile = process.env.USERPROFILE;
       process.env.HOME = '/home/test';
       delete process.env.USERPROFILE;
@@ -306,7 +311,7 @@ suite('aiAgentHooks', () => {
     });
 
     (process.platform === 'win32' ? test.skip : test)('should merge with existing hooks from other tools', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       const originalUserProfile = process.env.USERPROFILE;
       process.env.HOME = '/home/test';
       delete process.env.USERPROFILE;
@@ -353,7 +358,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should set executable permissions on Unix systems', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       fsPromisesStub.readFile.rejects(new Error('File not found'));
       const originalPlatform = process.platform;
@@ -370,7 +375,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should not set executable permissions on Windows', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.USERPROFILE = 'C:\\Users\\test';
       delete process.env.HOME;
       fsPromisesStub.readFile.rejects(new Error('File not found'));
@@ -387,7 +392,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should show error message on failure', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       fsPromisesStub.readFile.rejects(new Error('File not found'));
       fsPromisesStub.mkdir.rejects(new Error('Permission denied'));
@@ -408,7 +413,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should show info message when no hook is installed', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
@@ -419,7 +424,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should prompt for confirmation before uninstalling', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       const config = {
         hooks: {
@@ -447,7 +452,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should uninstall hook successfully when user confirms', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       const config = {
         hooks: {
@@ -473,7 +478,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should preserve hooks from other tools when uninstalling', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       const config = {
         hooks: {
@@ -501,7 +506,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should delete all SonarQube hook script files', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       const config = {
         hooks: {
@@ -533,7 +538,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should handle missing script files gracefully', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       const config = {
         hooks: {
@@ -592,7 +597,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should show info message when no hook is found', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
@@ -603,7 +608,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should open hook script when it exists', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       const config = {
         hooks: {
@@ -663,7 +668,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should show info message when configuration file does not exist', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       fsExistsSyncStub.returns(false);
 
@@ -674,7 +679,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should open configuration file when it exists', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       fsExistsSyncStub.returns(true);
       const mockDocument = { uri: vscode.Uri.file('/home/test/.codeium/windsurf/hooks.json') };
@@ -705,7 +710,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should show error message on failure', async () => {
-      envStub.value('Windsurf');
+      envStub.value('Windsurf Next');
       process.env.HOME = '/home/test';
       fsExistsSyncStub.returns(true);
       openTextDocumentStub.rejects(new Error('Permission denied'));

@@ -30,10 +30,10 @@ const HOOK_SCRIPT_PERMISSIONS = 0o700;
 const HOOK_SCRIPT_PATTERN = /sonarqube_analysis_hook\.(js|py|sh)$/;
 
 export function getCurrentAgentWithHookSupport(): AGENT | undefined {
-  if (vscode.env.appName.toLowerCase().includes('windsurf')) {
+  const appName = vscode.env.appName.toLowerCase();
+  // Hooks are only available on windsurf-next (beta) for now
+  if (appName.includes('windsurf') && appName.includes('next')) {
     return AGENT.WINDSURF;
-  } else if (vscode.env.appName.toLowerCase().includes('cursor')) {
-    return AGENT.CURSOR;
   }
   return undefined;
 }
