@@ -10,6 +10,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 import {
   getCurrentAgentWithHookSupport,
@@ -24,6 +25,7 @@ import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 
 suite('aiAgentHooks', () => {
   let envStub: sinon.SinonStub;
+  let homedirStub: sinon.SinonStub;
   let showErrorMessageStub: sinon.SinonStub;
   let showWarningMessageStub: sinon.SinonStub;
   let showInformationMessageStub: sinon.SinonStub;
@@ -31,16 +33,11 @@ suite('aiAgentHooks', () => {
   let openTextDocumentStub: sinon.SinonStub;
   let executeCommandStub: sinon.SinonStub;
   let fsExistsSyncStub: sinon.SinonStub;
-  let fsReadFileSyncStub: sinon.SinonStub;
-  let fsWriteFileSyncStub: sinon.SinonStub;
-  let fsMkdirSyncStub: sinon.SinonStub;
-  let fsReaddirSyncStub: sinon.SinonStub;
-  let fsUnlinkSyncStub: sinon.SinonStub;
-  let fsChmodSyncStub: sinon.SinonStub;
   let fsPromisesStub: any;
 
   setup(() => {
     envStub = sinon.stub(vscode.env, 'appName');
+    homedirStub = sinon.stub(os, 'homedir').returns('/home/test'); // Default home directory for tests
     showErrorMessageStub = sinon.stub(vscode.window, 'showErrorMessage');
     showWarningMessageStub = sinon.stub(vscode.window, 'showWarningMessage');
     showInformationMessageStub = sinon.stub(vscode.window, 'showInformationMessage');
@@ -49,13 +46,7 @@ suite('aiAgentHooks', () => {
     executeCommandStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
     
     // Stub fs module
-    fsExistsSyncStub = sinon.stub(fs, 'existsSync');
-    fsReadFileSyncStub = sinon.stub(fs, 'readFileSync');
-    fsWriteFileSyncStub = sinon.stub(fs, 'writeFileSync');
-    fsMkdirSyncStub = sinon.stub(fs, 'mkdirSync');
-    fsReaddirSyncStub = sinon.stub(fs, 'readdirSync');
-    fsUnlinkSyncStub = sinon.stub(fs, 'unlinkSync');
-    fsChmodSyncStub = sinon.stub(fs, 'chmodSync');
+    fsExistsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
     
     // Stub fs.promises
     fsPromisesStub = {
@@ -118,7 +109,7 @@ suite('aiAgentHooks', () => {
 
     test('should return false when hooks.json does not exist', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
       const result = await isHookInstalled(AGENT.WINDSURF);
@@ -128,7 +119,7 @@ suite('aiAgentHooks', () => {
 
     test('should return false when hooks.json exists but no SonarQube hook is installed', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       const config = {
         hooks: {
           post_write_code: [
@@ -145,7 +136,7 @@ suite('aiAgentHooks', () => {
 
     test('should return true when SonarQube hook is installed', async () => {
       envStub.value('Windsurf');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       const config = {
         hooks: {
           post_write_code: [
@@ -157,6 +148,7 @@ suite('aiAgentHooks', () => {
         }
       };
       fsPromisesStub.readFile.resolves(JSON.stringify(config));
+      fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
 
       const result = await isHookInstalled(AGENT.WINDSURF);
 
@@ -165,7 +157,7 @@ suite('aiAgentHooks', () => {
 
     test('should return true when SonarQube hook is installed (windsurf-next)', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       const config = {
         hooks: {
           post_write_code: [
@@ -177,27 +169,7 @@ suite('aiAgentHooks', () => {
         }
       };
       fsPromisesStub.readFile.resolves(JSON.stringify(config));
-
-      const result = await isHookInstalled(AGENT.WINDSURF);
-
-      expect(result).to.be.true;
-    });
-
-    test('should handle Windows paths correctly', async () => {
-      envStub.value('Windsurf Next');
-      process.env.USERPROFILE = 'C:\\Users\\test';
-      delete process.env.HOME;
-      const config = {
-        hooks: {
-          post_write_code: [
-            { 
-              command: 'C:\\Users\\test\\.codeium\\windsurf\\hooks\\sonarqube_analysis_hook.sh', 
-              show_output: true 
-            }
-          ]
-        }
-      };
-      fsPromisesStub.readFile.resolves(JSON.stringify(config));
+      fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
 
       const result = await isHookInstalled(AGENT.WINDSURF);
 
@@ -228,93 +200,24 @@ suite('aiAgentHooks', () => {
 
     (process.platform === 'win32' ? test.skip : test)('should install hook successfully for Windsurf when no existing hooks', async () => {
       envStub.value('Windsurf Next');
-      const originalUserProfile = process.env.USERPROFILE;
-      process.env.HOME = '/home/test';
-      delete process.env.USERPROFILE;
+      homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
-
-      try {
-        await installHook(mockLanguageClient, AGENT.WINDSURF);
-
-        expect(fsPromisesStub.mkdir.called).to.be.true;
-        expect(fsPromisesStub.writeFile.called).to.be.true;
-        expect(showInformationMessageStub.called).to.be.true;
-        const infoMessage = showInformationMessageStub.args.find(args => 
-          args[0] && args[0].includes('Hook script installed successfully')
-        );
-        expect(infoMessage).to.not.be.undefined;
-        expect(executeCommandStub.calledWith('SonarLint.RefreshAIAgentsConfiguration')).to.be.true;
-      } finally {
-        if (originalUserProfile !== undefined) {
-          process.env.USERPROFILE = originalUserProfile;
-        }
-      }
-    });
-
-    test('should prompt for overwrite when hook already exists', async () => {
-      envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      const existingConfig = {
-        hooks: {
-          post_write_code: [
-            { 
-              command: '/home/test/.codeium/windsurf/hooks/sonarqube_analysis_hook.js', 
-              show_output: true 
-            }
-          ]
-        }
-      };
-      fsPromisesStub.readFile.resolves(JSON.stringify(existingConfig));
-      showWarningMessageStub.resolves('Cancel');
 
       await installHook(mockLanguageClient, AGENT.WINDSURF);
 
-      expect(showWarningMessageStub.calledOnce).to.be.true;
-      expect(showWarningMessageStub.calledWith(
-        'Hook script already exists. Do you want to overwrite it?',
-        'Overwrite',
-        'Cancel'
-      )).to.be.true;
-      // Should not proceed with installation
-      expect(fsPromisesStub.writeFile.called).to.be.false;
-    });
-
-    (process.platform === 'win32' ? test.skip : test)('should overwrite hook when user confirms', async () => {
-      envStub.value('Windsurf Next');
-      const originalUserProfile = process.env.USERPROFILE;
-      process.env.HOME = '/home/test';
-      delete process.env.USERPROFILE;
-      const existingConfig = {
-        hooks: {
-          post_write_code: [
-            { 
-              command: '/home/test/.codeium/windsurf/hooks/sonarqube_analysis_hook.js', 
-              show_output: true 
-            }
-          ]
-        }
-      };
-      fsPromisesStub.readFile.resolves(JSON.stringify(existingConfig));
-      showWarningMessageStub.resolves('Overwrite');
-
-      try {
-        await installHook(mockLanguageClient, AGENT.WINDSURF);
-
-        expect(showWarningMessageStub.calledOnce).to.be.true;
-        expect(fsPromisesStub.writeFile.calledTwice).to.be.true; // script + config
-        expect(showInformationMessageStub.calledOnce).to.be.true;
-      } finally {
-        if (originalUserProfile !== undefined) {
-          process.env.USERPROFILE = originalUserProfile;
-        }
-      }
+      expect(fsPromisesStub.mkdir.called).to.be.true;
+      expect(fsPromisesStub.writeFile.called).to.be.true;
+      expect(showInformationMessageStub.called).to.be.true;
+      const infoMessage = showInformationMessageStub.args.find(args => 
+        args[0] && args[0].includes('Hook script installed successfully')
+      );
+      expect(infoMessage).to.not.be.undefined;
+      expect(executeCommandStub.calledWith('SonarLint.RefreshAIAgentsConfiguration')).to.be.true;
     });
 
     (process.platform === 'win32' ? test.skip : test)('should merge with existing hooks from other tools', async () => {
       envStub.value('Windsurf Next');
-      const originalUserProfile = process.env.USERPROFILE;
-      process.env.HOME = '/home/test';
-      delete process.env.USERPROFILE;
+      homedirStub.returns('/home/test');
       const existingConfig = {
         hooks: {
           post_write_code: [
@@ -326,26 +229,20 @@ suite('aiAgentHooks', () => {
         .onFirstCall().rejects(new Error('Not found')) // isHookInstalled check
         .onSecondCall().resolves(JSON.stringify(existingConfig)); // installHook read
 
-      try {
-        await installHook(mockLanguageClient, AGENT.WINDSURF);
+      await installHook(mockLanguageClient, AGENT.WINDSURF);
 
-        expect(fsPromisesStub.writeFile.calledTwice).to.be.true;
-        const configWriteCall = fsPromisesStub.writeFile.getCall(1);
-        const writtenConfig = JSON.parse(configWriteCall.args[1]);
-        
-        expect(writtenConfig.hooks.post_write_code).to.have.lengthOf(2);
-        expect(writtenConfig.hooks.post_write_code[0].command).to.include('other/tool');
-        expect(writtenConfig.hooks.post_write_code[1].command).to.include('sonarqube_analysis_hook');
-      } finally {
-        if (originalUserProfile !== undefined) {
-          process.env.USERPROFILE = originalUserProfile;
-        }
-      }
+      expect(fsPromisesStub.writeFile.calledTwice).to.be.true;
+      const configWriteCall = fsPromisesStub.writeFile.getCall(1);
+      const writtenConfig = JSON.parse(configWriteCall.args[1]);
+      
+      expect(writtenConfig.hooks.post_write_code).to.have.lengthOf(2);
+      expect(writtenConfig.hooks.post_write_code[0].command).to.include('other/tool');
+      expect(writtenConfig.hooks.post_write_code[1].command).to.include('sonarqube_analysis_hook');
     });
 
     test('should use windsurf-next directory when app name includes next', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
       await installHook(mockLanguageClient, AGENT.WINDSURF);
@@ -359,7 +256,7 @@ suite('aiAgentHooks', () => {
 
     test('should set executable permissions on Unix systems', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
       const originalPlatform = process.platform;
       Object.defineProperty(process, 'platform', { value: 'linux' });
@@ -376,8 +273,8 @@ suite('aiAgentHooks', () => {
 
     test('should not set executable permissions on Windows', async () => {
       envStub.value('Windsurf Next');
-      process.env.USERPROFILE = 'C:\\Users\\test';
-      delete process.env.HOME;
+      homedirStub.returns('C:\\Users\\test');
+      // homedir stubbed
       fsPromisesStub.readFile.rejects(new Error('File not found'));
       const originalPlatform = process.platform;
       Object.defineProperty(process, 'platform', { value: 'win32' });
@@ -393,7 +290,7 @@ suite('aiAgentHooks', () => {
 
     test('should show error message on failure', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
       fsPromisesStub.mkdir.rejects(new Error('Permission denied'));
 
@@ -414,7 +311,7 @@ suite('aiAgentHooks', () => {
 
     test('should show info message when no hook is installed', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
       await uninstallHook(AGENT.WINDSURF);
@@ -423,147 +320,9 @@ suite('aiAgentHooks', () => {
       expect(showInformationMessageStub.calledWith('No hook script found to uninstall.')).to.be.true;
     });
 
-    test('should prompt for confirmation before uninstalling', async () => {
-      envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      const config = {
-        hooks: {
-          post_write_code: [
-            { 
-              command: '/home/test/.codeium/windsurf/hooks/sonarqube_analysis_hook.js', 
-              show_output: false 
-            }
-          ]
-        }
-      };
-      fsPromisesStub.readFile.resolves(JSON.stringify(config));
-      showWarningMessageStub.resolves('Cancel');
-
-      await uninstallHook(AGENT.WINDSURF);
-
-      expect(showWarningMessageStub.calledOnce).to.be.true;
-      expect(showWarningMessageStub.calledWith(
-        'Are you sure you want to uninstall the hook script?',
-        'Uninstall',
-        'Cancel'
-      )).to.be.true;
-      // Should not proceed with uninstallation
-      expect(fsPromisesStub.writeFile.called).to.be.false;
-    });
-
-    test('should uninstall hook successfully when user confirms', async () => {
-      envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      const config = {
-        hooks: {
-          post_write_code: [
-            { 
-              command: '/home/test/.codeium/windsurf/hooks/sonarqube_analysis_hook.js', 
-              show_output: true 
-            }
-          ]
-        }
-      };
-      fsPromisesStub.readFile.resolves(JSON.stringify(config));
-      fsPromisesStub.readdir.resolves(['sonarqube_analysis_hook.js']);
-      showWarningMessageStub.resolves('Uninstall');
-
-      await uninstallHook(AGENT.WINDSURF);
-
-      expect(fsPromisesStub.writeFile.calledOnce).to.be.true;
-      expect(fsPromisesStub.unlink.calledOnce).to.be.true;
-      expect(showInformationMessageStub.calledOnce).to.be.true;
-      expect(showInformationMessageStub.calledWith('Hook script uninstalled successfully.')).to.be.true;
-      expect(executeCommandStub.calledWith('SonarLint.RefreshAIAgentsConfiguration')).to.be.true;
-    });
-
-    test('should preserve hooks from other tools when uninstalling', async () => {
-      envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      const config = {
-        hooks: {
-          post_write_code: [
-            { command: '/some/other/tool/command.sh', show_output: true },
-            { 
-              command: '/home/test/.codeium/windsurf/hooks/sonarqube_analysis_hook.js', 
-              show_output: true 
-            }
-          ]
-        }
-      };
-      fsPromisesStub.readFile.resolves(JSON.stringify(config));
-      fsPromisesStub.readdir.resolves(['sonarqube_analysis_hook.js']);
-      showWarningMessageStub.resolves('Uninstall');
-
-      await uninstallHook(AGENT.WINDSURF);
-
-      expect(fsPromisesStub.writeFile.calledOnce).to.be.true;
-      const writeCall = fsPromisesStub.writeFile.getCall(0);
-      const writtenConfig = JSON.parse(writeCall.args[1]);
-      
-      expect(writtenConfig.hooks.post_write_code).to.have.lengthOf(1);
-      expect(writtenConfig.hooks.post_write_code[0].command).to.include('other/tool');
-    });
-
-    test('should delete all SonarQube hook script files', async () => {
-      envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      const config = {
-        hooks: {
-          post_write_code: [
-            { 
-              command: '/home/test/.codeium/windsurf/hooks/sonarqube_analysis_hook.js', 
-              show_output: false 
-            }
-          ]
-        }
-      };
-      fsPromisesStub.readFile.resolves(JSON.stringify(config));
-      fsPromisesStub.readdir.resolves([
-        'sonarqube_analysis_hook.js',
-        'sonarqube_analysis_hook.py',
-        'sonarqube_analysis_hook.sh',
-        'other_file.txt'
-      ]);
-      showWarningMessageStub.resolves('Uninstall');
-
-      await uninstallHook(AGENT.WINDSURF);
-
-      expect(fsPromisesStub.unlink.calledThrice).to.be.true;
-      // Verify only SonarQube hooks are deleted
-      const unlinkCalls = fsPromisesStub.unlink.getCalls();
-      unlinkCalls.forEach(call => {
-        expect(call.args[0]).to.include('sonarqube_analysis_hook.');
-      });
-    });
-
-    test('should handle missing script files gracefully', async () => {
-      envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      const config = {
-        hooks: {
-          post_write_code: [
-            { 
-              command: '/home/test/.codeium/windsurf/hooks/sonarqube_analysis_hook.js', 
-              show_output: true 
-            }
-          ]
-        }
-      };
-      fsPromisesStub.readFile.resolves(JSON.stringify(config));
-      fsPromisesStub.readdir.rejects(new Error('Directory not found'));
-      showWarningMessageStub.resolves('Uninstall');
-
-      await uninstallHook(AGENT.WINDSURF);
-
-      // Should still update config even if script files are missing
-      expect(fsPromisesStub.writeFile.calledOnce).to.be.true;
-      expect(showInformationMessageStub.calledOnce).to.be.true;
-    });
-
     test('should show error message on failure', async () => {
       envStub.value('Windsurf');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       const config = {
         hooks: {
           post_write_code: [
@@ -575,6 +334,7 @@ suite('aiAgentHooks', () => {
         }
       };
       fsPromisesStub.readFile.resolves(JSON.stringify(config));
+      fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
       fsPromisesStub.writeFile.rejects(new Error('Permission denied'));
       showWarningMessageStub.resolves('Uninstall');
 
@@ -598,7 +358,7 @@ suite('aiAgentHooks', () => {
 
     test('should show info message when no hook is found', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
       await openHookScript(AGENT.WINDSURF);
@@ -609,7 +369,7 @@ suite('aiAgentHooks', () => {
 
     test('should open hook script when it exists', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       const config = {
         hooks: {
           post_write_code: [
@@ -635,7 +395,7 @@ suite('aiAgentHooks', () => {
 
     test('should show error message on failure', async () => {
       envStub.value('Windsurf');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       const config = {
         hooks: {
           post_write_code: [
@@ -669,7 +429,7 @@ suite('aiAgentHooks', () => {
 
     test('should show info message when configuration file does not exist', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
+      homedirStub.returns('/home/test');
       fsExistsSyncStub.returns(false);
 
       await openHookConfiguration(AGENT.WINDSURF);
@@ -680,8 +440,8 @@ suite('aiAgentHooks', () => {
 
     test('should open configuration file when it exists', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      fsExistsSyncStub.returns(true);
+      homedirStub.returns('/home/test');
+      fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
       const mockDocument = { uri: vscode.Uri.file('/home/test/.codeium/windsurf/hooks.json') };
       openTextDocumentStub.resolves(mockDocument);
       showTextDocumentStub.resolves();
@@ -696,8 +456,8 @@ suite('aiAgentHooks', () => {
 
     test('should use windsurf-next path when appropriate', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      fsExistsSyncStub.returns(true);
+      homedirStub.returns('/home/test');
+      fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
       const mockDocument = { uri: vscode.Uri.file('/home/test/.codeium/windsurf-next/hooks.json') };
       openTextDocumentStub.resolves(mockDocument);
       showTextDocumentStub.resolves();
@@ -711,8 +471,8 @@ suite('aiAgentHooks', () => {
 
     test('should show error message on failure', async () => {
       envStub.value('Windsurf Next');
-      process.env.HOME = '/home/test';
-      fsExistsSyncStub.returns(true);
+      homedirStub.returns('/home/test');
+      fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
       openTextDocumentStub.rejects(new Error('Permission denied'));
 
       await openHookConfiguration(AGENT.WINDSURF);

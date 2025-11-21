@@ -71,7 +71,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
     const rulesFileConfigured = await isSonarQubeRulesFileConfigured();
     const hookScriptInstalled = agentWithHookSupport ? await isHookInstalled(agentWithHookSupport) : false;
 
-    if (!sonarQubeMCPServerConfigured && !rulesFileConfigured && !hookScriptInstalled && !agentWithHookSupport) {
+    if (!sonarQubeMCPServerConfigured && !rulesFileConfigured && !isSupportingMCP && !agentWithHookSupport) {
       return [];
     }
 
@@ -109,8 +109,8 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
           hookScriptInstalled,
           'zap',
           'Automatically analyze code after AI generation',
-          Commands.INSTALL_HOOK_SCRIPT,
-          Commands.OPEN_HOOK_SCRIPT
+          Commands.INSTALL_AI_AGENT_HOOK_SCRIPT,
+          Commands.OPEN_AI_AGENT_HOOK_SCRIPT
         )
       );
     }

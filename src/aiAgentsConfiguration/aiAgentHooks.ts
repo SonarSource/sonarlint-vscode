@@ -9,6 +9,7 @@
 import * as vscode from 'vscode';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Commands } from '../util/commands';
 import { AGENT } from './aiAgentUtils';
@@ -46,15 +47,16 @@ function getWindsurfDirectory(): string {
   return 'windsurf';
 }
 
-function getHooksConfigPath(agent: AGENT): string | undefined {
+/**
+ * Get the IDE-specific configuration directory.
+ * For Windsurf: ~/.codeium/windsurf or ~/.codeium/windsurf-next
+ * For Cursor: not yet supported
+ */
+function getIdeConfigDirectory(agent: AGENT): string | undefined {
   switch (agent) {
     case AGENT.WINDSURF: {
-      const homeDir = process.env.HOME || process.env.USERPROFILE;
-      if (!homeDir) {
-        return undefined;
-      }
       const windsurfDir = getWindsurfDirectory();
-      return path.join(homeDir, '.codeium', windsurfDir, 'hooks.json');
+      return path.join(os.homedir(), '.codeium', windsurfDir);
     }
     case AGENT.CURSOR:
       return undefined;
@@ -63,21 +65,14 @@ function getHooksConfigPath(agent: AGENT): string | undefined {
   }
 }
 
+function getHooksConfigPath(agent: AGENT): string | undefined {
+  const ideConfigDir = getIdeConfigDirectory(agent);
+  return ideConfigDir ? path.join(ideConfigDir, 'hooks.json') : undefined;
+}
+
 function getHookScriptDirectory(agent: AGENT): string | undefined {
-  switch (agent) {
-    case AGENT.WINDSURF: {
-      const homeDir = process.env.HOME || process.env.USERPROFILE;
-      if (!homeDir) {
-        return undefined;
-      }
-      const windsurfDir = getWindsurfDirectory();
-      return path.join(homeDir, '.codeium', windsurfDir, 'hooks');
-    }
-    case AGENT.CURSOR:
-      return undefined;
-    default:
-      return undefined;
-  }
+  const ideConfigDir = getIdeConfigDirectory(agent);
+  return ideConfigDir ? path.join(ideConfigDir, 'hooks') : undefined;
 }
 
 async function readHooksConfig(configPath: string): Promise<HooksJson> {
@@ -90,9 +85,24 @@ async function readHooksConfig(configPath: string): Promise<HooksJson> {
 }
 
 async function writeHooksConfig(configPath: string, config: HooksJson): Promise<void> {
-  const dir = path.dirname(configPath);
-  await fs.promises.mkdir(dir, { recursive: true });
+  // Config directory should already exist if the IDE is running
   await fs.promises.writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
+}
+
+/**
+ * Check if a hook command references one of our SonarQube hook scripts.
+ * Example command: "/home/user/.codeium/windsurf-next/hooks/sonarqube_analysis_hook.js"
+ * Example scriptDir: "/home/user/.codeium/windsurf-next/hooks"
+ */
+function isSonarQubeHook(command: string, scriptDir: string): boolean {
+  // Normalize paths to use forward slashes for consistent comparison across platforms
+  // Windows: "C:\Users\user\.codeium\windsurf-next\hooks" -> "C:/Users/user/.codeium/windsurf-next/hooks"
+  const normalizedCommand = command.replaceAll('\\', '/');
+  const normalizedScriptDir = scriptDir.replaceAll('\\', '/');
+  return (
+    normalizedCommand.includes(normalizedScriptDir) &&
+    HOOK_SCRIPT_PATTERN.exec(normalizedCommand) !== null
+  );
 }
 
 export async function isHookInstalled(agent: AGENT): Promise<boolean> {
@@ -105,16 +115,21 @@ export async function isHookInstalled(agent: AGENT): Promise<boolean> {
 
   try {
     const config = await readHooksConfig(configPath);
-    // Check if our specific SonarQube hook is installed
+    // Check if our specific SonarQube hook is registered in the config
     const hooks = config.hooks.post_write_code || [];
-    return hooks.some(hook => {
-      const normalizedCommand = hook.command.replaceAll('\\', '/');
-      const normalizedScriptDir = scriptDir.replaceAll('\\', '/');
-      return (
-        normalizedCommand.includes(normalizedScriptDir) &&
-        HOOK_SCRIPT_PATTERN.exec(normalizedCommand) !== null
-      );
-    });
+    const hookRegistered = hooks.some(hook => isSonarQubeHook(hook.command, scriptDir));
+    
+    if (!hookRegistered) {
+      return false;
+    }
+    
+    // Also verify that the script file actually exists
+    const scriptPath = hooks.find(hook => isSonarQubeHook(hook.command, scriptDir))?.command;
+    if (scriptPath) {
+      return fs.existsSync(scriptPath);
+    }
+    
+    return false;
   } catch {
     return false;
   }
@@ -145,6 +160,7 @@ export async function installHook(
     if (alreadyInstalled) {
       const overwrite = await vscode.window.showWarningMessage(
         `Hook script already exists. Do you want to overwrite it?`,
+        { modal: true },
         'Overwrite',
         'Cancel'
       );
@@ -168,24 +184,16 @@ export async function installHook(
 
     // Merge: Remove any existing SonarLint hooks from OUR hooks directory, then add the new one
     const existingHooks = existingConfig.hooks.post_write_code || [];
-    const filteredHooks = existingHooks.filter(hook => {
-      // Only remove hooks that point to our specific script files in our hooks directory
-      const normalizedCommand = hook.command.replaceAll('\\', '/');
-      const normalizedScriptDir = scriptDir.replaceAll('\\', '/');
-      return !(
-        normalizedCommand.includes(normalizedScriptDir) &&
-        HOOK_SCRIPT_PATTERN.exec(normalizedCommand) !== null
-      );
-    });
+    const filteredHooks = existingHooks.filter(hook => !isSonarQubeHook(hook.command, scriptDir));
     existingConfig.hooks.post_write_code = [...filteredHooks, ...newConfig.hooks.post_write_code];
 
     await writeHooksConfig(configPath, existingConfig);
 
+    await vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
+
     vscode.window.showInformationMessage(
       `Hook script installed successfully for ${agent}. Code will be analyzed automatically after AI generation.`
     );
-
-    vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to install hook script: ${error.message}`);
   }
@@ -209,6 +217,7 @@ export async function uninstallHook(agent: AGENT): Promise<void> {
 
     const confirm = await vscode.window.showWarningMessage(
       'Are you sure you want to uninstall the hook script?',
+      { modal: true },
       'Uninstall',
       'Cancel'
     );
@@ -219,15 +228,7 @@ export async function uninstallHook(agent: AGENT): Promise<void> {
 
     const config = await readHooksConfig(configPath);
     if (config.hooks.post_write_code) {
-      config.hooks.post_write_code = config.hooks.post_write_code.filter(hook => {
-        // Only remove hooks that point to our specific script files in our hooks directory
-        const normalizedCommand = hook.command.replaceAll('\\', '/');
-        const normalizedScriptDir = scriptDir.replaceAll('\\', '/');
-        return !(
-          normalizedCommand.includes(normalizedScriptDir) &&
-          HOOK_SCRIPT_PATTERN.exec(normalizedCommand) !== null
-        );
-      });
+      config.hooks.post_write_code = config.hooks.post_write_code.filter(hook => !isSonarQubeHook(hook.command, scriptDir));
     }
     await writeHooksConfig(configPath, config);
 
@@ -238,13 +239,14 @@ export async function uninstallHook(agent: AGENT): Promise<void> {
       for (const file of hookFiles) {
         await fs.promises.unlink(path.join(scriptDir, file));
       }
-    } catch {
-      // Script files may not exist, that's ok
+    } catch (err) {
+      // Script files may not exist or be in use, log but continue
+      console.warn('Failed to delete hook script files:', err);
     }
 
+    await vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
+    
     vscode.window.showInformationMessage('Hook script uninstalled successfully.');
-
-    vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to uninstall hook script: ${error.message}`);
   }

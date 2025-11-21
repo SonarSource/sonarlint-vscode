@@ -705,28 +705,32 @@
         "enablement": "sonarqube.mcpServerSupportedAgent"
       },
       {
-        "command": "SonarLint.InstallHookScript",
+        "command": "SonarLint.InstallAiAgentHookScript",
         "title": "Install Hook for Code Analysis",
         "category": "SonarQube",
-        "icon": "$(symbol-event)"
+        "icon": "$(symbol-event)",
+        "enablement": "sonarqube.hookScriptSupportedAgent"
       },
       {
-        "command": "SonarLint.UninstallHookScript",
-        "title": "Uninstall Hook Script",
+        "command": "SonarLint.UninstallAiAgentHookScript",
+        "title": "Uninstall AI Agent Hook Script",
         "category": "SonarQube",
-        "icon": "$(trash)"
+        "icon": "$(trash)",
+        "enablement": "sonarqube.hookScriptSupportedAgent"
       },
       {
-        "command": "SonarLint.OpenHookScript",
-        "title": "Open Hook Script",
+        "command": "SonarLint.OpenAiAgentHookScript",
+        "title": "Open AI Agent Hook Script",
         "category": "SonarQube",
-        "icon": "$(go-to-file)"
+        "icon": "$(go-to-file)",
+        "enablement": "sonarqube.hookScriptSupportedAgent"
       },
       {
-        "command": "SonarLint.OpenHookConfiguration",
-        "title": "Open Hook Configuration File",
+        "command": "SonarLint.OpenAiAgentHookConfiguration",
+        "title": "Open AI Agent Hook Configuration File",
         "category": "SonarQube",
-        "icon": "$(json)"
+        "icon": "$(json)",
+        "enablement": "sonarqube.hookScriptSupportedAgent"
       }
     ],
     "viewsContainers": {

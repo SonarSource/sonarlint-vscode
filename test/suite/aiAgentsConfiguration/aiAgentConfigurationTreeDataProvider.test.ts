@@ -121,7 +121,7 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
       expect(hookItem.label).to.equal('Install Hook for Code Analysis');
       expect(hookItem.isConfigured).to.be.false;
       expect(hookItem.tooltip).to.equal('Automatically analyze code after AI generation');
-      expect(hookItem.command.command).to.equal(Commands.INSTALL_HOOK_SCRIPT);
+      expect(hookItem.command.command).to.equal(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT);
     });
 
     test('should include hook script item when agent with hook support is present and hook is installed', async () => {
@@ -139,7 +139,7 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
       expect(hookItem.label).to.equal('Install Hook for Code Analysis');
       expect(hookItem.isConfigured).to.be.true;
       expect(hookItem.tooltip).to.equal('Automatically analyze code after AI generation • Configured');
-      expect(hookItem.command.command).to.equal(Commands.OPEN_HOOK_SCRIPT);
+      expect(hookItem.command.command).to.equal(Commands.OPEN_AI_AGENT_HOOK_SCRIPT);
     });
 
     test('should not include hook script item when no agent with hook support', async () => {

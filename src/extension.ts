@@ -688,25 +688,25 @@ function registerCommands(context: VSCode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    VSCode.commands.registerCommand(Commands.INSTALL_HOOK_SCRIPT, () => {
+    VSCode.commands.registerCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT, () => {
       const agent = getCurrentAgentWithHookSupport();
       if (agent) {
         installHook(languageClient, agent);
       }
     }),
-    VSCode.commands.registerCommand(Commands.UNINSTALL_HOOK_SCRIPT, () => {
+    VSCode.commands.registerCommand(Commands.UNINSTALL_AI_AGENT_HOOK_SCRIPT, () => {
       const agent = getCurrentAgentWithHookSupport();
       if (agent) {
         uninstallHook(agent);
       }
     }),
-    VSCode.commands.registerCommand(Commands.OPEN_HOOK_SCRIPT, () => {
+    VSCode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_SCRIPT, () => {
       const agent = getCurrentAgentWithHookSupport();
       if (agent) {
         openHookScript(agent);
       }
     }),
-    VSCode.commands.registerCommand(Commands.OPEN_HOOK_CONFIGURATION, () => {
+    VSCode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION, () => {
       const agent = getCurrentAgentWithHookSupport();
       if (agent) {
         openHookConfiguration(agent);
