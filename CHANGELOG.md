@@ -1,3 +1,7 @@
+## 4.36
+
+* Update CFamily analyzer 6.73 -> [6.74](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D23720%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC)
+
 ## 4.35.1
 
 * Platform-specific packages downloaded from OpenVSX marketplace no longer support C# analysis. Download & install packages directly from [our releases page](https://github.com/SonarSource/sonarlint-vscode/releases) to keep C# analysis on non-Microsoft IDEs.
