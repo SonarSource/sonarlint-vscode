@@ -52,4 +52,9 @@ export class IdeLabsFlagManagementService {
     ContextManager.instance.setIdeLabsEnabledContext(false);
   }
 
+  public leaveIdeLabs(): void {
+    this.context.globalState.update(this.IDE_LABS_JOINED_FLAG_KEY, false);
+    ContextManager.instance.setIdeLabsJoinedContext(false);
+    ContextManager.instance.setIdeLabsEnabledContext(false);
+  }
 }

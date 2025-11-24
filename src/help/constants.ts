@@ -99,19 +99,4 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     url: 'https://www.sonarsource.com/company/privacy/',
     viewItem: false
   },
-  {
-    id: 'vcsChangedFilesAnalysisLink',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis/#analyze-changed-files/',
-    viewItem: false
-  },
-  {
-    id: 'mcpIntegrationLink',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server/',
-    viewItem: false
-  },
-  {
-    id: 'dependencyRiskManagementLink',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/dependency-risks/',
-    viewItem: false
-  }
 ];
