@@ -25,7 +25,7 @@ export interface LabsFeature {
 
 export const LABS_FEATURES: LabsFeature[] = [
   {
-    id: 'changedFilesAnalysis',
+    id: 'changed_files_analysis',
     title: 'Analysis of VCS Changed Files',
     description:
       'Trigger analysis on all files changed since the last commit to ensure fewer issues reach your remote repository. This is especially useful if automatic analysis is disabled for your development project.',
@@ -36,7 +36,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     feedbackUrl: 'https://forms.gle/HQQSotdcMhwinTwFA'
   },
   {
-    id: 'aiAgentsIntegration',
+    id: 'ai_agents_integration',
     title: 'AI Agents Integration',
     description: 'Seamlessly integrate AI agents from your favorite IDE with the SonarQube platform. You can automatically configure the SonarQube MCP Server and define a custom rules file for your active agents.',
     imageFile: 'labs/ai_agents_integration.png',
@@ -45,7 +45,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     feedbackUrl: 'https://forms.gle/z37tYGFmYNPBavXJ7'
   },
   {
-    id: 'dependencyRiskManagement',
+    id: 'dependency_risk_management',
     title: 'Dependency Risk Management',
     description: 'Synchronize Software Composition Analysis (SCA) results from SonarQube (Server, Cloud) analysis with your IDE. You can manage and change the status of identified dependency risks directly in the IDE.',
     imageFile: 'labs/dependency_risk_management.png',
@@ -54,7 +54,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     feedbackUrl: 'https://forms.gle/WiTXUuVWE2F8SuRw5'
   },
   {
-    id: 'connectedMode',
+    id: 'connected_mode',
     title: 'Connected Mode',
     description:
       "Link SonarQube for IDE to your SonarQube Server or Cloud projects. This enables broader language analysis, comprehensive issue detection across the whole project, and quality gate status notifications.",
