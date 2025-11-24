@@ -28,6 +28,7 @@ const USE_CONFIGURATION_ACTION = 'Use Configuration';
 const DONT_ASK_AGAIN_ACTION = "Don't Ask Again";
 
 const SOLUTION_FILE_SUFFIX_LENGTH = -4;
+const SLNX_FILE_SUFFIX_LENGTH = -5;
 
 export class SharedConnectedModeSettingsService implements FileSystemSubscriber {
   private static _instance: SharedConnectedModeSettingsService;
@@ -57,11 +58,16 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     if (folderUri && !this.solutionFilesByConfigScope.get(folderUri)) {
       this.solutionFilesByConfigScope.set(folderUri, []);
     }
+
     if (fileName.endsWith('.sln')) {
       const friendlySolutionName = fileName.slice(0, SOLUTION_FILE_SUFFIX_LENGTH);
       this.solutionFilesByConfigScope.get(folderUri).push(friendlySolutionName);
+    } else if (fileName.endsWith('.slnx')) {
+      const friendlySolutionName = fileName.slice(0, SLNX_FILE_SUFFIX_LENGTH);
+      this.solutionFilesByConfigScope.get(folderUri).push(friendlySolutionName);
     }
   }
+
   didRemoveWorkspaceFolder(workspaceFolderUri: vscode.Uri) {
     this.solutionFilesByConfigScope.set(workspaceFolderUri.toString(), []);
   }

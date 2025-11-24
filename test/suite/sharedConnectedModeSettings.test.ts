@@ -85,6 +85,21 @@ suite('Shared Connected Mode service test suite', () => {
     expect(result).to.equal('mySolution.json');
   });
 
+  test('Should name file by solution when one solution in the folder (.slnx format)', async () => {
+    const workspaceFolder1 = vscode.workspace.workspaceFolders[0];
+    const solutionFileName = 'mySolution.slnx';
+    const solutionFileUri = vscode.Uri.file(path.join(workspaceFolder1.uri.fsPath, solutionFileName));
+
+    await vscode.workspace.fs.writeFile(solutionFileUri, new TextEncoder().encode(''));
+    tempFiles.push(solutionFileUri);
+
+    await FileSystemServiceImpl.instance.crawlDirectory(workspaceFolder1.uri);
+
+    const result = await underTest.computeSharedConnectedModeFileName(workspaceFolder1.uri.toString());
+
+    expect(result).to.equal('mySolution.json');
+  });
+
   test('Should propose options when multiple solutions in the folder', async () => {
     const workspaceFolder1 = vscode.workspace.workspaceFolders[0];
     const solutionFileUri1 = vscode.Uri.file(path.join(workspaceFolder1.uri.fsPath, 'mySolution1.sln'));
