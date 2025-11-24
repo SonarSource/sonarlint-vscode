@@ -950,4 +950,13 @@ export namespace ExtendedServer {
   export namespace DumpThreadsNotification {
     export const type = new lsp.NotificationType('sonarlint/dumpThreads');
   }
+
+  export namespace LabsExternalLinkClicked {
+    export const type = new lsp.NotificationType<string>('sonarlint/labsExternalLinkClicked');
+  }
+
+  export namespace LabsFeedbackLinkClicked {
+    export const type = new lsp.NotificationType<string>('sonarlint/labsFeedbackLinkClicked');
+  }
+
 }
