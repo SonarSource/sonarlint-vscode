@@ -32,8 +32,8 @@ const HOOK_SCRIPT_PATTERN = /sonarqube_analysis_hook\.(js|py|sh)$/;
 
 export function getCurrentAgentWithHookSupport(): AGENT | undefined {
   const appName = vscode.env.appName.toLowerCase();
-  // Hooks are only available on windsurf-next (beta) for now
-  if (appName.includes('windsurf') && appName.includes('next')) {
+  // Hooks are available on all Windsurf versions
+  if (appName.includes('windsurf')) {
     return AGENT.WINDSURF;
   }
   return undefined;

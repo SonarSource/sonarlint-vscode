@@ -75,9 +75,9 @@ suite('aiAgentHooks', () => {
       expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
     });
 
-    test('should return undefined for regular Windsurf (not windsurf-next)', () => {
+    test('should return WINDSURF for regular Windsurf', () => {
       envStub.value('Windsurf');
-      expect(getCurrentAgentWithHookSupport()).to.be.undefined;
+      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
     });
 
     test('should return undefined for Cursor (not yet supported)', () => {
