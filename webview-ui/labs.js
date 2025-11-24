@@ -43,7 +43,7 @@ function showSignupView() {
   initSignupView();
 }
 
-function showFeaturesView(showCelebration = false) {
+function showFeaturesView() {
   currentView = 'features';
   const signupView = document.getElementById('signup-view');
   const featuresView = document.getElementById('features-view');
@@ -86,24 +86,11 @@ function initSignupView() {
     });
   }
 
-  // Links
-  const links = {
-    vcsChangedFilesAnalysisLink: 'vcsChangedFilesAnalysisLink',
-    mcpIntegrationLink: 'mcpIntegrationLink',
-    dependencyRiskManagementLink: 'dependencyRiskManagementLink',
-    termsLink: 'earlyAccessTerms',
-    privacyLink: 'privacyNotice'
-  };
-
-  for (const [elementId, linkId] of Object.entries(links)) {
-    const element = document.getElementById(elementId);
-    if (element) {
-      element.addEventListener('click', e => {
-        e.preventDefault();
-        vscode.postMessage({ command: 'openLink', linkId });
-      });
-    }
-  }
+  // Setup help links (Terms, Privacy, Get Help)
+  setupHelpLinks();
+  
+  // Setup learn more links in signup view
+  setupLearnMoreLinks();
 }
 
 function initFeaturesView() {
@@ -144,13 +131,13 @@ function renderFeatures(features) {
             <span class="toggle-icon">›</span>
             <h3 class="feature-title">${escapeHtml(feature.title)}</h3>
           </button>
-          <a href="${escapeHtml(feature.feedbackUrl)}" target="_blank" class="feedback-button">
+          <a href="#" class="feedback-button" data-element-type="feedback-link" data-feature-id="${escapeHtml(feature.id)}">
             Feedback
           </a>
         </div>
         <div class="feature-details" id="feature-details-${index}" hidden>
           <p class="feature-description">${escapeHtml(feature.description)}</p>
-          <a href="${escapeHtml(feature.learnMoreUrl)}" target="_blank" class="learn-more-link">
+          <a href="#" class="learn-more-link" data-element-type="learn-more-link" data-feature-id="${escapeHtml(feature.id)}">
             Learn More
           </a>
         </div>
@@ -160,6 +147,8 @@ function renderFeatures(features) {
   }).join('');
   
   setupFeatureToggles();
+  setupLearnMoreLinks();
+  setupFeedbackLinks();
 }
 
 function renderTag(tag) {
@@ -203,6 +192,46 @@ function setupFeatureToggles() {
         detailsElement.hidden = isExpanded;
         button.classList.toggle('expanded', !isExpanded);
       }
+    });
+  }
+}
+
+function setupLearnMoreLinks() {
+  const learnMoreLinks = document.querySelectorAll('[data-element-type="learn-more-link"]');
+  for (const link of learnMoreLinks) {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      vscode.postMessage({ 
+        command: 'openLearnMoreLink', 
+        featureId: link.dataset.featureId
+      });
+    });
+  }
+}
+
+function setupFeedbackLinks() {
+  const feedbackLinks = document.querySelectorAll('[data-element-type="feedback-link"]');
+  
+  for (const link of feedbackLinks) {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      vscode.postMessage({ 
+        command: 'openFeedbackLink', 
+        featureId: link.dataset.featureId
+      });
+    });
+  }
+}
+
+function setupHelpLinks() {
+  const helpLinks = document.querySelectorAll('[data-element-type="help-link"]');
+  for (const link of helpLinks) {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      vscode.postMessage({ 
+        command: 'openHelpLink', 
+        linkId: link.getAttribute('id')
+      });
     });
   }
 }

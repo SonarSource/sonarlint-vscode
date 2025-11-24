@@ -62,8 +62,14 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
           case 'signup':
             this.handleSignup(message.email);
             break;
-          case 'openLink':
-            this.handleOpenLink(message.linkId);
+          case 'openHelpLink':
+            this.handleOpenHelpLink(message.linkId);
+            break;
+          case 'openFeedbackLink':
+            this.handleOpenFeedbackLink(message.featureId);
+            break;
+          case 'openLearnMoreLink':
+            this.handleOpenLearnMoreLink(message.featureId);
             break;
         }
       },
@@ -112,12 +118,32 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private handleOpenLink(linkId: string) {
+  private handleOpenHelpLink(linkId: string) {
+    // General links that are part of help & feedback - such as terms & privacy docs
     const utmContent = 'ide-labs-signup';
     vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, {
       id: linkId,
       utm: { content: utmContent, term: linkId }
     });
+  }
+
+  private handleOpenFeedbackLink(featureId: string) {
+    // Survey form links for feature feedback
+    const url = LABS_FEATURES.find(feature => feature.id === featureId)?.feedbackUrl;
+    
+    if (url) {
+      this.languageClient.labsFeedbackLinkClicked(featureId);
+      vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(url));
+    }
+  }
+
+  private handleOpenLearnMoreLink(featureId: string) {
+    const url = LABS_FEATURES.find(feature => feature.id === featureId)?.learnMoreUrl;
+    
+    if (url) {
+      this.languageClient.labsExternalLinkClicked(featureId);
+      vscode.commands.executeCommand(Commands.OPEN_BROWSER, vscode.Uri.parse(url));
+    }
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {
