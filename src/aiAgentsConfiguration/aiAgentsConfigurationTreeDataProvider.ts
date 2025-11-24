@@ -11,12 +11,14 @@ import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import { Commands } from '../util/commands';
 import { getCurrentAgentWithMCPSupport } from './aiAgentUtils';
+import { getCurrentAgentWithHookSupport, isHookInstalled } from './aiAgentHooks';
 
 export class AIAgentsConfigurationItem extends VSCode.TreeItem {
   constructor(
     public readonly id: string,
     public readonly label: string,
     public readonly isConfigured: boolean,
+    public readonly baseIcon: string,
     public readonly tooltipText?: string,
     public readonly configureCommand?: string,
     public readonly reconfigureCommand?: string
@@ -42,9 +44,9 @@ export class AIAgentsConfigurationItem extends VSCode.TreeItem {
 
   private getStatusIcon(): VSCode.ThemeIcon {
     if (this.isConfigured) {
-      return new VSCode.ThemeIcon('check', new VSCode.ThemeColor('testing.iconPassed'));
+      return new VSCode.ThemeIcon('pass', new VSCode.ThemeColor('debugIcon.pauseForeground'));
     }
-    return new VSCode.ThemeIcon('circle-large-outline', new VSCode.ThemeColor('testing.iconQueued'));
+    return new VSCode.ThemeIcon(this.baseIcon);
   }
 }
 
@@ -63,11 +65,13 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
 
     const items: AIAgentsConfigurationItem[] = [];
     const isSupportingMCP = getCurrentAgentWithMCPSupport();
+    const agentWithHookSupport = getCurrentAgentWithHookSupport();
 
     const sonarQubeMCPServerConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
     const rulesFileConfigured = await isSonarQubeRulesFileConfigured();
+    const hookScriptInstalled = agentWithHookSupport ? await isHookInstalled(agentWithHookSupport) : false;
 
-    if (!sonarQubeMCPServerConfigured && !rulesFileConfigured) {
+    if (!sonarQubeMCPServerConfigured && !rulesFileConfigured && !isSupportingMCP && !agentWithHookSupport) {
       return [];
     }
 
@@ -76,6 +80,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
         'mcpServer',
         'Configure SonarQube MCP Server',
         sonarQubeMCPServerConfigured,
+        'link',
         'AI agent integration',
         Commands.CONFIGURE_MCP_SERVER,
         Commands.OPEN_MCP_SERVER_CONFIGURATION
@@ -88,9 +93,24 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
           'rulesFile',
           'Create Instructions for AI agents',
           rulesFileConfigured,
+          'file-code',
           'SonarQube MCP Server guide',
           Commands.INTRODUCE_SONARQUBE_RULES_FILE,
           Commands.OPEN_SONARQUBE_RULES_FILE
+        )
+      );
+    }
+
+    if (agentWithHookSupport) {
+      items.push(
+        new AIAgentsConfigurationItem(
+          'hookScript',
+          'Install Hook for Code Analysis',
+          hookScriptInstalled,
+          'zap',
+          'Automatically analyze code after AI generation',
+          Commands.INSTALL_AI_AGENT_HOOK_SCRIPT,
+          Commands.OPEN_AI_AGENT_HOOK_SCRIPT
         )
       );
     }

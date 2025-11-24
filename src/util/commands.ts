@@ -53,6 +53,10 @@ export namespace Commands {
   export const OPEN_MCP_SERVER_CONFIGURATION = 'SonarLint.OpenMCPServerConfiguration';
   export const INTRODUCE_SONARQUBE_RULES_FILE = 'SonarLint.IntroduceSonarQubeRulesFile';
   export const OPEN_SONARQUBE_RULES_FILE = 'SonarLint.OpenSonarQubeRulesFile';
+  export const INSTALL_AI_AGENT_HOOK_SCRIPT = 'SonarLint.InstallAiAgentHookScript';
+  export const UNINSTALL_AI_AGENT_HOOK_SCRIPT = 'SonarLint.UninstallAiAgentHookScript';
+  export const OPEN_AI_AGENT_HOOK_SCRIPT = 'SonarLint.OpenAiAgentHookScript';
+  export const OPEN_AI_AGENT_HOOK_CONFIGURATION = 'SonarLint.OpenAiAgentHookConfiguration';
   export const REFRESH_AI_AGENTS_CONFIGURATION = 'SonarLint.RefreshAIAgentsConfiguration';
   export const OPEN_AIAGENTS_CONFIGURATION_DOC = 'SonarLint.OpenAIAgentsConfigurationDoc';
 

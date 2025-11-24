@@ -748,6 +748,22 @@ export namespace ExtendedServer {
     export const type = new lsp.RequestType<string, GetMCPRulesFileContentResponse, null>('sonarlint/getMCPRuleFileContent');
   }
 
+export interface HookScript {
+  content: string;
+  fileName: string;
+}
+
+export interface GetHookScriptContentResponse {
+  scriptContent: string;
+  scriptFileName: string;
+  configContent: string;
+  configFileName: string;
+}
+
+  export namespace GetAiAgentHookScriptContent {
+    export const type = new lsp.RequestType<string, GetHookScriptContentResponse, null>('sonarlint/getAiAgentHookScriptContent');
+  }
+
   export namespace ReopenResolvedLocalIssues {
     export const type = new lsp.NotificationType<ReopenAllIssuesForFileParams>('sonarlint/reopenResolvedLocalIssues');
   }

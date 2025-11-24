@@ -703,6 +703,34 @@
         "category": "SonarQube",
         "icon": "$(file-text)",
         "enablement": "sonarqube.mcpServerSupportedAgent"
+      },
+      {
+        "command": "SonarLint.InstallAiAgentHookScript",
+        "title": "Install Hook for Code Analysis",
+        "category": "SonarQube",
+        "icon": "$(symbol-event)",
+        "enablement": "sonarqube.hookScriptSupportedAgent"
+      },
+      {
+        "command": "SonarLint.UninstallAiAgentHookScript",
+        "title": "Uninstall AI Agent Hook Script",
+        "category": "SonarQube",
+        "icon": "$(trash)",
+        "enablement": "sonarqube.hookScriptSupportedAgent"
+      },
+      {
+        "command": "SonarLint.OpenAiAgentHookScript",
+        "title": "Open AI Agent Hook Script",
+        "category": "SonarQube",
+        "icon": "$(go-to-file)",
+        "enablement": "sonarqube.hookScriptSupportedAgent"
+      },
+      {
+        "command": "SonarLint.OpenAiAgentHookConfiguration",
+        "title": "Open AI Agent Hook Configuration File",
+        "category": "SonarQube",
+        "icon": "$(json)",
+        "enablement": "sonarqube.hookScriptSupportedAgent"
       }
     ],
     "viewsContainers": {
@@ -1374,7 +1402,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.5.0.77841",
+      "version": "4.6.0.77866",
       "output": "server/sonarlint-ls.jar"
     },
     {
