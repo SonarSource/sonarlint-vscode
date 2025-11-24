@@ -6,6 +6,7 @@
 * Update Python analyzer 5.12 -> [5.13](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2024646%20ORDER%20BY%20created%20ASC)
 * Update PHP analyzer 3.51 -> [3.52](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2024382%20ORDER%20BY%20created%20ASC)
 * Update Go analyzer 1.29 -> [1.30](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2024578%20ORDER%20BY%20created%20ASC)
+* Update Text & Secrets analyzer 2.32 -> [2.33](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2024845%20ORDER%20BY%20created%20ASC)
 
 ## 4.35.1
 
