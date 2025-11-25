@@ -795,7 +795,7 @@
         },
         {
           "id": "SonarQube.Labs",
-          "name": "Labs",
+          "name": "SonarQube for IDE Labs",
           "icon": "$(beaker)",
           "type": "webview"
         }
