@@ -18,106 +18,49 @@ h1 {
     color: var(--vscode-foreground);
 }
 
-.hero-section {
+.logo-container {
     display: flex;
-    gap: 16px;
-    margin-bottom: 20px;
-    align-items: flex-start;
+    justify-content: flex-start;
+    align-items: center;
 }
 
-.mascot {
-    width: 130px;
-    height: 130px;
-    line-height: 1;
-    animation: float 3s ease-in-out infinite;
-}
-
-.mascot img {
+.logo-container img {
+    max-width: 400px;
     width: 100%;
-    height: 100%;
+    height: auto;
     display: block;
 }
 
-@keyframes float {
-    0%, 100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
+.features-feedback {
+    margin-bottom: 20px;
 }
 
-.features-box {
-    flex: 1;
-    background: var(--vscode-editor-background);
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: 4px;
-    padding: 12px;
-    position: relative;
-}
-
-.features-box::before {
-    content: '';
-    position: absolute;
-    left: -8px;
-    top: 20px;
-    width: 0;
-    height: 0;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-    border-right: 8px solid var(--vscode-panel-border);
-}
-
-.features-box::after {
-    content: '';
-    position: absolute;
-    left: -7px;
-    top: 20px;
-    width: 0;
-    height: 0;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-    border-right: 8px solid var(--vscode-editor-background);
-}
-
-.features-box h2 {
+.features-label {
     font-size: var(--vscode-font-size);
-    font-weight: 600;
-    margin: 0 0 8px 0;
-    color: var(--vscode-foreground);
+    line-height: 1.5;
+    color: var(--vscode-descriptionForeground);
+    margin: 0;
 }
 
-.features-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 8px 0;
-}
-
-.features-list li {
-    margin: 4px 0;
-}
-
-.features-list a {
+.features-label a {
     color: var(--vscode-textLink-foreground);
     text-decoration: none;
     cursor: pointer;
 }
 
-.features-list a:hover {
+.features-label a:hover {
     text-decoration: underline;
-}
-
-.features-more {
-    font-size: calc(var(--vscode-font-size) - 1px);
-    color: var(--vscode-descriptionForeground);
-    margin: 0;
 }
 
 .description {
     line-height: 1.5;
-    margin-bottom: 20px;
     color: var(--vscode-descriptionForeground);
     font-size: var(--vscode-font-size);
+}
+
+.divider {
+    border: none;
+    border-top: 2px solid var(--vscode-panel-border);
 }
 
 .input-group {
