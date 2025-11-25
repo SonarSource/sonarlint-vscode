@@ -24,6 +24,21 @@ if (document.readyState === 'loading') {
 }
 window.addEventListener('message', handleMessage);
 
+function updateLogoForTheme() {
+  const logo = document.getElementById('labsLogo');
+  if (!logo) {
+    return;
+  }
+
+  const {lightSrc, darkSrc} = logo.dataset;
+  
+  // Check if IDE is using a dark theme
+  const isDarkTheme = document.body.classList.contains('vscode-dark') || 
+                      document.body.classList.contains('vscode-high-contrast');
+  
+  logo.src = isDarkTheme ? darkSrc : lightSrc;
+}
+
 function init() {
   console.log('Labs view initializing...');
   vscode.postMessage({ command: 'ready' });
@@ -63,6 +78,8 @@ function initSignupView() {
   successMessageElement = document.getElementById('successMessage');
   emailInput = document.getElementById('email');
   joinBtn = document.getElementById('joinBtn');
+
+  updateLogoForTheme();
 
   // Clear error when user starts typing
   if (emailInput) {
@@ -322,6 +339,9 @@ function handleMessage(event) {
       if (currentView === 'features' && labsFeatures.length > 0) {
         renderFeatures(labsFeatures);
       }
+      break;
+    case 'themeChanged':
+      updateLogoForTheme();
       break;
   }
 }
