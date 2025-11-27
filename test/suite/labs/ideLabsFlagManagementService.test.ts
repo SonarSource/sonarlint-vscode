@@ -9,8 +9,8 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
-import { IdeLabsFlagManagementService } from '../../src/labs/ideLabsFlagManagementService';
-import { ContextManager } from '../../src/contextManager';
+import { IdeLabsFlagManagementService } from '../../../src/labs/ideLabsFlagManagementService';
+import { ContextManager } from '../../../src/contextManager';
 
 suite('IdeLabsFlagManagementService', () => {
   let context: vscode.ExtensionContext;
@@ -18,8 +18,8 @@ suite('IdeLabsFlagManagementService', () => {
   let globalStateUpdateStub: sinon.SinonStub;
   let setIdeLabsJoinedContextStub: sinon.SinonStub;
   let setIdeLabsEnabledContextStub: sinon.SinonStub;
-  let configurationStub: sinon.SinonStub;
   let configurationUpdateStub: sinon.SinonStub;
+  let configurationGetStub: sinon.SinonStub;
 
   setup(() => {
     globalStateGetStub = sinon.stub().returns(false);
@@ -28,9 +28,10 @@ suite('IdeLabsFlagManagementService', () => {
     IdeLabsFlagManagementService.init(context);
     setIdeLabsJoinedContextStub = sinon.stub(ContextManager.instance, 'setIdeLabsJoinedContext');
     setIdeLabsEnabledContextStub = sinon.stub(ContextManager.instance, 'setIdeLabsEnabledContext');
+    configurationGetStub = sinon.stub().returns(false);
     configurationUpdateStub = sinon.stub().returns(Promise.resolve());
-    configurationStub = sinon.stub(vscode.workspace, 'getConfiguration').returns({
-      get: sinon.stub().returns(false),
+    sinon.stub(vscode.workspace, 'getConfiguration').returns({
+      get: configurationGetStub,
       update: configurationUpdateStub
     } as unknown as vscode.WorkspaceConfiguration);
   });
@@ -59,5 +60,14 @@ suite('IdeLabsFlagManagementService', () => {
     expect(configurationUpdateStub.calledWith('ideLabsEnabled', false, vscode.ConfigurationTarget.Global)).to.be.true;
     expect(setIdeLabsEnabledContextStub.calledWith(false)).to.be.true;
     expect(globalStateUpdateStub.notCalled).to.be.true;
+  });
+
+  test('isIdeLabsEnabled returns false if IDE Labs is not joined but enabled', () => {
+    globalStateGetStub.withArgs('sonarqube.ideLabsJoined').returns(false);
+    configurationGetStub.returns(true);
+
+    const enabled = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
+
+    expect(enabled).to.be.false;
   });
 });

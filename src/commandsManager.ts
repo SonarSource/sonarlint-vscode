@@ -187,6 +187,10 @@ export class CommandsManager {
       }),
       vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
         const workspaceFolderUris = vscode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));
+        if (!workspaceFolderUris) {
+          vscode.window.showWarningMessage('No workspace folders found; Ignoring request to analyze VCS changed files.');
+          return;
+        }
         this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
           configScopeIds: workspaceFolderUris
         });
