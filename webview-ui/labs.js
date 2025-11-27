@@ -138,9 +138,7 @@ function renderFeatures(features) {
           ${feature.tags.map(tag => renderTag(tag)).join('')}
         </div>
         <img src="${escapeHtml(feature.imageUrl)}" 
-             alt="${escapeHtml(feature.title)}" 
-             class="clickable-image"
-             data-full-image="${escapeHtml(feature.imageUrl)}" />
+             alt="${escapeHtml(feature.title)}" />
       </div>
       <div class="feature-content">
         <div class="feature-header">
