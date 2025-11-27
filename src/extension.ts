@@ -10,7 +10,6 @@
 import { MonitoringService } from './monitoring/monitoring';
 
 import * as ChildProcess from 'node:child_process';
-import { DateTime } from 'luxon';
 import * as Path from 'node:path';
 import * as VSCode from 'vscode';
 import { LanguageClientOptions, StreamInfo } from 'vscode-languageclient/node';

@@ -4,10 +4,10 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as assert from 'assert';
-import * as FS from 'fs';
-import * as path from 'path';
-import * as os from 'os';
+import * as assert from 'node:assert';
+import * as FS from 'node:fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
 import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
@@ -61,27 +61,28 @@ suite('Extension Test Suite', () => {
 
     assert.strictEqual(notIgnored, false);
   }).timeout(60 * 1000);
-
-  async function checkSonarLintDiagnostics(fileUri: vscode.Uri) {
-    const document = await vscode.workspace.openTextDocument(fileUri);
-    await vscode.window.showTextDocument(document);
-
-    const diags = await waitForSonarLintDiagnostics(fileUri);
-
-    assert.strictEqual(diags.length, 2);
-    assert.strictEqual(diags[0].message, 'Remove the declaration of the unused \'i\' variable.');
-    assert.strictEqual(diags[1].message, 'Unexpected var, use let or const instead.');
-  }
-
-  async function waitForSonarLintDiagnostics(fileUri) {
-    let diags = getSonarLintDiagnostics(fileUri);
-    while (diags.length == 0) {
-      await sleep(200);
-      diags = getSonarLintDiagnostics(fileUri);
-    }
-    return diags;
-  }
 });
-function getSonarLintDiagnostics(fileUri: any) {
-  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source == 'sonarqube');
+
+async function checkSonarLintDiagnostics(fileUri: vscode.Uri) {
+  const document = await vscode.workspace.openTextDocument(fileUri);
+  await vscode.window.showTextDocument(document);
+
+  const diags = await waitForSonarLintDiagnostics(fileUri);
+
+  assert.strictEqual(diags.length, 2);
+  assert.strictEqual(diags[0].message, 'Remove the declaration of the unused \'i\' variable.');
+  assert.strictEqual(diags[1].message, 'Unexpected var, use let or const instead.');
+}
+
+async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
+  let diags = getSonarLintDiagnostics(fileUri);
+  while (diags.length === 0) {
+    await sleep(200);
+    diags = getSonarLintDiagnostics(fileUri);
+  }
+  return diags;
+}
+
+function getSonarLintDiagnostics(fileUri: vscode.Uri) {
+  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source === 'sonarqube');
 }
