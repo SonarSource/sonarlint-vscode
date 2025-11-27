@@ -105,17 +105,6 @@ input[type="email"]::placeholder {
     background: var(--vscode-button-hoverBackground);
 }
 
-button.success {
-    animation: .2s linear success;
-    animation-fill-mode: forwards;
-}
-  
-@keyframes success { 
-    from { width: 120px; }
-    50% { width: 170px; }
-    to { width: 120px; } 
-}
-
 .legal-text {
     font-size: calc(var(--vscode-font-size) - 2px);
     line-height: 1.4;
@@ -159,7 +148,7 @@ button.success {
     height: 14px;
     margin-right: 8px;
     border: 2px solid var(--vscode-button-foreground);
-    border-top-color: var(--vscode-button-foreground);
+    border-top-color: transparent;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
