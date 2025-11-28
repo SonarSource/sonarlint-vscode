@@ -545,6 +545,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, (params) => {
     onEmbeddedServerStarted(params.port);
   });
+  languageClient.onRequest(ExtendedClient.HasJoinedIdeLabs.type, () => {
+    return IdeLabsFlagManagementService.instance.isIdeLabsJoined();
+  });
 }
 
 function updateFindingsViewContainerBadge() {

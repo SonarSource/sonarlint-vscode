@@ -491,6 +491,10 @@ export namespace ExtendedClient {
   export namespace EmbeddedServerStartedNotification {
     export const type = new lsp.NotificationType<EmbeddedServerStartedParams>('sonarlint/embeddedServerStarted');
   }
+
+  export namespace HasJoinedIdeLabs {
+    export const type = new lsp.RequestType<void, boolean, null>('sonarlint/hasJoinedIdeLabs');
+  }
 }
 
 /**
