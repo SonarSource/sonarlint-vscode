@@ -10,6 +10,7 @@
 export enum FeatureTag {
   STABLE = 'stable',
   EXPERIMENTAL = 'experimental',
+  NEW = 'new',
   CONNECTED_MODE = 'connected-mode'
 }
 
@@ -40,7 +41,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     title: 'AI Agents Integration',
     description: 'Seamlessly integrate AI agents from your favorite IDE with the SonarQube platform. You can automatically configure the SonarQube MCP Server and define a custom rules file for your active agents.',
     imageFile: 'labs/ai_agents_integration.png',
-    tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
+    tags: [FeatureTag.NEW, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server/',
     feedbackUrl: 'https://forms.gle/z37tYGFmYNPBavXJ7'
   },
