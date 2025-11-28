@@ -126,6 +126,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetSharedConnectedModeConfigFileContents.type, { configScopeId });
   }
 
+  joinIdeLabsProgram(email: string, ide: string): Promise<ExtendedServer.JoinIdeLabsProgramResponse> {
+    return this.sendRequest(ExtendedServer.JoinIdeLabsProgram.type, { email, ide });
+  }
+
   getMCPServerConfiguration(connectionId: string, token: string): Promise<ExtendedServer.GetMCPServerConfigurationResponse> {
     return this.sendRequest(ExtendedServer.GetMCPServerConfiguration.type, { connectionId, token });
   }
@@ -225,5 +229,13 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   dumpThreads(): Promise<void> {
     return this.sendNotification(ExtendedServer.DumpThreadsNotification.type);
+  }
+
+  labsExternalLinkClicked(linkId: string) {
+    this.sendNotification(ExtendedServer.LabsExternalLinkClicked.type, linkId);
+  }
+
+  labsFeedbackLinkClicked(featureId: string) {
+    this.sendNotification(ExtendedServer.LabsFeedbackLinkClicked.type, featureId);
   }
 }

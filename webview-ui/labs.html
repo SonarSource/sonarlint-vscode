@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; img-src {{cspSource}} https: data:; script-src {{cspSource}}"
+    />
+    <link rel="stylesheet" type="text/css" href="{{styleSrc}}" />
+    <title>SonarQube for IDE Labs</title>
+  </head>
+  <body>
+    <!-- Signup View -->
+    <div id="signup-view" class="view-container">
+      <h1>Be a Sonar Insider</h1>
+
+      <div class="logo-container">
+        <img id="labsLogo" src="{{ideLabsLogoLightSrc}}" alt="SonarQube ide labs" data-light-src="{{ideLabsLogoLightSrc}}" data-dark-src="{{ideLabsLogoDarkSrc}}" />
+      </div>
+
+      <p class="description">
+        Get early access to our newest features and help shape the future of SonarQube for IDE. Sign up for our Labs program to test
+        new functionality and provide feedback directly to our team.
+      </p>
+
+      <hr class="divider" />
+
+      <div class="features-feedback">
+        <p class="features-label"><b>Features for Feedback:</b> <a href="#" data-element-type="learn-more-link" data-feature-id="dependency_risk_management">Dependency Risk Management</a>, <a href="#" data-element-type="learn-more-link" data-feature-id="changed_files_analysis">Analysis of VCS Changed Files</a>, <a href="#" data-element-type="learn-more-link" data-feature-id="ai_agents_integration">AI Agents Integration</a>, <a href="#" data-element-type="learn-more-link" data-feature-id="connected_mode">Connected Mode</a></p>
+      </div>
+
+      <div class="input-group">
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        <div id="successMessage" class="success-message" style="display: none;"></div>
+        <input type="email" id="email" placeholder="Enter your email" />
+      </div>
+
+      <button id="joinBtn" class="join-button">
+        <span class="button-text">Join SonarQube for IDE Labs</span>
+      </button>
+
+      <p class="legal-text">
+        By selecting "Join SonarQube for IDE Labs", you agree to take part in SonarQube for IDE Labs activities and
+        accept the SonarQube Cloud
+        <a href="#" data-element-type="help-link" id="earlyAccessTerms">Terms of Service</a> and
+        <a href="#" data-element-type="help-link" id="privacyNotice">Privacy Policy</a>
+      </p>
+    </div>
+
+    <!-- Features View -->
+    <div id="features-view" class="view-container labs-main-view">
+      <div class="labs-header">
+        <h1>
+          SonarQube for IDE Labs <span class="feature-count">({{featureCount}} features ready for feedback)</span>
+        </h1>
+      </div>
+
+      <div class="features-grid">
+        <!-- Features will be dynamically rendered here -->
+      </div>
+
+      <div class="labs-footer">
+        <p>
+          Help us improve! Share issues, ideas or feedback on
+          <a href="#" data-element-type="help-link" id="getHelp">Sonar Community</a>
+        </p>
+      </div>
+    </div>
+
+    <script src="{{canvasConfettiSrc}}"></script>
+    <script src="{{confettiSrc}}"></script>
+    <script src="{{scriptSrc}}"></script>
+  </body>
+</html>

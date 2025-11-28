@@ -88,5 +88,15 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     id: 'aiAgentsConfigurationDoc',
     url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server',
     viewItem: false
-  }
+  },
+  {
+    id: 'earlyAccessTerms',
+    url: 'https://www.sonarsource.com/legal/early-access/',
+    viewItem: false
+  },
+  {
+    id: 'privacyNotice',
+    url: 'https://www.sonarsource.com/company/privacy/',
+    viewItem: false
+  },
 ];

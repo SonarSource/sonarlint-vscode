@@ -491,6 +491,10 @@ export namespace ExtendedClient {
   export namespace EmbeddedServerStartedNotification {
     export const type = new lsp.NotificationType<EmbeddedServerStartedParams>('sonarlint/embeddedServerStarted');
   }
+
+  export namespace HasJoinedIdeLabs {
+    export const type = new lsp.RequestType<void, boolean, null>('sonarlint/hasJoinedIdeLabs');
+  }
 }
 
 /**
@@ -731,6 +735,20 @@ export namespace ExtendedServer {
       new lsp.RequestType<GetSharedConnectedModeConfigFileParams, GetSharedConnectedModeConfigFileResponse, null>("sonarlint/getSharedConnectedModeFileContent")
   }
 
+  export interface JoinIdeLabsProgramParams {
+    email: string;
+    ide: string;
+  }
+
+  export interface JoinIdeLabsProgramResponse {
+    success: boolean;
+    message: string;
+  }
+
+  export namespace JoinIdeLabsProgram {
+    export const type = new lsp.RequestType<JoinIdeLabsProgramParams, JoinIdeLabsProgramResponse, null>('sonarlint/joinIdeLabsProgram');
+  }
+
   export interface GetMCPServerConfigurationParams {
     connectionId: string;
     token: string;
@@ -884,6 +902,14 @@ export interface GetHookScriptContentResponse {
     );
   }
 
+  export interface AnalyzeVCSChangedFilesParams {
+    configScopeIds: string[];
+  }
+
+  export namespace AnalyzeVCSChangedFiles {
+    export const type = new lsp.NotificationType<AnalyzeVCSChangedFilesParams>('sonarlint/analyzeVCSChangedFiles');
+  }
+
   export enum BindingCreationMode {
     AUTOMATIC,
     IMPORTED,
@@ -950,4 +976,13 @@ export interface GetHookScriptContentResponse {
   export namespace DumpThreadsNotification {
     export const type = new lsp.NotificationType('sonarlint/dumpThreads');
   }
+
+  export namespace LabsExternalLinkClicked {
+    export const type = new lsp.NotificationType<string>('sonarlint/labsExternalLinkClicked');
+  }
+
+  export namespace LabsFeedbackLinkClicked {
+    export const type = new lsp.NotificationType<string>('sonarlint/labsFeedbackLinkClicked');
+  }
+
 }

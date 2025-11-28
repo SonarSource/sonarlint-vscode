@@ -23,6 +23,7 @@ const FLIGHT_RECORDER_RUNNING = 'sonarqube.flightRecorderRunning';
 const MCP_SERVER_SUPPORTED_AGENT = 'sonarqube.mcpServerSupportedAgent';
 const HOOK_SCRIPT_SUPPORTED_AGENT = 'sonarqube.hookScriptSupportedAgent';
 const IDE_LABS_ENABLED_FLAG_KEY = 'sonarqube.ideLabsEnabled';
+const IDE_LABS_JOINED_FLAG_KEY = 'sonarqube.ideLabsJoined';
 const COPILOT_ACTIVATION_DELAY_MS = 10000;
 
 export class ContextManager {
@@ -86,11 +87,17 @@ export class ContextManager {
   }
 
   initializeIdeLabsContext() {
+    const joined = IdeLabsFlagManagementService.instance.isIdeLabsJoined();
+    this.setIdeLabsJoinedContext(joined);
     const enabled = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
-    this.setIdeLabsContext(enabled);
+    this.setIdeLabsEnabledContext(enabled);
   }
 
-  setIdeLabsContext(enabled: boolean) {
+  setIdeLabsJoinedContext(joined: boolean) {
+    vscode.commands.executeCommand('setContext', IDE_LABS_JOINED_FLAG_KEY, joined);
+  }
+
+  setIdeLabsEnabledContext(enabled: boolean) {
     vscode.commands.executeCommand('setContext', IDE_LABS_ENABLED_FLAG_KEY, enabled);
   }
 

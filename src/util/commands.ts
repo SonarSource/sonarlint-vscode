@@ -79,6 +79,7 @@ export namespace Commands {
   export const CHANGE_HOTSPOT_STATUS = 'SonarLint.ChangeHotspotStatus';
   export const ENABLE_VERBOSE_LOGS = 'SonarLint.EnableVerboseLogs';
   export const ANALYSE_OPEN_FILE = 'SonarLint.AnalyseOpenFile';
+  export const ANALYZE_VCS_CHANGED_FILES = 'SonarLint.AnalyzeVCSChangedFiles';
   export const NEW_CODE_DEFINITION = 'SonarLint.NewCodeDefinition';
   export const AUTO_BIND_WORKSPACE_FOLDERS = 'SonarLint.AutoBindWorkspaceFolders';
 
@@ -101,4 +102,7 @@ export namespace Commands {
   export const SHOW_HIGH_SEVERITY_ONLY = 'SonarQube.ShowHighSeverityOnly';
   export const SHOW_CURRENT_FILE_ONLY = 'SonarQube.ShowCurrentFileOnly';
   export const CHANGE_DEPENDENCY_RISK_STATUS = 'SonarLint.ChangeDependencyRiskStatus';
+
+  export const ENABLE_LABS = 'SonarQube.EnableLabs';
+  export const DISABLE_LABS = 'SonarQube.DisableLabs';
 }
