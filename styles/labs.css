@@ -267,6 +267,12 @@ input[type="email"]::placeholder {
     color: #7934c7;
 }
 
+.feature-tag-new {
+    background: #FEF5D0;
+    border: 1px solid #8C5E1E;
+    color: #8C5E1E;
+}
+
 .feature-tag-connected-mode {
     background: #f5fbff;
     border: 1px solid #316c92;
