@@ -151,8 +151,6 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
     const templatePath = util.resolveExtensionFile(WEBVIEW_UI_DIR, 'labs.html');
     const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
 
-    this._resolver = new ResourceResolver(this.extensionContext, webview);
-
     const styleSrc = this._resolver.resolve('styles', 'labs.css');
     const canvasConfettiSrc = this._resolver.resolve('node_modules', 'canvas-confetti', 'dist', 'confetti.browser.js');
     const confettiSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'confetti.js');
