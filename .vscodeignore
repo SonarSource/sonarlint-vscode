@@ -9,6 +9,7 @@ src/
 tsconfig.json
 node_modules
 !node_modules/@vscode/webview-ui-toolkit/dist/toolkit.min.js
+!node_modules/canvas-confetti/dist/confetti.browser.js
 webpack.config.js
 sonarlint-vscode.code-workspace
 coverage/
