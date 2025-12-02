@@ -164,6 +164,7 @@ function renderFeatures(features) {
   setupFeatureToggles();
   setupLearnMoreLinks();
   setupFeedbackLinks();
+  setupHelpLinks();
 }
 
 function renderTag(tag) {
@@ -228,7 +229,6 @@ function setupLearnMoreLinks() {
 
 function setupFeedbackLinks() {
   const feedbackLinks = document.querySelectorAll('[data-element-type="feedback-link"]');
-  
   for (const link of feedbackLinks) {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -247,7 +247,7 @@ function setupHelpLinks() {
       e.preventDefault();
       vscode.postMessage({ 
         command: 'openHelpLink', 
-        linkId: link.getAttribute('id')
+        linkId: link.dataset.linkId
       });
     });
   }
