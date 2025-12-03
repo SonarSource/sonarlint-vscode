@@ -11,7 +11,7 @@ import { assert, expect } from 'chai';
 import { SONARLINT_CATEGORY } from '../../../src/settings/settings';
 import * as sinon from 'sinon';
 import { SetUpConnectedModeTool } from '../../../src/languageModelTools/setUpConnectedModeTool';
-import { ExtendedServer } from '../../../src/lsp/protocol';
+import { BindingSuggestionOrigin, ExtendedServer } from '../../../src/lsp/protocol';
 import * as connectionSetup from '../../../src/connected/connectionsetup';
 import { Commands } from '../../../src/util/commands';
 
@@ -62,7 +62,7 @@ const mockClient = {
             projectKey: 'myProject',
             region: 0
           },
-          isFromSharedConfiguration: true
+          origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
         }
       ]
     };

@@ -17,6 +17,7 @@ import * as path from 'path';
 import { selectFirstQuickPickItem } from './commons';
 import { sleep } from '../testutil';
 import { deduplicateSuggestions } from '../../src/util/connectionSuggestionUtils';
+import { BindingSuggestionOrigin } from '../../src/lsp/protocol';
 
 const SHARED_CONNECTED_MODE_FILE_CONTENT = '{\n'
  + '    "sonarCloudOrganization": "sonarsource",\n'
@@ -151,28 +152,28 @@ suite('Shared Connected Mode service test suite', () => {
           serverUrl: 'localhost:9000',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: true
+        origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
       },
       {
         connectionSuggestion: {
           serverUrl: 'localhost:9000',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: true
+        origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
       },
       {
         connectionSuggestion: {
           organization: 'myOrg',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: true
+        origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
       },
       {
         connectionSuggestion: {
           serverUrl: 'localhost:9090',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: true
+        origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
       }
     ];
 
@@ -187,28 +188,28 @@ suite('Shared Connected Mode service test suite', () => {
           serverUrl: 'localhost:9000',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: false
+        origin: BindingSuggestionOrigin.PROJECT_NAME
       },
       {
         connectionSuggestion: {
           serverUrl: 'localhost:9000',
           projectKey: 'myProject212'
         },
-        isFromSharedConfiguration: false
+        origin: BindingSuggestionOrigin.PROJECT_NAME
       },
       {
         connectionSuggestion: {
           organization: 'myOrg',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: false
+        origin: BindingSuggestionOrigin.PROJECT_NAME
       },
       {
         connectionSuggestion: {
           serverUrl: 'localhost:9090',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: false
+        origin: BindingSuggestionOrigin.PROJECT_NAME
       }
     ];
 
@@ -222,28 +223,28 @@ suite('Shared Connected Mode service test suite', () => {
           organization: 'myOrg',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: true
+        origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
       },
       {
         connectionSuggestion: {
           organization: 'myOrg',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: true
+        origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
       },
       {
         connectionSuggestion: {
           organization: 'myOrg',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: true
+        origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
       },
       {
         connectionSuggestion: {
           organization: 'myOrg',
           projectKey: 'myProject'
         },
-        isFromSharedConfiguration: true
+        origin: BindingSuggestionOrigin.SHARED_CONFIGURATION
       }
     ];
 

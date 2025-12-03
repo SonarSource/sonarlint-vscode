@@ -11,8 +11,7 @@ import { BindingService } from './binding';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import {
   BindingSuggestion,
-  ExtendedClient,
-  ExtendedServer
+  ExtendedClient
 } from '../lsp/protocol';
 import { DEFAULT_CONNECTION_ID, SonarLintDocumentation } from '../commons';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
@@ -267,14 +266,10 @@ export class AutoBindingService implements FileSystemSubscriber {
       CHOOSE_MANUALLY_ACTION,
       DONT_ASK_AGAIN_ACTION
     );
-    const bindingCreationMode = bindingSuggestion.isFromSharedConfiguration ?
-      ExtendedServer.BindingCreationMode.IMPORTED :
-      ExtendedServer.BindingCreationMode.AUTOMATIC;
 
     switch (result) {
       case BIND_ACTION:
-        await this.bindingService.saveBinding(
-          bindingSuggestion.sonarProjectKey, unboundFolder, bindingCreationMode, bindingSuggestion.connectionId);
+        await this.bindingService.saveSuggestedBinding(bindingSuggestion.sonarProjectKey, unboundFolder, bindingSuggestion.origin, bindingSuggestion.connectionId);
         break;
       case CHOOSE_MANUALLY_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();

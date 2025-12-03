@@ -17,7 +17,7 @@ import {
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from '../../src/connected/connections';
-import { ExtendedClient, ConnectionCheckResult } from '../../src/lsp/protocol';
+import { ExtendedClient, ExtendedServer, ConnectionCheckResult } from '../../src/lsp/protocol';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 import { sleep } from '../testutil';
 import { SharedConnectedModeSettingsService } from '../../src/connected/sharedConnectedModeSettingsService';
@@ -58,7 +58,10 @@ const mockClient = {
   async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<ExtendedClient.SuggestBindingParams> {
     return Promise.resolve({suggestions:{}});
   },
-  async didCreateBinding(mode) {
+  async addedManualBindings(): Promise<void> {
+    return Promise.resolve();
+  },
+  async acceptedBindingSuggestion(origin): Promise<void> {
     return Promise.resolve();
   }
 } as SonarLintExtendedLanguageClient;
@@ -138,7 +141,7 @@ suite('Bindings Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, false, TEST_BINDING.connectionId);
+      await underTest.saveManualBinding(TEST_BINDING.projectKey, workspaceFolder, TEST_BINDING.connectionId);
 
       const updatedBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -189,7 +192,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, false, TEST_BINDING.connectionId);
+      await underTest.saveSuggestedBinding(TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, TEST_BINDING.connectionId);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -217,7 +220,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, false, TEST_BINDING.connectionId);
+      await underTest.saveSuggestedBinding(TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, TEST_BINDING.connectionId);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -247,7 +250,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, false, DEFAULT_CONNECTION_ID);
+      await underTest.saveSuggestedBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, DEFAULT_CONNECTION_ID);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -280,7 +283,7 @@ suite('Bindings Test Suite', () => {
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
       expect(binding).to.be.empty;
 
-      await underTest.saveBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, false, undefined);
+      await underTest.saveSuggestedBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, undefined);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -376,7 +379,7 @@ suite('Bindings Test Suite', () => {
         .get(BINDING_SETTINGS);
       expect(existingBinding).to.be.empty;
 
-      await underTest.saveBinding(TEST_BINDING.projectKey, workspaceFolder, false, TEST_BINDING.connectionId);
+      await underTest.saveSuggestedBinding(TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, TEST_BINDING.connectionId);
 
       const updatedBinding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
