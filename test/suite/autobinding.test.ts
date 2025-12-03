@@ -19,7 +19,7 @@ import * as VSCode from 'vscode';
 import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
 import { TextEncoder } from 'util';
-import { ExtendedClient } from '../../src/lsp/protocol';
+import { ExtendedClient, ExtendedServer } from '../../src/lsp/protocol';
 import { FileSystemServiceImpl } from '../../src/fileSystem/fileSystemServiceImpl';
 import { sleep } from '../testutil';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
@@ -48,11 +48,14 @@ const mockClient = {
         connectionId: connectionId,
         sonarProjectKey: 'myProjectKey',
         sonarProjectName: 'myProjectName',
-        isFromSharedConfiguration: false
+        origin: ExtendedServer.BindingSuggestionOrigin.SHARED_CONFIGURATION
       }]
     }});
   },
-  async didCreateBinding(mode) {
+  async addedManualBindings(): Promise<void> {
+    return Promise.resolve();
+  },
+  async acceptedBindingSuggestion(origin): Promise<void> {
     return Promise.resolve();
   }
 } as SonarLintExtendedLanguageClient;
@@ -184,7 +187,7 @@ suite('Auto Binding Test Suite', () => {
           connectionId: 'test',
           sonarProjectKey: 'myProjectKey',
           sonarProjectName: 'myProjectName',
-          isFromSharedConfiguration: false
+          origin: ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME
         }] }
       });
 

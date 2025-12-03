@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { BindingService } from './binding';
 import { Connection } from './connections';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import { ExtendedServer, ConnectionCheckResult } from '../lsp/protocol';
+import { ExtendedServer, ConnectionCheckResult, BindingSuggestionOrigin } from '../lsp/protocol';
 import {
   ConnectionSettingsService,
   isSonarQubeConnection,
@@ -50,14 +50,14 @@ const SONARQUBE_SERVER_LABEL = 'SonarQube Server';
 const SONARQUBE_CLOUD_LABEL = 'SonarQube Cloud';
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
-  return (serverUrl='', projectKey='', isFromSharedConfiguration=false, folderUri?: vscode.Uri) => {
+  return (serverUrl='', projectKey='', suggestionOrigin?: BindingSuggestionOrigin, folderUri?: vscode.Uri) => {
     const initialState = {
       conn: {
         serverUrl,
         token: '',
         connectionId: '',
         projectKey,
-        isFromSharedConfiguration,
+        suggestionOrigin,
         folderUri: folderUri?.toString(false)
       }
     };
@@ -67,14 +67,14 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
 
 
 export function connectToSonarCloud(context: vscode.ExtensionContext) {
-  return (organizationKey='', projectKey='', isFromSharedConfiguration=false, region: SonarCloudRegion='EU', folderUri?: vscode.Uri) => {
+  return (organizationKey='', projectKey='', suggestionOrigin?: BindingSuggestionOrigin, region: SonarCloudRegion='EU', folderUri?: vscode.Uri) => {
     const initialState = {
       conn: {
         organizationKey,
         token: '',
         connectionId: '',
         projectKey,
-        isFromSharedConfiguration,
+        suggestionOrigin,
         folderUri: folderUri?.toString(false),
         region
       }
@@ -212,7 +212,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   const maybeProjectKey = connection.projectKey;
   const saveButtonLabel = maybeProjectKey ? 'Save Connection And Bind Project' : 'Save Connection';
 
-  const isFromSharedConfiguration = connection.isFromSharedConfiguration;
+  const suggestionOrigin = connection.suggestionOrigin;
   const maybeFolderUri = connection.folderUri || '';
   const maybeFolderBindingParagraph = renderBindingParagraph(maybeFolderUri, maybeProjectKey);
 
@@ -254,7 +254,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <input type="hidden" id="connectionId-initial" value="${initialConnectionId}" />
         <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create'}" />
         <input type="hidden" id="projectKey" value="${maybeProjectKey}" />
-        <input type="hidden" id="isFromSharedConfiguration" value="${isFromSharedConfiguration}" />
+        <input type="hidden" id="suggestionOrigin" value="${suggestionOrigin}" />
         <input type="hidden" id="folderUri" value="${maybeFolderUri}" />
         <vscode-checkbox id="enableNotifications" ${!connection.disableNotifications ? 'checked' : ''}>
           Receive
@@ -457,8 +457,8 @@ async function saveConnection(
   if (connection.projectKey && connection.folderUri) {
     const folderUri = vscode.Uri.parse(connection.folderUri);
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(folderUri);
-    const bindingCreationMode = connection.isFromSharedConfiguration ? ExtendedServer.BindingCreationMode.IMPORTED : ExtendedServer.BindingCreationMode.AUTOMATIC;
-    await BindingService.instance.saveBinding(connection.projectKey, workspaceFolder, bindingCreationMode, connection.connectionId);
+    await BindingService.instance.saveSuggestedBinding(connection.projectKey, workspaceFolder, 
+      connection.suggestionOrigin, connection.connectionId);
   }
 
   vscode.commands.executeCommand(Commands.FOCUS_ON_CONNECTION, isSQConnection ? '__sonarqube__' : '__sonarcloud__', connection.connectionId);

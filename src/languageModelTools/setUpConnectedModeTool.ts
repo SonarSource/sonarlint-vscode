@@ -70,9 +70,9 @@ export class SetUpConnectedModeTool implements vscode.LanguageModelTool<ISetUpCo
     } else {
       // If no suggestions found, rely on user input
       if (!params.isSonarQubeCloud && params.serverUrl) {
-        connectToSonarQube(this.context)(params.serverUrl, params.projectKey, false, workspaceFolder?.uri);
+        connectToSonarQube(this.context)(params.serverUrl, params.projectKey, null, workspaceFolder?.uri);
       } else if (params.isSonarQubeCloud && params.organizationKey) {
-        connectToSonarCloud(this.context)(params.organizationKey, params.projectKey, false, null, workspaceFolder?.uri);
+        connectToSonarCloud(this.context)(params.organizationKey, params.projectKey, null, null, workspaceFolder?.uri);
       }
   
       if (!params.serverUrl && !params.organizationKey) {
@@ -110,9 +110,9 @@ export class SetUpConnectedModeTool implements vscode.LanguageModelTool<ISetUpCo
     if (connectionSuggestions.length === 1) {
       const suggestion = connectionSuggestions[0].connectionSuggestion;
       if (suggestion.organization) {
-        connectToSonarCloud(this.context)(suggestion.organization, suggestion.projectKey, connectionSuggestions[0].isFromSharedConfiguration, sonarCloudRegionToLabel(suggestion.region), workspaceFolder.uri);
+        connectToSonarCloud(this.context)(suggestion.organization, suggestion.projectKey, connectionSuggestions[0].origin, sonarCloudRegionToLabel(suggestion.region), workspaceFolder.uri);
       } else {
-        connectToSonarQube(this.context)(suggestion.serverUrl, suggestion.projectKey, connectionSuggestions[0].isFromSharedConfiguration, workspaceFolder.uri);
+        connectToSonarQube(this.context)(suggestion.serverUrl, suggestion.projectKey, connectionSuggestions[0].origin, workspaceFolder.uri);
       }
     } else {
       // multiple suggestions for the same config scope

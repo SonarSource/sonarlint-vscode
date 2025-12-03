@@ -9,7 +9,7 @@
 import * as vscode from 'vscode';
 import { connectToSonarCloud, connectToSonarQube } from './connectionsetup';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { ConnectionSuggestion } from '../lsp/protocol';
+import { BindingSuggestionOrigin, ConnectionSuggestion } from '../lsp/protocol';
 import { logToSonarLintOutput } from '../util/logging';
 import { code2ProtocolConverter } from '../util/uri';
 import { TextEncoder } from 'util';
@@ -129,7 +129,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         connectToSonarCloud(this.context)(
           selectedConfig.description,
           selectedConfig.label,
-          false,
+          BindingSuggestionOrigin.SHARED_CONFIGURATION,
           selectedConfig.data?.region,
           workspaceFolder.uri
         );
@@ -149,7 +149,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
 
   private async suggestBindSingleOption(suggestion, workspaceFolder) {
     const { projectKey, serverUrl, organization, region } = suggestion.connectionSuggestion;
-    const isFromSharedConfiguration = suggestion.isFromSharedConfiguration;
+    const suggestionOrigin = suggestion.suggestionOrigin;
     const serverReference = organization
       ? `of SonarQube Cloud organization '${organization}'`
       : `on SonarQube Server '${serverUrl}'`;
@@ -160,12 +160,12 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
         connectToSonarCloud(this.context)(
           organization,
           projectKey,
-          isFromSharedConfiguration,
+          suggestionOrigin,
           sonarCloudRegionToLabel(region),
           workspaceFolder.uri
         );
       } else {
-        connectToSonarQube(this.context)(serverUrl, projectKey, isFromSharedConfiguration, workspaceFolder.uri);
+        connectToSonarQube(this.context)(serverUrl, projectKey, suggestionOrigin, workspaceFolder.uri);
       }
     };
     await this.suggestBinding(message, useConfigurationHandler);

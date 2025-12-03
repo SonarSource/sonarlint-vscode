@@ -195,7 +195,7 @@ function onClickSaveConnection() {
   const projectKey = byId('projectKey').value;
   const folderUri = byId('folderUri').value;
   const token = byId('token').value;
-  const isFromSharedConfiguration = byId('isFromSharedConfiguration').value;
+  const suggestionOrigin = byId('suggestionOrigin').value;
   const disableNotifications = !byId('enableNotifications').checked;
   const regionField = byId('region');
   const region = regionField ? regionField.value : 'EU';
@@ -206,7 +206,7 @@ function onClickSaveConnection() {
     disableNotifications,
     projectKey,
     folderUri,
-    isFromSharedConfiguration,
+    suggestionOrigin,
     region
   };
   const serverUrl = byId('serverUrl');

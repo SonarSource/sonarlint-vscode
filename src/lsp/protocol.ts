@@ -47,11 +47,18 @@ export interface ShowRuleDescriptionParams {
   }>;
 }
 
+export enum BindingSuggestionOrigin {
+  REMOTE_URL,
+  SHARED_CONFIGURATION,
+  PROPERTIES_FILE,
+  PROJECT_NAME
+}
+
 export interface BindingSuggestion {
   connectionId: string;
   sonarProjectKey: string;
   sonarProjectName: string;
-  isFromSharedConfiguration: boolean;
+  origin: BindingSuggestionOrigin;
 }
 
 export interface AnalysisFile {
@@ -74,7 +81,7 @@ export interface ConnectionSuggestion {
     projectKey: string;
     region?: number;
   };
-  isFromSharedConfiguration: boolean;
+  origin?: BindingSuggestionOrigin;
 }
 
 /**
@@ -426,7 +433,7 @@ export namespace ExtendedClient {
   export interface AssistBindingParams {
     connectionId: string;
     projectKey: string;
-    isFromSharedConfiguration: boolean;
+    origin: BindingSuggestionOrigin;
   }
 
   export interface AssistBindingResponse {
@@ -910,14 +917,23 @@ export interface GetHookScriptContentResponse {
     export const type = new lsp.NotificationType<AnalyzeVCSChangedFilesParams>('sonarlint/analyzeVCSChangedFiles');
   }
 
-  export enum BindingCreationMode {
-    AUTOMATIC,
-    IMPORTED,
-    MANUAL
+  export namespace AddedManualBindings {
+    export const type = new lsp.NotificationType('sonarlint/addedManualBindings');
   }
 
-  export namespace DidCreateBinding {
-    export const type = new lsp.NotificationType<BindingCreationMode>('sonarlint/didCreateBinding');
+  export enum BindingSuggestionOrigin {
+    REMOTE_URL,
+    SHARED_CONFIGURATION,
+    PROPERTIES_FILE,
+    PROJECT_NAME
+  }
+
+  export interface AcceptedBindingSuggestionParams {
+    origin: BindingSuggestionOrigin
+  }
+
+  export namespace AcceptedBindingSuggestion {
+    export const type = new lsp.NotificationType<AcceptedBindingSuggestionParams>('sonarlint/acceptedBindingSuggestion');
   }
 
   export enum ImpactSeverity {

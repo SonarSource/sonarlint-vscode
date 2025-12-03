@@ -211,8 +211,12 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetHotspotDetails.type, { hotspotId, fileUri });
   }
 
-  didCreateBinding(mode: ExtendedServer.BindingCreationMode): Promise<void> {
-    return this.sendNotification(ExtendedServer.DidCreateBinding.type, mode);
+  addedManualBindings(): Promise<void> {
+    return this.sendNotification(ExtendedServer.AddedManualBindings.type);
+  }
+
+  acceptedBindingSuggestion(origin: ExtendedServer.BindingSuggestionOrigin): Promise<void> {
+    return this.sendNotification(ExtendedServer.AcceptedBindingSuggestion.type, { origin })
   }
 
   listUserOrganizations(token: string, region: string) : Promise<ExtendedServer.Organization[]> {

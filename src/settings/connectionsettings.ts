@@ -10,7 +10,7 @@ import * as VSCode from 'vscode';
 import { Connection } from '../connected/connections';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { logToSonarLintOutput } from '../util/logging';
-import { ConnectionCheckResult } from '../lsp/protocol';
+import { BindingSuggestionOrigin, ConnectionCheckResult } from '../lsp/protocol';
 import { sanitizeSonarCloudRegionSetting } from '../util/util';
 
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -374,7 +374,7 @@ export interface BaseConnection {
   disableNotifications?: boolean;
   connectionCheckResult?: Promise<ConnectionCheckResult>;
   projectKey?: string;
-  isFromSharedConfiguration?: boolean;
+  suggestionOrigin?: BindingSuggestionOrigin;
   folderUri?: string;
 }
 
