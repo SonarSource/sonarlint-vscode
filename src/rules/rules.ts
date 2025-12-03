@@ -133,7 +133,7 @@ function byName(r1: ExtendedServer.Rule, r2: ExtendedServer.Rule) {
 export function setRulesViewMessage(allRulesView: VSCode.TreeView<LanguageNode>) {
   const folderBindingStates = [... BindingService.instance.bindingStatePerFolder().values()];
   if (allFalse(folderBindingStates)) {
-    allRulesView.message = 'Changes to this view are restricted to your personal development environment; to share a rule set with your team, please use Connected Mode .';
+    allRulesView.message = 'Changes to this view are restricted to your personal development environment; to share a rule set with your team, please use Connected Mode.';
   } else {
     allRulesView.message = "Changes to this view only apply to folders that don't use Connected Mode.";
   }
