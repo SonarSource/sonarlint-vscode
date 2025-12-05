@@ -1529,7 +1529,7 @@
     {
       "groupId": "com.sonarsource.cpp",
       "artifactId": "sonar-cfamily-plugin",
-      "version": "6.74.0.91793",
+      "version": "6.75.1.93101",
       "output": "analyzers/sonarcfamily.jar.asc",
       "requiresCredentials": true,
       "signatureOnly": true
