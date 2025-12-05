@@ -1,6 +1,7 @@
 ## 4.37
 
 * Update Java analyzer 8.20 -> [8.21.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2024581%20ORDER%20BY%20created%20ASC)
+* Update Go analyzer 1.30 -> 1.31
 
 ## 4.36
 
