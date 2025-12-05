@@ -7,6 +7,7 @@
 * Update Python analyzer 5.13 -> [5.14.1](https://sonarsource.atlassian.net/issues/?jql=fixversion%20IN%20%285.14.1%2C%205.14%29%20AND%20project%20%3D%20SONARPY%20ORDER%20BY%20created%20ASC)
 * Update IaC analyzer 2.1 to [2.2](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2026018%20ORDER%20BY%20created%20ASC)
 * Update Text & Secrets analyzer 2.33 -> 2.34
+* Update C# analyzer 10.15 -> [10.16.1](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.16.1.129956)
 
 ## 4.36
 
