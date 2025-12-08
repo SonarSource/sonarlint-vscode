@@ -10,8 +10,8 @@ import * as VSCode from 'vscode';
 import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import { Commands } from '../util/commands';
-import { getCurrentAgentWithMCPSupport } from './aiAgentUtils';
-import { getCurrentAgentWithHookSupport, isHookInstalled } from './aiAgentHooks';
+import { getCurrentAgentWithMCPSupport, getCurrentAgentWithHookSupport } from './aiAgentUtils';
+import { isHookInstalled } from './aiAgentHooks';
 
 export class AIAgentsConfigurationItem extends VSCode.TreeItem {
   constructor(

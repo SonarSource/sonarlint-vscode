@@ -42,7 +42,8 @@ import { ConnectionSettingsService } from './settings/connectionsettings';
 import { installManagedJre } from './util/requirements';
 import { AIAgentsConfigurationTreeDataProvider } from './aiAgentsConfiguration/aiAgentsConfigurationTreeDataProvider';
 import { Commands } from './util/commands';
-import { getCurrentAgentWithHookSupport, installHook, openHookConfiguration, openHookScript, uninstallHook } from './aiAgentsConfiguration/aiAgentHooks';
+import { installHook, openHookConfiguration, openHookScript, uninstallHook } from './aiAgentsConfiguration/aiAgentHooks';
+import { getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
 import { code2ProtocolConverter } from './util/uri';
 
 export class CommandsManager {

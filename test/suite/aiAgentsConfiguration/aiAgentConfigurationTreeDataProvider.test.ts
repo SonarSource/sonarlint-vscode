@@ -110,7 +110,7 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
       sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns(undefined);
       sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
       sinon.stub(aiAgentUtils, 'getCurrentAgentWithMCPSupport').returns(undefined);
-      sinon.stub(aiAgentHooks, 'getCurrentAgentWithHookSupport').returns(AGENT.WINDSURF);
+      sinon.stub(aiAgentUtils, 'getCurrentAgentWithHookSupport').returns(AGENT.WINDSURF);
       sinon.stub(aiAgentHooks, 'isHookInstalled').resolves(false);
 
       const children = await underTest.getChildren();
@@ -128,7 +128,7 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
       sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns(undefined);
       sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
       sinon.stub(aiAgentUtils, 'getCurrentAgentWithMCPSupport').returns(undefined);
-      sinon.stub(aiAgentHooks, 'getCurrentAgentWithHookSupport').returns(AGENT.WINDSURF);
+      sinon.stub(aiAgentUtils, 'getCurrentAgentWithHookSupport').returns(AGENT.WINDSURF);
       sinon.stub(aiAgentHooks, 'isHookInstalled').resolves(true);
 
       const children = await underTest.getChildren();
@@ -150,7 +150,7 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
       });
       sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
       sinon.stub(aiAgentUtils, 'getCurrentAgentWithMCPSupport').returns(AGENT.CURSOR);
-      sinon.stub(aiAgentHooks, 'getCurrentAgentWithHookSupport').returns(undefined);
+      sinon.stub(aiAgentUtils, 'getCurrentAgentWithHookSupport').returns(undefined);
 
       const children = await underTest.getChildren();
 
@@ -166,7 +166,7 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
       });
       sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(true);
       sinon.stub(aiAgentUtils, 'getCurrentAgentWithMCPSupport').returns(AGENT.WINDSURF);
-      sinon.stub(aiAgentHooks, 'getCurrentAgentWithHookSupport').returns(AGENT.WINDSURF);
+      sinon.stub(aiAgentUtils, 'getCurrentAgentWithHookSupport').returns(AGENT.WINDSURF);
       sinon.stub(aiAgentHooks, 'isHookInstalled').resolves(false);
 
       const children = await underTest.getChildren();
