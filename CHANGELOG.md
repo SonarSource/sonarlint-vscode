@@ -1,6 +1,6 @@
 ## 4.37
 
-* Update Java analyzer 8.20 -> [8.21.1](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2024581%20ORDER%20BY%20created%20ASC)
+* Update Java analyzer 8.20 -> [8.22](https://github.com/SonarSource/sonar-java/releases/tag/8.22.0.41895)
 * Update Go analyzer 1.30 -> 1.31
 * Update PHP analyzer 3.52 -> [3.53](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2026365%20ORDER%20BY%20created%20ASC)
 * Upadte XML analyzer 2.13 to [2.14.2](https://github.com/SonarSource/sonar-xml/releases/tag/2.14.2.7437)
