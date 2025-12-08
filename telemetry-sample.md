@@ -137,7 +137,23 @@
     {"key":"findings_investigation.hotspots_locally","value":"0","type":"integer","granularity":"daily"},
     {"key":"findings_investigation.hotspots_remotely","value":"0","type":"integer","granularity":"daily"},
     {"key":"findings_investigation.issues_locally","value":"3","type":"integer","granularity":"daily"},
-    {"key":"fingings_filtered.fix_available","value":"1","type":"integer","granularity":"daily"}
+    {"key":"findings_filtered.fix_available","value":"1","type":"integer","granularity":"daily"},
+    {"key":"new_bindings.manual","value":"1","type":"integer","granularity":"daily"},
+    {"key":"new_bindings.accepted_suggestion_remote_url","value":"2","type":"integer","granularity":"daily"},
+    {"key":"new_bindings.accepted_suggestion_properties_file","value":"3","type":"integer","granularity":"daily"},
+    {"key":"new_bindings.accepted_suggestion_shared_config_file","value":"4","type":"integer","granularity":"daily"},
+    {"key":"new_bindings.accepted_suggestion_project_name","value":"5","type":"integer","granularity":"daily"},
+    {"key":"binding_suggestion_clue.remote_url","value":"5","type":"integer","granularity":"daily"},
+    {"key":"ide_labs.joined","value":"true","type":"boolean","granularity":"daily"},
+    {"key":"ide_labs.enabled","value":"true","type":"boolean","granularity":"daily"},
+    {"key":"ide_labs.link_clicked_count_changed_file_analysis_doc","value":"10","type":"integer","granularity":"daily"},
+    {"key":"ide_labs.feedback_link_clicked_count_connected_mode","value":"1","type":"integer","granularity":"daily"},
+    {"key":"ide_labs.feedback_link_clicked_count_manage_dependency_risk","value":"2","type":"integer","granularity":"daily"},
+    {"key":"automatic_analysis.enabled","value":"true","type":"boolean","granularity":"daily"},
+    {"key":"automatic_analysis.toggled_count","value":"1","type":"integer","granularity":"daily"},
+    {"key":"mcp.configuration_requested","value":"3","type":"integer","granularity":"daily"},
+    {"key":"mcp.integration_enabled","value":"true","type":"boolean","granularity":"daily"},
+    {"key":"mcp.transport_mode","value":"HTTP","type":"string","granularity":"daily"}
   ]
 }
 ```
