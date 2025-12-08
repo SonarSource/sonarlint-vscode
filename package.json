@@ -1511,7 +1511,7 @@
     {
       "groupId": "org.sonarsource.html",
       "artifactId": "sonar-html-plugin",
-      "version": "3.21.0.7002",
+      "version": "3.22.0.7011",
       "output": "analyzers/sonarhtml.jar"
     },
     {
