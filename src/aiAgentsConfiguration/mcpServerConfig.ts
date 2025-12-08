@@ -15,7 +15,7 @@ import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as os from 'node:os';
 import { getVSCodeSettingsBaseDir } from '../util/util';
-import { getCurrentAgentWithMCPSupport, AGENT } from './aiAgentUtils';
+import { getCurrentAgentWithMCPSupport, AGENT, getWindsurfDirectory } from './aiAgentUtils';
 import { Commands } from '../util/commands';
 
 interface MCPServerConfig {
@@ -38,7 +38,7 @@ export function getMCPConfigPath(): string {
     case AGENT.CURSOR:
       return path.join(os.homedir(), '.cursor', 'mcp.json');
     case AGENT.WINDSURF:
-      return path.join(os.homedir(), '.codeium', 'windsurf', 'mcp_config.json');
+      return path.join(os.homedir(), '.codeium', getWindsurfDirectory(), 'mcp_config.json');
     case AGENT.GITHUB_COPILOT:
       // For GitHub Copilot, detect if it's VSCode or VSCode Insiders
       if (vscode.env.appName.toLowerCase().includes('insiders')) {

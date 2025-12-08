@@ -13,14 +13,13 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import {
-  getCurrentAgentWithHookSupport,
   isHookInstalled,
   installHook,
   uninstallHook,
   openHookScript,
   openHookConfiguration
 } from '../../../src/aiAgentsConfiguration/aiAgentHooks';
-import { AGENT } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { AGENT, getCurrentAgentWithHookSupport } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 
 suite('aiAgentHooks', () => {

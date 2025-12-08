@@ -11,8 +11,7 @@ import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
-import { getCurrentAgentWithMCPSupport } from './aiAgentsConfiguration/aiAgentUtils';
-import { getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentHooks';
+import { getCurrentAgentWithMCPSupport, getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';

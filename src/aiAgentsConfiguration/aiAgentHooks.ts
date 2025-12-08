@@ -12,7 +12,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Commands } from '../util/commands';
-import { AGENT } from './aiAgentUtils';
+import { AGENT, getWindsurfDirectory } from './aiAgentUtils';
 
 interface HookConfig {
   command: string;
@@ -29,23 +29,6 @@ interface HooksJson {
 
 const HOOK_SCRIPT_PERMISSIONS = 0o700;
 const HOOK_SCRIPT_PATTERN = /sonarqube_analysis_hook\.(js|py|sh)$/;
-
-export function getCurrentAgentWithHookSupport(): AGENT | undefined {
-  const appName = vscode.env.appName.toLowerCase();
-  // Hooks are available on all Windsurf versions
-  if (appName.includes('windsurf')) {
-    return AGENT.WINDSURF;
-  }
-  return undefined;
-}
-
-function getWindsurfDirectory(): string {
-  const appName = vscode.env.appName.toLowerCase();
-  if (appName.includes('next')) {
-    return 'windsurf-next';
-  }
-  return 'windsurf';
-}
 
 /**
  * Get the IDE-specific configuration directory.
