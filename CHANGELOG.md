@@ -9,7 +9,7 @@
 * Update Text & Secrets analyzer 2.33 -> 2.34
 * Update C# analyzer 10.15 -> [10.16.1](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.16.1.129956)
 * Update CFamily analyzer 6.74 to [6.75.1](https://sonarsource.atlassian.net/issues/?jql=project%20%3D%2010166%20AND%20fixVersion%3D26988%20ORDER%20BY%20priority%20DESC%2C%20key%20ASC)
-* Update JS/TS/CSS analyzer 11.6 to [11.7](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2026094%20ORDER%20BY%20created%20ASC)
+* Update JS/TS/CSS analyzer 11.6 to [11.7.1](https://github.com/SonarSource/SonarJS/releases/tag/11.7.1.36988)
 * Update HTML analyzer 3.20 -> [3.22](https://github.com/SonarSource/sonar-html/releases/tag/3.22.0.7011)
 * Update Java Symbolic Execution analyzer 8.16.1 -> [8.16.3](https://github.com/SonarSource/sonar-java-symbolic-execution/releases/tag/8.16.3.1589)
 
