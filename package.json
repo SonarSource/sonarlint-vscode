@@ -1543,21 +1543,21 @@
     {
       "groupId": "org.sonarsource.sonarlint.omnisharp",
       "artifactId": "sonarlint-omnisharp-plugin",
-      "version": "1.35.0.101562",
+      "version": "1.36.0.101591",
       "output": "analyzers/sonarlintomnisharp.jar",
       "requiresCredentials": true
     },
     {
       "groupId": "org.sonarsource.dotnet",
       "artifactId": "sonar-csharp-plugin",
-      "version": "10.16.1.129956",
+      "version": "10.16.2.130377",
       "output": "analyzers/sonarcsharp.jar",
       "requiresCredentials": true
     },
     {
       "groupId": "com.sonarsource.dotnet",
       "artifactId": "sonar-csharp-enterprise-plugin",
-      "version": "10.16.1.129956",
+      "version": "10.16.2.130377",
       "output": "analyzers/csharpenterprise.jar",
       "requiresCredentials": true
     }

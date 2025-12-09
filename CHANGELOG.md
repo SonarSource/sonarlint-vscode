@@ -8,7 +8,7 @@
 * Update Python analyzer 5.13 -> 5.14.2
 * Update IaC analyzer 2.1 to [2.2](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2026018%20ORDER%20BY%20created%20ASC)
 * Update Text & Secrets analyzer 2.33 -> 2.34
-* Update C# analyzer 10.15 -> [10.16.1](https://github.com/SonarSource/sonar-dotnet-enterprise/releases/tag/10.16.1.129956)
+* Update C# analyzer 10.15 -> [10.16.2](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.16.2.130377)
 * Update CFamily analyzer 6.74 -> 6.75.1
 * Update JS/TS/CSS analyzer 11.6 to [11.7.1](https://github.com/SonarSource/SonarJS/releases/tag/11.7.1.36988)
 * Update HTML analyzer 3.20 -> [3.22](https://github.com/SonarSource/sonar-html/releases/tag/3.22.0.7011)
