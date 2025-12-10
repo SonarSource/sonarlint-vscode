@@ -33,7 +33,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     imageFile: 'labs/analyze_vcs_changed_files.png',
     tags: [FeatureTag.EXPERIMENTAL],
     learnMoreUrl:
-      'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis/#analyze-changed-files/',
+      'https://docs.sonarsource.com/sonarqube-for-vs-code/getting-started/running-an-analysis#analyze-changed-files',
     feedbackUrl: 'https://forms.gle/vWXAsdZFYJSnGyjh8'
   },
   {
@@ -42,7 +42,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     description: 'Seamlessly integrate AI agents from your favorite IDE with the SonarQube platform. You can automatically configure the SonarQube MCP Server and define a custom rules file for your active agents.',
     imageFile: 'labs/ai_agents_integration.png',
     tags: [FeatureTag.NEW, FeatureTag.CONNECTED_MODE],
-    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server/',
+    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server',
     feedbackUrl: 'https://forms.gle/5Fy2a4Kk5nN9GrSX7'
   },
   {
@@ -51,7 +51,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     description: 'Synchronize Software Composition Analysis (SCA) results from SonarQube (Server, Cloud) analysis with your IDE. You can manage and change the status of identified dependency risks directly in the IDE.',
     imageFile: 'labs/dependency_risk_management.png',
     tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
-    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/dependency-risks/',
+    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/dependency-risks',
     feedbackUrl: 'https://forms.gle/dk3GVaDB63Put9AE7'
   },
   {
