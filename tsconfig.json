@@ -8,7 +8,8 @@
             "es2021"
         ],
         "sourceMap": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "skipLibCheck": true
     },
     "exclude": [
         "node_modules",

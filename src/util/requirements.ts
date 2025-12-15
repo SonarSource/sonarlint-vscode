@@ -8,12 +8,11 @@
 // Highly inspired from https://github.com/redhat-developer/vscode-java/blob/1f6783957c699e261a33d05702f2da356017458d/src/requirements.ts
 'use strict';
 
-import * as cp from 'child_process';
+import * as cp from 'node:child_process';
 import * as expandHomeDir from 'expand-home-dir';
 import * as findJavaHome from 'find-java-home';
 import * as fse from 'fs-extra';
-import * as path from 'path';
-import * as pathExists from 'path-exists';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { Commands } from './commands';
 import * as jre from '../java/jre';
@@ -45,11 +44,11 @@ export async function resolveRequirements(context: vscode.ExtensionContext): Pro
   if (javaHome) {
     const source = `'${JAVA_HOME_CONFIG}' variable defined in VS Code settings`;
     javaHome = expandHomeDir(javaHome);
-    if (!pathExists.sync(javaHome)) {
+    if (!fse.existsSync(javaHome)) {
       logToSonarLintOutput(`The ${source} points to a missing or inaccessible folder (${javaHome})`);
-    } else if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
+    } else if (!fse.existsSync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
       let msg: string;
-      if (pathExists.sync(path.resolve(javaHome, JAVA_FILENAME))) {
+      if (fse.existsSync(path.resolve(javaHome, JAVA_FILENAME))) {
         msg = `'bin' should be removed from the ${source} (${javaHome})`;
       } else {
         msg = `The ${source} (${javaHome}) does not point to a JRE. Will try to use embedded JRE.`;
@@ -77,11 +76,11 @@ function checkJavaRuntime(): Promise<string> {
     let { source, javaHome } = tryExplicitConfiguration();
     if (javaHome) {
       javaHome = expandHomeDir(javaHome);
-      if (!pathExists.sync(javaHome)) {
+      if (!fse.existsSync(javaHome)) {
         invalidJavaHome(reject, `The ${source} points to a missing or inaccessible folder (${javaHome})`);
-      } else if (!pathExists.sync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
+      } else if (!fse.existsSync(path.resolve(javaHome, 'bin', JAVA_FILENAME))) {
         let msg: string;
-        if (pathExists.sync(path.resolve(javaHome, JAVA_FILENAME))) {
+        if (fse.existsSync(path.resolve(javaHome, JAVA_FILENAME))) {
           msg = `'bin' should be removed from the ${source} (${javaHome})`;
         } else {
           msg = `The ${source} (${javaHome}) does not point to a JRE.`;
