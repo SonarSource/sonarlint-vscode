@@ -363,6 +363,13 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
   });
 
+
+  aiAgentsConfigurationTreeDataProvider = new AIAgentsConfigurationTreeDataProvider();
+  aiAgentsConfigurationView = VSCode.window.createTreeView('SonarLint.AIAgentsConfiguration', {
+    treeDataProvider: aiAgentsConfigurationTreeDataProvider
+  });
+  context.subscriptions.push(aiAgentsConfigurationView);
+
   const commandsManager = new CommandsManager(context, languageClient, allRulesTreeDataProvider, allRulesView, allConnectionsTreeDataProvider, allConnectionsView, aiAgentsConfigurationTreeDataProvider);
   commandsManager.registerCommands();
 
@@ -387,12 +394,6 @@ export async function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: helpAndFeedbackTreeDataProvider
   });
   context.subscriptions.push(helpAndFeedbackView);
-
-  aiAgentsConfigurationTreeDataProvider = new AIAgentsConfigurationTreeDataProvider();
-  aiAgentsConfigurationView = VSCode.window.createTreeView('SonarLint.AIAgentsConfiguration', {
-    treeDataProvider: aiAgentsConfigurationTreeDataProvider
-  });
-  context.subscriptions.push(aiAgentsConfigurationView);
 
   const labsWebviewProvider = new LabsWebviewProvider(context, languageClient);
   context.subscriptions.push(
