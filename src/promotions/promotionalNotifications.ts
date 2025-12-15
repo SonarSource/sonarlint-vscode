@@ -23,8 +23,8 @@ export async function maybeShowWiderLanguageSupportNotification(context: vscode.
   if (areNotificationsEnabled && notShownNotificationInCurrentPromoPeriod) {
     const learnMoreAction = 'Learn More';
     const dontShowAgainAction = 'Don\'t Show Again';
-    const message = languages.length > 1 ? `Enable ${languages[0]} or ${languages[1]} analysis by setting up SonarLint Connected Mode.` :
-      `Enable ${languages[0]} analysis by setting up SonarLint Connected Mode.`;
+    const message = languages.length > 1 ? `Enable ${languages[0]} and ${languages[1]} analysis by setting up SonarQube for IDE Connected Mode.` :
+      `Enable ${languages[0]} analysis by setting up SonarQube for IDE Connected Mode.`;
     const selection = await vscode.window.showInformationMessage(message, learnMoreAction, dontShowAgainAction);
 
     if (selection === dontShowAgainAction) {
