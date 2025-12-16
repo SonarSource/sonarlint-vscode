@@ -7,10 +7,10 @@
 'use strict';
 import { error, info } from 'fancy-log';
 import { getPackageJSON } from './fsUtils.mjs';
-import { basename, extname, join } from 'path';
+import { basename, extname, join } from 'node:path';
 import dateformat from 'dateformat';
 import { computeDependencyHashes, fileHashsum } from './hashes.mjs';
-import { createReadStream } from 'fs';
+import { createReadStream } from 'node:fs';
 import { globbySync } from 'globby';
 
 export function collectArtifactInfo(pattern = '*') {

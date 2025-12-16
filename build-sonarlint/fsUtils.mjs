@@ -5,14 +5,14 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import del from 'del';
+import { deleteSync } from 'del';
 import { info } from 'fancy-log';
 import { pathExistsSync, removeSync } from 'fs-extra/esm';
-import { readFileSync, unlinkSync } from 'fs';
+import { readFileSync, unlinkSync } from 'node:fs';
 
 export function clean() {
   info('Starting task "clean"');
-  del(['*.vsix', 'server', 'out', 'out-cov']);
+  deleteSync(['*.vsix', 'server', 'out', 'out-cov']);
 }
 
 export function cleanJreDir() {
