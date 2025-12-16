@@ -34,5 +34,7 @@ export function run(testsRoot: string, cb: (error: any, failures?: number) => vo
     } catch (runErr) {
       return cb(runErr);
     }
+  }).catch((err: Error) => {
+    cb(err);
   });
 }
