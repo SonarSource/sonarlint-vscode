@@ -8,10 +8,10 @@
 import { getPackageJSON } from './fsUtils.mjs';
 import _default from './constants.mjs';
 const { UNIVERSAL_PLATFORM, TARGETED_PLATFORMS } = _default;
-import { existsSync, readFileSync } from 'fs';
-import { createHash } from 'crypto';
+import { existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { warn, info } from 'fancy-log';
-import { join, basename } from 'path';
+import { join, basename } from 'node:path';
 import { globbySync } from 'globby';
 
 const allPlatforms = {};

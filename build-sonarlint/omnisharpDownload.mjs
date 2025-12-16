@@ -8,11 +8,11 @@
 
 import { ensureDir } from 'fs-extra';
 import { error, info } from 'fancy-log';
-import { createReadStream, existsSync, mkdirSync } from 'fs';
+import { createReadStream, existsSync, mkdirSync } from 'node:fs';
 import { createGunzip } from 'node:zlib';
-import { basename } from 'path';
+import { basename } from 'node:path';
 import { extract } from 'tar';
-import { parse } from 'url';
+import { parse } from 'node:url';
 
 import artifactory from './artifactory.mjs';
 import { downloadFile } from './downloadUtil.mjs';

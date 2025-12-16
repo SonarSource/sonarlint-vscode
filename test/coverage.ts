@@ -4,8 +4,8 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 const REPO_ROOT = path.resolve(__dirname, '../..');
 
@@ -14,17 +14,17 @@ export function instrument() {
 
   const instrumenter = iLibInstrument.createInstrumenter();
   const files = rreaddir(path.resolve(REPO_ROOT, 'out'));
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    if (/\.js\.map$/.test(file)) {
+  for (const element of files) {
+    const file = element;
+    if (file.endsWith(".js.map")) {
       //console.log(`ignoring ${file}`);
       continue;
     }
 
-    const inputPath = path.resolve(REPO_ROOT, 'out', files[i]);
-    const outputPath = path.resolve(REPO_ROOT, 'out-cov', files[i]);
+    const inputPath = path.resolve(REPO_ROOT, 'out', element);
+    const outputPath = path.resolve(REPO_ROOT, 'out-cov', element);
 
-    if (!/\.js$/.test(file) || /(^|[\\/])test[\\/]/.test(file)) {
+    if (!file.endsWith(".js") || /(^|[\\/])test[\\/]/.test(file)) {
       //console.log(`copying ${inputPath}`);
       copyFile(inputPath, outputPath);
       continue;
