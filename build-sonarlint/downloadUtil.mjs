@@ -7,8 +7,8 @@
 'use strict';
 
 import artifactory from './artifactory.mjs';
-import { createWriteStream } from 'fs';
-import { Readable } from 'stream';
+import { createWriteStream } from 'node:fs';
+import { Readable } from 'node:stream';
 
 const HTTP_BAD_REQUEST = 400;
 

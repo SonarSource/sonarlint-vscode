@@ -4,9 +4,9 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as cp from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as cp from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath, runTests } from '@vscode/test-electron';
 
@@ -35,9 +35,9 @@ async function main() {
     const vscodeExecutablePath = await downloadAndUnzipVSCode(vscodeVersion);
     const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
 
-    const vsixes = fs.readdirSync('..').filter(fn => fn.endsWith('.vsix'));
+    const vsix = fs.readdirSync('..').find(fn => fn.endsWith('.vsix'));
     // Use cp.spawn / cp.exec for custom setup
-    cp.spawnSync(cliPath, [`--extensions-dir=${extensionsDir}`, '--install-extension', '../' + vsixes[0]], {
+    cp.spawnSync(cliPath, [`--extensions-dir=${extensionsDir}`, '--install-extension', '../' + vsix], {
       encoding: 'utf-8',
       stdio: 'inherit'
     });
@@ -87,7 +87,7 @@ async function main() {
   } finally {
     if (extensionsDir !== '' && fs.existsSync(extensionsDir)) {
       try {
-        fs.rmdirSync(extensionsDir, { recursive: true });
+        fs.rmSync(extensionsDir, { recursive: true });
       } catch (e) {
         // NOP
       }
