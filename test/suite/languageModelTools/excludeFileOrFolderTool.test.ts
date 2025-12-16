@@ -116,7 +116,7 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
       .catch((error: Error) => {
         assert.strictEqual(
           error.message,
-          `The workspace folder '${workspaceFolder.name}' is bound to a remote project on SonarQube (Cloud, Server).
+          `The workspace folder **${workspaceFolder.name}** is bound to a remote project on SonarQube (Cloud, Server).
          Locally configured exclusions will not make a difference.`
         );
       });

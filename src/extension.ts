@@ -370,15 +370,15 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(aiAgentsConfigurationView);
 
-  const commandsManager = new CommandsManager(context, languageClient, allRulesTreeDataProvider, allRulesView, allConnectionsTreeDataProvider, allConnectionsView, aiAgentsConfigurationTreeDataProvider);
-  commandsManager.registerCommands();
-
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
   allConnectionsView = VSCode.window.createTreeView('SonarLint.ConnectedMode', {
     treeDataProvider: allConnectionsTreeDataProvider
   });
   context.subscriptions.push(allConnectionsView);
+
+  const commandsManager = new CommandsManager(context, languageClient, allRulesTreeDataProvider, allRulesView, allConnectionsTreeDataProvider, allConnectionsView, aiAgentsConfigurationTreeDataProvider);
+  commandsManager.registerCommands();
 
   automaticAnalysisStatusItem.show();
   
