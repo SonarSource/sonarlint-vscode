@@ -4,13 +4,13 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as assert from 'assert';
-import * as path from 'path';
-import { TextEncoder } from 'util';
-import * as fs from 'fs';
-import * as url from 'url';
-import * as os from 'os';
-import { exec } from 'child_process';
+import * as assert from 'node:assert';
+import * as path from 'node:path';
+import { TextEncoder } from 'node:util';
+import * as fs from 'node:fs';
+import * as url from 'node:url';
+import * as os from 'node:os';
+import { exec } from 'node:child_process';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it

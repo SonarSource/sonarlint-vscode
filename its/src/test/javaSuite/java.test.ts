@@ -4,15 +4,14 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as assert from 'assert';
-import * as path from 'path';
+import * as assert from 'node:assert';
+import * as path from 'node:path';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 
 import { activateAndShowOutput, dumpLogOutput, waitForSonarLintDiagnostics } from '../common/util';
-import { expect } from 'chai';
 
 const sampleFolderLocation = '../../../samples/';
 const sampleJavaFolderLocation = '../../../samples/sample-java-maven-multi-module/';
@@ -75,13 +74,13 @@ suite('Java Test Suite', () => {
       "SonarQube: Remove \"MyException\"",
       "SonarQube: Show issue details for 'java:S1130'"
     ];
-    const actualCodeActionTitles = codeActionsResult.filter(c => expectedActionTitles.indexOf(c.title) >= 0).map(c => c.title);
+    const actualCodeActionTitles = codeActionsResult.filter(c => expectedActionTitles.includes(c.title)).map(c => c.title);
     // Order of code actions is not stable, forcing lexicographic order for assertion
     actualCodeActionTitles.sort((a, b) => a.localeCompare(b));
     assert.deepStrictEqual(actualCodeActionTitles, expectedActionTitles);
 
     // Check that first fix has an edit that can be applied
-    const quickFix = codeActionsResult.filter(c => c.title === 'SonarQube: Remove "MyException"')[0] as vscode.CodeAction;
+    const quickFix = codeActionsResult.find(c => c.title === 'SonarQube: Remove "MyException"') as vscode.CodeAction;
     const fixApplied = await vscode.workspace.applyEdit(quickFix.edit!);
     assert.strictEqual(fixApplied, true);
 
@@ -99,9 +98,9 @@ suite('Java Test Suite', () => {
     const diags = await waitForSonarLintDiagnostics(fileUri);
 
     assert.deepStrictEqual(diags.length, 2);
-    const messages = diags.map(d => d.message);
-    expect(messages).to.include('Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.');
-    expect(messages).to.include('Add at least one assertion to this test case.');
+    const messages = new Set(diags.map(d => d.message));
+    assert.ok(messages.has('Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.'), 'Expected message about empty method not found');
+    assert.ok(messages.has('Add at least one assertion to this test case.'), 'Expected message about missing assertion not found');
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(120 * 1000);

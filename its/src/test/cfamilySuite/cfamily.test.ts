@@ -4,9 +4,9 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as assert from 'assert';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as assert from 'node:assert';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import {describe, after, before, it} from 'mocha';
 
 // You can import and use all API from the 'vscode' module
@@ -95,7 +95,7 @@ function sleep(ms: number) {
 
 function removeDir(dir: string) {
   if (fs.existsSync(dir)) {
-    fs.rmdir(dir, {recursive: true}, (err: any) => {
+    fs.rm(dir, {recursive: true}, (err: any) => {
       if (err) {
         throw err;
       }

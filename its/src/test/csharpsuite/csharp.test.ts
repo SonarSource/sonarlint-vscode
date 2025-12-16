@@ -4,8 +4,8 @@
  * sonarlint@sonarsource.com
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as assert from 'assert';
-import * as path from 'path';
+import * as assert from 'node:assert';
+import * as path from 'node:path';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -58,16 +58,16 @@ suite('CSharp Test Suite', () => {
       'SonarQube: Throw NotSupportedException'
     ];
     const actualCodeActionTitles = codeActionsResult
-      .filter(c => expectedActionTitles.indexOf(c.title) >= 0)
+      .filter(c => expectedActionTitles.includes(c.title))
       .map(c => c.title);
     // Order of code actions is not stable, forcing lexicographic order for assertion
-    actualCodeActionTitles.sort();
+    actualCodeActionTitles.sort((a, b) => a.localeCompare(b));
     assert.deepEqual(actualCodeActionTitles, expectedActionTitles);
 
     // Check that first fix has an edit that can be applied
-    const quickFix = codeActionsResult.filter(
+    const quickFix = codeActionsResult.find(
       c => c.title === 'SonarQube: Throw NotSupportedException'
-    )[0] as vscode.CodeAction;
+    ) as vscode.CodeAction;
     const fixApplied = await vscode.workspace.applyEdit(quickFix.edit!);
     assert.equal(fixApplied, true);
 
