@@ -36,6 +36,11 @@ async function main() {
     const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
 
     const vsix = fs.readdirSync('..').find(fn => fn.endsWith('.vsix'));
+    
+    if (!vsix) {
+      throw new Error('No vsix file found in the parent directory');
+    }
+    
     // Use cp.spawn / cp.exec for custom setup
     cp.spawnSync(cliPath, [`--extensions-dir=${extensionsDir}`, '--install-extension', '../' + vsix], {
       encoding: 'utf-8',

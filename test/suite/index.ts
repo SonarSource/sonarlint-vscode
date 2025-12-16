@@ -51,7 +51,9 @@ export function run(): Promise<void> {
   }).then(async () => {
     // Tests have finished executing, check if we should generate a coverage report
     if (process.env['GENERATE_COVERAGE']) {
-      await createReport();
+        await createReport();
     }
+  }).catch((err: Error) => {
+    throw new Error(`Failed to run tests: ${err.message}`);
   });
 }
