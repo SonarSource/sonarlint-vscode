@@ -1,3 +1,7 @@
+## 4.38
+
+* Update Python analyzer 5.14.2 -> 5.15
+
 ## 4.37
 
 * Introduce SonarQube for IDE Labs - a way to get early access to experimental features of SonarQube for IDE
