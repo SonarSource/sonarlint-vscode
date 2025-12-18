@@ -1,6 +1,7 @@
 ## 4.38
 
 * Update Python analyzer 5.14.2 -> 5.15
+* Update CFamily analyzer 6.75.1 -> 6.76
 
 ## 4.37
 
