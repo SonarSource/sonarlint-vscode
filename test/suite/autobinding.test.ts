@@ -142,6 +142,13 @@ suite('Auto Binding Test Suite', () => {
   teardown(async function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await cleanBindings();
+    // Reset global connections to avoid test pollution
+    await VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY)
+      .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, VSCode.ConfigurationTarget.Global);
+    await VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY)
+      .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, undefined, VSCode.ConfigurationTarget.Global);
     await VSCode.commands.executeCommand('workbench.action.closeAllEditors');
     await mockWorkspaceState.updateBindingForWs(false);
     await mockWorkspaceState.updateBindingForFolder([]);

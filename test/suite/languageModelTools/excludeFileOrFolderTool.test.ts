@@ -44,7 +44,7 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
   setup(async function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // clear exclusion settings
-    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined);
+    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined, vscode.ConfigurationTarget.Global);
     toolCalledCount.success = 0;
     toolCalledCount.failure = 0;
   });
@@ -52,7 +52,7 @@ suite('Exclude File or Folder Language Model Tool Test Suite', () => {
   teardown(async function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // Reset the configuration after tests
-    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined);
+    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined, vscode.ConfigurationTarget.Global);
     toolCalledCount.success = 0;
     toolCalledCount.failure = 0;
   });
