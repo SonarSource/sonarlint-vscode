@@ -3,6 +3,7 @@
 * Update Python analyzer 5.14.2 -> 5.15
 * Update CFamily analyzer 6.75.1 -> 6.76
 * Update Text & Secrets analyzer 234 -> 2.36
+* Update C# analyzer 10.16.2 -> [10.17](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.17.0.131074)
 
 ## 4.37
 
