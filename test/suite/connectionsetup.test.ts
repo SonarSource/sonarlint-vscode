@@ -18,6 +18,7 @@ import { ConnectionSettingsService } from '../../src/settings/connectionsettings
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { assert } from 'chai';
 import { ExtendedServer } from '../../src/lsp/protocol';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 const TEN_SECONDS = 10_000;
 
@@ -57,12 +58,14 @@ suite('Connection Setup', () => {
   const mockedConnectionSettingsService = new ConnectionSettingsService(mockSecretStorage, mockClient);
   const sleepTime = 2000;
 
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await deleteConnectedModeSettings();
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await deleteConnectedModeSettings();
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
@@ -291,7 +294,8 @@ suite('handleInvalidTokenNotification', () => {
   let showErrorMessageStub: sinon.SinonStub;
   let executeCommandStub: sinon.SinonStub;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // Create individual stubs for the methods
     getSonarQubeConnectionsStub = sinon.stub();
     getSonarCloudConnectionsStub = sinon.stub();

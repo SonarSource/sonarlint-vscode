@@ -28,6 +28,7 @@ import { getWorkspaceFolder } from '../testutil';
 import * as sinon from 'sinon';
 import { FindingsTreeDataProvider, FindingsTreeViewItem } from '../../src/findings/findingsTreeDataProvider';
 import { HotspotReviewPriority } from '../../src/findings/findingTypes/hotspotNode';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 const templateHotspot: ExtendedClient.RemoteHotspot = {
   message: 'Hotspot here!',
@@ -85,7 +86,8 @@ const mockFindingsTreeDataProvider = {
 } as FindingsTreeDataProvider;
 
 suite('Hotspots Test Suite', async () => {
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // Make sure workbench is clean before each test
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     await vscode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT);

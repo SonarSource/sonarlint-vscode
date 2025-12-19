@@ -11,7 +11,7 @@ import * as path from 'node:path';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 
-import { waitForSonarLintDiagnostics, dumpLogOutput } from '../common/util';
+import { waitForSonarLintDiagnostics, dumpLogOutput, SETUP_TEARDOWN_HOOK_TIMEOUT } from '../common/util';
 
 const sampleFolderLocation = '../../../samples/';
 
@@ -19,11 +19,13 @@ const ONE_MINUTE_MS = 60_000;
 
 suite('Extension Test Suite', () => {
 
-  suiteSetup(() => {
+  suiteSetup(function () {
+    this.timeout(30 * 1000);
     vscode.window.showInformationMessage('Start all tests.');
   });
 
-  teardown(() => {
+  teardown(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     dumpLogOutput();
   });
 

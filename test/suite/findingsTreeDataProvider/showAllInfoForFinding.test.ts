@@ -16,6 +16,7 @@ import { ExtendedServer } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { NotebookFindingNode } from '../../../src/findings/findingTypes/notebookFindingNode';
 import { FindingNode } from '../../../src/findings/findingTypes/findingNode';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 const TEST_FILE_URI = 'file:///test/file.js';
 const TEST_ISSUE_KEY = 'test-issue-key';
@@ -34,7 +35,8 @@ suite('Findings Tree Data Provider Test Suite', () => {
   let mockContext: vscode.ExtensionContext;
   let underTest: FindingsTreeDataProvider;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // Stub before any other operations
     executeCommandStub = sinon.stub(vscode.commands, 'executeCommand').resolves(undefined);
     sinon.stub(vscode.commands, 'registerCommand').returns({

@@ -9,6 +9,7 @@ import { fail } from 'assert';
 import * as vscode from 'vscode';
 
 const MAX_WAIT_DIAGNOSTICS_MS = 20000;
+export const SETUP_TEARDOWN_HOOK_TIMEOUT = 30000;
 
 interface WaitForDiagnosticsOptions {
   atLeastIssues?: number,

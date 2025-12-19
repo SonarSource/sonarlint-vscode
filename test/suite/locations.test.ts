@@ -6,19 +6,20 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import * as path from 'path';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { expect } from 'chai';
 
 import { FileItem, FlowItem, IssueItem, LocationItem, SecondaryLocationsTree } from '../../src/location/locations';
-import { sampleFolderLocation } from './commons';
+import { sampleFolderLocation, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 function uriStringFor(...fragments: string[]) {
   return vscode.Uri.file(path.join(__dirname, sampleFolderLocation, ...fragments)).toString();
 }
 
 suite('locations', () => {
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 

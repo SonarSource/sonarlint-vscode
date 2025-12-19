@@ -21,8 +21,7 @@ import { ExtendedClient, ExtendedServer, ConnectionCheckResult } from '../../src
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 import { sleep } from '../testutil';
 import { SharedConnectedModeSettingsService } from '../../src/connected/sharedConnectedModeSettingsService';
-import { selectFirstQuickPickItem } from './commons';
-import { Server } from 'http';
+import { selectFirstQuickPickItem, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -53,16 +52,16 @@ const mockClient = {
     return { projectKey1: 'projectName1', projectKey2: 'projectName2' };
   },
   async checkConnection(connectionId: string) {
-    return Promise.resolve({ connectionId, success: true });
+    return { connectionId, success: true };
   },
-  async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<ExtendedClient.SuggestBindingParams> {
-    return Promise.resolve({suggestions:{}});
+  async getSuggestedBinding(_configScopeId:string, _connectionId: string):Promise<ExtendedClient.SuggestBindingParams> {
+    return {suggestions:{}};
   },
   async addedManualBindings(): Promise<void> {
-    return Promise.resolve();
+    return;
   },
-  async acceptedBindingSuggestion(origin): Promise<void> {
-    return Promise.resolve();
+  async acceptedBindingSuggestion(_origin): Promise<void> {
+    return;
   }
 } as SonarLintExtendedLanguageClient;
 
@@ -107,7 +106,8 @@ const mockWorkspaceState = {
 const sharedConnectedModeSettingsService = {} as SharedConnectedModeSettingsService;
 
 suite('Bindings Test Suite', () => {
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // start from 1 SQ connection config
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
@@ -116,12 +116,14 @@ suite('Bindings Test Suite', () => {
     await resetBindings();
   });
 
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await resetBindings();
     await VSCode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
   suiteTeardown('Cleanup SQ connections', async function() {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
       .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, VSCode.ConfigurationTarget.Global);
@@ -129,7 +131,8 @@ suite('Bindings Test Suite', () => {
 
   suite('Bindings Manager', () => {
     let underTest;
-    setup(() => {
+    setup(function () {
+      this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
       underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService, sharedConnectedModeSettingsService);
     });
 
@@ -367,7 +370,8 @@ suite('Bindings Test Suite', () => {
 
   suite('Assist Binding', () => {
     let underTest;
-    setup(() => {
+    setup(function () {
+      this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
       underTest = new BindingService(mockClient, mockWorkspaceState, mockSettingsService, sharedConnectedModeSettingsService);
     });
 

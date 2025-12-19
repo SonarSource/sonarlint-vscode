@@ -15,12 +15,14 @@ import * as aiAgentRuleConfig from "../../../src/aiAgentsConfiguration/aiAgentRu
 import * as aiAgentUtils from "../../../src/aiAgentsConfiguration/aiAgentUtils";
 import * as aiAgentHooks from "../../../src/aiAgentsConfiguration/aiAgentHooks";
 import { AGENT } from "../../../src/aiAgentsConfiguration/aiAgentUtils";
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from "../commons";
 
 
 suite('aiAgentConfigurationTreeDataProvider', () => {
   let underTest: AIAgentsConfigurationTreeDataProvider;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     underTest = new AIAgentsConfigurationTreeDataProvider();
   });
 

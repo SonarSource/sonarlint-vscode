@@ -12,6 +12,7 @@ import { expect } from 'chai';
 import { ExtendedServer } from '../../src/lsp/protocol';
 import { Commands } from '../../src/util/commands';
 import { LanguageClient } from 'vscode-languageclient/lib/node/main';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 suite('ANALYZE_VCS_CHANGED_FILES command', () => {
   const FINDINGS_FOCUS_COMMAND = 'SonarQube.Findings.focus';
@@ -20,7 +21,8 @@ suite('ANALYZE_VCS_CHANGED_FILES command', () => {
   let workspaceFoldersStub: sinon.SinonStub;
   let showWarningMessageStub: sinon.SinonStub;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     sendNotificationSpy = sinon.spy(LanguageClient.prototype, 'sendNotification');
     executeCommandSpy = sinon.spy(vscode.commands, 'executeCommand');
     workspaceFoldersStub = sinon.stub(vscode.workspace, 'workspaceFolders');

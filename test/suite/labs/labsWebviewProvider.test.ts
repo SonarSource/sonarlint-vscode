@@ -13,6 +13,7 @@ import { LabsWebviewProvider } from '../../../src/labs/labsWebviewProvider';
 import { IdeLabsFlagManagementService } from '../../../src/labs/ideLabsFlagManagementService';
 import { Commands } from '../../../src/util/commands';
 import { LabsFeature, LABS_FEATURES } from '../../../src/labs/labsFeatures';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 suite('LabsWebviewProvider', () => {
   const TEST_EMAIL = 'test@example.com';
@@ -26,7 +27,8 @@ suite('LabsWebviewProvider', () => {
   let executeCommandStub: sinon.SinonStub;
   let mockLanguageClient: any;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     
     // Create an instance without calling the constructor to avoid command registration
     provider = Object.create(LabsWebviewProvider.prototype);

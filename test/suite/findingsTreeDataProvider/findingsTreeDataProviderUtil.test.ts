@@ -17,6 +17,7 @@ import {
   selectAndApplyCodeAction,
 } from '../../../src/findings/findingsTreeDataProviderUtil';
 import { getContextValueForFinding } from '../../../src/findings/findingTypes/findingNode';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 suite('Findings Tree Data Provider Util Test Suite', () => {
 
@@ -45,7 +46,8 @@ suite('Findings Tree Data Provider Util Test Suite', () => {
     let showErrorMessageStub: sinon.SinonStub;
     let showWarningMessageStub: sinon.SinonStub;
 
-    setup(() => {
+    setup(function () {
+      this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
       showQuickPickStub = sinon.stub(vscode.window, 'showQuickPick');
       applyEditStub = sinon.stub(vscode.workspace, 'applyEdit');
       executeCommandStub = sinon.stub(vscode.commands, 'executeCommand');
@@ -53,7 +55,8 @@ suite('Findings Tree Data Provider Util Test Suite', () => {
       showWarningMessageStub = sinon.stub(vscode.window, 'showWarningMessage');
     });
 
-    teardown(() => {
+    teardown(function () {
+      this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
       sinon.restore();
     });
 

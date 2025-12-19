@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 import { expect } from 'chai';
 import { AutomaticAnalysisService } from '../../src/settings/automaticAnalysis';
 import { FindingsTreeViewItem } from '../../src/findings/findingsTreeDataProvider';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 suite('AutomaticAnalysisService Test Suite', () => {
   
@@ -17,7 +18,8 @@ suite('AutomaticAnalysisService Test Suite', () => {
   let findingsView: vscode.TreeView<FindingsTreeViewItem>;
   let automaticAnalysisService: AutomaticAnalysisService;
   
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
     
     findingsView = {
@@ -40,7 +42,8 @@ suite('AutomaticAnalysisService Test Suite', () => {
       .update('automaticAnalysis', undefined, vscode.ConfigurationTarget.Global);
   });
 
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     statusBarItem.dispose();
     await vscode.workspace
       .getConfiguration('sonarlint')

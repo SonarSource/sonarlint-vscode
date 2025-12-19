@@ -12,11 +12,12 @@ import * as vscode from 'vscode';
 import { sleep } from '../testutil';
 import { Commands } from '../../src/util/commands';
 import { isFileIgnoredByScm } from '../../src/scm/scm';
-import { sampleFolderLocation } from './commons';
+import { sampleFolderLocation, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 suite('Extension Test Suite', () => {
 
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     await vscode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT);
   });

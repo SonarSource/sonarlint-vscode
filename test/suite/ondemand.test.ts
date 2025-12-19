@@ -7,9 +7,10 @@
 'use strict';
 
 import { expect } from 'chai';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { DateTime } from 'luxon';
-import * as path from 'path';
+import * as path from 'node:path';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 import { cleanupOldAnalyzersAsync, verifySignature } from '../../src/cfamily/ondemand';
 import * as util from '../../src/util/util';
@@ -53,7 +54,8 @@ suite('On demand analyzer download and cleanup', () => {
     expect(verificationResult).to.be.false;
   });
 
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     fs.rmSync(onDemandAnalyzersPath, { recursive: true, force: true });
     util.extensionContext.globalState.update(cFamily660LastUsed, undefined);
     util.extensionContext.globalState.update(cFamily662LastUsed, undefined);

@@ -11,7 +11,7 @@ import * as path from 'node:path';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 
-import { activateAndShowOutput, dumpLogOutput, waitForSonarLintDiagnostics } from '../common/util';
+import { activateAndShowOutput, dumpLogOutput, SETUP_TEARDOWN_HOOK_TIMEOUT, waitForSonarLintDiagnostics } from '../common/util';
 
 const sampleFolderLocation = '../../../samples/';
 
@@ -74,7 +74,8 @@ suite('CSharp Test Suite', () => {
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(60 * 1000);
 
-  suiteTeardown(() => {
+  suiteTeardown(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     dumpLogOutput();
   });
 });

@@ -17,6 +17,7 @@ import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { NotebookFindingNode } from '../../../src/findings/findingTypes/notebookFindingNode';
 import { NotebookNode } from '../../../src/findings/notebookNode';
 import { FindingNode } from '../../../src/findings/findingTypes/findingNode';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 const TEST_FILE_URI = 'file:///test/file.js';
 const TEST_NOTEBOOK_CELL_URI = 'vscode-notebook-cell://test/notebook.ipynb#1234';
@@ -36,7 +37,8 @@ suite('Findings Tree Data Provider Update Methods Test Suite', () => {
   let underTest: FindingsTreeDataProvider;
   let refreshSpy: sinon.SinonSpy;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // Stub command registration to prevent conflicts
     sinon.stub(vscode.commands, 'registerCommand').returns({
       dispose: sinon.stub()

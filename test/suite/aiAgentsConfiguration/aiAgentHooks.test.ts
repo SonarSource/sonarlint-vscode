@@ -21,6 +21,7 @@ import {
 } from '../../../src/aiAgentsConfiguration/aiAgentHooks';
 import { AGENT, getCurrentAgentWithHookSupport } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 suite('aiAgentHooks', () => {
   let envStub: sinon.SinonStub;
@@ -34,7 +35,8 @@ suite('aiAgentHooks', () => {
   let fsExistsSyncStub: sinon.SinonStub;
   let fsPromisesStub: any;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     envStub = sinon.stub(vscode.env, 'appName');
     homedirStub = sinon.stub(os, 'homedir').returns('/home/test'); // Default home directory for tests
     showErrorMessageStub = sinon.stub(vscode.window, 'showErrorMessage');
@@ -179,7 +181,8 @@ suite('aiAgentHooks', () => {
   suite('installHook', () => {
     let mockLanguageClient: SonarLintExtendedLanguageClient;
 
-    setup(() => {
+    setup(function () {
+      this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
       mockLanguageClient = {
         getAiAgentHookScriptContent: sinon.stub().resolves({
           scriptContent: '#!/usr/bin/env node\nconsole.log("test");',
