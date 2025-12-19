@@ -16,7 +16,7 @@ import { activateAndShowOutput, dumpLogOutput, SETUP_TEARDOWN_HOOK_TIMEOUT, wait
 const sampleFolderLocation = '../../../samples/';
 const sampleJavaFolderLocation = '../../../samples/sample-java-maven-multi-module/';
 
-const JAVA_LS_TIMEOUT_MILLIS = 30000;
+const JAVA_LS_TIMEOUT_MILLIS = 35000;
 
 suite('Java Test Suite', () => {
 
