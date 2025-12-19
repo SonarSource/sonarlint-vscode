@@ -2,6 +2,7 @@
 
 * Update Python analyzer 5.14.2 -> 5.15
 * Update CFamily analyzer 6.75.1 -> 6.76
+* Update Text & Secrets analyzer 234 -> 2.36
 
 ## 4.37
 
