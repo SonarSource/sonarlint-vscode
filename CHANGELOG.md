@@ -1,3 +1,7 @@
+## 4.38.1
+
+* Bugfix - unable to verify authenticity of the downloaded CFamily analyzer
+
 ## 4.38
 
 * Update Python analyzer 5.14.2 -> 5.15
