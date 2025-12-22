@@ -30,7 +30,7 @@ suite('CSharp Test Suite', () => {
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
 
-    // Check that we have 2 diagnostics in the right order
+    // Check that we have the expected diagnostic
     const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 1, timeoutMillis: 30_000 });
     assert.deepEqual(
       diags.map(d => [d.code, d.message]),

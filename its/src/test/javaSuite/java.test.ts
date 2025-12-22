@@ -95,7 +95,7 @@ suite('Java Test Suite', () => {
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
 
-    const diags = await waitForSonarLintDiagnostics(fileUri);
+    const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2 });
 
     assert.deepStrictEqual(diags.length, 2);
     const messages = new Set(diags.map(d => d.message));
