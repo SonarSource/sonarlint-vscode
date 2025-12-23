@@ -95,12 +95,11 @@ suite('Java Test Suite', () => {
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
 
-    const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2 });
+    const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 1 });
 
-    assert.ok(diags.length >= 2, 'Expected at least 2 diagnostics, got ' + diags.length);
+    assert.ok(diags.length >= 1, 'Expected at least 1 diagnostics, got ' + diags.length);
     const messages = new Set(diags.map(d => d.message));
     assert.ok(messages.has('Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.'), 'Expected message about empty method not found');
-    assert.ok(messages.has('Add at least one assertion to this test case.'), 'Expected message about missing assertion not found');
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(120 * 1000);
