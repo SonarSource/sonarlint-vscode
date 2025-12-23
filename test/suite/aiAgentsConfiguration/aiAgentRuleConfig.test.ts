@@ -12,6 +12,7 @@ import * as vscode from 'vscode';
 import { introduceSonarQubeRulesFile, isSonarQubeRulesFileConfigured, openSonarQubeRulesFile } from '../../../src/aiAgentsConfiguration/aiAgentRuleConfig';
 import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { AGENT } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 suite('aiAgentRuleConfig', () => {
   let workspaceStub: sinon.SinonStub;
@@ -24,7 +25,8 @@ suite('aiAgentRuleConfig', () => {
   let executeCommandStub: sinon.SinonStub;
   let getCurrentAgentStub: sinon.SinonStub;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     workspaceStub = sinon.stub(vscode.workspace, 'workspaceFolders');
     fsStub = sinon.stub(vscode.workspace, 'fs');
     showErrorMessageStub = sinon.stub(vscode.window, 'showErrorMessage');
@@ -36,7 +38,8 @@ suite('aiAgentRuleConfig', () => {
     getCurrentAgentStub = sinon.stub(aiAgentUtils, 'getCurrentAgentWithMCPSupport');
   });
 
-  teardown(() => {
+  teardown(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     sinon.restore();
   });
 

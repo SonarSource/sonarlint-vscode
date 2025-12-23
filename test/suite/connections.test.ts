@@ -11,7 +11,7 @@ import { expect } from 'chai';
 import { AllConnectionsTreeDataProvider, ConnectionGroup } from '../../src/connected/connections';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import * as path from 'path';
-import { sampleFolderLocation } from './commons';
+import { sampleFolderLocation, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 import { ThemeIcon } from 'vscode';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 
@@ -28,15 +28,16 @@ const projectKeysToNames = {
 
 const mockClient = {
   async checkConnection(connectionId: string) {
-    return Promise.resolve({ connectionId, success: true });
+    return { connectionId, success: true };
   },
   async getRemoteProjectNamesByKeys(_connectionId, _projectKeys) {
-    return Promise.resolve(projectKeysToNames);
+    return projectKeysToNames;
   }
 } as SonarLintExtendedLanguageClient;
 
 suite('Connected Mode Test Suite', () => {
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // start from scratch config
     await vscode.workspace
       .getConfiguration('sonarlint')
@@ -46,7 +47,8 @@ suite('Connected Mode Test Suite', () => {
       .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, undefined, vscode.ConfigurationTarget.Global);
   });
 
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await vscode.workspace
       .getConfiguration('sonarlint')
       .update(CONNECTED_MODE_SETTINGS, undefined, vscode.ConfigurationTarget.Global);
@@ -58,7 +60,8 @@ suite('Connected Mode Test Suite', () => {
 
   suite('getConnections()', () => {
     let underTest: AllConnectionsTreeDataProvider;
-    setup(() => {
+    setup(function () {
+      this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
       underTest = new AllConnectionsTreeDataProvider(mockClient);
     });
 

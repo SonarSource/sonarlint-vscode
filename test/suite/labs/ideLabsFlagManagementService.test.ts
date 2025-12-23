@@ -11,6 +11,7 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { IdeLabsFlagManagementService } from '../../../src/labs/ideLabsFlagManagementService';
 import { ContextManager } from '../../../src/contextManager';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 suite('IdeLabsFlagManagementService', () => {
   let context: vscode.ExtensionContext;
@@ -21,7 +22,8 @@ suite('IdeLabsFlagManagementService', () => {
   let configurationUpdateStub: sinon.SinonStub;
   let configurationGetStub: sinon.SinonStub;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     globalStateGetStub = sinon.stub().returns(false);
     globalStateUpdateStub = sinon.stub().resolves();
     context = { globalState: { get: globalStateGetStub, update: globalStateUpdateStub } } as unknown as vscode.ExtensionContext;

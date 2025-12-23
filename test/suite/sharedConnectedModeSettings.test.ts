@@ -12,9 +12,9 @@ import { SharedConnectedModeSettingsService } from '../../src/connected/sharedCo
 import { FileSystemServiceImpl } from '../../src/fileSystem/fileSystemServiceImpl';
 import * as vscode from 'vscode';
 import { expect } from 'chai';
-import { TextEncoder } from 'util';
-import * as path from 'path';
-import { selectFirstQuickPickItem } from './commons';
+import { TextEncoder } from 'node:util';
+import * as path from 'node:path';
+import { selectFirstQuickPickItem, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 import { sleep } from '../testutil';
 import { deduplicateSuggestions } from '../../src/util/connectionSuggestionUtils';
 import { BindingSuggestionOrigin } from '../../src/lsp/protocol';
@@ -27,9 +27,9 @@ const SHARED_CONNECTED_MODE_FILE_CONTENT = '{\n'
 
 const mockClient = ({
   async getSharedConnectedModeConfigFileContent(configScopeId) {
-    return Promise.resolve({
+    return {
       jsonFileContent: SHARED_CONNECTED_MODE_FILE_CONTENT        
-    });
+    };
   }
 } as unknown) as SonarLintExtendedLanguageClient;
 
@@ -47,13 +47,15 @@ const fakeContext = {
 let tempFiles = [];
 suite('Shared Connected Mode service test suite', () => {
   let underTest: SharedConnectedModeSettingsService;
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     FileSystemServiceImpl.init();
     SharedConnectedModeSettingsService.init(mockClient, FileSystemServiceImpl.instance, fakeContext);
     underTest = SharedConnectedModeSettingsService.instance;
   });
 
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     for (const fileUri of tempFiles) {
       await vscode.workspace.fs.delete(fileUri);
     }

@@ -8,6 +8,7 @@
 
 import { logToSonarLintOutput } from '../src/util/logging';
 import { extension } from '../src/util/util';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './suite/commons';
 
 setup('ensure extension is ready', async function () {
   logToSonarLintOutput(`>>>>>>>>>> Start  ${this.currentTest.fullTitle()}`);
@@ -15,6 +16,7 @@ setup('ensure extension is ready', async function () {
   await extension.activate();
 });
 
-teardown(function() {
+teardown(function () {
+  this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
   logToSonarLintOutput(`<<<<<<<<<< Finish ${this.currentTest.fullTitle()}`);
 });

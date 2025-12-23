@@ -16,6 +16,7 @@ import { ExtendedServer } from '../../../src/lsp/protocol';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { FindingNode } from '../../../src/findings/findingTypes/findingNode';
 import { FindingsFileNode } from '../../../src/findings/findingsFileNode';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 const TEST_FILE_URI = 'file:///test/file.js';
 const TEST_FILE_URI_2 = 'file:///test/file2.js';
@@ -42,7 +43,8 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
   let refreshSpy: sinon.SinonSpy;
   let executeCommandStub: sinon.SinonStub;
 
-  setup(() => {
+  setup(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     sinon.stub(vscode.commands, 'registerCommand').returns({
       dispose: sinon.stub()
     });
@@ -101,7 +103,8 @@ suite('Findings Tree Data Provider Filtering Test Suite', () => {
     refreshSpy = sinon.spy(underTest, 'refresh');
   });
 
-  teardown(() => {
+  teardown(function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     appliedFilter.reset();
     sinon.restore();
   });

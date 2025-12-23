@@ -5,10 +5,11 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { fail } from 'assert';
+import { fail } from 'node:assert';
 import * as vscode from 'vscode';
 
-const MAX_WAIT_DIAGNOSTICS_MS = 20000;
+const MAX_WAIT_DIAGNOSTICS_MS = 30000;
+export const SETUP_TEARDOWN_HOOK_TIMEOUT = 30000;
 
 interface WaitForDiagnosticsOptions {
   atLeastIssues?: number,

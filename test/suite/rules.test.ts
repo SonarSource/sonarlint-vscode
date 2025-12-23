@@ -9,9 +9,11 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import { allFalse, allTrue } from '../../src/rules/rules';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 suite('SonarLint Rules view', () => {
-  suiteSetup('reset rules settings', async () => {
+  suiteSetup('reset rules settings', async function() {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await vscode.workspace.getConfiguration('sonarlint').update('rules', undefined, vscode.ConfigurationTarget.Global);
   });
 
@@ -63,7 +65,8 @@ suite('SonarLint Rules view', () => {
     });
   });
 
-  suiteTeardown('reset rules settings', async () => {
+  suiteTeardown('reset rules settings', async function() {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await vscode.workspace.getConfiguration('sonarlint').update('rules', undefined, vscode.ConfigurationTarget.Global);
   });
 });

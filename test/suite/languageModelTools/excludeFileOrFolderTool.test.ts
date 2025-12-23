@@ -10,6 +10,7 @@ import { ExcludeFileOrFolderTool } from '../../../src/languageModelTools/exclude
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { SONARLINT_CATEGORY } from '../../../src/settings/settings';
 import { assert } from 'chai';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -40,16 +41,18 @@ const mockClient = {
 
 suite('Exclude File or Folder Language Model Tool Test Suite', () => {
   const underTest = new ExcludeFileOrFolderTool(mockClient);
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // clear exclusion settings
-    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined);
+    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined, vscode.ConfigurationTarget.Global);
     toolCalledCount.success = 0;
     toolCalledCount.failure = 0;
   });
 
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // Reset the configuration after tests
-    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined);
+    await vscode.workspace.getConfiguration(SONARLINT_CATEGORY).update('analysisExcludesStandalone', undefined, vscode.ConfigurationTarget.Global);
     toolCalledCount.success = 0;
     toolCalledCount.failure = 0;
   });

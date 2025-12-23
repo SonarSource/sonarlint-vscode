@@ -3,6 +3,8 @@ import * as VSCode from 'vscode';
 
 export const sampleFolderLocation = '../../../test/samples/';
 
+export const SETUP_TEARDOWN_HOOK_TIMEOUT = 10_000;
+
 export async function selectFirstQuickPickItem() {
   // Wait for the input field to show
   await sleep(1000);

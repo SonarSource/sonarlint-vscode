@@ -14,6 +14,7 @@ import { SetUpConnectedModeTool } from '../../../src/languageModelTools/setUpCon
 import { BindingSuggestionOrigin, ExtendedServer } from '../../../src/lsp/protocol';
 import * as connectionSetup from '../../../src/connected/connectionsetup';
 import { Commands } from '../../../src/util/commands';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const BINDING_SETTINGS = 'connectedMode.project';
@@ -71,7 +72,8 @@ const mockClient = {
 
 suite('Set up Connected Mode Language Model Tool Test Suite', () => {
   const underTest = new SetUpConnectedModeTool(fakeContext, mockClient);
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     toolCalledCount.success = 0;
     toolCalledCount.failure = 0;
     sinon.restore(); // Restore any previous stubs

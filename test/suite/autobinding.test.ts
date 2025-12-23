@@ -13,17 +13,18 @@ import {
   SonarQubeConnection
 } from '../../src/settings/connectionsettings';
 
-import * as path from 'path';
+import * as path from 'node:path';
 import * as VSCode from 'vscode';
 
 import { expect } from 'chai';
 import { AutoBindingService, DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG } from '../../src/connected/autobinding';
-import { TextEncoder } from 'util';
+import { TextEncoder } from 'node:util';
 import { ExtendedClient, ExtendedServer } from '../../src/lsp/protocol';
 import { FileSystemServiceImpl } from '../../src/fileSystem/fileSystemServiceImpl';
 import { sleep } from '../testutil';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import * as sinon from 'sinon';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
 const CONNECTED_MODE_SETTINGS_SONARCLOUD = 'connectedMode.connections.sonarcloud';
@@ -40,23 +41,23 @@ const mockClient = {
     return { projectKey1: 'projectName1', projectKey2: 'projectName2' };
   },
   async checkConnection(connectionId: string) {
-    return Promise.resolve({ connectionId, success: true });
+    return { connectionId, success: true };
   },
   async getSuggestedBinding(configScopeId:string, connectionId: string):Promise<ExtendedClient.SuggestBindingParams> {
-    return Promise.resolve({suggestions: {
+    return {suggestions: {
       [configScopeId]: [{
-        connectionId: connectionId,
+        connectionId,
         sonarProjectKey: 'myProjectKey',
         sonarProjectName: 'myProjectName',
         origin: ExtendedServer.BindingSuggestionOrigin.SHARED_CONFIGURATION
       }]
-    }});
+    }};
   },
   async addedManualBindings(): Promise<void> {
-    return Promise.resolve();
+    return;
   },
   async acceptedBindingSuggestion(origin): Promise<void> {
-    return Promise.resolve();
+    return;
   }
 } as SonarLintExtendedLanguageClient;
 
@@ -119,7 +120,7 @@ const mockWorkspaceState = {
   async updateBindingForFolder(newState: string[]) {
     this.bindingForFolderState = newState;
   },
-  async update(key: string, value: any) {
+  async update(_key: string, _value: any) {
     // For compatibiity
   }
 };
@@ -128,7 +129,8 @@ let tempFiles = [];
 
 
 suite('Auto Binding Test Suite', () => {
-  setup(async () => {
+  setup(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // start from 1 SQ connection config
     await VSCode.workspace
       .getConfiguration(SONARLINT_CATEGORY)
@@ -137,8 +139,16 @@ suite('Auto Binding Test Suite', () => {
     await cleanBindings();
   });
 
-  teardown(async () => {
+  teardown(async function () {
+    this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await cleanBindings();
+    // Reset global connections to avoid test pollution
+    await VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY)
+      .update(CONNECTED_MODE_SETTINGS_SONARQUBE, undefined, VSCode.ConfigurationTarget.Global);
+    await VSCode.workspace
+      .getConfiguration(SONARLINT_CATEGORY)
+      .update(CONNECTED_MODE_SETTINGS_SONARCLOUD, undefined, VSCode.ConfigurationTarget.Global);
     await VSCode.commands.executeCommand('workbench.action.closeAllEditors');
     await mockWorkspaceState.updateBindingForWs(false);
     await mockWorkspaceState.updateBindingForFolder([]);
@@ -152,7 +162,8 @@ suite('Auto Binding Test Suite', () => {
   suite('Bindings Manager', () => {
     let underTest : AutoBindingService;
     let underTestWithConnections : AutoBindingService;
-    setup(() => {
+    setup(function () {
+      this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
       FileSystemServiceImpl.init();
       AutoBindingService.init(
         mockBindingService,
