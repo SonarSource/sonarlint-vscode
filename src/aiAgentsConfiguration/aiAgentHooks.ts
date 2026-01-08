@@ -43,6 +43,8 @@ function getIdeConfigDirectory(agent: AGENT): string | undefined {
     }
     case AGENT.CURSOR:
       return undefined;
+    case AGENT.KIRO:
+      return undefined;
     default:
       return undefined;
   }

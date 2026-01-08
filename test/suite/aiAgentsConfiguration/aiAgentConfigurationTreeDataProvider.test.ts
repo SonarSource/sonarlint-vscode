@@ -91,6 +91,23 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
     ]);
   });
 
+  test('getChildren should return both items for Kiro', async () => {
+    sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns({
+      command: 'test-command',
+      args: ['test-arg'],
+      env: {}
+    });
+
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(true);
+    sinon.stub(aiAgentUtils, 'getCurrentAgentWithMCPSupport').returns(AGENT.KIRO);
+
+    const children = await underTest.getChildren();
+    expect(children.map(c => [ c.label, c.tooltip, c.command.command ])).to.deep.equal([
+        [ 'Configure SonarQube MCP Server', 'AI agent integration • Configured', Commands.OPEN_MCP_SERVER_CONFIGURATION ],
+        [ 'Create Instructions for AI agents', 'SonarQube MCP Server guide • Configured', Commands.OPEN_SONARQUBE_RULES_FILE ]
+    ]);
+  });
+
   test('getChildren should return only MCP server item when agent is not supported', async () => {
     sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns({
       command: 'test-command',

@@ -39,6 +39,8 @@ export function getMCPConfigPath(): string {
       return path.join(os.homedir(), '.cursor', 'mcp.json');
     case AGENT.WINDSURF:
       return path.join(os.homedir(), '.codeium', getWindsurfDirectory(), 'mcp_config.json');
+    case AGENT.KIRO:
+      return path.join(os.homedir(), '.kiro', 'settings', 'mcp.json');
     case AGENT.GITHUB_COPILOT:
       // For GitHub Copilot, detect if it's VSCode or VSCode Insiders
       if (vscode.env.appName.toLowerCase().includes('insiders')) {
