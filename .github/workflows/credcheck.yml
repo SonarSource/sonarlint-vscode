@@ -33,7 +33,9 @@ jobs:
       - name: Cache NPM dependencies
         uses: SonarSource/gh-action_cache@v1
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules/
           key: npm-${{ runner.os }}-credcheck-${{ hashFiles('.github/actions/vsce-publish/package-lock.json', '.github/actions/ovsx-publish/package-lock.json') }}
           restore-keys: npm-${{ runner.os }}-credcheck-
 

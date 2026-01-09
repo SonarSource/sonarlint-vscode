@@ -59,7 +59,7 @@ jobs:
         run: |
           cp ${GITHUB_WORKSPACE}/.github/scripts/.npmrc ./.npmrc
           export ARTIFACTORY_ACCESS_TOKEN=${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
-          npm install
+          npm ci
         working-directory: ./.github/actions/vsce-publish
       - name: Extract version, file name and download URL
         id: extract_version
@@ -140,7 +140,9 @@ jobs:
       - name: Cache NPM dependencies
         uses: SonarSource/gh-action_cache@v1
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules/
           key: npm-${{ runner.os }}-ovsx-publish-${{ hashFiles('.github/actions/ovsx-publish/package-lock.json') }}
           restore-keys: npm-${{ runner.os }}-ovsx-publish-
       - name: Install dependencies for ovsx-publish
