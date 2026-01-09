@@ -148,8 +148,8 @@ jobs:
       - name: Upload VSIX artifact for QA tests
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: vsix-universal
-          path: sonarlint-vscode-*.vsix
+          name: universal-vsix-qa-artifact
+          path: sonarlint-vscode-${{ steps.project_version.outputs.PACKAGE_VERSION }}.vsix
           retention-days: 1
 
   test-linux:
@@ -341,7 +341,7 @@ jobs:
       - name: Download VSIX artifact
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
-          name: vsix-universal
+          name: universal-vsix-qa-artifact
 
       - name: Prepare integration tests
         env:
