@@ -88,6 +88,28 @@ suite('aiAgentRuleConfig', () => {
         expect(callArg.path).to.include('.windsurf/rules');
       });
 
+    test('should return true when SonarQube rules file exists for Kiro', async () => {
+        getCurrentAgentStub.returns(AGENT.KIRO);
+        const mockWorkspaceFolder = {
+          uri: vscode.Uri.file('/mock/workspace'),
+          name: 'test-workspace',
+          index: 0
+        };
+        workspaceStub.value([mockWorkspaceFolder]);
+        
+        const mockFs = {
+          stat: sinon.stub().resolves({ type: vscode.FileType.File, ctime: 0, mtime: 0, size: 100 })
+        };
+        fsStub.value(mockFs);
+    
+        const result = await isSonarQubeRulesFileConfigured();
+    
+        expect(result).to.be.true;
+        expect(mockFs.stat.calledOnce).to.be.true;
+        const callArg = mockFs.stat.getCall(0).args[0];
+        expect(callArg.path).to.include('.kiro/steering');
+      });
+
     test('should return true when SonarQube rules file exists for GitHub Copilot', async () => {
         getCurrentAgentStub.returns(AGENT.GITHUB_COPILOT);
         const mockWorkspaceFolder = {
@@ -348,6 +370,38 @@ suite('aiAgentRuleConfig', () => {
       expect(mockLanguageClient.getMCPRulesFileContent.calledWith('windsurf')).to.be.true;
       const createDirCall = mockFs.createDirectory.getCall(0);
       expect(createDirCall.args[0].path).to.include('.windsurf/rules');
+    });
+
+    test('should create file for Kiro with correct path', async () => {
+      getCurrentAgentStub.returns(AGENT.KIRO);
+      showInformationMessageStub.resolves('OK');
+      const mockWorkspaceFolder = {
+        uri: vscode.Uri.file('/mock/workspace'),
+        name: 'test-workspace',
+        index: 0
+      };
+      workspaceStub.value([mockWorkspaceFolder]);
+
+      const mockFs = {
+        stat: sinon.stub().rejects(new Error('Directory not found')),
+        createDirectory: sinon.stub().resolves(),
+        writeFile: sinon.stub().resolves()
+      };
+      fsStub.value(mockFs);
+
+      const mockDocument = { uri: vscode.Uri.file('/mock/workspace/.kiro/steering/sonarqube_mcp_instructions.mdc') };
+      openTextDocumentStub.resolves(mockDocument);
+      showTextDocumentStub.resolves();
+
+      const mockLanguageClient = {
+        getMCPRulesFileContent: sinon.stub().resolves({ content: 'test content' })
+      } as any;
+
+      await introduceSonarQubeRulesFile(mockLanguageClient);
+
+      expect(mockLanguageClient.getMCPRulesFileContent.calledWith('kiro')).to.be.true;
+      const createDirCall = mockFs.createDirectory.getCall(0);
+      expect(createDirCall.args[0].path).to.include('.kiro/steering');
     });
 
     test('should create file for GitHub Copilot with correct path and extension', async () => {

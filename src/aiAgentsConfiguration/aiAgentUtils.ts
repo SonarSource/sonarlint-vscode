@@ -11,7 +11,8 @@ import * as vscode from 'vscode';
 export enum AGENT {
   GITHUB_COPILOT = 'github_copilot',
   CURSOR = 'cursor',
-  WINDSURF = 'windsurf'
+  WINDSURF = 'windsurf',
+  KIRO = 'kiro'
 }
 
 function isCopilotInstalledAndActive(): boolean {
@@ -24,6 +25,8 @@ export function getCurrentAgentWithMCPSupport(): AGENT | undefined {
     return AGENT.CURSOR;
   } else if (vscode.env.appName.toLowerCase().includes('windsurf')) {
     return AGENT.WINDSURF;
+  } else if (vscode.env.appName.toLowerCase().includes('kiro')) {
+    return AGENT.KIRO;
   } else if (vscode.env.appName.toLowerCase().includes('visual studio code') && isCopilotInstalledAndActive()) {
     return AGENT.GITHUB_COPILOT;
   }

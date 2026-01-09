@@ -41,6 +41,9 @@ suite('mcpServerConfig', () => {
       envStub.value('Windsurf');
       expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.WINDSURF);
 
+      envStub.value('Kiro');
+      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.KIRO);
+
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
       expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.GITHUB_COPILOT);
@@ -73,20 +76,28 @@ suite('mcpServerConfig', () => {
       envStub.value('Windsurf');
       const windsurfPath = getMCPConfigPath();
 
+      envStub.value('Kiro');
+      const kiroPath = getMCPConfigPath();
+
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
       const vscodePath = getMCPConfigPath();
 
       expect(cursorPath).to.not.equal(windsurfPath);
+      expect(cursorPath).to.not.equal(kiroPath);
       expect(cursorPath).to.not.equal(vscodePath);
+      expect(windsurfPath).to.not.equal(kiroPath);
       expect(windsurfPath).to.not.equal(vscodePath);
+      expect(kiroPath).to.not.equal(vscodePath);
 
       expect(cursorPath).to.include('.cursor');
       expect(windsurfPath).to.include('windsurf');
+      expect(kiroPath).to.include('.kiro');
       expect(vscodePath).to.include('Code');
 
       expect(cursorPath).to.match(/mcp\.json$/);
       expect(windsurfPath).to.match(/mcp_config\.json$/);
+      expect(kiroPath).to.match(/mcp\.json$/);
       expect(vscodePath).to.match(/mcp\.json$/);
     } finally {
       envStub.restore();
