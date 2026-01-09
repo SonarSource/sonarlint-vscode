@@ -133,7 +133,7 @@ function getRulesDirectoryUri(workspaceFolderUri: vscode.Uri, agent: AGENT): vsc
     case AGENT.WINDSURF:
       return vscode.Uri.joinPath(workspaceFolderUri, '.windsurf', 'rules');
     case AGENT.KIRO:
-      return vscode.Uri.joinPath(workspaceFolderUri, '.kiro', 'rules');
+      return vscode.Uri.joinPath(workspaceFolderUri, '.kiro', 'steering');
     case AGENT.GITHUB_COPILOT:
       return vscode.Uri.joinPath(workspaceFolderUri, '.github', 'instructions');
     default:
@@ -151,8 +151,8 @@ function getFileName(agent: AGENT): string {
   switch (agent) {
     case AGENT.CURSOR:
     case AGENT.WINDSURF:
-    case AGENT.KIRO:
       return SONARQUBE_MCP_INSTRUCTIONS_FILE_MDC;
+    case AGENT.KIRO:
     case AGENT.GITHUB_COPILOT:
       return SONARQUBE_MCP_INSTRUCTIONS_FILE_MD;
     default:

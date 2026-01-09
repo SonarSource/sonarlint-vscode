@@ -107,7 +107,7 @@ suite('aiAgentRuleConfig', () => {
         expect(result).to.be.true;
         expect(mockFs.stat.calledOnce).to.be.true;
         const callArg = mockFs.stat.getCall(0).args[0];
-        expect(callArg.path).to.include('.kiro/rules');
+        expect(callArg.path).to.include('.kiro/steering');
       });
 
     test('should return true when SonarQube rules file exists for GitHub Copilot', async () => {
@@ -389,7 +389,7 @@ suite('aiAgentRuleConfig', () => {
       };
       fsStub.value(mockFs);
 
-      const mockDocument = { uri: vscode.Uri.file('/mock/workspace/.kiro/rules/sonarqube_mcp_instructions.mdc') };
+      const mockDocument = { uri: vscode.Uri.file('/mock/workspace/.kiro/steering/sonarqube_mcp_instructions.mdc') };
       openTextDocumentStub.resolves(mockDocument);
       showTextDocumentStub.resolves();
 
@@ -401,7 +401,7 @@ suite('aiAgentRuleConfig', () => {
 
       expect(mockLanguageClient.getMCPRulesFileContent.calledWith('kiro')).to.be.true;
       const createDirCall = mockFs.createDirectory.getCall(0);
-      expect(createDirCall.args[0].path).to.include('.kiro/rules');
+      expect(createDirCall.args[0].path).to.include('.kiro/steering');
     });
 
     test('should create file for GitHub Copilot with correct path and extension', async () => {
