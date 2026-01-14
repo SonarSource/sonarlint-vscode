@@ -1,3 +1,7 @@
+## 4.39.1
+
+* Bugfix - Can't setup SonarQube Cloud connection when there are many organisations to pick from
+
 ## 4.39
 
 * Update Python analyzer 5.15 -> 5.16
