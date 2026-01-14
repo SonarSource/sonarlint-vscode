@@ -1403,7 +1403,7 @@
     "@openpgp/web-stream-tools": "^0.3.0",
     "@sentry/node": "^10.30.0",
     "@vscode/codicons": "^0.0.44",
-    "@vscode/webview-ui-toolkit": "^1.4.0",
+    "@vscode/webview-ui-toolkit": "1.0.0",
     "@xmldom/xmldom": "^0.8.11",
     "canvas-confetti": "^1.9.4",
     "compare-versions": "^6.1.1",
