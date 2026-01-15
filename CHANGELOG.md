@@ -1,4 +1,4 @@
-## 4.39.1
+## 4.40
 
 * Bugfix - Can't setup SonarQube Cloud connection when there are many organisations to pick from
 
