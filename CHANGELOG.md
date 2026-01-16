@@ -3,6 +3,7 @@
 * Update Text & Secrets analyzer 2.36 -> 2.38
 * Update CFamily analyzer 6.76 -> 6.77
 * Upadte XML analyzer 2.14.2 to [2.15](https://github.com/SonarSource/sonar-xml/releases/tag/2.15.0.7513)
+* Update IaC analyzer 2.3 -> 2.5
 * Bugfix - Can't setup SonarQube Cloud connection when there are many organisations to pick from
 
 ## 4.39
