@@ -1,5 +1,6 @@
 ## 4.40
 
+* Update Text & Secrets analyzer 2.36 -> 2.38
 * Bugfix - Can't setup SonarQube Cloud connection when there are many organisations to pick from
 
 ## 4.39
@@ -14,7 +15,7 @@
 
 * Update Python analyzer 5.14.2 -> 5.15
 * Update CFamily analyzer 6.75.1 -> 6.76
-* Update Text & Secrets analyzer 234 -> 2.36
+* Update Text & Secrets analyzer 2.34 -> 2.36
 * Update C# analyzer 10.16.2 -> [10.17](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.17.0.131074)
 * Update IaC analyzer 2.2 -> [2.3](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2027050%20ORDER%20BY%20created%20ASC)
 
