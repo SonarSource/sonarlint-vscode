@@ -1,6 +1,7 @@
 ## 4.40
 
 * Update Text & Secrets analyzer 2.36 -> 2.38
+* Update CFamily analyzer 6.76 -> 6.77
 * Bugfix - Can't setup SonarQube Cloud connection when there are many organisations to pick from
 
 ## 4.39
