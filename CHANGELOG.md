@@ -6,6 +6,7 @@
 * Update IaC analyzer 2.3 -> 2.5
 * Update PHP analyzer 3.53 -> [3.54](https://github.com/SonarSource/sonar-php/releases/tag/3.54.0.15452)
 * Update Go analyzer 1.31 -> 1.32
+* Update C# analyzer 10.17 -> [10.18](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.18.0.131500)
 * Bugfix - Can't setup SonarQube Cloud connection when there are many organisations to pick from
 
 ## 4.39
