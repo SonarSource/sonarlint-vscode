@@ -5,6 +5,7 @@
 * Upadte XML analyzer 2.14.2 to [2.15](https://github.com/SonarSource/sonar-xml/releases/tag/2.15.0.7513)
 * Update IaC analyzer 2.3 -> 2.5
 * Update PHP analyzer 3.53 -> [3.54](https://github.com/SonarSource/sonar-php/releases/tag/3.54.0.15452)
+* Update Go analyzer 1.31 -> 1.32
 * Bugfix - Can't setup SonarQube Cloud connection when there are many organisations to pick from
 
 ## 4.39
