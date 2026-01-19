@@ -91,9 +91,9 @@ export namespace Commands {
   export const TRIGGER_RESOLVE_TAINT_COMMAND = 'SonarQube.TriggerResolveTaintCommand';
   export const TRIGGER_FETCH_CODE_ACTIONS_COMMAND = 'SonarQube.TriggerFetchCodeActionsCommand';
 
-  export const SHOW_FLIGHT_RECORDING_MENU = 'SonarQube.ShowFlightRecordingMenu';
   export const DUMP_BACKEND_THREADS = 'SonarQube.DumpBackendThreads';
   export const COPY_FLIGHT_RECORDER_SESSION_ID = 'SonarQube.CopyFlightRecorderSessionId';
+  export const SHOW_STATUS_BAR_MENU = 'SonarQube.ShowStatusBarMenu';
 
   // Filter commands
   export const SHOW_ALL_FINDINGS = 'SonarQube.ShowAllFindings';

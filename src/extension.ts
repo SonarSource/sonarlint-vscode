@@ -73,6 +73,7 @@ import { FlightRecorderService } from './monitoring/flightrecorder';
 import { onEmbeddedServerStarted } from './aiAgentsConfiguration/mcpServerConfig';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 import { LabsWebviewProvider } from './labs/labsWebviewProvider';
+import { StatusBarService } from './statusbar/statusBar';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -237,6 +238,7 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   ConnectionSettingsService.init(context, languageClient);
   NewCodeDefinitionService.init(context);
+  StatusBarService.init(context);
   FileSystemServiceImpl.init();
   SharedConnectedModeSettingsService.init(languageClient, FileSystemServiceImpl.instance, context);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance, SharedConnectedModeSettingsService.instance);
@@ -246,7 +248,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   FixSuggestionService.init(languageClient);
   IdeLabsFlagManagementService.init(context);
-  
+
   ContextManager.instance.initializeContext(context);
 
   FindingsTreeDataProvider.init(context, languageClient);
@@ -259,22 +261,17 @@ export async function activate(context: VSCode.ExtensionContext) {
   installCustomRequestHandlers(context);
   initializeLanguageModelTools(context);
 
-  const referenceBranchStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 1);
-  const automaticAnalysisStatusItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 2);
-
-  const scm = await initScm(languageClient, referenceBranchStatusItem);
+  const scm = await initScm(languageClient);
   context.subscriptions.push(scm);
   context.subscriptions.push(
     languageClient.onNotification(ExtendedClient.SetReferenceBranchNameForFolderNotification.type, params => {
       scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
     })
   );
-  context.subscriptions.push(referenceBranchStatusItem);
-  context.subscriptions.push(automaticAnalysisStatusItem);
 
   VSCode.window.onDidChangeActiveTextEditor(e => {
-    scm.updateReferenceBranchStatusItem(e);
-    NewCodeDefinitionService.instance.updateNewCodeStatusBarItem(e);
+    const currentBranch = scm.getReferenceBranchNameForFile(e?.document?.uri);
+    StatusBarService.instance.updateReferenceBranch(currentBranch);
     FindingsTreeDataProvider.instance.refresh();
   });
 
@@ -327,8 +324,12 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
   }));
 
-  const automaticAnalysisService = new AutomaticAnalysisService(automaticAnalysisStatusItem, findingsView);
+  const automaticAnalysisService = new AutomaticAnalysisService(findingsView);
   automaticAnalysisService.updateAutomaticAnalysisStatusBarAndFindingsViewMessage();
+
+  const initialBranch = scm.getReferenceBranchNameForFile(VSCode.window.activeTextEditor?.document?.uri);
+  StatusBarService.instance.updateReferenceBranch(initialBranch);
+  NewCodeDefinitionService.instance.updateFocusOnNewCodeState();
 
   VSCode.workspace.onDidChangeConfiguration(async event => {
     if (event.affectsConfiguration('sonarlint.rules')) {
@@ -379,8 +380,6 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   const commandsManager = new CommandsManager(context, languageClient, allRulesTreeDataProvider, allRulesView, allConnectionsTreeDataProvider, allConnectionsView, aiAgentsConfigurationTreeDataProvider);
   commandsManager.registerCommands();
-
-  automaticAnalysisStatusItem.show();
   
   // Update badge when tree data changes
   context.subscriptions.push(

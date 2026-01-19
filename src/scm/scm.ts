@@ -18,6 +18,7 @@ import {
   logToSonarLintOutput,
   verboseLogToSonarLintOutput
 } from '../util/logging';
+import { StatusBarService } from '../statusbar/statusBar';
 
 const GIT_EXTENSION_ID = 'vscode.git';
 const GIT_API_VERSION = 1;
@@ -27,7 +28,6 @@ const CHECK_IGNORE_ARGS = ['check-ignore', '-v', '-z', '--stdin'];
 interface Scm extends vscode.Disposable {
   setReferenceBranchName(folderUri: vscode.Uri, branchName?: string): void;
   getReferenceBranchNameForFile(fileUri: vscode.Uri): string|null;
-  updateReferenceBranchStatusItem(event?: vscode.TextEditor): void;
 }
 
 class NoopScm implements Scm {
@@ -38,10 +38,6 @@ class NoopScm implements Scm {
 
   getReferenceBranchNameForFile(fileUri: vscode.Uri) {
     return null;
-  }
-
-  updateReferenceBranchStatusItem(event?: vscode.TextEditor) {
-    // NOP
   }
 
   dispose() {
@@ -59,8 +55,7 @@ class GitScm implements Scm {
 
   constructor(
     private readonly gitApi: API,
-    private readonly client: SonarLintExtendedLanguageClient,
-    private readonly referenceBranchStatusItem: vscode.StatusBarItem) {
+    private readonly client: SonarLintExtendedLanguageClient) {
     this.listeners = [
       gitApi.onDidOpenRepository(r => {
         this.subscribeToRepositoryChanges(r);
@@ -111,7 +106,11 @@ class GitScm implements Scm {
 
   setReferenceBranchName(folderUri: vscode.Uri, branchName?: string) {
     this.referenceBranchByFolderUri.set(folderUri.toString(true), branchName);
-    this.updateReferenceBranchStatusItem(vscode.window.activeTextEditor);
+    // Notify status bar with current branch for active editor
+    const currentBranch = this.getReferenceBranchNameForFile(
+      vscode.window.activeTextEditor?.document?.uri
+    );
+    StatusBarService.instance.updateReferenceBranch(currentBranch);
   }
 
   getReferenceBranchNameForFile(fileUri?: vscode.Uri) {
@@ -120,16 +119,6 @@ class GitScm implements Scm {
       return this.referenceBranchByFolderUri.get(workspaceFolderForFile?.uri?.toString(true));
     } else {
       return null;
-    }
-  }
-
-  updateReferenceBranchStatusItem(textEditor?: vscode.TextEditor) {
-    const referenceBranchName = this.getReferenceBranchNameForFile(textEditor?.document?.uri);
-    if (referenceBranchName) {
-      this.referenceBranchStatusItem.text = `SonarQube branch: ${referenceBranchName}`;
-      this.referenceBranchStatusItem.show();
-    } else {
-      this.referenceBranchStatusItem.hide();
     }
   }
 
@@ -144,7 +133,7 @@ class GitScm implements Scm {
   }
 }
 
-export async function initScm(client: SonarLintExtendedLanguageClient, referenceBranchStatusItem: vscode.StatusBarItem) {
+export async function initScm(client: SonarLintExtendedLanguageClient) {
   try {
     const gitExtension = vscode.extensions.getExtension<GitExtension>(GIT_EXTENSION_ID);
     if (!gitExtension) {
@@ -152,7 +141,7 @@ export async function initScm(client: SonarLintExtendedLanguageClient, reference
       return new NoopScm();
     }
     const gitApi = (await gitExtension.activate()).getAPI(GIT_API_VERSION);
-    return new GitScm(gitApi, client, referenceBranchStatusItem);
+    return new GitScm(gitApi, client);
   } catch (e) {
     logToSonarLintOutput(`Exception occurred while initializing the Git API: ${e}`);
     return new NoopScm();

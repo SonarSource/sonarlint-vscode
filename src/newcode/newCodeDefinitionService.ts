@@ -11,13 +11,13 @@ import * as VSCode from 'vscode';
 import { ExtendedClient } from '../lsp/protocol';
 import { Commands } from '../util/commands';
 import { code2ProtocolConverter } from '../util/uri';
+import { StatusBarService } from '../statusbar/statusBar';
 
 
 export class NewCodeDefinitionService {
 
   private static _instance: NewCodeDefinitionService;
   private readonly newCodeDefinitionByFolderUriCache = new Map<string, NewCodeDefinition>();
-  private newCodeStatusBarItem: VSCode.StatusBarItem;
   private focusOnNewCode: boolean;
 
   constructor() {
@@ -26,7 +26,7 @@ export class NewCodeDefinitionService {
 
   static init(context: VSCode.ExtensionContext): void {
     NewCodeDefinitionService._instance = new NewCodeDefinitionService();
-    NewCodeDefinitionService._instance.createNewCodeDefinitionStatusBarItem(context);
+    NewCodeDefinitionService._instance.registerNewCodeDefinitionCommand(context);
   }
 
   static get instance(): NewCodeDefinitionService {
@@ -39,65 +39,23 @@ export class NewCodeDefinitionService {
         isSupported: params.isSupported,
         newCodeDefinitionOrMessage: params.newCodeDefinitionOrMessage
       });
-    this.updateNewCodeStatusBarItem(VSCode.window.activeTextEditor);
   }
 
   getNewCodeDefinition(folderUri: string): NewCodeDefinition {
     return this.newCodeDefinitionByFolderUriCache.get(folderUri);
   }
 
-  createNewCodeDefinitionStatusBarItem(context: VSCode.ExtensionContext) {
+  registerNewCodeDefinitionCommand(context: VSCode.ExtensionContext) {
     context.subscriptions.push(VSCode.commands.registerCommand(Commands.NEW_CODE_DEFINITION, async () => {
       await VSCode.workspace.getConfiguration('sonarlint')
         .update('focusOnNewCode', !this.focusOnNewCode, VSCode.ConfigurationTarget.Global);
     }));
     this.focusOnNewCode = VSCode.workspace.getConfiguration().get('sonarlint.focusOnNewCode', false);
-    this.newCodeStatusBarItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 0);
-
-    this.newCodeStatusBarItem.command = Commands.NEW_CODE_DEFINITION;
-    context.subscriptions.push(this.newCodeStatusBarItem);
-    this.updateNewCodeStatusBarItem(VSCode.window.activeTextEditor);
-  }
-
-  updateNewCodeStatusBarItem(textEditor?: VSCode.TextEditor) {
-    const scheme = textEditor?.document?.uri?.scheme;
-    if (scheme !== 'file') {
-      this.newCodeStatusBarItem.hide();
-      return;
-    }
-    const textDocument = textEditor.document;
-    const uri = textDocument.uri;
-    const workspaceFolder = VSCode.workspace.getWorkspaceFolder(uri);
-    if (!workspaceFolder) {
-      this.newCodeStatusBarItem.hide();
-      return;
-    }
-    const newCodeDefinition = this.getNewCodeDefinition(code2ProtocolConverter(workspaceFolder.uri));
-    this.updateStatusBarTooltip(newCodeDefinition);
-    this.updateStatusBarText();
-    this.newCodeStatusBarItem.show();
-  }
-
-  private updateStatusBarTooltip(newCodeDefinition: NewCodeDefinition) {
-    let newCodeDefinitionMessage = '';
-    if (newCodeDefinition && this.focusOnNewCode) {
-      newCodeDefinitionMessage = `Only issues in new code are highlighted.\n\nNew Code Definition: ${newCodeDefinition.newCodeDefinitionOrMessage}`;
-    } else if (!this.focusOnNewCode) {
-      newCodeDefinitionMessage = 'All issues are shown.\n\nSet SonarQube focus on new code to see only issues in recently added or changed code.';
-    } else if (!newCodeDefinition) {
-      newCodeDefinitionMessage = 'There is no New Code Definition for the project';
-    }
-    this.newCodeStatusBarItem.tooltip = `${newCodeDefinitionMessage}`;
-  }
-
-  updateStatusBarText() {
-    const enabledText = this.focusOnNewCode ? 'new code' : 'overall code';
-    this.newCodeStatusBarItem.text = `SonarQube focus: ${enabledText}`;
   }
 
   updateFocusOnNewCodeState() {
     this.focusOnNewCode = this.getFocusOnNewCodeFromConfiguration();
-    this.updateNewCodeStatusBarItem(VSCode.window.activeTextEditor);
+    StatusBarService.instance.updateFocusOnNewCode(this.focusOnNewCode);
   }
 
   private getFocusOnNewCodeFromConfiguration() {
@@ -109,5 +67,3 @@ export interface NewCodeDefinition {
   newCodeDefinitionOrMessage: string;
   isSupported: boolean;
 }
-
-
