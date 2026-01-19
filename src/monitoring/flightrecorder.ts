@@ -9,6 +9,7 @@
 import * as vscode from 'vscode';
 import { ContextManager } from '../contextManager';
 import { Commands } from '../util/commands';
+import { StatusBarService } from '../statusbar/statusBar';
 
 const FLIGHT_RECORDER_ITEM_PRIORITY = 3;
 
@@ -29,14 +30,7 @@ const dumpBackendThreads = {
 export class FlightRecorderService {
   private static _instance: FlightRecorderService;
 
-  private readonly flightRecorderStatusItem: vscode.StatusBarItem;
   sessionId?: string;
-
-  constructor() {
-    this.flightRecorderStatusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, FLIGHT_RECORDER_ITEM_PRIORITY);
-    this.flightRecorderStatusItem.text = '$(record) SonarQube Flight Recorder';
-    this.flightRecorderStatusItem.command = Commands.SHOW_FLIGHT_RECORDING_MENU;
-  }
 
   static get instance() {
     if (!FlightRecorderService._instance) {
@@ -48,9 +42,7 @@ export class FlightRecorderService {
   async onFlightRecorderStarted(sessionId: string) {
     this.sessionId = sessionId;
     ContextManager.instance.setFlightRecorderRunningContext();
-    this.flightRecorderStatusItem.tooltip = `SonarQube Flight Recorder session '${this.sessionId}' running.
-Click to copy session ID or capture a thread dump.`;
-    this.flightRecorderStatusItem.show();
+    StatusBarService.instance.updateFlightRecorder(sessionId);
 
     vscode.window.showInformationMessage(`SonarQube Flight Recorder started with session ID '${this.sessionId}'.`, 'Copy Session ID')
       .then(copySelected => {

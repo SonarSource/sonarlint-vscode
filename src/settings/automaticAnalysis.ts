@@ -8,29 +8,25 @@
 
 import * as vscode from 'vscode';
 import { FindingsTreeViewItem } from '../findings/findingsTreeDataProvider';
+import { StatusBarService } from '../statusbar/statusBar';
 
 export class AutomaticAnalysisService {
-  public constructor(private readonly statusBarItem: vscode.StatusBarItem,
+  public constructor(
     private readonly findingsView: vscode.TreeView<FindingsTreeViewItem>,
   ) {
-  }  
+  }
 
   updateAutomaticAnalysisStatusBarAndFindingsViewMessage() {
     const isEnabled = vscode.workspace.getConfiguration('sonarlint').get('automaticAnalysis', true);
-    const icon = isEnabled ? '$(circle-filled)' : '$(circle-outline)';
-    const status = isEnabled ? 'enabled' : 'disabled';
-    const action = isEnabled ? 'disable' : 'enable';
-    const command = isEnabled ? 'SonarLint.AutomaticAnalysis.Disable' : 'SonarLint.AutomaticAnalysis.Enable';
-    
-    this.statusBarItem.text = `${icon} SonarQube`;
-    this.statusBarItem.tooltip = `Automatic analysis is ${status}. Click to ${action}.`;
-    this.statusBarItem.command = command;
-    
+
     // Update findings view message
     if (isEnabled) {
       this.findingsView.message = undefined;
     } else {
       this.findingsView.message = 'ⓘ Automatic analysis is disabled. The findings list might not be up to date.';
     }
+
+    // Notify status bar
+    StatusBarService.instance.updateAutomaticAnalysis(isEnabled);
   }
 }

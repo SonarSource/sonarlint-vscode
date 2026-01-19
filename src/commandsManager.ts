@@ -45,6 +45,7 @@ import { Commands } from './util/commands';
 import { installHook, openHookConfiguration, openHookScript, uninstallHook } from './aiAgentsConfiguration/aiAgentHooks';
 import { getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
 import { code2ProtocolConverter } from './util/uri';
+import { StatusBarService } from './statusbar/statusBar';
 
 export class CommandsManager {
   constructor(
@@ -206,8 +207,8 @@ export class CommandsManager {
           this.allConnectionsView.reveal(targetConnection, { select: true, focus: true, expand: false });
         }
       ),
-      vscode.commands.registerCommand(Commands.SHOW_FLIGHT_RECORDING_MENU, () =>
-        FlightRecorderService.instance.showFlightRecordingMenu()
+      vscode.commands.registerCommand(Commands.SHOW_STATUS_BAR_MENU, () =>
+        StatusBarService.instance.showQuickPickMenu()
       ),
       vscode.commands.registerCommand(Commands.COPY_FLIGHT_RECORDER_SESSION_ID, () =>
         FlightRecorderService.instance.copySessionIdToClipboard()

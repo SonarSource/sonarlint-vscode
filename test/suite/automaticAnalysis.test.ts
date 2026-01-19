@@ -35,7 +35,7 @@ suite('AutomaticAnalysisService Test Suite', () => {
       onDidChangeCheckboxState: new vscode.EventEmitter<vscode.TreeCheckboxChangeEvent<FindingsTreeViewItem>>().event
     } as vscode.TreeView<FindingsTreeViewItem>;
     
-    automaticAnalysisService = new AutomaticAnalysisService(statusBarItem, findingsView);
+    automaticAnalysisService = new AutomaticAnalysisService(findingsView);
     
     await vscode.workspace
       .getConfiguration('sonarlint')
