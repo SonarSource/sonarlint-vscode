@@ -39,7 +39,7 @@ import { navigateToLocation } from './location/locations';
 import { ExtendedServer } from './lsp/protocol';
 import { FlightRecorderService } from './monitoring/flightrecorder';
 import { ConnectionSettingsService } from './settings/connectionsettings';
-import { installManagedJre } from './util/requirements';
+import { installManagedJre, resolveRequirements } from './util/requirements';
 import { AIAgentsConfigurationTreeDataProvider } from './aiAgentsConfiguration/aiAgentsConfigurationTreeDataProvider';
 import { Commands } from './util/commands';
 import { installHook, openHookConfiguration, openHookScript, uninstallHook } from './aiAgentsConfiguration/aiAgentHooks';
@@ -210,12 +210,23 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.SHOW_STATUS_BAR_MENU, () =>
         StatusBarService.instance.showQuickPickMenu()
       ),
-      vscode.commands.registerCommand(Commands.COPY_FLIGHT_RECORDER_SESSION_ID, () =>
-        FlightRecorderService.instance.copySessionIdToClipboard()
-      ),
-      vscode.commands.registerCommand(Commands.DUMP_BACKEND_THREADS, () => {
-        this.languageClient.dumpThreads();
+      vscode.commands.registerCommand(Commands.START_FLIGHT_RECORDER, async () => {
+        try {
+          const requirements = await resolveRequirements(this.context);
+          await FlightRecorderService.instance.startRecording(requirements.javaHome);
+        } catch (error) {
+          vscode.window.showErrorMessage(`Failed to start Flight Recorder: ${error.message}`);
+        }
       }),
+      vscode.commands.registerCommand(Commands.STOP_FLIGHT_RECORDER, () =>
+        FlightRecorderService.instance.stopRecording()
+      ),
+      vscode.commands.registerCommand(Commands.DUMP_BACKEND_THREADS, () =>
+        FlightRecorderService.instance.captureThreadDump()
+      ),
+      vscode.commands.registerCommand(Commands.CAPTURE_HEAP_DUMP, () =>
+        FlightRecorderService.instance.captureHeapDump()
+      ),
       vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, connection => {
         configureMCPServer(this.languageClient, this.allConnectionsTreeDataProvider, connection);
         this.aiAgentsConfigurationTreeDataProvider.refresh();

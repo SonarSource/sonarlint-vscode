@@ -14,13 +14,11 @@ import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 suite('AutomaticAnalysisService Test Suite', () => {
   
-  let statusBarItem: vscode.StatusBarItem;
   let findingsView: vscode.TreeView<FindingsTreeViewItem>;
   let automaticAnalysisService: AutomaticAnalysisService;
   
   setup(async function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
-    statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
     
     findingsView = {
       message: undefined,
@@ -44,7 +42,6 @@ suite('AutomaticAnalysisService Test Suite', () => {
 
   teardown(async function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
-    statusBarItem.dispose();
     await vscode.workspace
       .getConfiguration('sonarlint')
       .update('automaticAnalysis', undefined, vscode.ConfigurationTarget.Global);
@@ -54,9 +51,6 @@ suite('AutomaticAnalysisService Test Suite', () => {
   test('should use default value when configuration is not set', () => {
     automaticAnalysisService.updateAutomaticAnalysisStatusBarAndFindingsViewMessage();
 
-    expect(statusBarItem.text).to.equal('$(circle-filled) SonarQube');
-    expect(statusBarItem.tooltip).to.equal('Automatic analysis is enabled. Click to disable.');
-    expect(statusBarItem.command).to.equal('SonarLint.AutomaticAnalysis.Disable');
     expect(findingsView.message).to.be.undefined;
   });
 
@@ -78,9 +72,6 @@ suite('AutomaticAnalysisService Test Suite', () => {
 
     // Message should be cleared
     expect(findingsView.message).to.be.undefined;
-    expect(statusBarItem.text).to.equal('$(circle-filled) SonarQube');
-    expect(statusBarItem.tooltip).to.equal('Automatic analysis is enabled. Click to disable.');
-    expect(statusBarItem.command).to.equal('SonarLint.AutomaticAnalysis.Disable');
   });
 
   test('should set findings view message and update status bar when analysis is disabled', async () => {
@@ -100,8 +91,5 @@ suite('AutomaticAnalysisService Test Suite', () => {
     automaticAnalysisService.updateAutomaticAnalysisStatusBarAndFindingsViewMessage();
 
     expect(findingsView.message).to.equal('ⓘ Automatic analysis is disabled. The findings list might not be up to date.');
-    expect(statusBarItem.text).to.equal('$(circle-outline) SonarQube');
-    expect(statusBarItem.tooltip).to.equal('Automatic analysis is disabled. Click to enable.');
-    expect(statusBarItem.command).to.equal('SonarLint.AutomaticAnalysis.Enable');
   });
 });

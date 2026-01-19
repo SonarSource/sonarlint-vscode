@@ -33,9 +33,6 @@ export async function languageServerCommand(
   const sonarLintConfiguration = getSonarLintConfiguration();
   const vmargs = sonarLintConfiguration.get('ls.vmargs', '');
   parseVMargs(params, vmargs);
-  if (sonarLintConfiguration.get('startFlightRecorder', false)) {
-    params.push('-Dsonarlint.flightrecorder.enabled=true');
-  }
 
   params.push('-jar', serverJar);
   params.push('-stdio');
