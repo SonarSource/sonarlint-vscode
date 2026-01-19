@@ -383,13 +383,6 @@
             }
           ]
         },
-        "sonarlint.startFlightRecorder": {
-          "order": 99,
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Start the language server's flight recorder mode.\n\n⚠ **This feature shares detailed information with SonarSource (logs, telemetry events) that may include _confidential_ data, only enable if requested to help investigate an issue.**",
-          "scope": "machine"
-        },
         "sonarlint.disableTelemetry": {
           "order": 100,
           "type": "boolean",
@@ -1405,6 +1398,7 @@
     "@vscode/codicons": "^0.0.44",
     "@vscode/webview-ui-toolkit": "1.0.0",
     "@xmldom/xmldom": "^0.8.11",
+    "adm-zip": "^0.5.10",
     "canvas-confetti": "^1.9.4",
     "compare-versions": "^6.1.1",
     "diff": "^8.0.2",
@@ -1429,6 +1423,7 @@
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^4.1.2",
     "@sentry/webpack-plugin": "^4.6.1",
+    "@types/adm-zip": "^0.5.0",
     "@types/chai": "^5.2.3",
     "@types/follow-redirects": "^1.14.4",
     "@types/lodash": "^4.17.21",

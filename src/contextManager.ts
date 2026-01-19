@@ -85,6 +85,10 @@ export class ContextManager {
     vscode.commands.executeCommand('setContext', FLIGHT_RECORDER_RUNNING, true);
   }
 
+  clearFlightRecorderRunningContext() {
+    vscode.commands.executeCommand('setContext', FLIGHT_RECORDER_RUNNING, false);
+  }
+
   initializeIdeLabsContext() {
     const joined = IdeLabsFlagManagementService.instance.isIdeLabsJoined();
     this.setIdeLabsJoinedContext(joined);

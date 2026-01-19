@@ -13,9 +13,9 @@ export class StatusBarService {
   private static _instance: StatusBarService;
   private readonly statusBarItem: VSCode.StatusBarItem;
   private referenceBranchName: string | null = null;
-  private focusOnNewCode: boolean = false;
-  private automaticAnalysisEnabled: boolean = true;
-  private flightRecorderSessionId: string | null = null;
+  private focusOnNewCode = false;
+  private flightRecorderStarted = false;
+  private automaticAnalysisEnabled = true;
 
   private constructor(context: VSCode.ExtensionContext) {
     this.statusBarItem = VSCode.window.createStatusBarItem(VSCode.StatusBarAlignment.Left, 0);
@@ -48,46 +48,40 @@ export class StatusBarService {
     this.updateStatusBarText();
   }
 
-  updateFlightRecorder(sessionId: string | null): void {
-    this.flightRecorderSessionId = sessionId;
+  updateFlightRecorder(started: boolean): void {
+    this.flightRecorderStarted = started;
     this.updateStatusBarText();
   }
 
   private updateStatusBarText(): void {
     const parts: string[] = [];
 
-    // Add focus state
     const focusText = this.focusOnNewCode ? 'new code' : 'overall code';
     parts.push(`focus on ${focusText}`);
 
-    // Add branch if available
     if (this.referenceBranchName) {
       parts.push(`branch ${this.referenceBranchName}`);
     }
 
-    // Build final text
     if (parts.length > 0) {
       this.statusBarItem.text = `SonarQube (${parts.join(', ')})`;
     } else {
       this.statusBarItem.text = 'SonarQube';
     }
 
-    // Update tooltip
     this.updateStatusBarTooltip();
   }
 
   private updateStatusBarTooltip(): void {
     const tooltipParts: string[] = [];
 
-    tooltipParts.push(`Focus: ${this.focusOnNewCode ? 'New code' : 'Overall code'}`);
-    tooltipParts.push(`Automatic analysis: ${this.automaticAnalysisEnabled ? 'Enabled' : 'Disabled'}`);
+    tooltipParts.push(
+      `Focus: ${this.focusOnNewCode ? 'New code' : 'Overall code'}`,
+      `Automatic analysis: ${this.automaticAnalysisEnabled ? 'Enabled' : 'Disabled'}`
+    );
 
     if (this.referenceBranchName) {
       tooltipParts.push(`Branch: ${this.referenceBranchName}`);
-    }
-
-    if (this.flightRecorderSessionId) {
-      tooltipParts.push(`Flight Recorder: Active (session ${this.flightRecorderSessionId})`);
     }
 
     tooltipParts.push('\nClick to open menu');
@@ -98,7 +92,7 @@ export class StatusBarService {
   async showQuickPickMenu(): Promise<void> {
     const items: VSCode.QuickPickItem[] = [];
 
-    const focusIcon = this.focusOnNewCode ? '$(eye)' : '$(eye-closed)';
+    const focusIcon = this.focusOnNewCode ? '$(eye-closed)' : '$(eye)';
     const focusLabel = this.focusOnNewCode ? 'Focus on overall code' : 'Focus on new code';
     items.push({
       label: `${focusIcon} ${focusLabel}`,
@@ -116,23 +110,32 @@ export class StatusBarService {
         ? 'Stop analyzing files automatically'
         : 'Start analyzing files automatically',
       alwaysShow: true
+    },
+    {
+      label: 'Flight Recorder',
+      kind: VSCode.QuickPickItemKind.Separator
     });
 
-    if (this.flightRecorderSessionId) {
+    if (this.flightRecorderStarted) {
       items.push({
-        label: 'Flight Recorder',
-        kind: VSCode.QuickPickItemKind.Separator
-      });
-
-      items.push({
-        label: '$(clippy) Copy Flight Recording Session ID',
-        detail: 'Copy current flight recording session ID to system clipboard',
+        label: '$(debug-stop) Stop Flight Recorder',
+        detail: 'Stop recording and create diagnostic archive',
+        alwaysShow: true
+      },
+      {
+        label: '$(debug-line-by-line) Capture Thread Dump',
+        detail: 'Capture current thread dump using jstack',
+        alwaysShow: true
+      },
+      {
+        label: '$(database) Capture Heap Dump',
+        detail: 'Capture heap dump using jcmd (may be large)',
         alwaysShow: true
       });
-
+    } else {
       items.push({
-        label: '$(debug-line-by-line) Dump Backend Threads',
-        detail: 'Capture a dump of the language server JVM threads',
+        label: '$(record) Start Flight Recorder',
+        detail: 'Start capturing diagnostic data locally',
         alwaysShow: true
       });
     }
@@ -157,12 +160,18 @@ export class StatusBarService {
         ? 'SonarLint.AutomaticAnalysis.Disable'
         : 'SonarLint.AutomaticAnalysis.Enable';
       await VSCode.commands.executeCommand(command);
-    } else if (item.label.includes('Copy Flight Recording')) {
-      // Copy flight recorder session ID
-      await VSCode.commands.executeCommand(Commands.COPY_FLIGHT_RECORDER_SESSION_ID);
-    } else if (item.label.includes('Dump Backend Threads')) {
-      // Dump backend threads
+    } else if (item.label.includes('Start Flight Recorder')) {
+      // Start flight recorder
+      await VSCode.commands.executeCommand(Commands.START_FLIGHT_RECORDER);
+    } else if (item.label.includes('Stop Flight Recorder')) {
+      // Stop flight recorder
+      await VSCode.commands.executeCommand(Commands.STOP_FLIGHT_RECORDER);
+    } else if (item.label.includes('Capture Thread Dump')) {
+      // Capture thread dump
       await VSCode.commands.executeCommand(Commands.DUMP_BACKEND_THREADS);
+    } else if (item.label.includes('Capture Heap Dump')) {
+      // Capture heap dump
+      await VSCode.commands.executeCommand(Commands.CAPTURE_HEAP_DUMP);
     }
   }
 }

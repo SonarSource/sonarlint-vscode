@@ -10,9 +10,7 @@
 import * as VSCode from 'vscode';
 import { ExtendedClient } from '../lsp/protocol';
 import { Commands } from '../util/commands';
-import { code2ProtocolConverter } from '../util/uri';
 import { StatusBarService } from '../statusbar/statusBar';
-
 
 export class NewCodeDefinitionService {
 
