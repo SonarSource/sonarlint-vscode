@@ -8,6 +8,7 @@
 * Update Go analyzer 1.31 -> 1.32
 * Update C# analyzer 10.17 -> [10.18](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.18.0.131500)
 * Bugfix - Can't setup SonarQube Cloud connection when there are many organisations to pick from
+* Enable AI Agent configurations for Kiro
 
 ## 4.39
 
