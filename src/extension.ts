@@ -101,6 +101,10 @@ let aiAgentsConfigurationTreeDataProvider: AIAgentsConfigurationTreeDataProvider
 let aiAgentsConfigurationView: VSCode.TreeView<AIAgentsConfigurationItem>;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
+// Diagnostic management for Problems view
+let diagnosticsCollection: VSCode.DiagnosticCollection;
+const diagnosticsCache = new Map<string, VSCode.Diagnostic[]>();
+
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   try {
     const requirements = await resolveRequirements(context);
@@ -176,12 +180,29 @@ export async function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(helmWatcher);
   context.subscriptions.push(sharedConnectedModeConfigurationWatcher);
 
+  // Create diagnostic collection for managing Problems view
+  diagnosticsCollection = VSCode.languages.createDiagnosticCollection('sonarlint');
+  context.subscriptions.push(diagnosticsCollection);
+
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     middleware: {
       handleDiagnostics: (uri, diagnostics, next) => {
+        // Always update the custom SonarQube Findings view
         FindingsTreeDataProvider.instance.updateIssues(uri.toString(), diagnostics);
-        next(uri, diagnostics); // Call the default handler
+
+        // Cache the diagnostics
+        diagnosticsCache.set(uri.toString(), diagnostics);
+
+        // Update Problems view based on setting
+        const showInProblemsView = VSCode.workspace.getConfiguration('sonarlint').get('showIssuesInProblemsView', true);
+        if (showInProblemsView) {
+          diagnosticsCollection.set(uri, diagnostics);
+        } else {
+          diagnosticsCollection.delete(uri);
+        }
+
+        // Don't call next() since we're managing diagnostics ourselves
       }
     },
     documentSelector: DOCUMENT_SELECTOR,
@@ -192,7 +213,6 @@ export async function activate(context: VSCode.ExtensionContext) {
       code2Protocol: code2ProtocolConverter,
       protocol2Code: protocol2CodeConverter
     },
-    diagnosticCollectionName: 'sonarlint',
     initializationOptions: () => {
       return {
         productKey: 'vscode',
@@ -278,6 +298,24 @@ export async function activate(context: VSCode.ExtensionContext) {
     StatusBarService.instance.updateReferenceBranch(currentBranch);
     FindingsTreeDataProvider.instance.refresh();
   });
+
+  // Listen for changes to the showIssuesInProblemsView setting
+  context.subscriptions.push(
+    VSCode.workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration('sonarlint.showIssuesInProblemsView')) {
+        const showInProblemsView = VSCode.workspace.getConfiguration('sonarlint').get('showIssuesInProblemsView', true);
+        if (showInProblemsView) {
+          // Republish all cached diagnostics to Problems view
+          diagnosticsCache.forEach((diagnostics, uriString) => {
+            diagnosticsCollection.set(VSCode.Uri.parse(uriString), diagnostics);
+          });
+        } else {
+          // Clear all diagnostics from Problems view
+          diagnosticsCollection.clear();
+        }
+      }
+    })
+  );
 
   allRulesTreeDataProvider = new AllRulesTreeDataProvider(() => languageClient.listAllRules());
   allRulesView = VSCode.window.createTreeView('SonarLint.AllRules', {

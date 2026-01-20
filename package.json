@@ -316,8 +316,15 @@
           "markdownDescription": "If enabled, by default, [focusing on new code](https://docs.sonarsource.com/sonarqube-for-vs-code/using/investigating-issues/#focusing-on-new-code) shows issues introduced in the last 30 days.\n\nFor the most accurate and customizable new code definition, use [Connected Mode](https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/connected-mode) with SonarQube (Server, Cloud).",
           "scope": "machine"
         },
-        "sonarlint.earlyAccess.showRegionSelection": {
+        "sonarlint.showIssuesInProblemsView": {
           "order": 14,
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "If enabled, SonarQube for IDE will report issues in both the native VS Code Problems view and the custom SonarQube view. If disabled, issues will only appear in the SonarQube view.",
+          "scope": "machine"
+        },
+        "sonarlint.earlyAccess.showRegionSelection": {
+          "order": 15,
           "type": "boolean",
           "default": false,
           "markdownDescription": "Show region selection while creating SonarQube Cloud Connection",
@@ -1464,7 +1471,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.10.0.77998",
+      "version": "4.10-SNAPSHOT",
       "output": "server/sonarlint-ls.jar"
     },
     {
