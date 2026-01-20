@@ -75,7 +75,7 @@ export class StatusBarService {
       tooltipParts.push(`Branch: ${this.referenceBranchName}`);
     }
 
-    tooltipParts.push('\nClick to open menu');
+    tooltipParts.push('\nSelect to open menu');
 
     this.statusBarItem.tooltip = tooltipParts.join('\n');
   }
