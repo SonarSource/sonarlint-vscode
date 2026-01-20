@@ -83,28 +83,27 @@ export class StatusBarService {
   async showQuickPickMenu(): Promise<void> {
     const items: StatusBarQuickPickItem[] = [];
 
-    const focusIcon = this.focusOnNewCode ? '$(eye-closed)' : '$(eye)';
-    const focusLabel = this.focusOnNewCode ? 'Focus on overall code' : 'Focus on new code';
-    items.push({
-      command: Commands.NEW_CODE_DEFINITION,
-      label: `${focusIcon} ${focusLabel}`,
-      detail: this.focusOnNewCode
-        ? 'Switch to showing all issues'
-        : 'Switch to showing only issues in new code',
-      alwaysShow: true
-    });
-
     const analysisIcon = this.automaticAnalysisEnabled ? '$(circle-outline)' : '$(circle-filled)';
     const analysisLabel = this.automaticAnalysisEnabled ? 'Disable automatic analysis' : 'Enable automatic analysis';
     const analysisCommand = this.automaticAnalysisEnabled
       ? 'SonarLint.AutomaticAnalysis.Disable'
       : 'SonarLint.AutomaticAnalysis.Enable';
+    const focusIcon = this.focusOnNewCode ? '$(eye-closed)' : '$(eye)';
+    const focusLabel = this.focusOnNewCode ? 'Focus on overall code' : 'Focus on new code';
     items.push({
       command: analysisCommand,
       label: `${analysisIcon} ${analysisLabel}`,
       detail: this.automaticAnalysisEnabled
         ? 'Stop analyzing files automatically'
         : 'Start analyzing files automatically',
+      alwaysShow: true
+    },
+    {
+      command: Commands.NEW_CODE_DEFINITION,
+      label: `${focusIcon} ${focusLabel}`,
+      detail: this.focusOnNewCode
+        ? 'Switch to showing all issues'
+        : 'Switch to showing only issues in new code',
       alwaysShow: true
     },
     {
