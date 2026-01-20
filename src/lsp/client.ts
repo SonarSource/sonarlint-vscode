@@ -231,10 +231,6 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendNotification(ExtendedServer.FindingsFilteredNotification.type, { filterType });
   }
 
-  dumpThreads(): Promise<void> {
-    return this.sendNotification(ExtendedServer.DumpThreadsNotification.type);
-  }
-
   labsExternalLinkClicked(linkId: string) {
     this.sendNotification(ExtendedServer.LabsExternalLinkClicked.type, linkId);
   }
