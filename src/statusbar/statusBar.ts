@@ -54,21 +54,8 @@ export class StatusBarService {
   }
 
   private updateStatusBarText(): void {
-    const parts: string[] = [];
-
-    const focusText = this.focusOnNewCode ? 'new code' : 'overall code';
-    parts.push(`focus on ${focusText}`);
-
-    if (this.referenceBranchName) {
-      parts.push(`branch ${this.referenceBranchName}`);
-    }
-
-    if (parts.length > 0) {
-      this.statusBarItem.text = `SonarQube (${parts.join(', ')})`;
-    } else {
-      this.statusBarItem.text = 'SonarQube';
-    }
-
+    const icon = this.automaticAnalysisEnabled ? '$(circle-filled)' : '$(circle-outline)';
+    this.statusBarItem.text = `${icon} SonarQube`;
     this.updateStatusBarTooltip();
   }
 
@@ -102,7 +89,7 @@ export class StatusBarService {
       alwaysShow: true
     });
 
-    const analysisIcon = this.automaticAnalysisEnabled ? '$(circle-filled)' : '$(circle-outline)';
+    const analysisIcon = this.automaticAnalysisEnabled ? '$(circle-outline)' : '$(circle-filled)';
     const analysisLabel = this.automaticAnalysisEnabled ? 'Disable automatic analysis' : 'Enable automatic analysis';
     items.push({
       label: `${analysisIcon} ${analysisLabel}`,
