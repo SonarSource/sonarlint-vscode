@@ -1415,7 +1415,7 @@
     "properties": "^1.2.1",
     "sinon": "^21.0.0",
     "supports-color": "^10.2.2",
-    "tar": "^7.5.2",
+    "tar": "^7.5.6",
     "underscore": "^1.13.7",
     "vscode-languageclient": "^9.0.1",
     "zlib": "^1.0.5"
