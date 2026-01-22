@@ -30,6 +30,15 @@ jobs:
             development/kv/data/visualstudio VSCE_TOKEN | VISUALSTUDIO_PAT;
             development/team/sonarlint/kv/data/openvsx token | OPENVSX_TOKEN;
 
+      - name: Cache NPM dependencies
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: |
+            ~/.npm
+            node_modules/
+          key: npm-${{ runner.os }}-credcheck-${{ hashFiles('.github/actions/vsce-publish/package-lock.json', '.github/actions/ovsx-publish/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-credcheck-
+
       - name: Check marketplace publisher personal access token
         if: ${{ !cancelled() }}
         env:

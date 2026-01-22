@@ -38,11 +38,23 @@ jobs:
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
       - name: Cache NPM dependencies
-        uses: SonarSource/ci-github-actions/cache@v1
+        uses: SonarSource/gh-action_cache@v1
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules/
           key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: npm-${{ runner.os }}
+
+      - name: Cache JAR dependencies
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: |
+            server/
+            analyzers/
+            eslint-bridge/
+          key: jars-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: jars-${{ runner.os }}
 
       - name: Prepare project
         env:

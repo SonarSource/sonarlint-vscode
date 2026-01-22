@@ -49,11 +49,17 @@ jobs:
           secrets: |
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
             development/kv/data/visualstudio VSCE_TOKEN | VISUALSTUDIO_PAT;
+      - name: Cache NPM dependencies
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-vsce-publish-${{ hashFiles('.github/actions/vsce-publish/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-vsce-publish-
       - name: Install dependencies for vsce-publish
         run: |
           cp ${GITHUB_WORKSPACE}/.github/scripts/.npmrc ./.npmrc
           export ARTIFACTORY_ACCESS_TOKEN=${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
-          npm install
+          npm ci
         working-directory: ./.github/actions/vsce-publish
       - name: Extract version, file name and download URL
         id: extract_version
@@ -131,11 +137,19 @@ jobs:
           secrets: |
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
             development/team/sonarlint/kv/data/openvsx token | OPENVSX_TOKEN;
+      - name: Cache NPM dependencies
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: |
+            ~/.npm
+            node_modules/
+          key: npm-${{ runner.os }}-ovsx-publish-${{ hashFiles('.github/actions/ovsx-publish/package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-ovsx-publish-
       - name: Install dependencies for ovsx-publish
         run: |
           cp ${GITHUB_WORKSPACE}/.github/scripts/.npmrc ./.npmrc
           export ARTIFACTORY_ACCESS_TOKEN=${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
-          npm install
+          npm ci
         working-directory: ./.github/actions/ovsx-publish
       - name: Extract version, file name and download URL
         id: extract_version

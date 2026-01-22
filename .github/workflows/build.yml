@@ -82,11 +82,23 @@ jobs:
           echo "| **Branch** | \`${{ needs.prepare.outputs.BRANCH_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
 
       - name: Cache NPM dependencies
-        uses: SonarSource/ci-github-actions/cache@v1
+        uses: SonarSource/gh-action_cache@v1
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules/
           key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: npm-${{ runner.os }}
+
+      - name: Cache JAR dependencies
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: |
+            server/
+            analyzers/
+            eslint-bridge/
+          key: jars-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: jars-${{ runner.os }}
 
       - name: Prepare build
         env:
@@ -133,6 +145,13 @@ jobs:
           GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: npm run deploy-all-marketplaces
 
+      - name: Upload VSIX artifact for QA tests
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: universal-vsix-qa-artifact
+          path: sonarlint-vscode-${{ steps.project_version.outputs.PACKAGE_VERSION }}.vsix
+          retention-days: 1
+
   test-linux:
     runs-on: github-ubuntu-latest-m
     name: Run tests on Linux
@@ -157,11 +176,23 @@ jobs:
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
       - name: Cache NPM dependencies
-        uses: SonarSource/ci-github-actions/cache@v1
+        uses: SonarSource/gh-action_cache@v1
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules/
           key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: npm-${{ runner.os }}
+
+      - name: Cache JAR dependencies
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: |
+            server/
+            analyzers/
+            eslint-bridge/
+          key: jars-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: jars-${{ runner.os }}
 
       - name: Prepare xvfb and ffmpeg
         run: mise run install-system-deps
@@ -186,7 +217,7 @@ jobs:
 
       - name: Upload tests recording
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: linux-test-recording
           path: vscode_test-linux_${{ github.run_id }}.mp4
@@ -221,11 +252,23 @@ jobs:
             development/kv/data/next token | SONAR_TOKEN;
 
       - name: Cache NPM dependencies
-        uses: SonarSource/ci-github-actions/cache@v1
+        uses: SonarSource/gh-action_cache@v1
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules/
           key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: npm-${{ runner.os }}
+
+      - name: Cache JAR dependencies
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: |
+            server/
+            analyzers/
+            eslint-bridge/
+          key: jars-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: jars-${{ runner.os }}
 
       - name: Run tests with coverage
         env:
@@ -274,27 +317,31 @@ jobs:
             development/kv/data/slack token | SLACK_BOT_TOKEN;
 
       - name: Cache NPM dependencies
-        uses: SonarSource/ci-github-actions/cache@v1
+        uses: SonarSource/gh-action_cache@v1
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            node_modules/
           key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: npm-${{ runner.os }}
+
+      - name: Cache JAR dependencies
+        uses: SonarSource/gh-action_cache@v1
+        with:
+          path: |
+            server/
+            analyzers/
+            eslint-bridge/
+          key: jars-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: jars-${{ runner.os }}
 
       - name: Prepare xvfb and ffmpeg
         run: mise run install-system-deps
 
-      - name: Download VSIX from Artifactory
-        env:
-          ARTIFACTORY_URL: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_URL }}
-          ARTIFACTORY_PRIVATE_USERNAME: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_USER }}
-          ARTIFACTORY_PRIVATE_PASSWORD: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
-          PACKAGE_VERSION: ${{ needs.build.outputs.PACKAGE_VERSION }}
-          PROJECT_VERSION: ${{ needs.build.outputs.PROJECT_VERSION }}
-        run: |
-          echo "Downloading staged VSIX for ${PROJECT_VERSION}"
-          curl -u "${ARTIFACTORY_PRIVATE_USERNAME}:${ARTIFACTORY_PRIVATE_PASSWORD}" \
-            -o "sonarlint-vscode-${PACKAGE_VERSION}.vsix" \
-            "${ARTIFACTORY_URL}/sonarsource-public-qa/org/sonarsource/sonarlint/vscode/sonarlint-vscode/${PROJECT_VERSION}/sonarlint-vscode-${PACKAGE_VERSION}.vsix"
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: universal-vsix-qa-artifact
 
       - name: Prepare integration tests
         env:
@@ -321,7 +368,7 @@ jobs:
 
       - name: Upload test recording
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: its-test-recording-${{ matrix.qa_category }}
           path: its/vscode_qa-tests-${{ matrix.qa_category }}_${{ github.run_id }}.mp4
