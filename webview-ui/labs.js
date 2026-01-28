@@ -295,6 +295,10 @@ function setLoading(loading) {
 }
 
 function handleMessage(event) {
+  if (event.origin && !event.origin.startsWith('vscode-webview://')) {
+    return;
+  }
+
   const message = event.data;
   switch (message.command) {
     case 'initialState':
