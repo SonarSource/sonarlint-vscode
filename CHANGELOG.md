@@ -1,3 +1,7 @@
+## 4.41
+
+* Bugfixes and technical improvements
+
 ## 4.40
 
 * Update Text & Secrets analyzer 2.36 -> 2.38
