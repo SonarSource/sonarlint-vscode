@@ -1,6 +1,7 @@
 ## 4.42
 
 * Update JS/TS/CSS analyzer 11.7 -> [11.8](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2027110%20ORDER%20BY%20created%20ASC)
+* Update Java analyzer 8.22 -> [8.23](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2027248%20ORDER%20BY%20created%20ASC)
 
 ## 4.41
 
