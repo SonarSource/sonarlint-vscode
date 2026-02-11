@@ -8,6 +8,8 @@
 
 import { RemediationEvent, RemediationEventType } from './remediationEvent';
 import { ResourceResolver } from '../util/webview';
+import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
+import * as vscode from 'vscode';
 
 export function generateRemediationPanelContent(
   events: ReadonlyArray<RemediationEvent>,
@@ -55,17 +57,29 @@ function renderEventList(events: ReadonlyArray<RemediationEvent>, resolver: Reso
 }
 
 function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): string {
-  const icon = getEventIcon(event.type, resolver);
   const typeLabel = getEventTypeLabel(event.type);
   const timeAgo = formatTimeAgo(event.timestamp);
   const message = escapeHtml(event.message);
-  const filePath = escapeHtml(event.filePath);
   const ruleKey = event.ruleKey ? escapeHtml(event.ruleKey) : '';
 
+  // Extract filename and directory path
+  const fileName = escapeHtml(getFileNameFromFullPath(event.fileUri));
+  const uri = vscode.Uri.parse(event.fileUri);
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+  const specifyWorkspaceFolderName = vscode.workspace.workspaceFolders?.length > 1;
+
+  let dirPath = '';
+  if (workspaceFolder) {
+    dirPath = escapeHtml(getRelativePathFromFullPath(
+      event.fileUri,
+      workspaceFolder,
+      specifyWorkspaceFolderName
+    ));
+  }
+
+  const fullPath = escapeHtml(event.filePath);
+
   return `<div class="event-item" data-event-id="${event.id}">
-    <div class="event-icon">
-      <img src="${icon}" alt="${typeLabel}">
-    </div>
     <div class="event-details">
       <div class="event-header">
         <span class="event-type">${typeLabel}</span>
@@ -73,7 +87,10 @@ function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): s
       </div>
       <div class="event-message">${message}</div>
       <div class="event-metadata">
-        <span class="event-file">${filePath}</span>
+        <span class="event-file" title="${fullPath}">
+          <span class="file-name">${fileName}</span>
+          ${dirPath ? `<span class="file-dir">${dirPath}</span>` : ''}
+        </span>
         ${ruleKey ? `<span class="event-rule">${ruleKey}</span>` : ''}
       </div>
     </div>
@@ -88,34 +105,26 @@ function renderEmptyState(): string {
 }
 
 function formatTimeAgo(timestamp: number): string {
-  const now = Date.now();
-  const diffMs = now - timestamp;
-  const diffSeconds = Math.floor(diffMs / 1000);
-  const diffMinutes = Math.floor(diffSeconds / 60);
-  const diffHours = Math.floor(diffMinutes / 60);
-  const diffDays = Math.floor(diffHours / 24);
+  const date = new Date(timestamp);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
 
-  if (diffSeconds < 60) {
-    return 'just now';
-  } else if (diffMinutes < 60) {
-    return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
-  } else if (diffHours < 24) {
-    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+  // Format time as HH:MM AM/PM
+  const timeString = date.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  // If today, just show time; otherwise show date and time
+  if (isToday) {
+    return timeString;
   } else {
-    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
-  }
-}
-
-function getEventIcon(type: RemediationEventType, resolver: ResourceResolver): string {
-  switch (type) {
-    case RemediationEventType.OPEN_ISSUE:
-      return resolver.resolve('images', 'type', 'bug.svg');
-    case RemediationEventType.OPEN_HOTSPOT:
-      return resolver.resolve('images', 'type', 'security_hotspot.svg');
-    case RemediationEventType.VIEW_FIX_SUGGESTION:
-      return resolver.resolve('images', 'labs', 'ide_labs.svg');
-    default:
-      return resolver.resolve('images', 'type', 'bug.svg');
+    const dateString = date.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric'
+    });
+    return `${dateString}, ${timeString}`;
   }
 }
 

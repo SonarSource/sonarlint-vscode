@@ -86,6 +86,24 @@
   white-space: nowrap;
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.file-name {
+  font-weight: 600;
+  color: var(--vscode-foreground);
+  flex-shrink: 0;
+}
+
+.file-dir {
+  color: var(--vscode-descriptionForeground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .event-rule {

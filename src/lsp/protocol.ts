@@ -364,6 +364,7 @@ export namespace ExtendedClient {
 
   export interface ShowFixSuggestionParams {
     suggestionId: string;
+    explanation: string;
     textEdits: Change[];
     fileUri: string;
     isLocal: boolean;
