@@ -96,7 +96,7 @@ export class RemediationService {
       timestamp: Date.now(),
       fileUri,
       filePath,
-      message: 'AI-generated fix suggestion',
+      message: params.explanation,
       params
     };
 
