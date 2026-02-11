@@ -12,7 +12,8 @@ import {
   RemediationEvent,
   RemediationEventType,
   IssueRemediationEvent,
-  HotspotRemediationEvent
+  HotspotRemediationEvent,
+  FixSuggestionRemediationEvent
 } from './remediationEvent';
 
 const BATCH_THRESHOLD_MS = 5000;
@@ -78,6 +79,25 @@ export class RemediationService {
       ruleKey: hotspot.rule?.key,
       hotspot,
       textRange
+    };
+
+    this.addEvent(event);
+  }
+
+  trackFixSuggestionEvent(params: ExtendedClient.ShowFixSuggestionParams): void {
+    this.checkAndClearBatch();
+
+    const fileUri = params.fileUri;
+    const filePath = this.getRelativePath(fileUri);
+
+    const event: FixSuggestionRemediationEvent = {
+      id: this.generateId(),
+      type: RemediationEventType.VIEW_FIX_SUGGESTION,
+      timestamp: Date.now(),
+      fileUri,
+      filePath,
+      message: 'AI-generated fix suggestion',
+      params
     };
 
     this.addEvent(event);

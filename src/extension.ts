@@ -468,7 +468,9 @@ function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
 }
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
-  languageClient.onNotification(ExtendedClient.ShowFixSuggestion.type, params => FixSuggestionService.instance.showFixSuggestion(params))
+  languageClient.onNotification(ExtendedClient.ShowFixSuggestion.type, params => {
+    RemediationService.instance.trackFixSuggestionEvent(params);
+  })
   languageClient.onNotification(ExtendedClient.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(ExtendedClient.SuggestBindingNotification.type, params => suggestBinding(params));
   languageClient.onRequest(ExtendedClient.ListFilesInFolderRequest.type, async (params) => {

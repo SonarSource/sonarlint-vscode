@@ -13,6 +13,7 @@ import { ResourceResolver } from '../util/webview';
 import { RemediationEventType } from './remediationEvent';
 import { IssueService } from '../issue/issue';
 import { Commands } from '../util/commands';
+import { FixSuggestionService } from '../fixSuggestions/fixSuggestionsService';
 
 export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -103,7 +104,7 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
           await this.openHotspotFile(event.hotspot);
           break;
         case RemediationEventType.VIEW_FIX_SUGGESTION:
-          // Future implementation
+          await FixSuggestionService.instance.showFixSuggestion(event.params);
           break;
       }
     } catch (error) {

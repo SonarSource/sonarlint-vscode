@@ -38,8 +38,7 @@ export interface HotspotRemediationEvent extends BaseRemediationEvent {
 
 export interface FixSuggestionRemediationEvent extends BaseRemediationEvent {
   type: RemediationEventType.VIEW_FIX_SUGGESTION;
-  suggestionId: string;
-  changes: any[];
+  params: ExtendedClient.ShowFixSuggestionParams;
 }
 
 export type RemediationEvent = IssueRemediationEvent | HotspotRemediationEvent | FixSuggestionRemediationEvent;
