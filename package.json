@@ -492,6 +492,12 @@
         "enablement": "view == SonarLint.IssueLocations || view == SonarQube.Findings"
       },
       {
+        "command": "SonarLint.ClearRemediationEvents",
+        "title": "Clear All",
+        "icon": "$(clear-all)",
+        "category": "SonarQube"
+      },
+      {
         "command": "SonarLint.ClearHotspotLocations",
         "title": "Clear Highlighting",
         "enablement": "view == SonarQube.Findings"
@@ -997,6 +1003,11 @@
         {
           "submenu": "SonarQube.Labs",
           "when": "view == SonarQube.Labs && sonarqube.ideLabsJoined",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ClearRemediationEvents",
+          "when": "view == SonarLint.RemediationPanel",
           "group": "navigation"
         }
       ],
