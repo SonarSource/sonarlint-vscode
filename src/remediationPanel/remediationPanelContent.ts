@@ -100,7 +100,7 @@ function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): s
 function renderEmptyState(): string {
   return `<div class="empty-state">
     <p>No remediation events yet.</p>
-    <p class="empty-state-hint">Events will appear here when you open issues, hotspots, or fix suggestions from SonarQube/SonarCloud.</p>
+    <p class="empty-state-hint">Events will appear here when you open issues, hotspots, or fix suggestions from SonarQube Server or Cloud.</p>
   </div>`;
 }
 
