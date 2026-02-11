@@ -74,6 +74,8 @@ import { onEmbeddedServerStarted } from './aiAgentsConfiguration/mcpServerConfig
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 import { LabsWebviewProvider } from './labs/labsWebviewProvider';
 import { StatusBarService } from './statusbar/statusBar';
+import { RemediationService } from './remediationPanel/remediationService';
+import { RemediationWebviewProvider } from './remediationPanel/remediationWebviewProvider';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -99,6 +101,7 @@ let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 let aiAgentsConfigurationTreeDataProvider: AIAgentsConfigurationTreeDataProvider;
 let aiAgentsConfigurationView: VSCode.TreeView<AIAgentsConfigurationItem>;
+let remediationWebviewProvider: RemediationWebviewProvider;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
@@ -244,6 +247,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   NewCodeDefinitionService.init(context);
   StatusBarService.init(context);
   FileSystemServiceImpl.init();
+  RemediationService.init();
   SharedConnectedModeSettingsService.init(languageClient, FileSystemServiceImpl.instance, context);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance, SharedConnectedModeSettingsService.instance);
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance, FileSystemServiceImpl.instance, languageClient);
@@ -261,6 +265,11 @@ export async function activate(context: VSCode.ExtensionContext) {
     treeDataProvider: findingsTreeDataProvider
   });
   context.subscriptions.push(findingsView);
+
+  remediationWebviewProvider = new RemediationWebviewProvider(context);
+  context.subscriptions.push(
+    VSCode.window.registerWebviewViewProvider('SonarLint.RemediationPanel', remediationWebviewProvider)
+  );
 
   installCustomRequestHandlers(context);
   initializeLanguageModelTools(context);
@@ -294,8 +303,13 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   IssueService.init(languageClient, secondaryLocationsTree, issueLocationsView);
 
-  context.subscriptions.push(languageClient.onNotification(ExtendedClient.ShowIssueNotification.type, IssueService.showIssue));
-  
+  context.subscriptions.push(
+    languageClient.onNotification(ExtendedClient.ShowIssueNotification.type, async (issue) => {
+      await IssueService.showIssue(issue);
+      RemediationService.instance.trackIssueEvent(issue);
+    })
+  );
+
   context.subscriptions.push(languageClient.onNotification(ExtendedClient.StartProgressNotification.type, (params: ExtendedClient.StartProgressNotificationParams) => {
     const taskId = params.taskId;
     if (currentProgress[taskId]) {
@@ -504,9 +518,10 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     const targetSection = `sonarlint.connectedMode.connections.${isSonarCloud ? 'sonarcloud' : 'sonarqube'}`;
     return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
-  languageClient.onNotification(ExtendedClient.ShowHotspotNotification.type, h =>
-    showSecurityHotspot(findingsView, findingsTreeDataProvider, h)
-  );
+  languageClient.onNotification(ExtendedClient.ShowHotspotNotification.type, async h => {
+    await showSecurityHotspot(findingsView, findingsTreeDataProvider, h);
+    RemediationService.instance.trackHotspotEvent(h);
+  });
   languageClient.onNotification(ExtendedClient.ShowIssueOrHotspotNotification.type, IssueService.showAllLocations);
   languageClient.onNotification(ExtendedClient.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
   languageClient.onRequest(ExtendedClient.GetTokenForServer.type, serverId => getTokenForServer(serverId));

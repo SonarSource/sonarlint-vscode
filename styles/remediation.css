@@ -1,0 +1,114 @@
+/* SonarQube for IDE Remediation Panel Styles */
+
+.remediation-container {
+  padding: 12px;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.event-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.event-item:hover {
+  background-color: var(--vscode-list-hoverBackground);
+  border-color: var(--vscode-focusBorder);
+}
+
+.event-icon {
+  flex-shrink: 0;
+}
+
+.event-icon img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.event-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.event-type {
+  font-weight: 600;
+  color: var(--vscode-foreground);
+  font-size: 13px;
+}
+
+.event-time {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.event-message {
+  color: var(--vscode-foreground);
+  font-size: 13px;
+  margin-bottom: 6px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.event-metadata {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  flex-wrap: wrap;
+  overflow: hidden;
+}
+
+.event-file {
+  font-family: var(--vscode-editor-font-family);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.event-rule {
+  font-family: var(--vscode-editor-font-family);
+  color: var(--vscode-textLink-foreground);
+  flex-shrink: 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--vscode-descriptionForeground);
+}
+
+.empty-state p {
+  margin: 8px 0;
+}
+
+.empty-state-hint {
+  font-size: 12px;
+  max-width: 400px;
+}

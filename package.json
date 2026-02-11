@@ -815,6 +815,12 @@
           "name": "SonarQube Findings"
         },
         {
+          "id": "SonarLint.RemediationPanel",
+          "name": "Remediation Panel",
+          "type": "webview",
+          "icon": "$(history)"
+        },
+        {
           "id": "SonarQube.Labs",
           "name": "SonarQube for IDE Labs",
           "icon": "$(beaker)",
@@ -842,6 +848,10 @@
       {
         "view": "SonarQube.Findings",
         "contents": "No SonarQube issues to display."
+      },
+      {
+        "view": "SonarLint.RemediationPanel",
+        "contents": "No 'Open In IDE' events yet.\n\nClick 'Open In IDE' from SonarQube (Server, Cloud) to see events here."
       }
     ],
     "walkthroughs": [
