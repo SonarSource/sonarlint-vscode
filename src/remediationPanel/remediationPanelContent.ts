@@ -9,6 +9,7 @@
 import { RemediationEvent, RemediationEventType } from './remediationEvent';
 import { ResourceResolver } from '../util/webview';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
+import { RemediationService } from './remediationService';
 import * as vscode from 'vscode';
 
 export function generateRemediationPanelContent(
@@ -78,8 +79,10 @@ function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): s
   }
 
   const fullPath = escapeHtml(event.filePath);
+  const isViewed = RemediationService.instance.isEventViewed(event.id);
+  const viewedClass = isViewed ? ' viewed' : '';
 
-  return `<div class="event-item" data-event-id="${event.id}">
+  return `<div class="event-item${viewedClass}" data-event-id="${event.id}">
     <div class="event-details">
       <div class="event-header">
         <span class="event-type">${typeLabel}</span>
