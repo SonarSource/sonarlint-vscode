@@ -71,14 +71,7 @@ export class FixSuggestionService {
 			if (result) {
 				vscode.window.showInformationMessage('SonarQube for IDE: AI Fix applied.');
 			} else {
-				// Offer to show the fix details when declined or failed
-				const action = await vscode.window.showInformationMessage(
-					'SonarQube for IDE: AI Fix declined.',
-					'View Fix Details'
-				);
-				if (action === 'View Fix Details') {
-					await this.showFixDetails(params, fileUri);
-				}
+				vscode.window.showInformationMessage('SonarQube for IDE: AI Fix declined.');
 			}
 			this.client.fixSuggestionResolved(params.suggestionId, result);
 		} catch (error) {
