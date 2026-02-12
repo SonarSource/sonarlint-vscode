@@ -492,7 +492,7 @@
         "enablement": "view == SonarLint.IssueLocations || view == SonarQube.Findings"
       },
       {
-        "command": "SonarLint.ClearRemediationEvents",
+        "command": "SonarQube.ClearRemediationEvents",
         "title": "Clear All",
         "icon": "$(clear-all)",
         "category": "SonarQube"
@@ -821,7 +821,7 @@
           "name": "SonarQube Findings"
         },
         {
-          "id": "SonarLint.RemediationPanel",
+          "id": "SonarQube.RemediationPanel",
           "name": "Remediation Panel",
           "type": "webview",
           "icon": "$(history)"
@@ -856,7 +856,7 @@
         "contents": "No SonarQube issues to display."
       },
       {
-        "view": "SonarLint.RemediationPanel",
+        "view": "SonarQube.RemediationPanel",
         "contents": "No 'Open In IDE' events yet.\n\nClick 'Open In IDE' from SonarQube (Server, Cloud) to see events here."
       }
     ],
@@ -1006,8 +1006,8 @@
           "group": "navigation"
         },
         {
-          "command": "SonarLint.ClearRemediationEvents",
-          "when": "view == SonarLint.RemediationPanel",
+          "command": "SonarQube.ClearRemediationEvents",
+          "when": "view == SonarQube.RemediationPanel",
           "group": "navigation"
         }
       ],

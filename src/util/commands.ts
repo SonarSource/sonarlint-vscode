@@ -37,7 +37,7 @@ export namespace Commands {
   export const SHOW_ALL_LOCATIONS = 'SonarLint.ShowAllLocations';
   export const CLEAR_LOCATIONS = 'SonarLint.ClearLocations';
   export const NAVIGATE_TO_LOCATION = 'SonarLint.NavigateToLocation';
-  export const CLEAR_REMEDIATION_EVENTS = 'SonarLint.ClearRemediationEvents';
+  export const CLEAR_REMEDIATION_EVENTS = 'SonarQube.ClearRemediationEvents';
 
   export const INSTALL_MANAGED_JRE = 'SonarLint.InstallManagedJre';
 
