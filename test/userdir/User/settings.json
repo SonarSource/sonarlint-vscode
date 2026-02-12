@@ -16,5 +16,6 @@
   // Enable auto import of Git repositories
   "git.openRepositoryInParentFolders": "always",
   "sonarlint.output.showAnalyzerLogs": true,
-  "sonarlint.output.showVerboseLogs": true
+  "sonarlint.output.showVerboseLogs": true,
+  "sonarlint.connectedMode.connections.sonarqube": []
 }

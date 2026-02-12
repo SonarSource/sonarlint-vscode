@@ -1397,7 +1397,7 @@
       }
     ]
   },
-  "main": "./dist/extension",
+  "main": "out/src/extension",
   "scripts": {
     "vscode:prepublish": "node build-sonarlint/prepare.mjs && webpack --mode production",
     "compile": "tsc -p ./",
