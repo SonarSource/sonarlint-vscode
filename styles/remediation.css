@@ -28,6 +28,14 @@
   border-color: var(--vscode-focusBorder);
 }
 
+.event-item.viewed {
+  opacity: 0.5;
+}
+
+.event-item.viewed:hover {
+  opacity: 0.7;
+}
+
 .event-icon {
   flex-shrink: 0;
 }

@@ -21,6 +21,7 @@ const BATCH_THRESHOLD_MS = 5000;
 export class RemediationService {
   private static _instance: RemediationService;
   private events: RemediationEvent[] = [];
+  private viewedEventIds: Set<string> = new Set();
   private lastEventTimestamp: number = 0;
   private eventChangeEmitter = new vscode.EventEmitter<RemediationEvent[]>();
   public readonly onEventsChanged = this.eventChangeEmitter.event;
@@ -109,12 +110,22 @@ export class RemediationService {
 
   clearEvents(): void {
     this.events = [];
+    this.viewedEventIds.clear();
     this.lastEventTimestamp = 0;
     this.eventChangeEmitter.fire(this.events);
   }
 
   getEvents(): ReadonlyArray<RemediationEvent> {
     return this.events;
+  }
+
+  markEventAsViewed(eventId: string): void {
+    this.viewedEventIds.add(eventId);
+    this.eventChangeEmitter.fire(this.events);
+  }
+
+  isEventViewed(eventId: string): boolean {
+    return this.viewedEventIds.has(eventId);
   }
 
   private checkAndClearBatch(): void {

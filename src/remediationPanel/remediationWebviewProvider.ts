@@ -95,6 +95,9 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
       return;
     }
 
+    // Mark the event as viewed
+    RemediationService.instance.markEventAsViewed(eventId);
+
     try {
       switch (event.type) {
         case RemediationEventType.OPEN_ISSUE:
