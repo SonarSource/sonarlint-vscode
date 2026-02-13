@@ -8,6 +8,7 @@
 
 import * as vscode from 'vscode';
 import { ExtendedClient } from '../lsp/protocol';
+import { logToSonarLintOutput } from '../util/logging';
 import {
   RemediationEvent,
   RemediationEventType,
@@ -20,11 +21,12 @@ const BATCH_THRESHOLD_MS = 5000;
 
 export class RemediationService {
   private static _instance: RemediationService;
-  private events: RemediationEvent[] = [];
-  private viewedEventIds: Set<string> = new Set();
-  private lastEventTimestamp: number = 0;
-  private eventChangeEmitter = new vscode.EventEmitter<RemediationEvent[]>();
+  private readonly viewedEventIds: Set<string> = new Set();
+  private readonly eventChangeEmitter = new vscode.EventEmitter<RemediationEvent[]>();
   public readonly onEventsChanged = this.eventChangeEmitter.event;
+  private events: RemediationEvent[] = [];
+  private lastEventTimestamp = 0;
+  private eventIdCounter = 0;
 
   private constructor() {}
 
@@ -44,9 +46,8 @@ export class RemediationService {
   trackIssueEvent(issue: ExtendedClient.Issue): void {
     this.checkAndClearBatch();
 
-    const fileUri = issue.fileUri;
+    const { fileUri, textRange } = issue;
     const filePath = this.getRelativePath(fileUri);
-    const textRange = issue.textRange;
 
     const event: IssueRemediationEvent = {
       id: this.generateId(),
@@ -105,7 +106,8 @@ export class RemediationService {
   }
 
   private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    this.eventIdCounter++;
+    return `${Date.now()}-${this.eventIdCounter}`;
   }
 
   clearEvents(): void {
@@ -150,6 +152,7 @@ export class RemediationService {
       }
       return uri.fsPath;
     } catch (error) {
+      logToSonarLintOutput(`Error encountered while resolving relative path for remediation, ${error}`);
       return fileUri;
     }
   }
