@@ -59,6 +59,7 @@ function renderEventList(events: ReadonlyArray<RemediationEvent>, resolver: Reso
 
 function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): string {
   const typeLabel = getEventTypeLabel(event.type);
+  const typeClass = getEventTypeClass(event.type);
   const timeAgo = formatTimeAgo(event.timestamp);
   const message = escapeHtml(event.message);
   const ruleKey = event.ruleKey ? escapeHtml(event.ruleKey) : '';
@@ -85,7 +86,7 @@ function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): s
   return `<div class="event-item${viewedClass}" data-event-id="${event.id}">
     <div class="event-details">
       <div class="event-header">
-        <span class="event-type">${typeLabel}</span>
+        <span class="event-type ${typeClass}">${typeLabel}</span>
         <span class="event-time">${timeAgo}</span>
       </div>
       <div class="event-message">${message}</div>
@@ -141,6 +142,19 @@ function getEventTypeLabel(type: RemediationEventType): string {
       return 'Fix Suggestion';
     default:
       return 'Event';
+  }
+}
+
+function getEventTypeClass(type: RemediationEventType): string {
+  switch (type) {
+    case RemediationEventType.OPEN_ISSUE:
+      return 'event-type-issue';
+    case RemediationEventType.OPEN_HOTSPOT:
+      return 'event-type-hotspot';
+    case RemediationEventType.VIEW_FIX_SUGGESTION:
+      return 'event-type-fix-suggestion';
+    default:
+      return '';
   }
 }
 
