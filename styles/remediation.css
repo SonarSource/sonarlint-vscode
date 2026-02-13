@@ -1,7 +1,7 @@
 /* SonarQube for IDE Remediation Center Styles */
 
 .remediation-container {
-  padding: 12px;
+  padding: 12px 0;
   height: 100vh;
   overflow-y: auto;
 }
