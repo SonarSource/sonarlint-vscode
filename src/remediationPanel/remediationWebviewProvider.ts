@@ -6,22 +6,17 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import * as fs from 'node:fs';
 import * as vscode from 'vscode';
-import * as util from '../util/util';
 import { RemediationService } from './remediationService';
-import { generateRemediationContentHtml } from './remediationPanelContent';
+import { generateRemediationPanelContent } from './remediationPanelContent';
 import { ResourceResolver } from '../util/webview';
 import { RemediationEventType } from './remediationEvent';
 import { IssueService } from '../issue/issue';
 import { Commands } from '../util/commands';
 import { FixSuggestionService } from '../fixSuggestions/fixSuggestionsService';
 
-const WEBVIEW_UI_DIR = 'webview-ui';
-
 export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
-  private _resolver: ResourceResolver;
   private readonly disposables: vscode.Disposable[] = [];
 
   constructor(private readonly context: vscode.ExtensionContext) {
@@ -40,10 +35,13 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this.context.extensionUri]
+      localResourceRoots: [
+        vscode.Uri.joinPath(this.context.extensionUri, 'styles'),
+        vscode.Uri.joinPath(this.context.extensionUri, 'images')
+      ]
     };
 
-    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
+    this.updateContent();
 
     webviewView.webview.onDidReceiveMessage(
       message => {
@@ -56,44 +54,30 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
     );
   }
 
-  private getHtmlForWebview(webview: vscode.Webview): string {
-    this._resolver = new ResourceResolver(this.context, webview);
-    const templatePath = util.resolveExtensionFile(WEBVIEW_UI_DIR, 'remediation.html');
-    const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
-
-    const themeCss = this._resolver.resolve('styles', 'theme.css');
-    const remediationCss = this._resolver.resolve('styles', 'remediation.css');
-    const scriptSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'remediation.js');
-
-    const events = RemediationService.instance.getEvents();
-    const contentHtml = generateRemediationContentHtml(events);
-
-    return template
-      .replaceAll('{{cspSource}}', webview.cspSource)
-      .replace('{{themeCss}}', themeCss)
-      .replace('{{remediationCss}}', remediationCss)
-      .replace('{{scriptSrc}}', scriptSrc)
-      .replace('<!-- Content will be dynamically rendered here -->', contentHtml);
-  }
-
   private updateContent(): void {
     if (!this._view) {
       return;
     }
 
     const events = RemediationService.instance.getEvents();
-    const contentHtml = generateRemediationContentHtml(events);
-
-    this._view.webview.postMessage({
-      command: 'updateContent',
-      html: contentHtml
-    });
+    const resolver = new ResourceResolver(this.context, this._view.webview);
+    const nonce = this.getNonce();
+    this._view.webview.html = generateRemediationPanelContent(events, resolver, this._view.webview.cspSource, nonce);
   }
 
   private expandView(): void {
     if (this._view && RemediationService.instance.getEvents().length > 0) {
       this._view.show?.(true);
     }
+  }
+
+  private getNonce(): string {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
   }
 
   private async handleNavigateToEvent(eventId: string): Promise<void> {

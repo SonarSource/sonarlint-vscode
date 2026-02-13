@@ -7,21 +7,57 @@
 'use strict';
 
 import { RemediationEvent, RemediationEventType } from './remediationEvent';
+import { ResourceResolver } from '../util/webview';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { RemediationService } from './remediationService';
 import * as vscode from 'vscode';
 
-export function generateRemediationContentHtml(events: ReadonlyArray<RemediationEvent>): string {
-  return events.length === 0 ? renderEmptyState() : renderEventList(events);
+export function generateRemediationPanelContent(
+  events: ReadonlyArray<RemediationEvent>,
+  resolver: ResourceResolver,
+  cspSource: string,
+  nonce: string
+): string {
+  const themeCss = resolver.resolve('styles', 'theme.css');
+  const remediationCss = resolver.resolve('styles', 'remediation.css');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${cspSource}; style-src ${cspSource}; script-src 'nonce-${nonce}';">
+  <link rel="stylesheet" href="${themeCss}">
+  <link rel="stylesheet" href="${remediationCss}">
+  <title>SonarQube for IDE Remediation</title>
+</head>
+<body>
+  <div class="remediation-container">
+    ${events.length === 0 ? renderEmptyState() : renderEventList(events, resolver)}
+  </div>
+  <script nonce="${nonce}">
+    (function() {
+      const vscode = acquireVsCodeApi();
+
+      document.querySelectorAll('.event-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const eventId = item.getAttribute('data-event-id');
+          vscode.postMessage({ command: 'navigateToEvent', eventId });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>`;
 }
 
-function renderEventList(events: ReadonlyArray<RemediationEvent>): string {
+function renderEventList(events: ReadonlyArray<RemediationEvent>, resolver: ResourceResolver): string {
   return `<div class="event-list">
-    ${events.map(event => renderEventItem(event)).join('')}
+    ${events.map(event => renderEventItem(event, resolver)).join('')}
   </div>`;
 }
 
-function renderEventItem(event: RemediationEvent): string {
+function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): string {
   const typeLabel = getEventTypeLabel(event.type);
   const typeClass = getEventTypeClass(event.type);
   const timeAgo = formatTimeAgo(event.timestamp);
