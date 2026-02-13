@@ -6,18 +6,23 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+import * as fs from 'node:fs';
 import * as vscode from 'vscode';
+import * as util from '../util/util';
 import { RemediationService } from './remediationService';
-import { generateRemediationPanelContent } from './remediationPanelContent';
+import { generateRemediationContentHtml } from './remediationPanelContent';
 import { ResourceResolver } from '../util/webview';
 import { RemediationEventType } from './remediationEvent';
 import { IssueService } from '../issue/issue';
 import { Commands } from '../util/commands';
 import { FixSuggestionService } from '../fixSuggestions/fixSuggestionsService';
 
+const WEBVIEW_UI_DIR = 'webview-ui';
+
 export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
-  private disposables: vscode.Disposable[] = [];
+  private _resolver: ResourceResolver;
+  private readonly disposables: vscode.Disposable[] = [];
 
   constructor(private readonly context: vscode.ExtensionContext) {
     RemediationService.instance.onEventsChanged(() => {
@@ -35,25 +40,40 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [
-        vscode.Uri.joinPath(this.context.extensionUri, 'styles'),
-        vscode.Uri.joinPath(this.context.extensionUri, 'images')
-      ]
+      localResourceRoots: [this.context.extensionUri]
     };
 
-    this.updateContent();
+    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(
       message => {
-        switch (message.command) {
-          case 'navigateToEvent':
-            this.handleNavigateToEvent(message.eventId);
-            break;
+        if (message.command === 'navigateToEvent') {
+          this.handleNavigateToEvent(message.eventId);
         }
       },
       undefined,
       this.disposables
     );
+  }
+
+  private getHtmlForWebview(webview: vscode.Webview): string {
+    this._resolver = new ResourceResolver(this.context, webview);
+    const templatePath = util.resolveExtensionFile(WEBVIEW_UI_DIR, 'remediation.html');
+    const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
+
+    const themeCss = this._resolver.resolve('styles', 'theme.css');
+    const remediationCss = this._resolver.resolve('styles', 'remediation.css');
+    const scriptSrc = this._resolver.resolve(WEBVIEW_UI_DIR, 'remediation.js');
+
+    const events = RemediationService.instance.getEvents();
+    const contentHtml = generateRemediationContentHtml(events);
+
+    return template
+      .replaceAll('{{cspSource}}', webview.cspSource)
+      .replace('{{themeCss}}', themeCss)
+      .replace('{{remediationCss}}', remediationCss)
+      .replace('{{scriptSrc}}', scriptSrc)
+      .replace('<!-- Content will be dynamically rendered here -->', contentHtml);
   }
 
   private updateContent(): void {
@@ -62,29 +82,18 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
     }
 
     const events = RemediationService.instance.getEvents();
-    const resolver = new ResourceResolver(this.context, this._view.webview);
-    const nonce = this.getNonce();
-    this._view.webview.html = generateRemediationPanelContent(
-      events,
-      resolver,
-      this._view.webview.cspSource,
-      nonce
-    );
+    const contentHtml = generateRemediationContentHtml(events);
+
+    this._view.webview.postMessage({
+      command: 'updateContent',
+      html: contentHtml
+    });
   }
 
   private expandView(): void {
     if (this._view && RemediationService.instance.getEvents().length > 0) {
       this._view.show?.(true);
     }
-  }
-
-  private getNonce(): string {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 32; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
   }
 
   private async handleNavigateToEvent(eventId: string): Promise<void> {
@@ -115,7 +124,7 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private async openHotspotFile(hotspot: any): Promise<void> {
+  private async openHotspotFile(hotspot): Promise<void> {
     try {
       const foundUris = await vscode.workspace.findFiles(`**/${hotspot.ideFilePath}`);
       if (foundUris.length === 0) {

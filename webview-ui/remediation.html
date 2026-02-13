@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src {{cspSource}}; style-src {{cspSource}}; script-src {{cspSource}}">
+  <link rel="stylesheet" href="{{themeCss}}">
+  <link rel="stylesheet" href="{{remediationCss}}">
+  <title>SonarQube for IDE Remediation</title>
+</head>
+<body>
+  <div class="remediation-container" id="remediation-container">
+    <!-- Content will be dynamically rendered here -->
+  </div>
+  <script src="{{scriptSrc}}"></script>
+</body>
+</html>
