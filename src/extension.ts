@@ -374,7 +374,7 @@ export async function activate(context: VSCode.ExtensionContext) {
       const isEnabled = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
       if (isEnabled && !remediationWebviewProvider) {
         VSCode.window.showInformationMessage(
-          'Please reload the window to activate the Remediation Panel.',
+          'Please reload the window to activate the SonarQube for IDE Remediation Center.',
           'Reload'
         ).then(selection => {
           if (selection === 'Reload') {

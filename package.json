@@ -823,7 +823,7 @@
         },
         {
           "id": "SonarQube.RemediationPanel",
-          "name": "Remediation Panel",
+          "name": "Remediation Center",
           "type": "webview",
           "icon": "$(history)",
           "when": "sonarqube.ideLabsEnabled"
