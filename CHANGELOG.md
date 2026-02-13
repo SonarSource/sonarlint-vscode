@@ -3,6 +3,7 @@
 * Update C# analyzer 10.18 -> [10.19](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.19.0.132793)
 * Update Python analyzer 5.16 -> 5.17
 * Update Go analyzer 1.32 -> 1.33
+* Update IaC analyzer 2.5 -> 2.6.1
 
 ## 4.42
 
