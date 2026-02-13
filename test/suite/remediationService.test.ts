@@ -11,12 +11,19 @@ import { expect } from 'chai';
 import { RemediationService } from '../../src/remediationPanel/remediationService';
 import { RemediationEventType } from '../../src/remediationPanel/remediationEvent';
 import { ExtendedClient } from '../../src/lsp/protocol';
+import { IdeLabsFlagManagementService } from '../../src/labs/ideLabsFlagManagementService';
 
 suite('RemediationService Test Suite', () => {
   let remediationService: RemediationService;
   let eventChangeEmitterSpy: sinon.SinonSpy;
 
   setup(() => {
+    // Mock IDE Labs flag to be enabled for these tests
+    sinon.stub(IdeLabsFlagManagementService, 'instance').get(() => ({
+      isIdeLabsEnabled: () => true,
+      isIdeLabsJoined: () => true
+    }));
+
     // Initialize service before each test
     RemediationService.init();
     remediationService = RemediationService.instance;

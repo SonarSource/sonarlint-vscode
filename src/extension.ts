@@ -266,10 +266,12 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(findingsView);
 
-  remediationWebviewProvider = new RemediationWebviewProvider(context);
-  context.subscriptions.push(
-    VSCode.window.registerWebviewViewProvider('SonarQube.RemediationPanel', remediationWebviewProvider)
-  );
+  if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+    remediationWebviewProvider = new RemediationWebviewProvider(context);
+    context.subscriptions.push(
+      VSCode.window.registerWebviewViewProvider('SonarQube.RemediationPanel', remediationWebviewProvider)
+    );
+  }
 
   installCustomRequestHandlers(context);
   initializeLanguageModelTools(context);
@@ -306,7 +308,9 @@ export async function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(
     languageClient.onNotification(ExtendedClient.ShowIssueNotification.type, async (issue) => {
       await IssueService.showIssue(issue);
-      RemediationService.instance.trackIssueEvent(issue);
+      if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+        RemediationService.instance.trackIssueEvent(issue);
+      }
     })
   );
 
@@ -365,6 +369,19 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint.automaticAnalysis')) {
       automaticAnalysisService.updateAutomaticAnalysisStatusBarAndFindingsViewMessage();
+    }
+    if (event.affectsConfiguration('sonarlint.ideLabsEnabled')) {
+      const isEnabled = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
+      if (isEnabled && !remediationWebviewProvider) {
+        VSCode.window.showInformationMessage(
+          'Please reload the window to activate the Remediation Panel.',
+          'Reload'
+        ).then(selection => {
+          if (selection === 'Reload') {
+            VSCode.commands.executeCommand('workbench.action.reloadWindow');
+          }
+        });
+      }
     }
     if (event.affectsConfiguration('sonarlint')) {
       // only send notification to let language server pull the latest settings when the change is relevant
@@ -469,7 +486,13 @@ function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(ExtendedClient.ShowFixSuggestion.type, params => {
-    RemediationService.instance.trackFixSuggestionEvent(params);
+    if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+      // Labs enabled: Only track in panel, user views from there
+      RemediationService.instance.trackFixSuggestionEvent(params);
+    } else {
+      // Labs disabled: Show immediately (old behavior)
+      FixSuggestionService.instance.showFixSuggestion(params);
+    }
   })
   languageClient.onNotification(ExtendedClient.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(ExtendedClient.SuggestBindingNotification.type, params => suggestBinding(params));
@@ -522,7 +545,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(ExtendedClient.ShowHotspotNotification.type, async h => {
     await showSecurityHotspot(findingsView, findingsTreeDataProvider, h);
-    RemediationService.instance.trackHotspotEvent(h);
+    if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+      RemediationService.instance.trackHotspotEvent(h);
+    }
   });
   languageClient.onNotification(ExtendedClient.ShowIssueOrHotspotNotification.type, IssueService.showAllLocations);
   languageClient.onNotification(ExtendedClient.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));

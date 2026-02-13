@@ -2,8 +2,16 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import * as sinon from 'sinon';
 import { FixSuggestionService } from '../../src/fixSuggestions/fixSuggestionsService';
+import { IdeLabsFlagManagementService } from '../../src/labs/ideLabsFlagManagementService';
 import { assert } from 'chai';
+
+// Mock IDE Labs flag to be enabled for these tests
+sinon.stub(IdeLabsFlagManagementService, 'instance').get(() => ({
+  isIdeLabsEnabled: () => true,
+  isIdeLabsJoined: () => true
+}));
 
 FixSuggestionService.init(null);
 const fixSuggestionService = FixSuggestionService.instance;

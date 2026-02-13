@@ -495,7 +495,8 @@
         "command": "SonarQube.ClearRemediationEvents",
         "title": "Clear All",
         "icon": "$(clear-all)",
-        "category": "SonarQube"
+        "category": "SonarQube",
+        "enablement": "sonarqube.ideLabsEnabled"
       },
       {
         "command": "SonarLint.ClearHotspotLocations",
@@ -824,7 +825,8 @@
           "id": "SonarQube.RemediationPanel",
           "name": "Remediation Panel",
           "type": "webview",
-          "icon": "$(history)"
+          "icon": "$(history)",
+          "when": "sonarqube.ideLabsEnabled"
         },
         {
           "id": "SonarQube.Labs",
@@ -857,7 +859,8 @@
       },
       {
         "view": "SonarQube.RemediationPanel",
-        "contents": "No 'Open In IDE' events yet.\n\nClick 'Open In IDE' from SonarQube (Server, Cloud) to see events here."
+        "contents": "No 'Open In IDE' events yet.\n\nClick 'Open In IDE' from SonarQube (Server, Cloud) to see events here.",
+        "when": "sonarqube.ideLabsEnabled"
       }
     ],
     "walkthroughs": [
@@ -1007,7 +1010,7 @@
         },
         {
           "command": "SonarQube.ClearRemediationEvents",
-          "when": "view == SonarQube.RemediationPanel",
+          "when": "view == SonarQube.RemediationPanel && sonarqube.ideLabsEnabled",
           "group": "navigation"
         }
       ],
@@ -1397,7 +1400,7 @@
       }
     ]
   },
-  "main": "./dist/extension",
+  "main": "out/src/extension",
   "scripts": {
     "vscode:prepublish": "node build-sonarlint/prepare.mjs && webpack --mode production",
     "compile": "tsc -p ./",
