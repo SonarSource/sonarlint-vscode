@@ -46,6 +46,8 @@ import { installHook, openHookConfiguration, openHookScript, uninstallHook } fro
 import { getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
 import { code2ProtocolConverter } from './util/uri';
 import { StatusBarService } from './statusbar/statusBar';
+import { RemediationService } from './remediationPanel/remediationService';
+import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 export class CommandsManager {
   constructor(
@@ -68,6 +70,11 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.SHOW_ALL_LOCATIONS, IssueService.showAllLocations),
       vscode.commands.registerCommand(Commands.CLEAR_LOCATIONS, IssueService.clearLocations),
       vscode.commands.registerCommand(Commands.NAVIGATE_TO_LOCATION, navigateToLocation),
+      vscode.commands.registerCommand(Commands.CLEAR_REMEDIATION_EVENTS, () => {
+        if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+          RemediationService.instance.clearEvents();
+        }
+      }),
       vscode.commands.registerCommand(Commands.DEACTIVATE_RULE, toggleRule('off')),
       vscode.commands.registerCommand(Commands.ACTIVATE_RULE, toggleRule('on')),
       vscode.commands.registerCommand(Commands.SHOW_HOTSPOT_RULE_DESCRIPTION, hotspot =>
