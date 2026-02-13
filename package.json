@@ -1524,7 +1524,7 @@
     {
       "groupId": "com.sonarsource.cpp",
       "artifactId": "sonar-cfamily-plugin",
-      "version": "6.77.0.95488",
+      "version": "6.78.0.96395",
       "output": "analyzers/sonarcfamily.jar.asc",
       "requiresCredentials": true,
       "signatureOnly": true
