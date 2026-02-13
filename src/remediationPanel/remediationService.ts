@@ -23,10 +23,10 @@ export class RemediationService {
   private static _instance: RemediationService;
   private readonly viewedEventIds: Set<string> = new Set();
   private readonly eventChangeEmitter = new vscode.EventEmitter<RemediationEvent[]>();
-  public readonly onEventsChanged = this.eventChangeEmitter.event;
   private events: RemediationEvent[] = [];
   private lastEventTimestamp = 0;
   private eventIdCounter = 0;
+  public readonly onEventsChanged = this.eventChangeEmitter.event;
 
   private constructor() {}
 
@@ -49,8 +49,9 @@ export class RemediationService {
     const { fileUri, textRange } = issue;
     const filePath = this.getRelativePath(fileUri);
 
+    this.eventIdCounter++;
     const event: IssueRemediationEvent = {
-      id: this.generateId(),
+      id: `${Date.now()}-${this.eventIdCounter}`,
       type: RemediationEventType.OPEN_ISSUE,
       timestamp: Date.now(),
       fileUri,
@@ -71,8 +72,9 @@ export class RemediationService {
     const filePath = this.getRelativePath(fileUri);
     const textRange = hotspot.textRange;
 
+    this.eventIdCounter++;
     const event: HotspotRemediationEvent = {
-      id: this.generateId(),
+      id: `${Date.now()}-${this.eventIdCounter}`,
       type: RemediationEventType.OPEN_HOTSPOT,
       timestamp: Date.now(),
       fileUri,
@@ -92,8 +94,9 @@ export class RemediationService {
     const fileUri = params.fileUri;
     const filePath = this.getRelativePath(fileUri);
 
+    this.eventIdCounter++;
     const event: FixSuggestionRemediationEvent = {
-      id: this.generateId(),
+      id: `${Date.now()}-${this.eventIdCounter}`,
       type: RemediationEventType.VIEW_FIX_SUGGESTION,
       timestamp: Date.now(),
       fileUri,
@@ -103,11 +106,6 @@ export class RemediationService {
     };
 
     this.addEvent(event);
-  }
-
-  private generateId(): string {
-    this.eventIdCounter++;
-    return `${Date.now()}-${this.eventIdCounter}`;
   }
 
   clearEvents(): void {
@@ -152,7 +150,7 @@ export class RemediationService {
       }
       return uri.fsPath;
     } catch (error) {
-      logToSonarLintOutput(`Error encountered while resolving relative path for remediation, ${error}`);
+      logToSonarLintOutput(`Remediation event failed to resolve file path [${fileUri}]: ${error.message}`);
       return fileUri;
     }
   }
