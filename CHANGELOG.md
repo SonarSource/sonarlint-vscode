@@ -4,6 +4,7 @@
 * Update Python analyzer 5.16 -> 5.17
 * Update Go analyzer 1.32 -> 1.33
 * Update IaC analyzer 2.5 -> 2.6.1
+* Update CFamily analyzer 6.77 -> 6.78
 
 ## 4.42
 
