@@ -4,6 +4,7 @@ import { logToSonarLintOutput } from "../util/logging";
 import { SonarLintExtendedLanguageClient } from "../lsp/client";
 import { pathExists } from "../util/uri";
 import { showNoFileWithUriError } from "../util/showMessage";
+import { IdeLabsFlagManagementService } from '../labs/ideLabsFlagManagementService';
 
 export class FixSuggestionService {
 	private static readonly END_OF_LINE_OFFSET = 10000;
@@ -22,13 +23,18 @@ export class FixSuggestionService {
 		try {
 			const fileUri = vscode.Uri.parse(params.fileUri);
 			if (!(await pathExists(fileUri))) {
-				// File doesn't exist - offer to view fix details instead
-				const action = await vscode.window.showWarningMessage(
-					'Could not find file. The file may have been deleted or moved.',
-					'View Fix Details'
-				);
-				if (action === 'View Fix Details') {
-					await this.showFixDetails(params, fileUri);
+				if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+					// NEW: Markdown fallback
+					const action = await vscode.window.showWarningMessage(
+						'Could not find file. The file may have been deleted or moved.',
+						'View Fix Details'
+					);
+					if (action === 'View Fix Details') {
+						await this.showFixDetails(params, fileUri);
+					}
+				} else {
+					// OLD: Show error message
+					showNoFileWithUriError(fileUri);
 				}
 				return;
 			}
@@ -49,19 +55,27 @@ export class FixSuggestionService {
 
 			// If content has significantly changed, offer to view details before showing diff
 			if (hasContentMismatch) {
-				const action = await vscode.window.showWarningMessage(
-					'The content of the file has changed. The fix suggestion may not be applicable.',
-					'View Fix Details',
-					'Try Anyway'
-				);
-				if (action === 'View Fix Details') {
-					await this.showFixDetails(params, fileUri);
-					this.client.fixSuggestionResolved(params.suggestionId, false);
-					return;
-				} else if (action !== 'Try Anyway') {
-					// User dismissed the dialog
-					this.client.fixSuggestionResolved(params.suggestionId, false);
-					return;
+				if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+					// NEW: Markdown fallback with options
+					const action = await vscode.window.showWarningMessage(
+						'The content of the file has changed. The fix suggestion may not be applicable.',
+						'View Fix Details',
+						'Try Anyway'
+					);
+					if (action === 'View Fix Details') {
+						await this.showFixDetails(params, fileUri);
+						this.client.fixSuggestionResolved(params.suggestionId, false);
+						return;
+					} else if (action !== 'Try Anyway') {
+						// User dismissed the dialog
+						this.client.fixSuggestionResolved(params.suggestionId, false);
+						return;
+					}
+				} else {
+					// OLD: Simple warning
+					vscode.window.showWarningMessage(
+						'The content of the file has changed. The fix suggestion may not be applicable.'
+					);
 				}
 			}
 
@@ -76,15 +90,18 @@ export class FixSuggestionService {
 			this.client.fixSuggestionResolved(params.suggestionId, result);
 		} catch (error) {
 			logToSonarLintOutput('Failed to apply edit: '.concat(error.message));
-			// Offer to show fix details on error
-			const action = await vscode.window.showErrorMessage(
-				'Failed to apply AI Fix: ' + error.message,
-				'View Fix Details'
-			);
-			if (action === 'View Fix Details') {
-				const fileUri = vscode.Uri.parse(params.fileUri);
-				await this.showFixDetails(params, fileUri);
+			if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+				// NEW: Markdown fallback option
+				const action = await vscode.window.showErrorMessage(
+					'Failed to apply AI Fix: ' + error.message,
+					'View Fix Details'
+				);
+				if (action === 'View Fix Details') {
+					const fileUri = vscode.Uri.parse(params.fileUri);
+					await this.showFixDetails(params, fileUri);
+				}
 			}
+			// OLD: Just log (no user action)
 		}
 	}
 

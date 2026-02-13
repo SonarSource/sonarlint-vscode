@@ -13,7 +13,14 @@ import * as os from 'os';
 import * as sinon from 'sinon';
 import { FixSuggestionService } from '../../src/fixSuggestions/fixSuggestionsService';
 import { ExtendedClient } from '../../src/lsp/protocol';
+import { IdeLabsFlagManagementService } from '../../src/labs/ideLabsFlagManagementService';
 import { expect } from 'chai';
+
+// Mock IDE Labs flag to be enabled for these tests - must be before suite definition
+sinon.stub(IdeLabsFlagManagementService, 'instance').get(() => ({
+  isIdeLabsEnabled: () => true,
+  isIdeLabsJoined: () => true
+}));
 
 suite('Fix Suggestions Service - Enhanced Test Suite', () => {
   let fixSuggestionService: FixSuggestionService;
@@ -29,6 +36,7 @@ suite('Fix Suggestions Service - Enhanced Test Suite', () => {
   let openTextDocumentStub: sinon.SinonStub;
 
   setup(async () => {
+
     // Create temp folder and file
     folder = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tmpdir'));
     filePath = path.join(folder, 'fixSuggestion.js');
