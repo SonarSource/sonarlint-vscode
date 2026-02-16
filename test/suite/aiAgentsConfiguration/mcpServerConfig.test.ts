@@ -45,19 +45,19 @@ suite('mcpServerConfig', () => {
       expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.KIRO);
 
       envStub.value('Visual Studio Code');
-      extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
+      extensionsStub.withArgs('github.copilot-chat').returns({ isActive: true });
       expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.GITHUB_COPILOT);
 
       envStub.value('Visual Studio Code');
-      extensionsStub.withArgs('GitHub.copilot').returns({ isActive: false });
+      extensionsStub.withArgs('github.copilot-chat').returns({ isActive: false });
       expect(getCurrentAgentWithMCPSupport()).to.be.undefined;
 
       envStub.value('Visual Studio Code - Insiders');
-      extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
+      extensionsStub.withArgs('github.copilot-chat').returns({ isActive: true });
       expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.GITHUB_COPILOT);
 
       envStub.value('Unknown IDE');
-      extensionsStub.withArgs('GitHub.copilot').returns(undefined);
+      extensionsStub.withArgs('github.copilot-chat').returns(undefined);
       expect(getCurrentAgentWithMCPSupport()).to.be.undefined;
     } finally {
       envStub.restore();
@@ -80,7 +80,7 @@ suite('mcpServerConfig', () => {
       const kiroPath = getMCPConfigPath();
 
       envStub.value('Visual Studio Code');
-      extensionsStub.withArgs('GitHub.copilot').returns({ isActive: true });
+      extensionsStub.withArgs('github.copilot-chat').returns({ isActive: true });
       const vscodePath = getMCPConfigPath();
 
       expect(cursorPath).to.not.equal(windsurfPath);
@@ -111,7 +111,7 @@ suite('mcpServerConfig', () => {
 
     try {
       envStub.value('Unsupported agent');
-      extensionsStub.withArgs('GitHub.copilot').returns(undefined);
+      extensionsStub.withArgs('github.copilot-chat').returns(undefined);
 
       expect(() => getMCPConfigPath()).to.throw('Unsupported agent');
     } finally {
