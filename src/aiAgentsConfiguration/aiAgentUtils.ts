@@ -16,7 +16,7 @@ export enum AGENT {
 }
 
 function isCopilotInstalledAndActive(): boolean {
-  const copilotExtension = vscode.extensions.getExtension('GitHub.copilot');
+  const copilotExtension = vscode.extensions.getExtension('github.copilot-chat');
   return copilotExtension?.isActive;
 }
 
