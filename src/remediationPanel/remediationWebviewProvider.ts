@@ -72,12 +72,7 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
   }
 
   private getNonce(): string {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (let i = 0; i < 32; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
+    return btoa(String.fromCodePoint(...crypto.getRandomValues(new Uint8Array(32))));
   }
 
   private async handleNavigateToEvent(eventId: string): Promise<void> {
