@@ -104,7 +104,7 @@ function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): s
 function renderEmptyState(): string {
   return `<div class="empty-state">
     <p>No remediation events yet.</p>
-    <p class="empty-state-hint">Events will appear here when you open issues, hotspots, or fix suggestions from SonarQube Server or Cloud.</p>
+    <p class="empty-state-hint">Events will appear here when you open issues, hotspots, or fix suggestions from SonarQube (Server, Cloud).</p>
   </div>`;
 }
 
@@ -137,7 +137,7 @@ function getEventTypeLabel(type: RemediationEventType): string {
     case RemediationEventType.OPEN_ISSUE:
       return 'Issue';
     case RemediationEventType.OPEN_HOTSPOT:
-      return 'Hotspot';
+      return 'Security Hotspot';
     case RemediationEventType.VIEW_FIX_SUGGESTION:
       return 'Fix Suggestion';
     default:

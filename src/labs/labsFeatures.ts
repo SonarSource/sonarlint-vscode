@@ -29,7 +29,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     id: 'remediation_center',
     title: 'Remediation Center',
     description:
-      'Streamline your remediation workflow by bringing SonarQube Cloud and Server actions directly within a new IDE panel. Manage AI codefix suggestions and issue reviews without switching context.',
+      'Streamline your remediation workflow by bringing SonarQube (Server, Cloud) actions directly within a new IDE panel. Manage AI CodeFix suggestions and server issue reviews without switching context.',
     imageFile: 'labs/labs_remediation_center.png',
     tags: [FeatureTag.NEW, FeatureTag.EXPERIMENTAL],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/fixing-issues#remediation-center',
