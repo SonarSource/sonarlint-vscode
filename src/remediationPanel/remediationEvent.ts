@@ -19,7 +19,6 @@ export interface BaseRemediationEvent {
   type: RemediationEventType;
   timestamp: number;
   fileUri: string;
-  filePath: string;
   message: string;
   ruleKey?: string;
 }

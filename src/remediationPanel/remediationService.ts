@@ -47,7 +47,6 @@ export class RemediationService {
     this.checkAndClearBatch();
 
     const { fileUri, textRange } = issue;
-    const filePath = this.getRelativePath(fileUri);
 
     this.eventIdCounter++;
     const event: IssueRemediationEvent = {
@@ -55,7 +54,6 @@ export class RemediationService {
       type: RemediationEventType.OPEN_ISSUE,
       timestamp: Date.now(),
       fileUri,
-      filePath,
       message: issue.message,
       ruleKey: issue.ruleKey,
       issue,
@@ -69,7 +67,6 @@ export class RemediationService {
     this.checkAndClearBatch();
 
     const fileUri = `file://${hotspot.ideFilePath}`;
-    const filePath = this.getRelativePath(fileUri);
     const textRange = hotspot.textRange;
 
     this.eventIdCounter++;
@@ -78,7 +75,6 @@ export class RemediationService {
       type: RemediationEventType.OPEN_HOTSPOT,
       timestamp: Date.now(),
       fileUri,
-      filePath,
       message: hotspot.message,
       ruleKey: hotspot.rule?.key,
       hotspot,
@@ -92,7 +88,6 @@ export class RemediationService {
     this.checkAndClearBatch();
 
     const fileUri = params.fileUri;
-    const filePath = this.getRelativePath(fileUri);
 
     this.eventIdCounter++;
     const event: FixSuggestionRemediationEvent = {
@@ -100,7 +95,6 @@ export class RemediationService {
       type: RemediationEventType.VIEW_FIX_SUGGESTION,
       timestamp: Date.now(),
       fileUri,
-      filePath,
       message: params.explanation,
       params
     };
@@ -139,20 +133,6 @@ export class RemediationService {
     this.events.push(event);
     this.lastEventTimestamp = event.timestamp;
     this.eventChangeEmitter.fire(this.events);
-  }
-
-  private getRelativePath(fileUri: string): string {
-    try {
-      const uri = vscode.Uri.parse(fileUri);
-      const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
-      if (workspaceFolder) {
-        return vscode.workspace.asRelativePath(uri, false);
-      }
-      return uri.fsPath;
-    } catch (error) {
-      logToSonarLintOutput(`Remediation event failed to resolve file path [${fileUri}]: ${error.message}`);
-      return fileUri;
-    }
   }
 
   dispose(): void {

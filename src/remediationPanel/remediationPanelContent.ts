@@ -7,7 +7,7 @@
 'use strict';
 
 import { RemediationEvent, RemediationEventType } from './remediationEvent';
-import { ResourceResolver } from '../util/webview';
+import { escapeHtml, ResourceResolver } from '../util/webview';
 import { getFileNameFromFullPath, getRelativePathFromFullPath } from '../util/uri';
 import { RemediationService } from './remediationService';
 import * as vscode from 'vscode';
@@ -79,7 +79,6 @@ function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): s
     ));
   }
 
-  const fullPath = escapeHtml(event.filePath);
   const isViewed = RemediationService.instance.isEventViewed(event.id);
   const viewedClass = isViewed ? ' viewed' : '';
 
@@ -91,7 +90,7 @@ function renderEventItem(event: RemediationEvent, resolver: ResourceResolver): s
       </div>
       <div class="event-message">${message}</div>
       <div class="event-metadata">
-        <span class="event-file" title="${fullPath}">
+        <span class="event-file" title="${dirPath}">
           <span class="file-name">${fileName}</span>
           ${dirPath ? `<span class="file-dir">${dirPath}</span>` : ''}
         </span>
@@ -156,13 +155,4 @@ function getEventTypeClass(type: RemediationEventType): string {
     default:
       return '';
   }
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }
