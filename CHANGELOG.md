@@ -5,6 +5,7 @@
 * Update Go analyzer 1.32 -> 1.33
 * Update IaC analyzer 2.5 -> 2.6.1
 * Update CFamily analyzer 6.77 -> 6.78
+* Introduce Remediation Center - an experimental feature available inside SonarQube for IDE Labs. It streamlines your remediation workflow by bringing SonarQube (Server, Cloud) actions directly within a new IDE panel
 
 ## 4.42
 
