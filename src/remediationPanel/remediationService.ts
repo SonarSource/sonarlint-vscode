@@ -8,7 +8,6 @@
 
 import * as vscode from 'vscode';
 import { ExtendedClient } from '../lsp/protocol';
-import { logToSonarLintOutput } from '../util/logging';
 import {
   RemediationEvent,
   RemediationEventType,
@@ -17,14 +16,11 @@ import {
   FixSuggestionRemediationEvent
 } from './remediationEvent';
 
-const BATCH_THRESHOLD_MS = 5000;
-
 export class RemediationService {
   private static _instance: RemediationService;
   private readonly viewedEventIds: Set<string> = new Set();
   private readonly eventChangeEmitter = new vscode.EventEmitter<RemediationEvent[]>();
   private events: RemediationEvent[] = [];
-  private lastEventTimestamp = 0;
   private eventIdCounter = 0;
   public readonly onEventsChanged = this.eventChangeEmitter.event;
 
@@ -44,7 +40,7 @@ export class RemediationService {
   }
 
   trackIssueEvent(issue: ExtendedClient.Issue): void {
-    this.checkAndClearBatch();
+    this.clearEvents();
 
     const { fileUri, textRange } = issue;
 
@@ -64,7 +60,7 @@ export class RemediationService {
   }
 
   trackHotspotEvent(hotspot: ExtendedClient.RemoteHotspot): void {
-    this.checkAndClearBatch();
+    this.clearEvents();
 
     const fileUri = `file://${hotspot.ideFilePath}`;
     const textRange = hotspot.textRange;
@@ -85,7 +81,7 @@ export class RemediationService {
   }
 
   trackFixSuggestionEvent(params: ExtendedClient.ShowFixSuggestionParams): void {
-    this.checkAndClearBatch();
+    this.clearEvents();
 
     const fileUri = params.fileUri;
 
@@ -105,7 +101,6 @@ export class RemediationService {
   clearEvents(): void {
     this.events = [];
     this.viewedEventIds.clear();
-    this.lastEventTimestamp = 0;
     this.eventChangeEmitter.fire(this.events);
   }
 
@@ -122,16 +117,8 @@ export class RemediationService {
     return this.viewedEventIds.has(eventId);
   }
 
-  private checkAndClearBatch(): void {
-    const now = Date.now();
-    if (this.events.length > 0 && now - this.lastEventTimestamp > BATCH_THRESHOLD_MS) {
-      this.events = [];
-    }
-  }
-
   private addEvent(event: RemediationEvent): void {
     this.events.push(event);
-    this.lastEventTimestamp = event.timestamp;
     this.eventChangeEmitter.fire(this.events);
   }
 
