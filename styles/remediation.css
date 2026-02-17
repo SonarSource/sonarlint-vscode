@@ -67,7 +67,6 @@
   display: inline-block;
 }
 
-/* Issue and Hotspot use Connected Mode tag style */
 .event-type-issue,
 .event-type-hotspot {
   background: #f5fbff;
@@ -75,7 +74,6 @@
   color: #316c92;
 }
 
-/* Fix Suggestion uses Experimental tag style */
 .event-type-fix-suggestion {
   background: #f4eeff;
   border: 1px solid #7934c7;
