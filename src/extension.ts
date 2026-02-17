@@ -266,12 +266,10 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(findingsView);
 
-  if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
-    remediationWebviewProvider = new RemediationWebviewProvider(context);
-    context.subscriptions.push(
-      VSCode.window.registerWebviewViewProvider('SonarQube.RemediationPanel', remediationWebviewProvider)
-    );
-  }
+  remediationWebviewProvider = new RemediationWebviewProvider(context);
+  context.subscriptions.push(
+    VSCode.window.registerWebviewViewProvider('SonarQube.RemediationPanel', remediationWebviewProvider)
+  );
 
   installCustomRequestHandlers(context);
   initializeLanguageModelTools(context);
@@ -369,19 +367,6 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint.automaticAnalysis')) {
       automaticAnalysisService.updateAutomaticAnalysisStatusBarAndFindingsViewMessage();
-    }
-    if (event.affectsConfiguration('sonarlint.ideLabsEnabled')) {
-      const isEnabled = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
-      if (isEnabled && !remediationWebviewProvider) {
-        VSCode.window.showInformationMessage(
-          'Please reload the window to activate the SonarQube for IDE Remediation Center.',
-          'Reload'
-        ).then(selection => {
-          if (selection === 'Reload') {
-            VSCode.commands.executeCommand('workbench.action.reloadWindow');
-          }
-        });
-      }
     }
     if (event.affectsConfiguration('sonarlint')) {
       // only send notification to let language server pull the latest settings when the change is relevant
