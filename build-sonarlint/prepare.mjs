@@ -40,7 +40,7 @@ jarDependencies.map(async dep => {
 });
 
 async function artifactUrl(dep) {
-  const groupIdForArtifactory = dep.groupId.replace(/\./g, '/');
+  const groupIdForArtifactory = dep.groupId.replaceAll('.', '/');
 
   if (dep.path) {
     // If path is manually defined, use it
