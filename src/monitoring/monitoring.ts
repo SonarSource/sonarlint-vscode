@@ -12,25 +12,22 @@ import {
   getDefaultIntegrations,
   NodeClient,
   makeNodeTransport,
-  Scope, EventHint
+  Scope,
+  EventHint
 } from '@sentry/node';
 import * as vscode from 'vscode';
 
 import { isDogfoodingEnvironment } from './dogfooding';
 import * as util from '../util/util';
 
-const SKIPPED_DEFAULT_INTEGRATIONS = [
-  'Breadcrumbs',
-  'GlobalHandlers'
-];
+const SKIPPED_DEFAULT_INTEGRATIONS = new Set(['Breadcrumbs', 'GlobalHandlers']);
 
 export class MonitoringService implements vscode.TelemetrySender {
-
   public static readonly instance = new MonitoringService();
   private readonly scope: Scope;
 
   private constructor() {
-    if(isDogfoodingEnvironment()) {
+    if (isDogfoodingEnvironment()) {
       console.info('Initializing monitoring service in dogfooding environment');
 
       // Following the recommendations on shared environment, we're initializing our Sentry client manually
@@ -38,11 +35,9 @@ export class MonitoringService implements vscode.TelemetrySender {
       // See: https://docs.sentry.io/platforms/javascript/best-practices/shared-environments/
 
       // Filter integrations that use the global variable
-      const integrations = getDefaultIntegrations({}).filter(
-        (defaultIntegration) => {
-          return !SKIPPED_DEFAULT_INTEGRATIONS.includes(defaultIntegration.name);
-        },
-      );
+      const integrations = getDefaultIntegrations({}).filter(defaultIntegration => {
+        return !SKIPPED_DEFAULT_INTEGRATIONS.has(defaultIntegration.name);
+      });
 
       const client = new NodeClient({
         dsn: 'https://5e3853ab83d91a04bfc8d81347dadc14@o1316750.ingest.us.sentry.io/4508460058214400',
@@ -57,7 +52,7 @@ export class MonitoringService implements vscode.TelemetrySender {
             ideVersion: vscode.version,
             architecture: process.arch,
             ...event.tags
-          }
+          };
           return event;
         }
       });
