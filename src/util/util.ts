@@ -111,10 +111,7 @@ export function formatIssueMessage(message: string, ruleKey: string) {
   return new vscode.MarkdownString(`$(warning) ${message} \`sonarqube(${ruleKey})\``, true);
 }
 
-export async function findFilesInFolder(
-  uri: vscode.Uri,
-  cancelToken: vscode.CancellationToken
-): Promise<vscode.Uri[]> {
+export async function findFilesInFolder(uri: vscode.Uri, cancelToken: vscode.CancellationToken): Promise<vscode.Uri[]> {
   if (cancelToken.isCancellationRequested) {
     return [];
   }
@@ -154,7 +151,7 @@ export async function createAnalysisFilesFromFileUris(
       return [];
     }
     currentFile += 1;
-    progress.report({increment: 50.0 * currentFile / totalFiles});
+    progress.report({ increment: (50 * currentFile) / totalFiles });
     const fileStat = await vscode.workspace.fs.stat(fileUri);
     if (fileStat.size > HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT_BYTES) {
       verboseLogToSonarLintOutput(`File will not be analysed because it's too large: ${fileUri.path}`);
@@ -183,7 +180,8 @@ export async function createAnalysisFilesFromFileUris(
 }
 
 export function getQuickPickListItemsForWorkspaceFolders(
-  workspaceFolders: readonly vscode.WorkspaceFolder[]): vscode.QuickPickItem[] {
+  workspaceFolders: readonly vscode.WorkspaceFolder[]
+): vscode.QuickPickItem[] {
   const quickPickItems: vscode.QuickPickItem[] = [];
   for (const workspaceFolder of workspaceFolders) {
     quickPickItems.push({
@@ -296,8 +294,10 @@ export function filterOutFilesIgnoredForAnalysis(fileUris: string[]): ExtendedCl
   const workspaceFolderConfig = vscode.workspace.getConfiguration(null, scope);
   const excludes: string = workspaceFolderConfig.get(ANALYSIS_EXCLUDES);
   const excludesArray = excludes.split(',').map(it => it.trim());
-  const filteredFiles = getFilesNotMatchedGlobPatterns(fileUris.map(it => vscode.Uri.parse(it)), excludesArray)
-    .map(it => it.toString());
+  const filteredFiles = getFilesNotMatchedGlobPatterns(
+    fileUris.map(it => vscode.Uri.parse(it)),
+    excludesArray
+  ).map(it => it.toString());
   return { fileUris: filteredFiles };
 }
 
@@ -330,19 +330,27 @@ export function getSeverity(severity: number): vscode.DiagnosticSeverity {
 
 export function mapVscodeSeverityToLspSeverity(severity: vscode.DiagnosticSeverity): DiagnosticSeverity {
   switch (severity) {
-    case vscode.DiagnosticSeverity.Error: return DiagnosticSeverity.Error;
-    case vscode.DiagnosticSeverity.Warning: return DiagnosticSeverity.Warning;
-    case vscode.DiagnosticSeverity.Information: return DiagnosticSeverity.Information;
-    case vscode.DiagnosticSeverity.Hint: return DiagnosticSeverity.Hint;
-    default: return DiagnosticSeverity.Warning;
+    case vscode.DiagnosticSeverity.Error:
+      return DiagnosticSeverity.Error;
+    case vscode.DiagnosticSeverity.Warning:
+      return DiagnosticSeverity.Warning;
+    case vscode.DiagnosticSeverity.Information:
+      return DiagnosticSeverity.Information;
+    case vscode.DiagnosticSeverity.Hint:
+      return DiagnosticSeverity.Hint;
+    default:
+      return DiagnosticSeverity.Warning;
   }
 }
 
 export function sonarCloudRegionToLabel(region: number): SonarCloudRegion {
   switch (region) {
-    case 0: return 'EU';
-    case 1: return 'US';
-    default: return 'EU';
+    case 0:
+      return 'EU';
+    case 1:
+      return 'US';
+    default:
+      return 'EU';
   }
 }
 
@@ -352,29 +360,32 @@ export function sanitizeSonarCloudRegionSetting(region: string): SonarCloudRegio
   }
   // Technically, users could put anything in the `region` setting. If it is something invalid, we default to EU.
   switch (region.toUpperCase()) {
-    case 'EU': return 'EU';
-    case 'US': return 'US';
-    default: return 'EU';
+    case 'EU':
+      return 'EU';
+    case 'US':
+      return 'US';
+    default:
+      return 'EU';
   }
 }
 
 export function convertVscodeDiagnosticToLspDiagnostic(diagnostic: vscode.Diagnostic): Diagnostic {
-    // Convert range
-    const range: Range = {
-      start: { line: diagnostic.range.start.line, character: diagnostic.range.start.character },
-      end: { line: diagnostic.range.end.line, character: diagnostic.range.end.character }
-    };
-  
-    const lspDiag = {
-      range,
-      message: diagnostic.message,
-      severity: mapVscodeSeverityToLspSeverity(diagnostic.severity),
-      code: diagnostic.code as string,
-      source: diagnostic.source,
-      data: diagnostic['data']
-    };
-  
-    return lspDiag;
+  // Convert range
+  const range: Range = {
+    start: { line: diagnostic.range.start.line, character: diagnostic.range.start.character },
+    end: { line: diagnostic.range.end.line, character: diagnostic.range.end.character }
+  };
+
+  const lspDiag = {
+    range,
+    message: diagnostic.message,
+    severity: mapVscodeSeverityToLspSeverity(diagnostic.severity),
+    code: diagnostic.code as string,
+    source: diagnostic.source,
+    data: diagnostic['data']
+  };
+
+  return lspDiag;
 }
 
 export function getVSCodeSettingsBaseDir(): string {
