@@ -115,7 +115,13 @@ export class FileItem extends vscode.TreeItem {
   readonly children: LocationItem[];
   readonly parent: FlowItem;
 
-  constructor(uri: string | null, filePath: string, lastIndex: number, locations: ExtendedClient.Location[], parent: FlowItem) {
+  constructor(
+    uri: string | null,
+    filePath: string,
+    lastIndex: number,
+    locations: ExtendedClient.Location[],
+    parent: FlowItem
+  ) {
     const label = uri ? uri.substring(uri.lastIndexOf('/') + 1) : filePath.substring(filePath.lastIndexOf('/') + 1);
     super(label, vscode.TreeItemCollapsibleState.Expanded);
     this.children = locations.map((l, i) => new LocationItem(l, lastIndex + 1 - locations.length + i, this));
@@ -169,11 +175,7 @@ export type LocationTreeItem = IssueItem | ChildItem;
 export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationTreeItem> {
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<LocationTreeItem | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-  private rootItem?: IssueItem;
-
-  constructor() {
-    this.rootItem = null;
-  }
+  private rootItem: IssueItem | null = null;
 
   async showAllLocations(issue: ExtendedClient.Issue) {
     this.rootItem = new IssueItem(issue);
