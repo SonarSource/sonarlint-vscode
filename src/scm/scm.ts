@@ -27,11 +27,10 @@ const CHECK_IGNORE_ARGS = ['check-ignore', '-v', '-z', '--stdin'];
 
 interface Scm extends vscode.Disposable {
   setReferenceBranchName(folderUri: vscode.Uri, branchName?: string): void;
-  getReferenceBranchNameForFile(fileUri: vscode.Uri): string|null;
+  getReferenceBranchNameForFile(fileUri: vscode.Uri): string | null;
 }
 
 class NoopScm implements Scm {
-
   setReferenceBranchName(folderUri: vscode.Uri, branchName?: string) {
     // NOP
   }
@@ -46,7 +45,6 @@ class NoopScm implements Scm {
 }
 
 class GitScm implements Scm {
-
   private readonly listeners: Array<vscode.Disposable>;
 
   private readonly localBranchByFolderUri: Map<string, string>;
@@ -55,7 +53,8 @@ class GitScm implements Scm {
 
   constructor(
     private readonly gitApi: API,
-    private readonly client: SonarLintExtendedLanguageClient) {
+    private readonly client: SonarLintExtendedLanguageClient
+  ) {
     this.listeners = [
       gitApi.onDidOpenRepository(r => {
         this.subscribeToRepositoryChanges(r);
@@ -89,27 +88,27 @@ class GitScm implements Scm {
   }
 
   private subscribeToRepositoryChanges(repository: Repository) {
-    this.listeners.push(repository.state.onDidChange(() => {
-      vscode.workspace.workspaceFolders?.forEach(folder => {
-        const folderUriAsString = folder.uri.toString();
-        if (folderUriAsString.startsWith(repository.rootUri.toString())) {
-          const branchName = repository.state.HEAD?.name;
-          if (this.localBranchByFolderUri.get(folderUriAsString) !== branchName) {
-            verboseLogToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
-            this.localBranchByFolderUri.set(folder.uri.toString(), branchName);
-            this.client.didLocalBranchNameChange(folder.uri, branchName);
+    this.listeners.push(
+      repository.state.onDidChange(() => {
+        vscode.workspace.workspaceFolders?.forEach(folder => {
+          const folderUriAsString = folder.uri.toString();
+          if (folderUriAsString.startsWith(repository.rootUri.toString())) {
+            const branchName = repository.state.HEAD?.name;
+            if (this.localBranchByFolderUri.get(folderUriAsString) !== branchName) {
+              verboseLogToSonarLintOutput(`Folder ${folder.uri} is now on branch ${branchName}`);
+              this.localBranchByFolderUri.set(folder.uri.toString(), branchName);
+              this.client.didLocalBranchNameChange(folder.uri, branchName);
+            }
           }
-        }
-      });
-    }));
+        });
+      })
+    );
   }
 
   setReferenceBranchName(folderUri: vscode.Uri, branchName?: string) {
     this.referenceBranchByFolderUri.set(folderUri.toString(true), branchName);
     // Notify status bar with current branch for active editor
-    const currentBranch = this.getReferenceBranchNameForFile(
-      vscode.window.activeTextEditor?.document?.uri
-    );
+    const currentBranch = this.getReferenceBranchNameForFile(vscode.window.activeTextEditor?.document?.uri);
     StatusBarService.instance.updateReferenceBranch(currentBranch);
   }
 
@@ -154,8 +153,13 @@ export async function isIgnoredByScm(fileUri: string): Promise<boolean> {
 
 export async function isFileIgnoredByScm(
   fileUri: string,
-  scmCheck: (gitPath: string, gitArgs: string[], workspaceFolderPath: string,
-             fileUris: vscode.Uri[]) => Promise<vscode.Uri[]>): Promise<boolean> {
+  scmCheck: (
+    gitPath: string,
+    gitArgs: string[],
+    workspaceFolderPath: string,
+    fileUris: vscode.Uri[]
+  ) => Promise<vscode.Uri[]>
+): Promise<boolean> {
   const parsedFileUri = vscode.Uri.parse(fileUri);
   const notIgnoredFiles = await filterOutScmIgnoredFiles([parsedFileUri], scmCheck);
   return notIgnoredFiles.length === 0;
@@ -163,8 +167,13 @@ export async function isFileIgnoredByScm(
 
 export async function filterOutScmIgnoredFiles(
   fileUris: vscode.Uri[],
-  scmCheck: (gitPath: string, gitArgs: string[], workspaceFolderPath: string,
-             fileUris: vscode.Uri[]) => Promise<vscode.Uri[]>): Promise<vscode.Uri[]> {
+  scmCheck: (
+    gitPath: string,
+    gitArgs: string[],
+    workspaceFolderPath: string,
+    fileUris: vscode.Uri[]
+  ) => Promise<vscode.Uri[]>
+): Promise<vscode.Uri[]> {
   const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git').exports;
   if (gitExtension == null) {
     logToSonarLintOutput(`The git extension is not installed, consider all files not ignored`);
@@ -187,17 +196,26 @@ export async function filterOutScmIgnoredFiles(
 
     const submodulesPaths = await getSubmodulesPaths(gitPath, repoFsPath);
     if (submodulesPaths) {
-      const fileGroups = _.groupBy(fileUris, function(fileUri: vscode.Uri) {
+      const fileGroups = _.groupBy(fileUris, function (fileUri: vscode.Uri) {
         return submodulesPaths.some(submodulePath => fileUri.path.includes(submodulePath));
       });
       filesInsideSubmodules = fileGroups.true;
       filesOutsideSubmodules = fileGroups.false;
-      const notIgnoredFilesInSubmodules =
-        await notIgnoredFilesFromSubmodules(submodulesPaths, filesInsideSubmodules, repoFsPath, scmCheck, gitPath);
+      const notIgnoredFilesInSubmodules = await notIgnoredFilesFromSubmodules(
+        submodulesPaths,
+        filesInsideSubmodules,
+        repoFsPath,
+        scmCheck,
+        gitPath
+      );
       notIgnoredFiles.push(...notIgnoredFilesInSubmodules);
     }
-    const notIgnoredFilesOutsideSubmodules =
-      await scmCheck(gitPath, CHECK_IGNORE_ARGS, repoFsPath, filesOutsideSubmodules);
+    const notIgnoredFilesOutsideSubmodules = await scmCheck(
+      gitPath,
+      CHECK_IGNORE_ARGS,
+      repoFsPath,
+      filesOutsideSubmodules
+    );
     notIgnoredFiles.push(...notIgnoredFilesOutsideSubmodules);
     return notIgnoredFiles;
   } catch (e) {
@@ -207,10 +225,17 @@ export async function filterOutScmIgnoredFiles(
 }
 
 export async function notIgnoredFilesFromSubmodules(
-  submodulesPaths: string[], filesInsideSubmodules: vscode.Uri[], repoFsPath: string,
-  scmCheck: (gitPath: string, gitArgs: string[], workspaceFolderPath: string,
-             fileUris: vscode.Uri[]) => Promise<vscode.Uri[]>,
-  gitPath: string): Promise<vscode.Uri[]> {
+  submodulesPaths: string[],
+  filesInsideSubmodules: vscode.Uri[],
+  repoFsPath: string,
+  scmCheck: (
+    gitPath: string,
+    gitArgs: string[],
+    workspaceFolderPath: string,
+    fileUris: vscode.Uri[]
+  ) => Promise<vscode.Uri[]>,
+  gitPath: string
+): Promise<vscode.Uri[]> {
   const notIgnoredFiles = [];
 
   for (const submodulePath of submodulesPaths) {
@@ -238,7 +263,10 @@ export async function getSubmodulesPaths(gitPath: string, repoPath: string): Pro
     }
 
     const raw = result.stdout;
-    return raw.split('\n').map(value => value.split(/\s/g)[1]).filter(value => value);
+    return raw
+      .split('\n')
+      .map(value => value.split(/\s/g)[1])
+      .filter(Boolean);
   } catch (e) {
     logNoSubmodulesFound(repoPath, e);
     return Promise.resolve([]);
@@ -253,63 +281,63 @@ interface GitResponse {
 async function executeGitCommand(
   gitPath: string,
   gitArgs: string[],
-  workspaceFolderPath: string, stdIn): Promise<GitResponse> {
+  workspaceFolderPath: string,
+  stdIn
+): Promise<GitResponse> {
   let stderr = '';
   let stdout = '';
-  return new Promise<GitResponse>(
-    (resolve, reject) => {
-      const onExit = (exitCode: number) => {
-        if (exitCode === 1) {
-          reject(stderr);
-        } else if (exitCode === 0) {
-          resolve({ stdout, stderr });
+  return new Promise<GitResponse>((resolve, reject) => {
+    const onExit = (exitCode: number) => {
+      if (exitCode === 1) {
+        reject(stderr);
+      } else if (exitCode === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        if (/ is in submodule /.test(stderr)) {
+          reject({ stdout, stderr, exitCode, gitErrorCode: GitErrorCodes.IsInSubmodule });
         } else {
-          if (/ is in submodule /.test(stderr)) {
-            reject({ stdout, stderr, exitCode, gitErrorCode: GitErrorCodes.IsInSubmodule });
-          } else {
-            reject({ stdout, stderr, exitCode });
-          }
-        }
-      };
-      const child = ChildProcess.spawn(
-        gitPath,
-        gitArgs,
-        { cwd: workspaceFolderPath }
-      );
-
-      child.on('error', reject);
-      child.stdin.on('error', reject);
-      child.stdout.on('error', reject);
-      child.stderr.on('error', reject);
-      child.on('exit', onExit);
-
-      const onStdoutData = (raw: string) => {
-        stdout += raw;
-      };
-
-      child.stdout.setEncoding('utf8');
-      child.stdout.on('data', onStdoutData);
-
-      child.stderr.setEncoding('utf8');
-      child.stderr.on('data', raw => stderr += raw);
-
-      try {
-        child.stdin.write(stdIn, 'utf-8');
-      } catch(e) {
-        reject(e);
-      } finally {
-        try {
-          child.stdin.end();
-        } catch(e) {
-          // ignore
+          reject({ stdout, stderr, exitCode });
         }
       }
-    });
+    };
+    const child = ChildProcess.spawn(gitPath, gitArgs, { cwd: workspaceFolderPath });
+
+    child.on('error', reject);
+    child.stdin.on('error', reject);
+    child.stdout.on('error', reject);
+    child.stderr.on('error', reject);
+    child.on('exit', onExit);
+
+    const onStdoutData = (raw: string) => {
+      stdout += raw;
+    };
+
+    child.stdout.setEncoding('utf8');
+    child.stdout.on('data', onStdoutData);
+
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', raw => (stderr += raw));
+
+    try {
+      child.stdin.write(stdIn, 'utf-8');
+    } catch (e) {
+      reject(e);
+    } finally {
+      try {
+        child.stdin.end();
+      } catch (e) {
+        // ignore
+      }
+    }
+  });
 }
 
 export async function filterIgnored(
-  gitPath: string, gitArgs: string[], workspaceFolderPath: string,
-  fileUris: vscode.Uri[]): Promise<vscode.Uri[]> {
+  gitPath: string,
+  gitArgs: string[],
+  workspaceFolderPath: string,
+  fileUris: vscode.Uri[]
+): Promise<vscode.Uri[]> {
   try {
     const stdIn = fileUris.map(it => it.fsPath).join('\0');
     const result = await executeGitCommand(gitPath, gitArgs, workspaceFolderPath, stdIn);
