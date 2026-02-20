@@ -97,9 +97,9 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
     } else {
       const response = await this.getAllRules();
       return Object.keys(response)
-          .filter(k => response[k].findIndex(r => r.key.toUpperCase() === node.rule.key.toUpperCase()) >= 0)
-          .map(l => new LanguageNode(l))
-          .pop();
+        .filter(k => response[k].findIndex(r => r.key.toUpperCase() === node.rule.key.toUpperCase()) >= 0)
+        .map(l => new LanguageNode(l))
+        .pop();
     }
   }
 
@@ -131,9 +131,10 @@ function byName(r1: ExtendedServer.Rule, r2: ExtendedServer.Rule) {
 }
 
 export function setRulesViewMessage(allRulesView: VSCode.TreeView<LanguageNode>) {
-  const folderBindingStates = [... BindingService.instance.bindingStatePerFolder().values()];
+  const folderBindingStates = [...BindingService.instance.bindingStatePerFolder().values()];
   if (allFalse(folderBindingStates)) {
-    allRulesView.message = 'Changes to this view are restricted to your personal development environment; to share a rule set with your team, please use Connected Mode.';
+    allRulesView.message =
+      'Changes to this view are restricted to your personal development environment; to share a rule set with your team, please use Connected Mode.';
   } else {
     allRulesView.message = "Changes to this view only apply to folders that don't use Connected Mode.";
   }
@@ -144,7 +145,7 @@ export function allTrue(values: boolean[]) {
 }
 
 export function allFalse(values: boolean[]) {
-  return values.length === 0 || values.every(negate(identity));
+  return values.every(negate(identity));
 }
 
 export function toggleRule(level: ExtendedServer.ConfigLevel) {
@@ -178,7 +179,11 @@ export function toggleRule(level: ExtendedServer.ConfigLevel) {
 async function notifyOnRuleDeactivation(ruleKey: string) {
   const undoAction = 'Undo';
   const showAllRulesAction = 'Show All Rules';
-  const selectedAction = await VSCode.window.showInformationMessage(`Sonar rule ${ruleKey} is now disabled in your local environment`, undoAction, showAllRulesAction);
+  const selectedAction = await VSCode.window.showInformationMessage(
+    `Sonar rule ${ruleKey} is now disabled in your local environment`,
+    undoAction,
+    showAllRulesAction
+  );
   if (selectedAction === undoAction) {
     toggleRule('on')(ruleKey);
   } else if (selectedAction === showAllRulesAction) {
