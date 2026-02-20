@@ -40,7 +40,7 @@ jarDependencies.map(async dep => {
 });
 
 async function artifactUrl(dep) {
-  const groupIdForArtifactory = dep.groupId.replace(/\./g, '/');
+  const groupIdForArtifactory = dep.groupId.replaceAll('.', '/');
 
   if (dep.path) {
     // If path is manually defined, use it
@@ -65,7 +65,8 @@ async function artifactUrl(dep) {
       }
     } catch (err) {
       console.log(
-        `Could not find local maven repository in order to get ${dep.artifactId} JAR. Skipping this dependency.`);
+        `Could not find local maven repository in order to get ${dep.artifactId} JAR. Skipping this dependency.`
+      );
       console.log(`Reason: ${err}`);
       return null;
     }
@@ -79,18 +80,19 @@ function downloadIfNeeded(url, dest) {
   } else if (url.startsWith('file:')) {
     createReadStream(url.substring('file:'.length)).pipe(createWriteStream(dest));
   } else {
-    const callback = async (response) => {
+    const callback = async response => {
       if (!response.ok) {
         throw new Error(`Unable to get file ${url}: ${response.statusCode} ${response.text()}`);
       } else {
         downloadIfChecksumMismatch(await response.text(), url, dest);
       }
     };
-    artifactory.maybeAuthenticatedFetch(url + '.sha1')
+    artifactory
+      .maybeAuthenticatedFetch(url + '.sha1')
       .then(callback)
       .catch(err => {
-          throw new Error(err);
-        });
+        throw new Error(err);
+      });
   }
 }
 
@@ -111,7 +113,7 @@ async function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
   } else {
     createReadStream(dest)
       .pipe(createHash('sha1').setEncoding('hex'))
-      .on('finish', async function() {
+      .on('finish', async function () {
         const sha1 = this.read();
         if (expectedChecksum !== sha1) {
           console.info(`Checksum mismatch for '${dest}'. Will download it!`);
@@ -122,9 +124,10 @@ async function downloadIfChecksumMismatch(expectedChecksum, url, dest) {
 }
 
 function sendRequest(url) {
-  return artifactory.maybeAuthenticatedFetch(url)
+  return artifactory
+    .maybeAuthenticatedFetch(url)
     .then(response => {
-      if(!response.ok) {
+      if (!response.ok) {
         throw new Error(`Unable to get file ${url}: ${response.status}`);
       } else {
         return response.body;
@@ -149,8 +152,10 @@ async function unzipEslintBridgeBundle(jarPath) {
     mkdirSync(outputFolderPath);
   }
 
-  file.stream().pipe(createWriteStream(outputFilePath))
-    .on('finish',  async () => {
+  file
+    .stream()
+    .pipe(createWriteStream(outputFilePath))
+    .on('finish', async () => {
       const compressedReadStream = createReadStream(join('.', outputFilePath));
       const decompressionStream = createGunzip();
       const extractionStream = extract({
@@ -176,6 +181,6 @@ async function unzipEslintBridgeBundle(jarPath) {
         });
       });
 
-      unlinkSync(outputFilePath)
+      unlinkSync(outputFilePath);
     });
 }
