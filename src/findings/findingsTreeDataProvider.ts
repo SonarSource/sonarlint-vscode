@@ -402,7 +402,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   private getFindingsForNotebook(notebookCellUris: string[]): FindingNode[] {
     return Array.from(notebookCellUris)
       .map(uri => this.findingsCache.get(uri) || [])
-      .reduce((acc, findings) => acc.concat(findings), []);
+      .flat();
   }
 
   private getFindingsForFile(fileUri: string): FindingNode[] {
