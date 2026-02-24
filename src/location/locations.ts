@@ -169,11 +169,7 @@ export type LocationTreeItem = IssueItem | ChildItem;
 export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationTreeItem> {
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<LocationTreeItem | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-  private rootItem?: IssueItem;
-
-  constructor() {
-    this.rootItem = null;
-  }
+  private rootItem?: IssueItem = null;
 
   async showAllLocations(issue: ExtendedClient.Issue) {
     this.rootItem = new IssueItem(issue);
