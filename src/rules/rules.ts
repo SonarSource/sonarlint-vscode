@@ -144,7 +144,7 @@ export function allTrue(values: boolean[]) {
 }
 
 export function allFalse(values: boolean[]) {
-  return values.length === 0 || values.every(negate(identity));
+  return values.every(negate(identity));
 }
 
 export function toggleRule(level: ExtendedServer.ConfigLevel) {
