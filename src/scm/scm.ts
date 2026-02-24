@@ -238,7 +238,7 @@ export async function getSubmodulesPaths(gitPath: string, repoPath: string): Pro
     }
 
     const raw = result.stdout;
-    return raw.split('\n').map(value => value.split(/\s/g)[1]).filter(value => value);
+    return raw.split('\n').map(value => value.split(/\s/g)[1]).filter(Boolean);
   } catch (e) {
     logNoSubmodulesFound(repoPath, e);
     return Promise.resolve([]);
