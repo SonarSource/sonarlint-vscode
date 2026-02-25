@@ -19,10 +19,10 @@ import * as vscode from 'vscode';
 import { isDogfoodingEnvironment } from './dogfooding';
 import * as util from '../util/util';
 
-const SKIPPED_DEFAULT_INTEGRATIONS = [
+const SKIPPED_DEFAULT_INTEGRATIONS = new Set([
   'Breadcrumbs',
   'GlobalHandlers'
-];
+]);
 
 export class MonitoringService implements vscode.TelemetrySender {
 
@@ -40,7 +40,7 @@ export class MonitoringService implements vscode.TelemetrySender {
       // Filter integrations that use the global variable
       const integrations = getDefaultIntegrations({}).filter(
         (defaultIntegration) => {
-          return !SKIPPED_DEFAULT_INTEGRATIONS.includes(defaultIntegration.name);
+          return !SKIPPED_DEFAULT_INTEGRATIONS.has(defaultIntegration.name);
         },
       );
 
