@@ -257,7 +257,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
 function tryGetWorkspaceFolder(configScopeId: string) {
   try {
     return vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(configScopeId));
-  } catch (notAuri) {
+  } catch (error_) {
     return undefined;
   }
 }
