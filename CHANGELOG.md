@@ -2,6 +2,7 @@
 
 * Update Text & Secrets analyzer 2.38 -> 2.41
 * Update C# analyzer 10.19 -> [10.20](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.20.0.135146)
+* Update Java analyzer 8.23 -> [8.24](https://github.com/SonarSource/sonar-java/releases/tag/8.24.0.42567)
 
 ## 4.43
 
