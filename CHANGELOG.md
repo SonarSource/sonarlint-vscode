@@ -1,3 +1,7 @@
+## 4.42
+
+* Update Text & Secrets analyzer 2.38 -> 2.41
+
 ## 4.43
 
 * Update C# analyzer 10.18 -> [10.19](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.19.0.132793)
