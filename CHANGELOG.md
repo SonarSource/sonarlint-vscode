@@ -1,6 +1,7 @@
 ## 4.45
 
 * Update Java analyzer 8.24 -> [8.26](https://github.com/SonarSource/sonar-java/releases/tag/8.26.0.42915)
+* Update Python analyzer 5.18 -> 5.19
 
 ## 4.44
 
