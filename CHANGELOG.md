@@ -10,7 +10,7 @@
 * Update C# analyzer 10.19 -> [10.20](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.20.0.135146)
 * Update Java analyzer 8.23 -> [8.24](https://github.com/SonarSource/sonar-java/releases/tag/8.24.0.42567)
 * Update Python analyzer 5.17 -> 5.18
-* Upadte XML analyzer 2.15 to [2.16](https://github.com/SonarSource/sonar-xml/releases/tag/2.16.0.7616)
+* Update XML analyzer 2.15 to [2.16](https://github.com/SonarSource/sonar-xml/releases/tag/2.16.0.7616)
 * Update JS/TS/CSS analyzer 11.8 -> [12.0](https://github.com/SonarSource/SonarJS/releases/tag/12.0.0.38664)
 
 ## 4.43
@@ -35,7 +35,7 @@
 
 * Update Text & Secrets analyzer 2.36 -> 2.38
 * Update CFamily analyzer 6.76 -> 6.77
-* Upadte XML analyzer 2.14.2 to [2.15](https://github.com/SonarSource/sonar-xml/releases/tag/2.15.0.7513)
+* Update XML analyzer 2.14.2 to [2.15](https://github.com/SonarSource/sonar-xml/releases/tag/2.15.0.7513)
 * Update IaC analyzer 2.3 -> 2.5
 * Update PHP analyzer 3.53 -> [3.54](https://github.com/SonarSource/sonar-php/releases/tag/3.54.0.15452)
 * Update Go analyzer 1.31 -> 1.32
@@ -66,7 +66,7 @@
 * Update Java analyzer 8.20 -> [8.22](https://github.com/SonarSource/sonar-java/releases/tag/8.22.0.41895)
 * Update Go analyzer 1.30 -> 1.31
 * Update PHP analyzer 3.52 -> [3.53](https://github.com/SonarSource/sonar-php/releases/tag/3.53.0.15220)
-* Upadte XML analyzer 2.13 to [2.14.2](https://github.com/SonarSource/sonar-xml/releases/tag/2.14.2.7437)
+* Update XML analyzer 2.13 to [2.14.2](https://github.com/SonarSource/sonar-xml/releases/tag/2.14.2.7437)
 * Update Python analyzer 5.13 -> 5.14.2
 * Update IaC analyzer 2.1 to [2.2](https://sonarsource.atlassian.net/issues/?jql=fixVersion%20%3D%2026018%20ORDER%20BY%20created%20ASC)
 * Update Text & Secrets analyzer 2.33 -> 2.34
