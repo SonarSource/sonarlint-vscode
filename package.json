@@ -1425,7 +1425,7 @@
     "adm-zip": "^0.5.10",
     "canvas-confetti": "^1.9.4",
     "compare-versions": "^6.1.1",
-    "diff": "^8.0.2",
+    "diff": "^8.0.3",
     "expand-home-dir": "^0.0.3",
     "find-java-home": "^2.0.0",
     "follow-redirects": "^1.15.11",
@@ -1439,8 +1439,8 @@
     "properties": "^1.2.1",
     "sinon": "^21.0.0",
     "supports-color": "^10.2.2",
-    "tar": "^7.5.6",
-    "underscore": "^1.13.7",
+    "tar": "^7.5.11",
+    "underscore": "^1.13.8",
     "vscode-languageclient": "^9.0.1",
     "zlib": "^1.0.5"
   },
@@ -1481,14 +1481,14 @@
     "typescript": "^5.9.3",
     "unzipper": "^0.12.3",
     "vinyl": "^3.0.1",
-    "webpack": "^5.103.0",
+    "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1"
   },
   "jarDependencies": [
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.14.0.78151",
+      "version": "4.15.0.78211",
       "output": "server/sonarlint-ls.jar"
     },
     {
