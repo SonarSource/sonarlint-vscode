@@ -495,6 +495,15 @@ export namespace ExtendedClient {
   export namespace HasJoinedIdeLabs {
     export const type = new lsp.RequestType<void, boolean, null>('sonarlint/hasJoinedIdeLabs');
   }
+
+  export interface DidChangePluginStatusesParams {
+    configScopeId: string;
+    pluginStatuses: ExtendedServer.PluginStatusDto[];
+  }
+
+  export namespace DidChangePluginStatuses {
+    export const type = new lsp.NotificationType<DidChangePluginStatusesParams>('sonarlint/didChangePluginStatuses');
+  }
 }
 
 /**
@@ -988,6 +997,32 @@ export interface GetHookScriptContentResponse {
 
   export namespace LabsFeedbackLinkClicked {
     export const type = new lsp.NotificationType<string>('sonarlint/labsFeedbackLinkClicked');
+  }
+
+  export type PluginStateDto = 'ACTIVE' | 'SYNCED' | 'DOWNLOADING' | 'FAILED' | 'PREMIUM' | 'UNSUPPORTED';
+
+  export type ArtifactSourceDto = 'EMBEDDED' | 'ON_DEMAND' | 'SONARQUBE_SERVER' | 'SONARQUBE_CLOUD';
+
+  export interface PluginStatusDto {
+    pluginName: string;
+    state: PluginStateDto;
+    source: ArtifactSourceDto;
+    actualVersion?: string;
+    overriddenVersion?: string;
+  }
+
+  export interface GetPluginStatusesParams {
+    configurationScopeId: string | null;
+  }
+
+  export interface GetPluginStatusesResponse {
+    pluginStatuses: PluginStatusDto[];
+  }
+
+  export namespace GetPluginStatuses {
+    export const type = new lsp.RequestType<GetPluginStatusesParams, GetPluginStatusesResponse, void>(
+      'sonarlint/getPluginStatuses'
+    );
   }
 
 }
