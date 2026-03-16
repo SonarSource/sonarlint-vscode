@@ -301,14 +301,16 @@ export class CommandsManager {
     const sqConnections = ConnectionSettingsService.instance.getSonarQubeConnections();
     const scConnections = ConnectionSettingsService.instance.getSonarCloudConnections();
 
-    for (const conn of [...sqConnections, ...scConnections]) {
-      const connectionId = conn.connectionId ?? '';
+    // One dropdown entry per bound workspace folder, labeled "<folder name> (<connection id>)".
+    // Folders bound to a connection that has no active bindings are skipped.
+    for (const connection of [...sqConnections, ...scConnections]) {
+      const connectionId = connection.connectionId ?? '';
       const bindingsForConnection = allBindings.get(connectionId);
       if (!bindingsForConnection) {
         continue;
       }
-      const fallbackLabel = isSonarQubeConnection(conn) ? conn.serverUrl : conn.organizationKey;
-      const connectionLabel = conn.connectionId ?? fallbackLabel ?? connectionId;
+      const fallbackLabel = isSonarQubeConnection(connection) ? connection.serverUrl : connection.organizationKey;
+      const connectionLabel = connection.connectionId ?? fallbackLabel ?? connectionId;
       for (const boundFolders of bindingsForConnection.values()) {
         for (const { folder } of boundFolders) {
           const configScopeId = code2ProtocolConverter(folder.uri);
@@ -317,9 +319,11 @@ export class CommandsManager {
       }
     }
 
+    // Prepend "Standalone" if any binding does not cover at least one workspace folder.
     const boundUris = new Set(options.map(o => o.configScopeId));
-    const hasStandaloneFolder = (vscode.workspace.workspaceFolders ?? [])
-      .some(f => !boundUris.has(code2ProtocolConverter(f.uri)));
+    const hasStandaloneFolder = (vscode.workspace.workspaceFolders ?? []).some(
+      folder => !boundUris.has(code2ProtocolConverter(folder.uri))
+    );
     if (hasStandaloneFolder) {
       options.unshift({ label: 'Standalone', configScopeId: null });
     }
