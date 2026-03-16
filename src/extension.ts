@@ -76,6 +76,7 @@ import { LabsWebviewProvider } from './labs/labsWebviewProvider';
 import { StatusBarService } from './statusbar/statusBar';
 import { RemediationService } from './remediationPanel/remediationService';
 import { RemediationWebviewProvider } from './remediationPanel/remediationWebviewProvider';
+import { isPluginStatusPanelOpen, refreshPluginStatusPanel } from './plugin/pluginStatusPanel';
 
 const DOCUMENT_SELECTOR = [
   { scheme: 'file', pattern: '**/*' },
@@ -575,6 +576,11 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onRequest(ExtendedClient.HasJoinedIdeLabs.type, () => {
     return IdeLabsFlagManagementService.instance.isIdeLabsJoined();
+  });
+  languageClient.onNotification(ExtendedClient.DidChangePluginStatuses.type, params => {
+    if (isPluginStatusPanelOpen()) {
+      refreshPluginStatusPanel(params.pluginStatuses, params.configScopeId ?? null, context);
+    }
   });
 }
 
