@@ -275,6 +275,9 @@ export class CommandsManager {
         }
       }),
       vscode.commands.registerCommand(Commands.SHOW_SUPPORTED_LANGUAGES, async () => {
+        if (!IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+          return;
+        }
         const connections = this._buildConnectionOptions();
         const initialScopeId = connections[0]?.configScopeId ?? null;
         const onScopeChange = async (configScopeId: string | null) => {

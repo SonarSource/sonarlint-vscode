@@ -9,6 +9,7 @@
 import * as VSCode from 'vscode';
 import { Commands } from '../util/commands';
 import { HelpAndFeedbackItem, helpAndFeedbackItems } from './constants';
+import { IdeLabsFlagManagementService } from '../labs/ideLabsFlagManagementService';
 
 export function getHelpAndFeedbackItemById(id: string): HelpAndFeedbackItem {
   return helpAndFeedbackItems.find(i => i.id === id);
@@ -31,13 +32,23 @@ export class HelpAndFeedbackTreeDataProvider implements VSCode.TreeDataProvider<
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<HelpAndFeedbackLink | undefined>();
   readonly onDidChangeTreeData: VSCode.Event<HelpAndFeedbackLink | undefined> = this._onDidChangeTreeData.event;
 
+  constructor() {
+    VSCode.workspace.onDidChangeConfiguration(event => {
+      if (event.affectsConfiguration('sonarlint.ideLabsEnabled')) {
+        this.refresh();
+      }
+    });
+  }
+
   refresh() {
     this._onDidChangeTreeData.fire(null);
   }
 
   getChildren(element?: HelpAndFeedbackLink): HelpAndFeedbackLink[] {
+    const isLabsEnabled = IdeLabsFlagManagementService.instance.isIdeLabsEnabled();
     return helpAndFeedbackItems
       .filter(item => item.viewItem)
+      .filter(item => !item.labsOnly || isLabsEnabled)
       .map(item => new HelpAndFeedbackLink(item.id));
   }
 

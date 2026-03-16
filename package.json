@@ -767,7 +767,8 @@
         "command": "SonarLint.ShowSupportedLanguages",
         "title": "Show Supported Languages & Analyzers",
         "category": "SonarQube",
-        "icon": "$(list-unordered)"
+        "icon": "$(list-unordered)",
+        "enablement": "sonarqube.ideLabsEnabled"
       }
     ],
     "viewsContainers": {
