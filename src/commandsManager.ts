@@ -26,6 +26,7 @@ import {
 } from './connected/connectionsetup';
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
+import { showPluginStatusPanel, ConnectionOption } from './plugin/pluginStatusPanel';
 import {
   showHotspotDetails,
   changeHotspotStatus,
@@ -38,7 +39,7 @@ import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { navigateToLocation } from './location/locations';
 import { ExtendedServer } from './lsp/protocol';
 import { FlightRecorderService } from './monitoring/flightrecorder';
-import { ConnectionSettingsService } from './settings/connectionsettings';
+import { ConnectionSettingsService, isSonarQubeConnection } from './settings/connectionsettings';
 import { installManagedJre, resolveRequirements } from './util/requirements';
 import { AIAgentsConfigurationTreeDataProvider } from './aiAgentsConfiguration/aiAgentsConfigurationTreeDataProvider';
 import { Commands } from './util/commands';
@@ -272,8 +273,58 @@ export class CommandsManager {
         if (agent) {
           openHookConfiguration(agent);
         }
+      }),
+      vscode.commands.registerCommand(Commands.SHOW_SUPPORTED_LANGUAGES, async () => {
+        const connections = this._buildConnectionOptions();
+        const initialScopeId = connections[0]?.configScopeId ?? null;
+        const onScopeChange = async (configScopeId: string | null) => {
+          try {
+            const response = await this.languageClient.getPluginStatuses(configScopeId);
+            showPluginStatusPanel(this.context, connections, response?.pluginStatuses ?? [], configScopeId, onScopeChange);
+          } catch (e) {
+            vscode.window.showErrorMessage(`Could not retrieve plugin statuses: ${e}`);
+          }
+        };
+        try {
+          const response = await this.languageClient.getPluginStatuses(initialScopeId);
+          showPluginStatusPanel(this.context, connections, response?.pluginStatuses ?? [], initialScopeId, onScopeChange);
+        } catch (e) {
+          vscode.window.showErrorMessage(`Could not retrieve plugin statuses: ${e}`);
+        }
       })
     );
+  }
+
+  private _buildConnectionOptions(): ConnectionOption[] {
+    const options: ConnectionOption[] = [];
+    const allBindings = BindingService.instance.getAllBindings();
+    const sqConnections = ConnectionSettingsService.instance.getSonarQubeConnections();
+    const scConnections = ConnectionSettingsService.instance.getSonarCloudConnections();
+
+    for (const conn of [...sqConnections, ...scConnections]) {
+      const connectionId = conn.connectionId ?? '';
+      const bindingsForConnection = allBindings.get(connectionId);
+      if (!bindingsForConnection) {
+        continue;
+      }
+      const fallbackLabel = isSonarQubeConnection(conn) ? conn.serverUrl : conn.organizationKey;
+      const connectionLabel = conn.connectionId ?? fallbackLabel ?? connectionId;
+      for (const boundFolders of bindingsForConnection.values()) {
+        for (const { folder } of boundFolders) {
+          const configScopeId = code2ProtocolConverter(folder.uri);
+          options.push({ label: `${folder.name} (${connectionLabel})`, configScopeId });
+        }
+      }
+    }
+
+    const boundUris = new Set(options.map(o => o.configScopeId));
+    const hasStandaloneFolder = (vscode.workspace.workspaceFolders ?? [])
+      .some(f => !boundUris.has(code2ProtocolConverter(f.uri)));
+    if (hasStandaloneFolder) {
+      options.unshift({ label: 'Standalone', configScopeId: null });
+    }
+
+    return options;
   }
 
   private async _scanFolderForHotspotsCommandHandler(folderUri: vscode.Uri) {
