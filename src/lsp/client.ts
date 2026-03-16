@@ -238,4 +238,8 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   labsFeedbackLinkClicked(featureId: string) {
     this.sendNotification(ExtendedServer.LabsFeedbackLinkClicked.type, featureId);
   }
+
+  getPluginStatuses(configurationScopeId: string | null): Promise<ExtendedServer.GetPluginStatusesResponse> {
+    return this.sendRequest(ExtendedServer.GetPluginStatuses.type, { configurationScopeId });
+  }
 }
