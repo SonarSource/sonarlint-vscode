@@ -9,7 +9,8 @@
 import * as VSCode from 'vscode';
 import { ExtendedServer } from '../lsp/protocol';
 import * as util from '../util/util';
-import { ResourceResolver } from '../util/webview';
+import { escapeHtml, ResourceResolver } from '../util/webview';
+import { Commands } from '../util/commands';
 
 /** A connection option shown in the dropdown. `configScopeId` is null for standalone. */
 export interface ConnectionOption {
@@ -79,7 +80,9 @@ function lazyCreatePluginStatusPanel(context: VSCode.ExtensionContext) {
     pluginStatusPanel.webview.onDidReceiveMessage(
       msg => {
         if (msg.command === 'setupConnection') {
-          VSCode.commands.executeCommand('SonarLint.ConnectToSonarQube');
+          VSCode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
+        } else if (msg.command === 'openSonarQubeProductPage') {
+          VSCode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarQubeProductPage');
         } else if (msg.command === 'changeScope') {
           currentOnScopeChange?.(msg.configScopeId || null);
         }
@@ -120,8 +123,13 @@ export function resolveEnumValue(value: unknown, byOrdinal: Record<number, strin
   if (typeof value === 'number') {
     return byOrdinal[value] ?? String(value);
   }
-  return String(value ?? '');
+  if (typeof value === 'string') {
+    return value;
+  }
+  return '';
 }
+
+const BADGE_ABBREVIATION_LENGTH = 3;
 
 // Language name → [abbreviation, background color, text color]
 const LANGUAGE_BADGE_STYLES: Record<string, [string, string, string]> = {
@@ -156,7 +164,7 @@ const LANGUAGE_BADGE_STYLES: Record<string, [string, string, string]> = {
 
 export function renderLanguageBadge(pluginName: string): string {
   const style = LANGUAGE_BADGE_STYLES[pluginName];
-  const [abbr, bg, color] = style ?? [pluginName.slice(0, 3), 'rgba(128,128,128,0.35)', 'var(--vscode-foreground)'];
+  const [abbr, bg, color] = style ?? [pluginName.slice(0, BADGE_ABBREVIATION_LENGTH), 'rgba(128,128,128,0.35)', 'var(--vscode-foreground)'];
   return `<span class="lang-badge" title="${escapeHtml(pluginName)}" style="background:${bg};color:${color}">${escapeHtml(abbr)}</span>`;
 }
 
@@ -201,15 +209,15 @@ function computePluginStatusPanelContent(
 ): string {
   const resolver = new ResourceResolver(context, webview);
   const themeSrc = resolver.resolve('styles', 'theme.css');
-  const nonce = [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+  const nonce = btoa(String.fromCodePoint(...crypto.getRandomValues(new Uint8Array(32))));
 
   const isStandalone = selectedConfigScopeId === null;
 
   const dropdownOptions = connections
-    .map(c => {
-      const selected = c.configScopeId === selectedConfigScopeId ? ' selected' : '';
-      const scopeAttr = c.configScopeId !== null ? escapeHtml(c.configScopeId) : '';
-      return `<option value="${scopeAttr}"${selected}>${escapeHtml(c.label)}</option>`;
+    .map(connection => {
+      const selected = connection.configScopeId === selectedConfigScopeId ? ' selected' : '';
+      const scopeAttr = connection.configScopeId == null ? '' : escapeHtml(connection.configScopeId);
+      return `<option value="${scopeAttr}"${selected}>${escapeHtml(connection.label)}</option>`;
     })
     .join('');
 
@@ -234,7 +242,7 @@ function computePluginStatusPanelContent(
         <div class="info-banner-icon">&#x2139;</div>
         <div class="info-banner-body">
           <div class="info-banner-title">Get more from your analysis</div>
-          <p>Connect to <a href="https://www.sonarsource.com/products/sonarqube/">SonarQube Server or Cloud</a> to unlock ${extendedLanguageSupportHtml} and advanced security rules for your existing code.</p>
+          <p>Connect to <a href="#" id="sonarqube-product-link">SonarQube Server or Cloud</a> to unlock ${extendedLanguageSupportHtml} and advanced security rules for your existing code.</p>
           <button class="info-banner-btn" id="setup-connection-btn">Set up connection</button>
         </div>
        </div>`
@@ -253,7 +261,7 @@ function computePluginStatusPanelContent(
         ? `<button class="retry-btn">Retry</button>`
         : '';
       return `<tr>
-        <td class="col-name">${badge}<span class="lang-name">${escapeHtml(s.pluginName)}</span></td>
+        <td class="col-name">${badge}<span class="lang-name">${escapeHtml(s.pluginName ?? '')}</span></td>
         <td class="col-status">${status}${retryBtn}</td>
         <td class="col-version">${escapeHtml(version) || '—'}</td>
         <td class="col-source">${source}</td>
@@ -471,6 +479,14 @@ function computePluginStatusPanelContent(
             });
           }
 
+          const sonarQubeLink = document.getElementById('sonarqube-product-link');
+          if (sonarQubeLink) {
+            sonarQubeLink.addEventListener('click', function(e) {
+              e.preventDefault();
+              vscodeApi.postMessage({ command: 'openSonarQubeProductPage' });
+            });
+          }
+
           const scopeSelect = document.getElementById('scope-select');
           if (scopeSelect) {
             scopeSelect.addEventListener('change', function() {
@@ -483,13 +499,3 @@ function computePluginStatusPanelContent(
   </html>`;
 }
 
-function escapeHtml(text: string | null | undefined): string {
-  if (text == null) {
-    return '';
-  }
-  return String(text)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-}
