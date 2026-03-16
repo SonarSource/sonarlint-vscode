@@ -762,6 +762,12 @@
         "category": "SonarQube",
         "icon": "$(settings-gear)",
         "enablement": "view == SonarQube.Labs && sonarqube.ideLabsEnabled"
+      },
+      {
+        "command": "SonarLint.ShowSupportedLanguages",
+        "title": "Show Supported Languages & Analyzers",
+        "category": "SonarQube",
+        "icon": "$(list-unordered)"
       }
     ],
     "viewsContainers": {

@@ -46,6 +46,16 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     }
   },
   {
+    id: 'supportedLanguages',
+    label: 'Supported Languages & Analyzers',
+    icon: 'list-unordered',
+    viewItem: true,
+    command: {
+      command: Commands.SHOW_SUPPORTED_LANGUAGES,
+      title: 'Show Supported Languages & Analyzers'
+    }
+  },
+  {
     id: 'sonarCloudProductPage',
     url: 'https://www.sonarsource.com/products/sonarcloud/',
     viewItem: false
