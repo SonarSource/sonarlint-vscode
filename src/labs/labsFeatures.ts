@@ -75,5 +75,15 @@ export const LABS_FEATURES: LabsFeature[] = [
     tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/connected-mode',
     feedbackUrl: 'https://forms.gle/GgFWfjgQzR9AgDAMA'
+  },
+  {
+    id: 'supported_languages',
+    title: 'Supported Languages & Analyzers',
+    description:
+      'View the full list of analyzers available in your current context, with their status, version, and source. Switch between standalone and connected projects using the dropdown to compare what is available.',
+    imageFile: 'labs/connected_mode.png',
+    tags: [FeatureTag.EXPERIMENTAL],
+    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code',
+    feedbackUrl: 'https://community.sonarsource.com/c/sl/vs-code/36'
   }
 ];
