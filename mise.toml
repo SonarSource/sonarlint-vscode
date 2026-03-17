@@ -1,6 +1,8 @@
 [tools]
 node = '20'
 jfrog-cli = "2.77.0"
+# needed to run ITs, takes precedence over runner built-in Java
+java = '21'
 
 [tasks.install-system-deps]
 # Install system dependences and disable man-db auto-update to prevent it from hanging during installation

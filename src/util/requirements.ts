@@ -20,11 +20,12 @@ import { logToSonarLintOutput } from './logging';
 import { PlatformInformation } from './platform';
 import * as util from './util';
 
-const REQUIRED_JAVA_VERSION = 17;
+const REQUIRED_JAVA_VERSION = 21;
 
 const isWindows = process.platform.indexOf('win') === 0;
 const JAVA_FILENAME = `java${isWindows ? '.exe' : ''}`;
-export const JAVA_HOME_CONFIG = 'sonarlint.ls.javaHome';
+export const JAVA_HOME_SUBKEY = 'ls.javaHome';
+export const JAVA_HOME_CONFIG = `sonarlint.${JAVA_HOME_SUBKEY}`;
 
 export interface RequirementsData {
   javaHome: string;
@@ -124,20 +125,18 @@ function readJavaConfig(): string {
 }
 
 function checkJavaVersion(javaHome: string): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const javaExec = path.join(javaHome, 'bin', 'java');
-    cp.execFile(javaExec, ['-version'], {}, (error, stdout, stderr) => {
-      const javaVersion = parseMajorVersion(stderr);
-      if (javaVersion < REQUIRED_JAVA_VERSION) {
+  const javaExec = path.join(javaHome, 'bin', JAVA_FILENAME);
+  return readJavaVersion(javaExec).then(javaVersion => {
+    if (javaVersion < REQUIRED_JAVA_VERSION) {
+      return new Promise<number>((_, reject) =>
         openJREDownload(
           reject,
           `Java ${REQUIRED_JAVA_VERSION} or more recent is required to run.
 Please download and install a recent JRE.`
-        );
-      } else {
-        resolve(javaVersion);
-      }
-    });
+        )
+      );
+    }
+    return javaVersion;
   });
 }
 
@@ -161,6 +160,34 @@ export function parseMajorVersion(content: string): number {
     javaVersion = Number.parseInt(match[0]);
   }
   return javaVersion;
+}
+
+function readJavaVersion(javaExec: string): Promise<number> {
+  return new Promise(resolve => {
+    cp.execFile(javaExec, ['-version'], {}, (_error, _stdout, stderr) => {
+      resolve(parseMajorVersion(stderr));
+    });
+  });
+}
+
+export async function validateJavaHome(javaHome: string): Promise<string | null> {
+  const expandedPath = expandHomeDir(javaHome);
+  if (!fse.existsSync(expandedPath)) {
+    return null;
+  }
+  const javaExec = path.join(expandedPath, 'bin', JAVA_FILENAME);
+  if (!fse.existsSync(javaExec)) {
+    return null;
+  }
+  const javaVersion = await readJavaVersion(javaExec);
+  if (javaVersion > 0 && javaVersion < REQUIRED_JAVA_VERSION) {
+    return (
+      `Java ${REQUIRED_JAVA_VERSION} or more recent is required to run the SonarQube for VS Code Language Server, ` +
+      `but the configured JRE is Java ${javaVersion}. ` +
+      `Please update the \`${JAVA_HOME_CONFIG}\` setting to point to a JRE ${REQUIRED_JAVA_VERSION} or more recent.`
+    );
+  }
+  return null;
 }
 
 function suggestManagedJre(reject) {
