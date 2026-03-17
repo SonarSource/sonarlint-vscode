@@ -300,7 +300,7 @@
         "sonarlint.ls.javaHome": {
           "order": 11,
           "type": "string",
-          "markdownDescription": "Path to a Java Runtime Environment (17 or more recent) used to launch the SonarQube for VS Code Language Server.\n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-17` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/corretto-17.0.5/Contents/Home`",
+          "markdownDescription": "Path to a Java Runtime Environment (21 or more recent) used to launch the SonarQube for VS Code Language Server.\n* On Windows, backslashes must be escaped, e.g. `C:\\\\Program Files\\\\Java\\\\jdk-21` \n* On macOS, this path should include the `/Contents/Home` directory, e.g `/Library/Java/JavaVirtualMachines/corretto-21/Contents/Home`",
           "scope": "resource"
         },
         "sonarlint.ls.vmargs": {
@@ -1495,7 +1495,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "4.16.0.78274",
+      "version": "5.0.0.78280",
       "output": "server/sonarlint-ls.jar"
     },
     {

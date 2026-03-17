@@ -8,6 +8,7 @@
 
 import * as vscode from 'vscode';
 import { ConnectionSettingsService, migrateConnectedModeSettings } from './connectionsettings';
+import { JAVA_HOME_SUBKEY, validateJavaHome } from '../util/requirements';
 
 let currentConfig: vscode.WorkspaceConfiguration;
 
@@ -36,15 +37,26 @@ export function getCurrentConfiguration() {
 }
 
 export function onConfigurationChange() {
-  return vscode.workspace.onDidChangeConfiguration(event => {
+  return vscode.workspace.onDidChangeConfiguration(async event => {
     if (!event.affectsConfiguration('sonarlint')) {
       return;
     }
+    const oldConfig = currentConfig;
     const newConfig = getSonarLintConfiguration();
 
-    const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(currentConfig, newConfig);
+    const sonarLintLsConfigChanged = hasSonarLintLsConfigChanged(oldConfig, newConfig);
 
     if (sonarLintLsConfigChanged) {
+      const newJavaHome = newConfig.get<string>(JAVA_HOME_SUBKEY);
+      const javaHomeChanged = !configKeyEquals(JAVA_HOME_SUBKEY, oldConfig, newConfig);
+      if (javaHomeChanged && newJavaHome) {
+        const errorMessage = await validateJavaHome(newJavaHome);
+        if (errorMessage) {
+          vscode.window.showErrorMessage(errorMessage);
+          return;
+        }
+      }
+
       const msg = 'SonarLint Language Server configuration changed, please restart VS Code.';
       const action = 'Restart Now';
       const restartId = 'workbench.action.reloadWindow';
@@ -60,7 +72,7 @@ export function onConfigurationChange() {
 }
 
 function hasSonarLintLsConfigChanged(oldConfig, newConfig) {
-  return !configKeyEquals('ls.javaHome', oldConfig, newConfig) || !configKeyEquals('ls.vmargs', oldConfig, newConfig);
+  return !configKeyEquals(JAVA_HOME_SUBKEY, oldConfig, newConfig) || !configKeyEquals('ls.vmargs', oldConfig, newConfig);
 }
 
 function configKeyEquals(key, oldConfig, newConfig) {
