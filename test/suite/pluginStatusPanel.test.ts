@@ -104,40 +104,35 @@ suite('pluginStatusPanel', () => {
     });
 
     test('escapes HTML special chars in plugin name', () => {
-      const html = renderLanguageBadge('C++');
-      expect(html).to.satisfy(() => !html.includes('<C++>'));
+      const html = renderLanguageBadge('<script>alert(1)</script>');
+      expect(html).to.not.include('<script>');
+      expect(html).to.include('&lt;script&gt;');
     });
   });
 
   suite('formatSource', () => {
     test('formats EMBEDDED source as SonarQube for VS Code with extension version', () => {
-      const result = formatSource('EMBEDDED', '');
-      expect(result).to.match(/^SonarQube for VS Code \d+\.\d+/);
+      expect(formatSource('EMBEDDED')).to.match(/^SonarQube for VS Code \d+\.\d+/);
     });
 
     test('formats ON_DEMAND source as SonarQube for VS Code with extension version', () => {
-      const result = formatSource('ON_DEMAND', '1.2.3');
-      expect(result).to.match(/^SonarQube for VS Code \d+\.\d+/);
+      expect(formatSource('ON_DEMAND')).to.match(/^SonarQube for VS Code \d+\.\d+/);
     });
 
-    test('formats SONARQUBE_SERVER source with version', () => {
-      expect(formatSource('SONARQUBE_SERVER', '10.5.0')).to.equal('SonarQube Server 10.5.0');
+    test('formats SONARQUBE_SERVER source without version when serverVersion is absent', () => {
+      expect(formatSource('SONARQUBE_SERVER')).to.equal('SonarQube Server');
     });
 
-    test('formats SONARQUBE_SERVER source without version', () => {
-      expect(formatSource('SONARQUBE_SERVER', '')).to.equal('SonarQube Server');
+    test('formats SONARQUBE_SERVER source with version when serverVersion is provided', () => {
+      expect(formatSource('SONARQUBE_SERVER', '10.8.1')).to.equal('SonarQube Server 10.8.1');
     });
 
-    test('formats SONARQUBE_CLOUD source with version', () => {
-      expect(formatSource('SONARQUBE_CLOUD', '2024.1')).to.equal('SonarQube Cloud 2024.1');
+    test('formats SONARQUBE_CLOUD source', () => {
+      expect(formatSource('SONARQUBE_CLOUD')).to.equal('SonarQube Cloud');
     });
 
-    test('formats unknown source as raw value with version', () => {
-      expect(formatSource('UNKNOWN_SOURCE', '1.0')).to.equal('UNKNOWN_SOURCE 1.0');
-    });
-
-    test('formats unknown source as raw value without version', () => {
-      expect(formatSource('UNKNOWN_SOURCE', '')).to.equal('UNKNOWN_SOURCE');
+    test('formats unknown source as raw value', () => {
+      expect(formatSource('UNKNOWN_SOURCE')).to.equal('UNKNOWN_SOURCE');
     });
   });
 });

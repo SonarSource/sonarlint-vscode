@@ -109,5 +109,5 @@ export namespace Commands {
   export const ENABLE_LABS = 'SonarQube.EnableLabs';
   export const DISABLE_LABS = 'SonarQube.DisableLabs';
 
-  export const SHOW_SUPPORTED_LANGUAGES = 'SonarLint.ShowSupportedLanguages';
+  export const SHOW_SUPPORTED_LANGUAGES = 'SonarQube.ShowSupportedLanguages';
 }

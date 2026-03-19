@@ -11,6 +11,8 @@ import * as vscode from 'vscode';
 import { ContextManager } from '../contextManager';
 import { SONARLINT_CATEGORY } from '../settings/settings';
 
+export const IDE_LABS_ENABLED_SETTING = 'sonarlint.ideLabsEnabled';
+
 export class IdeLabsFlagManagementService {
   private static _instance: IdeLabsFlagManagementService;
   private readonly IDE_LABS_ENABLED_CONFIG_KEY = 'ideLabsEnabled';

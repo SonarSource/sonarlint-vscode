@@ -278,57 +278,77 @@ export class CommandsManager {
         if (!IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
           return;
         }
-        const connections = this._buildConnectionOptions();
-        const initialScopeId = connections[0]?.configScopeId ?? null;
-        const onScopeChange = async (configScopeId: string | null) => {
+        const connections = this.buildConnectionOptions();
+        if (connections.length === 0) {
+          // No workspace folders open — show global standalone statuses directly.
           try {
-            const response = await this.languageClient.getPluginStatuses(configScopeId);
-            showPluginStatusPanel(this.context, connections, response?.pluginStatuses ?? [], configScopeId, onScopeChange);
+            const response = await this.languageClient.getPluginStatuses(null);
+            showPluginStatusPanel(this.context, [], response?.pluginStatuses ?? [], '');
           } catch (e) {
-            vscode.window.showErrorMessage(`Could not retrieve plugin statuses: ${e}`);
+            vscode.window.showErrorMessage(`Could not retrieve plugin statuses: ${e instanceof Error ? e.message : String(e)}`);
+          }
+          return;
+        }
+
+        const fetchAndShow = async (configScopeId: string) => {
+          const option = connections.find(config => config.configScopeId === configScopeId);
+          try {
+            const response = await this.languageClient.getPluginStatuses(option?.isStandalone ? null : configScopeId);
+            showPluginStatusPanel(this.context, connections, response?.pluginStatuses ?? [], configScopeId, fetchAndShow);
+          } catch (e) {
+            vscode.window.showErrorMessage(`Could not retrieve plugin statuses: ${e instanceof Error ? e.message : String(e)}`);
           }
         };
-        try {
-          const response = await this.languageClient.getPluginStatuses(initialScopeId);
-          showPluginStatusPanel(this.context, connections, response?.pluginStatuses ?? [], initialScopeId, onScopeChange);
-        } catch (e) {
-          vscode.window.showErrorMessage(`Could not retrieve plugin statuses: ${e}`);
-        }
+
+        await fetchAndShow(connections[0].configScopeId);
       })
     );
   }
 
-  private _buildConnectionOptions(): ConnectionOption[] {
+  private buildConnectionOptions(): ConnectionOption[] {
     const options: ConnectionOption[] = [];
     const allBindings = BindingService.instance.getAllBindings();
     const sqConnections = ConnectionSettingsService.instance.getSonarQubeConnections();
     const scConnections = ConnectionSettingsService.instance.getSonarCloudConnections();
 
+    // Collect the set of distinct connection IDs that have at least one bound folder.
     // One dropdown entry per bound workspace folder, labeled "<folder name> (<connection id>)".
-    // Folders bound to a connection that has no active bindings are skipped.
+    const seenConnectionIds = new Set<string>();
     for (const connection of [...sqConnections, ...scConnections]) {
       const connectionId = connection.connectionId ?? '';
       const bindingsForConnection = allBindings.get(connectionId);
       if (!bindingsForConnection) {
         continue;
       }
+      seenConnectionIds.add(connectionId);
       const fallbackLabel = isSonarQubeConnection(connection) ? connection.serverUrl : connection.organizationKey;
-      const connectionLabel = connection.connectionId ?? fallbackLabel ?? connectionId;
+      const connectionLabel = fallbackLabel ?? connectionId;
       for (const boundFolders of bindingsForConnection.values()) {
         for (const { folder } of boundFolders) {
           const configScopeId = code2ProtocolConverter(folder.uri);
-          options.push({ label: `${folder.name} (${connectionLabel})`, configScopeId });
+          options.push({ label: `${folder.name} (${connectionLabel})`, configScopeId, isStandalone: false });
         }
       }
     }
 
-    // Prepend "Standalone" if any binding does not cover at least one workspace folder.
+    // Prepend one entry per unbound workspace folder, labeled "<folder name> (Standalone)".
     const boundUris = new Set(options.map(o => o.configScopeId));
-    const hasStandaloneFolder = (vscode.workspace.workspaceFolders ?? []).some(
+    const standaloneFolders = (vscode.workspace.workspaceFolders ?? []).filter(
       folder => !boundUris.has(code2ProtocolConverter(folder.uri))
     );
-    if (hasStandaloneFolder) {
-      options.unshift({ label: 'Standalone', configScopeId: null });
+    for (const folder of standaloneFolders) {
+      const configScopeId = code2ProtocolConverter(folder.uri);
+      options.unshift({ label: `${folder.name} (Standalone)`, configScopeId, isStandalone: true });
+    }
+    const hasStandaloneFolder = standaloneFolders.length > 0;
+
+    // Only show the dropdown when there is genuine variety in context:
+    // - mixed standalone + connected, or
+    // - folders bound to more than one distinct connection.
+    // If everything is standalone, or all bound folders share the same connection, collapse to one entry.
+    const hasMultipleContexts = (hasStandaloneFolder && seenConnectionIds.size >= 1) || seenConnectionIds.size > 1;
+    if (!hasMultipleContexts) {
+      return options.slice(0, 1);
     }
 
     return options;
