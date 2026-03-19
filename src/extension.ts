@@ -409,7 +409,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     })
   );
 
-  helpAndFeedbackTreeDataProvider = new HelpAndFeedbackTreeDataProvider();
+  helpAndFeedbackTreeDataProvider = new HelpAndFeedbackTreeDataProvider(context.subscriptions);
   helpAndFeedbackView = VSCode.window.createTreeView('SonarLint.HelpAndFeedback', {
     treeDataProvider: helpAndFeedbackTreeDataProvider
   });
@@ -579,7 +579,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(ExtendedClient.DidChangePluginStatuses.type, params => {
     if (isPluginStatusPanelOpen()) {
-      refreshPluginStatusPanel(params.pluginStatuses, params.configScopeId ?? null, context);
+      refreshPluginStatusPanel(params.pluginStatuses, params.configScopeId, context);
     }
   });
 }

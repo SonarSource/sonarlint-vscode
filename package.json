@@ -764,7 +764,7 @@
         "enablement": "view == SonarQube.Labs && sonarqube.ideLabsEnabled"
       },
       {
-        "command": "SonarLint.ShowSupportedLanguages",
+        "command": "SonarQube.ShowSupportedLanguages",
         "title": "Show Supported Languages & Analyzers",
         "category": "SonarQube",
         "icon": "$(list-unordered)",
