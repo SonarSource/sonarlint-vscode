@@ -111,9 +111,8 @@ export class AutoBindingService implements FileSystemSubscriber {
     }
     const connectionId = targetConnection.connectionId;
     const suggestedBinding = await this.languageClient.getSuggestedBinding(configScopeId, connectionId);
-    if (suggestedBinding?.suggestions?.[configScopeId]) {
-      this.promptToAutoBind(suggestedBinding.suggestions[configScopeId], folderToBind);
-    }
+    const suggestions = suggestedBinding?.suggestions?.[configScopeId] || [];
+    this.promptToAutoBind(suggestions, folderToBind);
   }
 
   private async selectFolderToBind(unboundFolders: vscode.WorkspaceFolder[]) : Promise<vscode.WorkspaceFolder> {
@@ -290,7 +289,7 @@ export class AutoBindingService implements FileSystemSubscriber {
 
   private isBindingSuggestionForSonarCloud(bindingSuggestion: BindingSuggestion) {
     const sonarCloudConnections = this.settingsService.getSonarCloudConnections();
-    return sonarCloudConnections.filter(sc => bindingSuggestion.connectionId === sc.connectionId).length > 0;
+    return sonarCloudConnections.some(sc => bindingSuggestion.connectionId === sc.connectionId);
   }
 
   private async promptToAutoBindMultiChoice(unboundFolder: vscode.WorkspaceFolder) {

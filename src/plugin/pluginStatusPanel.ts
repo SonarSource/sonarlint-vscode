@@ -6,112 +6,25 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+import * as fs from 'node:fs';
 import * as VSCode from 'vscode';
 import { ExtendedServer } from '../lsp/protocol';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
 import { Commands } from '../util/commands';
 
-export interface ConnectionOption {
+import { BindingService } from '../connected/binding';
+import { code2ProtocolConverter } from '../util/uri';
+import { IdeLabsFlagManagementService } from '../labs/ideLabsFlagManagementService';
+import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { ConnectionSettingsService } from '../settings/connectionsettings';
+
+const WEBVIEW_UI_DIR = 'webview-ui';
+
+export interface FolderOption {
   label: string;
   configScopeId: string;
   isStandalone: boolean;
-}
-
-let pluginStatusPanel: VSCode.WebviewPanel | undefined;
-let currentConnections: ConnectionOption[] = [];
-let currentSelectedScopeId: string | undefined;
-let currentOnScopeChange: ((configScopeId: string) => void) | undefined;
-
-export function showPluginStatusPanel(
-  context: VSCode.ExtensionContext,
-  connections: ConnectionOption[],
-  statuses: ExtendedServer.PluginStatusDto[],
-  selectedConfigScopeId: string,
-  onScopeChange?: (configScopeId: string) => void
-) {
-  currentConnections = connections;
-  currentSelectedScopeId = selectedConfigScopeId;
-  currentOnScopeChange = onScopeChange;
-  const isNew = !pluginStatusPanel;
-  lazyCreatePluginStatusPanel(context);
-  pluginStatusPanel.webview.html = computePluginStatusPanelContent(
-    context,
-    pluginStatusPanel.webview,
-    connections,
-    statuses,
-    selectedConfigScopeId
-  );
-  if (isNew) {
-    pluginStatusPanel.iconPath = {
-      light: util.resolveExtensionFile('images', 'sonarqube_for_ide.svg'),
-      dark: util.resolveExtensionFile('images', 'sonarqube_for_ide_dark.svg')
-    };
-    pluginStatusPanel.reveal();
-    VSCode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
-  }
-}
-
-export function refreshPluginStatusPanel(
-  statuses: ExtendedServer.PluginStatusDto[],
-  incomingScopeId: string,
-  context: VSCode.ExtensionContext
-) {
-  if (!pluginStatusPanel || !currentSelectedScopeId) {
-    return;
-  }
-  const selectedOption = currentConnections.find(c => c.configScopeId === currentSelectedScopeId);
-  // Refresh if the notification targets the currently displayed scope, or if the current scope is
-  // a standalone folder and the notification concerns any standalone folder in this workspace.
-  const matches = incomingScopeId === currentSelectedScopeId ||
-    (selectedOption?.isStandalone && currentConnections.some(c => c.isStandalone && c.configScopeId === incomingScopeId));
-  if (matches) {
-    pluginStatusPanel.webview.html = computePluginStatusPanelContent(
-      context,
-      pluginStatusPanel.webview,
-      currentConnections,
-      statuses,
-      currentSelectedScopeId
-    );
-  }
-}
-
-export function isPluginStatusPanelOpen(): boolean {
-  return pluginStatusPanel !== undefined;
-}
-
-function lazyCreatePluginStatusPanel(context: VSCode.ExtensionContext) {
-  if (!pluginStatusPanel) {
-    pluginStatusPanel = VSCode.window.createWebviewPanel(
-      'sonarlint.PluginStatuses',
-      'Supported Languages & Analyzers',
-      VSCode.ViewColumn.One,
-      { enableScripts: true }
-    );
-    pluginStatusPanel.webview.onDidReceiveMessage(
-      msg => {
-        if (msg.command === 'setupConnection') {
-          VSCode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
-        } else if (msg.command === 'openSonarQubeProductPage') {
-          VSCode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarQubeProductPage');
-        } else if (msg.command === 'changeScope') {
-          currentOnScopeChange?.(msg.configScopeId);
-        }
-      },
-      null,
-      context.subscriptions
-    );
-    pluginStatusPanel.onDidDispose(
-      () => {
-        pluginStatusPanel = undefined;
-        currentConnections = [];
-        currentSelectedScopeId = undefined;
-        currentOnScopeChange = undefined;
-      },
-      null,
-      context.subscriptions
-    );
-  }
 }
 
 export const PLUGIN_STATE_BY_ORDINAL: Record<number, string> = {
@@ -140,43 +53,192 @@ export function resolveEnumValue(value: unknown, byOrdinal: Record<number, strin
   return '';
 }
 
-const BADGE_ABBREVIATION_LENGTH = 3;
+export class PluginStatusPanel {
+  private static instance?: PluginStatusPanel;
 
-// Language name → [abbreviation, background color, text color]
-const LANGUAGE_BADGE_STYLES: Record<string, [string, string, string]> = {
-  'JavaScript':  ['JS',    '#F7DF1E', '#000'],
-  'TypeScript':  ['TS',    '#3178C6', '#fff'],
-  'Python':      ['PY',    '#3776AB', '#fff'],
-  'HTML':        ['HTML',  '#E34F26', '#fff'],
-  'CSS':         ['CSS',   '#1572B6', '#fff'],
-  'XML':         ['XML',   '#005FAD', '#fff'],
-  'JSON':        ['JSON',  '#292929', '#fff'],
-  'YAML':        ['YAML',  '#CB171E', '#fff'],
-  'Java':        ['Java',  '#007396', '#fff'],
-  'PHP':         ['PHP',   '#777BB4', '#fff'],
-  'Go':          ['Go',    '#00ADD8', '#fff'],
-  'Ruby':        ['Ruby',  '#CC342D', '#fff'],
-  'Texts':       ['Txt',   '#5a5a5a', '#fff'],
-  'Secrets':     ['Sec',   '#4a5568', '#fff'],
-  'C':           ['C',     '#A8B9CC', '#000'],
-  'C++':         ['C++',   '#00599C', '#fff'],
-  'C#':          ['C#',    '#239120', '#fff'],
-  'VB.NET':      ['VB',    '#512BD4', '#fff'],
-  'Objective-C': ['ObjC',  '#6866FB', '#fff'],
-  'Swift':       ['SW',    '#FA7343', '#fff'],
-  'Kotlin':      ['Kt',    '#7F52FF', '#fff'],
-  'Scala':       ['Sc',    '#DC322F', '#fff'],
-  'ABAP':        ['ABAP',  '#E8274B', '#fff'],
-  'Apex':        ['Apex',  '#1797C0', '#fff'],
-  'COBOL':       ['COB',   '#01325A', '#fff'],
-  'PL/SQL':      ['PL',    '#C41E24', '#fff'],
-  'T-SQL':       ['T-SQL', '#CC2927', '#fff'],
-};
+  private readonly panel: VSCode.WebviewPanel;
+  private readonly languageClient: SonarLintExtendedLanguageClient;
+  private folders: FolderOption[] = [];
+  private selectedScopeId = '';
 
-export function renderLanguageBadge(pluginName: string): string {
-  const style = LANGUAGE_BADGE_STYLES[pluginName];
-  const [abbr, bg, color] = style ?? [pluginName.slice(0, BADGE_ABBREVIATION_LENGTH), 'rgba(128,128,128,0.35)', 'var(--vscode-foreground)'];
-  return `<span class="lang-badge" title="${escapeHtml(pluginName)}" data-badge-bg="${escapeHtml(bg)}" data-badge-color="${escapeHtml(color)}">${escapeHtml(abbr)}</span>`;
+  private constructor(panel: VSCode.WebviewPanel, languageClient: SonarLintExtendedLanguageClient) {
+    this.panel = panel;
+    this.languageClient = languageClient;
+  }
+
+  private getFolders(): FolderOption[] {
+    const bindingState = BindingService.instance.bindingStatePerFolder();
+    return (VSCode.workspace.workspaceFolders ?? []).map(folder => {
+      const connectionId = BindingService.instance.getConnectionIdForFolder(folder);
+      return {
+        label: connectionId ? `${folder.name} (${connectionId})` : folder.name,
+        configScopeId: code2ProtocolConverter(folder.uri),
+        isStandalone: !bindingState.get(folder.uri)
+      };
+    });
+  }
+
+  public static async showSupportedLanguages(
+    context: VSCode.ExtensionContext,
+    languageClient: SonarLintExtendedLanguageClient
+  ) {
+    if (!IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
+      return;
+    }
+
+    if (!PluginStatusPanel.instance) {
+      PluginStatusPanel.create(context, languageClient);
+    }
+
+    await PluginStatusPanel.instance.fetchAndShow();
+  }
+
+  private static create(context: VSCode.ExtensionContext, languageClient: SonarLintExtendedLanguageClient) {
+    const panel = VSCode.window.createWebviewPanel(
+      'sonarlint.PluginStatuses',
+      'Supported Languages & Analyzers',
+      VSCode.ViewColumn.One,
+      {
+        enableScripts: true,
+        localResourceRoots: [context.extensionUri]
+      }
+    );
+
+    panel.iconPath = {
+      light: util.resolveExtensionFile('images', 'sonarqube_for_ide.svg'),
+      dark: util.resolveExtensionFile('images', 'sonarqube_for_ide_dark.svg')
+    };
+
+    const instance = new PluginStatusPanel(panel, languageClient);
+    PluginStatusPanel.instance = instance;
+
+    panel.webview.onDidReceiveMessage(msg => instance.handleMessage(msg), null, context.subscriptions);
+
+    panel.onDidDispose(
+      () => {
+        PluginStatusPanel.instance = undefined;
+      },
+      null,
+      context.subscriptions
+    );
+  }
+
+  private handleMessage(msg: { command: string; configScopeId?: string }) {
+    switch (msg.command) {
+      case 'setupConnection':
+        VSCode.commands.executeCommand(Commands.CONNECT_TO_SONARCLOUD);
+        break;
+      case 'bindProject':
+        VSCode.commands.executeCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS);
+        break;
+      case 'openSonarQubeProductPage':
+        VSCode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarQubeProductPage');
+        break;
+      case 'changeScope':
+        this.fetchAndShow(msg.configScopeId);
+        break;
+    }
+  }
+
+  private async fetchAndShow(configScopeId?: string) {
+    this.folders = this.getFolders();
+    let statuses: ExtendedServer.PluginStatusDto[] = [];
+    let scopeForApi: string | null = null;
+
+    if (this.folders.length > 0) {
+      if (!configScopeId) {
+        configScopeId = this.selectedScopeId || this.folders[0].configScopeId;
+      }
+
+      let folder = this.folders.find(f => f.configScopeId === configScopeId);
+      if (!folder) {
+        folder = this.folders[0];
+        configScopeId = folder.configScopeId;
+      }
+      this.selectedScopeId = configScopeId;
+      scopeForApi = folder.isStandalone ? null : configScopeId || null;
+    } else {
+      this.selectedScopeId = '';
+    }
+
+    try {
+      const response = await this.languageClient.getPluginStatuses(scopeForApi);
+      statuses = response?.pluginStatuses ?? [];
+    } catch (e) {
+      VSCode.window.showErrorMessage(
+        `Could not retrieve plugin statuses: ${e instanceof Error ? e.message : String(e)}`
+      );
+      return;
+    }
+
+    if (this.panel.webview.html) {
+      this.panel.webview.postMessage({
+        command: 'updateContent',
+        html: renderContent(statuses, this.selectedScopeId, this.folders),
+        scopeSelectorHtml: renderScopeSelector(this.folders, this.selectedScopeId)
+      });
+    } else {
+      this.panel.webview.html = computeFullHtml(
+        util.extensionContext,
+        this.panel.webview,
+        this.folders,
+        statuses,
+        this.selectedScopeId
+      );
+    }
+
+    this.panel.reveal();
+    VSCode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
+  }
+
+  public static async refresh(statuses: ExtendedServer.PluginStatusDto[], updatedScopeId: string) {
+    const instance = PluginStatusPanel.instance;
+    if (!instance) {
+      return;
+    }
+
+    instance.folders = instance.getFolders();
+
+    let currentScopeId = instance.selectedScopeId;
+    const folderExists = instance.folders.find(f => f.configScopeId === currentScopeId);
+
+    if (instance.folders.length === 0) {
+      instance.selectedScopeId = '';
+      if (updatedScopeId === '') {
+        instance.panel.webview.postMessage({
+          command: 'updateContent',
+          html: renderContent(statuses, '', []),
+          scopeSelectorHtml: renderScopeSelector([], '')
+        });
+      }
+      return;
+    } else if (!folderExists) {
+      currentScopeId = instance.folders[0].configScopeId;
+      // In case the active folder has been deleted from the workspace, fetch again for the new folder
+      await instance.fetchAndShow(currentScopeId);
+      return;
+    }
+
+    if (currentScopeId !== updatedScopeId) {
+      // The background sync was for a folder we aren't currently viewing.
+      // Ignore the pushed statuses, but update the dropdown in case workspace folders were added/removed.
+      instance.panel.webview.postMessage({
+        command: 'updateContent',
+        scopeSelectorHtml: renderScopeSelector(instance.folders, currentScopeId)
+      });
+      return;
+    }
+
+    instance.panel.webview.postMessage({
+      command: 'updateContent',
+      html: renderContent(statuses, currentScopeId, instance.folders),
+      scopeSelectorHtml: renderScopeSelector(instance.folders, currentScopeId)
+    });
+  }
+
+  public static isOpen(): boolean {
+    return PluginStatusPanel.instance !== undefined;
+  }
 }
 
 export function renderStatus(state: string): string {
@@ -210,18 +272,18 @@ export function formatSource(source: string, serverVersion?: string): string {
   }
 }
 
-function renderScopeSelector(connections: ConnectionOption[], selectedConfigScopeId: string): string {
-  if (connections.length <= 1) {
+function renderScopeSelector(folders: FolderOption[], selectedConfigScopeId: string): string {
+  if (folders.length <= 1) {
     return '';
   }
-  const options = connections
-    .map(connection => {
-      const selected = connection.configScopeId === selectedConfigScopeId ? ' selected' : '';
-      return `<option value="${escapeHtml(connection.configScopeId)}"${selected}>${escapeHtml(connection.label)}</option>`;
+  const options = folders
+    .map(folder => {
+      const selected = folder.configScopeId === selectedConfigScopeId ? ' selected' : '';
+      return `<option value="${escapeHtml(folder.configScopeId)}"${selected}>${escapeHtml(folder.label)}</option>`;
     })
     .join('');
   return `<div class="scope-selector">
-      <label for="scope-select">Context:</label>
+      <label for="scope-select">Folder:</label>
       <select id="scope-select">${options}</select>
     </div>`;
 }
@@ -230,6 +292,7 @@ function renderInfoBanner(statuses: ExtendedServer.PluginStatusDto[], isStandalo
   if (!isStandalone) {
     return '';
   }
+  const hasConnection = ConnectionSettingsService.instance.hasConnectionConfigured();
   const premiumPluginNames = statuses
     .filter(s => resolveEnumValue(s.state, PLUGIN_STATE_BY_ORDINAL) === 'PREMIUM')
     .map(s => escapeHtml(s.pluginName ?? ''))
@@ -237,12 +300,16 @@ function renderInfoBanner(statuses: ExtendedServer.PluginStatusDto[], isStandalo
   const extendedLanguageSupportHtml = premiumPluginNames.length > 0
     ? `<span class="premium-tooltip" title="${premiumPluginNames.join('&#10;')}">extended language support</span>`
     : 'extended language support';
+    
+  const buttonId = hasConnection ? 'bind-project-btn' : 'setup-connection-btn';
+  const buttonText = hasConnection ? 'Bind Project' : 'Set up connection';
+
   return `<div class="info-banner">
       <div class="info-banner-icon">&#x2139;</div>
       <div class="info-banner-body">
         <div class="info-banner-title">Get more from your analysis</div>
         <p>Connect to <a href="#" id="sonarqube-product-link">SonarQube Server or Cloud</a> to unlock ${extendedLanguageSupportHtml} and advanced security rules for your existing code.</p>
-        <button class="info-banner-btn" id="setup-connection-btn">Set up connection</button>
+        <button class="info-banner-btn" id="${buttonId}">${buttonText}</button>
       </div>
     </div>`;
 }
@@ -252,12 +319,11 @@ function renderTable(statuses: ExtendedServer.PluginStatusDto[]): string {
     .map(s => ({ ...s, stateStr: resolveEnumValue(s.state, PLUGIN_STATE_BY_ORDINAL), sourceStr: resolveEnumValue(s.source, ARTIFACT_SOURCE_BY_ORDINAL) }))
     .filter(s => s.stateStr !== 'PREMIUM' && s.stateStr !== 'UNSUPPORTED')
     .map(s => {
-      const badge = renderLanguageBadge(s.pluginName ?? '');
       const status = renderStatus(s.stateStr);
       const source = formatSource(s.sourceStr, s.serverVersion);
       const name = escapeHtml(s.pluginName ?? '');
       return `<tr>
-        <td class="col-name" data-sort="${name}">${badge}<span class="lang-name">${name}</span></td>
+        <td class="col-name lang-name" data-sort="${name}">${name}</td>
         <td class="col-status" data-sort="${escapeHtml(s.stateStr)}">${status}</td>
         <td class="col-source" data-sort="${escapeHtml(s.sourceStr)}">${source}</td>
       </tr>`;
@@ -268,247 +334,47 @@ function renderTable(statuses: ExtendedServer.PluginStatusDto[]): string {
   return `<table class="plugins-table">
       <thead>
         <tr>
-          <th><button class="sort-btn" data-col="0">ANALYSIS TYPE<span class="sort-indicator" aria-hidden="true"></span></button></th>
-          <th><button class="sort-btn" data-col="1">STATUS<span class="sort-indicator" aria-hidden="true"></span></button></th>
-          <th><button class="sort-btn" data-col="2">SOURCE<span class="sort-indicator" aria-hidden="true"></span></button></th>
+          <th aria-sort="none"><button class="sort-btn" data-col="0">LANGUAGE/ANALYZER<span class="sort-indicator" aria-hidden="true"></span></button></th>
+          <th aria-sort="none"><button class="sort-btn" data-col="1">STATUS<span class="sort-indicator" aria-hidden="true"></span></button></th>
+          <th aria-sort="none"><button class="sort-btn" data-col="2">SOURCE<span class="sort-indicator" aria-hidden="true"></span></button></th>
         </tr>
       </thead>
       <tbody>${rows.join('\n')}</tbody>
     </table>`;
 }
 
-function renderPageStyles(nonce: string): string {
-  return `
-    <style nonce="${nonce}">
-      body {
-        font-family: var(--vscode-font-family, 'Segoe UI', Helvetica, Arial, sans-serif);
-        font-size: var(--vscode-font-size, 13px);
-        color: var(--vscode-editor-foreground);
-        background: var(--vscode-editor-background);
-        margin: 0;
-        padding: 24px 32px;
-      }
-      .page-content { width: 100%; }
-      h1 { font-size: 20px; font-weight: 600; margin: 0 0 20px 0; }
-
-      /* Info banner */
-      .info-banner {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        background: var(--vscode-textBlockQuote-background, rgba(100,100,255,0.1));
-        border: 1px solid var(--vscode-textBlockQuote-border, #555);
-        border-radius: 6px;
-        padding: 16px;
-        margin-bottom: 24px;
-      }
-      .info-banner-icon { font-size: 18px; color: var(--sonarlint-info-color, #8FCAEA); flex-shrink: 0; line-height: 1.4; }
-      .info-banner-body { flex: 1; }
-      .info-banner-title { font-weight: 600; margin-bottom: 4px; }
-      .info-banner-body p { margin: 0 0 12px 0; color: var(--vscode-descriptionForeground, #ccc); }
-      .info-banner-body a { color: var(--vscode-textLink-foreground, #4ea6dc); text-decoration: none; }
-      .premium-tooltip { text-decoration: underline; text-decoration-style: dotted; cursor: help; }
-      .info-banner-btn {
-        background: var(--vscode-button-background, #0e639c);
-        color: var(--vscode-button-foreground, #fff);
-        border: none;
-        border-radius: 3px;
-        padding: 6px 14px;
-        font-size: 12px;
-        cursor: default;
-        font-family: inherit;
-      }
-
-      /* Table */
-      .plugins-table { border-collapse: collapse; min-width: 560px; }
-      .plugins-table thead th {
-        text-align: left;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        color: var(--vscode-descriptionForeground, #999);
-        padding: 0 24px 10px 0;
-        border-bottom: 1px solid var(--vscode-widget-border, #444);
-        white-space: nowrap;
-      }
-      .plugins-table tbody tr { border-bottom: 1px solid var(--vscode-widget-border, rgba(128,128,128,0.15)); }
-      .plugins-table tbody tr:last-child { border-bottom: none; }
-      .plugins-table tbody td { padding: 10px 24px 10px 0; vertical-align: middle; }
-
-      /* Language name column */
-      .col-name { display: flex; align-items: center; gap: 10px; }
-      .lang-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px; height: 24px;
-        min-width: 24px; min-height: 24px;
-        aspect-ratio: 1 / 1;
-        font-size: 7px;
-        font-weight: 600;
-        line-height: 1;
-        border-radius: 2px;
-        flex-shrink: 0;
-        letter-spacing: 0.02em;
-        border: none;
-        overflow: hidden;
-        box-sizing: border-box;
-      }
-      .lang-name { font-weight: 500; }
-
-      /* Status column */
-      .col-status { white-space: nowrap; }
-      .status { display: inline-flex; align-items: center; gap: 5px; }
-      .status-dot { font-size: 10px; }
-      .status-active      { color: #4CAF50; }
-      .status-failed      { color: #F44336; }
-      .status-downloading { color: #FF9800; }
-      .status-synced      { color: #4CAF50; }
-
-      .col-source { color: var(--vscode-descriptionForeground, #ccc); }
-      .empty-state { color: var(--vscode-descriptionForeground, #999); margin-top: 24px; }
-
-      /* Sortable column headers */
-      .sort-btn {
-        background: none;
-        border: none;
-        padding: 0;
-        font: inherit;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        color: var(--vscode-descriptionForeground, #999);
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        white-space: nowrap;
-        text-transform: uppercase;
-      }
-      .sort-btn:hover { color: var(--vscode-foreground, #ccc); }
-      .sort-indicator::after { content: ''; }
-      .sort-btn[aria-sort="ascending"]  .sort-indicator::after { content: ' ▲'; }
-      .sort-btn[aria-sort="descending"] .sort-indicator::after { content: ' ▼'; }
-
-      .content-block { display: inline-block; }
-      .content-block .info-banner { width: 100%; box-sizing: border-box; }
-
-      /* Scope selector */
-      .scope-selector { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
-      .scope-selector label { font-size: 13px; color: var(--vscode-descriptionForeground, #999); white-space: nowrap; }
-      .scope-selector select {
-        background: var(--vscode-dropdown-background, #3c3c3c);
-        color: var(--vscode-dropdown-foreground, #ccc);
-        border: 1px solid var(--vscode-dropdown-border, #555);
-        border-radius: 2px;
-        padding: 4px 8px;
-        font-size: 13px;
-        font-family: inherit;
-        min-width: 220px;
-        cursor: default;
-      }
-    </style>`;
+function isSelectedFolderStandalone(folders: FolderOption[], selectedConfigScopeId: string): boolean {
+  if (folders.length === 0 || !selectedConfigScopeId) {
+    return true;
+  }
+  return folders.find(f => f.configScopeId === selectedConfigScopeId)?.isStandalone ?? false;
 }
 
-function renderPageScript(nonce: string): string {
-  return `<script nonce="${nonce}">
-    (function() {
-      const vscodeApi = acquireVsCodeApi();
-
-      document.querySelectorAll('.lang-badge').forEach(function(el) {
-        el.style.background = el.dataset.badgeBg;
-        el.style.color = el.dataset.badgeColor;
-      });
-
-      (function initSorting() {
-        var currentCol = -1;
-        var ascending = true;
-
-        document.querySelectorAll('.sort-btn').forEach(function(btn) {
-          btn.addEventListener('click', function() {
-            var col = parseInt(btn.dataset.col, 10);
-            if (currentCol === col) {
-              ascending = !ascending;
-            } else {
-              currentCol = col;
-              ascending = true;
-            }
-
-            document.querySelectorAll('.sort-btn').forEach(function(b) {
-              b.removeAttribute('aria-sort');
-            });
-            btn.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
-
-            var tbody = document.querySelector('.plugins-table tbody');
-            var rows = Array.from(tbody.querySelectorAll('tr'));
-            rows.sort(function(a, b) {
-              var aVal = (a.querySelectorAll('td')[col].dataset.sort || '').toLowerCase();
-              var bVal = (b.querySelectorAll('td')[col].dataset.sort || '').toLowerCase();
-              return ascending ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-            });
-            rows.forEach(function(row) { tbody.appendChild(row); });
-          });
-        });
-      })();
-
-      const setupBtn = document.getElementById('setup-connection-btn');
-      if (setupBtn) {
-        setupBtn.addEventListener('click', function() {
-          vscodeApi.postMessage({ command: 'setupConnection' });
-        });
-      }
-
-      const sonarQubeLink = document.getElementById('sonarqube-product-link');
-      if (sonarQubeLink) {
-        sonarQubeLink.addEventListener('click', function(e) {
-          e.preventDefault();
-          vscodeApi.postMessage({ command: 'openSonarQubeProductPage' });
-        });
-      }
-
-      const scopeSelect = document.getElementById('scope-select');
-      if (scopeSelect) {
-        scopeSelect.addEventListener('change', function() {
-          vscodeApi.postMessage({ command: 'changeScope', configScopeId: scopeSelect.value });
-        });
-      }
-    })();
-  </script>`;
+function renderContent(statuses: ExtendedServer.PluginStatusDto[], selectedConfigScopeId: string, folders: FolderOption[]): string {
+  return renderInfoBanner(statuses, isSelectedFolderStandalone(folders, selectedConfigScopeId)) + renderTable(statuses);
 }
 
-function computePluginStatusPanelContent(
+function computeFullHtml(
   context: VSCode.ExtensionContext,
   webview: VSCode.Webview,
-  connections: ConnectionOption[],
+  folders: FolderOption[],
   statuses: ExtendedServer.PluginStatusDto[],
   selectedConfigScopeId: string
 ): string {
-  const themeSrc = new ResourceResolver(context, webview).resolve('styles', 'theme.css');
-  const nonce = btoa(String.fromCodePoint(...crypto.getRandomValues(new Uint8Array(32))));
-  // When there are no connections (no open workspace folders), always treat as standalone.
-  const isStandalone = connections.length === 0 ||
-    (connections.find(c => c.configScopeId === selectedConfigScopeId)?.isStandalone ?? false);
+  const resolver = new ResourceResolver(context, webview);
+  const themeSrc = resolver.resolve('styles', 'theme.css');
+  const pluginStatusSrc = resolver.resolve('styles', 'pluginStatus.css');
+  const scriptSrc = resolver.resolve(WEBVIEW_UI_DIR, 'pluginStatus.js');
 
-  return `<!doctype html><html lang="en">
-    <head>
-      <title>Supported Languages &amp; Analyzers</title>
-      <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-      <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; style-src ${webview.cspSource} 'nonce-${nonce}'; script-src 'nonce-${nonce}';"/>
-      <link rel="stylesheet" type="text/css" href="${themeSrc}" />
-      ${renderPageStyles(nonce)}
-    </head>
-    <body>
-      <div class="page-content">
-        <h1>Supported Languages &amp; Analyzers</h1>
-        ${renderScopeSelector(connections, selectedConfigScopeId)}
-        <div class="content-block">
-          ${renderInfoBanner(statuses, isStandalone)}
-          ${renderTable(statuses)}
-        </div>
-      </div>
-      ${renderPageScript(nonce)}
-    </body>
-  </html>`;
+  const templatePath = util.resolveExtensionFile(WEBVIEW_UI_DIR, 'pluginStatus.html');
+  const template = fs.readFileSync(templatePath.fsPath, 'utf-8');
+
+  return template
+    .replaceAll('{{cspSource}}', webview.cspSource)
+    .replace('{{themeSrc}}', themeSrc)
+    .replace('{{pluginStatusSrc}}', pluginStatusSrc)
+    .replace('{{scopeSelector}}', renderScopeSelector(folders, selectedConfigScopeId))
+    .replace('{{infoBanner}}', renderInfoBanner(statuses, isSelectedFolderStandalone(folders, selectedConfigScopeId)))
+    .replace('{{table}}', renderTable(statuses))
+    .replace('{{scriptSrc}}', scriptSrc);
 }
-

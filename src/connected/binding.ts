@@ -71,7 +71,7 @@ export class BindingService {
       deleteAction
     );
     if (confirm !== deleteAction) {
-      return Promise.resolve(undefined);
+      return undefined;
     }
     return this.deleteBinding(binding);
   }
@@ -123,6 +123,12 @@ export class BindingService {
       bindingStatePerFolder.set(folder.uri, binding.projectKey !== undefined);
     }
     return bindingStatePerFolder;
+  }
+
+  getConnectionIdForFolder(folder: VSCode.WorkspaceFolder): string | undefined {
+    const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
+    const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
+    return binding?.connectionId ?? binding?.serverId;
   }
 
   async assistBinding(params: ExtendedClient.AssistBindingParams) {
