@@ -9,6 +9,7 @@ export interface HelpAndFeedbackItem {
   url?: string;
   icon?: string;
   viewItem: boolean;
+  labsOnly?: boolean;
   command?: Command;
   utm?: Utm;
 }
@@ -43,6 +44,17 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
     command: {
       command: Commands.ENABLE_LOGS_AND_SHOW_OUTPUT,
       title: 'Show SonarQube Output'
+    }
+  },
+  {
+    id: 'supportedLanguages',
+    label: 'Supported Languages & Analyzers',
+    icon: 'list-unordered',
+    viewItem: true,
+    labsOnly: true,
+    command: {
+      command: Commands.SHOW_SUPPORTED_LANGUAGES,
+      title: 'Show Supported Languages & Analyzers'
     }
   },
   {

@@ -26,6 +26,7 @@ import {
 } from './connected/connectionsetup';
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 import { helpAndFeedbackLinkClicked } from './help/linkTelemetry';
+import { PluginStatusPanel } from './plugin/pluginStatusPanel';
 import {
   showHotspotDetails,
   changeHotspotStatus,
@@ -272,6 +273,9 @@ export class CommandsManager {
         if (agent) {
           openHookConfiguration(agent);
         }
+      }),
+      vscode.commands.registerCommand(Commands.SHOW_SUPPORTED_LANGUAGES, async () => {
+        await PluginStatusPanel.showSupportedLanguages(this.context, this.languageClient);
       })
     );
   }
