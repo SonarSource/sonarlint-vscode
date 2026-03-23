@@ -11,7 +11,6 @@ import {
   ARTIFACT_SOURCE_BY_ORDINAL,
   PLUGIN_STATE_BY_ORDINAL,
   formatSource,
-  renderLanguageBadge,
   renderStatus,
   resolveEnumValue
 } from '../../src/plugin/pluginStatusPanel';
@@ -81,32 +80,6 @@ suite('pluginStatusPanel', () => {
       expect(html).to.contain('SOME_NEW_STATE');
       expect(html).not.to.contain('status-active');
       expect(html).not.to.contain('status-dot');
-    });
-  });
-
-  suite('renderLanguageBadge', () => {
-    test('renders known language with correct abbreviation and colors', () => {
-      const html = renderLanguageBadge('JavaScript');
-      expect(html).to.contain('JS');
-      expect(html).to.contain('#F7DF1E');
-      expect(html).to.contain('#000');
-    });
-
-    test('renders known language with tooltip title', () => {
-      const html = renderLanguageBadge('Python');
-      expect(html).to.contain('title="Python"');
-    });
-
-    test('falls back to first 3 chars for unknown language', () => {
-      const html = renderLanguageBadge('UnknownLang');
-      expect(html).to.contain('Unk');
-      expect(html).to.contain('rgba(128,128,128,0.35)');
-    });
-
-    test('escapes HTML special chars in plugin name', () => {
-      const html = renderLanguageBadge('<script>alert(1)</script>');
-      expect(html).to.not.include('<script>');
-      expect(html).to.include('&lt;script&gt;');
     });
   });
 

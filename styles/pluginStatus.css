@@ -1,0 +1,119 @@
+/* --------------------------------------------------------------------------------------------
+ * SonarLint for VisualStudio Code
+ * Copyright (C) 2017-2025 SonarSource SA
+ * sonarlint@sonarsource.com
+ * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
+body {
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  margin: 0;
+  padding: 24px 32px;
+}
+
+.page-content { width: 100%; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 20px 0; color: var(--vscode-foreground); }
+
+/* Info banner */
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--vscode-textBlockQuote-background);
+  border: 1px solid var(--vscode-textBlockQuote-border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+.info-banner-icon { font-size: 18px; color: var(--sonarlint-info-color); flex-shrink: 0; line-height: 1.4; }
+.info-banner-body { flex: 1; }
+.info-banner-title { font-weight: 600; margin-bottom: 4px; }
+.info-banner-body p { margin: 0 0 12px 0; color: var(--vscode-descriptionForeground); }
+.info-banner-body a { color: var(--vscode-textLink-foreground); text-decoration: none; }
+.premium-tooltip { text-decoration: underline; text-decoration-style: dotted; cursor: help; }
+.info-banner-btn {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 3px;
+  padding: 6px 14px;
+  font-size: var(--vscode-font-size);
+  cursor: default;
+  font-family: var(--vscode-font-family);
+}
+.info-banner-btn:hover { background: var(--vscode-button-hoverBackground); }
+
+/* Table */
+.plugins-table { border-collapse: collapse; min-width: 800px; }
+.plugins-table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--vscode-descriptionForeground);
+  padding: 0 24px 10px 0;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  white-space: nowrap;
+}
+.plugins-table tbody tr { border-bottom: 1px solid var(--vscode-panel-border); }
+.plugins-table tbody tr:last-child { border-bottom: none; }
+.plugins-table tbody td { padding: 10px 24px 10px 0; vertical-align: middle; }
+
+/* Language name column */
+.col-name { display: flex; align-items: center; gap: 10px; }
+.lang-name { font-weight: 500; }
+
+/* Status column */
+.col-status { white-space: nowrap; }
+.status { display: inline-flex; align-items: center; gap: 5px; }
+.status-dot { font-size: 10px; }
+.status-active      { color: var(--vscode-testing-iconPassed); }
+.status-failed      { color: var(--vscode-testing-iconFailed); }
+.status-downloading { color: var(--vscode-testing-iconQueued); }
+.status-synced      { color: var(--vscode-testing-iconPassed); }
+
+.col-source { color: var(--vscode-descriptionForeground); }
+.empty-state { color: var(--vscode-descriptionForeground); margin-top: 24px; }
+
+/* Sortable column headers */
+.sort-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.sort-btn:hover { color: var(--vscode-foreground); }
+.sort-indicator::after { content: ''; }
+th[aria-sort="ascending"]  .sort-indicator::after { content: ' ▲'; }
+th[aria-sort="descending"] .sort-indicator::after { content: ' ▼'; }
+
+.content-block { display: inline-block; }
+.content-block .info-banner { width: 100%; box-sizing: border-box; }
+
+/* Scope selector */
+.scope-selector { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+.scope-selector label { font-size: var(--vscode-font-size); color: var(--vscode-descriptionForeground); white-space: nowrap; }
+.scope-selector select {
+  background: var(--vscode-dropdown-background);
+  color: var(--vscode-dropdown-foreground);
+  border: 1px solid var(--vscode-dropdown-border);
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-size: var(--vscode-font-size);
+  font-family: var(--vscode-font-family);
+  min-width: 220px;
+  cursor: default;
+}
