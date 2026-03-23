@@ -26,6 +26,17 @@ export interface LabsFeature {
 
 export const LABS_FEATURES: LabsFeature[] = [
   {
+    id: 'supported_languages',
+    title: 'Supported Languages & Analyzers',
+    description:
+      'View the status of all active analyzers for your current connection. This dashboard provides visibility into which languages are being analyzed and allows you to troubleshoot analyzers if a failure occurs.',
+    imageFile: 'labs/supported_languages.png',
+    tags: [FeatureTag.EXPERIMENTAL],
+    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code',
+    // TODO: Add feedback form
+    feedbackUrl: 'https://community.sonarsource.com/c/sl/vs-code/36'
+  },
+  {
     id: 'remediation_center',
     title: 'Remediation Center',
     description:
@@ -75,15 +86,5 @@ export const LABS_FEATURES: LabsFeature[] = [
     tags: [FeatureTag.STABLE, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/connected-mode',
     feedbackUrl: 'https://forms.gle/GgFWfjgQzR9AgDAMA'
-  },
-  {
-    id: 'supported_languages',
-    title: 'Supported Languages & Analyzers',
-    description:
-      'View the status of all active analyzers for your current connection. This dashboard provides visibility into which languages are being analyzed and allows you to troubleshoot analyzers if a failure occurs.',
-    imageFile: 'labs/supported_languages.png',
-    tags: [FeatureTag.EXPERIMENTAL],
-    learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code',
-    feedbackUrl: 'https://community.sonarsource.com/c/sl/vs-code/36'
   }
 ];
