@@ -179,8 +179,8 @@ function renderTag(tag) {
     'stable': 'This feature is live for all users. We welcome your feedback to help improve it.',
     'experimental': 'Exclusive Labs feature. May be unstable as we test and refine functionality.',
     'connected-mode': 'This feature requires Connected Mode to be enabled.',
-    'new': 'This feature is available to all users. We are actively iterating on this feature, expect some changes.'
-  }
+    'new': 'We are actively iterating on this feature, expect some changes.'
+  };
 
   const label = tagLabels[tag] || tag;
   const tooltip = tagTooltips[tag] || '';
