@@ -1004,6 +1004,7 @@ export interface GetHookScriptContentResponse {
   export type ArtifactSourceDto = 'EMBEDDED' | 'ON_DEMAND' | 'SONARQUBE_SERVER' | 'SONARQUBE_CLOUD';
 
   export interface PluginStatusDto {
+    language: string;
     pluginName: string;
     state: PluginStateDto;
     source: ArtifactSourceDto;

@@ -31,10 +31,9 @@ export const LABS_FEATURES: LabsFeature[] = [
     description:
       'View the status of all active analyzers for your current connection. This dashboard provides visibility into which languages are being analyzed and allows you to troubleshoot analyzers if a failure occurs.',
     imageFile: 'labs/supported_languages.png',
-    tags: [FeatureTag.EXPERIMENTAL],
+    tags: [FeatureTag.NEW, FeatureTag.EXPERIMENTAL],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code',
-    // TODO: Add feedback form
-    feedbackUrl: 'https://community.sonarsource.com/c/sl/vs-code/36'
+    feedbackUrl: 'https://forms.gle/Vr6UDXuDJzonsPjeA'
   },
   {
     id: 'remediation_center',
@@ -42,7 +41,7 @@ export const LABS_FEATURES: LabsFeature[] = [
     description:
       'Streamline your remediation workflow by bringing SonarQube (Server, Cloud) actions directly within a new IDE panel. Manage AI CodeFix suggestions and server issue reviews without switching context.',
     imageFile: 'labs/labs_remediation_center.png',
-    tags: [FeatureTag.NEW, FeatureTag.EXPERIMENTAL],
+    tags: [FeatureTag.EXPERIMENTAL],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/using/fixing-issues#remediation-center',
     feedbackUrl: 'https://forms.gle/Y8vnvKTfgYH859dJ9'
   },
