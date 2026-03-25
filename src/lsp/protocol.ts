@@ -1028,4 +1028,12 @@ export interface GetHookScriptContentResponse {
     );
   }
 
+  export namespace SupportedLanguagesPanelOpened {
+    export const type = new lsp.NotificationType('sonarlint/supportedLanguagesPanelOpened');
+  }
+
+  export namespace SupportedLanguagesPanelCtaClicked {
+    export const type = new lsp.NotificationType('sonarlint/supportedLanguagesPanelCtaClicked');
+  }
+
 }

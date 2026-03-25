@@ -7,15 +7,21 @@
 'use strict';
 
 import { expect } from 'chai';
+import * as sinon from 'sinon';
+import * as vscode from 'vscode';
+import { IdeLabsFlagManagementService } from '../../src/labs/ideLabsFlagManagementService';
 import {
   ARTIFACT_SOURCE_BY_ORDINAL,
   PLUGIN_STATE_BY_ORDINAL,
+  PluginStatusPanel,
   formatSource,
   renderStatus,
   resolveEnumValue
 } from '../../src/plugin/pluginStatusPanel';
+import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 suite('pluginStatusPanel', () => {
+
   suite('resolveEnumValue', () => {
     test('resolves ordinal number to enum name', () => {
       expect(resolveEnumValue(0, PLUGIN_STATE_BY_ORDINAL)).to.equal('ACTIVE');
@@ -108,4 +114,68 @@ suite('pluginStatusPanel', () => {
       expect(formatSource('UNKNOWN_SOURCE')).to.equal('UNKNOWN_SOURCE');
     });
   });
+
+  suite('telemetry', () => {
+    let mockLanguageClient: any;
+    let isIdeLabsEnabledStub: sinon.SinonStub;
+
+    setup(function () {
+      this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
+      mockLanguageClient = {
+        supportedLanguagesPanelOpened: sinon.stub(),
+        supportedLanguagesPanelCtaClicked: sinon.stub(),
+        getPluginStatuses: sinon.stub().resolves({ pluginStatuses: [] })
+      };
+      isIdeLabsEnabledStub = sinon.stub(IdeLabsFlagManagementService.instance, 'isIdeLabsEnabled');
+    });
+
+    teardown(() => {
+      sinon.restore();
+      (PluginStatusPanel as any).instance = undefined;
+    });
+
+    test('supportedLanguagesPanelOpened is sent when the panel is shown', async () => {
+      isIdeLabsEnabledStub.returns(true);
+
+      const fakeInstance = Object.create(PluginStatusPanel.prototype);
+      fakeInstance.fetchAndShow = sinon.stub().resolves();
+      (PluginStatusPanel as any).instance = fakeInstance;
+
+      const fakeContext = {} as vscode.ExtensionContext;
+      await PluginStatusPanel.showSupportedLanguages(fakeContext, mockLanguageClient);
+
+      expect(
+        mockLanguageClient.supportedLanguagesPanelOpened.calledOnce,
+        'supportedLanguagesPanelOpened should be called once when the panel is shown'
+      ).to.be.true;
+    });
+
+    test('supportedLanguagesPanelOpened is not sent when IDE Labs is disabled', async () => {
+      isIdeLabsEnabledStub.returns(false);
+
+      const fakeContext = {} as vscode.ExtensionContext;
+      await PluginStatusPanel.showSupportedLanguages(fakeContext, mockLanguageClient);
+
+      expect(
+        mockLanguageClient.supportedLanguagesPanelOpened.notCalled,
+        'supportedLanguagesPanelOpened should not be called when IDE Labs is disabled'
+      ).to.be.true;
+    });
+
+    test('supportedLanguagesPanelCtaClicked is sent when the setup connection button is clicked', () => {
+      const executeCommandStub = sinon.stub(vscode.commands, 'executeCommand');
+
+      const panelInstance = Object.create(PluginStatusPanel.prototype);
+      panelInstance.languageClient = mockLanguageClient;
+
+      (panelInstance as any).handleMessage({ command: 'setupConnection' });
+
+      expect(
+        mockLanguageClient.supportedLanguagesPanelCtaClicked.calledOnce,
+        'supportedLanguagesPanelCtaClicked should be called once when setup connection is clicked'
+      ).to.be.true;
+      expect(executeCommandStub.called, 'A VS Code command should be executed after the telemetry call').to.be.true;
+    });
+  });
+
 });

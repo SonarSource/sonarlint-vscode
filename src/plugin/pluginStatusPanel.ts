@@ -90,6 +90,7 @@ export class PluginStatusPanel {
       PluginStatusPanel.create(context, languageClient);
     }
 
+    languageClient.supportedLanguagesPanelOpened();
     await PluginStatusPanel.instance.fetchAndShow();
   }
 
@@ -126,9 +127,11 @@ export class PluginStatusPanel {
   private handleMessage(msg: { command: string; configScopeId?: string }) {
     switch (msg.command) {
       case 'setupConnection':
+        this.languageClient.supportedLanguagesPanelCtaClicked();
         VSCode.commands.executeCommand(Commands.CONNECT_TO_SONARCLOUD);
         break;
       case 'bindProject':
+        this.languageClient.supportedLanguagesPanelCtaClicked();
         VSCode.commands.executeCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS);
         break;
       case 'openSonarQubeProductPage':
