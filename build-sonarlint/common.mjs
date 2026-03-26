@@ -5,8 +5,8 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-  import { createVSIX } from '@vscode/vsce';
-import { clean, cleanOmnisharpDir } from './fsUtils.mjs';
+import { createVSIX } from '@vscode/vsce';
+import { clean } from './fsUtils.mjs';
 import { info } from 'fancy-log';
 import downloadJre from './jreDownload.mjs';
 import cycloneDx from './sbomGeneration.mjs';
@@ -15,12 +15,7 @@ import { deployBuildInfo, deployVsixWithPattern } from './deployUtils.mjs';
 import populateBuildNumber from './populateBuildNumber.mjs';
 import signVsix from './sign.mjs';
 import _default from './constants.mjs';
-import {
-  downloadOmnisharpAllPlatformDistributions,
-  downloadAndExtractOmnisharp,
-  omnisharpPlatformMapping
-} from './omnisharpDownload.mjs';
-const { TARGETED_PLATFORMS, LATEST_JRE, OMNISHARP_VERSION } = _default;
+const { TARGETED_PLATFORMS, LATEST_JRE } = _default;
 
 export async function deployUniversal() {
   commonPreBuildTasks();
@@ -37,7 +32,6 @@ export async function deployAllMicrosoft() {
 }
 
 async function buildUniversal() {
-  await downloadOmnisharpAllPlatformDistributions(OMNISHARP_VERSION);
   await createVSIX();
 }
 
@@ -51,10 +45,7 @@ async function buildTargeted() {
 
 async function buildForPlatform(platform) {
   await downloadJre(platform, LATEST_JRE);
-  await downloadAndExtractOmnisharp(OMNISHARP_VERSION, omnisharpPlatformMapping[platform]);
-  await downloadAndExtractOmnisharp(OMNISHARP_VERSION, 'net6.0');
   await createVSIX({ target: platform });
-  cleanOmnisharpDir();
 }
 
 function commonPreBuildTasks() {

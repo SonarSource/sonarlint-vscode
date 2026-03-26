@@ -21,12 +21,6 @@ export function cleanJreDir() {
   }
 }
 
-export function cleanOmnisharpDir() {
-  if (pathExistsSync('./omnisharp')) {
-    removeSync('./omnisharp');
-  }
-}
-
 export function getPackageJSON() {
   return JSON.parse(readFileSync('package.json').toString());
 }

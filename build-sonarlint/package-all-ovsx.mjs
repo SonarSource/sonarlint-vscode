@@ -6,18 +6,14 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import _default from './constants.mjs';
-const { LATEST_JRE, OMNISHARP_VERSION, TARGETED_PLATFORMS } = _default;
+const { LATEST_JRE, TARGETED_PLATFORMS } = _default;
 import downloadJre from './jreDownload.mjs';
 import { cleanJreDir } from './fsUtils.mjs';
 import { createVSIX } from '@vscode/vsce';
-import { downloadOmnisharpAllPlatformDistributions } from './omnisharpDownload.mjs';
 
-// Build platform-specific packages WITHOUT OmniSharp
 for (const platform of TARGETED_PLATFORMS) {
   await downloadJre(platform, LATEST_JRE);
   await createVSIX({ target: platform });
 }
 cleanJreDir();
-// Build universal package WITH OmniSharp
-await downloadOmnisharpAllPlatformDistributions(OMNISHARP_VERSION);
 await createVSIX();

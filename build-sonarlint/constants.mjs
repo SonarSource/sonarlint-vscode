@@ -17,11 +17,6 @@ Object.defineProperty(constants, 'LATEST_JRE', {
   writable: false
 });
 
-Object.defineProperty(constants, 'OMNISHARP_VERSION', {
-  value: '1.39.15',
-  writable: false
-});
-
 Object.defineProperty(constants, 'TARGETED_PLATFORMS', {
   value: ['win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64'],
   writable: false

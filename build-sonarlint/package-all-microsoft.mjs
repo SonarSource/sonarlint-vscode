@@ -6,25 +6,16 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import _default from './constants.mjs'; 
-const { TARGETED_PLATFORMS, LATEST_JRE, OMNISHARP_VERSION } = _default;
+const { TARGETED_PLATFORMS, LATEST_JRE } = _default;
 import downloadJre from './jreDownload.mjs';
-import { cleanJreDir, cleanOmnisharpDir } from './fsUtils.mjs';
+import { cleanJreDir } from './fsUtils.mjs';
 import { createVSIX } from '@vscode/vsce';
-import {
-  downloadAndExtractOmnisharp,
-  downloadOmnisharpAllPlatformDistributions,
-  omnisharpPlatformMapping
-} from './omnisharpDownload.mjs';
 
 (async () => {
   for (const platform of TARGETED_PLATFORMS) {
     await downloadJre(platform, LATEST_JRE);
-    await downloadAndExtractOmnisharp(OMNISHARP_VERSION, omnisharpPlatformMapping[platform]);
-    await downloadAndExtractOmnisharp(OMNISHARP_VERSION, 'net6.0');
     await createVSIX({ target: platform });
-    cleanOmnisharpDir();
   }
   cleanJreDir();
-  await downloadOmnisharpAllPlatformDistributions(OMNISHARP_VERSION);
   await createVSIX();
 })();
