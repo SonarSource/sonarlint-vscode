@@ -78,7 +78,6 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   dependencyRiskInvestigatedLocally() {
     this.sendNotification(ExtendedServer.DependencyRiskInvestigatedLocally.type);
   }
-  
 
   getDependencyRiskTransitions(dependencyRiskId: string): Promise<ExtendedServer.GetDependencyRiskTransitionsResponse> {
     return this.sendRequest(ExtendedServer.GetDependencyRiskTransitions.type, { dependencyRiskId });
@@ -216,11 +215,11 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   acceptedBindingSuggestion(origin: ExtendedServer.BindingSuggestionOrigin): Promise<void> {
-    return this.sendNotification(ExtendedServer.AcceptedBindingSuggestion.type, { origin })
+    return this.sendNotification(ExtendedServer.AcceptedBindingSuggestion.type, { origin });
   }
 
-  listUserOrganizations(token: string, region: string) : Promise<ExtendedServer.Organization[]> {
-    return this.sendRequest(ExtendedServer.ListUserOrganizations.type, { token, region })
+  listUserOrganizations(token: string, region: string): Promise<ExtendedServer.Organization[]> {
+    return this.sendRequest(ExtendedServer.ListUserOrganizations.type, { token, region });
   }
 
   fixSuggestionResolved(suggestionId: string, accepted: boolean): Promise<void> {
@@ -242,4 +241,13 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   getPluginStatuses(configurationScopeId: string | null): Promise<ExtendedServer.GetPluginStatusesResponse> {
     return this.sendRequest(ExtendedServer.GetPluginStatuses.type, { configurationScopeId });
   }
+
+  supportedLanguagesPanelOpened() {
+    this.sendNotification(ExtendedServer.SupportedLanguagesPanelOpened.type);
+  }
+
+  supportedLanguagesPanelCtaClicked() {
+    this.sendNotification(ExtendedServer.SupportedLanguagesPanelCtaClicked.type);
+  }
+
 }
