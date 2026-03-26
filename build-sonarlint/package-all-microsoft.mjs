@@ -20,7 +20,7 @@ import {
   for (const platform of TARGETED_PLATFORMS) {
     await downloadJre(platform, LATEST_JRE);
     await downloadAndExtractOmnisharp(OMNISHARP_VERSION, omnisharpPlatformMapping[platform]);
-    await downloadAndExtractOmnisharp(OMNISHARP_VERSION, 'net6');
+    await downloadAndExtractOmnisharp(OMNISHARP_VERSION, 'net6.0');
     await createVSIX({ target: platform });
     cleanOmnisharpDir();
   }
