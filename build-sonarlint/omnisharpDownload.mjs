@@ -26,6 +26,8 @@ export const omnisharpPlatformMapping = {
   'win32-x64': 'net472'
 };
 
+const BINARIES_ROOT = 'https://binaries.sonarsource.com'
+
 export async function downloadAndExtractOmnisharp(omnisharpVersion, omnisharpDistribution) {
   ensureDir('./omnisharp', err => {
     if (err) {
@@ -35,7 +37,7 @@ export async function downloadAndExtractOmnisharp(omnisharpVersion, omnisharpDis
 
   info(`Downloading omnisharp ${omnisharpDistribution}`);
 
-  const omnisharpDownloadUrl = `${artifactory.repoRoot}/org/sonarsource/sonarlint/omnisharp/omnisharp-roslyn/${omnisharpVersion}/omnisharp-roslyn-${omnisharpVersion}-${omnisharpDistribution}.tar.gz`;
+  const omnisharpDownloadUrl = `${BINARIES_ROOT}/OmniSharp-Roslyn/${omnisharpVersion}/omnisharp-${omnisharpDistribution}.tar.gz`;
   const parsedDownloadUrl = parse(omnisharpDownloadUrl);
   const omnisharpFileName = basename(parsedDownloadUrl.pathname).replace(/\.(?:7z|bz2|gz|rar|tar|zip|xz)*$/, '');
 
@@ -78,5 +80,5 @@ export async function downloadAndExtractOmnisharp(omnisharpVersion, omnisharpDis
 export async function downloadOmnisharpAllPlatformDistributions(omnisharpVersion) {
   await downloadAndExtractOmnisharp(omnisharpVersion, 'mono');
   await downloadAndExtractOmnisharp(omnisharpVersion, 'net472');
-  await downloadAndExtractOmnisharp(omnisharpVersion, 'net6');
+  await downloadAndExtractOmnisharp(omnisharpVersion, 'net6.0');
 }
