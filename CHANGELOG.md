@@ -5,6 +5,7 @@
 * Update IaC analyzer 2.6.1 -> 2.8
 * Update Python analyzer 5.19 -> 5.20
 * Update JS/TS/CSS analyzer 12.0 -> [12.2](https://github.com/SonarSource/SonarJS/releases/tag/12.2.0.39785)
+* Update CFamily analyzer 6.78 -> 6.79
 
 ## 4.45
 
