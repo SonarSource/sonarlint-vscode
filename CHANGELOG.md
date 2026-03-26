@@ -6,6 +6,7 @@
 * Update Python analyzer 5.19 -> 5.20
 * Update JS/TS/CSS analyzer 12.0 -> [12.2](https://github.com/SonarSource/SonarJS/releases/tag/12.2.0.39785)
 * Update CFamily analyzer 6.78 -> 6.79
+* Update C# analyzer 10.20 -> [10.21](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.21.0.135717)
 
 ## 4.45
 
