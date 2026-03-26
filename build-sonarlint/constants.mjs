@@ -18,7 +18,7 @@ Object.defineProperty(constants, 'LATEST_JRE', {
 });
 
 Object.defineProperty(constants, 'OMNISHARP_VERSION', {
-  value: '1.39.10',
+  value: '1.39.15',
   writable: false
 });
 
