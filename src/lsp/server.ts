@@ -11,12 +11,11 @@ import { TransportKind } from 'vscode-languageclient/node';
 import { getSonarLintConfiguration } from '../settings/settings';
 import { RequirementsData } from '../util/requirements';
 import * as util from '../util/util';
-import { maybeAddCFamilyJar } from '../cfamily/ondemand';
 
 declare let v8debug: object;
 const DEBUG = typeof v8debug === 'object' || util.startedInDebugMode(process);
 
-export async function languageServerCommand(
+export function languageServerCommand(
   context: VSCode.ExtensionContext,
   requirements: RequirementsData
 ) {
@@ -51,7 +50,6 @@ export async function languageServerCommand(
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonartext.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonariac.jar'));
   params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarlintomnisharp.jar'));
-  await maybeAddCFamilyJar(params);
 
   return { command: javaExecutablePath, args: params, transport: TransportKind.stdio };
 }

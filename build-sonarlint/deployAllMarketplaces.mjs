@@ -9,7 +9,6 @@ import { executeWithDurationLog, deployAllMicrosoft } from './common.mjs';
 import { deployAllOpenVSX } from './deployAllOpenVSX.mjs';
 import { deployBuildInfo, collectArtifactInfo } from './deployUtils.mjs';
 
-// Deploy Microsoft marketplace variants (with OmniSharp in all packages)
 await executeWithDurationLog(async () => {
   await deployAllMicrosoft();
 }, 'Deploy-all-microsoft');
@@ -17,7 +16,7 @@ await executeWithDurationLog(async () => {
 // Collect Microsoft artifact information (universal + platform-specific VSIXs)
 const microsoftArtifacts = collectArtifactInfo();
 
-// Deploy OpenVSX variants (without OmniSharp in platform-specific packages)
+// Deploy OpenVSX variants
 // This overwrites the platform-specific VSIXs, but we've already captured Microsoft metadata
 await executeWithDurationLog(async () => {
   await deployAllOpenVSX();

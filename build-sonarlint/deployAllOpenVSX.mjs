@@ -23,7 +23,6 @@ export async function deployAllOpenVSX() {
 }
 
 async function buildOpenVSXPackages() {
-  // Build platform-specific packages WITHOUT OmniSharp
   for (const platform of TARGETED_PLATFORMS) {
     await executeWithDurationLog(async () => {
       await downloadJre(platform, LATEST_JRE);

@@ -108,7 +108,7 @@ const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   try {
     const requirements = await resolveRequirements(context);
-    const { command, args } = await languageServerCommand(context, requirements);
+    const { command, args } = languageServerCommand(context, requirements);
     logToSonarLintOutput(`Executing ${command} ${args.join(' ')}`);
     const process = ChildProcess.spawn(command, args);
 
@@ -220,9 +220,6 @@ export async function activate(context: VSCode.ExtensionContext) {
         enableNotebooks: true,
         clientNodePath: VSCode.workspace.getConfiguration().get('sonarlint.pathToNodeExecutable'),
         eslintBridgeServerPath: Path.resolve(context.extensionPath, 'eslint-bridge'),
-        omnisharpDirectory: Path.resolve(context.extensionPath, 'omnisharp'),
-        csharpOssPath: Path.resolve(context.extensionPath, 'analyzers', 'sonarcsharp.jar'),
-        csharpEnterprisePath: Path.resolve(context.extensionPath, 'analyzers', 'csharpenterprise.jar'),
         connections: VSCode.workspace.getConfiguration('sonarlint.connectedMode').get('connections', {"sonarqube": [], "sonarcloud": []}),
         rules: VSCode.workspace.getConfiguration('sonarlint').get('rules', {}),
         focusOnNewCode: VSCode.workspace.getConfiguration('sonarlint').get('focusOnNewCode', false),
