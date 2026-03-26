@@ -1,3 +1,7 @@
+## 5.0
+
+* Update HTML analyzer 3.22 -> [3.25](https://github.com/SonarSource/sonar-html/releases/tag/3.25.0.7473)
+
 ## 4.45
 
 * Update Java analyzer 8.24 -> [8.26](https://github.com/SonarSource/sonar-java/releases/tag/8.26.0.42915)
