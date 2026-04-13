@@ -2,6 +2,7 @@
 
 * Update Java analyzer 8.26 -> [8.27](https://github.com/SonarSource/sonar-java/releases/tag/8.27.0.43088) -> [8.28](https://github.com/SonarSource/sonar-java/releases/tag/8.28.0.43176)
 * Update Python analyzer 5.20 -> 5.21
+* Update CFamily analyzer 6.79 -> 6.80
 
 ## 5.0
 
