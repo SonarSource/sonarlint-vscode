@@ -11,7 +11,7 @@ import { info } from 'fancy-log';
 import downloadJre from './jreDownload.mjs';
 import cycloneDx from './sbomGeneration.mjs';
 import { computeUniversalVsixHashes } from './hashes.mjs';
-import { deployBuildInfo, deployVsixWithPattern } from './deployUtils.mjs';
+import { deployBuildInfo, deployVsix } from './deployUtils.mjs';
 import populateBuildNumber from './populateBuildNumber.mjs';
 import signVsix from './sign.mjs';
 import _default from './constants.mjs';
@@ -21,10 +21,9 @@ export async function deployUniversal() {
   commonPreBuildTasks();
   await buildUniversal();
   await commonPostBuildTasks();
-  await deployBuildInfo();
 }
 
-export async function deployAllMicrosoft() {
+export async function deployAll() {
   commonPreBuildTasks();
   await buildUniversal();
   await buildTargeted();
@@ -56,24 +55,14 @@ function commonPreBuildTasks() {
 
 async function commonPostBuildTasks() {
   computeUniversalVsixHashes();
-  await signAndDeployPackages();
-}
-
-export async function signAndDeployPackages(options = {}) {
-  const {
-    signFiles = null,
-    deployPattern = '*{.vsix,-cyclonedx.json,.asc}',
-    taskSuffix = 'vsix'
-  } = options;
-
   await signVsix({
     privateKeyArmored: process.env.GPG_SIGNING_KEY,
     passphrase: process.env.GPG_SIGNING_PASSPHRASE
-  }, signFiles);
-
-  await executeWithDurationLog(async () => {
-    await deployVsixWithPattern(deployPattern);
-  }, `Deploy-${taskSuffix}`);
+  });
+  await executeWithDurationLog(() => {
+    deployVsix();
+  }, 'Deploy-vsix');
+  await deployBuildInfo();
 }
 
 export async function executeWithDurationLog(callback, taskName) {
