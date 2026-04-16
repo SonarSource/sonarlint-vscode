@@ -22,5 +22,6 @@ eslint-bridge
 .env
 .idea
 .sonar-code-context/
-.cursor/rules/
+.cursor/
 jre/
+.claude/
