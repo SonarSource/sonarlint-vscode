@@ -1506,7 +1506,7 @@
     {
       "groupId": "com.sonarsource.sca",
       "artifactId": "sca-cli-core",
-      "version": "2025.6.0.12936",
+      "version": "2025.6.0.12966",
       "output": "server/sca-cli-core.jar"
     },
     {
