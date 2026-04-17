@@ -417,6 +417,11 @@
         "enablement": "sonarqube.ideLabsEnabled"
       },
       {
+        "command": "SonarLint.RunScaCliProofOfConcept",
+        "title": "Run SCA CLI Proof of Concept",
+        "category": "SonarQube"
+      },
+      {
         "command": "SonarLint.ConfigureCompilationDatabase",
         "title": "Configure the compilation database for C and C++ analysis",
         "category": "SonarQube"
@@ -1497,6 +1502,12 @@
       "artifactId": "sonarlint-language-server",
       "version": "5.2.0.78336",
       "output": "server/sonarlint-ls.jar"
+    },
+    {
+      "groupId": "com.sonarsource.sca",
+      "artifactId": "sca-cli-core",
+      "version": "2025.6.0.12936",
+      "output": "server/sca-cli-core.jar"
     },
     {
       "groupId": "org.sonarsource.go",

@@ -6,8 +6,11 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+import * as ChildProcess from 'node:child_process';
+import * as FS from 'node:fs';
+import * as Path from 'node:path';
 import * as vscode from 'vscode';
-import { showLogOutput } from './util/logging';
+import { logToSonarLintOutput, showLogOutput } from './util/logging';
 import { enableVerboseLogs } from './settings/settings';
 import { AllRulesTreeDataProvider, LanguageNode, RuleNode, toggleRule } from './rules/rules';
 import { FindingNode } from './findings/findingTypes/findingNode';
@@ -18,6 +21,7 @@ import { configureCompilationDatabase } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
 import { BindingService } from './connected/binding';
 import { AllConnectionsTreeDataProvider, ConnectionType, ConnectionsNode } from './connected/connections';
+import { DEFAULT_CONNECTION_ID } from './commons';
 import {
   connectToSonarQube,
   connectToSonarCloud,
@@ -39,16 +43,27 @@ import { resolveIssueMultiStepInput } from './issue/resolveIssue';
 import { navigateToLocation } from './location/locations';
 import { ExtendedServer } from './lsp/protocol';
 import { FlightRecorderService } from './monitoring/flightrecorder';
-import { ConnectionSettingsService } from './settings/connectionsettings';
+import { ConnectionSettingsService, SonarCloudRegion } from './settings/connectionsettings';
 import { installManagedJre, resolveRequirements } from './util/requirements';
 import { AIAgentsConfigurationTreeDataProvider } from './aiAgentsConfiguration/aiAgentsConfigurationTreeDataProvider';
 import { Commands } from './util/commands';
-import { installHook, openHookConfiguration, openHookScript, uninstallHook } from './aiAgentsConfiguration/aiAgentHooks';
+import {
+  installHook,
+  openHookConfiguration,
+  openHookScript,
+  uninstallHook
+} from './aiAgentsConfiguration/aiAgentHooks';
 import { getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
 import { code2ProtocolConverter } from './util/uri';
 import { StatusBarService } from './statusbar/statusBar';
 import { RemediationService } from './remediationPanel/remediationService';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
+
+// TODO: Resolve Sonar API URLs from backend endpoint data so that this stays aligned with the rest of the system.
+const SONARCLOUD_REGION_API_URL_MAP: Record<SonarCloudRegion, string> = {
+  EU: 'https://api.sonarcloud.io',
+  US: 'https://api.sonarqube.us'
+};
 
 export class CommandsManager {
   constructor(
@@ -198,13 +213,18 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
         const workspaceFolderUris = vscode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));
         if (!workspaceFolderUris) {
-          vscode.window.showWarningMessage('No workspace folders found; Ignoring request to analyze VCS changed files.');
+          vscode.window.showWarningMessage(
+            'No workspace folders found; Ignoring request to analyze VCS changed files.'
+          );
           return;
         }
         this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
           configScopeIds: workspaceFolderUris
         });
         vscode.commands.executeCommand('SonarQube.Findings.focus');
+      }),
+      vscode.commands.registerCommand(Commands.RUN_SCA_CLI_PROOF_OF_CONCEPT, async () => {
+        await this.runScaCliProofOfConcept();
       }),
       vscode.commands.registerCommand(
         Commands.FOCUS_ON_CONNECTION,
@@ -287,5 +307,222 @@ export class CommandsManager {
       this.languageClient,
       getFilesForHotspotsAndLaunchScan
     );
+  }
+
+  private async runScaCliProofOfConcept() {
+    const jarPath = Path.resolve(this.context.extensionPath, 'server', 'sca-cli-core.jar');
+
+    if (!FS.existsSync(jarPath)) {
+      const message = `SCA proof-of-concept JAR not found: ${jarPath}`;
+      logToSonarLintOutput(message);
+      showLogOutput();
+      vscode.window.showErrorMessage(message);
+      return;
+    }
+
+    try {
+      const workspaceFolder = await this.getWorkspaceFolderForScaCli();
+      if (!workspaceFolder) {
+        return;
+      }
+
+      if (!BindingService.instance.isBound(workspaceFolder)) {
+        const message = `Workspace folder '${workspaceFolder.name}' is not bound to a SonarQube connection.`;
+        logToSonarLintOutput(message);
+        vscode.window.showErrorMessage(message);
+        return;
+      }
+
+      const connectionId = BindingService.instance.getConnectionIdForFolder(workspaceFolder) ?? DEFAULT_CONNECTION_ID;
+      const connectionDetails = await this.getScaConnectionDetails(connectionId);
+
+      if (!connectionDetails) {
+        const message = `Could not resolve the SonarQube connection for workspace folder '${workspaceFolder.name}'.`;
+        logToSonarLintOutput(message);
+        vscode.window.showErrorMessage(message);
+        return;
+      }
+
+      if (!connectionDetails.sonarToken) {
+        const message = `Connection '${connectionDetails.connectionLabel}' does not have a token configured.`;
+        logToSonarLintOutput(message);
+        vscode.window.showErrorMessage(message);
+        return;
+      }
+
+      const requirements = await resolveRequirements(this.context);
+      const javaExecutable = Path.resolve(
+        requirements.javaHome,
+        'bin',
+        process.platform === 'win32' ? 'java.exe' : 'java'
+      );
+      const args = [
+        '-jar',
+        jarPath,
+        // Scan the currently selected workspace folder.
+        '--base-dir',
+        workspaceFolder.uri.fsPath,
+        // Base URL for the SCA service endpoints.
+        '--api-base-url',
+        connectionDetails.apiBaseUrl,
+        // Reuse the bound Sonar connection token for API authentication.
+        '--sonar-token',
+        connectionDetails.sonarToken,
+
+        // Optional: scanners usually use `.scannerwork`; this is where
+        // `dependency-files.tar.xz` will be written.
+        // '--work-dir',
+        // "",
+
+        // Optional: cache location for the managed Tidelift executable.
+        // '--cache-dir',
+        // "",
+
+        // Forward any connection-specific request headers here.
+        // '--header',
+        // 'name=value',
+
+        // Pass scanner properties. SCA is mainly interested in `sonar.sca.*`, but you could also just send them all
+        // '--scanner-property',
+        // 'sonar.sca.example=value',
+
+        // Pass through environment variables SCA and also for CLIs invoked by SCA. (npm, gradle, etc).
+        // This should probably just be all environment variables so we are respecting the user's environment.
+        // '--environment-override',
+        // 'NAME=value',
+
+        // This should be wired to `sonar.exclusions`
+        // '--excluded-path',
+        // 'pattern',
+
+        // This should be wired to `sonar.scm.exclusions.disabled`
+        // '--include-git-ignored-paths',
+
+        // Keep debug on in the POC for stack traces and CLI diagnostics.
+        '--debug'
+      ];
+      let archivePath: string | undefined;
+      const redactedCommand = [
+        javaExecutable,
+        ...args.map((arg, index) => (args[index - 1] === '--sonar-token' ? '***' : arg))
+      ];
+
+      logToSonarLintOutput(`Starting SCA proof-of-concept JAR: ${jarPath}`);
+      logToSonarLintOutput(`Executing ${JSON.stringify(redactedCommand)}`);
+      showLogOutput();
+
+      const childProcess = ChildProcess.spawn(javaExecutable, args, {
+        cwd: workspaceFolder.uri.fsPath
+      });
+
+      childProcess.stdout.on('data', data => {
+        const output = data.toString().trimEnd();
+        logToSonarLintOutput(output);
+
+        for (const line of output.split(/\r?\n/)) {
+          const parsedOutput = this.tryParseScaCliResult(line);
+          if (parsedOutput?.archive) {
+            archivePath = parsedOutput.archive;
+          }
+        }
+      });
+
+      childProcess.stderr.on('data', data => {
+        logToSonarLintOutput(data.toString().trimEnd());
+      });
+
+      childProcess.on('error', error => {
+        const message = `Failed to run SCA proof-of-concept JAR: ${error.message}`;
+        logToSonarLintOutput(message);
+        vscode.window.showErrorMessage(message);
+      });
+
+      childProcess.on('close', exitCode => {
+        const message = archivePath
+          ? `SCA proof-of-concept JAR exited with code ${exitCode ?? 'unknown'}. Archive: ${archivePath}`
+          : `SCA proof-of-concept JAR exited with code ${exitCode ?? 'unknown'}`;
+        logToSonarLintOutput(message);
+        vscode.window.showInformationMessage(message);
+      });
+    } catch (error) {
+      const message = `Failed to resolve Java for SCA proof of concept: ${error.message}`;
+      logToSonarLintOutput(message);
+      showLogOutput();
+      vscode.window.showErrorMessage(message);
+    }
+  }
+
+  private async getWorkspaceFolderForScaCli(): Promise<vscode.WorkspaceFolder | undefined> {
+    const activeWorkspaceFolder = vscode.window.activeTextEditor
+      ? vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)
+      : undefined;
+    if (activeWorkspaceFolder) {
+      return activeWorkspaceFolder;
+    }
+
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      const message = 'No workspace folder is open.';
+      logToSonarLintOutput(message);
+      vscode.window.showErrorMessage(message);
+      return undefined;
+    }
+
+    if (workspaceFolders.length === 1) {
+      return workspaceFolders[0];
+    }
+
+    const selectedFolderName = await vscode.window.showQuickPick(
+      workspaceFolders.map(folder => folder.name),
+      {
+        title: 'Select Workspace Folder',
+        placeHolder: 'Select the workspace folder to analyze with the SCA CLI'
+      }
+    );
+
+    return workspaceFolders.find(folder => folder.name === selectedFolderName);
+  }
+
+  private async getScaConnectionDetails(connectionId: string): Promise<
+    | {
+        connectionLabel: string;
+        apiBaseUrl: string;
+        sonarToken?: string;
+      }
+    | undefined
+  > {
+    const sonarQubeConnection = await ConnectionSettingsService.instance.loadSonarQubeConnection(connectionId);
+    if (sonarQubeConnection) {
+      return {
+        connectionLabel: connectionId,
+        apiBaseUrl: this.getScaServiceUrl(sonarQubeConnection.serverUrl),
+        sonarToken: sonarQubeConnection.token
+      };
+    }
+
+    const sonarCloudConnection = await ConnectionSettingsService.instance.loadSonarCloudConnection(connectionId);
+    if (sonarCloudConnection) {
+      const region = sonarCloudConnection.region ?? 'EU';
+      return {
+        connectionLabel: connectionId,
+        apiBaseUrl: this.getScaServiceUrl(SONARCLOUD_REGION_API_URL_MAP[region]),
+        sonarToken: sonarCloudConnection.token
+      };
+    }
+
+    return undefined;
+  }
+
+  private getScaServiceUrl(baseUrl: string): string {
+    return new URL('sca/', `${baseUrl.replace(/\/+$/, '')}/`).toString();
+  }
+
+  private tryParseScaCliResult(line: string): { archive?: string } | undefined {
+    try {
+      const parsed = JSON.parse(line) as { archive?: unknown };
+      return typeof parsed.archive === 'string' ? { archive: parsed.archive } : undefined;
+    } catch {
+      return undefined;
+    }
   }
 }
