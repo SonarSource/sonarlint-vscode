@@ -17,7 +17,7 @@ jobs:
     with:
       publishToBinaries: false
       mavenCentralSync: false
-      slackChannel: squad-ide-private
+      slackChannel: C02E6L5C01H # squad-devex-private
 
   deploy_to_microsoft_marketplace:
     permissions:
