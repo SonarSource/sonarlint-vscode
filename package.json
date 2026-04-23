@@ -1518,7 +1518,7 @@
     {
       "groupId": "org.sonarsource.java",
       "artifactId": "sonar-java-symbolic-execution-plugin",
-      "version": "8.16.3.1589",
+      "version": "8.16.4.1912",
       "output": "analyzers/sonarjavasymbolicexecution.jar"
     },
     {
