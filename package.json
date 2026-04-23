@@ -1552,14 +1552,6 @@
       "output": "analyzers/sonartext.jar"
     },
     {
-      "groupId": "com.sonarsource.cpp",
-      "artifactId": "sonar-cfamily-plugin",
-      "version": "6.80.0.98490",
-      "output": "analyzers/sonarcfamily.jar.asc",
-      "requiresCredentials": true,
-      "signatureOnly": true
-    },
-    {
       "groupId": "org.sonarsource.iac",
       "artifactId": "sonar-iac-plugin",
       "version": "2.8.0.19776",
@@ -1570,20 +1562,6 @@
       "artifactId": "sonarlint-omnisharp-plugin",
       "version": "1.42.0.101759",
       "output": "analyzers/sonarlintomnisharp.jar",
-      "requiresCredentials": true
-    },
-    {
-      "groupId": "org.sonarsource.dotnet",
-      "artifactId": "sonar-csharp-plugin",
-      "version": "10.23.0.137933",
-      "output": "analyzers/sonarcsharp.jar",
-      "requiresCredentials": true
-    },
-    {
-      "groupId": "com.sonarsource.dotnet",
-      "artifactId": "sonar-csharp-enterprise-plugin",
-      "version": "10.23.0.137933",
-      "output": "analyzers/csharpenterprise.jar",
       "requiresCredentials": true
     }
   ],
