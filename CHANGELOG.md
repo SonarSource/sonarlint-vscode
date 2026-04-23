@@ -1,5 +1,6 @@
 ## 5.2
 
+* On-demand download of analysis dependencies for C#
 * Update JS/TS/CSS analyzer 12.2 -> [12.3](https://github.com/SonarSource/SonarJS/releases/tag/12.3.0.39932)
 * Update Go analyzer 1.33 -> 1.36
 * Update Java Symbolic Execution analyzer 8.16.3 -> 8.16.4
