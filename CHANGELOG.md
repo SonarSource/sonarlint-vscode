@@ -1,6 +1,7 @@
 ## 5.2
 
 * Update JS/TS/CSS analyzer 12.2 -> [12.3](https://github.com/SonarSource/SonarJS/releases/tag/12.3.0.39932)
+* Update Go analyzer 1.33 -> 1.35
 
 ## 5.1
 
