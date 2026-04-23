@@ -6,6 +6,7 @@
 * Update Java Symbolic Execution analyzer 8.16.3 -> 8.16.4
 * Update PHP analyzer 3.55 -> [3.56](https://github.com/SonarSource/sonar-php/releases/tag/3.56.0.15870)
 * Update IaC analyzer 2.8 -> 2.9
+* Update C# analyzer 10.23 -> [10.24](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.24.0.138807)
 
 ## 5.1
 
