@@ -1,7 +1,7 @@
 ## 5.2
 
 * Update JS/TS/CSS analyzer 12.2 -> [12.3](https://github.com/SonarSource/SonarJS/releases/tag/12.3.0.39932)
-* Update Go analyzer 1.33 -> 1.35
+* Update Go analyzer 1.33 -> 1.36
 * Update Java Symbolic Execution analyzer 8.16.3 -> 8.16.4
 * Update PHP analyzer 3.55 -> [3.56](https://github.com/SonarSource/sonar-php/releases/tag/3.56.0.15870)
 
