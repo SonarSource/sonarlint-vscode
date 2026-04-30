@@ -15,6 +15,7 @@ export class DependencyRiskNode extends FindingNode {
 enum DependencyRiskType {
   VULNERABILITY = 'Vulnerability',
   PROHIBITED_LICENSE = 'Prohibited License',
+  MALWARE = 'Malware',
 }
 
 export enum DependencyRiskTransition {
