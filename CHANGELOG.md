@@ -1,3 +1,7 @@
+## 5.2.1
+
+* Fixed synchronization failure when the server returns dependency risks of Malware type.
+
 ## 5.2
 
 * On-demand download of analysis dependencies for C#
