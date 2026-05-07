@@ -1,3 +1,9 @@
+## 5.2.2
+
+* Fixed C# analysis in connected mode.
+* Fixed infinite plugin reload loop on failed on-demand artifact download.
+* Enable MISRA rules when connected to SonarQube Cloud.
+
 ## 5.2.1
 
 * Fixed synchronization failure when the server returns dependency risks of Malware type.
