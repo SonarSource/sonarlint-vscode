@@ -5,6 +5,7 @@
 * Update Go analyzer 1.36 -> 1.37
 * Update IaC analyzer 2.9 -> 2.10
 * Update Text & Secrets analyzer 2.42 -> 2.43
+* Update Java analyzer 8.28 -> [8.29](https://github.com/SonarSource/sonar-java/releases/tag/8.29.0.43460)
 
 ## 5.2.2
 
