@@ -3,6 +3,7 @@
 * Update Python analyzer 5.21 -> 5.22
 * Update JS/TS/CSS analyzer 12.3 -> [12.4](https://github.com/SonarSource/SonarJS/releases/tag/12.4.0.40770)
 * Update Go analyzer 1.36 -> 1.37
+* Update IaC analyzer 2.9 -> 2.10
 
 ## 5.2.2
 
