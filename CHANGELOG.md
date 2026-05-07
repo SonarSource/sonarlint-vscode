@@ -1,3 +1,7 @@
+## 5.3
+
+* Update Python analyzer 5.21 -> 5.22
+
 ## 5.2.2
 
 * Fixed C# analysis in connected mode.
