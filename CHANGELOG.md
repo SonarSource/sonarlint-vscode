@@ -1,6 +1,7 @@
 ## 5.3
 
 * Update Python analyzer 5.21 -> 5.22
+* Update JS/TS/CSS analyzer 12.3 -> [12.4](https://github.com/SonarSource/SonarJS/releases/tag/12.4.0.40770)
 
 ## 5.2.2
 
