@@ -1,0 +1,32 @@
+name: Download VSIX
+description: Downloads a VSIX artifact from Artifactory and outputs its local path.
+
+inputs:
+  artifact-name:
+    description: 'File name of the artifact to download'
+    required: true
+  artifact-url:
+    description: 'Artifactory URL to download from'
+    required: true
+  artifactory-token:
+    description: 'Artifactory access token'
+    required: true
+
+outputs:
+  artifact-file:
+    description: 'Absolute path to the downloaded artifact'
+    value: ${{ steps.download.outputs.artifact-file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download from Artifactory
+      id: download
+      env:
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        ARTIFACT_URL: ${{ inputs.artifact-url }}
+        ARTIFACTORY_TOKEN: ${{ inputs.artifactory-token }}
+      shell: bash
+      run: |
+        curl -sSf -o "$ARTIFACT_NAME" -H "Authorization: Bearer $ARTIFACTORY_TOKEN" "$ARTIFACT_URL"
+        echo "artifact-file=$(pwd)/$ARTIFACT_NAME" >> "${GITHUB_OUTPUT}"
