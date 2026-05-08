@@ -22,7 +22,6 @@ jobs:
     runs-on: github-ubuntu-latest-s
     name: Attach VSIX files to draft release
     strategy:
-      max-parallel: 1
       matrix:
         platform: [ 'win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal' ]
     steps:

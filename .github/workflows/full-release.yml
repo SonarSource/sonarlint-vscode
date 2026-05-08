@@ -1,0 +1,103 @@
+name: Full release
+
+on:
+  workflow_dispatch:
+    inputs:
+      short-description:
+        description: 'A short description for the release ticket'
+        required: true
+        type: string
+      branch:
+        description: 'The branch from which to release.'
+        required: false
+        default: 'master'
+        type: string
+
+jobs:
+  release:
+    name: Release
+    uses: SonarSource/release-github-actions/.github/workflows/ide-automated-release.yml@1340c5f09fba35b909ed5fd443e60c0d351116db # 1.5.7
+    permissions:
+      statuses: read
+      id-token: write
+      contents: write
+      actions: write
+      pull-requests: write
+    with:
+      jira-project-key: "SLVSCODE"
+      project-name: "SonarQube for VS Code"
+      short-description: ${{ inputs.short-description }}
+      branch: ${{ inputs.branch }}
+
+  bump-version:
+    name: Create a PR to bump version
+    runs-on: github-ubuntu-latest-s
+    needs:
+      - release
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: master
+
+      - name: Vault Secrets
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@c154b4a417b51cb98dd71137f49bf20e77c56820 # 3.4.0
+        with:
+          secrets: |
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
+
+      - name: Use Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '20'
+
+      - name: bump-version
+        id: bump
+        env:
+          NEW_VERSION: ${{ needs.release.outputs.new-version }}
+        run: |
+          if [[ -z "${NEW_VERSION}" ]]; then
+            echo "ERROR: new-version output is empty" >&2
+            exit 1
+          fi
+          if [[ "${NEW_VERSION}" =~ ^([0-9]+)\.([0-9]+)(\.[0-9]+)?$ ]]; then
+            # Bump to the next minor iteration regardless of release type
+            # e.g. 5.2.2 → 5.3.0, 5.3 → 5.4.0, 5.3.0 → 5.4.0
+            FULL_VERSION="${BASH_REMATCH[1]}.$((BASH_REMATCH[2] + 1)).0"
+          else
+            echo "ERROR: Unexpected NEW_VERSION format: '${NEW_VERSION}'" >&2
+            exit 1
+          fi
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          HIGHER=$(printf '%s\n%s\n' "${FULL_VERSION}" "${CURRENT_VERSION}" | sort -V | tail -1)
+          if [[ "${HIGHER}" == "${FULL_VERSION}" && "${FULL_VERSION}" != "${CURRENT_VERSION}" ]]; then
+            npm version --no-git-tag-version "${FULL_VERSION}"
+            echo "bumped=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "Skipping bump: ${FULL_VERSION} is not greater than current ${CURRENT_VERSION} (main branch is already ahead)"
+            echo "bumped=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: npm install
+        if: steps.bump.outputs.bumped == 'true'
+        env:
+          NPM_CONFIG_//repox.jfrog.io/artifactory/api/npm/:_authToken: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+        run: npm install
+
+      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        if: steps.bump.outputs.bumped == 'true'
+        with:
+          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          commit-message: Prepare next development iteration
+          title: Prepare next development iteration
+          branch: bot/bump-project-version
+          branch-suffix: timestamp
+          delete-branch: true
+          base: master
+          draft: true
+          reviewers: ${{ github.actor }}
+          body: Bump the version for the new iteration. Created by release automation.
