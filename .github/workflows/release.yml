@@ -1,25 +1,75 @@
 name: sonar-release
-# This workflow is triggered when publishing a new github release
+# Triggered by the SonarSource IDE release action (publish-github-release) via workflow_dispatch
 on:
-  release:
-    types:
-      - published
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: 'Full version including build number, e.g. 5.2.2+80191'
+        required: true
+      dryRun:
+        type: boolean
+        description: Flag to enable the dry-run execution
+        default: false
 
-env:
-  PYTHONUNBUFFERED: 1
 
 jobs:
-  release:
+  attach-vsix-to-draft:
+    if: ${{ !inputs.dryRun }}
     permissions:
       id-token: write
       contents: write
-    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v6
+    runs-on: github-ubuntu-latest-s
+    name: Attach VSIX files to draft release
+    strategy:
+      max-parallel: 1
+      matrix:
+        platform: [ 'win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal' ]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Get vault secrets
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@c154b4a417b51cb98dd71137f49bf20e77c56820 # 3.4.0
+        with:
+          secrets: |
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
+      - name: Extract artifact URL
+        id: extract_version
+        env:
+          TAG_NAME: ${{ inputs.version }}
+          PLATFORM: ${{ matrix.platform }}
+        run: bash .github/scripts/extract-artifact-url.sh
+      - name: Download VSIX from Artifactory
+        id: download_artifact
+        uses: ./.github/actions/download-vsix
+        with:
+          artifact-name: ${{ steps.extract_version.outputs.artifactName }}
+          artifact-url: ${{ steps.extract_version.outputs.artifactUrl }}
+          artifactory-token: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+      - name: Upload VSIX to draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifact-file }}
+        run: gh release upload "$RELEASE_VERSION" "$ARTIFACT_FILE" --clobber
+
+  release:
+    needs: attach-vsix-to-draft
+    if: ${{ always() && (needs.attach-vsix-to-draft.result == 'success' || needs.attach-vsix-to-draft.result == 'skipped') }}
+    permissions:
+      id-token: write
+      contents: write
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@95ca260926950eedcc8c69437f9f12b6f0584de4 # 7.0.1
     with:
+      version: ${{ inputs.version }}
+      dryRun: ${{ inputs.dryRun }}
+      createDraftRelease: false
       publishToBinaries: false
       mavenCentralSync: false
       slackChannel: C02E6L5C01H # squad-devex-private
 
   deploy_to_microsoft_marketplace:
+    if: ${{ !inputs.dryRun }}
     permissions:
       id-token: write
       contents: write
@@ -63,53 +113,29 @@ jobs:
         working-directory: ./.github/actions/vsce-publish
       - name: Extract version, file name and download URL
         id: extract_version
-        shell: python
-        run: |
-          import os
-          #
-          # Extract version, build file name and download URL from GH ref
-          #
-          # See https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
-          tagName = '${{ github.ref_name }}'
-          # tagName = <version>+<buildId>
-          version = tagName.split('+')[0]
-          platform = '${{ matrix.platform }}'
-
-          artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases'
-          slvscodeBaseUrl = f'{artifactoryPublicRepo}/org/sonarsource/sonarlint/vscode/sonarlint-vscode'
-          if platform == 'universal':
-            artifactName = f'sonarlint-vscode-{version}.vsix'
-          else:
-            artifactName = f'sonarlint-vscode-{platform}-{version}.vsix'
-          artifactUrl = f'{slvscodeBaseUrl}/{tagName}/{artifactName}'
-
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:
-            print(f'artifactUrl={artifactUrl}', file=githubOutput)
-            print(f'artifactName={artifactName}', file=githubOutput)
+        env:
+          TAG_NAME: ${{ inputs.version }}
+          PLATFORM: ${{ matrix.platform }}
+        run: bash .github/scripts/extract-artifact-url.sh
       - name: Download promoted file
         id: download_artifact
-        run: |
-          curl -s -o ${{ steps.extract_version.outputs.artifactName }} -H 'Authorization: Bearer ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}' ${{ steps.extract_version.outputs.artifactUrl }} 
-          echo 'artifactFile='$(pwd)/${{ steps.extract_version.outputs.artifactName }} >> ${GITHUB_OUTPUT}
+        uses: ./.github/actions/download-vsix
+        with:
+          artifact-name: ${{ steps.extract_version.outputs.artifactName }}
+          artifact-url: ${{ steps.extract_version.outputs.artifactUrl }}
+          artifactory-token: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
 
       - name: Publish to Visual Studio Marketplace
         if: success()
         id: vsce_publish
         env:
-          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
+          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifact-file }}
           TARGET_PLATFORM: ${{ matrix.platform }}
           VSCE_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).VISUALSTUDIO_PAT }}
         uses: ./.github/actions/vsce-publish
 
-      - name: Attach artifact to GitHub release
-        if: success()
-        id: attach_artifact
-        env:
-          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.ref_name }} "$ARTIFACT_FILE"
-
   deploy_to_openvsx:
+    if: ${{ !inputs.dryRun }}
     permissions:
       id-token: write
       contents: write
@@ -153,38 +179,21 @@ jobs:
         working-directory: ./.github/actions/ovsx-publish
       - name: Extract version, file name and download URL
         id: extract_version
-        shell: python
-        run: |
-          import os
-          #
-          # Extract version, build file name and download URL from GH ref
-          #
-          # See https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
-          tagName = '${{ github.ref_name }}'
-          # tagName = <version>+<buildId>
-          version = tagName.split('+')[0]
-          platform = '${{ matrix.platform }}'
-
-          artifactoryPublicRepo = 'https://repox.jfrog.io/artifactory/sonarsource-public-releases'
-          slvscodeBaseUrl = f'{artifactoryPublicRepo}/org/sonarsource/sonarlint/vscode/sonarlint-vscode'
-          if platform == 'universal':
-            artifactName = f'sonarlint-vscode-{version}.vsix'
-          else:
-            artifactName = f'sonarlint-vscode-{platform}-{version}.vsix'
-          artifactUrl = f'{slvscodeBaseUrl}/{tagName}/{artifactName}'
-
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as githubOutput:
-            print(f'artifactUrl={artifactUrl}', file=githubOutput)
-            print(f'artifactName={artifactName}', file=githubOutput)
+        env:
+          TAG_NAME: ${{ inputs.version }}
+          PLATFORM: ${{ matrix.platform }}
+        run: bash .github/scripts/extract-artifact-url.sh
       - name: Download promoted file
         id: download_artifact
-        run: |
-          curl -s -o ${{ steps.extract_version.outputs.artifactName }} -H 'Authorization: Bearer ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}' ${{ steps.extract_version.outputs.artifactUrl }} 
-          echo 'artifactFile='$(pwd)/${{ steps.extract_version.outputs.artifactName }} >> ${GITHUB_OUTPUT}
+        uses: ./.github/actions/download-vsix
+        with:
+          artifact-name: ${{ steps.extract_version.outputs.artifactName }}
+          artifact-url: ${{ steps.extract_version.outputs.artifactUrl }}
+          artifactory-token: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
       - name: Publish to OpenVSX
         if: success()
         id: ovsx_publish
         env:
-          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifactFile }}
+          ARTIFACT_FILE: ${{ steps.download_artifact.outputs.artifact-file }}
           OPENVSX_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).OPENVSX_TOKEN }}
         uses: ./.github/actions/ovsx-publish
