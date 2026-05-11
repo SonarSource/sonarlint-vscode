@@ -16,7 +16,7 @@ on:
 jobs:
   release:
     name: Release
-    uses: SonarSource/release-github-actions/.github/workflows/ide-automated-release.yml@1340c5f09fba35b909ed5fd443e60c0d351116db # 1.5.7
+    uses: SonarSource/release-github-actions/.github/workflows/ide-automated-release.yml@f89f99a2c6b3dad90646074261469e94297570bc # 1.5.8
     permissions:
       statuses: read
       id-token: write
