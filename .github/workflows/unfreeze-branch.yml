@@ -1,0 +1,22 @@
+name: Unfreeze branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to unfreeze'
+        required: false
+        default: 'master'
+        type: string
+
+jobs:
+  unfreeze-branch:
+    name: Unfreeze branch
+    runs-on: github-ubuntu-latest-s
+    permissions:
+      id-token: write
+    steps:
+      - uses: SonarSource/release-github-actions/lock-branch@v1
+        with:
+          branch: ${{ inputs.branch }}
+          freeze: false
