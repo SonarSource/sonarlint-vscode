@@ -16,7 +16,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: SonarSource/release-github-actions/lock-branch@v1
+      - uses: SonarSource/release-github-actions/lock-branch@f89f99a2c6b3dad90646074261469e94297570bc # v1
         with:
           branch: ${{ inputs.branch }}
           freeze: false
