@@ -76,7 +76,7 @@
     "@typescript-eslint/parser": "^7.0.1",
     "@vscode/vsce": "2.23.0",
     "eslint": "^8.56.0",
-    "glob": "^10.3.10",
+    "glob": "^11.0.0",
     "mocha": "^10.3.0",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
