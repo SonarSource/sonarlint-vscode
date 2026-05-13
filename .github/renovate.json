@@ -2,5 +2,17 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>SonarSource/renovate-config:ide-xp-team"
+  ],
+  "ignorePaths": [
+    "its/samples/**"
+  ],
+  "npmrc": "registry=https://repox.jfrog.io/artifactory/api/npm/npm/",
+  "npmrcMerge": true,
+  "hostRules": [
+    {
+      "hostType": "npm",
+      "matchHost": "repox.jfrog.io",
+      "token": "{{ secrets.REPOX_TOKEN }}"
+    }
   ]
 }
