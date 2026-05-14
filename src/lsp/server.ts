@@ -36,20 +36,22 @@ export function languageServerCommand(
   const vmargs = sonarLintConfiguration.get('ls.vmargs', '');
   parseVMargs(params, vmargs);
 
-  params.push('-jar', serverJar);
-  params.push('-stdio');
-  params.push('-analyzers');
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonargo.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjavasymbolicexecution.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarxml.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonartext.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonariac.jar'));
-  params.push(Path.resolve(context.extensionPath, 'analyzers', 'sonarlintomnisharp.jar'));
+  params.push(
+    '-jar', serverJar,
+    '-stdio',
+    '-analyzers',
+    Path.resolve(context.extensionPath, 'analyzers', 'sonargo.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonarjava.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonarjavasymbolicexecution.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonarjs.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonarphp.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonarpython.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonarhtml.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonarxml.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonartext.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonariac.jar'),
+    Path.resolve(context.extensionPath, 'analyzers', 'sonarlintomnisharp.jar')
+  );
 
   return { command: javaExecutablePath, args: params, transport: TransportKind.stdio };
 }
