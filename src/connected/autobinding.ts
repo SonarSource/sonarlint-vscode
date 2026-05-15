@@ -365,6 +365,7 @@ export class AutoBindingService implements FileSystemSubscriber {
       }
       return foundFiles;
     } catch (error) {
+      console.log(`Error listing JSON files in .sonarlint directory: ${error}`);
       return [];
     }
   }

@@ -211,7 +211,7 @@ function openJREDownload(reject, cause) {
 }
 
 function invalidJavaHome(reject, cause: string) {
-  if (cause.indexOf(JAVA_HOME_CONFIG) > -1) {
+  if (cause.includes(JAVA_HOME_CONFIG)) {
     reject({
       message: cause,
       label: 'Open settings',

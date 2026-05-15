@@ -146,7 +146,7 @@ function logWithPrefix(data, prefix) {
 }
 
 export function toUrl(filePath: string) {
-  let pathName = Path.resolve(filePath).replace(/\\/g, '/');
+  let pathName = Path.resolve(filePath).replaceAll('\\', '/');
 
   // Windows drive letter must be prefixed with a slash
   if (!pathName.startsWith('/')) {
@@ -176,9 +176,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   const pythonWatcher = VSCode.workspace.createFileSystemWatcher('**/*.py');
   const helmWatcher = VSCode.workspace.createFileSystemWatcher('**/*.{y?ml,tpl,txt,toml}');
   const sharedConnectedModeConfigurationWatcher = VSCode.workspace.createFileSystemWatcher('**/.sonarlint/*.json');
-  context.subscriptions.push(pythonWatcher);
-  context.subscriptions.push(helmWatcher);
-  context.subscriptions.push(sharedConnectedModeConfigurationWatcher);
+  context.subscriptions.push(pythonWatcher, helmWatcher, sharedConnectedModeConfigurationWatcher);
 
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
