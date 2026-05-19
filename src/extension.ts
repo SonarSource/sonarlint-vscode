@@ -273,8 +273,8 @@ export async function activate(context: VSCode.ExtensionContext) {
   initializeLanguageModelTools(context);
 
   const scm = await initScm(languageClient);
-  context.subscriptions.push(scm);
   context.subscriptions.push(
+    scm,
     languageClient.onNotification(ExtendedClient.SetReferenceBranchNameForFolderNotification.type, params => {
       scm.setReferenceBranchName(VSCode.Uri.parse(params.folderUri), params.branchName);
     })
