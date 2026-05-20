@@ -301,7 +301,7 @@ async function executeGitCommand(
         try {
           child.stdin.end();
         } catch(e) {
-          // ignore
+          verboseLogToSonarLintOutput(`Error closing stdin: ${e}`);
         }
       }
     });

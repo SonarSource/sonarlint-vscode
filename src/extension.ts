@@ -419,9 +419,8 @@ export async function activate(context: VSCode.ExtensionContext) {
 
   TaintVulnerabilityDecorator.init();
 
-  context.subscriptions.push(onConfigurationChange());
-
   context.subscriptions.push(
+    onConfigurationChange(),
     VSCode.extensions.onDidChange(() => {
       installClasspathListener(languageClient);
     })
@@ -458,10 +457,12 @@ function suggestBinding(params: ExtendedClient.SuggestBindingParams) {
 
 function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
   if (VSCode.lm) {
-    context.subscriptions.push(VSCode.lm.registerTool(ListPotentialSecurityIssuesTool.toolName, new ListPotentialSecurityIssuesTool(languageClient)));
-    context.subscriptions.push(VSCode.lm.registerTool(ExcludeFileOrFolderTool.toolName, new ExcludeFileOrFolderTool(languageClient)));
-    context.subscriptions.push(VSCode.lm.registerTool(SetUpConnectedModeTool.toolName, new SetUpConnectedModeTool(context, languageClient)));
-    context.subscriptions.push(VSCode.lm.registerTool(AnalyzeFileTool.toolName, new AnalyzeFileTool(languageClient)));
+    context.subscriptions.push(
+      VSCode.lm.registerTool(ListPotentialSecurityIssuesTool.toolName, new ListPotentialSecurityIssuesTool(languageClient)),
+      VSCode.lm.registerTool(ExcludeFileOrFolderTool.toolName, new ExcludeFileOrFolderTool(languageClient)),
+      VSCode.lm.registerTool(SetUpConnectedModeTool.toolName, new SetUpConnectedModeTool(context, languageClient)),
+      VSCode.lm.registerTool(AnalyzeFileTool.toolName, new AnalyzeFileTool(languageClient))
+    );
   } else {
     logToSonarLintOutput('Language model tools are not available in this version of VSCode. Initializing extension without them.');
   }
