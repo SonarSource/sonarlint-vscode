@@ -79,7 +79,7 @@ class GitScm implements Scm {
   }
 
   private subscribeToAllRepositoryChanges() {
-    this.gitApi.repositories.forEach(this.subscribeToRepositoryChanges, this);
+    this.gitApi.repositories.forEach(r => this.subscribeToRepositoryChanges(r));
     vscode.workspace.workspaceFolders?.forEach(folder => {
       const branchName = this.gitApi.getRepository(folder.uri)?.state.HEAD?.name;
       verboseLogToSonarLintOutput(`Initializing ${folder.uri} on branch ${branchName}`);
@@ -127,7 +127,7 @@ class GitScm implements Scm {
       try {
         d.dispose();
       } catch (e) {
-        // Ignored during dispose
+        logToSonarLintOutput(`Error disposing listener: ${e}`);
       }
     });
   }
@@ -238,7 +238,7 @@ export async function getSubmodulesPaths(gitPath: string, repoPath: string): Pro
     }
 
     const raw = result.stdout;
-    return raw.split('\n').map(value => value.split(/\s/g)[1]).filter(value => value);
+    return raw.split('\n').map(value => value.split(/\s/g)[1]).filter(Boolean);
   } catch (e) {
     logNoSubmodulesFound(repoPath, e);
     return Promise.resolve([]);

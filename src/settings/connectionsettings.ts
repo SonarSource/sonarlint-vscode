@@ -111,6 +111,7 @@ export class ConnectionSettingsService {
       const serverToken = await this.getServerToken(serverUrlOrOrganizationKey);
       return serverToken !== undefined;
     } catch (errorWhileFetchingToken) {
+      logToSonarLintOutput(`Error while fetching token for server: ${errorWhileFetchingToken}`);
       return false;
     }
   }
