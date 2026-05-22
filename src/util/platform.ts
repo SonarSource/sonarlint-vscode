@@ -109,5 +109,5 @@ function isAlpineLinux(): boolean {
       return false;
     }
   }
-  return !!fileContent && (fileContent.match(/^ID=([^\u001b\r\n]*)/m) || [])[1] === 'alpine';
+  return !!fileContent && (/^ID=([^\u001b\r\n]*)/m.exec(fileContent) || [])[1] === 'alpine';
 }

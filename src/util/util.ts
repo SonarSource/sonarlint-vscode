@@ -6,9 +6,9 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import * as child_process from 'child_process';
-import * as path from 'path';
-import * as process from 'process';
+import * as child_process from 'node:child_process';
+import * as path from 'node:path';
+import * as process from 'node:process';
 import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
 import { AnalysisFile, ExtendedClient } from '../lsp/protocol';

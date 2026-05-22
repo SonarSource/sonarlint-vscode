@@ -16,7 +16,6 @@ import { TextEncoder } from 'util';
 import * as path from 'path';
 import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
 import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl';
-import { SonarCloudRegion } from '../settings/connectionsettings';
 import { sonarCloudRegionToLabel } from '../util/util';
 import { shouldShowRegionSelection } from '../settings/settings';
 import { CustomQuickPickItem, deduplicateSuggestions } from '../util/connectionSuggestionUtils';
