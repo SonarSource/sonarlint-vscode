@@ -9,7 +9,7 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as process from 'process';
-import { TextDecoder } from 'util';
+import { TextDecoder } from 'node:util';
 import * as vscode from 'vscode';
 import { AnalysisFile, ExtendedClient } from '../lsp/protocol';
 import { code2ProtocolConverter } from './uri';

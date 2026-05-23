@@ -8,8 +8,8 @@
 // Heavily inspired by https://github.com/microsoft/vscode-cpptools/blob/0cffa4e27ac04c3b34e10c41a855149e6ac00c46/Extension/src/platform.ts
 // Copyright (c) Microsoft Corporation.
 
-import * as fs from 'fs';
-import * as os from 'os';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as util from './util';
 
 function platformToJreOs(platform: string) {
@@ -64,9 +64,9 @@ export class PlatformInformation {
             const arch = archArray[1].trim();
 
             // Note: This string can be localized. So, we'll just check to see if it contains 32 or 64.
-            if (arch.indexOf('64') >= 0) {
+            if (arch.includes('64')) {
               return 'x86_64';
-            } else if (arch.indexOf('32') >= 0) {
+            } else if (arch.includes('32')) {
               return 'x86';
             }
           }
