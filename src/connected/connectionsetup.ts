@@ -256,7 +256,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
         <input type="hidden" id="projectKey" value="${maybeProjectKey}" />
         <input type="hidden" id="suggestionOrigin" value="${suggestionOrigin}" />
         <input type="hidden" id="folderUri" value="${maybeFolderUri}" />
-        <vscode-checkbox id="enableNotifications" ${!connection.disableNotifications ? 'checked' : ''}>
+        <vscode-checkbox id="enableNotifications" ${connection.disableNotifications ? '' : 'checked'}>
           Receive
           <vscode-link target="_blank" href="${serverDocUrl}">notifications</vscode-link>
           from ${serverProductName} for the Quality Gate status and new issues assigned to you

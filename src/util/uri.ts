@@ -19,7 +19,7 @@
  */
 
 import * as vscode from 'vscode';
-import * as path from 'path';
+import * as path from 'node:path';
 
 // See https://github.com/Microsoft/vscode-languageserver-node/issues/105
 export function code2ProtocolConverter(value: vscode.Uri) {

@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import * as process from 'process';
+import * as process from 'node:process';
 import {
   defaultStackParser,
   getDefaultIntegrations,

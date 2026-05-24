@@ -102,10 +102,10 @@ function isAlpineLinux(): boolean {
   let fileContent: string | undefined;
   try {
     fileContent = fs.readFileSync('/etc/os-release', 'utf-8');
-  } catch (error1) {
+  } catch {
     try {
       fileContent = fs.readFileSync('/usr/lib/os-release', 'utf-8');
-    } catch (error2) {
+    } catch {
       return false;
     }
   }
