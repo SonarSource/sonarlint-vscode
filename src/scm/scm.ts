@@ -6,9 +6,9 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import * as ChildProcess from 'child_process';
+import * as ChildProcess from 'node:child_process';
 import * as vscode from 'vscode';
-import * as path from 'path';
+import * as path from 'node:path';
 import * as _ from 'underscore';
 import { API, GitErrorCodes, GitExtension, Repository } from './git';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
