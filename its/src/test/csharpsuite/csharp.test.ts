@@ -21,7 +21,7 @@ suite('CSharp Test Suite', () => {
     this.timeout(30 * 1000);
     vscode.window.showInformationMessage('Start CSharp tests.');
     vscode.commands.executeCommand('workbench.panel.markers.view.focus');
-  
+
     await activateAndShowOutput();
   });
 
@@ -30,7 +30,6 @@ suite('CSharp Test Suite', () => {
     const document = await vscode.workspace.openTextDocument(fileUri);
     await vscode.window.showTextDocument(document);
 
-    // Check that we have the expected diagnostic
     const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 1, timeoutMillis: 45_000 });
     assert.deepEqual(
       diags.map(d => [d.code, d.message]),

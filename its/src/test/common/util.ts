@@ -43,7 +43,7 @@ export function dumpLogOutput() {
 }
 
 function getSonarLintDiagnostics(fileUri: vscode.Uri) {
-  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source === 'sonarqube');
+  return vscode.languages.getDiagnostics(fileUri).filter(d => d.source?.startsWith('sonarqube'));
 }
 
 function sleep(ms: number): Promise<void> {

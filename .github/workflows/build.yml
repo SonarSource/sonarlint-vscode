@@ -337,6 +337,34 @@ jobs:
       - name: Prepare xvfb and ffmpeg
         run: mise run install-system-deps
 
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4
+        with:
+          dotnet-version: '8.0.406'
+
+      - name: Pin dotnet for integration tests
+        run: |
+          echo "DOTNET_MULTILEVEL_LOOKUP=0" >> "$GITHUB_ENV"
+          echo "DOTNET_ROOT=/usr/share/dotnet" >> "$GITHUB_ENV"
+          echo "/usr/share/dotnet" >> "$GITHUB_PATH"
+          # OmniSharp 1.39.x cannot use MSBuild from .NET 9/10 SDKs shipped on ubuntu-latest runners.
+          shopt -s nullglob
+          for sdk_dir in /usr/share/dotnet/sdk/9.* /usr/share/dotnet/sdk/10.*; do
+            sudo rm -rf "$sdk_dir"
+          done
+          for runtime_dir in \
+            /usr/share/dotnet/shared/Microsoft.NETCore.App/9.* \
+            /usr/share/dotnet/shared/Microsoft.NETCore.App/10.* \
+            /usr/share/dotnet/shared/Microsoft.AspNetCore.App/9.* \
+            /usr/share/dotnet/shared/Microsoft.AspNetCore.App/10.*; do
+            sudo rm -rf "$runtime_dir"
+          done
+          for sdk_dir in /usr/share/dotnet/sdk/*; do
+            if [ "$(basename "$sdk_dir")" != "8.0.406" ]; then
+              sudo rm -rf "$sdk_dir"
+            fi
+          done
+
       - name: Download VSIX artifact
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
@@ -352,6 +380,7 @@ jobs:
           npm ci
           npm run compile
           npm run prepare
+          dotnet build its/samples/sample-cs/CSSample/CSSample.csproj
           cd its
           npm ci
 
