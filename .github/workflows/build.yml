@@ -337,6 +337,27 @@ jobs:
       - name: Prepare xvfb and ffmpeg
         run: mise run install-system-deps
 
+      - name: Pin .NET SDK selection for OmniSharp
+        run: |
+          # Disable host multi-level lookup so .NET only consults DOTNET_ROOT for SDK discovery.
+          echo "DOTNET_MULTILEVEL_LOOKUP=0" >> "$GITHUB_ENV"
+          echo "DOTNET_ROOT=/usr/share/dotnet" >> "$GITHUB_ENV"
+          echo "DOTNET_HOST_PATH=/usr/share/dotnet/dotnet" >> "$GITHUB_ENV"
+          # Resolve the .NET 10 SDK actually installed on the runner and force MSBuild
+          # to use its Sdks directory, regardless of which SDK MSBuildLocator picks.
+          sdk_dir="$(ls -d /usr/share/dotnet/sdk/10.* 2>/dev/null | sort -V | tail -1)"
+          if [ -z "$sdk_dir" ]; then
+            echo "ERROR: no .NET 10 SDK found under /usr/share/dotnet/sdk/" >&2
+            ls /usr/share/dotnet/sdk/ >&2
+            exit 1
+          fi
+          echo "MSBuildSDKsPath=${sdk_dir}/Sdks" >> "$GITHUB_ENV"
+          echo "Diagnostic — selected SDK directory: ${sdk_dir}"
+          echo "=== Installed SDKs ==="
+          dotnet --list-sdks
+          echo "=== global.json resolution ==="
+          (cd its/samples/sample-cs && dotnet --info)
+
       - name: Download VSIX artifact
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
