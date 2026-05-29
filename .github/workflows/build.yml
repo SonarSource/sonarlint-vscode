@@ -337,6 +337,19 @@ jobs:
       - name: Prepare xvfb and ffmpeg
         run: mise run install-system-deps
 
+      - name: Setup .NET SDK
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.tool_cache }}/dotnet-it
+        uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
+        with:
+          dotnet-version: '8.0.406'
+
+      - name: Pin dotnet for integration tests
+        run: |
+          echo "DOTNET_MULTILEVEL_LOOKUP=0" >> "$GITHUB_ENV"
+          echo "DOTNET_ROOT=${{ runner.tool_cache }}/dotnet-it" >> "$GITHUB_ENV"
+          echo "${{ runner.tool_cache }}/dotnet-it" >> "$GITHUB_PATH"
+
       - name: Download VSIX artifact
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
