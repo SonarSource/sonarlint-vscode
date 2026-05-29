@@ -1500,7 +1500,7 @@
     {
       "groupId": "org.sonarsource.go",
       "artifactId": "sonar-go-plugin",
-      "version": "1.37.0.6200",
+      "version": "1.38.0.6335",
       "output": "analyzers/sonargo.jar"
     },
     {
