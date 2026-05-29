@@ -64,10 +64,13 @@ jobs:
             echo "ERROR: new-version output is empty" >&2
             exit 1
           fi
-          if [[ "${NEW_VERSION}" =~ ^([0-9]+)\.([0-9]+)(\.[0-9]+)?$ ]]; then
-            # Bump to the next minor iteration regardless of release type
-            # e.g. 5.2.2 → 5.3.0, 5.3 → 5.4.0, 5.3.0 → 5.4.0
-            FULL_VERSION="${BASH_REMATCH[1]}.$((BASH_REMATCH[2] + 1)).0"
+          if [[ "${NEW_VERSION}" =~ ^([0-9]+)\.([0-9]+)(\.([0-9]+))?$ ]]; then
+            # new-version is already the next JIRA iteration (e.g. 5.4 after releasing 5.3)
+            if [[ -n "${BASH_REMATCH[3]}" ]]; then
+              FULL_VERSION="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[4]}"
+            else
+              FULL_VERSION="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.0"
+            fi
           else
             echo "ERROR: Unexpected NEW_VERSION format: '${NEW_VERSION}'" >&2
             exit 1
