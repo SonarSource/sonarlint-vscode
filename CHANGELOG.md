@@ -5,6 +5,7 @@
 * Update PHP analyzer 3.56 -> [3.57](https://github.com/SonarSource/sonar-php/releases/tag/3.57.0.15976)
 * Update XML analyzer 2.16 -> [2.17](https://github.com/SonarSource/sonar-xml/releases/tag/2.17.0.7895)
 * Update Go analyzer 1.37 -> 1.38
+* Update JS/TS/CSS analyzer 12.4 -> [12.5](https://github.com/SonarSource/SonarJS/releases/tag/12.5.0.41048)
 
 ## 5.2.3
 
