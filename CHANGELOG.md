@@ -3,6 +3,7 @@
 * Update CFamily analyzer 6.80 -> 6.81.1.99296
 * Update C# analyzer 10.24 -> [10.27](https://github.com/SonarSource/sonar-dotnet/releases/tag/10.27.0.140913)
 * Update PHP analyzer 3.56 -> [3.57](https://github.com/SonarSource/sonar-php/releases/tag/3.57.0.15976)
+* Update XML analyzer 2.16 -> [2.17](https://github.com/SonarSource/sonar-xml/releases/tag/2.17.0.7895)
 
 ## 5.2.3
 

@@ -1542,7 +1542,7 @@
     {
       "groupId": "org.sonarsource.xml",
       "artifactId": "sonar-xml-plugin",
-      "version": "2.16.0.7616",
+      "version": "2.17.0.7895",
       "output": "analyzers/sonarxml.jar"
     },
     {
