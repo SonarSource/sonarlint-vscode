@@ -1,3 +1,7 @@
+## 5.4
+
+* Update Text & Secrets analyzer 2.43 -> 2.44
+
 ## 5.3
 
 * Update CFamily analyzer 6.80 -> 6.81.1.99296
