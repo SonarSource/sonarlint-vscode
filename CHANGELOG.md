@@ -1,6 +1,7 @@
 ## 5.4
 
 * Update Text & Secrets analyzer 2.43 -> 2.44
+* Update Python analyzer 5.22 -> 5.23
 
 ## 5.3
 
