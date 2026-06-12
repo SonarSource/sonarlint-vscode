@@ -4,6 +4,7 @@
 * Update Python analyzer 5.22 -> 5.23
 * Update Java analyzer 8.29 -> [8.30](https://github.com/SonarSource/sonar-java/releases/tag/8.30.0.43910)
 * Update XML analyzer 2.17 -> [2.18](https://github.com/SonarSource/sonar-xml/releases/tag/2.18.0.7959)
+* Update HTML analyzer 3.26 -> [3.28](https://github.com/SonarSource/sonar-html/releases/tag/3.28.0.8018)
 
 ## 5.3
 
