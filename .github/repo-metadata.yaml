@@ -1,0 +1,2 @@
+check-sca:
+  project-key: org.sonarsource.sonarlint.vscode:sonarlint-vscode
