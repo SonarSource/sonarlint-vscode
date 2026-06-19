@@ -235,7 +235,7 @@ async function findEmbeddedJRE(context: vscode.ExtensionContext): Promise<string
       }
     }
   }
-  return Promise.resolve(undefined);
+  return undefined;
 }
 
 export function installManagedJre() {
