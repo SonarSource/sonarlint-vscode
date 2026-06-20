@@ -22,7 +22,7 @@ import * as util from './util';
 
 const REQUIRED_JAVA_VERSION = 21;
 
-const isWindows = process.platform.indexOf('win') === 0;
+const isWindows = process.platform.startsWith('win');
 const JAVA_FILENAME = `java${isWindows ? '.exe' : ''}`;
 export const JAVA_HOME_SUBKEY = 'ls.javaHome';
 export const JAVA_HOME_CONFIG = `sonarlint.${JAVA_HOME_SUBKEY}`;

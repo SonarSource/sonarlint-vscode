@@ -23,7 +23,7 @@ import * as path from 'path';
 
 // See https://github.com/Microsoft/vscode-languageserver-node/issues/105
 export function code2ProtocolConverter(value: vscode.Uri) {
-  if (/^win32/.test(process.platform)) {
+  if (process.platform.startsWith('win32')) {
     // The *first* : is also being encoded which is not the standard for URI on Windows
     // Here we transform it back to the standard way
     return value.toString().replace(/%3A/i, ':');
