@@ -32,6 +32,7 @@ export function startedInDebugMode(process: NodeJS.Process): boolean {
 export const extension = vscode.extensions.getExtension('SonarSource.sonarlint-vscode');
 export const packageJson = extension.packageJSON;
 export const HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT_BYTES = 500_000;
+const PROGRESS_PERCENTAGE_FOR_FILE_PROCESSING = 50.0;
 
 export function extensionVersionWithBuildNumber(): string {
   const { version, buildNumber } = packageJson;
@@ -47,18 +48,20 @@ export function setExtensionContext(context: vscode.ExtensionContext): void {
 }
 
 export function isRunningOnWindows() {
-  return /^win32/.test(process.platform);
+  return process.platform.startsWith('win32');
 }
 
 export function isRunningAutoBuild() {
   return process.env.NODE_ENV === 'continuous-integration';
 }
 
+const MAX_EXEC_BUFFER_SIZE = 512_000;
+
 export function execChildProcess(process: string, workingDirectory: string, channel?: vscode.OutputChannel) {
   return new Promise<string>((resolve, reject) => {
     child_process.exec(
       process,
-      { cwd: workingDirectory, maxBuffer: 500 * 1024 },
+      { cwd: workingDirectory, maxBuffer: MAX_EXEC_BUFFER_SIZE },
       (error: Error, stdout: string, stderr: string) => {
         if (channel) {
           let message = '';
@@ -154,7 +157,7 @@ export async function createAnalysisFilesFromFileUris(
       return [];
     }
     currentFile += 1;
-    progress.report({increment: 50.0 * currentFile / totalFiles});
+    progress.report({ increment: PROGRESS_PERCENTAGE_FOR_FILE_PROCESSING * currentFile / totalFiles });
     const fileStat = await vscode.workspace.fs.stat(fileUri);
     if (fileStat.size > HOTSPOTS_FULL_SCAN_FILE_SIZE_LIMIT_BYTES) {
       verboseLogToSonarLintOutput(`File will not be analysed because it's too large: ${fileUri.path}`);
