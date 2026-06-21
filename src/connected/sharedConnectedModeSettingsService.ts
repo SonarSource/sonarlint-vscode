@@ -133,7 +133,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
           selectedConfig.data?.region,
           workspaceFolder.uri
         );
-      } else if (selectedConfig && selectedConfig.detail === 'SonarQube Server') {
+      } else if (selectedConfig?.detail === 'SonarQube Server') {
         connectToSonarQube(this.context)(selectedConfig.description, selectedConfig.label, workspaceFolder.uri);
       }
     };

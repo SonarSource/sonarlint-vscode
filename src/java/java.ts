@@ -39,11 +39,9 @@ export function installClasspathListener(languageClient: SonarLintExtendedLangua
         });
       }
     }
-  } else {
-    if (classpathChangeListener) {
-      classpathChangeListener.dispose();
-      classpathChangeListener = null;
-    }
+  } else if (classpathChangeListener) {
+    classpathChangeListener.dispose();
+    classpathChangeListener = null;
   }
 }
 
@@ -67,11 +65,9 @@ export function installServerModeChangeListener(languageClient: SonarLintExtende
         serverModeListener = onDidServerModeChange(newServerModeChangeListener(languageClient));
       }
     }
-  } else {
-    if (serverModeListener) {
-      serverModeListener.dispose();
-      serverModeListener = null;
-    }
+  } else if (serverModeListener) {
+    serverModeListener.dispose();
+    serverModeListener = null;
   }
 }
 

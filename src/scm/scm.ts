@@ -263,12 +263,10 @@ async function executeGitCommand(
           reject(stderr);
         } else if (exitCode === 0) {
           resolve({ stdout, stderr });
+        } else if (/ is in submodule /.test(stderr)) {
+          reject({ stdout, stderr, exitCode, gitErrorCode: GitErrorCodes.IsInSubmodule });
         } else {
-          if (/ is in submodule /.test(stderr)) {
-            reject({ stdout, stderr, exitCode, gitErrorCode: GitErrorCodes.IsInSubmodule });
-          } else {
-            reject({ stdout, stderr, exitCode });
-          }
+          reject({ stdout, stderr, exitCode });
         }
       };
       const child = ChildProcess.spawn(
