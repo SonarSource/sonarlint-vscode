@@ -7,6 +7,7 @@
 * Update HTML analyzer 3.26 -> [3.28](https://github.com/SonarSource/sonar-html/releases/tag/3.28.0.8018)
 * Update PHP analyzer 3.57 -> [3.58](https://github.com/SonarSource/sonar-php/releases/tag/3.58.0.16263)
 * Update IaC analyzer 2.10 -> [2.11](https://github.com/SonarSource/sonar-iac/releases/tag/2.11.0.21159)
+* Update JS/TS/CSS analyzer 12.5 -> [13.0](https://github.com/SonarSource/SonarJS/releases/tag/13.0.0.42526)
 
 ## 5.3
 
