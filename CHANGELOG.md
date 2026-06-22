@@ -1,6 +1,6 @@
 ## 5.4
 
-* Update Text & Secrets analyzer 2.43 -> 2.44
+* Update Text & Secrets analyzer 2.43 -> 2.44 -> [2.45](https://github.com/SonarSource/sonar-text/releases/tag/2.45.0.11557)
 * Update Python analyzer 5.22 -> 5.23
 * Update Java analyzer 8.29 -> [8.30](https://github.com/SonarSource/sonar-java/releases/tag/8.30.0.43910) -> [8.32](https://github.com/SonarSource/sonar-java/releases/tag/8.32.0.44337) -> [8.32.1](https://github.com/SonarSource/sonar-java/releases/tag/8.32.1.44409) -> [8.33](https://github.com/SonarSource/sonar-java/releases/tag/8.33.0.44481)
 * Update XML analyzer 2.17 -> [2.18](https://github.com/SonarSource/sonar-xml/releases/tag/2.18.0.7959)
