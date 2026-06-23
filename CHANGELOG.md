@@ -1,6 +1,7 @@
 ## 5.5
 
 * Support analysis of Shell and Azure Pipelines in Connected Mode
+* Update Text & Secrets analyzer 2.44 -> [2.45](https://github.com/SonarSource/sonar-text/releases/tag/2.45.0.11557)
 
 ## 5.4
 
