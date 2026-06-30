@@ -22,11 +22,14 @@ export function sonarToHighlightJsLanguageKeyMapping(sonarLanguageKey: string): 
       return 'html';
     case 'secrets':
       return 'markdown';
+    case 'azurepipelines':
     case 'cloudformation':
     case 'kubernetes':
       return 'yaml';
     case 'ipynb':
       return 'python';
+    case 'shell':
+      return 'bash';
     case 'plsql':
     case 'tsql':
       return 'sql';
