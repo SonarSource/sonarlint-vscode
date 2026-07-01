@@ -6,9 +6,11 @@ suite('Syntax Highlighting', () => {
   test('sonarToHighlightJsLanguageKeyMapping()', () => {
     expect(sonarToHighlightJsLanguageKeyMapping('web')).to.equal('html');
     expect(sonarToHighlightJsLanguageKeyMapping('secrets')).to.equal('markdown');
+    expect(sonarToHighlightJsLanguageKeyMapping('azurepipelines')).to.equal('yaml');
     expect(sonarToHighlightJsLanguageKeyMapping('cloudformation')).to.equal('yaml');
     expect(sonarToHighlightJsLanguageKeyMapping('ipynb')).to.equal('python');
     expect(sonarToHighlightJsLanguageKeyMapping('kubernetes')).to.equal('yaml');
+    expect(sonarToHighlightJsLanguageKeyMapping('shell')).to.equal('bash');
     expect(sonarToHighlightJsLanguageKeyMapping('terraform')).to.equal('terraform');
     expect(sonarToHighlightJsLanguageKeyMapping('plsql')).to.equal('sql');
     expect(sonarToHighlightJsLanguageKeyMapping('tsql')).to.equal('sql');

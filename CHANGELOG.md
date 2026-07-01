@@ -1,3 +1,7 @@
+## 5.5
+
+* Support analysis of Shell and Azure Pipelines in Connected Mode
+
 ## 5.4
 
 * Update Text & Secrets analyzer 2.43 -> 2.44
