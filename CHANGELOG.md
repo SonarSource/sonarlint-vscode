@@ -5,6 +5,7 @@
 * Update Go analyzer 1.38 -> 1.39 -> 1.40
 * Update IaC analyzer 2.11 -> [2.12](https://github.com/SonarSource/sonar-iac/releases/tag/2.12.0.21417)
 * Update Python analyzer 5.23 -> [5.24](https://github.com/SonarSource/sonar-python/releases/tag/5.24.0.34324)
+* Update Java analyzer 8.33 -> [8.34](https://github.com/SonarSource/sonar-java/releases/tag/8.34.0.44906)
 
 ## 5.4
 
