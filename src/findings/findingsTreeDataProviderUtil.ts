@@ -83,7 +83,7 @@ export function isFileOpen(fileUri: string): boolean {
 
 export function isCurrentFile(fileUri: string): boolean {
   const activeEditor = vscode.window.activeTextEditor;
-  return activeEditor && activeEditor.document.uri.toString() === fileUri;
+  return activeEditor?.document.uri.toString() === fileUri;
 }
 
 export function getFilterContextValue(filter: FilterType): string {
