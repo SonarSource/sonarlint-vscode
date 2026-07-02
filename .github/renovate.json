@@ -6,7 +6,7 @@
   "ignorePaths": [
     "its/samples/**"
   ],
-  "npmrc": "registry=https://repox.jfrog.io/artifactory/api/npm/npm/",
+  "npmrc": "registry=https://repox.jfrog.io/artifactory/api/npm/npm",
   "npmrcMerge": true,
   "hostRules": [
     {
