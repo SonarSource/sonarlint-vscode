@@ -2,6 +2,7 @@
 
 * Support analysis of Shell and Azure Pipelines in Connected Mode
 * Update Text & Secrets analyzer 2.44 -> [2.45](https://github.com/SonarSource/sonar-text/releases/tag/2.45.0.11557)
+* Update JS/TS/CSS analyzer 12.5 -> [13.0](https://github.com/SonarSource/SonarJS/releases/tag/13.0.0.42526) -> [13.1](https://github.com/SonarSource/SonarJS/releases/tag/13.1.0.42921)
 * Update Go analyzer 1.38 -> 1.39 -> 1.40
 * Update IaC analyzer 2.11 -> [2.12](https://github.com/SonarSource/sonar-iac/releases/tag/2.12.0.21417)
 * Update Python analyzer 5.23 -> [5.24](https://github.com/SonarSource/sonar-python/releases/tag/5.24.0.34324)
