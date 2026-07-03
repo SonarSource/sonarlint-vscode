@@ -7,8 +7,6 @@
 'use strict';
 import { deployAll, executeWithDurationLog } from './common.mjs';
 
-(async () => {
-  await executeWithDurationLog(async () => {
-    await deployAll();
-  }, 'Deploy-all');
-})();
+await executeWithDurationLog(async () => {
+  await deployAll();
+}, 'Deploy-all');

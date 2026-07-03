@@ -11,11 +11,9 @@ import downloadJre from './jreDownload.mjs';
 import { cleanJreDir } from './fsUtils.mjs';
 import { createVSIX } from '@vscode/vsce';
 
-(async () => {
-  for (const platform of TARGETED_PLATFORMS) {
-    await downloadJre(platform, LATEST_JRE);
-    await createVSIX({ target: platform });
-  }
-  cleanJreDir();
-  await createVSIX();
-})();
+for (const platform of TARGETED_PLATFORMS) {
+  await downloadJre(platform, LATEST_JRE);
+  await createVSIX({ target: platform });
+}
+cleanJreDir();
+await createVSIX();

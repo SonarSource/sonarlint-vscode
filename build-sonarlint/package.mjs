@@ -7,6 +7,4 @@
 'use strict';
 import { createVSIX } from '@vscode/vsce';
 
-(async () => {
-  await createVSIX();
-})();
+await createVSIX();
