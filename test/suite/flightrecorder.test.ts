@@ -14,8 +14,7 @@ import { FlightRecorderService } from '../../src/monitoring/flightrecorder';
 import { ProcessManager } from '../../src/monitoring/processManager';
 import { Commands } from '../../src/util/commands';
 
-suite('Flight Recorder Test Suite', async () => {
-
+suite('Flight Recorder Test Suite', () => {
   let sandbox: sinon.SinonSandbox;
 
   setup(() => {

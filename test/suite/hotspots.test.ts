@@ -85,7 +85,7 @@ const mockFindingsTreeDataProvider = {
   }
 } as FindingsTreeDataProvider;
 
-suite('Hotspots Test Suite', async () => {
+suite('Hotspots Test Suite', () => {
   setup(async function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     // Make sure workbench is clean before each test
@@ -305,7 +305,10 @@ Please make sure that the right folder is open and bound to the right project on
 
   suite('diagnosticSeverity', () => {
     test('High probability maps to Error severity', () => {
-      assert.strictEqual(diagnosticSeverity(buildHotspot('file', ExtendedClient.HotspotProbability.high)), HotspotReviewPriority.High);
+      assert.strictEqual(
+        diagnosticSeverity(buildHotspot('file', ExtendedClient.HotspotProbability.high)),
+        HotspotReviewPriority.High
+      );
     });
 
     test('Medium probability maps to Warning severity', () => {
@@ -316,7 +319,10 @@ Please make sure that the right folder is open and bound to the right project on
     });
 
     test('Low probability maps to Info severity', () => {
-      assert.strictEqual(diagnosticSeverity(buildHotspot('file', ExtendedClient.HotspotProbability.low)), HotspotReviewPriority.Low);
+      assert.strictEqual(
+        diagnosticSeverity(buildHotspot('file', ExtendedClient.HotspotProbability.low)),
+        HotspotReviewPriority.Low
+      );
     });
 
     test('should not change hotspot status when not permitted', () => {
