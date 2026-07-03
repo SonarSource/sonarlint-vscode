@@ -234,14 +234,14 @@ export async function getSubmodulesPaths(gitPath: string, repoPath: string): Pro
 
     if (result.stderr) {
       logNoSubmodulesFound(repoPath, result.stderr);
-      return Promise.resolve([]);
+      return [];
     }
 
     const raw = result.stdout;
     return raw.split('\n').map(value => value.split(/\s/g)[1]).filter(value => value);
   } catch (e) {
     logNoSubmodulesFound(repoPath, e);
-    return Promise.resolve([]);
+    return [];
   }
 }
 

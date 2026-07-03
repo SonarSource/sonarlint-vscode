@@ -44,7 +44,7 @@ const DEFAULT_OPTIONS = {
 };
 
 export function buildUrl(options: Options) {
-  const actualOptions = Object.assign({}, DEFAULT_OPTIONS, options);
+  const actualOptions = { ...DEFAULT_OPTIONS, ...options };
   const requestUrl = [
     ADOPT_OPEN_JDK_API_ROOT,
     actualOptions.request,
