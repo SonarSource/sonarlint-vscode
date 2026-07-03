@@ -7,29 +7,42 @@ import { FixSuggestionService } from '../../src/fixSuggestions/fixSuggestionsSer
 import { IdeLabsFlagManagementService } from '../../src/labs/ideLabsFlagManagementService';
 import { assert } from 'chai';
 
-// Mock IDE Labs flag to be enabled for these tests
-sinon.stub(IdeLabsFlagManagementService, 'instance').get(() => ({
-  isIdeLabsEnabled: () => true,
-  isIdeLabsJoined: () => true
-}));
+suite('Fix Suggestions Service Test Suite', () => {
+  let fixSuggestionService: FixSuggestionService;
+  let folder: string;
+  let fileUri: vscode.Uri;
+  let range: vscode.Range;
 
-FixSuggestionService.init(null);
-const fixSuggestionService = FixSuggestionService.instance;
+  suiteSetup(async () => {
+    sinon.stub(IdeLabsFlagManagementService, 'instance').get(() => ({
+      isIdeLabsEnabled: () => true,
+      isIdeLabsJoined: () => true
+    }));
 
-suite('Fix Suggestions Service Test Suite', async () => {
-	const folder = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tmpdir'));
-	const filePath = path.join(folder, 'fixSuggestion.js');
-	await fs.promises.writeFile(filePath, 'var i = 0;');
-	const fileUri = vscode.Uri.parse(folder + '/fixSuggestion.js');
-	const range = new vscode.Range(0, 0, 0, 10000);
+    FixSuggestionService.init(null);
+    fixSuggestionService = FixSuggestionService.instance;
 
-	test('fixSuggestionService.isBeforeContentIdentical should return true when before content matches', async () => {
-		const result = await fixSuggestionService.isBeforeContentIdentical(fileUri, range, 'var i = 0;');
-		assert.isTrue(result);
-	});
+    folder = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tmpdir'));
+    const filePath = path.join(folder, 'fixSuggestion.js');
+    await fs.promises.writeFile(filePath, 'var i = 0;');
+    fileUri = vscode.Uri.file(filePath);
+    range = new vscode.Range(0, 0, 0, 10000);
+  });
 
-	test('fixSuggestionService.isBeforeContentIdentical should return false when before content does not match', async () => {
-		const result = await fixSuggestionService.isBeforeContentIdentical(fileUri, range, 'var i = 1;');
-		assert.isFalse(result);
-	});
+  suiteTeardown(async () => {
+    sinon.restore();
+    if (folder) {
+      await fs.promises.rm(folder, { recursive: true, force: true });
+    }
+  });
+
+  test('fixSuggestionService.isBeforeContentIdentical should return true when before content matches', async () => {
+    const result = await fixSuggestionService.isBeforeContentIdentical(fileUri, range, 'var i = 0;');
+    assert.isTrue(result);
+  });
+
+  test('fixSuggestionService.isBeforeContentIdentical should return false when before content does not match', async () => {
+    const result = await fixSuggestionService.isBeforeContentIdentical(fileUri, range, 'var i = 1;');
+    assert.isFalse(result);
+  });
 });

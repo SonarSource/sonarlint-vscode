@@ -167,9 +167,12 @@ suite('Code diff', () => {
       '<p>Untrusted data, suc session cookie to untrusted data.</p>\n' +
       '<p>Session .<br> Often</p>';
 
-    const actualResult = decorateContextualHtmlContentWithDiff(testHtmlString);
-    expect(actualResult).to.be.a('string');
-    expect(expectedResult).to.be.a('string');
-    assert.strictEqual(actualResult, expectedResult);
+    test('Should decorate contextual HTML content with diff', () => {
+      const actualResult = decorateContextualHtmlContentWithDiff(testHtmlString);
+
+      expect(actualResult).to.be.a('string');
+      expect(expectedResult).to.be.a('string');
+      assert.strictEqual(actualResult, expectedResult);
+    });
   });
 });
