@@ -73,7 +73,7 @@ export function highlightAllCodeSnippetsInDesc(htmlDescription, ruleLanguageKey,
           realContainer.appendChild(newDiv);
         });
         pre.appendChild(realContainer);
-        pre.removeChild(pre.firstChild);
+        pre.firstChild.remove();
       });
     }
   } catch (e) {
