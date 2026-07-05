@@ -1494,7 +1494,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "5.5.0.78524",
+      "version": "5.5.0.78541",
       "output": "server/sonarlint-ls.jar"
     },
     {
