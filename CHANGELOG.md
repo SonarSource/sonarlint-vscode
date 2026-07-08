@@ -1,3 +1,7 @@
+## 5.6
+
+* Update JS/TS/CSS analyzer 13.1 -> [13.2](https://github.com/SonarSource/SonarJS/releases/tag/13.2.0.43154)
+
 ## 5.5
 
 * Support analysis of Shell and Azure Pipelines in Connected Mode
