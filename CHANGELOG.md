@@ -1,5 +1,6 @@
 ## 5.6
 
+* Support analysis of Rust in Connected Mode
 * Update JS/TS/CSS analyzer 13.1 -> [13.2](https://github.com/SonarSource/SonarJS/releases/tag/13.2.0.43154)
 * Update Java analyzer 8.34 -> [8.35](https://github.com/SonarSource/sonar-java/releases/tag/8.35.0.45121)
 
