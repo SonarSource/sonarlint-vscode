@@ -3,7 +3,7 @@
 * Update JS/TS/CSS analyzer 13.1 -> [13.2](https://github.com/SonarSource/SonarJS/releases/tag/13.2.0.43154)
 * Update Java analyzer 8.34 -> [8.35](https://github.com/SonarSource/sonar-java/releases/tag/8.35.0.45121)
 * Update PHP analyzer 3.58 -> [3.59](https://github.com/SonarSource/sonar-php/releases/tag/3.59.0.16496)
-* Update Python analyzer 5.24 -> [5.25](https://github.com/SonarSource/sonar-python/releases/tag/5.25.0.34794)
+* Update Python analyzer 5.24 -> 5.25
 
 ## 5.5
 
@@ -12,7 +12,7 @@
 * Update JS/TS/CSS analyzer 12.5 -> [13.0](https://github.com/SonarSource/SonarJS/releases/tag/13.0.0.42526) -> [13.1](https://github.com/SonarSource/SonarJS/releases/tag/13.1.0.42921)
 * Update Go analyzer 1.38 -> 1.39 -> 1.40
 * Update IaC analyzer 2.11 -> [2.12](https://github.com/SonarSource/sonar-iac/releases/tag/2.12.0.21417)
-* Update Python analyzer 5.23 -> [5.24](https://github.com/SonarSource/sonar-python/releases/tag/5.24.0.34324)
+* Update Python analyzer 5.23 -> 5.24
 * Update Java analyzer 8.33 -> [8.34](https://github.com/SonarSource/sonar-java/releases/tag/8.34.0.44906)
 
 ## 5.4
