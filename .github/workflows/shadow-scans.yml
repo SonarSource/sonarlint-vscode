@@ -31,7 +31,7 @@ jobs:
             development/kv/data/next url | SONAR_NEXT_URL;
             development/kv/data/sonarcloud url | SONAR_SQC_EU_URL;
             development/kv/data/sonarqube-us url | SONAR_SQC_US_URL;
-            development/kv/data/iris next | SONAR_IRIS_NEXT_TOKEN;
+            development/kv/data/next token | SONAR_IRIS_NEXT_TOKEN;
             development/kv/data/iris sqc-eu | SONAR_IRIS_SQC_EU_TOKEN;
             development/kv/data/iris sqc-us | SONAR_IRIS_SQC_US_TOKEN;
 
