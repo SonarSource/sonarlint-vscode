@@ -73,35 +73,23 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
     context.subscriptions.push(
       vscode.commands.registerCommand(Commands.SHOW_ALL_INFO_FOR_FINDING, (finding: FindingNode) => {
         this._instance.showAllInfoForFinding(finding);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.TRIGGER_BROWSE_TAINT_COMMAND, (finding: FindingNode) => {
         // call server-side command to open the taint vulnerability on the remote server
         vscode.commands.executeCommand('SonarLint.BrowseTaintVulnerability', finding.serverIssueKey, finding.fileUri);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.TRIGGER_AI_CODE_FIX_COMMAND, (finding: FindingNode) => {
         // call server-side command to to suggest fix
         vscode.commands.executeCommand('SonarLint.SuggestFix', finding.key, finding.fileUri);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.TRIGGER_RESOLVE_TAINT_COMMAND, (finding: FindingNode) => {
         const fileUri = finding.fileUri;
         const workspaceUri = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(fileUri)).uri.toString();
         const issueKey = finding.serverIssueKey;
         const isTaintIssue = true;
-        
-        vscode.commands.executeCommand(Commands.RESOLVE_ISSUE, workspaceUri, issueKey, fileUri, isTaintIssue);
-      })
-    );
 
-    context.subscriptions.push(
+        vscode.commands.executeCommand(Commands.RESOLVE_ISSUE, workspaceUri, issueKey, fileUri, isTaintIssue);
+      }),
       vscode.commands.registerCommand(Commands.TRIGGER_FETCH_CODE_ACTIONS_COMMAND, async (finding: FindingNode) => {
         const codeActions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
           'vscode.executeCodeActionProvider',
@@ -111,40 +99,22 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
         );
         const codeActionsFromSonarQube = codeActions.filter(action => action.title.startsWith('SonarQube: '));
         await selectAndApplyCodeAction(codeActionsFromSonarQube);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.SHOW_ALL_FINDINGS, () => {
         this._instance.setFilter(FilterType.All);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.SHOW_FIXABLE_ISSUES_ONLY, () => {
         this._instance.setFilter(FilterType.Fix_Available);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.SHOW_OPEN_FILES_ONLY, () => {
         this._instance.setFilter(FilterType.Open_Files_Only);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.SHOW_HIGH_SEVERITY_ONLY, () => {
         this._instance.setFilter(FilterType.High_Severity_Only);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.SHOW_CURRENT_FILE_ONLY, () => {
         this._instance.setFilter(FilterType.Current_File_Only);
-      })
-    );
-
-    context.subscriptions.push(
+      }),
       vscode.commands.registerCommand(Commands.CHANGE_DEPENDENCY_RISK_STATUS, (finding: FindingNode) => {
         this._instance.changeDependencyRiskStatus(finding);
       })
