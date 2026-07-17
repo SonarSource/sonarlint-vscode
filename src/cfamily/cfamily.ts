@@ -7,8 +7,8 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { SONARLINT_CATEGORY } from '../settings/settings';
 import { SonarLintDocumentation } from '../commons';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
