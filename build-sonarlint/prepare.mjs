@@ -5,15 +5,15 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import { exec } from 'child_process';
-import { createHash } from 'crypto';
-import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, unlinkSync } from 'fs';
-import { dirname, join, resolve } from 'path';
+import { exec } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, unlinkSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import * as unzipper from 'unzipper';
 import { extract } from 'tar';
 import { createGunzip } from 'node:zlib';
 
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 
 import artifactory from './artifactory.mjs';
 import { Readable } from 'node:stream';
