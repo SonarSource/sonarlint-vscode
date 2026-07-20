@@ -1425,7 +1425,7 @@
   "dependencies": {
     "@openpgp/web-stream-tools": "^0.3.0",
     "@sentry/node": "^10.30.0",
-    "@vscode/codicons": "^0.0.44",
+    "@vscode/codicons": "^0.0.45",
     "@vscode/webview-ui-toolkit": "1.0.0",
     "@xmldom/xmldom": "^0.8.11",
     "adm-zip": "^0.5.10",
