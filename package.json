@@ -1452,7 +1452,7 @@
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^5.0.0",
-    "@sentry/webpack-plugin": "^4.6.1",
+    "@sentry/webpack-plugin": "^5.0.0",
     "@types/adm-zip": "^0.5.0",
     "@types/chai": "^5.2.3",
     "@types/follow-redirects": "^1.14.4",
