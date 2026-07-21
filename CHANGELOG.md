@@ -1,3 +1,7 @@
+## 5.7
+
+* Update Java analyzer 8.35 -> [8.36](https://github.com/SonarSource/sonar-java/releases/tag/8.36.0.45637)
+
 ## 5.6
 
 * Update Text & Secrets analyzer 2.45 -> [2.46](https://github.com/SonarSource/sonar-text/releases/tag/2.46.0.11866)
