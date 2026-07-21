@@ -14,16 +14,16 @@ jobs:
       ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
       - name: Checkout custom actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           clean: false
       - name: Use Node 18
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '18'
       - name: Get vault secrets
         id: secrets
-        uses: SonarSource/vault-action-wrapper@dc8fe04652687f7278f3ecd27905967836bab0eb # tag=2.7.4-1
+        uses: SonarSource/vault-action-wrapper@881045d830534a70ec3c7c275fa3714412c8ff6e # 3.6.1
         with:
           secrets: |
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;

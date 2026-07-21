@@ -25,7 +25,7 @@ jobs:
       matrix:
         platform: [ 'win32-x64', 'linux-x64', 'darwin-x64', 'darwin-arm64', 'universal' ]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Get vault secrets
         id: secrets
         uses: SonarSource/vault-action-wrapper@c154b4a417b51cb98dd71137f49bf20e77c56820 # 3.4.0
@@ -84,11 +84,11 @@ jobs:
       ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
       - name: Checkout custom actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           clean: false
       - name: Use Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '20'
       - name: Get vault secrets
@@ -150,9 +150,9 @@ jobs:
       ARTIFACTORY_URL: https://repox.jfrog.io/artifactory
     steps:
       - name: Checkout custom actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Use Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '20'
       - name: Get vault secrets
