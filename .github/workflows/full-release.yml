@@ -28,6 +28,7 @@ jobs:
       project-name: "SonarQube for VS Code"
       short-description: ${{ inputs.short-description }}
       branch: ${{ inputs.branch }}
+      slack-channel: "C04UA29K9HQ" #squad-ide-vscode-bots
 
   bump-version:
     name: Create a PR to bump version
