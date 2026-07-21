@@ -1,6 +1,7 @@
 ## 5.7
 
 * Update Java analyzer 8.35 -> [8.36](https://github.com/SonarSource/sonar-java/releases/tag/8.36.0.45637)
+* Update XML analyzer 2.18 -> [2.19](https://github.com/SonarSource/sonar-xml/releases/tag/2.19.0.8138)
 
 ## 5.6
 
