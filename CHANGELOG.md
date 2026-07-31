@@ -1,7 +1,7 @@
 ## 5.7
 
 * Update Text & Secrets analyzer 2.46 -> [2.47](https://github.com/SonarSource/sonar-text/releases/tag/2.47.0.11983)
-* Update Python analyzer 5.25 -> [5.26](https://github.com/SonarSource/sonar-python/releases/tag/5.26.0.35296)
+* Update Python analyzer 5.25 -> [5.26](https://github.com/SonarSource/sonar-python/releases/tag/5.26.0.35296) -> [5.27](https://github.com/SonarSource/sonar-python/releases/tag/5.27.0.35548)
 * Update IaC analyzer 2.12 -> [2.13](https://github.com/SonarSource/sonar-iac/releases/tag/2.13.0.21933)
 * Update JS/TS/CSS analyzer 13.2 -> [13.3](https://github.com/SonarSource/SonarJS/releases/tag/13.3.0.43633) -> [13.4](https://github.com/SonarSource/SonarJS/releases/tag/13.4.0.43982)
 * Update Java analyzer 8.35 -> [8.36](https://github.com/SonarSource/sonar-java/releases/tag/8.36.0.45637)
