@@ -1,3 +1,8 @@
+## 5.8
+* Update Java analyzer 8.36 -> [8.37](https://github.com/SonarSource/sonar-java/releases/tag/8.37.0.45887)
+* Update Python analyzer 5.26 -> [5.27](https://github.com/SonarSource/sonar-python/releases/tag/5.27.0.35548)
+* Update PHP analyzer 3.59 -> [3.60](https://github.com/SonarSource/sonar-php/releases/tag/3.60.0.16641)
+
 ## 5.7
 
 * Update Text & Secrets analyzer 2.46 -> [2.47](https://github.com/SonarSource/sonar-text/releases/tag/2.47.0.11983)
