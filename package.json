@@ -1574,5 +1574,8 @@
     "arrowParens": "avoid",
     "trailingComma": "none",
     "bracketSpacing": true
+  },
+  "overrides": {
+    "ip-address": "^10.3.1"
   }
 }
