@@ -132,10 +132,10 @@ suite('Connected Mode Test Suite', () => {
       expect(workspaceFolderNode.label).to.equal('sample-for-bindings');
     });
 
-    test('should return two element list when expanding SC and two connections exist', async () => {
+    test('should include regions when expanding SC and two connections exist', async () => {
       const testSCConfig = [
-        { organizationKey: 'myOrg1', token: 'ggggg' },
-        { organizationKey: 'myOrg2', token: 'ddddd' }
+        { organizationKey: 'myOrg1', token: 'ggggg', region: 'EU' },
+        { organizationKey: 'myOrg2', token: 'ddddd', region: 'US' }
       ];
       await vscode.workspace
         .getConfiguration('sonarlint')
@@ -146,8 +146,8 @@ suite('Connected Mode Test Suite', () => {
       const sonarCloudChildren = await underTest.getChildren(SCGroup);
 
       expect(sonarCloudChildren.length).to.equal(2);
-      expect(sonarCloudChildren[0].label).to.equal(testSCConfig[0].organizationKey);
-      expect(sonarCloudChildren[1].label).to.equal(testSCConfig[1].organizationKey);
+      expect(sonarCloudChildren[0].label).to.equal('[EU] ' + testSCConfig[0].organizationKey);
+      expect(sonarCloudChildren[1].label).to.equal('[US] ' + testSCConfig[1].organizationKey);
     });
 
     test('should return two element list with proper icons when expanding SC and two connections exist', async () => {
@@ -174,9 +174,9 @@ suite('Connected Mode Test Suite', () => {
       const sonarCloudChildren = await underTest.getChildren(SCGroup);
 
       expect(sonarCloudChildren.length).to.equal(2);
-      expect(sonarCloudChildren[0].label).to.equal(testSCConfig[0].connectionId);
+      expect(sonarCloudChildren[0].label).to.equal('[EU] ' + testSCConfig[0].connectionId);
       expect((sonarCloudChildren[0].iconPath as ThemeIcon).id).to.equal('pass');
-      expect(sonarCloudChildren[1].label).to.equal(testSCConfig[1].connectionId);
+      expect(sonarCloudChildren[1].label).to.equal('[EU] ' + testSCConfig[1].connectionId);
       expect((sonarCloudChildren[1].iconPath as ThemeIcon).id).to.equal('error');
     });
   });

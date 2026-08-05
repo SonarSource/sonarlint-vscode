@@ -12,7 +12,8 @@ import { Commands } from '../../src/util/commands';
 import {
   getDefaultConnectionId,
   handleMessageWithConnectionSettingsService,
-  handleInvalidTokenNotification
+  handleInvalidTokenNotification,
+  renderServerUrlField
 } from '../../src/connected/connectionsetup';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
@@ -68,6 +69,16 @@ suite('Connection Setup', () => {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     await deleteConnectedModeSettings();
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+  });
+
+  test('should show SonarQube Cloud region selection defaulting to EU', () => {
+    const html = renderServerUrlField({ conn: { organizationKey: '', connectionId: '', token: '' } }, 'create');
+
+    assert.include(html, 'id="region"');
+    assert.include(html, '<vscode-radio checked value="EU">');
+    assert.include(html, '<b>US</b> - sonarqube.us (invite-only)');
+    assert.notInclude(html, 'checked value="US"');
+    assert.notInclude(html, 'hidden');
   });
 
   test('should show SonarQube creation webview when command is called', async () => {

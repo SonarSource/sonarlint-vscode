@@ -22,7 +22,6 @@ import {
 import { Commands } from '../util/commands';
 import * as util from '../util/util';
 import { escapeHtml, ResourceResolver } from '../util/webview';
-import { shouldShowRegionSelection } from '../settings/settings';
 
 let connectionSetupPanel: vscode.WebviewPanel;
 
@@ -276,7 +275,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
   </html>`;
 }
 
-function renderServerUrlField(initialState, mode) {
+export function renderServerUrlField(initialState, mode) {
   if (isSonarQubeConnection(initialState.conn)) {
     const serverUrl = escapeHtml(initialState.conn.serverUrl);
     return `<vscode-text-field id="serverUrl" type="url" placeholder="https://your.sonarqube.server/" required size="40"
@@ -287,14 +286,13 @@ function renderServerUrlField(initialState, mode) {
   }
 
   // SonarQube Cloud connection - pre-populate region field if available
-  const hidden = !shouldShowRegionSelection();
   const region = initialState.conn.region ?? 'EU';
   const euChecked = region === 'EU' ? 'checked' : '';
   const usChecked = region === 'US' ? 'checked' : '';
-  return `<vscode-radio-group orientation=vertical id="region" ${mode === 'update' ? 'disabled' : ''} ${hidden ? 'hidden' : ''}>
+  return `<vscode-radio-group orientation=vertical id="region" ${mode === 'update' ? 'disabled' : ''}>
             <label slot="label">Select the SonarQube Cloud region you would like to connect to</label>
             <vscode-radio ${euChecked} value="EU"><b>EU</b> - sonarcloud.io</vscode-radio>
-            <vscode-radio ${usChecked} value="US"><b>US</b> - sonarqube.us</vscode-radio>
+            <vscode-radio ${usChecked} value="US"><b>US</b> - sonarqube.us (invite-only)</vscode-radio>
           </vscode-radio-group>`;
 }
 

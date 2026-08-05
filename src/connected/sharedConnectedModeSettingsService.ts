@@ -18,7 +18,6 @@ import { FileSystemSubscriber } from '../fileSystem/fileSystemSubscriber';
 import { FileSystemServiceImpl } from '../fileSystem/fileSystemServiceImpl';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 import { sonarCloudRegionToLabel } from '../util/util';
-import { shouldShowRegionSelection } from '../settings/settings';
 import { CustomQuickPickItem, deduplicateSuggestions } from '../util/connectionSuggestionUtils';
 
 const MAX_FOLDERS_TO_NOTIFY = 1;
@@ -113,8 +112,7 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
   severalSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder) {
     return async () => {
       const quickPickItems: CustomQuickPickItem[] = uniqueSuggestions.map(s => {
-        const regionPrefix =
-          s.organization && shouldShowRegionSelection() ? `[${sonarCloudRegionToLabel(s.region)}] ` : '';
+        const regionPrefix = s.organization ? `[${sonarCloudRegionToLabel(s.region)}] ` : '';
         return {
           label: s.projectKey,
           description: s.organization || s.serverUrl,

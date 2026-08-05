@@ -12,7 +12,6 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionCheckResult } from '../lsp/protocol';
 import { BaseConnection, ConnectionSettingsService, SonarCloudConnection } from '../settings/connectionsettings';
 import { DEFAULT_CONNECTION_ID } from '../commons';
-import { shouldShowRegionSelection } from '../settings/settings';
 
 type ConnectionStatus = 'ok' | 'notok' | 'loading';
 
@@ -103,14 +102,11 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
         : ConnectionSettingsService.instance.getSonarCloudConnections();
     const connections = await Promise.all(
       connectionsFromSettings.map(async c => {
-        // Display the region prefix in case user is in dogfooding, 
-        // has more than 1 SonarQube Cloud connections, and the region is set
-        const regionPrefix = 
-          shouldShowRegionSelection() &&
-          type !== '__sonarqube__'
-          && connectionsFromSettings.length > 1
-          && (c as SonarCloudConnection).region
-            ? `[${(c as SonarCloudConnection).region}] ` : '';
+        // Display the region prefix when there is more than one SonarQube Cloud connection and the region is set
+        const regionPrefix =
+          type !== '__sonarqube__' && connectionsFromSettings.length > 1 && (c as SonarCloudConnection).region
+            ? `[${(c as SonarCloudConnection).region}] `
+            : '';
         const label = c[labelKey] ? c[labelKey] : c[alternativeLabelKey];
         let status: ConnectionStatus = 'loading';
         const connectionId: string = c.connectionId ? c.connectionId : DEFAULT_CONNECTION_ID;
