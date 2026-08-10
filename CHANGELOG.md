@@ -3,6 +3,7 @@
 * Update Java analyzer 8.36 -> [8.37](https://github.com/SonarSource/sonar-java/releases/tag/8.37.0.45887) -> [8.38](https://github.com/SonarSource/sonar-java/releases/tag/8.38.0.46176)
 * Update Python analyzer 5.26 -> [5.27](https://github.com/SonarSource/sonar-python/releases/tag/5.27.0.35548) -> [5.28](https://github.com/SonarSource/sonar-python/releases/tag/5.28.0.35681)
 * Update PHP analyzer 3.59 -> [3.60](https://github.com/SonarSource/sonar-php/releases/tag/3.60.0.16641)
+* Update JS/TS/CSS analyzer 13.4 -> [13.5](https://github.com/SonarSource/SonarJS/releases/tag/13.5.0.44127)
 
 ## 5.7
 
