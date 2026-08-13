@@ -1499,13 +1499,13 @@
     {
       "groupId": "org.sonarsource.javascript",
       "artifactId": "sonar-javascript-plugin",
-      "version": "13.4.0.43982",
+      "version": "13.5.0.44127",
       "output": "analyzers/sonarjs.jar"
     },
     {
       "groupId": "org.sonarsource.java",
       "artifactId": "sonar-java-plugin",
-      "version": "8.37.0.45887",
+      "version": "8.38.0.46176",
       "output": "analyzers/sonarjava.jar"
     },
     {
@@ -1523,7 +1523,7 @@
     {
       "groupId": "org.sonarsource.python",
       "artifactId": "sonar-python-plugin",
-      "version": "5.27.0.35548",
+      "version": "5.28.0.35681",
       "output": "analyzers/sonarpython.jar"
     },
     {
@@ -1541,13 +1541,13 @@
     {
       "groupId": "org.sonarsource.text",
       "artifactId": "sonar-text-plugin",
-      "version": "2.47.0.11983",
+      "version": "2.48.0.12108",
       "output": "analyzers/sonartext.jar"
     },
     {
       "groupId": "org.sonarsource.iac",
       "artifactId": "sonar-iac-plugin",
-      "version": "2.13.0.21933",
+      "version": "2.14.0.22356",
       "output": "analyzers/sonariac.jar"
     },
     {
