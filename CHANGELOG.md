@@ -4,6 +4,7 @@
 * Update Python analyzer 5.26 -> [5.27](https://github.com/SonarSource/sonar-python/releases/tag/5.27.0.35548) -> [5.28](https://github.com/SonarSource/sonar-python/releases/tag/5.28.0.35681)
 * Update PHP analyzer 3.59 -> [3.60](https://github.com/SonarSource/sonar-php/releases/tag/3.60.0.16641)
 * Update JS/TS/CSS analyzer 13.4 -> [13.5](https://github.com/SonarSource/SonarJS/releases/tag/13.5.0.44127)
+* Update IaC analyzer 2.13 -> [2.14](https://github.com/SonarSource/sonar-iac/releases/tag/2.14.0.22356)
 
 ## 5.7
 
