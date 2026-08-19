@@ -97,7 +97,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
     } else {
       const response = await this.getAllRules();
       return Object.keys(response)
-          .filter(k => response[k].findIndex(r => r.key.toUpperCase() === node.rule.key.toUpperCase()) >= 0)
+          .filter(k => response[k].some(r => r.key.toUpperCase() === node.rule.key.toUpperCase()))
           .map(l => new LanguageNode(l))
           .pop();
     }
@@ -118,7 +118,7 @@ export class AllRulesTreeDataProvider implements VSCode.TreeDataProvider<AllRule
 
   async checkRuleExists(key: string) {
     return this.getAllRules().then(response =>
-      Object.keys(response).filter(k => response[k].findIndex(r => r.key.toUpperCase() === key.toUpperCase()) >= 0)
+      Object.keys(response).filter(k => response[k].some(r => r.key.toUpperCase() === key.toUpperCase()))
         .length === 0
         ? `Key not found ${key}`
         : ''
@@ -144,7 +144,7 @@ export function allTrue(values: boolean[]) {
 }
 
 export function allFalse(values: boolean[]) {
-  return values.length === 0 || values.every(negate(identity));
+  return values.every(negate(identity));
 }
 
 export function toggleRule(level: ExtendedServer.ConfigLevel) {
