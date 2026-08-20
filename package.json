@@ -1499,7 +1499,7 @@
     {
       "groupId": "org.sonarsource.javascript",
       "artifactId": "sonar-javascript-plugin",
-      "version": "13.6.0.44263",
+      "version": "13.7.0.44407",
       "output": "analyzers/sonarjs.jar"
     },
     {
@@ -1511,7 +1511,7 @@
     {
       "groupId": "org.sonarsource.java",
       "artifactId": "sonar-java-symbolic-execution-plugin",
-      "version": "8.16.4.1912",
+      "version": "8.22.0.2207",
       "output": "analyzers/sonarjavasymbolicexecution.jar"
     },
     {
@@ -1547,7 +1547,7 @@
     {
       "groupId": "org.sonarsource.iac",
       "artifactId": "sonar-iac-plugin",
-      "version": "2.14.0.22356",
+      "version": "2.15.0.22475",
       "output": "analyzers/sonariac.jar"
     },
     {
