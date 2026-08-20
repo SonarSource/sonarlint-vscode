@@ -5,7 +5,7 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import * as Path from 'path';
+import * as Path from 'node:path';
 import * as VSCode from 'vscode';
 import { TransportKind } from 'vscode-languageclient/node';
 import { getSonarLintConfiguration } from '../settings/settings';

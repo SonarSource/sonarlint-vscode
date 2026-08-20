@@ -13,7 +13,7 @@ import * as util from '../util/util';
 import { clean, escapeHtml, ResourceResolver } from '../util/webview';
 import { decorateContextualHtmlContentWithDiff } from './code-diff';
 import { highlightAllCodeSnippetsInDesc } from './syntax-highlight';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { DOMParser, XMLSerializer } from '@xmldom/xmldom';
 
 let ruleDescriptionPanel: VSCode.WebviewPanel;
