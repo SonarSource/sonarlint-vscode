@@ -6,6 +6,7 @@
 * Update JS/TS/CSS analyzer 13.4 -> [13.5](https://github.com/SonarSource/SonarJS/releases/tag/13.5.0.44127) -> [13.6](https://github.com/SonarSource/SonarJS/releases/tag/13.6.0.44263)
 * Update IaC analyzer 2.13 -> [2.14](https://github.com/SonarSource/sonar-iac/releases/tag/2.14.0.22356) -> [2.15](https://github.com/SonarSource/sonar-iac/releases/tag/2.15.0.22475)
 * Update Go analyzer 1.40 -> [1.41](https://github.com/SonarSource/sonar-go/releases/tag/1.41.0.7435)
+* Update Java Symbolic Execution analyzer 8.16 -> [8.22](https://github.com/SonarSource/sonar-java-symbolic-execution/releases/tag/8.22.0.2207)
 
 ## 5.7
 
