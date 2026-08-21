@@ -1,5 +1,5 @@
 [tools]
-node = '20'
+node = '24'
 jfrog-cli = "2.77.0"
 # needed to run ITs, takes precedence over runner built-in Java
 java = '21'
