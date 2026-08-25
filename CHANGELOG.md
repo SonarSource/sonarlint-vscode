@@ -1,4 +1,5 @@
 ## 5.9
+* Update Go analyzer 1.41 -> [1.42](https://github.com/SonarSource/sonar-go/releases/tag/1.42.0.7579)
 * Update Java analyzer 8.39 -> [8.40](https://github.com/SonarSource/sonar-java/releases/tag/8.40.0.46617)
 * Update Python analyzer 5.29 -> [5.30](https://github.com/SonarSource/sonar-python/releases/tag/5.30.0.36259)
 
