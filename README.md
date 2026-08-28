@@ -1,4 +1,23 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://assets-eu-01.kc-usercontent.com/ef593040-b591-0198-9506-ed88b30bc023/a23fc7ba-23f0-489a-829d-ed88c0748521/Sonar_Logo_Dark%20Backgrounds.svg">
+    <img src="https://assets-eu-01.kc-usercontent.com/ef593040-b591-0198-9506-ed88b30bc023/82c13eba-d95c-4bb8-8007-7ce77c14e043/Sonar_Logo_Light%20Backgrounds.svg" alt="Sonar logo" width="400">
+  </picture>
+</p>
+
 # SonarQube for IDE: Visual Studio Code (formerly SonarLint)
+
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://assets-eu-01.kc-usercontent.com/ef593040-b591-0198-9506-ed88b30bc023/7934b7e0-d989-42aa-9c75-73af00b948b7/SQ_Logo_IDE_Dark%20Backgrounds.svg">
+    <img src="https://assets-eu-01.kc-usercontent.com/ef593040-b591-0198-9506-ed88b30bc023/b839fc43-d33c-44b5-9e14-f9dee4e9a047/SQ_Logo_IDE_Light%20Backgrounds.png" alt="SonarQube for IDE logo" width="400">
+  </picture>
+</p>
+
+[![GitHub stars](https://img.shields.io/github/stars/SonarSource/sonarlint-vscode?style=flat)](https://github.com/SonarSource/sonarlint-vscode)
+[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/SonarSource.sonarlint-vscode)](https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode)
+[![License](https://img.shields.io/badge/license-LGPL--3.0-blue)](#license)
+[![Community forum](https://img.shields.io/badge/community-forum-blue)](https://community.sonarsource.com/c/sl/11)
 
 SonarQube for IDE by [Sonar](https://www.sonarsource.com/) is a free, sophisticated static analysis tool that enhances your code quality and security. Analyze your code early—as you write or generate it. Local analysis automatically identifies quality and security issues in real-time, even with AI-generated code. Fix issues found using QuickFix or the AI CodeFix feature, before pushing to your SCM. This ensures your code meets your quality standards and is safe for running in production. 
 
