@@ -183,7 +183,7 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
       const uri = issue.fileUri;
       const editor = await vscode.window.showTextDocument(vscode.Uri.parse(uri));
 
-      const locations = issue.flows.map(f => f.locations).reduce((acc, cur) => acc.concat(cur), []);
+      const locations = issue.flows.flatMap(f => f.locations);
       if (locations.length > 0) {
         this.highlightSecondaryLocations(locations, editor);
       } else {
@@ -277,7 +277,7 @@ export async function navigateToLocation(item: LocationItem) {
 }
 
 function buildMainDecorations(item: LocationItem, document: vscode.TextDocument) {
-  return [buildDecoration(item, document)].filter(d => d);
+  return [buildDecoration(item, document)].filter(Boolean);
 }
 
 function buildSiblingDecorations(item: LocationItem, document: vscode.TextDocument) {
@@ -285,14 +285,13 @@ function buildSiblingDecorations(item: LocationItem, document: vscode.TextDocume
     item.parent instanceof FileItem
       ? (item.parent.parent.children as FileItem[])
           .filter(f => hasSameNullSafeResourceUri(f, item.parent as FileItem))
-          .map(f => f.children)
-          .reduce((acc, cur) => acc.concat(cur), [])
+          .flatMap(f => f.children)
       : (item.parent.children as LocationItem[]);
   return locationsInSameFile
     .filter(i => i !== item)
     .filter(i => i.location.textRange)
     .map(i => buildDecoration(i, document))
-    .filter(d => d);
+    .filter(Boolean);
 }
 
 function hasSameNullSafeResourceUri(f1: FileItem, f2: FileItem) {
