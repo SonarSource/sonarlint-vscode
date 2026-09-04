@@ -40,7 +40,7 @@ export function escapeHtml(str: string) {
 }
 
 export function clean(str: string) {
-  return capitalizeName(str.toLowerCase().split('_').join(' '));
+  return capitalizeName(str.toLowerCase().replaceAll('_', ' '));
 }
 
 export function capitalizeName(name: string) {
