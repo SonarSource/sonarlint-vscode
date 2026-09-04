@@ -128,7 +128,7 @@ function renderStandardModeSeverityDetails(ruleType: string, severity: string) {
   const severityToLowerCase = severity.toLocaleLowerCase('en-us');
   const ruleTypeImgSrc = util.resolveExtensionFile('images', 'type', `${ruleTypeToLowerCase}.svg`);
   const severityImgSrc = util.resolveExtensionFile('images', 'impact', `${severityToImpact[severityToLowerCase]}.svg`);
-  const formattedDescription = `${escapeHtml(severityToLowerCase)} ${escapeHtml(ruleTypeToLowerCase.replace(/_/g, ' '))}`;
+  const formattedDescription = `${escapeHtml(severityToLowerCase)} ${escapeHtml(ruleTypeToLowerCase.replaceAll('_', ' '))}`;
   return `<div class="impact severity-${severityToLowerCase} capsule" title="${formattedDescription}">
   ${fetchSVGIcon(ruleTypeImgSrc)}
   &nbsp;${clean(ruleType)}&nbsp;

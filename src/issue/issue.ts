@@ -84,7 +84,7 @@ export class IssueService {
     const currentlyOpenFileUri = VSCode.window.activeTextEditor.document.uri;
     const workspaceFolder = VSCode.workspace.getWorkspaceFolder(currentlyOpenFileUri);
     const fileRelativePath = getRelativePathWithFileNameFromFullPath(currentlyOpenFileUri.toString(), workspaceFolder);
-    const unixStyleRelativePath = fileRelativePath.replace(/\\/g, '/');
+    const unixStyleRelativePath = fileRelativePath.replaceAll('\\', '/');
     return this.languageClient.reopenResolvedLocalIssues(
       code2ProtocolConverter(workspaceFolder.uri),
       unixStyleRelativePath,
