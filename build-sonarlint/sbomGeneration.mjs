@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import { getPackageJSON } from './fsUtils.mjs';
-import { exec } from 'child_process';
+import { exec } from 'node:child_process';
 import { info } from 'fancy-log';
 
 export default function cycloneDx() {
