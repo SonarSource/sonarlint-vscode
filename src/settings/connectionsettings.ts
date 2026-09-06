@@ -110,7 +110,7 @@ export class ConnectionSettingsService {
     try {
       const serverToken = await this.getServerToken(serverUrlOrOrganizationKey);
       return serverToken !== undefined;
-    } catch (errorWhileFetchingToken) {
+    } catch (error_) {
       return false;
     }
   }
