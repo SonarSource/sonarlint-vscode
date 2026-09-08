@@ -75,7 +75,7 @@ export default async function downloadJre(targetPlatform, javaVersion) {
   const list = manifest.split(/\r?\n/);
   const jreIdentifier = list.find(value => {
     return (
-      value.indexOf('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') >= 0 && value.indexOf(javaPlatform) >= 0
+      value.includes('org.eclipse.justj.openjdk.hotspot.jre.full.stripped') && value.includes(javaPlatform)
     );
   });
 
