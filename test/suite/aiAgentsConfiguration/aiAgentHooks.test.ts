@@ -271,7 +271,9 @@ suite('aiAgentHooks', () => {
       homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
-      await installHook(mockLanguageClient, AGENT.WINDSURF);
+      const agent = getCurrentAgentWithHookSupport();
+      expect(agent).to.equal(AGENT.WINDSURF);
+      await installHook(mockLanguageClient, agent);
 
       expect(fsPromisesStub.mkdir.called).to.be.true;
       const mkdirCall = fsPromisesStub.mkdir.getCalls().find(call => 
