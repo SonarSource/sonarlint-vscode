@@ -41,6 +41,9 @@ suite('mcpServerConfig', () => {
       envStub.value('Windsurf');
       expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.WINDSURF);
 
+      envStub.value('Devin');
+      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.WINDSURF);
+
       envStub.value('Kiro');
       expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.KIRO);
 
@@ -76,6 +79,9 @@ suite('mcpServerConfig', () => {
       envStub.value('Windsurf');
       const windsurfPath = getMCPConfigPath();
 
+      envStub.value('Devin');
+      const devinPath = getMCPConfigPath();
+
       envStub.value('Kiro');
       const kiroPath = getMCPConfigPath();
 
@@ -97,6 +103,7 @@ suite('mcpServerConfig', () => {
 
       expect(cursorPath).to.match(/mcp\.json$/);
       expect(windsurfPath).to.match(/mcp_config\.json$/);
+      expect(devinPath).to.equal(windsurfPath);
       expect(kiroPath).to.match(/mcp\.json$/);
       expect(vscodePath).to.match(/mcp\.json$/);
     } finally {

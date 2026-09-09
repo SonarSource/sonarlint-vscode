@@ -81,6 +81,16 @@ suite('aiAgentHooks', () => {
       expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
     });
 
+    test('should return WINDSURF for Devin (rebranded Windsurf)', () => {
+      envStub.value('Devin');
+      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
+    });
+
+    test('should return WINDSURF for Devin Next', () => {
+      envStub.value('Devin Next');
+      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
+    });
+
     test('should return undefined for Cursor (not yet supported)', () => {
       envStub.value('Cursor');
       expect(getCurrentAgentWithHookSupport()).to.be.undefined;
@@ -244,6 +254,20 @@ suite('aiAgentHooks', () => {
 
     test('should use windsurf-next directory when app name includes next', async () => {
       envStub.value('Windsurf Next');
+      homedirStub.returns('/home/test');
+      fsPromisesStub.readFile.rejects(new Error('File not found'));
+
+      await installHook(mockLanguageClient, AGENT.WINDSURF);
+
+      expect(fsPromisesStub.mkdir.called).to.be.true;
+      const mkdirCall = fsPromisesStub.mkdir.getCalls().find(call => 
+        call.args[0] && call.args[0].includes('windsurf-next')
+      );
+      expect(mkdirCall).to.not.be.undefined;
+    });
+
+    test('should use windsurf-next directory when Devin Next app name is used', async () => {
+      envStub.value('Devin Next');
       homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
