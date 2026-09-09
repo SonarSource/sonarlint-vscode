@@ -20,14 +20,20 @@ function isCopilotInstalledAndActive(): boolean {
   return copilotExtension?.isActive;
 }
 
+// Windsurf was rebranded to Devin; both share the same configuration layout under ~/.codeium
+function isWindsurfBasedIde(appName: string): boolean {
+  return appName.includes('windsurf') || appName.includes('devin');
+}
+
 export function getCurrentAgentWithMCPSupport(): AGENT | undefined {
-  if (vscode.env.appName.toLowerCase().includes('cursor')) {
+  const appName = vscode.env.appName.toLowerCase();
+  if (appName.includes('cursor')) {
     return AGENT.CURSOR;
-  } else if (vscode.env.appName.toLowerCase().includes('windsurf')) {
+  } else if (isWindsurfBasedIde(appName)) {
     return AGENT.WINDSURF;
-  } else if (vscode.env.appName.toLowerCase().includes('kiro')) {
+  } else if (appName.includes('kiro')) {
     return AGENT.KIRO;
-  } else if (vscode.env.appName.toLowerCase().includes('visual studio code') && isCopilotInstalledAndActive()) {
+  } else if (appName.includes('visual studio code') && isCopilotInstalledAndActive()) {
     return AGENT.GITHUB_COPILOT;
   }
   return undefined;
@@ -35,8 +41,8 @@ export function getCurrentAgentWithMCPSupport(): AGENT | undefined {
 
 export function getCurrentAgentWithHookSupport(): AGENT | undefined {
   const appName = vscode.env.appName.toLowerCase();
-  // Hooks are available on all Windsurf versions
-  if (appName.includes('windsurf')) {
+  // Hooks are available on all Windsurf / Devin versions
+  if (isWindsurfBasedIde(appName)) {
     return AGENT.WINDSURF;
   }
   return undefined;
