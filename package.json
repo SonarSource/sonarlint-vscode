@@ -1455,7 +1455,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.0.2",
     "@types/vscode": "^1.73.1",
-    "@vscode/test-electron": "^2.5.2",
+    "@vscode/test-electron": "^3.0.0",
     "@vscode/vsce": "^3.9.2",
     "chai": "^6.2.1",
     "crypto": "^1.0.1",
