@@ -1424,7 +1424,7 @@
     "adm-zip": "^0.6.0",
     "canvas-confetti": "^1.9.4",
     "compare-versions": "^6.1.1",
-    "diff": "^8.0.3",
+    "diff": "^9.0.0",
     "expand-home-dir": "^0.0.3",
     "find-java-home": "^2.0.0",
     "follow-redirects": "^1.15.11",
