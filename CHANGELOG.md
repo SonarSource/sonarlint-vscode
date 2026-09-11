@@ -2,6 +2,7 @@
 * Update IaC analyzer 2.15 -> [2.16](https://github.com/SonarSource/sonar-iac/releases/tag/2.16.0.22905) -> [2.17](https://github.com/SonarSource/sonar-iac/releases/tag/2.17.0.23172)
 * Update JS/TS/CSS analyzer 13.8 -> [13.9](https://github.com/SonarSource/SonarJS/releases/tag/13.9.0.44793)
 * Update Text & Secrets analyzer 2.49 -> [2.50](https://github.com/SonarSource/sonar-text/releases/tag/2.50.0.13411)
+* Update Go analyzer 1.43 -> [1.44](https://github.com/SonarSource/sonar-go/releases/tag/1.44.0.8969)
 
 ## 5.9
 * Update Go analyzer 1.41 -> [1.42](https://github.com/SonarSource/sonar-go/releases/tag/1.42.0.7579) -> [1.43](https://github.com/SonarSource/sonar-go/releases/tag/1.43.0.7704)
