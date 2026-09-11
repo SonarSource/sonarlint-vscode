@@ -73,7 +73,7 @@
     "@types/semver": "^7.5.7",
     "@types/vscode": "^1.86.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^7.0.1",
+    "@typescript-eslint/parser": "^8.0.0",
     "@vscode/vsce": "^3.9.2",
     "eslint": "^8.56.0",
     "glob": "^11.0.0",
