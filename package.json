@@ -1493,13 +1493,13 @@
     {
       "groupId": "org.sonarsource.go",
       "artifactId": "sonar-go-plugin",
-      "version": "1.43.0.7704",
+      "version": "1.44.0.8969",
       "output": "analyzers/sonargo.jar"
     },
     {
       "groupId": "org.sonarsource.javascript",
       "artifactId": "sonar-javascript-plugin",
-      "version": "13.8.0.44569",
+      "version": "13.9.0.44793",
       "output": "analyzers/sonarjs.jar"
     },
     {
@@ -1541,13 +1541,13 @@
     {
       "groupId": "org.sonarsource.text",
       "artifactId": "sonar-text-plugin",
-      "version": "2.49.0.12346",
+      "version": "2.50.0.13411",
       "output": "analyzers/sonartext.jar"
     },
     {
       "groupId": "org.sonarsource.iac",
       "artifactId": "sonar-iac-plugin",
-      "version": "2.15.0.22475",
+      "version": "2.18.0.23895",
       "output": "analyzers/sonariac.jar"
     },
     {
