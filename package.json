@@ -1547,7 +1547,7 @@
     {
       "groupId": "org.sonarsource.iac",
       "artifactId": "sonar-iac-plugin",
-      "version": "2.16.0.22905",
+      "version": "2.17.0.23172",
       "output": "analyzers/sonariac.jar"
     },
     {

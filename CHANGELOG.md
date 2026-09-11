@@ -1,5 +1,5 @@
 ## 5.10
-* Update IaC analyzer 2.15 -> [2.16](https://github.com/SonarSource/sonar-iac/releases/tag/2.16.0.22905)
+* Update IaC analyzer 2.15 -> [2.16](https://github.com/SonarSource/sonar-iac/releases/tag/2.16.0.22905) -> [2.17](https://github.com/SonarSource/sonar-iac/releases/tag/2.17.0.23172)
 
 ## 5.9
 * Update Go analyzer 1.41 -> [1.42](https://github.com/SonarSource/sonar-go/releases/tag/1.42.0.7579) -> [1.43](https://github.com/SonarSource/sonar-go/releases/tag/1.43.0.7704)
