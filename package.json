@@ -1505,7 +1505,7 @@
     {
       "groupId": "org.sonarsource.java",
       "artifactId": "sonar-java-plugin",
-      "version": "8.41.0.47177",
+      "version": "8.43.0.47668",
       "output": "analyzers/sonarjava.jar"
     },
     {
@@ -1517,7 +1517,7 @@
     {
       "groupId": "org.sonarsource.php",
       "artifactId": "sonar-php-plugin",
-      "version": "3.60.0.16641",
+      "version": "4.0.0.16889",
       "output": "analyzers/sonarphp.jar"
     },
     {
@@ -1541,7 +1541,7 @@
     {
       "groupId": "org.sonarsource.text",
       "artifactId": "sonar-text-plugin",
-      "version": "2.50.0.13411",
+      "version": "2.51.0.13430",
       "output": "analyzers/sonartext.jar"
     },
     {
