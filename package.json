@@ -1444,7 +1444,7 @@
     "zlib": "^1.0.5"
   },
   "devDependencies": {
-    "@cyclonedx/cyclonedx-npm": "^5.0.0",
+    "@cyclonedx/cyclonedx-npm": "^6.0.0",
     "@sentry/webpack-plugin": "^4.6.1",
     "@sonar/scan": "^5.0.0",
     "@types/adm-zip": "^0.5.0",
