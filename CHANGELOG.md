@@ -1,5 +1,6 @@
 ## 5.11
 * Update PHP analyzer 3.60 -> [4.0](https://github.com/SonarSource/sonar-php/releases/tag/4.0.0.16889)
+* Update Text & Secrets analyzer 2.50 -> [2.51](https://github.com/SonarSource/sonar-text/releases/tag/2.51.0.13430)
 
 ## 5.10
 * Update IaC analyzer 2.15 -> [2.16](https://github.com/SonarSource/sonar-iac/releases/tag/2.16.0.22905) -> [2.17](https://github.com/SonarSource/sonar-iac/releases/tag/2.17.0.23172) -> [2.18](https://github.com/SonarSource/sonar-iac/releases/tag/2.18.0.23895)
