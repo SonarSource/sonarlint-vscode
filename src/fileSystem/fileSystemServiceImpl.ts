@@ -61,6 +61,6 @@ export class FileSystemServiceImpl implements FileSystemService {
   }
 
   async didAddWorkspaceFolder(folder: vscode.WorkspaceFolder) {
-    this.crawlDirectory(folder.uri);
+    await this.crawlDirectory(folder.uri);
   }
 }

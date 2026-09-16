@@ -73,7 +73,7 @@ export class AutoBindingService implements FileSystemSubscriber {
     if (Object.keys(bindingSuggestionsPerConfigScope).length > AUTOBINDING_THRESHOLD) {
       await this.askUserBeforeAutoBinding();
     } else {
-      this.autoBindAllFolders(bindingSuggestionsPerConfigScope);
+      await this.autoBindAllFolders(bindingSuggestionsPerConfigScope);
     }
   }
 
@@ -87,7 +87,7 @@ export class AutoBindingService implements FileSystemSubscriber {
         if (!folderToBind) {
           return;
         }
-        this.autoBindSelectedFolder(folderToBind);
+        await this.autoBindSelectedFolder(folderToBind);
       } else {
         vscode.window.showInformationMessage(`All folders in this workspace are already bound
          to SonarQube (Server, Cloud) projects`);
@@ -112,7 +112,7 @@ export class AutoBindingService implements FileSystemSubscriber {
     const connectionId = targetConnection.connectionId;
     const suggestedBinding = await this.languageClient.getSuggestedBinding(configScopeId, connectionId);
     const suggestions = suggestedBinding?.suggestions?.[configScopeId] || [];
-    this.promptToAutoBind(suggestions, folderToBind);
+    await this.promptToAutoBind(suggestions, folderToBind);
   }
 
   private async selectFolderToBind(unboundFolders: vscode.WorkspaceFolder[]) : Promise<vscode.WorkspaceFolder> {
@@ -124,14 +124,14 @@ export class AutoBindingService implements FileSystemSubscriber {
     return unboundFolders.find(folder => folder.name === folderNameToBind);
   }
 
-  private autoBindAllFolders(bindingSuggestions: { [folderUri: string]: Array<BindingSuggestion> }) {
+  private async autoBindAllFolders(bindingSuggestions: { [folderUri: string]: Array<BindingSuggestion> }) {
     const foldersNotToAutoBound = this.getFoldersThatShouldNotBeAutoBound();
-    Object.keys(bindingSuggestions).forEach((folderUri) => {
+    for (const folderUri of Object.keys(bindingSuggestions)) {
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(folderUri));
       if (workspaceFolder && !foldersNotToAutoBound.includes(workspaceFolder.uri.toString())) {
-        this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
+        await this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
       }
-    });
+    }
   }
 
   isConnectionConfigured(): boolean {

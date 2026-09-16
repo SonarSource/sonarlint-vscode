@@ -72,13 +72,13 @@ export function notifyMissingCompileCommands(context: vscode.ExtensionContext) {
       database.`;
     vscode.window
       .showWarningMessage(message, configureCompileCommandsAction, DONT_ASK_AGAIN_ACTION)
-      .then(selection => {
+      .then(async selection => {
         switch (selection) {
           case DONT_ASK_AGAIN_ACTION:
             context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
             break;
           case configureCompileCommandsAction:
-            configureCompilationDatabase();
+            await configureCompilationDatabase();
             break;
           default:
             remindMeLaterAboutCompileCommandsFlag = true;

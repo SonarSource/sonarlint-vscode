@@ -138,7 +138,7 @@ export class PluginStatusPanel {
         VSCode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'sonarQubeProductPage');
         break;
       case 'changeScope':
-        this.fetchAndShow(msg.configScopeId);
+        void this.fetchAndShow(msg.configScopeId);
         break;
     }
   }

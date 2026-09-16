@@ -84,7 +84,7 @@ function downloadIfNeeded(url, dest) {
       if (!response.ok) {
         throw new Error(`Unable to get file ${url}: ${response.statusCode} ${response.text()}`);
       } else {
-        downloadIfChecksumMismatch(await response.text(), url, dest);
+        await downloadIfChecksumMismatch(await response.text(), url, dest);
       }
     };
     artifactory.maybeAuthenticatedFetch(url + '.sha1')

@@ -180,7 +180,7 @@ async function notifyOnRuleDeactivation(ruleKey: string) {
   const showAllRulesAction = 'Show All Rules';
   const selectedAction = await VSCode.window.showInformationMessage(`Sonar rule ${ruleKey} is now disabled in your local environment`, undoAction, showAllRulesAction);
   if (selectedAction === undoAction) {
-    toggleRule('on')(ruleKey);
+    await toggleRule('on')(ruleKey);
   } else if (selectedAction === showAllRulesAction) {
     await VSCode.commands.executeCommand(Commands.OPEN_RULE_BY_KEY, ruleKey);
   }

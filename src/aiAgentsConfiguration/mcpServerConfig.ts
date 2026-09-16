@@ -152,7 +152,7 @@ export async function configureMCPServer(
     );
 
     if (openFile === 'Open Configuration File') {
-      openMCPServerConfigurationFile();
+      await openMCPServerConfigurationFile();
     }
 
     logToSonarLintOutput(`SonarQube MCP server configured successfully for connection: ${selectedConnection.label}`);
