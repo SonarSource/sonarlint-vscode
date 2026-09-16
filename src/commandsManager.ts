@@ -195,16 +195,16 @@ export class CommandsManager {
         await IssueService.instance.analyseOpenFileIgnoringExcludes(true);
         await vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
-      vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, async () => {
+      vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
         const workspaceFolderUris = vscode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));
         if (!workspaceFolderUris) {
           vscode.window.showWarningMessage('No workspace folders found; Ignoring request to analyze VCS changed files.');
           return;
         }
-        await this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
+        void this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
           configScopeIds: workspaceFolderUris
         });
-        await vscode.commands.executeCommand('SonarQube.Findings.focus');
+        void vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
       vscode.commands.registerCommand(
         Commands.FOCUS_ON_CONNECTION,

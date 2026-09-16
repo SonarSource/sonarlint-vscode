@@ -302,7 +302,7 @@ export class BindingService {
 
     VSCode.window.showInformationMessage(`Workspace folder '${workspaceFolder.name}/' has been bound with project '${projectKey}'`);
 
-    await this.proposeSharingConfig(projectKey, workspaceFolder);
+    void this.proposeSharingConfig(projectKey, workspaceFolder);
 
     // Focus on the Findings view
     VSCode.commands.executeCommand('SonarQube.Findings.focus');
@@ -312,16 +312,14 @@ export class BindingService {
     const SHARE_CONFIGURATION_ACTION = 'Share configuration';
     const LEARN_MORE_ACTION = 'Learn more';
 
-    VSCode.window.showInformationMessage(`Do you want to share this new SonarQube Connected Mode configuration?
+    const selection = await VSCode.window.showInformationMessage(`Do you want to share this new SonarQube Connected Mode configuration?
     A configuration file will be created in this working directory. This will allow your team to reuse the binding configuration`,
-      SHARE_CONFIGURATION_ACTION, LEARN_MORE_ACTION)
-      .then(async selection => {
-        if (selection === SHARE_CONFIGURATION_ACTION) {
-          await this.sharedConnectedModeSettingsService.createSharedConnectedModeSettingsFile(workspaceFolder);
-        } else if (selection === LEARN_MORE_ACTION) {
-          await VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/setup/#reuse-the-binding-configuration'));
-        }
-      });
+      SHARE_CONFIGURATION_ACTION, LEARN_MORE_ACTION);
+    if (selection === SHARE_CONFIGURATION_ACTION) {
+      await this.sharedConnectedModeSettingsService.createSharedConnectedModeSettingsFile(workspaceFolder);
+    } else if (selection === LEARN_MORE_ACTION) {
+      await VSCode.commands.executeCommand(OPEN_BROWSER, VSCode.Uri.parse('https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/setup/#reuse-the-binding-configuration'));
+    }
   }
 
   async getRemoteProjects(connectionId: string) {
