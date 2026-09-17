@@ -175,20 +175,53 @@ function renderCliFeedback(cli) {
 function renderMcp(state) {
   let status = 'Unavailable';
   let statusKind = 'unavailable';
-  if (state.mcp.supported) {
-    status = state.mcp.configured ? 'Configured' : 'Not configured';
-    statusKind = state.mcp.configured ? 'configured' : 'notConfigured';
+  if (state.mcp.configurationStatus === 'STANDALONE') {
+    status = 'Configured';
+    statusKind = 'configured';
+  } else if (state.mcp.configurationStatus === 'CLI_MANAGED') {
+    status = 'Managed by CLI';
+    statusKind = 'configured';
+  } else if (['MALFORMED', 'UNKNOWN'].includes(state.mcp.configurationStatus)) {
+    status = 'Needs attention';
+  } else if (state.mcp.supported) {
+    status = 'Not configured';
+    statusKind = 'notConfigured';
   }
   setStatus(mcpStatus, status, statusKind);
 
   mcpAgent.textContent = state.mcp.agentName ?? `No supported MCP agent detected in ${state.ideName}`;
-  mcpReadiness.textContent = state.mcp.configured ? 'Connection not verified' : '';
-  mcpAction.disabled = !state.mcp.supported || (!state.mcp.configured && state.isRemote);
-  mcpAction.textContent = state.mcp.configured ? 'Open configuration' : 'Set up MCP';
-  mcpAction.onclick = () =>
-    vscode.postMessage({
-      command: state.mcp.configured ? 'openMcpConfiguration' : 'configureMcp'
-    });
+  mcpReadiness.textContent = state.mcp.diagnostic ?? '';
+  if (state.mcp.requiresSetup) {
+    mcpReadiness.textContent = 'Set up MCP again to update the IDE connection.';
+  } else if (state.mcp.configurationStatus === 'STANDALONE' && !state.mcp.diagnostic) {
+    mcpReadiness.textContent = 'Connection not verified';
+  }
+  const shouldOpenConfiguration =
+    ['STANDALONE', 'CLI_MANAGED', 'MALFORMED', 'UNKNOWN'].includes(state.mcp.configurationStatus) &&
+    !state.mcp.requiresSetup;
+  if (state.mcp.operationInProgress) {
+    mcpAction.disabled = true;
+    mcpAction.textContent = 'Setting up MCP…';
+    mcpAction.onclick = undefined;
+  } else {
+    mcpAction.disabled = !state.mcp.supported || (!shouldOpenConfiguration && state.isRemote);
+    mcpAction.textContent = 'Set up MCP';
+    if (shouldOpenConfiguration) {
+      mcpAction.textContent = 'Open configuration';
+    } else if (state.mcp.requiresSetup) {
+      mcpAction.textContent = 'Set up MCP again';
+    }
+    mcpAction.onclick = () => {
+      if (shouldOpenConfiguration) {
+        vscode.postMessage({ command: 'openMcpConfiguration' });
+      } else {
+        mcpAction.disabled = true;
+        mcpAction.textContent = 'Setting up MCP…';
+        mcpAction.onclick = undefined;
+        vscode.postMessage({ command: 'configureMcp' });
+      }
+    };
+  }
 
   setVisible(legacyInstructionsRow, state.mcp.legacyInstructionsConfigured);
 }
