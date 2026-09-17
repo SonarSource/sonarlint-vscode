@@ -1432,7 +1432,7 @@
     "highlight.js": "^11.11.1",
     "inly": "^5.0.1",
     "luxon": "^3.7.2",
-    "node-html-parser": "^7.0.1",
+    "node-html-parser": "^9.0.0",
     "openpgp": "^6.3.0",
     "path-exists": "^5.0.0",
     "properties": "^1.2.1",
