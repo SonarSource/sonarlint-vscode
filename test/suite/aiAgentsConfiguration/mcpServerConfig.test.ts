@@ -10,7 +10,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import { getMCPConfigPath, configureMCPServer, onEmbeddedServerStarted } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
-import { getCurrentAgentWithMCPSupport, AGENT } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { getCurrentAgentWithMCPSupport, IntegrationTarget } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { AllConnectionsTreeDataProvider, Connection } from '../../../src/connected/connections';
 import { ConnectionSettingsService } from '../../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
@@ -36,17 +36,17 @@ suite('mcpServerConfig', () => {
 
     try {
       envStub.value('Cursor');
-      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.CURSOR);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.CURSOR);
 
       envStub.value('Windsurf');
-      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.WINDSURF);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.WINDSURF);
 
       envStub.value('Kiro');
-      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.KIRO);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.KIRO);
 
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('github.copilot-chat').returns({ isActive: true });
-      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.GITHUB_COPILOT);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.GITHUB_COPILOT);
 
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('github.copilot-chat').returns({ isActive: false });
@@ -54,7 +54,7 @@ suite('mcpServerConfig', () => {
 
       envStub.value('Visual Studio Code - Insiders');
       extensionsStub.withArgs('github.copilot-chat').returns({ isActive: true });
-      expect(getCurrentAgentWithMCPSupport()).to.equal(AGENT.GITHUB_COPILOT);
+      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.GITHUB_COPILOT);
 
       envStub.value('Unknown IDE');
       extensionsStub.withArgs('github.copilot-chat').returns(undefined);
