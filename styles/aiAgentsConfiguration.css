@@ -75,7 +75,7 @@ main {
 }
 
 .agent-summary,
-.mcp-context {
+.mcp-list {
   padding-top: 12px;
   margin: 14px 0;
   border-top: 1px solid var(--vscode-panel-border);
@@ -204,9 +204,35 @@ button {
   text-decoration: underline;
 }
 
-.mcp-context {
+.mcp-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.mcp-integration-row {
   display: grid;
-  gap: 2px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  padding: 4px 0;
+}
+
+.mcp-integration-details,
+.mcp-integration-action {
+  display: grid;
+  gap: 3px;
+}
+
+.mcp-integration-action {
+  justify-items: end;
+}
+
+.mcp-configuration-path,
+.mcp-diagnostic {
+  overflow-wrap: anywhere;
+}
+
+.mcp-diagnostic {
+  grid-column: 1 / -1;
 }
 
 .component-row {
@@ -240,5 +266,13 @@ button:focus-visible {
 
   .product-card {
     padding: 13px;
+  }
+
+  .mcp-integration-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mcp-integration-action {
+    justify-items: stretch;
   }
 }
