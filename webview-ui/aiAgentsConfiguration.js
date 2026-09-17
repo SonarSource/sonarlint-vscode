@@ -22,9 +22,8 @@ const hookRow = document.getElementById('hook-row');
 const hookStatus = document.getElementById('hook-status');
 const hookAction = document.getElementById('hook-action');
 const mcpStatus = document.getElementById('mcp-status');
-const mcpAgent = document.getElementById('mcp-agent');
-const mcpReadiness = document.getElementById('mcp-readiness');
-const mcpAction = document.getElementById('mcp-action');
+const mcpList = document.getElementById('mcp-list');
+const noMcpAgents = document.getElementById('no-mcp-agents');
 const legacyInstructionsRow = document.getElementById('legacy-instructions-row');
 
 document.addEventListener('DOMContentLoaded', () => vscode.postMessage({ command: 'ready' }));
@@ -209,58 +208,105 @@ function postCliSetup(message) {
 }
 
 function renderMcp(state) {
-  let status = 'Unavailable';
-  let statusKind = 'unavailable';
-  if (state.mcp.configurationStatus === 'STANDALONE') {
-    status = 'Configured';
-    statusKind = 'configured';
-  } else if (state.mcp.configurationStatus === 'CLI_MANAGED') {
-    status = 'Managed by CLI';
-    statusKind = 'configured';
-  } else if (['MALFORMED', 'UNKNOWN', 'LEGACY'].includes(state.mcp.configurationStatus)) {
-    status = 'Needs attention';
-    statusKind = 'unavailable';
-  } else if (state.mcp.supported) {
-    status = 'Not configured';
-    statusKind = 'notConfigured';
-  }
-  setStatus(mcpStatus, status, statusKind);
-
-  mcpAgent.textContent = state.mcp.agentName ?? `No supported MCP agent detected in ${state.ideName}`;
-  mcpReadiness.textContent = state.mcp.diagnostic ?? '';
-  if (state.mcp.requiresSetup) {
-    mcpReadiness.textContent = 'Set up MCP again to update the IDE connection.';
-  } else if (state.mcp.configurationStatus === 'STANDALONE' && !state.mcp.diagnostic) {
-    mcpReadiness.textContent = 'Connection not verified';
-  }
-  const shouldOpenConfiguration =
-    ['STANDALONE', 'CLI_MANAGED', 'MALFORMED', 'UNKNOWN', 'LEGACY'].includes(state.mcp.configurationStatus) &&
-    !state.mcp.requiresSetup;
-  if (state.mcp.operationInProgress) {
-    mcpAction.disabled = true;
-    mcpAction.textContent = 'Setting up MCP…';
-    mcpAction.onclick = undefined;
+  if (state.mcp.configurableCount === 0) {
+    setStatus(mcpStatus, 'No standalone agents', 'unavailable');
   } else {
-    mcpAction.disabled = !state.mcp.supported || state.isRemote;
-    mcpAction.textContent = 'Set up MCP';
-    if (shouldOpenConfiguration) {
-      mcpAction.textContent = 'Open configuration';
-    } else if (state.mcp.requiresSetup) {
-      mcpAction.textContent = 'Set up MCP again';
-    }
-    mcpAction.onclick = () => {
-      if (shouldOpenConfiguration) {
-        vscode.postMessage({ command: 'openMcpConfiguration' });
-      } else {
-        mcpAction.disabled = true;
-        mcpAction.textContent = 'Setting up MCP…';
-        mcpAction.onclick = undefined;
-        vscode.postMessage({ command: 'configureMcp' });
-      }
-    };
+    const allConfigured = state.mcp.configurableCount > 0 && state.mcp.configuredCount === state.mcp.configurableCount;
+    setStatus(
+      mcpStatus,
+      `${state.mcp.configuredCount} of ${state.mcp.configurableCount} configured`,
+      allConfigured ? 'configured' : 'notConfigured'
+    );
   }
+
+  mcpList.replaceChildren();
+  for (const integration of state.mcp.integrations) {
+    mcpList.append(createMcpIntegrationRow(integration, state));
+  }
+  const hasAgents = state.mcp.integrations.length > 0;
+  mcpList.hidden = !hasAgents;
+  noMcpAgents.hidden = hasAgents;
 
   setVisible(legacyInstructionsRow, state.mcp.legacyInstructionsConfigured);
+}
+
+function createMcpIntegrationRow(integration, state) {
+  const row = document.createElement('li');
+  row.className = 'mcp-integration-row';
+
+  const details = document.createElement('div');
+  details.className = 'mcp-integration-details';
+  const name = document.createElement('span');
+  name.textContent = integration.agentName;
+  const file = document.createElement('span');
+  file.className = 'supporting-text mcp-configuration-path';
+  file.textContent = integration.configurationPath ?? 'Standalone configuration is not supported';
+  details.append(name, file);
+
+  const stateAndAction = document.createElement('div');
+  stateAndAction.className = 'mcp-integration-action';
+  const status = document.createElement('span');
+  const action = document.createElement('button');
+  action.className = 'secondary-action';
+  action.type = 'button';
+  const needsAttention = ['MALFORMED', 'UNKNOWN', 'LEGACY'].includes(integration.configurationStatus);
+
+  if (integration.availableThroughCli) {
+    setStatus(status, 'Available through CLI', 'notConfigured');
+  } else if (!integration.standaloneSupported) {
+    setStatus(status, 'Unavailable', 'unavailable');
+  } else if (integration.configurationStatus === 'CLI_MANAGED') {
+    setStatus(status, 'Managed by CLI', 'configured');
+    configureOpenAction(action, integration.agentId);
+  } else if (needsAttention) {
+    setStatus(status, 'Needs attention', 'unavailable');
+    configureOpenAction(action, integration.agentId);
+  } else if (integration.configurationStatus === 'STANDALONE') {
+    setStatus(status, 'Configured', 'configured');
+    if (integration.requiresSetup) {
+      action.textContent = 'Set up again';
+      configureSetupAction(action, integration.agentId);
+    } else {
+      configureOpenAction(action, integration.agentId);
+    }
+  } else {
+    setStatus(status, 'Not configured', 'notConfigured');
+    action.textContent = 'Set up';
+    configureSetupAction(action, integration.agentId);
+  }
+
+  const hasAction = action.textContent.length > 0;
+  action.hidden = !hasAction;
+  action.disabled = hasAction && (state.mcp.operationInProgress || state.isRemote);
+  if (integration.operationInProgress) {
+    action.textContent = 'Setting up…';
+  }
+  stateAndAction.append(status, action);
+  row.append(details, stateAndAction);
+
+  const diagnostic = integration.requiresSetup
+    ? 'Set up again to select the IDE connection for this agent.'
+    : integration.diagnostic;
+  if (diagnostic) {
+    const message = document.createElement('span');
+    message.className = 'supporting-text mcp-diagnostic';
+    message.textContent = diagnostic;
+    row.append(message);
+  }
+  return row;
+}
+
+function configureOpenAction(action, agent) {
+  action.textContent = 'Open configuration';
+  action.addEventListener('click', () => vscode.postMessage({ command: 'openMcpConfiguration', agent }));
+}
+
+function configureSetupAction(action, agent) {
+  action.addEventListener('click', () => {
+    mcpList.querySelectorAll('button').forEach(button => (button.disabled = true));
+    action.textContent = 'Setting up…';
+    vscode.postMessage({ command: 'configureMcp', agent });
+  });
 }
 
 function setVisible(element, visible) {
