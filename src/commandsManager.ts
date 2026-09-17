@@ -41,10 +41,15 @@ import { ExtendedServer } from './lsp/protocol';
 import { FlightRecorderService } from './monitoring/flightrecorder';
 import { ConnectionSettingsService } from './settings/connectionsettings';
 import { installManagedJre, resolveRequirements } from './util/requirements';
-import { AIAgentsConfigurationTreeDataProvider } from './aiAgentsConfiguration/aiAgentsConfigurationTreeDataProvider';
+import { AIAgentsConfigurationWebviewProvider } from './aiAgentsConfiguration/aiAgentsConfigurationWebviewProvider';
 import { Commands } from './util/commands';
-import { installHook, openHookConfiguration, openHookScript, uninstallHook } from './aiAgentsConfiguration/aiAgentHooks';
-import { getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
+import {
+  installHook,
+  openHookConfiguration,
+  openHookScript,
+  uninstallHook
+} from './aiAgentsConfiguration/aiAgentHooks';
+import { getCurrentIntegrationTargetWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
 import { code2ProtocolConverter } from './util/uri';
 import { StatusBarService } from './statusbar/statusBar';
 import { RemediationService } from './remediationPanel/remediationService';
@@ -58,7 +63,7 @@ export class CommandsManager {
     private readonly allRulesView: vscode.TreeView<LanguageNode>,
     private readonly allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
     private readonly allConnectionsView: vscode.TreeView<ConnectionsNode>,
-    private readonly aiAgentsConfigurationTreeDataProvider: AIAgentsConfigurationTreeDataProvider
+    private readonly aiAgentsConfigurationWebviewProvider: AIAgentsConfigurationWebviewProvider
   ) {}
 
   registerCommands() {
@@ -198,7 +203,9 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
         const workspaceFolderUris = vscode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));
         if (!workspaceFolderUris) {
-          vscode.window.showWarningMessage('No workspace folders found; Ignoring request to analyze VCS changed files.');
+          vscode.window.showWarningMessage(
+            'No workspace folders found; Ignoring request to analyze VCS changed files.'
+          );
           return;
         }
         this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
@@ -235,43 +242,46 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.CAPTURE_HEAP_DUMP, () =>
         FlightRecorderService.instance.captureHeapDump()
       ),
-      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, connection => {
-        configureMCPServer(this.languageClient, this.allConnectionsTreeDataProvider, connection);
-        this.aiAgentsConfigurationTreeDataProvider.refresh();
+      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async connection => {
+        await configureMCPServer(this.languageClient, this.allConnectionsTreeDataProvider, connection);
+        await this.aiAgentsConfigurationWebviewProvider.refresh();
       }),
       vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, () => openMCPServerConfigurationFile()),
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
-        this.aiAgentsConfigurationTreeDataProvider.refresh()
+        this.aiAgentsConfigurationWebviewProvider.refresh()
       ),
       vscode.commands.registerCommand(Commands.OPEN_AIAGENTS_CONFIGURATION_DOC, () => {
         vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'aiAgentsConfigurationDoc');
       }),
-      vscode.commands.registerCommand(Commands.OPEN_SONARQUBE_RULES_FILE, () => openSonarQubeRulesFile()),
+      vscode.commands.registerCommand(Commands.OPEN_SONARQUBE_RULES_FILE, (offerCreation = true) =>
+        openSonarQubeRulesFile(offerCreation)
+      ),
       vscode.commands.registerCommand(Commands.INTRODUCE_SONARQUBE_RULES_FILE, () =>
         introduceSonarQubeRulesFile(this.languageClient)
       ),
-      vscode.commands.registerCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT, () => {
-        const agent = getCurrentAgentWithHookSupport();
+      vscode.commands.registerCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT, async () => {
+        const agent = getCurrentIntegrationTargetWithHookSupport();
         if (agent) {
-          installHook(this.languageClient, agent);
+          await installHook(this.languageClient, agent);
+          await this.aiAgentsConfigurationWebviewProvider.refresh();
         }
       }),
       vscode.commands.registerCommand(Commands.UNINSTALL_AI_AGENT_HOOK_SCRIPT, () => {
-        const agent = getCurrentAgentWithHookSupport();
+        const agent = getCurrentIntegrationTargetWithHookSupport();
         if (agent) {
           uninstallHook(agent);
         }
       }),
       vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_SCRIPT, () => {
-        const agent = getCurrentAgentWithHookSupport();
+        const agent = getCurrentIntegrationTargetWithHookSupport();
         if (agent) {
           openHookScript(agent);
         }
       }),
-      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION, () => {
-        const agent = getCurrentAgentWithHookSupport();
+      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION, async () => {
+        const agent = getCurrentIntegrationTargetWithHookSupport();
         if (agent) {
-          openHookConfiguration(agent);
+          await openHookConfiguration(agent);
         }
       }),
       vscode.commands.registerCommand(Commands.SHOW_SUPPORTED_LANGUAGES, async () => {

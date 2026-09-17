@@ -15,7 +15,7 @@ import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as os from 'node:os';
 import { getVSCodeSettingsBaseDir } from '../util/util';
-import { getCurrentAgentWithMCPSupport, AGENT, getWindsurfDirectory } from './aiAgentUtils';
+import { getCurrentIntegrationTargetWithMCPSupport, INTEGRATION_TARGET, getWindsurfDirectory } from './aiAgentUtils';
 import { Commands } from '../util/commands';
 
 interface MCPServerConfig {
@@ -33,15 +33,15 @@ interface MCPConfigurationVSCode {
 }
 
 export function getMCPConfigPath(): string {
-  const currentAgent = getCurrentAgentWithMCPSupport();
+  const currentAgent = getCurrentIntegrationTargetWithMCPSupport();
   switch (currentAgent) {
-    case AGENT.CURSOR:
+    case INTEGRATION_TARGET.CURSOR:
       return path.join(os.homedir(), '.cursor', 'mcp.json');
-    case AGENT.WINDSURF:
+    case INTEGRATION_TARGET.WINDSURF:
       return path.join(os.homedir(), '.codeium', getWindsurfDirectory(), 'mcp_config.json');
-    case AGENT.KIRO:
+    case INTEGRATION_TARGET.KIRO:
       return path.join(os.homedir(), '.kiro', 'settings', 'mcp.json');
-    case AGENT.GITHUB_COPILOT:
+    case INTEGRATION_TARGET.GITHUB_COPILOT:
       // For GitHub Copilot, detect if it's VSCode or VSCode Insiders
       if (vscode.env.appName.toLowerCase().includes('insiders')) {
         return path.join(getVSCodeSettingsBaseDir(), 'Code - Insiders', 'User', 'mcp.json');
@@ -54,13 +54,13 @@ export function getMCPConfigPath(): string {
 }
 
 export function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefined {
-  const currentAgent = getCurrentAgentWithMCPSupport();
+  const currentAgent = getCurrentIntegrationTargetWithMCPSupport();
   if (!currentAgent) {
     return undefined;
   }
   const configPath = getMCPConfigPath();
   const config = readMCPConfig(configPath);
-  return currentAgent === AGENT.GITHUB_COPILOT
+  return currentAgent === INTEGRATION_TARGET.GITHUB_COPILOT
     ? (config as MCPConfigurationVSCode).servers.sonarqube
     : (config as MCPConfigurationOthers).mcpServers.sonarqube;
 }
@@ -75,8 +75,8 @@ function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigur
     logToSonarLintOutput(`Error reading MCP config: ${error.message}`);
   }
 
-  const currentAgent = getCurrentAgentWithMCPSupport();
-  return currentAgent === AGENT.GITHUB_COPILOT
+  const currentAgent = getCurrentIntegrationTargetWithMCPSupport();
+  return currentAgent === INTEGRATION_TARGET.GITHUB_COPILOT
     ? {
         servers: {}
       }
@@ -87,11 +87,11 @@ function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigur
 
 function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
   try {
-    const currentAgent = getCurrentAgentWithMCPSupport();
+    const currentAgent = getCurrentIntegrationTargetWithMCPSupport();
     const configPath = getMCPConfigPath();
     const config = readMCPConfig(configPath);
 
-    if (currentAgent === AGENT.GITHUB_COPILOT) {
+    if (currentAgent === INTEGRATION_TARGET.GITHUB_COPILOT) {
       (config as MCPConfigurationVSCode).servers.sonarqube = sonarQubeMCPConfig;
     } else {
       (config as MCPConfigurationOthers).mcpServers.sonarqube = sonarQubeMCPConfig;
@@ -147,7 +147,7 @@ export async function configureMCPServer(
     openMCPServersListIfCursor();
 
     const openFile = await vscode.window.showInformationMessage(
-      `SonarQube MCP server configured for "${selectedConnection.label}"`,
+      `SonarQube MCP Server configured for "${selectedConnection.label}"`,
       'Open Configuration File'
     );
 
@@ -155,10 +155,10 @@ export async function configureMCPServer(
       openMCPServerConfigurationFile();
     }
 
-    logToSonarLintOutput(`SonarQube MCP server configured successfully for connection: ${selectedConnection.label}`);
+    logToSonarLintOutput(`SonarQube MCP Server configured successfully for connection: ${selectedConnection.label}`);
   } catch (error) {
     const connectionLabel = connection?.label || 'unknown connection';
-    const errorMessage = `Failed to configure SonarQube MCP server for "${connectionLabel}": ${error.message}`;
+    const errorMessage = `Failed to configure SonarQube MCP Server for "${connectionLabel}": ${error.message}`;
     vscode.window.showErrorMessage(errorMessage);
     logToSonarLintOutput(errorMessage);
     throw error;
@@ -217,8 +217,8 @@ function warnNoConnectionConfigured() {
 }
 
 function openMCPServersListIfCursor() {
-  const currentAgent = getCurrentAgentWithMCPSupport();
-  if (currentAgent === AGENT.CURSOR) {
+  const currentAgent = getCurrentIntegrationTargetWithMCPSupport();
+  if (currentAgent === INTEGRATION_TARGET.CURSOR) {
     vscode.commands.executeCommand('workbench.action.openMCPSettings');
   }
 }

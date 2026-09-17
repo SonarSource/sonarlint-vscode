@@ -19,7 +19,7 @@ import {
   openHookScript,
   openHookConfiguration
 } from '../../../src/aiAgentsConfiguration/aiAgentHooks';
-import { AGENT, getCurrentAgentWithHookSupport } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { INTEGRATION_TARGET, getCurrentIntegrationTargetWithHookSupport } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
@@ -65,46 +65,46 @@ suite('aiAgentHooks', () => {
     sinon.restore();
   });
 
-  suite('getCurrentAgentWithHookSupport', () => {
+  suite('getCurrentIntegrationTargetWithHookSupport', () => {
     test('should return WINDSURF when app name contains windsurf next', () => {
       envStub.value('Windsurf Next');
-      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
+      expect(getCurrentIntegrationTargetWithHookSupport()).to.equal(INTEGRATION_TARGET.WINDSURF);
     });
 
     test('should return WINDSURF when app name contains windsurf next (case insensitive)', () => {
       envStub.value('WINDSURF NEXT Editor');
-      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
+      expect(getCurrentIntegrationTargetWithHookSupport()).to.equal(INTEGRATION_TARGET.WINDSURF);
     });
 
     test('should return WINDSURF for regular Windsurf', () => {
       envStub.value('Windsurf');
-      expect(getCurrentAgentWithHookSupport()).to.equal(AGENT.WINDSURF);
+      expect(getCurrentIntegrationTargetWithHookSupport()).to.equal(INTEGRATION_TARGET.WINDSURF);
     });
 
     test('should return undefined for Cursor (not yet supported)', () => {
       envStub.value('Cursor');
-      expect(getCurrentAgentWithHookSupport()).to.be.undefined;
+      expect(getCurrentIntegrationTargetWithHookSupport()).to.be.undefined;
     });
 
     test('should return undefined for Cursor (case insensitive)', () => {
       envStub.value('CURSOR IDE');
-      expect(getCurrentAgentWithHookSupport()).to.be.undefined;
+      expect(getCurrentIntegrationTargetWithHookSupport()).to.be.undefined;
     });
 
     test('should return undefined for Visual Studio Code', () => {
       envStub.value('Visual Studio Code');
-      expect(getCurrentAgentWithHookSupport()).to.be.undefined;
+      expect(getCurrentIntegrationTargetWithHookSupport()).to.be.undefined;
     });
 
     test('should return undefined for unknown IDE', () => {
       envStub.value('Unknown IDE');
-      expect(getCurrentAgentWithHookSupport()).to.be.undefined;
+      expect(getCurrentIntegrationTargetWithHookSupport()).to.be.undefined;
     });
   });
 
   suite('isHookInstalled', () => {
     test('should return false when agent is CURSOR (not supported)', async () => {
-      const result = await isHookInstalled(AGENT.CURSOR);
+      const result = await isHookInstalled(INTEGRATION_TARGET.CURSOR);
       expect(result).to.be.false;
     });
 
@@ -113,7 +113,7 @@ suite('aiAgentHooks', () => {
       homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
-      const result = await isHookInstalled(AGENT.WINDSURF);
+      const result = await isHookInstalled(INTEGRATION_TARGET.WINDSURF);
 
       expect(result).to.be.false;
     });
@@ -130,7 +130,7 @@ suite('aiAgentHooks', () => {
       };
       fsPromisesStub.readFile.resolves(JSON.stringify(config));
 
-      const result = await isHookInstalled(AGENT.WINDSURF);
+      const result = await isHookInstalled(INTEGRATION_TARGET.WINDSURF);
 
       expect(result).to.be.false;
     });
@@ -151,7 +151,7 @@ suite('aiAgentHooks', () => {
       fsPromisesStub.readFile.resolves(JSON.stringify(config));
       fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
 
-      const result = await isHookInstalled(AGENT.WINDSURF);
+      const result = await isHookInstalled(INTEGRATION_TARGET.WINDSURF);
 
       expect(result).to.be.true;
     });
@@ -172,7 +172,7 @@ suite('aiAgentHooks', () => {
       fsPromisesStub.readFile.resolves(JSON.stringify(config));
       fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
 
-      const result = await isHookInstalled(AGENT.WINDSURF);
+      const result = await isHookInstalled(INTEGRATION_TARGET.WINDSURF);
 
       expect(result).to.be.true;
     });
@@ -194,7 +194,7 @@ suite('aiAgentHooks', () => {
     });
 
     test('should show error for unsupported agent', async () => {
-      await installHook(mockLanguageClient, AGENT.CURSOR);
+      await installHook(mockLanguageClient, INTEGRATION_TARGET.CURSOR);
 
       expect(showErrorMessageStub.called).to.be.true;
       expect(showErrorMessageStub.args[0][0]).to.include('not supported');
@@ -205,7 +205,7 @@ suite('aiAgentHooks', () => {
       homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
-      await installHook(mockLanguageClient, AGENT.WINDSURF);
+      await installHook(mockLanguageClient, INTEGRATION_TARGET.WINDSURF);
 
       expect(fsPromisesStub.mkdir.called).to.be.true;
       expect(fsPromisesStub.writeFile.called).to.be.true;
@@ -231,7 +231,7 @@ suite('aiAgentHooks', () => {
         .onFirstCall().rejects(new Error('Not found')) // isHookInstalled check
         .onSecondCall().resolves(JSON.stringify(existingConfig)); // installHook read
 
-      await installHook(mockLanguageClient, AGENT.WINDSURF);
+      await installHook(mockLanguageClient, INTEGRATION_TARGET.WINDSURF);
 
       expect(fsPromisesStub.writeFile.calledTwice).to.be.true;
       const configWriteCall = fsPromisesStub.writeFile.getCall(1);
@@ -247,7 +247,7 @@ suite('aiAgentHooks', () => {
       homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
-      await installHook(mockLanguageClient, AGENT.WINDSURF);
+      await installHook(mockLanguageClient, INTEGRATION_TARGET.WINDSURF);
 
       expect(fsPromisesStub.mkdir.called).to.be.true;
       const mkdirCall = fsPromisesStub.mkdir.getCalls().find(call => 
@@ -264,7 +264,7 @@ suite('aiAgentHooks', () => {
       Object.defineProperty(process, 'platform', { value: 'linux' });
 
       try {
-        await installHook(mockLanguageClient, AGENT.WINDSURF);
+        await installHook(mockLanguageClient, INTEGRATION_TARGET.WINDSURF);
 
         expect(fsPromisesStub.chmod.calledOnce).to.be.true;
         expect(fsPromisesStub.chmod.calledWith(sinon.match.string, 0o700)).to.be.true;
@@ -282,7 +282,7 @@ suite('aiAgentHooks', () => {
       Object.defineProperty(process, 'platform', { value: 'win32' });
 
       try {
-        await installHook(mockLanguageClient, AGENT.WINDSURF);
+        await installHook(mockLanguageClient, INTEGRATION_TARGET.WINDSURF);
 
         expect(fsPromisesStub.chmod.called).to.be.false;
       } finally {
@@ -296,7 +296,7 @@ suite('aiAgentHooks', () => {
       fsPromisesStub.readFile.rejects(new Error('File not found'));
       fsPromisesStub.mkdir.rejects(new Error('Permission denied'));
 
-      await installHook(mockLanguageClient, AGENT.WINDSURF);
+      await installHook(mockLanguageClient, INTEGRATION_TARGET.WINDSURF);
 
       expect(showErrorMessageStub.calledOnce).to.be.true;
       expect(showErrorMessageStub.calledWith(sinon.match(/Failed to install hook script/))).to.be.true;
@@ -305,7 +305,7 @@ suite('aiAgentHooks', () => {
 
   suite('uninstallHook', () => {
     test('should show error for unsupported agent', async () => {
-      await uninstallHook(AGENT.CURSOR);
+      await uninstallHook(INTEGRATION_TARGET.CURSOR);
 
       expect(showErrorMessageStub.called).to.be.true;
       expect(showErrorMessageStub.args[0][0]).to.include('not supported');
@@ -316,7 +316,7 @@ suite('aiAgentHooks', () => {
       homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
-      await uninstallHook(AGENT.WINDSURF);
+      await uninstallHook(INTEGRATION_TARGET.WINDSURF);
 
       expect(showInformationMessageStub.calledOnce).to.be.true;
       expect(showInformationMessageStub.calledWith('No hook script found to uninstall.')).to.be.true;
@@ -340,7 +340,7 @@ suite('aiAgentHooks', () => {
       fsPromisesStub.writeFile.rejects(new Error('Permission denied'));
       showWarningMessageStub.resolves('Uninstall');
 
-      await uninstallHook(AGENT.WINDSURF);
+      await uninstallHook(INTEGRATION_TARGET.WINDSURF);
 
       expect(showErrorMessageStub.called).to.be.true;
       const errorMessage = showErrorMessageStub.args.find(args => 
@@ -352,7 +352,7 @@ suite('aiAgentHooks', () => {
 
   suite('openHookScript', () => {
     test('should show error for unsupported agent', async () => {
-      await openHookScript(AGENT.CURSOR);
+      await openHookScript(INTEGRATION_TARGET.CURSOR);
 
       expect(showErrorMessageStub.called).to.be.true;
       expect(showErrorMessageStub.args[0][0]).to.include('not supported');
@@ -363,7 +363,7 @@ suite('aiAgentHooks', () => {
       homedirStub.returns('/home/test');
       fsPromisesStub.readFile.rejects(new Error('File not found'));
 
-      await openHookScript(AGENT.WINDSURF);
+      await openHookScript(INTEGRATION_TARGET.WINDSURF);
 
       expect(showInformationMessageStub.calledOnce).to.be.true;
       expect(showInformationMessageStub.calledWith('No hook script found. Please install it first.')).to.be.true;
@@ -387,7 +387,7 @@ suite('aiAgentHooks', () => {
       openTextDocumentStub.resolves(mockDocument);
       showTextDocumentStub.resolves();
 
-      await openHookScript(AGENT.WINDSURF);
+      await openHookScript(INTEGRATION_TARGET.WINDSURF);
 
       expect(openTextDocumentStub.calledOnce).to.be.true;
       expect(openTextDocumentStub.calledWith('/home/test/.codeium/windsurf/hooks/sonarqube_analysis_hook.js')).to.be.true;
@@ -411,7 +411,7 @@ suite('aiAgentHooks', () => {
       fsPromisesStub.readFile.resolves(JSON.stringify(config));
       openTextDocumentStub.rejects(new Error('Permission denied'));
 
-      await openHookScript(AGENT.WINDSURF);
+      await openHookScript(INTEGRATION_TARGET.WINDSURF);
 
       expect(showErrorMessageStub.called).to.be.true;
       const errorMessage = showErrorMessageStub.args.find(args => 
@@ -423,7 +423,7 @@ suite('aiAgentHooks', () => {
 
   suite('openHookConfiguration', () => {
     test('should show error for unsupported agent', async () => {
-      await openHookConfiguration(AGENT.CURSOR);
+      await openHookConfiguration(INTEGRATION_TARGET.CURSOR);
 
       expect(showErrorMessageStub.called).to.be.true;
       expect(showErrorMessageStub.args[0][0]).to.include('not supported');
@@ -434,7 +434,7 @@ suite('aiAgentHooks', () => {
       homedirStub.returns('/home/test');
       fsExistsSyncStub.returns(false);
 
-      await openHookConfiguration(AGENT.WINDSURF);
+      await openHookConfiguration(INTEGRATION_TARGET.WINDSURF);
 
       expect(showInformationMessageStub.calledOnce).to.be.true;
       expect(showInformationMessageStub.calledWith('No hook configuration found. Please install the hook first.')).to.be.true;
@@ -448,7 +448,7 @@ suite('aiAgentHooks', () => {
       openTextDocumentStub.resolves(mockDocument);
       showTextDocumentStub.resolves();
 
-      await openHookConfiguration(AGENT.WINDSURF);
+      await openHookConfiguration(INTEGRATION_TARGET.WINDSURF);
 
       expect(fsExistsSyncStub.calledOnce).to.be.true;
       expect(openTextDocumentStub.calledOnce).to.be.true;
@@ -464,7 +464,7 @@ suite('aiAgentHooks', () => {
       openTextDocumentStub.resolves(mockDocument);
       showTextDocumentStub.resolves();
 
-      await openHookConfiguration(AGENT.WINDSURF);
+      await openHookConfiguration(INTEGRATION_TARGET.WINDSURF);
 
       expect(fsExistsSyncStub.calledOnce).to.be.true;
       const callArg = fsExistsSyncStub.getCall(0).args[0];
@@ -477,11 +477,10 @@ suite('aiAgentHooks', () => {
       fsExistsSyncStub.withArgs(sinon.match.any).returns(true);
       openTextDocumentStub.rejects(new Error('Permission denied'));
 
-      await openHookConfiguration(AGENT.WINDSURF);
+      await openHookConfiguration(INTEGRATION_TARGET.WINDSURF);
 
       expect(showErrorMessageStub.calledOnce).to.be.true;
       expect(showErrorMessageStub.calledWith(sinon.match(/Failed to open hook configuration/))).to.be.true;
     });
   });
 });
-

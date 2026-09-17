@@ -12,7 +12,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Commands } from '../util/commands';
-import { AGENT, getWindsurfDirectory } from './aiAgentUtils';
+import { INTEGRATION_TARGET, getWindsurfDirectory } from './aiAgentUtils';
 
 interface HookConfig {
   command: string;
@@ -35,27 +35,27 @@ const HOOK_SCRIPT_PATTERN = /sonarqube_analysis_hook\.(js|py|sh)$/;
  * For Windsurf: ~/.codeium/windsurf or ~/.codeium/windsurf-next
  * For Cursor: not yet supported
  */
-function getIdeConfigDirectory(agent: AGENT): string | undefined {
+function getIdeConfigDirectory(agent: INTEGRATION_TARGET): string | undefined {
   switch (agent) {
-    case AGENT.WINDSURF: {
+    case INTEGRATION_TARGET.WINDSURF: {
       const windsurfDir = getWindsurfDirectory();
       return path.join(os.homedir(), '.codeium', windsurfDir);
     }
-    case AGENT.CURSOR:
+    case INTEGRATION_TARGET.CURSOR:
       return undefined;
-    case AGENT.KIRO:
+    case INTEGRATION_TARGET.KIRO:
       return undefined;
     default:
       return undefined;
   }
 }
 
-function getHooksConfigPath(agent: AGENT): string | undefined {
+function getHooksConfigPath(agent: INTEGRATION_TARGET): string | undefined {
   const ideConfigDir = getIdeConfigDirectory(agent);
   return ideConfigDir ? path.join(ideConfigDir, 'hooks.json') : undefined;
 }
 
-function getHookScriptDirectory(agent: AGENT): string | undefined {
+function getHookScriptDirectory(agent: INTEGRATION_TARGET): string | undefined {
   const ideConfigDir = getIdeConfigDirectory(agent);
   return ideConfigDir ? path.join(ideConfigDir, 'hooks') : undefined;
 }
@@ -90,7 +90,7 @@ function isSonarQubeHook(command: string, scriptDir: string): boolean {
   );
 }
 
-export async function isHookInstalled(agent: AGENT): Promise<boolean> {
+export async function isHookInstalled(agent: INTEGRATION_TARGET): Promise<boolean> {
   const configPath = getHooksConfigPath(agent);
   const scriptDir = getHookScriptDirectory(agent);
   
@@ -122,7 +122,7 @@ export async function isHookInstalled(agent: AGENT): Promise<boolean> {
 
 export async function installHook(
   languageClient: SonarLintExtendedLanguageClient,
-  agent: AGENT
+  agent: INTEGRATION_TARGET
 ): Promise<void> {
   const configPath = getHooksConfigPath(agent);
   const scriptDir = getHookScriptDirectory(agent);
@@ -184,7 +184,7 @@ export async function installHook(
   }
 }
 
-export async function uninstallHook(agent: AGENT): Promise<void> {
+export async function uninstallHook(agent: INTEGRATION_TARGET): Promise<void> {
   const configPath = getHooksConfigPath(agent);
   const scriptDir = getHookScriptDirectory(agent);
   
@@ -237,7 +237,7 @@ export async function uninstallHook(agent: AGENT): Promise<void> {
   }
 }
 
-export async function openHookScript(agent: AGENT): Promise<void> {
+export async function openHookScript(agent: INTEGRATION_TARGET): Promise<void> {
   const configPath = getHooksConfigPath(agent);
   
   if (!configPath) {
@@ -263,7 +263,7 @@ export async function openHookScript(agent: AGENT): Promise<void> {
   }
 }
 
-export async function openHookConfiguration(agent: AGENT): Promise<void> {
+export async function openHookConfiguration(agent: INTEGRATION_TARGET): Promise<void> {
   const configPath = getHooksConfigPath(agent);
   
   if (!configPath) {
@@ -283,4 +283,3 @@ export async function openHookConfiguration(agent: AGENT): Promise<void> {
     vscode.window.showErrorMessage(`Failed to open hook configuration: ${error.message}`);
   }
 }
-

@@ -17,9 +17,6 @@ export enum INTEGRATION_TARGET {
   CODEX = 'codex'
 }
 
-export const AGENT = INTEGRATION_TARGET;
-export type AGENT = INTEGRATION_TARGET;
-
 export enum IDE_HOST {
   VS_CODE = 'vscode',
   CURSOR = 'cursor',
@@ -141,9 +138,6 @@ export function getCurrentIntegrationTargetWithHookSupport(): INTEGRATION_TARGET
   }
   return undefined;
 }
-
-export const getCurrentAgentWithMCPSupport = getCurrentIntegrationTargetWithMCPSupport;
-export const getCurrentAgentWithHookSupport = getCurrentIntegrationTargetWithHookSupport;
 
 export function getWindsurfDirectory(): string {
   const appName = vscode.env.appName.toLowerCase();
