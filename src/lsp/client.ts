@@ -10,6 +10,7 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import { ExtendedServer, AnalysisFile, ShowRuleDescriptionParams } from './protocol';
+import { AiIntegration } from './aiIntegrationProtocol';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
@@ -134,37 +135,37 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   getAiIntegrationState(
-    params: ExtendedServer.GetAiIntegrationStateParams
-  ): Promise<ExtendedServer.GetAiIntegrationStateResponse> {
-    return this.sendRequest(ExtendedServer.GetAiIntegrationState.type, params);
+    params: AiIntegration.GetAiIntegrationStateParams
+  ): Promise<AiIntegration.GetAiIntegrationStateResponse> {
+    return this.sendRequest(AiIntegration.GetAiIntegrationState.type, params);
   }
 
-  prepareInstallCliCommand(): Promise<ExtendedServer.PrepareCliCommandResponse> {
-    return this.sendRequest(ExtendedServer.PrepareInstallCliCommand.type);
+  prepareInstallCliCommand(): Promise<AiIntegration.PrepareCliCommandResponse> {
+    return this.sendRequest(AiIntegration.PrepareInstallCliCommand.type);
   }
 
   prepareAuthenticateCliCommand(
-    params: ExtendedServer.PrepareAuthenticateCliCommandParams
-  ): Promise<ExtendedServer.PrepareCliCommandResponse> {
-    return this.sendRequest(ExtendedServer.PrepareAuthenticateCliCommand.type, params);
+    params: AiIntegration.PrepareAuthenticateCliCommandParams
+  ): Promise<AiIntegration.PrepareCliCommandResponse> {
+    return this.sendRequest(AiIntegration.PrepareAuthenticateCliCommand.type, params);
   }
 
   prepareIntegrateCliCommand(
-    params: ExtendedServer.PrepareIntegrateCliCommandParams
-  ): Promise<ExtendedServer.PrepareCliCommandResponse> {
-    return this.sendRequest(ExtendedServer.PrepareIntegrateCliCommand.type, params);
+    params: AiIntegration.PrepareIntegrateCliCommandParams
+  ): Promise<AiIntegration.PrepareCliCommandResponse> {
+    return this.sendRequest(AiIntegration.PrepareIntegrateCliCommand.type, params);
   }
 
   inspectMcpConfiguration(
-    params: ExtendedServer.McpConfigurationInspectionParams
-  ): Promise<ExtendedServer.McpConfigurationInspectionResponse> {
-    return this.sendRequest(ExtendedServer.InspectMcpConfiguration.type, params);
+    params: AiIntegration.McpConfigurationInspectionParams
+  ): Promise<AiIntegration.McpConfigurationInspectionResponse> {
+    return this.sendRequest(AiIntegration.InspectMcpConfiguration.type, params);
   }
 
   planMcpConfigurationUpdate(
-    params: ExtendedServer.McpConfigurationUpdateParams
-  ): Promise<ExtendedServer.McpConfigurationUpdatePlanResponse> {
-    return this.sendRequest(ExtendedServer.PlanMcpConfigurationUpdate.type, params);
+    params: AiIntegration.McpConfigurationUpdateParams
+  ): Promise<AiIntegration.McpConfigurationUpdatePlanResponse> {
+    return this.sendRequest(AiIntegration.PlanMcpConfigurationUpdate.type, params);
   }
 
   getMCPRulesFileContent(aiAssistedIde: string): Promise<ExtendedServer.GetMCPRulesFileContentResponse> {
