@@ -10,11 +10,9 @@ import * as vscode from 'vscode';
 import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
-import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
-import {
-  getCurrentIntegrationTargetWithHookSupport,
-  getCurrentIntegrationTargetWithMCPSupport
-} from './aiAgentsConfiguration/aiAgentUtils';
+import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
+import { getCurrentIntegrationTargetWithHookSupport, getDetectedIdeAgents } from './aiAgentsConfiguration/aiAgentUtils';
+import { supportsStandaloneMCP } from './aiAgentsConfiguration/mcpServerConfig';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
@@ -64,7 +62,7 @@ export class ContextManager {
   }
 
   setMCPServerSupportedAgentContext() {
-    const isSupportedTarget = getCurrentIntegrationTargetWithMCPSupport() !== undefined;
+    const isSupportedTarget = getDetectedIdeAgents().some(agent => supportsStandaloneMCP(agent.id));
     vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_AGENT, isSupportedTarget);
   }
 

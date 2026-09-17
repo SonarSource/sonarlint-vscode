@@ -20,6 +20,16 @@ import { ExtendedServer } from '../../../src/lsp/protocol';
 import { Commands } from '../../../src/util/commands';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
+function standaloneMcpCapability(agent: ExtendedServer.AiAgent): ExtendedServer.AiIntegrationAgentCapability {
+  return {
+    agent,
+    cliIntegrationSupported: false,
+    standaloneMcpSupported: true,
+    hookSupported: false,
+    skillSupported: false
+  };
+}
+
 suite('AIAgentsConfigurationWebviewProvider', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let provider: any;
@@ -31,6 +41,13 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     provider = Object.create(AIAgentsConfigurationWebviewProvider.prototype);
     provider.setupInProgress = false;
     provider.mcpSetupInProgress = false;
+    provider.activeMCPAgent = undefined;
+    provider.extensionContext = {
+      globalState: {
+        get: sinon.stub(),
+        update: sinon.stub().resolves()
+      }
+    };
     getIntegrationState = sinon.stub().resolves({
       cli: {
         installationStatus: ExtendedServer.CliInstallationStatus.NOT_INSTALLED,
@@ -47,9 +64,19 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
   test('builds the CLI and MCP card state', async () => {
     sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IDE_HOST.VS_CODE, name: 'VS Code' });
-    sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithMCPSupport').returns(INTEGRATION_TARGET.GITHUB_COPILOT);
+    sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithMCPSupport').returns(undefined);
     sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithHookSupport').returns(undefined);
     sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([
+      {
+        id: INTEGRATION_TARGET.GITHUB_COPILOT,
+        name: 'Copilot in VS Code',
+        source: 'extension'
+      },
+      {
+        id: INTEGRATION_TARGET.CLAUDE_CODE,
+        name: 'Claude Code',
+        source: 'extension'
+      },
       {
         id: INTEGRATION_TARGET.CODEX,
         name: 'Codex',
@@ -63,6 +90,20 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       },
       agents: [
         {
+          agent: ExtendedServer.AiAgent.GITHUB_COPILOT,
+          cliIntegrationSupported: true,
+          standaloneMcpSupported: true,
+          hookSupported: false,
+          skillSupported: false
+        },
+        {
+          agent: ExtendedServer.AiAgent.CLAUDE_CODE,
+          cliIntegrationSupported: true,
+          standaloneMcpSupported: true,
+          hookSupported: false,
+          skillSupported: false
+        },
+        {
           agent: ExtendedServer.AiAgent.CODEX,
           cliIntegrationSupported: false,
           standaloneMcpSupported: true,
@@ -73,11 +114,19 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       connectionChoices: []
     });
     sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(true);
-    sinon.stub(mcpServerConfig, 'inspectCurrentMCPConfiguration').resolves({
+    const inspect = sinon.stub(mcpServerConfig, 'inspectMCPConfiguration');
+    inspect.withArgs(INTEGRATION_TARGET.GITHUB_COPILOT).resolves({
       state: ExtendedServer.McpConfigurationState.STANDALONE,
       diagnostics: []
     });
-    sinon.stub(mcpServerConfig, 'hasPersistedMCPConnection').returns(true);
+    inspect.withArgs(INTEGRATION_TARGET.CLAUDE_CODE).resolves({
+      state: ExtendedServer.McpConfigurationState.NOT_CONFIGURED,
+      diagnostics: []
+    });
+    sinon
+      .stub(mcpServerConfig, 'hasPersistedMCPConnection')
+      .withArgs(sinon.match.any, INTEGRATION_TARGET.GITHUB_COPILOT)
+      .returns(true);
 
     const state = await provider.buildState();
 
@@ -85,11 +134,11 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(
       getIntegrationState.calledOnceWithExactly(
         IDE_HOST.VS_CODE,
-        [INTEGRATION_TARGET.CODEX],
+        [INTEGRATION_TARGET.GITHUB_COPILOT, INTEGRATION_TARGET.CLAUDE_CODE, INTEGRATION_TARGET.CODEX],
         ExtendedServer.AiIntegrationScope.GLOBAL
       )
     ).to.be.true;
-    expect(state.agents[0].supportsCliIntegration).to.be.false;
+    expect(state.agents.map(agent => agent.supportsCliIntegration)).to.deep.equal([true, true, false]);
     expect(state.cli).to.deep.equal({
       installationStatus: 'INSTALLED',
       authenticationStatus: 'AUTHENTICATED',
@@ -99,12 +148,44 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       hook: { supported: false, configured: false }
     });
     expect(state.mcp).to.deep.equal({
-      supported: true,
-      configurationStatus: 'STANDALONE',
-      diagnostic: undefined,
+      integrations: [
+        {
+          agentId: INTEGRATION_TARGET.GITHUB_COPILOT,
+          agentName: 'Copilot in VS Code',
+          standaloneSupported: true,
+          availableThroughCli: false,
+          configurationPath: mcpServerConfig.getMCPConfigPath(INTEGRATION_TARGET.GITHUB_COPILOT),
+          configurationStatus: 'STANDALONE',
+          diagnostic: undefined,
+          requiresSetup: false,
+          operationInProgress: false
+        },
+        {
+          agentId: INTEGRATION_TARGET.CLAUDE_CODE,
+          agentName: 'Claude Code',
+          standaloneSupported: true,
+          availableThroughCli: false,
+          configurationPath: mcpServerConfig.getMCPConfigPath(INTEGRATION_TARGET.CLAUDE_CODE),
+          configurationStatus: 'NOT_CONFIGURED',
+          diagnostic: undefined,
+          requiresSetup: false,
+          operationInProgress: false
+        },
+        {
+          agentId: INTEGRATION_TARGET.CODEX,
+          agentName: 'Codex',
+          standaloneSupported: false,
+          availableThroughCli: true,
+          configurationPath: undefined,
+          configurationStatus: undefined,
+          diagnostic: undefined,
+          requiresSetup: false,
+          operationInProgress: false
+        }
+      ],
+      configuredCount: 1,
+      configurableCount: 2,
       operationInProgress: false,
-      requiresSetup: false,
-      agentName: undefined,
       legacyInstructionsConfigured: true
     });
   });
@@ -113,42 +194,99 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IDE_HOST.CURSOR, name: 'Cursor' });
     sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithMCPSupport').returns(INTEGRATION_TARGET.CURSOR);
     sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithHookSupport').returns(undefined);
-    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([]);
+    sinon
+      .stub(aiAgentUtils, 'getDetectedIdeAgents')
+      .returns([{ id: INTEGRATION_TARGET.CURSOR, name: 'Cursor', source: 'builtIn' }]);
     sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
-    sinon.stub(mcpServerConfig, 'inspectCurrentMCPConfiguration').resolves({
+    sinon.stub(mcpServerConfig, 'inspectMCPConfiguration').resolves({
       state: ExtendedServer.McpConfigurationState.STANDALONE,
       diagnostics: []
     });
     sinon.stub(mcpServerConfig, 'hasPersistedMCPConnection').returns(false);
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: ExtendedServer.CliInstallationStatus.NOT_INSTALLED,
+        authenticationStatus: ExtendedServer.CliAuthenticationStatus.UNKNOWN
+      },
+      agents: [standaloneMcpCapability(ExtendedServer.AiAgent.CURSOR)],
+      connectionChoices: []
+    });
 
     const state = await provider.buildState();
 
-    expect(state.mcp.configurationStatus).to.equal('STANDALONE');
-    expect(state.mcp.requiresSetup).to.be.true;
+    expect(state.mcp.integrations[0].configurationStatus).to.equal('STANDALONE');
+    expect(state.mcp.integrations[0].requiresSetup).to.be.true;
   });
 
   test('exposes shared MCP states and their first diagnostic', async () => {
     sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IDE_HOST.CURSOR, name: 'Cursor' });
     sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithMCPSupport').returns(INTEGRATION_TARGET.CURSOR);
     sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithHookSupport').returns(undefined);
-    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([]);
+    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([
+      { id: INTEGRATION_TARGET.CURSOR, name: 'Cursor', source: 'builtIn' },
+      { id: INTEGRATION_TARGET.CLAUDE_CODE, name: 'Claude Code', source: 'extension' }
+    ]);
     sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
-    const inspect = sinon.stub(mcpServerConfig, 'inspectCurrentMCPConfiguration').resolves({
+    const inspect = sinon.stub(mcpServerConfig, 'inspectMCPConfiguration');
+    inspect.withArgs(INTEGRATION_TARGET.CURSOR).resolves({
       state: ExtendedServer.McpConfigurationState.MALFORMED,
       diagnostics: ['Fix the malformed MCP configuration.']
     });
-
-    const malformedState = await provider.buildState();
-    expect(malformedState.mcp.configurationStatus).to.equal('MALFORMED');
-    expect(malformedState.mcp.diagnostic).to.equal('Fix the malformed MCP configuration.');
-
-    inspect.resolves({
+    inspect.withArgs(INTEGRATION_TARGET.CLAUDE_CODE).resolves({
       state: ExtendedServer.McpConfigurationState.CLI_MANAGED,
       diagnostics: ['Managed by the CLI.']
     });
-    const cliManagedState = await provider.buildState();
-    expect(cliManagedState.mcp.configurationStatus).to.equal('CLI_MANAGED');
-    expect(cliManagedState.mcp.diagnostic).to.equal('Managed by the CLI.');
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: ExtendedServer.CliInstallationStatus.NOT_INSTALLED,
+        authenticationStatus: ExtendedServer.CliAuthenticationStatus.UNKNOWN
+      },
+      agents: [
+        standaloneMcpCapability(ExtendedServer.AiAgent.CURSOR),
+        standaloneMcpCapability(ExtendedServer.AiAgent.CLAUDE_CODE)
+      ],
+      connectionChoices: []
+    });
+
+    const state = await provider.buildState();
+    expect(state.mcp.integrations[0].configurationStatus).to.equal('MALFORMED');
+    expect(state.mcp.integrations[0].diagnostic).to.equal('Fix the malformed MCP configuration.');
+    expect(state.mcp.integrations[1].configurationStatus).to.equal('CLI_MANAGED');
+    expect(state.mcp.integrations[1].diagnostic).to.equal('Managed by the CLI.');
+  });
+
+  test('keeps other MCP integrations available when one inspection fails', async () => {
+    sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IDE_HOST.CURSOR, name: 'Cursor' });
+    sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithMCPSupport').returns(INTEGRATION_TARGET.CURSOR);
+    sinon.stub(aiAgentUtils, 'getCurrentIntegrationTargetWithHookSupport').returns(undefined);
+    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([
+      { id: INTEGRATION_TARGET.CURSOR, name: 'Cursor', source: 'builtIn' },
+      { id: INTEGRATION_TARGET.CLAUDE_CODE, name: 'Claude Code', source: 'extension' }
+    ]);
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
+    const inspect = sinon.stub(mcpServerConfig, 'inspectMCPConfiguration');
+    inspect.withArgs(INTEGRATION_TARGET.CURSOR).rejects(new Error('cannot read'));
+    inspect.withArgs(INTEGRATION_TARGET.CLAUDE_CODE).resolves({
+      state: ExtendedServer.McpConfigurationState.NOT_CONFIGURED,
+      diagnostics: []
+    });
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: ExtendedServer.CliInstallationStatus.NOT_INSTALLED,
+        authenticationStatus: ExtendedServer.CliAuthenticationStatus.UNKNOWN
+      },
+      agents: [
+        standaloneMcpCapability(ExtendedServer.AiAgent.CURSOR),
+        standaloneMcpCapability(ExtendedServer.AiAgent.CLAUDE_CODE)
+      ],
+      connectionChoices: []
+    });
+
+    const state = await provider.buildState();
+
+    expect(state.mcp.integrations[0].configurationStatus).to.equal('UNKNOWN');
+    expect(state.mcp.integrations[0].diagnostic).to.include('Could not inspect Cursor');
+    expect(state.mcp.integrations[1].configurationStatus).to.equal('NOT_CONFIGURED');
   });
 
   test('includes the current IDE hook state and hides absent legacy instructions', async () => {
@@ -158,7 +296,10 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([]);
     sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
     sinon.stub(aiAgentHooks, 'isHookInstalled').resolves(true);
-    sinon.stub(mcpServerConfig, 'inspectCurrentMCPConfiguration').resolves(undefined);
+    sinon.stub(mcpServerConfig, 'inspectMCPConfiguration').resolves({
+      state: ExtendedServer.McpConfigurationState.NOT_CONFIGURED,
+      diagnostics: []
+    });
 
     const state = await provider.buildState();
 
@@ -181,7 +322,10 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       .stub(aiAgentUtils, 'getDetectedIdeAgents')
       .returns([{ id: INTEGRATION_TARGET.CODEX, name: 'Codex', source: 'extension' }]);
     sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
-    sinon.stub(mcpServerConfig, 'inspectCurrentMCPConfiguration').resolves(undefined);
+    sinon.stub(mcpServerConfig, 'inspectMCPConfiguration').resolves({
+      state: ExtendedServer.McpConfigurationState.NOT_CONFIGURED,
+      diagnostics: []
+    });
     getIntegrationState.resolves({
       cli: {
         installationStatus: ExtendedServer.CliInstallationStatus.UNUSABLE,
@@ -210,7 +354,11 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       hook: { supported: false, configured: false }
     });
     expect(state.agents[0].supportsCliIntegration).to.be.true;
-    expect(state.mcp.supported).to.be.false;
+    expect(state.mcp.integrations[0]).to.include({
+      agentId: INTEGRATION_TARGET.CODEX,
+      availableThroughCli: true,
+      standaloneSupported: false
+    });
   });
 
   test('shows a generic error state and recovers on a later refresh', async () => {
@@ -233,11 +381,14 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
   test('routes MCP setup through the existing command and refreshes state', async () => {
     const executeCommand = sinon.stub(vscode.commands, 'executeCommand').resolves();
+    sinon
+      .stub(aiAgentUtils, 'getDetectedIdeAgents')
+      .returns([{ id: INTEGRATION_TARGET.CLAUDE_CODE, name: 'Claude Code', source: 'extension' }]);
     provider.refresh = sinon.stub().resolves();
 
-    await provider.handleMessage({ command: 'configureMcp' });
+    await provider.handleMessage({ command: 'configureMcp', agent: INTEGRATION_TARGET.CLAUDE_CODE });
 
-    expect(executeCommand.calledOnceWith(Commands.CONFIGURE_MCP_SERVER)).to.be.true;
+    expect(executeCommand.calledOnceWith(Commands.CONFIGURE_MCP_SERVER, INTEGRATION_TARGET.CLAUDE_CODE)).to.be.true;
     expect(provider.refresh.calledTwice).to.be.true;
     expect(provider.mcpSetupInProgress).to.be.false;
   });
@@ -246,17 +397,32 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     let finishSetup: () => void;
     const setupFinished = new Promise<void>(resolve => (finishSetup = resolve));
     const executeCommand = sinon.stub(vscode.commands, 'executeCommand').returns(setupFinished);
+    sinon
+      .stub(aiAgentUtils, 'getDetectedIdeAgents')
+      .returns([{ id: INTEGRATION_TARGET.CLAUDE_CODE, name: 'Claude Code', source: 'extension' }]);
     provider.refresh = sinon.stub().resolves();
 
-    const firstSetup = provider.handleMessage({ command: 'configureMcp' });
+    const firstSetup = provider.handleMessage({ command: 'configureMcp', agent: INTEGRATION_TARGET.CLAUDE_CODE });
     await Promise.resolve();
-    await provider.handleMessage({ command: 'configureMcp' });
+    await provider.handleMessage({ command: 'configureMcp', agent: INTEGRATION_TARGET.CLAUDE_CODE });
 
-    expect(executeCommand.calledOnceWith(Commands.CONFIGURE_MCP_SERVER)).to.be.true;
+    expect(executeCommand.calledOnceWith(Commands.CONFIGURE_MCP_SERVER, INTEGRATION_TARGET.CLAUDE_CODE)).to.be.true;
     expect(provider.mcpSetupInProgress).to.be.true;
     finishSetup();
     await firstSetup;
     expect(provider.mcpSetupInProgress).to.be.false;
+  });
+
+  test('opens the configuration for the requested agent', async () => {
+    const executeCommand = sinon.stub(vscode.commands, 'executeCommand').resolves();
+
+    await provider.handleMessage({
+      command: 'openMcpConfiguration',
+      agent: INTEGRATION_TARGET.CLAUDE_CODE
+    });
+
+    expect(executeCommand.calledOnceWith(Commands.OPEN_MCP_SERVER_CONFIGURATION, INTEGRATION_TARGET.CLAUDE_CODE)).to.be
+      .true;
   });
 
   test('opens hook configuration from the CLI card', async () => {
