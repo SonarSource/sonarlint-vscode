@@ -133,6 +133,28 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetMCPServerConfiguration.type, { connectionId, token });
   }
 
+  getAiIntegrationState(
+    params: ExtendedServer.GetAiIntegrationStateParams
+  ): Promise<ExtendedServer.GetAiIntegrationStateResponse> {
+    return this.sendRequest(ExtendedServer.GetAiIntegrationState.type, params);
+  }
+
+  prepareCliCommand(params: ExtendedServer.PrepareCliCommandParams): Promise<ExtendedServer.PrepareCliCommandResponse> {
+    return this.sendRequest(ExtendedServer.PrepareCliCommand.type, params);
+  }
+
+  inspectMcpConfiguration(
+    params: ExtendedServer.McpConfigurationInspectionParams
+  ): Promise<ExtendedServer.McpConfigurationInspectionResponse> {
+    return this.sendRequest(ExtendedServer.InspectMcpConfiguration.type, params);
+  }
+
+  planMcpConfigurationUpdate(
+    params: ExtendedServer.McpConfigurationUpdateParams
+  ): Promise<ExtendedServer.McpConfigurationUpdatePlanResponse> {
+    return this.sendRequest(ExtendedServer.PlanMcpConfigurationUpdate.type, params);
+  }
+
   getMCPRulesFileContent(aiAssistedIde: string): Promise<ExtendedServer.GetMCPRulesFileContentResponse> {
     return this.sendRequest(ExtendedServer.GetMCPRulesFileContent.type, aiAssistedIde);
   }
