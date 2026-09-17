@@ -54,6 +54,7 @@ import { code2ProtocolConverter } from './util/uri';
 import { StatusBarService } from './statusbar/statusBar';
 import { RemediationService } from './remediationPanel/remediationService';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
+import { AiIntegrationService } from './aiAgentsConfiguration/aiIntegrationService';
 
 export class CommandsManager {
   constructor(
@@ -63,7 +64,8 @@ export class CommandsManager {
     private readonly allRulesView: vscode.TreeView<LanguageNode>,
     private readonly allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
     private readonly allConnectionsView: vscode.TreeView<ConnectionsNode>,
-    private readonly aiAgentsConfigurationWebviewProvider: AIAgentsConfigurationWebviewProvider
+    private readonly aiAgentsConfigurationWebviewProvider: AIAgentsConfigurationWebviewProvider,
+    private readonly aiIntegrationService: AiIntegrationService
   ) {}
 
   registerCommands() {
@@ -243,7 +245,13 @@ export class CommandsManager {
         FlightRecorderService.instance.captureHeapDump()
       ),
       vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async connection => {
-        await configureMCPServer(this.languageClient, this.allConnectionsTreeDataProvider, connection);
+        await configureMCPServer(
+          this.languageClient,
+          this.aiIntegrationService,
+          this.allConnectionsTreeDataProvider,
+          this.context,
+          connection
+        );
         await this.aiAgentsConfigurationWebviewProvider.refresh();
       }),
       vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, () => openMCPServerConfigurationFile()),
