@@ -200,20 +200,20 @@ export class AutoBindingService implements FileSystemSubscriber {
   }
 
   async askUserBeforeAutoBinding() {
-    return vscode.window
-      .showInformationMessage(
-        CONFIGURE_BINDING_PROMPT_MESSAGE,
-        BIND_ACTION,
-        DONT_ASK_AGAIN_ACTION
-      )
-      .then(async action => {
-        if (action === DONT_ASK_AGAIN_ACTION) {
-          this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
-        } else if (action === BIND_ACTION) {
-          const targetConnection = await this.getTargetConnectionForManualBinding();
-          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
-        }
-      });
+    const action = await vscode.window.showInformationMessage(
+      CONFIGURE_BINDING_PROMPT_MESSAGE,
+      BIND_ACTION,
+      DONT_ASK_AGAIN_ACTION
+    );
+    if (action === DONT_ASK_AGAIN_ACTION) {
+      await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
+    } else if (action === BIND_ACTION) {
+      const targetConnection = await this.getTargetConnectionForManualBinding();
+      if (!targetConnection) {
+        return;
+      }
+      await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+    }
   }
 
   private async promptToAutoBind(bindingSuggestions: BindingSuggestion[], unboundFolder: vscode.WorkspaceFolder) {
@@ -240,6 +240,9 @@ export class AutoBindingService implements FileSystemSubscriber {
       ]);
     } else if (action === BIND_ACTION) {
       const targetConnection = await this.getTargetConnectionForManualBinding();
+      if (!targetConnection) {
+        return;
+      }
       await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
     }
   }
@@ -269,6 +272,9 @@ export class AutoBindingService implements FileSystemSubscriber {
         break;
       case CHOOSE_MANUALLY_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();
+        if (!targetConnection) {
+          return;
+        }
         await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;
       }
@@ -298,6 +304,9 @@ export class AutoBindingService implements FileSystemSubscriber {
     switch (result) {
       case BIND_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();
+        if (!targetConnection) {
+          return;
+        }
         await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;
       }
