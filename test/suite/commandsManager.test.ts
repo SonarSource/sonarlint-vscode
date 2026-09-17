@@ -110,7 +110,7 @@ suite('CONFIGURE_MCP_SERVER command', () => {
     await configureCommand!(undefined, { skipViewRefresh: true });
     expect(refreshStub.called).to.be.false;
     await configureCommand!();
-    expect(refreshStub.calledOnce).to.be.true;
+    expect(refreshStub.calledTwice).to.be.true;
     expect(configureStub.calledTwice).to.be.true;
   });
 });
