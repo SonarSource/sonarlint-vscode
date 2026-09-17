@@ -15,8 +15,8 @@ import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import * as os from 'node:os';
 import { getVSCodeSettingsBaseDir } from '../util/util';
-import { getCurrentAgentWithMCPSupport, IntegrationTarget, getWindsurfDirectory } from './aiAgentUtils';
 import { Commands } from '../util/commands';
+import { getCurrentAgentWithMCPSupport, IntegrationTarget, getWindsurfDirectory } from './aiAgentUtils';
 
 interface MCPServerConfig {
   command: string;
@@ -65,8 +65,8 @@ export function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefine
   const configPath = getMCPConfigPath();
   const config = readMCPConfig(configPath);
   return currentAgent === IntegrationTarget.GITHUB_COPILOT
-    ? (config as MCPConfigurationVSCode).servers.sonarqube
-    : (config as MCPConfigurationOthers).mcpServers.sonarqube;
+    ? (config as MCPConfigurationVSCode).servers?.sonarqube
+    : (config as MCPConfigurationOthers).mcpServers?.sonarqube;
 }
 
 function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigurationVSCode {
@@ -96,9 +96,13 @@ function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
     const config = readMCPConfig(configPath);
 
     if (currentAgent === IntegrationTarget.GITHUB_COPILOT) {
-      (config as MCPConfigurationVSCode).servers.sonarqube = sonarQubeMCPConfig;
+      const vscodeConfig = config as MCPConfigurationVSCode;
+      vscodeConfig.servers ??= {};
+      vscodeConfig.servers.sonarqube = sonarQubeMCPConfig;
     } else {
-      (config as MCPConfigurationOthers).mcpServers.sonarqube = sonarQubeMCPConfig;
+      const agentConfig = config as MCPConfigurationOthers;
+      agentConfig.mcpServers ??= {};
+      agentConfig.mcpServers.sonarqube = sonarQubeMCPConfig;
     }
 
     const configDir = path.dirname(configPath);
@@ -110,8 +114,6 @@ function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
     fs.writeFileSync(configPath, content, 'utf8');
 
     logToSonarLintOutput(`MCP configuration updated: ${configPath}`);
-    // Refresh the AI agents configuration tree
-    vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
   } catch (error) {
     logToSonarLintOutput(`Error writing MCP config: ${error.message}`);
     throw error;
@@ -147,11 +149,12 @@ export async function configureMCPServer(
     const sonarQubeMCPConfig = await languageClient.getMCPServerConfiguration(selectedConnection.id, token);
 
     writeSonarQubeMCPConfig(JSON.parse(sonarQubeMCPConfig.jsonConfiguration));
+    void vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
 
     openMCPServersListIfCursor();
 
     const openFile = await vscode.window.showInformationMessage(
-      `SonarQube MCP server configured for "${selectedConnection.label}"`,
+      `SonarQube MCP Server configured for "${selectedConnection.label}"`,
       'Open Configuration File'
     );
 
@@ -159,13 +162,12 @@ export async function configureMCPServer(
       await openMCPServerConfigurationFile();
     }
 
-    logToSonarLintOutput(`SonarQube MCP server configured successfully for connection: ${selectedConnection.label}`);
+    logToSonarLintOutput(`SonarQube MCP Server configured successfully for connection: ${selectedConnection.label}`);
   } catch (error) {
     const connectionLabel = connection?.label || 'unknown connection';
-    const errorMessage = `Failed to configure SonarQube MCP server for "${connectionLabel}": ${error.message}`;
+    const errorMessage = `Failed to configure SonarQube MCP Server for "${connectionLabel}": ${error.message}`;
     vscode.window.showErrorMessage(errorMessage);
     logToSonarLintOutput(errorMessage);
-    throw error;
   }
 }
 

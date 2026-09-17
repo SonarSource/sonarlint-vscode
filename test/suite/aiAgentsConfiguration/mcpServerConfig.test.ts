@@ -9,11 +9,17 @@
 import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
-import { getMCPConfigPath, configureMCPServer, onEmbeddedServerStarted } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
+import {
+  getMCPConfigPath,
+  configureMCPServer,
+  getCurrentSonarQubeMCPServerConfig,
+  onEmbeddedServerStarted
+} from '../../../src/aiAgentsConfiguration/mcpServerConfig';
 import { getCurrentAgentWithMCPSupport, IntegrationTarget } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { AllConnectionsTreeDataProvider, Connection } from '../../../src/connected/connections';
 import { ConnectionSettingsService } from '../../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
+import { Commands } from '../../../src/util/commands';
 
 const mockConnection: Connection = new Connection('test-connection-id', 'Test SonarQube', 'sonarqubeConnection', 'ok');
 
@@ -128,9 +134,9 @@ suite('mcpServerConfig', () => {
       .resolves('valid-test-token');
     const showInfoStub = sinon.stub(vscode.window, 'showInformationMessage').resolves(undefined);
     const executeCommandStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
-
     const fs = require('node:fs');
-    const existsStub = sinon.stub(fs, 'existsSync').returns(false);
+    const existsStub = sinon.stub(fs, 'existsSync').returns(true);
+    const readFileStub = sinon.stub(fs, 'readFileSync').returns('{"inputs": []}');
     const mkdirStub = sinon.stub(fs, 'mkdirSync');
     const writeFileStub = sinon.stub(fs, 'writeFileSync');
 
@@ -149,9 +155,11 @@ suite('mcpServerConfig', () => {
 
         const writtenConfig = JSON.parse(fileContent);
         expect(writtenConfig).to.have.property('mcpServers');
+        expect(writtenConfig.inputs).to.deep.equal([]);
         expect(writtenConfig.mcpServers).to.have.property('sonarqube');
         expect(writtenConfig.mcpServers.sonarqube.command).to.equal('test-command');
         expect(writtenConfig.mcpServers.sonarqube.args).to.deep.equal(['test-arg']);
+        expect(executeCommandStub.calledWith(Commands.REFRESH_AI_AGENTS_CONFIGURATION)).to.be.true;
     } finally {
       envStub.restore();
       extensionsStub.restore();
@@ -159,8 +167,42 @@ suite('mcpServerConfig', () => {
       showInfoStub.restore();
       executeCommandStub.restore();
       existsStub.restore();
+      readFileStub.restore();
       mkdirStub.restore();
       writeFileStub.restore();
+    }
+  });
+
+  test('should report configuration failures without rejecting the command', async () => {
+    const connectionServiceStub = sinon
+      .stub(ConnectionSettingsService.instance, 'getTokenForConnection')
+      .rejects(new Error('Could not read token'));
+    const showErrorStub = sinon.stub(vscode.window, 'showErrorMessage').resolves(undefined);
+
+    try {
+      await configureMCPServer(mockLanguageClient, mockAllConnectionsTreeDataProvider, mockConnection);
+
+      expect(showErrorStub.calledOnceWith(sinon.match('Could not read token'))).to.be.true;
+    } finally {
+      connectionServiceStub.restore();
+      showErrorStub.restore();
+    }
+  });
+
+  test('should treat a config without the agent root as not configured', () => {
+    const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
+    const extensionsStub = sinon.stub(vscode.extensions, 'getExtension');
+    const fs = require('node:fs');
+    const existsStub = sinon.stub(fs, 'existsSync').returns(true);
+    const readFileStub = sinon.stub(fs, 'readFileSync').returns('{"inputs": []}');
+
+    try {
+      expect(getCurrentSonarQubeMCPServerConfig()).to.be.undefined;
+    } finally {
+      envStub.restore();
+      extensionsStub.restore();
+      existsStub.restore();
+      readFileStub.restore();
     }
   });
 
