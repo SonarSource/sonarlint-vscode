@@ -228,23 +228,20 @@ export class AutoBindingService implements FileSystemSubscriber {
   }
 
   private async promptToBindManually(unboundFolder: vscode.WorkspaceFolder) {
-    vscode.window
-      .showInformationMessage(
-        CONFIGURE_BINDING_MANUALLY_PROMPT_MESSAGE,
-        BIND_ACTION,
-        DONT_ASK_AGAIN_ACTION
-      )
-      .then(async action => {
-        if (action === DONT_ASK_AGAIN_ACTION) {
-          this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
-            ...this.getFoldersThatShouldNotBeAutoBound(),
-            unboundFolder.uri.toString()
-          ]);
-        } else if (action === BIND_ACTION) {
-          const targetConnection = await this.getTargetConnectionForManualBinding();
-          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
-        }
-      });
+    const action = await vscode.window.showInformationMessage(
+      CONFIGURE_BINDING_MANUALLY_PROMPT_MESSAGE,
+      BIND_ACTION,
+      DONT_ASK_AGAIN_ACTION
+    );
+    if (action === DONT_ASK_AGAIN_ACTION) {
+      await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
+        ...this.getFoldersThatShouldNotBeAutoBound(),
+        unboundFolder.uri.toString()
+      ]);
+    } else if (action === BIND_ACTION) {
+      const targetConnection = await this.getTargetConnectionForManualBinding();
+      await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+    }
   }
 
   private async promptToAutoBindSingleOption(
