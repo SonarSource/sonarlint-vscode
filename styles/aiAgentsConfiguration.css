@@ -81,6 +81,11 @@ main {
   border-top: 1px solid var(--vscode-panel-border);
 }
 
+.cli-authentication {
+  display: block;
+  margin-top: 10px;
+}
+
 .agent-list {
   padding: 0;
   margin: 6px 0 0;
@@ -95,12 +100,41 @@ main {
   min-height: 28px;
 }
 
+.agent-details {
+  display: grid;
+  gap: 2px;
+}
+
+.agent-action {
+  flex: 0 0 auto;
+}
+
 .notice {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
   padding: 8px 10px;
   margin: 12px 0;
+  overflow-wrap: anywhere;
   color: var(--vscode-descriptionForeground);
   background: var(--vscode-textBlockQuote-background);
   border-left: 2px solid var(--vscode-textBlockQuote-border);
+}
+
+.notice[hidden] {
+  display: none;
+}
+
+@media (max-width: 360px) {
+  .agent-list li {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .agent-action {
+    width: 100%;
+  }
 }
 
 button {
@@ -125,7 +159,8 @@ button {
   background: var(--vscode-button-hoverBackground);
 }
 
-.primary-action:disabled {
+.primary-action:disabled,
+.secondary-action:disabled {
   cursor: default;
   opacity: 0.5;
 }
@@ -136,7 +171,7 @@ button {
   border: 1px solid transparent;
 }
 
-.secondary-action:hover {
+.secondary-action:hover:not(:disabled) {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
