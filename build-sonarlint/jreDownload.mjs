@@ -46,16 +46,12 @@ export default async function downloadJre(targetPlatform, javaVersion) {
 
   const manifestUrl = `https://download.eclipse.org/justj/jres/${javaVersion}/downloads/latest/justj.manifest`;
   // Download justj.manifest file
-  const manifest = await new Promise(function (resolve, reject) {
-    fetch(manifestUrl).then(response => {
-      const BAD_REQUEST_STATUS_CODE = 400;
-      if (!response.ok || response.status >= BAD_REQUEST_STATUS_CODE) {
-        reject(response.error || `${response.status} returned from ${manifestUrl}`);
-      } else {
-        resolve(response.text());
-      }
-    });
-  });
+  const response = await fetch(manifestUrl);
+  const BAD_REQUEST_STATUS_CODE = 400;
+  if (!response.ok || response.status >= BAD_REQUEST_STATUS_CODE) {
+    throw new Error(response.error || `${response.status} returned from ${manifestUrl}`);
+  }
+  const manifest = await response.text();
 
   if (!manifest) {
     const message = `Failed to download justj.manifest, please check if the link ${manifestUrl} is valid.`;

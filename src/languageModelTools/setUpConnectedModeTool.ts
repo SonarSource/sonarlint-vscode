@@ -66,7 +66,7 @@ export class SetUpConnectedModeTool implements vscode.LanguageModelTool<ISetUpCo
     const suggestions = await this.client.getConnectionSuggestions(workspaceFolderUri.toString());
     // If at least one suggestion found, use that
     if (suggestions.connectionSuggestions.length > 0) {
-      this.setUpConnectedModeUsingSuggestions(suggestions.connectionSuggestions, workspaceFolder);
+      await this.setUpConnectedModeUsingSuggestions(suggestions.connectionSuggestions, workspaceFolder);
     } else {
       // If no suggestions found, rely on user input
       if (!params.isSonarQubeCloud && params.serverUrl) {
@@ -119,9 +119,9 @@ export class SetUpConnectedModeTool implements vscode.LanguageModelTool<ISetUpCo
       // deduplicate suggestions first
       const uniqueSuggestions = deduplicateSuggestions(connectionSuggestions);
       if (uniqueSuggestions.length === 1) {
-        this.setUpConnectedModeUsingSuggestions([uniqueSuggestions[0]], workspaceFolder);
+        await this.setUpConnectedModeUsingSuggestions([uniqueSuggestions[0]], workspaceFolder);
       } else {
-        SharedConnectedModeSettingsService.instance.severalSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder)();
+        await SharedConnectedModeSettingsService.instance.severalSharedConfigPoposalHandler(uniqueSuggestions, workspaceFolder)();
       }
     }
   }

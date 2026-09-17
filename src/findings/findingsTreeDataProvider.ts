@@ -115,9 +115,9 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       vscode.commands.registerCommand(Commands.SHOW_CURRENT_FILE_ONLY, () => {
         this._instance.setFilter(FilterType.Current_File_Only);
       }),
-      vscode.commands.registerCommand(Commands.CHANGE_DEPENDENCY_RISK_STATUS, (finding: FindingNode) => {
-        this._instance.changeDependencyRiskStatus(finding);
-      })
+      vscode.commands.registerCommand(Commands.CHANGE_DEPENDENCY_RISK_STATUS, (finding: FindingNode) =>
+        this._instance.changeDependencyRiskStatus(finding)
+      )
     );
 
     // Initialize the context for the filter
@@ -411,8 +411,8 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   setFilter(filter: FilterType) {
     this.activeFilter = filter;
     this.refresh();
-    vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', getFilterContextValue(filter));
-    this.client.findingsFiltered(filter);
+    void vscode.commands.executeCommand('setContext', 'sonarqube.findingsFilter', getFilterContextValue(filter));
+    void this.client.findingsFiltered(filter);
   }
 
   getActiveFilter(): FilterType {
@@ -431,6 +431,6 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
   }
 
   async changeDependencyRiskStatus(finding: FindingNode) {
-    resolveIssueMultiStepInput(finding.fileUri, finding.key, finding.fileUri, false, true);
+    await resolveIssueMultiStepInput(finding.fileUri, finding.key, finding.fileUri, false, true);
   }
 }

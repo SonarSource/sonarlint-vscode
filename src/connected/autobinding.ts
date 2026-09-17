@@ -73,7 +73,7 @@ export class AutoBindingService implements FileSystemSubscriber {
     if (Object.keys(bindingSuggestionsPerConfigScope).length > AUTOBINDING_THRESHOLD) {
       await this.askUserBeforeAutoBinding();
     } else {
-      this.autoBindAllFolders(bindingSuggestionsPerConfigScope);
+      await this.autoBindAllFolders(bindingSuggestionsPerConfigScope);
     }
   }
 
@@ -87,7 +87,7 @@ export class AutoBindingService implements FileSystemSubscriber {
         if (!folderToBind) {
           return;
         }
-        this.autoBindSelectedFolder(folderToBind);
+        await this.autoBindSelectedFolder(folderToBind);
       } else {
         vscode.window.showInformationMessage(`All folders in this workspace are already bound
          to SonarQube (Server, Cloud) projects`);
@@ -112,7 +112,7 @@ export class AutoBindingService implements FileSystemSubscriber {
     const connectionId = targetConnection.connectionId;
     const suggestedBinding = await this.languageClient.getSuggestedBinding(configScopeId, connectionId);
     const suggestions = suggestedBinding?.suggestions?.[configScopeId] || [];
-    this.promptToAutoBind(suggestions, folderToBind);
+    await this.promptToAutoBind(suggestions, folderToBind);
   }
 
   private async selectFolderToBind(unboundFolders: vscode.WorkspaceFolder[]) : Promise<vscode.WorkspaceFolder> {
@@ -124,14 +124,14 @@ export class AutoBindingService implements FileSystemSubscriber {
     return unboundFolders.find(folder => folder.name === folderNameToBind);
   }
 
-  private autoBindAllFolders(bindingSuggestions: { [folderUri: string]: Array<BindingSuggestion> }) {
+  private async autoBindAllFolders(bindingSuggestions: { [folderUri: string]: Array<BindingSuggestion> }) {
     const foldersNotToAutoBound = this.getFoldersThatShouldNotBeAutoBound();
-    Object.keys(bindingSuggestions).forEach((folderUri) => {
+    for (const folderUri of Object.keys(bindingSuggestions)) {
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(folderUri));
       if (workspaceFolder && !foldersNotToAutoBound.includes(workspaceFolder.uri.toString())) {
-        this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
+        await this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
       }
-    });
+    }
   }
 
   isConnectionConfigured(): boolean {
@@ -200,20 +200,20 @@ export class AutoBindingService implements FileSystemSubscriber {
   }
 
   async askUserBeforeAutoBinding() {
-    return vscode.window
-      .showInformationMessage(
-        CONFIGURE_BINDING_PROMPT_MESSAGE,
-        BIND_ACTION,
-        DONT_ASK_AGAIN_ACTION
-      )
-      .then(async action => {
-        if (action === DONT_ASK_AGAIN_ACTION) {
-          this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
-        } else if (action === BIND_ACTION) {
-          const targetConnection = await this.getTargetConnectionForManualBinding();
-          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
-        }
-      });
+    const action = await vscode.window.showInformationMessage(
+      CONFIGURE_BINDING_PROMPT_MESSAGE,
+      BIND_ACTION,
+      DONT_ASK_AGAIN_ACTION
+    );
+    if (action === DONT_ASK_AGAIN_ACTION) {
+      await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_WS_FLAG, true);
+    } else if (action === BIND_ACTION) {
+      const targetConnection = await this.getTargetConnectionForManualBinding();
+      if (!targetConnection) {
+        return;
+      }
+      await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+    }
   }
 
   private async promptToAutoBind(bindingSuggestions: BindingSuggestion[], unboundFolder: vscode.WorkspaceFolder) {
@@ -228,23 +228,23 @@ export class AutoBindingService implements FileSystemSubscriber {
   }
 
   private async promptToBindManually(unboundFolder: vscode.WorkspaceFolder) {
-    vscode.window
-      .showInformationMessage(
-        CONFIGURE_BINDING_MANUALLY_PROMPT_MESSAGE,
-        BIND_ACTION,
-        DONT_ASK_AGAIN_ACTION
-      )
-      .then(async action => {
-        if (action === DONT_ASK_AGAIN_ACTION) {
-          this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
-            ...this.getFoldersThatShouldNotBeAutoBound(),
-            unboundFolder.uri.toString()
-          ]);
-        } else if (action === BIND_ACTION) {
-          const targetConnection = await this.getTargetConnectionForManualBinding();
-          await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
-        }
-      });
+    const action = await vscode.window.showInformationMessage(
+      CONFIGURE_BINDING_MANUALLY_PROMPT_MESSAGE,
+      BIND_ACTION,
+      DONT_ASK_AGAIN_ACTION
+    );
+    if (action === DONT_ASK_AGAIN_ACTION) {
+      await this.workspaceState.update(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, [
+        ...this.getFoldersThatShouldNotBeAutoBound(),
+        unboundFolder.uri.toString()
+      ]);
+    } else if (action === BIND_ACTION) {
+      const targetConnection = await this.getTargetConnectionForManualBinding();
+      if (!targetConnection) {
+        return;
+      }
+      await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
+    }
   }
 
   private async promptToAutoBindSingleOption(
@@ -272,6 +272,9 @@ export class AutoBindingService implements FileSystemSubscriber {
         break;
       case CHOOSE_MANUALLY_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();
+        if (!targetConnection) {
+          return;
+        }
         await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;
       }
@@ -301,6 +304,9 @@ export class AutoBindingService implements FileSystemSubscriber {
     switch (result) {
       case BIND_ACTION: {
         const targetConnection = await this.getTargetConnectionForManualBinding();
+        if (!targetConnection) {
+          return;
+        }
         await this.bindingService.createOrEditBinding(targetConnection.connectionId, targetConnection.contextValue);
         break;
       }

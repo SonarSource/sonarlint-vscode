@@ -191,13 +191,13 @@ export class SecondaryLocationsTree implements vscode.TreeDataProvider<LocationT
       }
     } else if (this.rootItem.children[0] instanceof LocationItem) {
       // Flattened locations: take the first one
-      navigateToLocation(this.rootItem.children[0]);
+      await navigateToLocation(this.rootItem.children[0]);
     } else if (this.rootItem.children[0].children[0] instanceof LocationItem) {
       // Locations in a single file: take the first location of the first flow
-      navigateToLocation(this.rootItem.children[0].children[0]);
+      await navigateToLocation(this.rootItem.children[0].children[0]);
     } else {
       // Multiple file locations: take the first location of the first file of the first flow
-      navigateToLocation(this.rootItem.children[0].children[0].children[0]);
+      await navigateToLocation(this.rootItem.children[0].children[0].children[0]);
     }
   }
 

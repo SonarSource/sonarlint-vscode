@@ -184,7 +184,7 @@ export async function useProvidedFolderOrPickManuallyAndScan(
 ) {
   if (!folderUri?.path) {
     if (!workspaceFolders || workspaceFolders.length === 0) {
-      noWorkspaceFolderToScanMessage();
+      void noWorkspaceFolderToScanMessage();
       return;
     }
     if (workspaceFolders.length === 1) {
@@ -313,7 +313,7 @@ export async function changeHotspotStatus(hotspotServerKey: string, fileUriAsSti
                                                   languageClient: SonarLintExtendedLanguageClient) {
   const fileUri = vscode.Uri.parse(fileUriAsSting);
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
-  doChangeHotspotStatus(hotspotServerKey, fileUriAsSting, workspaceFolder, languageClient);
+  await doChangeHotspotStatus(hotspotServerKey, fileUriAsSting, workspaceFolder, languageClient);
 }
 
 // visible for testing
@@ -341,10 +341,9 @@ export async function doChangeHotspotStatus(hotspotServerKey: string, fileUriAsS
     placeHolder: 'Choose a status for the hotspot'
   });
   if (chosenStatus) {
-    showChangeStatusConfirmationDialog('hotspot').then(async answer => {
-      if (answer === 'Yes') {
-        languageClient.changeHotspotStatus(hotspotServerKey, chosenStatus, fileUriAsSting);
-      }
-    });
+    const answer = await showChangeStatusConfirmationDialog('hotspot');
+    if (answer === 'Yes') {
+      await languageClient.changeHotspotStatus(hotspotServerKey, chosenStatus, fileUriAsSting);
+    }
   }
 }

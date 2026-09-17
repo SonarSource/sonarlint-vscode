@@ -367,17 +367,17 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint')) {
       // only send notification to let language server pull the latest settings when the change is relevant
-      languageClient.sendNotification('workspace/didChangeConfiguration', { settings: null })
+      void languageClient.sendNotification('workspace/didChangeConfiguration', { settings: null })
     }
   });
 
   VSCode.workspace.onDidChangeWorkspaceFolders(async event => {
     for (const removed of event.removed) {
-      FileSystemServiceImpl.instance.didRemoveWorkspaceFolder(removed);
+      await FileSystemServiceImpl.instance.didRemoveWorkspaceFolder(removed);
     }
 
     for (const added of event.added) {
-      FileSystemServiceImpl.instance.didAddWorkspaceFolder(added);
+      void FileSystemServiceImpl.instance.didAddWorkspaceFolder(added);
     }
   });
 
@@ -452,7 +452,7 @@ function cleanRemoteName(remoteName?: string): string {
 
 function suggestBinding(params: ExtendedClient.SuggestBindingParams) {
   logToSonarLintOutput(`Received binding suggestions: ${JSON.stringify(params)}`);
-  AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
+  void AutoBindingService.instance.checkConditionsAndAttemptAutobinding(params);
 }
 
 function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
@@ -473,7 +473,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       RemediationService.instance.trackFixSuggestionEvent(params);
     } else {
       // Labs disabled: Show immediately (old behavior)
-      FixSuggestionService.instance.showFixSuggestion(params);
+      void FixSuggestionService.instance.showFixSuggestion(params);
     }
   })
   languageClient.onNotification(ExtendedClient.ShowRuleDescriptionNotification.type, showRuleDescription(context));
@@ -575,7 +575,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(ExtendedClient.DidChangePluginStatuses.type, params => {
     if (PluginStatusPanel.isOpen()) {
-      PluginStatusPanel.refresh(params.pluginStatuses, params.configScopeId);
+      void PluginStatusPanel.refresh(params.pluginStatuses, params.configScopeId);
     }
   });
 }

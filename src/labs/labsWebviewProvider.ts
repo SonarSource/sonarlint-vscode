@@ -60,7 +60,7 @@ export class LabsWebviewProvider implements vscode.WebviewViewProvider {
             this.sendInitialState();
             break;
           case 'signup':
-            this.handleSignup(message.email);
+            void this.handleSignup(message.email);
             break;
           case 'openHelpLink':
             this.handleOpenHelpLink(message.linkId);

@@ -157,13 +157,13 @@ export class CommandsManager {
         (workspaceUri: string, issueKey: string, fileUri: string, isTaintIssue: boolean, isDependencyRisk = false) =>
           resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue, isDependencyRisk)
       ),
-      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () => {
-        IssueService.instance.reopenLocalIssues();
-      }),
+      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () =>
+        IssueService.instance.reopenLocalIssues()
+      ),
       vscode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
         const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
         if (connectionDeleted) {
-          BindingService.instance.deleteBindingsForConnection(connection);
+          await BindingService.instance.deleteBindingsForConnection(connection);
         }
       }),
       vscode.commands.registerCommand(Commands.EDIT_PROJECT_BINDING, binding =>
@@ -191,9 +191,9 @@ export class CommandsManager {
         this.languageClient.forgetFolderHotspots()
       ),
       vscode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()),
-      vscode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () => {
-        IssueService.instance.analyseOpenFileIgnoringExcludes(true);
-        vscode.commands.executeCommand('SonarQube.Findings.focus');
+      vscode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, async () => {
+        await IssueService.instance.analyseOpenFileIgnoringExcludes(true);
+        void vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
       vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
         const workspaceFolderUris = vscode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));
@@ -201,10 +201,10 @@ export class CommandsManager {
           vscode.window.showWarningMessage('No workspace folders found; Ignoring request to analyze VCS changed files.');
           return;
         }
-        this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
+        void this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
           configScopeIds: workspaceFolderUris
         });
-        vscode.commands.executeCommand('SonarQube.Findings.focus');
+        void vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
       vscode.commands.registerCommand(
         Commands.FOCUS_ON_CONNECTION,
@@ -235,8 +235,8 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.CAPTURE_HEAP_DUMP, () =>
         FlightRecorderService.instance.captureHeapDump()
       ),
-      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, connection => {
-        configureMCPServer(this.languageClient, this.allConnectionsTreeDataProvider, connection);
+      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async connection => {
+        await configureMCPServer(this.languageClient, this.allConnectionsTreeDataProvider, connection);
         this.aiAgentsConfigurationTreeDataProvider.refresh();
       }),
       vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, () => openMCPServerConfigurationFile()),
@@ -250,28 +250,28 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.INTRODUCE_SONARQUBE_RULES_FILE, () =>
         introduceSonarQubeRulesFile(this.languageClient)
       ),
-      vscode.commands.registerCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT, () => {
+      vscode.commands.registerCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
         if (agent) {
-          installHook(this.languageClient, agent);
+          await installHook(this.languageClient, agent);
         }
       }),
-      vscode.commands.registerCommand(Commands.UNINSTALL_AI_AGENT_HOOK_SCRIPT, () => {
+      vscode.commands.registerCommand(Commands.UNINSTALL_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
         if (agent) {
-          uninstallHook(agent);
+          await uninstallHook(agent);
         }
       }),
-      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_SCRIPT, () => {
+      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
         if (agent) {
-          openHookScript(agent);
+          await openHookScript(agent);
         }
       }),
-      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION, () => {
+      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION, async () => {
         const agent = getCurrentAgentWithHookSupport();
         if (agent) {
-          openHookConfiguration(agent);
+          await openHookConfiguration(agent);
         }
       }),
       vscode.commands.registerCommand(Commands.SHOW_SUPPORTED_LANGUAGES, async () => {
