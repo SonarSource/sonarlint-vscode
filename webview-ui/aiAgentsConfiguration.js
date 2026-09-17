@@ -12,6 +12,9 @@ const loading = document.getElementById('loading');
 const loadError = document.getElementById('load-error');
 const content = document.getElementById('content');
 const cliStatus = document.getElementById('cli-status');
+const cliAction = document.getElementById('cli-action');
+const cliAuthentication = document.getElementById('cli-authentication');
+const cliFeedback = document.getElementById('cli-feedback');
 const detectedLabel = document.getElementById('detected-label');
 const agentList = document.getElementById('agent-list');
 const noAgents = document.getElementById('no-agents');
@@ -36,6 +39,10 @@ window.addEventListener('message', event => {
     content.hidden = true;
     loading.hidden = true;
     loadError.hidden = false;
+  } else if (event.data.command === 'setupOutcome') {
+    cliFeedback.hidden = false;
+    cliFeedback.dataset.running = 'false';
+    cliFeedback.textContent = event.data.message;
   }
 });
 
@@ -71,6 +78,9 @@ function render(state) {
 
 function renderCli(state) {
   renderCliStatus(state.cli.installationStatus);
+  renderCliAuthentication(state.cli);
+  renderCliAction(state);
+  renderCliFeedback(state.cli.operationInProgress);
 
   agentList.replaceChildren();
   const compatibleAgents = state.agents.filter(agent => agent.supportsCliIntegration);
@@ -81,7 +91,20 @@ function renderCli(state) {
     name.textContent = agent.name;
     source.className = 'agent-source';
     source.textContent = agent.source === 'builtIn' ? 'Built in' : 'Extension';
-    item.append(name, source);
+    const details = document.createElement('div');
+    details.className = 'agent-details';
+    details.append(name, source);
+    const action = document.createElement('button');
+    action.className = 'secondary-action agent-action';
+    action.type = 'button';
+    action.textContent = 'Integrate for all projects';
+    action.disabled =
+      !cliInstalled ||
+      state.cli.authenticationStatus !== 'AUTHENTICATED' ||
+      state.isRemote ||
+      state.cli.operationInProgress;
+    action.addEventListener('click', () => postCliSetup({ command: 'integrateAgent', agent: agent.id }));
+    item.append(details, action);
     agentList.append(item);
   }
   const hasCompatibleAgents = compatibleAgents.length > 0;
@@ -113,6 +136,94 @@ function renderCliStatus(installationStatus) {
     setStatus(cliStatus, 'Unavailable', 'unavailable');
   } else {
     setStatus(cliStatus, 'Not detected', 'notConfigured');
+  }
+}
+
+function renderCliAuthentication(cli) {
+  if (cli.installationStatus === 'NOT_INSTALLED') {
+    cliAuthentication.hidden = true;
+    cliAuthentication.textContent = '';
+    return;
+  }
+
+  cliAuthentication.hidden = false;
+  if (cli.installationStatus === 'UNUSABLE') {
+    cliAuthentication.textContent = 'The detected CLI installation could not be used.';
+  } else if (cli.authenticationStatus === 'AUTHENTICATED') {
+    const connection = cli.organization ?? cli.serverUrl;
+    cliAuthentication.textContent = connection ? `Authenticated with ${connection}` : 'CLI authentication detected.';
+  } else if (cli.authenticationStatus === 'UNAUTHENTICATED') {
+    cliAuthentication.textContent = 'Sign in to continue with agent integration.';
+  } else if (cli.authenticationStatus === 'INVALID') {
+    cliAuthentication.textContent = 'CLI authentication is invalid. Sign in again to continue.';
+  } else if (cli.authenticationStatus === 'UNVERIFIED') {
+    cliAuthentication.textContent = 'CLI authentication could not be verified. Sign in again or refresh.';
+  } else if (cli.authenticationStatus === 'UNAVAILABLE') {
+    cliAuthentication.textContent = 'Authentication verification is unavailable. Refresh to try again.';
+  } else {
+    cliAuthentication.textContent = 'CLI authentication could not be verified. Refresh to try again.';
+  }
+}
+
+function renderCliAction(state) {
+  if (state.cli.operationInProgress) {
+    setVisible(cliAction, true);
+    cliAction.textContent = 'Setup running in terminal…';
+    cliAction.disabled = true;
+    cliAction.onclick = undefined;
+    return;
+  }
+
+  let label;
+  let command;
+  if (state.cli.installationStatus === 'NOT_INSTALLED') {
+    label = 'Install SonarQube CLI';
+    command = 'installCli';
+  } else if (state.cli.installationStatus === 'UNUSABLE') {
+    label = 'Open troubleshooting guide';
+    command = 'openCliDocumentation';
+  } else if (['UNAUTHENTICATED', 'INVALID', 'UNVERIFIED'].includes(state.cli.authenticationStatus)) {
+    label = 'Sign in with SonarQube CLI';
+    command = 'authenticateCli';
+  } else if (state.cli.authenticationStatus !== 'AUTHENTICATED') {
+    label = 'Refresh';
+    command = 'refresh';
+  }
+
+  setVisible(cliAction, command !== undefined);
+  if (command === undefined) {
+    cliAction.onclick = undefined;
+    return;
+  }
+  cliAction.textContent = label;
+  cliAction.disabled = state.isRemote && ['installCli', 'authenticateCli'].includes(command);
+  cliAction.onclick = () => {
+    if (['installCli', 'authenticateCli'].includes(command)) {
+      postCliSetup({ command });
+    } else {
+      vscode.postMessage({ command });
+    }
+  };
+}
+
+function postCliSetup(message) {
+  cliAction.disabled = true;
+  agentList.querySelectorAll('button').forEach(button => (button.disabled = true));
+  cliFeedback.hidden = false;
+  cliFeedback.dataset.running = 'true';
+  cliFeedback.textContent = 'Opening the SonarQube CLI terminal…';
+  vscode.postMessage(message);
+}
+
+function renderCliFeedback(operationInProgress) {
+  if (operationInProgress) {
+    cliFeedback.hidden = false;
+    cliFeedback.dataset.running = 'true';
+    cliFeedback.textContent = 'Setup is running in the SonarQube CLI terminal.';
+  } else if (cliFeedback.dataset.running === 'true') {
+    cliFeedback.hidden = true;
+    cliFeedback.dataset.running = 'false';
+    cliFeedback.textContent = '';
   }
 }
 
