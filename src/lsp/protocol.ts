@@ -773,6 +773,117 @@ export namespace ExtendedServer {
     );
   }
 
+  export type AiAgent = 'CURSOR' | 'GITHUB_COPILOT' | 'KIRO' | 'WINDSURF' | 'CLAUDE_CODE' | 'CODEX';
+  export type AiIntegrationHost = 'VSCODE' | 'CURSOR' | 'WINDSURF' | 'KIRO' | 'INTELLIJ' | 'VISUAL_STUDIO' | 'OTHER';
+  export type AiIntegrationScope = 'GLOBAL' | 'PROJECT';
+  export type CliInstallationStatus = 'NOT_INSTALLED' | 'INSTALLED' | 'UNUSABLE';
+  export type CliAuthenticationStatus =
+    | 'AUTHENTICATED'
+    | 'UNAUTHENTICATED'
+    | 'INVALID'
+    | 'UNVERIFIED'
+    | 'UNAVAILABLE'
+    | 'UNKNOWN';
+  export type CliCommandAction = 'INSTALL' | 'AUTHENTICATE' | 'INTEGRATE';
+  export type McpConfigurationState = 'NOT_CONFIGURED' | 'STANDALONE' | 'CLI_MANAGED' | 'UNKNOWN' | 'MALFORMED';
+
+  export interface GetAiIntegrationStateParams {
+    ideHost: AiIntegrationHost;
+    detectedAgents: AiAgent[];
+    scope: AiIntegrationScope;
+    configurationScopeId?: string | null;
+  }
+
+  export interface SonarQubeCliState {
+    installationStatus: CliInstallationStatus;
+    authenticationStatus: CliAuthenticationStatus;
+    executablePath?: string | null;
+    version?: string | null;
+    serverUrl?: string | null;
+    organization?: string | null;
+  }
+
+  export interface AiIntegrationAgentCapability {
+    agent: AiAgent;
+    cliIntegrationSupported: boolean;
+    standaloneMcpSupported: boolean;
+    hookSupported: boolean;
+    skillSupported: boolean;
+  }
+
+  export interface AiIntegrationConnection {
+    connectionId: string;
+    serverUrl: string;
+    organization?: string | null;
+  }
+
+  export interface GetAiIntegrationStateResponse {
+    cli: SonarQubeCliState;
+    agents: AiIntegrationAgentCapability[];
+    connectionChoices: AiIntegrationConnection[];
+    recommendedConnectionId?: string | null;
+  }
+
+  export namespace GetAiIntegrationState {
+    export const type = new lsp.RequestType<GetAiIntegrationStateParams, GetAiIntegrationStateResponse, null>(
+      'sonarlint/getAiIntegrationState'
+    );
+  }
+
+  export interface PrepareCliCommandParams {
+    action: CliCommandAction;
+    agent?: AiAgent | null;
+    serverUrl?: string | null;
+    organization?: string | null;
+    connectionId?: string | null;
+  }
+
+  export interface PrepareCliCommandResponse {
+    executable: string;
+    arguments: string[];
+    interactive: boolean;
+  }
+
+  export namespace PrepareCliCommand {
+    export const type = new lsp.RequestType<PrepareCliCommandParams, PrepareCliCommandResponse, null>(
+      'sonarlint/prepareCliCommand'
+    );
+  }
+
+  export interface McpConfigurationInspectionParams {
+    agent: AiAgent;
+    content?: string | null;
+  }
+
+  export interface McpConfigurationInspectionResponse {
+    state: McpConfigurationState;
+    diagnostics: string[];
+  }
+
+  export namespace InspectMcpConfiguration {
+    export const type = new lsp.RequestType<McpConfigurationInspectionParams, McpConfigurationInspectionResponse, null>(
+      'sonarlint/inspectMcpConfiguration'
+    );
+  }
+
+  export interface McpConfigurationUpdateParams {
+    agent: AiAgent;
+    content?: string | null;
+    sonarMcpConfiguration: string;
+  }
+
+  export interface McpConfigurationUpdatePlanResponse {
+    state: McpConfigurationState;
+    updatedContent?: string | null;
+    diagnostics: string[];
+  }
+
+  export namespace PlanMcpConfigurationUpdate {
+    export const type = new lsp.RequestType<McpConfigurationUpdateParams, McpConfigurationUpdatePlanResponse, null>(
+      'sonarlint/planMcpConfigurationUpdate'
+    );
+  }
+
   export interface GetMCPRulesFileContentResponse {
     content: string;
   }
