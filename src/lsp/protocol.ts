@@ -773,19 +773,59 @@ export namespace ExtendedServer {
     );
   }
 
-  export type AiAgent = 'CURSOR' | 'GITHUB_COPILOT' | 'KIRO' | 'WINDSURF' | 'CLAUDE_CODE' | 'CODEX';
-  export type AiIntegrationHost = 'VSCODE' | 'CURSOR' | 'WINDSURF' | 'KIRO' | 'INTELLIJ' | 'VISUAL_STUDIO' | 'OTHER';
-  export type AiIntegrationScope = 'GLOBAL' | 'PROJECT';
-  export type CliInstallationStatus = 'NOT_INSTALLED' | 'INSTALLED' | 'UNUSABLE';
-  export type CliAuthenticationStatus =
-    | 'AUTHENTICATED'
-    | 'UNAUTHENTICATED'
-    | 'INVALID'
-    | 'UNVERIFIED'
-    | 'UNAVAILABLE'
-    | 'UNKNOWN';
-  export type CliCommandAction = 'INSTALL' | 'AUTHENTICATE' | 'INTEGRATE';
-  export type McpConfigurationState = 'NOT_CONFIGURED' | 'STANDALONE' | 'CLI_MANAGED' | 'UNKNOWN' | 'MALFORMED';
+  export enum AiAgent {
+    CURSOR,
+    GITHUB_COPILOT,
+    KIRO,
+    WINDSURF,
+    CLAUDE_CODE,
+    CODEX
+  }
+
+  export enum AiIntegrationHost {
+    VSCODE,
+    CURSOR,
+    WINDSURF,
+    KIRO,
+    INTELLIJ,
+    VISUAL_STUDIO,
+    OTHER
+  }
+
+  export enum AiIntegrationScope {
+    GLOBAL,
+    PROJECT
+  }
+
+  export enum CliInstallationStatus {
+    NOT_INSTALLED,
+    INSTALLED,
+    UNUSABLE
+  }
+
+  export enum CliAuthenticationStatus {
+    AUTHENTICATED,
+    UNAUTHENTICATED,
+    INVALID,
+    UNVERIFIED,
+    UNAVAILABLE,
+    UNKNOWN
+  }
+
+  export enum CliCommandAction {
+    INSTALL,
+    AUTHENTICATE,
+    INTEGRATE
+  }
+
+  export enum McpConfigurationState {
+    NOT_CONFIGURED,
+    STANDALONE,
+    CLI_MANAGED,
+    LEGACY,
+    UNKNOWN,
+    MALFORMED
+  }
 
   export interface GetAiIntegrationStateParams {
     ideHost: AiIntegrationHost;
