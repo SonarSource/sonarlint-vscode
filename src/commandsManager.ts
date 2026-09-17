@@ -193,7 +193,7 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()),
       vscode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, async () => {
         await IssueService.instance.analyseOpenFileIgnoringExcludes(true);
-        await vscode.commands.executeCommand('SonarQube.Findings.focus');
+        void vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
       vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
         const workspaceFolderUris = vscode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));

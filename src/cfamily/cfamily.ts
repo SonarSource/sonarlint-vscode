@@ -70,21 +70,22 @@ export function notifyMissingCompileCommands(context: vscode.ExtensionContext) {
     const configureCompileCommandsAction = 'Configure compile commands';
     const message = `SonarQube for VS Code is unable to analyze C and C++ file(s) because there is no configured compilation 
       database.`;
-    vscode.window
-      .showWarningMessage(message, configureCompileCommandsAction, DONT_ASK_AGAIN_ACTION)
-      .then(async selection => {
-        switch (selection) {
-          case DONT_ASK_AGAIN_ACTION:
-            context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
-            break;
-          case configureCompileCommandsAction:
-            await configureCompilationDatabase();
-            break;
-          default:
-            remindMeLaterAboutCompileCommandsFlag = true;
-            break;
-        }
-      });
+    const selection = await vscode.window.showWarningMessage(
+      message,
+      configureCompileCommandsAction,
+      DONT_ASK_AGAIN_ACTION
+    );
+    switch (selection) {
+      case DONT_ASK_AGAIN_ACTION:
+        await context.workspaceState.update(DO_NOT_ASK_ABOUT_COMPILE_COMMANDS_FLAG, true);
+        break;
+      case configureCompileCommandsAction:
+        await configureCompilationDatabase();
+        break;
+      default:
+        remindMeLaterAboutCompileCommandsFlag = true;
+        break;
+    }
   };
 }
 

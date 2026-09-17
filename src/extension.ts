@@ -377,7 +377,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
 
     for (const added of event.added) {
-      await FileSystemServiceImpl.instance.didAddWorkspaceFolder(added);
+      void FileSystemServiceImpl.instance.didAddWorkspaceFolder(added);
     }
   });
 

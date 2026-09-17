@@ -238,7 +238,7 @@ export class BindingService {
       remoteProjectsQuickPick.onDidChangeSelection(selection => {
         selectedRemoteProject = selection[0];
 
-        void this.saveManualBinding(selectedRemoteProject.description, workspaceFolder, connectionId)
+        void this.saveManualBinding(selectedRemoteProject.description, workspaceFolder, connectionId);
         remoteProjectsQuickPick.dispose();
       });
 
@@ -322,6 +322,13 @@ export class BindingService {
     }
   }
 
+  private async promptToBindManually(workspaceFolder: VSCode.WorkspaceFolder) {
+    const action = await VSCode.window.showWarningMessage('No remote projects to display.', BIND_MANUALLY_ACTION);
+    if (action === BIND_MANUALLY_ACTION) {
+      await bindManuallyAction(workspaceFolder);
+    }
+  }
+
   async getRemoteProjects(connectionId: string) {
     return this.languageClient.getRemoteProjectsForConnection(connectionId);
   }
@@ -337,11 +344,7 @@ export class BindingService {
       }
 
       if (remoteProjects.size === 0) {
-        VSCode.window.showWarningMessage('No remote projects to display.', BIND_MANUALLY_ACTION).then(async action => {
-          if (action === BIND_MANUALLY_ACTION) {
-            await bindManuallyAction(workspaceFolder);
-          }
-        });
+        void this.promptToBindManually(workspaceFolder);
       }
 
       remoteProjects.forEach((v, k) => {
