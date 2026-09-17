@@ -176,8 +176,6 @@ export async function installHook(
 
     await writeHooksConfig(configPath, existingConfig);
 
-    await vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
-
     vscode.window.showInformationMessage(
       `Hook script installed successfully for ${toAgentDisplayName(agent)}. Code will be analyzed automatically after AI generation.`
     );
@@ -285,4 +283,3 @@ export async function openHookConfiguration(agent: IntegrationTarget): Promise<v
     vscode.window.showErrorMessage(`Failed to open hook configuration: ${error.message}`);
   }
 }
-
