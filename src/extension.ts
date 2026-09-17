@@ -19,17 +19,10 @@ import { AutoBindingService } from './connected/autobinding';
 import { assistCreatingConnection } from './connected/assistCreatingConnection';
 import { BindingService, showSoonUnsupportedVersionMessage } from './connected/binding';
 import { AllConnectionsTreeDataProvider, ConnectionsNode } from './connected/connections';
-import {
-  handleInvalidTokenNotification
-} from './connected/connectionsetup';
-import {
-  HelpAndFeedbackLink,
-  HelpAndFeedbackTreeDataProvider
-} from './help/helpAndFeedbackTreeDataProvider';
+import { handleInvalidTokenNotification } from './connected/connectionsetup';
+import { HelpAndFeedbackLink, HelpAndFeedbackTreeDataProvider } from './help/helpAndFeedbackTreeDataProvider';
 import { AIAgentsConfigurationWebviewProvider } from './aiAgentsConfiguration/aiAgentsConfigurationWebviewProvider';
-import {
-  showSecurityHotspot,
-} from './hotspot/hotspots';
+import { showSecurityHotspot } from './hotspot/hotspots';
 import { FindingsTreeDataProvider, FindingsTreeViewItem } from './findings/findingsTreeDataProvider';
 import { FilterType, getFilterDisplayName } from './findings/findingsTreeDataProviderUtil';
 import { getJavaConfig, installClasspathListener } from './java/java';
@@ -102,7 +95,10 @@ let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
 let aiAgentsConfigurationWebviewProvider: AIAgentsConfigurationWebviewProvider;
 let remediationWebviewProvider: RemediationWebviewProvider;
-const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
+const currentProgress: Record<
+  string,
+  { progress: VSCode.Progress<{ increment?: number }>; resolve: () => void } | undefined
+> = {};
 
 async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamInfo> {
   try {
@@ -120,7 +116,7 @@ async function runJavaServer(context: VSCode.ExtensionContext): Promise<StreamIn
     return {
       reader: process.stdout,
       writer: process.stdin
-    }
+    };
   } catch (error) {
     //show error
     VSCode.window.showErrorMessage(error.message, error.label).then(selection => {
@@ -213,19 +209,21 @@ export async function activate(context: VSCode.ExtensionContext) {
             uiKind: VSCode.UIKind[VSCode.env.uiKind],
             installTime,
             isTelemetryEnabled: VSCode.env.isTelemetryEnabled
-          },
+          }
         },
         enableNotebooks: true,
         clientNodePath: VSCode.workspace.getConfiguration().get('sonarlint.pathToNodeExecutable'),
         eslintBridgeServerPath: Path.resolve(context.extensionPath, 'eslint-bridge'),
-        connections: VSCode.workspace.getConfiguration('sonarlint.connectedMode').get('connections', {"sonarqube": [], "sonarcloud": []}),
+        connections: VSCode.workspace
+          .getConfiguration('sonarlint.connectedMode')
+          .get('connections', { sonarqube: [], sonarcloud: [] }),
         rules: VSCode.workspace.getConfiguration('sonarlint').get('rules', {}),
         focusOnNewCode: VSCode.workspace.getConfiguration('sonarlint').get('focusOnNewCode', false),
         automaticAnalysis: VSCode.workspace.getConfiguration('sonarlint').get('automaticAnalysis', true)
       };
     },
     outputChannel: getLogOutput(),
-    revealOutputChannelOn: 4, // never
+    revealOutputChannelOn: 4 // never
   };
 
   // Create the language client and start the client.
@@ -245,8 +243,19 @@ export async function activate(context: VSCode.ExtensionContext) {
   FileSystemServiceImpl.init();
   RemediationService.init();
   SharedConnectedModeSettingsService.init(languageClient, FileSystemServiceImpl.instance, context);
-  BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance, SharedConnectedModeSettingsService.instance);
-  AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance, FileSystemServiceImpl.instance, languageClient);
+  BindingService.init(
+    languageClient,
+    context.workspaceState,
+    ConnectionSettingsService.instance,
+    SharedConnectedModeSettingsService.instance
+  );
+  AutoBindingService.init(
+    BindingService.instance,
+    context.workspaceState,
+    ConnectionSettingsService.instance,
+    FileSystemServiceImpl.instance,
+    languageClient
+  );
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
   });
@@ -300,45 +309,49 @@ export async function activate(context: VSCode.ExtensionContext) {
   IssueService.init(languageClient, secondaryLocationsTree, issueLocationsView);
 
   context.subscriptions.push(
-    languageClient.onNotification(ExtendedClient.ShowIssueNotification.type, async (issue) => {
+    languageClient.onNotification(ExtendedClient.ShowIssueNotification.type, async issue => {
       await IssueService.showIssue(issue);
       if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
         RemediationService.instance.trackIssueEvent(issue);
       }
-    })
-  );
+    }),
+    languageClient.onNotification(
+      ExtendedClient.StartProgressNotification.type,
+      (params: ExtendedClient.StartProgressNotificationParams) => {
+        const taskId = params.taskId;
+        if (currentProgress[taskId]) {
+          // If there's an existing progress, resolve it first
+          currentProgress[taskId].resolve();
+        }
 
-  context.subscriptions.push(languageClient.onNotification(ExtendedClient.StartProgressNotification.type, (params: ExtendedClient.StartProgressNotificationParams) => {
-    const taskId = params.taskId;
-    if (currentProgress[taskId]) {
-      // If there's an existing progress, resolve it first
-      currentProgress[taskId].resolve();
-    }
-    
-    VSCode.window.withProgress(
-      {
-        location: VSCode.ProgressLocation.Notification,
-        title: 'SonarQube for IDE',
-        cancellable: false
-      },
-      (progress) => {
-        return new Promise<void>((resolve) => {
-          currentProgress[taskId] = { progress, resolve };
-          if (params.message) {
-            progress.report({ message: params.message });
+        void VSCode.window.withProgress(
+          {
+            location: VSCode.ProgressLocation.Notification,
+            title: 'SonarQube for IDE',
+            cancellable: false
+          },
+          progress => {
+            return new Promise<void>(resolve => {
+              currentProgress[taskId] = { progress, resolve };
+              if (params.message) {
+                progress.report({ message: params.message });
+              }
+            });
           }
-        });
+        );
       }
-    );
-  }));
-
-  context.subscriptions.push(languageClient.onNotification(ExtendedClient.EndProgressNotification.type, (params: ExtendedClient.EndProgressNotificationParams) => {
-    const taskId = params.taskId
-    if (currentProgress[taskId]) {
-      currentProgress[taskId].resolve();
-      currentProgress[taskId] = undefined;
-    }
-  }));
+    ),
+    languageClient.onNotification(
+      ExtendedClient.EndProgressNotification.type,
+      (params: ExtendedClient.EndProgressNotificationParams) => {
+        const taskId = params.taskId;
+        if (currentProgress[taskId]) {
+          currentProgress[taskId].resolve();
+          currentProgress[taskId] = undefined;
+        }
+      }
+    )
+  );
 
   const automaticAnalysisService = new AutomaticAnalysisService(findingsView);
   automaticAnalysisService.updateAutomaticAnalysisStatusBarAndFindingsViewMessage();
@@ -366,7 +379,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
     if (event.affectsConfiguration('sonarlint')) {
       // only send notification to let language server pull the latest settings when the change is relevant
-      void languageClient.sendNotification('workspace/didChangeConfiguration', { settings: null })
+      void languageClient.sendNotification('workspace/didChangeConfiguration', { settings: null });
     }
   });
 
@@ -380,10 +393,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
   });
 
-  aiAgentsConfigurationWebviewProvider = new AIAgentsConfigurationWebviewProvider(
-    context,
-    languageClient
-  );
+  aiAgentsConfigurationWebviewProvider = new AIAgentsConfigurationWebviewProvider(context, languageClient);
   context.subscriptions.push(
     VSCode.window.registerWebviewViewProvider('SonarLint.AIAgentsConfiguration', aiAgentsConfigurationWebviewProvider)
   );
@@ -395,9 +405,17 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  const commandsManager = new CommandsManager(context, languageClient, allRulesTreeDataProvider, allRulesView, allConnectionsTreeDataProvider, allConnectionsView, aiAgentsConfigurationWebviewProvider);
+  const commandsManager = new CommandsManager(
+    context,
+    languageClient,
+    allRulesTreeDataProvider,
+    allRulesView,
+    allConnectionsTreeDataProvider,
+    allConnectionsView,
+    aiAgentsConfigurationWebviewProvider
+  );
   commandsManager.registerCommands();
-  
+
   // Update badge when tree data changes
   context.subscriptions.push(
     findingsTreeDataProvider.onDidChangeTreeData(() => {
@@ -412,9 +430,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   context.subscriptions.push(helpAndFeedbackView);
 
   const labsWebviewProvider = new LabsWebviewProvider(context, languageClient);
-  context.subscriptions.push(
-    VSCode.window.registerWebviewViewProvider('SonarQube.Labs', labsWebviewProvider)
-  );
+  context.subscriptions.push(VSCode.window.registerWebviewViewProvider('SonarQube.Labs', labsWebviewProvider));
 
   TaintVulnerabilityDecorator.init();
 
@@ -457,12 +473,19 @@ function suggestBinding(params: ExtendedClient.SuggestBindingParams) {
 
 function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
   if (VSCode.lm) {
-    context.subscriptions.push(VSCode.lm.registerTool(ListPotentialSecurityIssuesTool.toolName, new ListPotentialSecurityIssuesTool(languageClient)));
-    context.subscriptions.push(VSCode.lm.registerTool(ExcludeFileOrFolderTool.toolName, new ExcludeFileOrFolderTool(languageClient)));
-    context.subscriptions.push(VSCode.lm.registerTool(SetUpConnectedModeTool.toolName, new SetUpConnectedModeTool(context, languageClient)));
-    context.subscriptions.push(VSCode.lm.registerTool(AnalyzeFileTool.toolName, new AnalyzeFileTool(languageClient)));
+    context.subscriptions.push(
+      VSCode.lm.registerTool(
+        ListPotentialSecurityIssuesTool.toolName,
+        new ListPotentialSecurityIssuesTool(languageClient)
+      ),
+      VSCode.lm.registerTool(ExcludeFileOrFolderTool.toolName, new ExcludeFileOrFolderTool(languageClient)),
+      VSCode.lm.registerTool(SetUpConnectedModeTool.toolName, new SetUpConnectedModeTool(context, languageClient)),
+      VSCode.lm.registerTool(AnalyzeFileTool.toolName, new AnalyzeFileTool(languageClient))
+    );
   } else {
-    logToSonarLintOutput('Language model tools are not available in this version of VSCode. Initializing extension without them.');
+    logToSonarLintOutput(
+      'Language model tools are not available in this version of VSCode. Initializing extension without them.'
+    );
   }
 }
 
@@ -475,14 +498,13 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
       // Labs disabled: Show immediately (old behavior)
       void FixSuggestionService.instance.showFixSuggestion(params);
     }
-  })
+  });
   languageClient.onNotification(ExtendedClient.ShowRuleDescriptionNotification.type, showRuleDescription(context));
   languageClient.onNotification(ExtendedClient.SuggestBindingNotification.type, params => suggestBinding(params));
-  languageClient.onRequest(ExtendedClient.ListFilesInFolderRequest.type, async (params) => {
+  languageClient.onRequest(ExtendedClient.ListFilesInFolderRequest.type, async params => {
     await FileSystemServiceImpl.instance.crawlDirectory(VSCode.Uri.parse(params.folderUri));
     return AutoBindingService.instance.listAutobindingFilesInFolder(params);
-  }
-  );
+  });
   languageClient.onRequest(ExtendedClient.GetTokenForServer.type, serverId => getTokenForServer(serverId));
 
   languageClient.onRequest(ExtendedClient.GetJavaConfigRequest.type, fileUri => getJavaConfig(languageClient, fileUri));
@@ -492,14 +514,17 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     filterOutFilesIgnoredForAnalysis(params.fileUris)
   );
   languageClient.onRequest(ExtendedClient.CanShowMissingRequirementNotification.type, () => {
-    return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true) ? ExtendedClient.CanShowMissingRequirementNotificationResult.Full :
-     ExtendedClient.CanShowMissingRequirementNotificationResult.DoNotShowAgain;
+    return context.globalState.get(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, true)
+      ? ExtendedClient.CanShowMissingRequirementNotificationResult.Full
+      : ExtendedClient.CanShowMissingRequirementNotificationResult.DoNotShowAgain;
   });
   languageClient.onNotification(ExtendedClient.DoNotShowMissingRequirementsMessageAgain.type, () => {
     context.globalState.update(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, false);
-  })
-  languageClient.onNotification(ExtendedClient.MaybeShowWiderLanguageSupportNotification.type, (language) => maybeShowWiderLanguageSupportNotification(context, language));
-  languageClient.onNotification(ExtendedClient.RemoveBindingsForDeletedConnections.type, async (connectionIds) => {
+  });
+  languageClient.onNotification(ExtendedClient.MaybeShowWiderLanguageSupportNotification.type, language =>
+    maybeShowWiderLanguageSupportNotification(context, language)
+  );
+  languageClient.onNotification(ExtendedClient.RemoveBindingsForDeletedConnections.type, async connectionIds => {
     await BindingService.instance.removeBindingsForRemovedConnections(connectionIds);
   });
   languageClient.onNotification(ExtendedClient.ReportConnectionCheckResult.type, checkResult => {
@@ -532,27 +557,32 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     }
   });
   languageClient.onNotification(ExtendedClient.ShowIssueOrHotspotNotification.type, IssueService.showAllLocations);
-  languageClient.onNotification(ExtendedClient.NeedCompilationDatabaseRequest.type, notifyMissingCompileCommands(context));
+  languageClient.onNotification(
+    ExtendedClient.NeedCompilationDatabaseRequest.type,
+    notifyMissingCompileCommands(context)
+  );
   languageClient.onRequest(ExtendedClient.GetTokenForServer.type, serverId => getTokenForServer(serverId));
-  languageClient.onNotification(ExtendedClient.PublishHotspotsForFile.type, async hotspotsPerFile => {
+  languageClient.onNotification(ExtendedClient.PublishHotspotsForFile.type, hotspotsPerFile => {
     findingsTreeDataProvider.updateHotspots(hotspotsPerFile);
   });
-  languageClient.onNotification(ExtendedClient.PublishTaintVulnerabilitiesForFile.type, async taintVulnerabilitiesPerFile => {
-    findingsTreeDataProvider.updateTaintVulnerabilities(taintVulnerabilitiesPerFile.uri, taintVulnerabilitiesPerFile.diagnostics);
-    TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile(VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri));
+  languageClient.onNotification(ExtendedClient.PublishTaintVulnerabilitiesForFile.type, taintVulnerabilitiesPerFile => {
+    findingsTreeDataProvider.updateTaintVulnerabilities(
+      taintVulnerabilitiesPerFile.uri,
+      taintVulnerabilitiesPerFile.diagnostics
+    );
+    TaintVulnerabilityDecorator.instance.updateTaintVulnerabilityDecorationsForFile(
+      VSCode.Uri.parse(taintVulnerabilitiesPerFile.uri)
+    );
   });
   languageClient.onNotification(ExtendedClient.NotifyInvalidToken.type, async params => {
     await handleInvalidTokenNotification(params.connectionId);
   });
 
-  languageClient.onNotification(ExtendedClient.PublishDependencyRisksForFolder.type, async dependencyRisksPerFolder => {
+  languageClient.onNotification(ExtendedClient.PublishDependencyRisksForFolder.type, dependencyRisksPerFolder => {
     findingsTreeDataProvider.updateDependencyRisks(dependencyRisksPerFolder);
   });
 
-  languageClient.onRequest(
-    ExtendedClient.AssistBinding.type,
-    async params => await BindingService.instance.assistBinding(params)
-  );
+  languageClient.onRequest(ExtendedClient.AssistBinding.type, params => BindingService.instance.assistBinding(params));
   languageClient.onRequest(ExtendedClient.SslCertificateConfirmation.type, cert =>
     showSslCertificateConfirmationDialog(cert)
   );
@@ -563,12 +593,14 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(ExtendedClient.SubmitNewCodeDefinition.type, newCodeDefinitionForFolderUri => {
     NewCodeDefinitionService.instance.updateNewCodeDefinitionForFolderUri(newCodeDefinitionForFolderUri);
   });
-  languageClient.onNotification(ExtendedClient.SuggestConnection.type, (params) => SharedConnectedModeSettingsService.instance.handleSuggestConnectionNotification(params.suggestionsByConfigScopeId));
+  languageClient.onNotification(ExtendedClient.SuggestConnection.type, params =>
+    SharedConnectedModeSettingsService.instance.handleSuggestConnectionNotification(params.suggestionsByConfigScopeId)
+  );
   languageClient.onRequest(ExtendedClient.IsOpenInEditor.type, fileUri => {
     return VSCode.workspace.textDocuments.some(doc => code2ProtocolConverter(doc.uri) === fileUri);
   });
-  languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, (params) => {
-    onEmbeddedServerStarted(params.port);
+  languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, () => {
+    void onEmbeddedServerStarted(languageClient, context);
   });
   languageClient.onRequest(ExtendedClient.HasJoinedIdeLabs.type, () => {
     return IdeLabsFlagManagementService.instance.isIdeLabsJoined();
@@ -584,16 +616,16 @@ function updateFindingsViewContainerBadge() {
   const totalCount = findingsTreeDataProvider.getTotalFindingsCount();
   const filteredCount = findingsTreeDataProvider.getFilteredFindingsCount();
   const activeFilter = findingsTreeDataProvider.getActiveFilter();
-  
-  if (totalCount > 0) { 
+
+  if (totalCount > 0) {
     const badgeValue = activeFilter === FilterType.All ? totalCount : filteredCount;
     const filterDisplayName = getFilterDisplayName(activeFilter);
-    
+
     findingsView.badge = {
       value: badgeValue,
       tooltip: `${filterDisplayName}: ${filteredCount} of ${totalCount}`
     };
-    
+
     findingsView.title = `SonarQube Findings (${filterDisplayName})`;
   } else {
     findingsView.badge = undefined;
@@ -605,7 +637,6 @@ async function getTokenForServer(serverId: string): Promise<string> {
   // serverId is either a server URL or a organizationKey prefixed with region (EU_ or US_)
   return ConnectionSettingsService.instance.getServerToken(serverId);
 }
-
 
 export function deactivate(): Thenable<void> {
   if (!languageClient) {
