@@ -11,7 +11,10 @@ import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
 import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
-import { getCurrentAgentWithMCPSupport, getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
+import {
+  getCurrentAgentWithHookSupport,
+  getCurrentAgentWithMCPSupport
+} from './aiAgentsConfiguration/aiAgentUtils';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
@@ -61,13 +64,13 @@ export class ContextManager {
   }
 
   setMCPServerSupportedAgentContext() {
-    const isSupportedAgent = getCurrentAgentWithMCPSupport() !== undefined;
-    vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_AGENT, isSupportedAgent);
+    const isSupportedTarget = getCurrentAgentWithMCPSupport() !== undefined;
+    vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_AGENT, isSupportedTarget);
   }
 
   setHookScriptSupportedAgentContext() {
-    const isSupportedAgent = getCurrentAgentWithHookSupport() !== undefined;
-    vscode.commands.executeCommand('setContext', HOOK_SCRIPT_SUPPORTED_AGENT, isSupportedAgent);
+    const isSupportedTarget = getCurrentAgentWithHookSupport() !== undefined;
+    vscode.commands.executeCommand('setContext', HOOK_SCRIPT_SUPPORTED_AGENT, isSupportedTarget);
   }
 
   setIssueLocationsContext() {

@@ -215,6 +215,17 @@ suite('aiAgentRuleConfig', () => {
       expect(executeCommandStub.calledWith('SonarLint.IntroduceSonarQubeRulesFile')).to.be.true;
     });
 
+    test('should not offer to create a missing file when opening from the legacy instructions row', async () => {
+      getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
+      workspaceStub.value([{ uri: vscode.Uri.file('/mock/workspace'), name: 'test-workspace', index: 0 }]);
+      fsStub.value({ stat: sinon.stub().rejects(new Error('File not found')) });
+
+      await openSonarQubeRulesFile(false);
+
+      expect(showWarningMessageStub.called).to.be.false;
+      expect(executeCommandStub.called).to.be.false;
+    });
+
     test('should open and show text document when rules file exists for Cursor', async () => {
       getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
       const mockWorkspaceFolder = {
@@ -265,6 +276,20 @@ suite('aiAgentRuleConfig', () => {
       expect(openTextDocumentStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.calledWith(mockDocument)).to.be.true;
+    });
+
+    test('should report an opening error without offering to recreate an existing rules file', async () => {
+      getCurrentAgentStub.returns(IntegrationTarget.GITHUB_COPILOT);
+      workspaceStub.value([{ uri: vscode.Uri.file('/mock/workspace'), name: 'test-workspace', index: 0 }]);
+      fsStub.value({
+        stat: sinon.stub().resolves({ type: vscode.FileType.File, ctime: 0, mtime: 0, size: 100 })
+      });
+      openTextDocumentStub.rejects(new Error('Permission denied'));
+
+      await openSonarQubeRulesFile();
+
+      expect(showWarningMessageStub.called).to.be.false;
+      expect(showErrorMessageStub.calledWith('Error opening SonarQube rules file: Permission denied')).to.be.true;
     });
   });
 
