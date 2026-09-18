@@ -773,7 +773,8 @@ export namespace ExtendedServer {
     );
   }
 
-  export type AiAgent = 'CURSOR' | 'GITHUB_COPILOT' | 'KIRO' | 'WINDSURF' | 'CLAUDE_CODE' | 'CODEX';
+  export type AiAgent = 'CURSOR' | 'GITHUB_COPILOT' | 'KIRO' | 'WINDSURF' | 'CLAUDE_CODE' | 'CODEX' | 'GITHUB_COPILOT_CLI' | 'ANTIGRAVITY';
+  export type AiAgentDetectionSource = 'IDE' | 'CLI';
   export type AiIntegrationHost = 'VSCODE' | 'CURSOR' | 'WINDSURF' | 'KIRO' | 'INTELLIJ' | 'VISUAL_STUDIO' | 'OTHER';
   export type AiIntegrationScope = 'GLOBAL' | 'PROJECT';
   export type CliInstallationStatus = 'NOT_INSTALLED' | 'INSTALLED' | 'UNUSABLE';
@@ -784,7 +785,6 @@ export namespace ExtendedServer {
     | 'UNVERIFIED'
     | 'UNAVAILABLE'
     | 'UNKNOWN';
-  export type CliCommandAction = 'INSTALL' | 'AUTHENTICATE' | 'INTEGRATE';
   export type McpConfigurationState = 'NOT_CONFIGURED' | 'STANDALONE' | 'CLI_MANAGED' | 'UNKNOWN' | 'MALFORMED';
 
   export interface GetAiIntegrationStateParams {
@@ -792,6 +792,7 @@ export namespace ExtendedServer {
     detectedAgents: AiAgent[];
     scope: AiIntegrationScope;
     configurationScopeId?: string | null;
+    discoverLocalAgentClis?: boolean;
   }
 
   export interface SonarQubeCliState {
@@ -805,6 +806,7 @@ export namespace ExtendedServer {
 
   export interface AiIntegrationAgentCapability {
     agent: AiAgent;
+    detectionSources: AiAgentDetectionSource[];
     cliIntegrationSupported: boolean;
     standaloneMcpSupported: boolean;
     hookSupported: boolean;
@@ -830,12 +832,14 @@ export namespace ExtendedServer {
     );
   }
 
-  export interface PrepareCliCommandParams {
-    action: CliCommandAction;
-    agent?: AiAgent | null;
+  export interface PrepareAuthenticateCliCommandParams {
     serverUrl?: string | null;
     organization?: string | null;
     connectionId?: string | null;
+  }
+
+  export interface PrepareIntegrateCliCommandParams {
+    agent?: AiAgent | null;
   }
 
   export interface PrepareCliCommandResponse {
@@ -844,9 +848,19 @@ export namespace ExtendedServer {
     interactive: boolean;
   }
 
-  export namespace PrepareCliCommand {
-    export const type = new lsp.RequestType<PrepareCliCommandParams, PrepareCliCommandResponse, null>(
-      'sonarlint/prepareCliCommand'
+  export namespace PrepareInstallCliCommand {
+    export const type = new lsp.RequestType0<PrepareCliCommandResponse, null>('sonarlint/prepareInstallCliCommand');
+  }
+
+  export namespace PrepareAuthenticateCliCommand {
+    export const type = new lsp.RequestType<PrepareAuthenticateCliCommandParams, PrepareCliCommandResponse, null>(
+      'sonarlint/prepareAuthenticateCliCommand'
+    );
+  }
+
+  export namespace PrepareIntegrateCliCommand {
+    export const type = new lsp.RequestType<PrepareIntegrateCliCommandParams, PrepareCliCommandResponse, null>(
+      'sonarlint/prepareIntegrateCliCommand'
     );
   }
 
