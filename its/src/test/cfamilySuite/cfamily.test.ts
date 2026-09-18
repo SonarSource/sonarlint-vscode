@@ -7,10 +7,6 @@
 import * as assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import {describe, after, before, it} from 'mocha';
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from 'vscode';
 
 import { activateAndShowOutput } from '../common/util';
@@ -21,17 +17,17 @@ const firstCompileDbToCreate = vscode.Uri.file(firstCompileDbToCreatePath);
 const innerDir = path.join(__dirname, sampleCFamilyFolderLocation, 'inner');
 const projectUri = vscode.Uri.file(path.join(__dirname, sampleCFamilyFolderLocation));
 
-describe('CFamily Test Suite', () => {
+suite('CFamily Test Suite', () => {
   vscode.window.showInformationMessage('Start cfamily tests.');
 
-  before(async function () {
+  setup(async function () {
     this.timeout(30 * 1000);
     await resetPathToCompileCommands();
 
     await activateAndShowOutput();
   });
 
-  it('should detect compilation database correctly', async () => {
+  test('should detect compilation database correctly', async () => {
 
     const ext = vscode.extensions.getExtension('sonarsource.sonarlint-vscode')!;
     await ext.activate();
@@ -66,7 +62,7 @@ describe('CFamily Test Suite', () => {
   }).timeout(30 * 1000);
 
   // test cleanup
-  after(async function () {
+  teardown(async function () {
     const vscodeProjectSettingsPath = path.join(__dirname, sampleCFamilyFolderLocation, '.vscode');
     removeDir(vscodeProjectSettingsPath);
     removeDir(innerDir);
