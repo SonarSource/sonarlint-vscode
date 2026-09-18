@@ -294,7 +294,7 @@ jobs:
       matrix:
         include:
           - qa_category: oldest
-            vscode_version: '1.99.3'
+            vscode_version: '1.100.0'
           - qa_category: stable
             vscode_version: 'stable'
           - qa_category: insiders
