@@ -139,8 +139,20 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetAiIntegrationState.type, params);
   }
 
-  prepareCliCommand(params: ExtendedServer.PrepareCliCommandParams): Promise<ExtendedServer.PrepareCliCommandResponse> {
-    return this.sendRequest(ExtendedServer.PrepareCliCommand.type, params);
+  prepareInstallCliCommand(): Promise<ExtendedServer.PrepareCliCommandResponse> {
+    return this.sendRequest(ExtendedServer.PrepareInstallCliCommand.type);
+  }
+
+  prepareAuthenticateCliCommand(
+    params: ExtendedServer.PrepareAuthenticateCliCommandParams
+  ): Promise<ExtendedServer.PrepareCliCommandResponse> {
+    return this.sendRequest(ExtendedServer.PrepareAuthenticateCliCommand.type, params);
+  }
+
+  prepareIntegrateCliCommand(
+    params: ExtendedServer.PrepareIntegrateCliCommandParams
+  ): Promise<ExtendedServer.PrepareCliCommandResponse> {
+    return this.sendRequest(ExtendedServer.PrepareIntegrateCliCommand.type, params);
   }
 
   inspectMcpConfiguration(
