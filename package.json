@@ -1471,7 +1471,7 @@
     "istanbul-lib-source-maps": "^5.0.6",
     "istanbul-reports": "^3.2.0",
     "map-stream": "^0.0.7",
-    "mocha": "^11.7.5",
+    "mocha": "^12.0.0",
     "mocha-multi-reporters": "^1.5.1",
     "prettier": "^3.7.4",
     "stream": "^0.0.3",
