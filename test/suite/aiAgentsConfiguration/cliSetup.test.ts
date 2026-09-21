@@ -59,7 +59,7 @@ suite('cliSetup', () => {
       label: 'Refresh'
     });
     expect(resolveCliPrimaryAction(INSTALLED, UNKNOWN, false)?.command).to.equal('refresh');
-    expect(resolveCliPrimaryAction(INSTALLED, AUTHENTICATED, false)).to.equal(undefined);
+    expect(resolveCliPrimaryAction(INSTALLED, AUTHENTICATED, false)).to.be.undefined;
   });
 
   test('matches the enum ordinals used by the language server', () => {
