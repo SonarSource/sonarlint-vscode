@@ -18,6 +18,13 @@ export const IntegrationTarget = {
 
 export type IntegrationTarget = (typeof IntegrationTarget)[keyof typeof IntegrationTarget];
 
+const AGENT_DISPLAY_NAMES: Record<IntegrationTarget, string> = {
+  [IntegrationTarget.GITHUB_COPILOT]: 'GitHub Copilot',
+  [IntegrationTarget.CURSOR]: 'Cursor',
+  [IntegrationTarget.WINDSURF]: 'Windsurf',
+  [IntegrationTarget.KIRO]: 'Kiro'
+};
+
 export const IdeHost = {
   VSCODE: AiIntegration.AiIntegrationHost.VSCODE,
   CURSOR: AiIntegration.AiIntegrationHost.CURSOR,
@@ -46,6 +53,10 @@ export interface CurrentIdeHost {
 
 export function toAgentKey(agent: AiIntegration.AiAgent): string {
   return AiIntegration.AiAgent[agent].toLowerCase();
+}
+
+export function toAgentDisplayName(agent: IntegrationTarget): string {
+  return AGENT_DISPLAY_NAMES[agent];
 }
 
 const COPILOT_CHAT_EXTENSION_ID = 'github.copilot-chat';

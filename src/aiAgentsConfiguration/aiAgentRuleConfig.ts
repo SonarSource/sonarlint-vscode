@@ -16,7 +16,7 @@ const SONARQUBE_MCP_INSTRUCTIONS_FILE_MD = 'sonarqube_mcp.instructions.md';
 
 export async function introduceSonarQubeRulesFile(languageClient: SonarLintExtendedLanguageClient): Promise<void> {
   const currentAgent = getCurrentAgentWithMCPSupport();
-  if (!currentAgent) {
+  if (currentAgent === undefined) {
     vscode.window.showErrorMessage('Current agent does not support MCP Server configuration.');
     return;
   }
@@ -74,7 +74,7 @@ export async function introduceSonarQubeRulesFile(languageClient: SonarLintExten
 export async function openSonarQubeRulesFile(offerCreation = true): Promise<void> {
   try {
     const currentAgent = getCurrentAgentWithMCPSupport();
-    if (!currentAgent) {
+    if (currentAgent === undefined) {
       vscode.window.showErrorMessage('Current agent does not support MCP Server configuration.');
       return;
     }
@@ -113,7 +113,7 @@ export async function openSonarQubeRulesFile(offerCreation = true): Promise<void
 
 export async function isSonarQubeRulesFileConfigured(): Promise<boolean> {
   const currentAgent = getCurrentAgentWithMCPSupport();
-  if (!currentAgent) {
+  if (currentAgent === undefined) {
     return false;
   }
 
