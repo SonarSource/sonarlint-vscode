@@ -38,10 +38,6 @@ window.addEventListener('message', event => {
     content.hidden = true;
     loading.hidden = false;
     loading.textContent = 'Could not load AI integrations. Reload the view to try again.';
-  } else if (event.data.command === 'setupOutcome') {
-    cliFeedback.hidden = false;
-    cliFeedback.dataset.running = 'false';
-    cliFeedback.textContent = event.data.message;
   }
 });
 
@@ -65,11 +61,10 @@ function render(state) {
 }
 
 function renderCli(state) {
-  const cliInstalled = state.cli.installationStatus === 'INSTALLED';
   renderCliStatus(state.cli.installationStatus);
   renderCliAuthentication(state.cli);
   renderCliAction(state);
-  renderCliFeedback(state.cli.operationInProgress);
+  renderCliFeedback(state.cli);
 
   agentList.replaceChildren();
   const compatibleAgents = state.agents.filter(agent => agent.supportsCliIntegration);
@@ -87,12 +82,8 @@ function renderCli(state) {
     action.className = 'secondary-action agent-action';
     action.type = 'button';
     action.textContent = 'Integrate for all projects';
-    action.disabled =
-      !cliInstalled ||
-      state.cli.authenticationStatus !== 'AUTHENTICATED' ||
-      state.isRemote ||
-      state.cli.operationInProgress;
-    action.addEventListener('click', () => postCliSetup({ command: 'integrateAgent', agent: agent.id }));
+    action.disabled = !state.cli.canIntegrate;
+    action.addEventListener('click', () => vscode.postMessage({ command: 'integrateAgent', agent: agent.id }));
     item.append(details, action);
     agentList.append(item);
   }
@@ -163,57 +154,30 @@ function renderCliAction(state) {
     return;
   }
 
-  let label;
-  let command;
-  if (state.cli.installationStatus === 'NOT_INSTALLED') {
-    label = 'Install SonarQube CLI';
-    command = 'installCli';
-  } else if (state.cli.installationStatus === 'UNUSABLE') {
-    label = 'Open troubleshooting guide';
-    command = 'openCliDocumentation';
-  } else if (['UNAUTHENTICATED', 'INVALID', 'UNVERIFIED'].includes(state.cli.authenticationStatus)) {
-    label = 'Sign in with SonarQube CLI';
-    command = 'authenticateCli';
-  } else if (state.cli.authenticationStatus !== 'AUTHENTICATED') {
-    label = 'Refresh';
-    command = 'refresh';
-  }
-
-  setVisible(cliAction, command !== undefined);
-  if (command === undefined) {
+  const action = state.cli.primaryAction;
+  setVisible(cliAction, Boolean(action));
+  if (!action) {
     cliAction.onclick = undefined;
     return;
   }
-  cliAction.textContent = label;
-  cliAction.disabled = state.isRemote && ['installCli', 'authenticateCli'].includes(command);
-  cliAction.onclick = () => {
-    if (['installCli', 'authenticateCli'].includes(command)) {
-      postCliSetup({ command });
-    } else {
-      vscode.postMessage({ command });
-    }
-  };
+  cliAction.textContent = action.label;
+  cliAction.disabled = false;
+  cliAction.onclick = () => vscode.postMessage({ command: action.command });
 }
 
-function postCliSetup(message) {
-  cliAction.disabled = true;
-  agentList.querySelectorAll('button').forEach(button => (button.disabled = true));
-  cliFeedback.hidden = false;
-  cliFeedback.dataset.running = 'true';
-  cliFeedback.textContent = 'Opening the SonarQube CLI terminal…';
-  vscode.postMessage(message);
-}
-
-function renderCliFeedback(operationInProgress) {
-  if (operationInProgress) {
+function renderCliFeedback(cli) {
+  if (cli.operationInProgress) {
     cliFeedback.hidden = false;
-    cliFeedback.dataset.running = 'true';
     cliFeedback.textContent = 'Setup is running in the SonarQube CLI terminal.';
-  } else if (cliFeedback.dataset.running === 'true') {
-    cliFeedback.hidden = true;
-    cliFeedback.dataset.running = 'false';
-    cliFeedback.textContent = '';
+    return;
   }
+  if (cli.notice) {
+    cliFeedback.hidden = false;
+    cliFeedback.textContent = cli.notice.message;
+    return;
+  }
+  cliFeedback.hidden = true;
+  cliFeedback.textContent = '';
 }
 
 function renderMcp(state) {
