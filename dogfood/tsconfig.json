@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "bundler",
     "target": "es2021",
     "outDir": "out",
     "lib": [
@@ -8,7 +9,9 @@
     ],
     "sourceMap": true,
     "rootDir": "src",
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true,
+    "types": ["node", "mocha"]
   },
   "include": [
     "src"
