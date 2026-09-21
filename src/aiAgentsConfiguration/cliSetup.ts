@@ -212,11 +212,11 @@ export class CliSetupSession {
     );
   }
 
-  private async openInteractiveCommand(
+  private openInteractiveCommand(
     name: string,
     command: AiIntegration.PrepareCliCommandResponse,
     nonInteractiveMessage: string
-  ): Promise<boolean> {
+  ): boolean {
     if (!command.interactive) {
       this.notice = { outcome: 'failed', message: nonInteractiveMessage };
       return false;
