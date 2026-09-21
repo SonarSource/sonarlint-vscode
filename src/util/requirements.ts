@@ -89,17 +89,17 @@ function checkJavaRuntime(): Promise<string> {
         invalidJavaHome(reject, msg);
       }
       resolve(javaHome);
+    } else {
+      // No settings, let's try to detect
+      void findJavaHome((err, home) => {
+        if (err || !home) {
+          // No Java detected, last resort is to ask for permission to download and manage our own
+          suggestManagedJre(reject);
+        } else {
+          resolve(home);
+        }
+      });
     }
-
-    // No settings let's try to detect
-    findJavaHome((err, home) => {
-      if (err || !home) {
-        // No Java detected, last resort is to ask for permission to download and manage our own
-        suggestManagedJre(reject);
-      } else {
-        resolve(home);
-      }
-    });
   });
 }
 
