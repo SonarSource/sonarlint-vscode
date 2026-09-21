@@ -92,7 +92,7 @@ function checkJavaRuntime(): Promise<string> {
     }
 
     // No settings let's try to detect
-    findJavaHome((err, home) => {
+    return findJavaHome((err, home) => {
       if (err || !home) {
         // No Java detected, last resort is to ask for permission to download and manage our own
         suggestManagedJre(reject);
