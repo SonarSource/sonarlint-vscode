@@ -62,6 +62,14 @@ suite('cliSetup', () => {
     expect(resolveCliPrimaryAction(INSTALLED, AUTHENTICATED, false)).to.equal(undefined);
   });
 
+  test('matches the enum ordinals used by the language server', () => {
+    expect(NOT_INSTALLED).to.equal(0);
+    expect(UNKNOWN).to.equal(5);
+    expect(AiIntegration.AiAgent.CLAUDE_CODE).to.equal(4);
+    expect(AiIntegration.AiAgentDetectionSource.CLI).to.equal(1);
+    expect(AiIntegration.McpConfigurationState.CLI_MANAGED).to.equal(2);
+  });
+
   test('allows agent integration only when local CLI auth is ready', () => {
     expect(canIntegrateAgent(INSTALLED, AUTHENTICATED, false, false)).to.be.true;
     expect(canIntegrateAgent(INSTALLED, AUTHENTICATED, false, true)).to.be.false;
