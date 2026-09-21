@@ -119,7 +119,7 @@ export class CliSetupSession {
     return this.inProgress;
   }
 
-  async run(step: CliSetupStep, agentId?: string): Promise<void> {
+  async run(step: CliSetupStep, agentId?: AiIntegration.AiAgent): Promise<void> {
     if (this.inProgress) {
       this.activeSetupTerminal?.show();
       return;
@@ -146,7 +146,7 @@ export class CliSetupSession {
     await this.onChange();
   }
 
-  private async execute(step: CliSetupStep, agentId?: string): Promise<boolean> {
+  private async execute(step: CliSetupStep, agentId?: AiIntegration.AiAgent): Promise<boolean> {
     const state = await this.languageClient.getAiIntegrationState(
       getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
     );
@@ -194,7 +194,7 @@ export class CliSetupSession {
   private async startIntegrate(
     state: AiIntegration.GetAiIntegrationStateResponse,
     isRemote: boolean,
-    agentId?: string
+    agentId?: AiIntegration.AiAgent
   ): Promise<boolean> {
     const detectedAgent = getDetectedIdeAgents().find(agent => agent.id === agentId);
     const capability = state.agents.find(agent => agent.agent === detectedAgent?.id);
