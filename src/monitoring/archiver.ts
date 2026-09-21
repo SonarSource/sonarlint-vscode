@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import * as AdmZip from 'adm-zip';
+import AdmZip from 'adm-zip';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 

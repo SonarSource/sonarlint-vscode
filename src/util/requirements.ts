@@ -10,7 +10,7 @@
 
 import * as cp from 'node:child_process';
 import * as expandHomeDir from 'expand-home-dir';
-import * as findJavaHome from 'find-java-home';
+import findJavaHome from 'find-java-home';
 import * as fse from 'fs-extra';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
