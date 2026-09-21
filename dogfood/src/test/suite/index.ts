@@ -1,8 +1,6 @@
 import { glob } from 'glob';
-import * as mochaNs from 'mocha';
+import Mocha from 'mocha';
 import * as path from 'path';
-
-const Mocha = ('default' in mochaNs ? mochaNs.default : mochaNs) as typeof mochaNs;
 
 export function run(): Promise<void> {
   const mocha = new Mocha({
