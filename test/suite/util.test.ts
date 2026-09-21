@@ -7,9 +7,9 @@
 'use strict';
 
 import { expect } from 'chai';
-import * as path from 'path';
+import path from 'path';
 import * as vscode from 'vscode';
-import * as os from 'node:os';
+import os from 'node:os';
 import * as sinon from 'sinon';
 import {
   createAnalysisFilesFromFileUris,
