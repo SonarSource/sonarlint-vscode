@@ -9,7 +9,9 @@ import * as mochaNs from 'mocha';
 import * as path from 'node:path';
 import { createReport } from '../coverage';
 
-const Mocha = ('default' in mochaNs ? mochaNs.default : mochaNs) as typeof mochaNs;
+const Mocha = ('default' in mochaNs ? mochaNs.default : mochaNs) as new (
+  options?: Mocha.MochaOptions
+) => Mocha;
 
 export function run(): Promise<void> {
   const mochaOptions: Mocha.MochaOptions = {

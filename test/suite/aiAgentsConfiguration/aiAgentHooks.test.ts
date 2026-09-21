@@ -9,8 +9,8 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
+import fs from 'node:fs';
+import os from 'node:os';
 import * as path from 'node:path';
 import {
   isHookInstalled,

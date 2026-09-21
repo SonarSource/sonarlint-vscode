@@ -8,7 +8,9 @@ import { glob } from 'glob';
 import * as mochaNs from 'mocha';
 import * as path from 'node:path';
 
-const Mocha = ('default' in mochaNs ? mochaNs.default : mochaNs) as typeof mochaNs;
+const Mocha = ('default' in mochaNs ? mochaNs.default : mochaNs) as new (
+  options?: Mocha.MochaOptions
+) => Mocha;
 
 export function runMochaSuite(xmlFileName: string) {
   return (testsRoot: string, cb: (error: any, failures?: number) => void): void => {
