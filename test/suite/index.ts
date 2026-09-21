@@ -5,9 +5,13 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { globby } from 'globby';
-import Mocha from 'mocha';
+import * as mochaNs from 'mocha';
 import * as path from 'node:path';
 import { createReport } from '../coverage';
+
+const Mocha = ('default' in mochaNs ? mochaNs.default : mochaNs) as new (
+  options?: Mocha.MochaOptions
+) => Mocha;
 
 export function run(): Promise<void> {
   const mochaOptions: Mocha.MochaOptions = {

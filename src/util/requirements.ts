@@ -9,8 +9,8 @@
 'use strict';
 
 import * as cp from 'node:child_process';
-import expandHomeDir from 'expand-home-dir';
-import findJavaHome from 'find-java-home';
+import expandHomeDir = require('expand-home-dir');
+import findJavaHome = require('find-java-home');
 import * as fse from 'fs-extra';
 import * as path from 'node:path';
 import * as vscode from 'vscode';

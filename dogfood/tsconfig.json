@@ -10,7 +10,6 @@
     "sourceMap": true,
     "rootDir": "src",
     "strict": true,
-    "esModuleInterop": true,
     "types": ["node", "mocha"]
   },
   "include": [

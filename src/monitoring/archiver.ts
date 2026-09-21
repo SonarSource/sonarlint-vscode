@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import AdmZip from 'adm-zip';
+import AdmZip = require('adm-zip');
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
