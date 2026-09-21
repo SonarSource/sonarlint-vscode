@@ -37,14 +37,37 @@ const WEBVIEW_UI_DIR = 'webview-ui';
 const CLI_DOCUMENTATION_URL = vscode.Uri.parse('https://www.sonarsource.com/sonarqube/cli/');
 const VORTEX_DOCUMENTATION_URL = vscode.Uri.parse('https://www.sonarsource.com/blog/introducing-sonar-vortex/');
 const MCP_CONFIGURATOR_URL = vscode.Uri.parse('https://mcp.sonarqube.com/');
+type CliInstallationStatus = 'INSTALLED' | 'NOT_INSTALLED' | 'UNUSABLE';
+type CliAuthenticationStatus =
+  | 'AUTHENTICATED'
+  | 'UNAUTHENTICATED'
+  | 'INVALID'
+  | 'UNVERIFIED'
+  | 'UNAVAILABLE'
+  | 'UNKNOWN';
+
+const CLI_INSTALLATION_STATUS_NAMES: Record<AiIntegration.CliInstallationStatus, CliInstallationStatus> = {
+  [AiIntegration.CliInstallationStatus.NOT_INSTALLED]: 'NOT_INSTALLED',
+  [AiIntegration.CliInstallationStatus.INSTALLED]: 'INSTALLED',
+  [AiIntegration.CliInstallationStatus.UNUSABLE]: 'UNUSABLE'
+};
+
+const CLI_AUTHENTICATION_STATUS_NAMES: Record<AiIntegration.CliAuthenticationStatus, CliAuthenticationStatus> = {
+  [AiIntegration.CliAuthenticationStatus.AUTHENTICATED]: 'AUTHENTICATED',
+  [AiIntegration.CliAuthenticationStatus.UNAUTHENTICATED]: 'UNAUTHENTICATED',
+  [AiIntegration.CliAuthenticationStatus.INVALID]: 'INVALID',
+  [AiIntegration.CliAuthenticationStatus.UNVERIFIED]: 'UNVERIFIED',
+  [AiIntegration.CliAuthenticationStatus.UNAVAILABLE]: 'UNAVAILABLE',
+  [AiIntegration.CliAuthenticationStatus.UNKNOWN]: 'UNKNOWN'
+};
 
 export interface AIAgentsConfigurationState {
   ideName: string;
   isRemote: boolean;
   agents: Array<DetectedIdeAgent & { supportsCliIntegration: boolean }>;
   cli: {
-    installationStatus: AiIntegration.CliInstallationStatus;
-    authenticationStatus: AiIntegration.CliAuthenticationStatus;
+    installationStatus: CliInstallationStatus;
+    authenticationStatus: CliAuthenticationStatus;
     serverUrl?: string;
     organization?: string;
     operationInProgress: boolean;
@@ -152,8 +175,8 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
       isRemote,
       agents,
       cli: {
-        installationStatus,
-        authenticationStatus,
+        installationStatus: CLI_INSTALLATION_STATUS_NAMES[installationStatus],
+        authenticationStatus: CLI_AUTHENTICATION_STATUS_NAMES[authenticationStatus],
         serverUrl: integrationState.cli.serverUrl ?? undefined,
         organization: integrationState.cli.organization ?? undefined,
         operationInProgress: cliSetup.operationInProgress,
@@ -176,7 +199,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     };
   }
 
-  private async handleMessage(message: { command?: string; agent?: string }): Promise<void> {
+  private async handleMessage(message: { command?: string; agent?: AiIntegration.AiAgent }): Promise<void> {
     switch (message.command) {
       case 'ready':
       case 'refresh':

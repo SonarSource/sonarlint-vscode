@@ -12,7 +12,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Commands } from '../util/commands';
-import { IntegrationTarget, getWindsurfDirectory } from './aiAgentUtils';
+import { IntegrationTarget, getWindsurfDirectory, toAgentKey } from './aiAgentUtils';
 
 interface HookConfig {
   command: string;
@@ -135,7 +135,7 @@ export async function installHook(
   }
 
   try {
-    const response = await languageClient.getAiAgentHookScriptContent(agent.toLowerCase());
+    const response = await languageClient.getAiAgentHookScriptContent(toAgentKey(agent));
     
     // Create hooks directory if it doesn't exist
     await fs.promises.mkdir(scriptDir, { recursive: true });

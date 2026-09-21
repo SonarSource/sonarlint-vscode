@@ -9,7 +9,7 @@
 import * as vscode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Commands } from '../util/commands';
-import { getCurrentAgentWithMCPSupport, IntegrationTarget } from './aiAgentUtils';
+import { getCurrentAgentWithMCPSupport, IntegrationTarget, toAgentKey } from './aiAgentUtils';
 
 const SONARQUBE_MCP_INSTRUCTIONS_FILE_MDC = 'sonarqube_mcp_instructions.mdc';
 const SONARQUBE_MCP_INSTRUCTIONS_FILE_MD = 'sonarqube_mcp.instructions.md';
@@ -56,7 +56,7 @@ export async function introduceSonarQubeRulesFile(languageClient: SonarLintExten
       // file does not exist, proceed to create it
     }
 
-    const rulesFileResponse = await languageClient.getMCPRulesFileContent(currentAgent.toLowerCase());
+    const rulesFileResponse = await languageClient.getMCPRulesFileContent(toAgentKey(currentAgent));
 
     await vscode.workspace.fs.writeFile(rulesFileUri, Buffer.from(rulesFileResponse.content, 'utf8'));
 

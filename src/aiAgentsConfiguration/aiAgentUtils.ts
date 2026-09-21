@@ -44,6 +44,10 @@ export interface CurrentIdeHost {
   name: string;
 }
 
+export function toAgentKey(agent: AiIntegration.AiAgent): string {
+  return AiIntegration.AiAgent[agent].toLowerCase();
+}
+
 const COPILOT_CHAT_EXTENSION_ID = 'github.copilot-chat';
 
 interface BuiltInAgent {
