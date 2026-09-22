@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { expect } from 'chai';
 import { ExtendedServer } from '../../src/lsp/protocol';
 import { Commands } from '../../src/util/commands';
-import { LanguageClient } from 'vscode-languageclient/lib/node/main';
+import { LanguageClient } from 'vscode-languageclient/node';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 
 suite('ANALYZE_VCS_CHANGED_FILES command', () => {
