@@ -9,8 +9,8 @@
 'use strict';
 
 import * as cp from 'node:child_process';
-import * as expandHomeDir from 'expand-home-dir';
-import * as findJavaHome from 'find-java-home';
+import expandHomeDir = require('expand-home-dir');
+import findJavaHome = require('find-java-home');
 import * as fse from 'fs-extra';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
@@ -92,7 +92,7 @@ function checkJavaRuntime(): Promise<string> {
     }
 
     // No settings let's try to detect
-    findJavaHome((err, home) => {
+    void findJavaHome((err, home) => {
       if (err || !home) {
         // No Java detected, last resort is to ask for permission to download and manage our own
         suggestManagedJre(reject);

@@ -15,7 +15,7 @@
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "engines": {
-    "vscode": "^1.99.3"
+    "vscode": "^1.100.0"
   },
   "categories": [
     "Linters",
@@ -1432,7 +1432,7 @@
     "highlight.js": "^11.11.1",
     "inly": "^5.0.1",
     "luxon": "^3.7.2",
-    "node-html-parser": "^7.0.1",
+    "node-html-parser": "^9.0.0",
     "openpgp": "^6.3.0",
     "path-exists": "^5.0.0",
     "properties": "^1.2.1",
@@ -1471,17 +1471,17 @@
     "istanbul-lib-source-maps": "^5.0.6",
     "istanbul-reports": "^3.2.0",
     "map-stream": "^0.0.7",
-    "mocha": "^11.7.5",
+    "mocha": "^12.0.0",
     "mocha-multi-reporters": "^1.5.1",
     "prettier": "^3.7.4",
     "stream": "^0.0.3",
     "through2": "^4.0.2",
     "ts-loader": "^9.5.4",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "unzipper": "^0.12.3",
     "vinyl": "^3.0.1",
     "webpack": "^5.104.1",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^7.0.0"
   },
   "jarDependencies": [
     {

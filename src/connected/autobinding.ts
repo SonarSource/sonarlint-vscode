@@ -126,12 +126,15 @@ export class AutoBindingService implements FileSystemSubscriber {
 
   private async autoBindAllFolders(bindingSuggestions: { [folderUri: string]: Array<BindingSuggestion> }) {
     const foldersNotToAutoBound = this.getFoldersThatShouldNotBeAutoBound();
+    // Prompts must stay sequential: they share workspace state and should not stack UI dialogs
+    let promptChain = Promise.resolve();
     for (const folderUri of Object.keys(bindingSuggestions)) {
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(folderUri));
       if (workspaceFolder && !foldersNotToAutoBound.includes(workspaceFolder.uri.toString())) {
-        await this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder);
+        promptChain = promptChain.then(() => this.promptToAutoBind(bindingSuggestions[folderUri], workspaceFolder));
       }
     }
+    await promptChain;
   }
 
   isConnectionConfigured(): boolean {

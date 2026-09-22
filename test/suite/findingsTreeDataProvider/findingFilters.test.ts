@@ -8,7 +8,7 @@
 
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import * as vscode from 'vscode';
+import vscode from 'vscode';
 import { Diagnostic } from 'vscode-languageserver-types';
 import { FindingsTreeDataProvider } from '../../../src/findings/findingsTreeDataProvider';
 import { FindingType, FindingSource, FilterType } from '../../../src/findings/findingsTreeDataProviderUtil';

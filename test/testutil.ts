@@ -5,7 +5,7 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { Context } from 'mocha';
+import type { Context } from 'mocha';
 import * as util from '../src/util/util';
 
 export function sleep(ms: number) {

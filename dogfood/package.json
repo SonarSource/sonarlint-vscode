@@ -69,20 +69,20 @@
   "devDependencies": {
     "@types/glob": "^9.0.0",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.17",
+    "@types/node": "^24.0.0",
     "@types/semver": "^7.5.7",
     "@types/vscode": "^1.86.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "@vscode/vsce": "^3.9.2",
     "eslint": "^10.0.0",
-    "glob": "^11.0.0",
-    "mocha": "^10.3.0",
+    "glob": "^13.0.0",
+    "mocha": "^12.0.0",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.3.3",
+    "typescript": "^6.0.3",
     "vscode-test": "^1.6.1",
     "webpack": "^5.90.1",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^7.0.0"
   },
   "dependencies": {
     "semver": "^7.6.0"

@@ -372,9 +372,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
 
   VSCode.workspace.onDidChangeWorkspaceFolders(async event => {
-    for (const removed of event.removed) {
-      await FileSystemServiceImpl.instance.didRemoveWorkspaceFolder(removed);
-    }
+    await Promise.all(event.removed.map(removed => FileSystemServiceImpl.instance.didRemoveWorkspaceFolder(removed)));
 
     for (const added of event.added) {
       void FileSystemServiceImpl.instance.didAddWorkspaceFolder(added);
