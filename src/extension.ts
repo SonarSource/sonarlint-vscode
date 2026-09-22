@@ -225,7 +225,7 @@ export async function activate(context: VSCode.ExtensionContext) {
         automaticAnalysis: VSCode.workspace.getConfiguration('sonarlint').get('automaticAnalysis', true)
       };
     },
-    outputChannel: getLogOutput(),
+    outputChannel: getLogOutput() as LanguageClientOptions['outputChannel'],
     revealOutputChannelOn: 4, // never
   };
 
@@ -507,21 +507,21 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(ExtendedClient.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
   );
-  languageClient.onNotification(ExtendedClient.ShowSonarLintOutputNotification.type, () =>
-    VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT)
-  );
-  languageClient.onNotification(ExtendedClient.OpenJavaHomeSettingsNotification.type, () =>
-    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG)
-  );
-  languageClient.onNotification(ExtendedClient.OpenPathToNodeSettingsNotification.type, () =>
-    VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable')
-  );
-  languageClient.onNotification(ExtendedClient.BrowseToNotification.type, browseTo =>
-    VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(browseTo))
-  );
+  languageClient.onNotification(ExtendedClient.ShowSonarLintOutputNotification.type, () => {
+    void VSCode.commands.executeCommand(Commands.SHOW_SONARLINT_OUTPUT);
+  });
+  languageClient.onNotification(ExtendedClient.OpenJavaHomeSettingsNotification.type, () => {
+    void VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, JAVA_HOME_CONFIG);
+  });
+  languageClient.onNotification(ExtendedClient.OpenPathToNodeSettingsNotification.type, () => {
+    void VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, 'sonarlint.pathToNodeExecutable');
+  });
+  languageClient.onNotification(ExtendedClient.BrowseToNotification.type, browseTo => {
+    void VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(browseTo));
+  });
   languageClient.onNotification(ExtendedClient.OpenConnectionSettingsNotification.type, isSonarCloud => {
     const targetSection = `sonarlint.connectedMode.connections.${isSonarCloud ? 'sonarcloud' : 'sonarqube'}`;
-    return VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
+    void VSCode.commands.executeCommand(Commands.OPEN_SETTINGS, targetSection);
   });
   languageClient.onNotification(ExtendedClient.ShowHotspotNotification.type, async h => {
     await showSecurityHotspot(findingsView, findingsTreeDataProvider, h);
