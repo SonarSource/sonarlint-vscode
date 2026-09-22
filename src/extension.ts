@@ -26,7 +26,7 @@ import {
   HelpAndFeedbackLink,
   HelpAndFeedbackTreeDataProvider
 } from './help/helpAndFeedbackTreeDataProvider';
-import { AIAgentsConfigurationTreeDataProvider, AIAgentsConfigurationItem } from './aiAgentsConfiguration/aiAgentsConfigurationTreeDataProvider';
+import { AIAgentsConfigurationWebviewProvider } from './aiAgentsConfiguration/aiAgentsConfigurationWebviewProvider';
 import {
   showSecurityHotspot,
 } from './hotspot/hotspots';
@@ -100,8 +100,7 @@ let findingsTreeDataProvider: FindingsTreeDataProvider;
 let findingsView: VSCode.TreeView<FindingsTreeViewItem>;
 let helpAndFeedbackTreeDataProvider: HelpAndFeedbackTreeDataProvider;
 let helpAndFeedbackView: VSCode.TreeView<HelpAndFeedbackLink>;
-let aiAgentsConfigurationTreeDataProvider: AIAgentsConfigurationTreeDataProvider;
-let aiAgentsConfigurationView: VSCode.TreeView<AIAgentsConfigurationItem>;
+let aiAgentsConfigurationWebviewProvider: AIAgentsConfigurationWebviewProvider;
 let remediationWebviewProvider: RemediationWebviewProvider;
 const currentProgress: Record<string, { progress: VSCode.Progress<{ increment?: number }>, resolve: () => void } | undefined> = {};
 
@@ -379,12 +378,13 @@ export async function activate(context: VSCode.ExtensionContext) {
     }
   });
 
-
-  aiAgentsConfigurationTreeDataProvider = new AIAgentsConfigurationTreeDataProvider();
-  aiAgentsConfigurationView = VSCode.window.createTreeView('SonarLint.AIAgentsConfiguration', {
-    treeDataProvider: aiAgentsConfigurationTreeDataProvider
-  });
-  context.subscriptions.push(aiAgentsConfigurationView);
+  aiAgentsConfigurationWebviewProvider = new AIAgentsConfigurationWebviewProvider(
+    context,
+    languageClient
+  );
+  context.subscriptions.push(
+    VSCode.window.registerWebviewViewProvider('SonarLint.AIAgentsConfiguration', aiAgentsConfigurationWebviewProvider)
+  );
 
   allConnectionsTreeDataProvider = new AllConnectionsTreeDataProvider(languageClient);
 
@@ -393,7 +393,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   });
   context.subscriptions.push(allConnectionsView);
 
-  const commandsManager = new CommandsManager(context, languageClient, allRulesTreeDataProvider, allRulesView, allConnectionsTreeDataProvider, allConnectionsView, aiAgentsConfigurationTreeDataProvider);
+  const commandsManager = new CommandsManager(context, languageClient, allRulesTreeDataProvider, allRulesView, allConnectionsTreeDataProvider, allConnectionsView, aiAgentsConfigurationWebviewProvider);
   commandsManager.registerCommands();
   
   // Update badge when tree data changes
