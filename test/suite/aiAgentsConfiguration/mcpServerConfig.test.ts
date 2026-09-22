@@ -99,17 +99,17 @@ suite('mcpServerConfig', () => {
 
     try {
       envStub.value('Cursor');
-      const cursorPath = getMCPConfigPath();
+      const cursorPath = getMCPConfigPath(IntegrationTarget.CURSOR);
 
       envStub.value('Windsurf');
-      const windsurfPath = getMCPConfigPath();
+      const windsurfPath = getMCPConfigPath(IntegrationTarget.WINDSURF);
 
       envStub.value('Kiro');
-      const kiroPath = getMCPConfigPath();
+      const kiroPath = getMCPConfigPath(IntegrationTarget.KIRO);
 
       envStub.value('Visual Studio Code');
       extensionsStub.withArgs('github.copilot-chat').returns({ isActive: true });
-      const vscodePath = getMCPConfigPath();
+      const vscodePath = getMCPConfigPath(IntegrationTarget.GITHUB_COPILOT);
 
       expect(cursorPath).to.not.equal(windsurfPath);
       expect(cursorPath).to.not.equal(kiroPath);
@@ -141,7 +141,7 @@ suite('mcpServerConfig', () => {
       envStub.value('Unsupported agent');
       extensionsStub.withArgs('github.copilot-chat').returns(undefined);
 
-      expect(() => getMCPConfigPath()).to.throw('Unsupported agent');
+      expect(() => getMCPConfigPath(AiIntegration.AiAgent.CODEX)).to.throw('Standalone MCP is not supported');
     } finally {
       envStub.restore();
       extensionsStub.restore();
@@ -172,6 +172,7 @@ suite('mcpServerConfig', () => {
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
         extensionContext,
+        IntegrationTarget.CURSOR,
         mockConnection
       );
 
@@ -234,6 +235,7 @@ suite('mcpServerConfig', () => {
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
         extensionContext,
+        IntegrationTarget.CURSOR,
         defaultConnection
       );
 
@@ -294,6 +296,7 @@ suite('mcpServerConfig', () => {
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
         extensionContext,
+        IntegrationTarget.CURSOR,
         mockConnection
       );
 
@@ -350,6 +353,7 @@ suite('mcpServerConfig', () => {
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
         extensionContext,
+        IntegrationTarget.CURSOR,
         mockConnection
       );
 
@@ -394,6 +398,7 @@ suite('mcpServerConfig', () => {
           mockLanguageClient,
           mockAllConnectionsTreeDataProvider,
           extensionContext,
+          IntegrationTarget.CURSOR,
           mockConnection
         );
       }
@@ -435,6 +440,7 @@ suite('mcpServerConfig', () => {
           mockLanguageClient,
           mockAllConnectionsTreeDataProvider,
           extensionContext,
+          IntegrationTarget.CURSOR,
           mockConnection
         );
       } catch (error) {
@@ -495,8 +501,7 @@ suite('mcpServerConfig', () => {
       state: AiIntegration.McpConfigurationState.STANDALONE,
       diagnostics: []
     });
-    const plannedContent =
-      '{"mcpServers":{"sonarqube":{"command":"docker","env":{"SONARQUBE_IDE_PORT":"64123"}}}}\n';
+    const plannedContent = '{"mcpServers":{"sonarqube":{"command":"docker","env":{"SONARQUBE_IDE_PORT":"64123"}}}}\n';
     planMcpConfigurationUpdateStub.resolves({
       state: AiIntegration.McpConfigurationState.STANDALONE,
       updatedContent: plannedContent,
@@ -641,6 +646,7 @@ suite('mcpServerConfig', () => {
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
         extensionContext,
+        IntegrationTarget.CURSOR,
         mockConnection
       );
 
@@ -738,9 +744,7 @@ suite('mcpServerConfig', () => {
     const existsStub = sinon.stub(fs, 'existsSync').returns(true);
     const readFileStub = sinon.stub(fs, 'readFileSync').returns('{"mcpServers":{"sonarqube":{}}}');
     const writeFileStub = sinon.stub(fs, 'writeFileSync');
-    const getServerTokenStub = sinon
-      .stub(ConnectionSettingsService.instance, 'getServerToken')
-      .resolves('cloud-token');
+    const getServerTokenStub = sinon.stub(ConnectionSettingsService.instance, 'getServerToken').resolves('cloud-token');
     const sonarQubeConnectionsStub = sinon
       .stub(ConnectionSettingsService.instance, 'getSonarQubeConnections')
       .returns([]);
