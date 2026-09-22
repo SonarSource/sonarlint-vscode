@@ -565,8 +565,8 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onRequest(ExtendedClient.IsOpenInEditor.type, fileUri => {
     return VSCode.workspace.textDocuments.some(doc => code2ProtocolConverter(doc.uri) === fileUri);
   });
-  languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, (params) => {
-    onEmbeddedServerStarted(params.port);
+  languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, () => {
+    void onEmbeddedServerStarted(languageClient, context);
   });
   languageClient.onRequest(ExtendedClient.HasJoinedIdeLabs.type, () => {
     return IdeLabsFlagManagementService.instance.isIdeLabsJoined();
