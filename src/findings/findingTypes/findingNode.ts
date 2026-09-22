@@ -17,6 +17,10 @@ import { ExtendedServer } from '../../lsp/protocol';
 import { Commands } from '../../util/commands';
 import { Diagnostic } from 'vscode-languageserver-types';
 
+function diagnosticMessageText(message: Diagnostic['message']): string {
+  return typeof message === 'string' ? message : message.value;
+}
+
 export class FindingNode extends vscode.TreeItem {
   public readonly key: string;
   public readonly serverIssueKey?: string;
@@ -38,7 +42,7 @@ export class FindingNode extends vscode.TreeItem {
     public readonly finding: Diagnostic,
     public readonly findingLabel = ''
   ) {
-    super(finding.message, vscode.TreeItemCollapsibleState.None);
+    super(diagnosticMessageText(finding.message), vscode.TreeItemCollapsibleState.None);
     this.key = finding['data'].entryKey;
     this.serverIssueKey = finding['data'].serverIssueKey;
     this.id = `${fileUri}-${this.key}`;
@@ -57,7 +61,7 @@ export class FindingNode extends vscode.TreeItem {
       this.isAiCodeFixable
     );
     this.source = finding.source as FindingSource;
-    this.message = finding.message;
+    this.message = diagnosticMessageText(finding.message);
     this.ruleKey = (finding.code as string) || 'unknown';
     this.status = finding['data']?.status;
     this.isOnNewCode = finding['data']?.isOnNewCode;
