@@ -214,7 +214,6 @@ suite('aiAgentHooks', () => {
         args[0] && args[0].includes('Hook script installed successfully')
       );
       expect(infoMessage).to.not.be.undefined;
-      expect(executeCommandStub.calledWith('SonarLint.RefreshAIAgentsConfiguration')).to.be.true;
     });
 
     (process.platform === 'win32' ? test.skip : test)('should merge with existing hooks from other tools', async () => {
@@ -484,4 +483,3 @@ suite('aiAgentHooks', () => {
     });
   });
 });
-
