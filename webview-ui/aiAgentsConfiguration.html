@@ -31,12 +31,14 @@
             <button id="vortex-docs" class="inline-link-action" type="button">Sonar Vortex</button>
             to find bugs and vulnerabilities before you commit.
           </p>
+          <p id="cli-authentication" class="supporting-text cli-authentication"></p>
           <div class="agent-summary">
             <span id="detected-label" class="supporting-text"></span>
             <ul id="agent-list" class="agent-list"></ul>
             <p id="no-agents" class="supporting-text" hidden>No CLI-compatible agents detected in this IDE.</p>
           </div>
           <button id="cli-action" class="primary-action" type="button"></button>
+          <output id="cli-feedback" class="notice" aria-live="polite" hidden></output>
           <div id="hook-row" class="component-row" hidden>
             <div class="component-details">
               <span>Automatic analysis after agent edits</span>

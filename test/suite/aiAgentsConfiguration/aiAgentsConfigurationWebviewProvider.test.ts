@@ -7,6 +7,7 @@
 'use strict';
 
 import { expect } from 'chai';
+import * as os from 'node:os';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { AIAgentsConfigurationWebviewProvider } from '../../../src/aiAgentsConfiguration/aiAgentsConfigurationWebviewProvider';
@@ -24,10 +25,14 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let provider: any;
   let getIntegrationState: sinon.SinonStub;
+  let prepareInstallCliCommand: sinon.SinonStub;
+  let prepareAuthenticateCliCommand: sinon.SinonStub;
+  let prepareIntegrateCliCommand: sinon.SinonStub;
 
   setup(function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     provider = Object.create(AIAgentsConfigurationWebviewProvider.prototype);
+    provider.extensionContext = { subscriptions: [] };
     getIntegrationState = sinon.stub().resolves({
       cli: {
         installationStatus: AiIntegration.CliInstallationStatus.NOT_INSTALLED,
@@ -36,7 +41,15 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       agents: [],
       connectionChoices: []
     });
-    provider.languageClient = { getAiIntegrationState: getIntegrationState };
+    prepareInstallCliCommand = sinon.stub();
+    prepareAuthenticateCliCommand = sinon.stub();
+    prepareIntegrateCliCommand = sinon.stub();
+    provider.languageClient = {
+      getAiIntegrationState: getIntegrationState,
+      prepareInstallCliCommand,
+      prepareAuthenticateCliCommand,
+      prepareIntegrateCliCommand
+    };
   });
 
   teardown(() => sinon.restore());
@@ -90,6 +103,13 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(state.agents[0].supportsCliIntegration).to.be.true;
     expect(state.cli).to.deep.equal({
       installationStatus: 'INSTALLED',
+      authenticationStatus: 'AUTHENTICATED',
+      serverUrl: undefined,
+      organization: undefined,
+      operationInProgress: false,
+      notice: undefined,
+      primaryAction: undefined,
+      canIntegrate: true,
       hook: { supported: false, configured: false }
     });
     expect(state.mcp).to.deep.equal({
@@ -113,6 +133,13 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     expect(state.cli).to.deep.equal({
       installationStatus: 'NOT_INSTALLED',
+      authenticationStatus: 'UNKNOWN',
+      serverUrl: undefined,
+      organization: undefined,
+      operationInProgress: false,
+      notice: undefined,
+      primaryAction: { command: 'installCli', label: 'Install SonarQube CLI' },
+      canIntegrate: false,
       hook: { supported: true, configured: true }
     });
     expect(state.mcp.legacyInstructionsConfigured).to.be.false;
@@ -149,6 +176,13 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     expect(state.cli).to.deep.equal({
       installationStatus: 'UNUSABLE',
+      authenticationStatus: 'UNKNOWN',
+      serverUrl: undefined,
+      organization: undefined,
+      operationInProgress: false,
+      notice: undefined,
+      primaryAction: { command: 'openCliDocumentation', label: 'Open troubleshooting guide' },
+      canIntegrate: false,
       hook: { supported: false, configured: false }
     });
     expect(state.agents[0].supportsCliIntegration).to.be.true;
@@ -210,6 +244,191 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     expect(openExternal.calledOnceWith(vscode.Uri.parse('https://www.sonarsource.com/blog/introducing-sonar-vortex/')))
       .to.be.true;
+  });
+
+  test('runs the prepared installation command in one visible terminal', async () => {
+    const terminal = { show: sinon.stub() };
+    const createTerminal = sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    const closeListener = { dispose: sinon.stub() };
+    const onDidCloseTerminal = sinon.stub(vscode.window, 'onDidCloseTerminal').returns(closeListener);
+    prepareInstallCliCommand.resolves({
+      executable: '/bin/sh',
+      arguments: ['-c', 'install-sonar'],
+      interactive: false
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'installCli' });
+    await provider.handleMessage({ command: 'installCli' });
+
+    expect(prepareInstallCliCommand.calledOnceWithExactly()).to.be.true;
+    expect(
+      createTerminal.calledOnceWithExactly({
+        name: 'SonarQube CLI installation',
+        shellPath: '/bin/sh',
+        shellArgs: ['-c', 'install-sonar'],
+        cwd: os.homedir()
+      })
+    ).to.be.true;
+    expect(terminal.show.calledTwice).to.be.true;
+    expect(provider.extensionContext.subscriptions).to.deep.equal([closeListener]);
+
+    const exitStatus = { code: undefined, reason: vscode.TerminalExitReason.User };
+    Object.assign(terminal, { exitStatus });
+    onDidCloseTerminal.firstCall.args[0](terminal as unknown as vscode.Terminal);
+    expect(closeListener.dispose.called).to.be.false;
+    expect(provider.cliSetupSession.operationInProgress).to.be.false;
+    expect(provider.cliSetupSession.notice).to.deep.include({ outcome: 'cancelled' });
+  });
+
+  test('prepares login without a connection when the IDE has none', async () => {
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.UNAUTHENTICATED
+      },
+      agents: [],
+      connectionChoices: []
+    });
+    prepareAuthenticateCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['auth', 'login'],
+      interactive: true
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'authenticateCli' });
+
+    expect(prepareAuthenticateCliCommand.calledOnceWithExactly({})).to.be.true;
+    expect(terminal.show.calledOnce).to.be.true;
+  });
+
+  test('prepares login with the recommended IDE connection', async () => {
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.UNAUTHENTICATED
+      },
+      agents: [],
+      connectionChoices: [{ connectionId: 'cloud', serverUrl: 'https://sonarcloud.io', organization: 'example' }],
+      recommendedConnectionId: 'cloud'
+    });
+    prepareAuthenticateCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['auth', 'login', '--server', 'https://sonarcloud.io', '--org', 'example'],
+      interactive: true
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'authenticateCli' });
+
+    expect(
+      prepareAuthenticateCliCommand.calledOnceWithExactly({
+        serverUrl: 'https://sonarcloud.io',
+        organization: 'example'
+      })
+    ).to.be.true;
+    expect(terminal.show.calledOnce).to.be.true;
+  });
+
+  test('allows login when existing CLI authentication could not be verified', async () => {
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.UNVERIFIED
+      },
+      agents: [],
+      connectionChoices: [{ connectionId: 'server', serverUrl: 'https://server.example' }]
+    });
+    prepareAuthenticateCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['auth', 'login', '--server', 'https://server.example'],
+      interactive: true
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'authenticateCli' });
+
+    expect(
+      prepareAuthenticateCliCommand.calledOnceWithExactly({
+        serverUrl: 'https://server.example'
+      })
+    ).to.be.true;
+  });
+
+  test('reports a cancelled login connection selection without starting a command', async () => {
+    sinon.stub(vscode.window, 'showQuickPick').resolves(undefined);
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.UNAUTHENTICATED
+      },
+      agents: [],
+      connectionChoices: [
+        { connectionId: 'server', serverUrl: 'https://server.example' },
+        { connectionId: 'cloud', serverUrl: 'https://sonarcloud.io', organization: 'example' }
+      ]
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'authenticateCli' });
+
+    expect(prepareAuthenticateCliCommand.notCalled).to.be.true;
+    expect(provider.cliSetupSession.notice).to.deep.equal({
+      outcome: 'cancelled',
+      message: 'SonarQube CLI login was cancelled.'
+    });
+    expect(provider.cliSetupSession.operationInProgress).to.be.false;
+  });
+
+  test('runs supported agent integration interactively', async () => {
+    sinon
+      .stub(aiAgentUtils, 'getDetectedIdeAgents')
+      .returns([{ id: AiIntegration.AiAgent.CLAUDE_CODE, name: 'Claude Code', source: 'extension' }]);
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED
+      },
+      agents: [
+        {
+          agent: AiIntegration.AiAgent.CLAUDE_CODE,
+          detectionSources: [AiIntegration.AiAgentDetectionSource.IDE],
+          cliIntegrationSupported: true,
+          standaloneMcpSupported: true,
+          hookSupported: true,
+          skillSupported: true
+        }
+      ],
+      connectionChoices: []
+    });
+    prepareIntegrateCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['integrate', 'claude', '--global'],
+      interactive: true
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'integrateAgent', agent: AiIntegration.AiAgent.CLAUDE_CODE });
+
+    expect(
+      prepareIntegrateCliCommand.calledOnceWithExactly({
+        agent: AiIntegration.AiAgent.CLAUDE_CODE
+      })
+    ).to.be.true;
+    expect(terminal.show.calledOnce).to.be.true;
   });
 
   test('opens only existing legacy instructions', async () => {
