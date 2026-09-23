@@ -60,16 +60,16 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     ]);
     getIntegrationState.resolves({
       cli: {
-        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
-        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED
+        installationStatus: 1,
+        authenticationStatus: 0
       },
       agents: [
         {
-          agent: AiIntegration.AiAgent.CODEX,
-          detectionSources: [AiIntegration.AiAgentDetectionSource.IDE],
-          cliIntegrationSupported: false,
-          standaloneMcpSupported: true,
-          hookSupported: true,
+          agent: 5,
+          detectionSources: [0],
+          cliIntegrationSupported: true,
+          standaloneMcpSupported: false,
+          hookSupported: false,
           skillSupported: true
         }
       ],
@@ -87,7 +87,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     expect(state.ideName).to.equal('VS Code');
     expect(getIntegrationState.calledOnceWithExactly(integrationStateParams)).to.be.true;
-    expect(state.agents[0].supportsCliIntegration).to.be.false;
+    expect(state.agents[0].supportsCliIntegration).to.be.true;
     expect(state.cli).to.deep.equal({
       installationStatus: 'INSTALLED',
       hook: { supported: false, configured: false }
