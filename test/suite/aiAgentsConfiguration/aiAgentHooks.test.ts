@@ -198,6 +198,7 @@ suite('aiAgentHooks', () => {
 
       expect(showErrorMessageStub.called).to.be.true;
       expect(showErrorMessageStub.args[0][0]).to.include('not supported');
+      expect(showErrorMessageStub.args[0][0]).to.include('Cursor');
     });
 
     (process.platform === 'win32' ? test.skip : test)('should install hook successfully for Windsurf when no existing hooks', async () => {
@@ -214,6 +215,7 @@ suite('aiAgentHooks', () => {
         args[0] && args[0].includes('Hook script installed successfully')
       );
       expect(infoMessage).to.not.be.undefined;
+      expect(infoMessage?.[0]).to.include('Windsurf');
       expect(executeCommandStub.calledWith('SonarLint.RefreshAIAgentsConfiguration')).to.be.true;
     });
 

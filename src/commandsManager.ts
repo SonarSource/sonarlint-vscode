@@ -252,25 +252,25 @@ export class CommandsManager {
       ),
       vscode.commands.registerCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
-        if (agent) {
+        if (agent !== undefined) {
           await installHook(this.languageClient, agent);
         }
       }),
       vscode.commands.registerCommand(Commands.UNINSTALL_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
-        if (agent) {
+        if (agent !== undefined) {
           await uninstallHook(agent);
         }
       }),
       vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
-        if (agent) {
+        if (agent !== undefined) {
           await openHookScript(agent);
         }
       }),
       vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION, async () => {
         const agent = getCurrentAgentWithHookSupport();
-        if (agent) {
+        if (agent !== undefined) {
           await openHookConfiguration(agent);
         }
       }),
