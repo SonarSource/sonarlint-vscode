@@ -124,7 +124,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     const [integrationState, legacyInstructionsConfigured, hookConfigured] = await Promise.all([
       this.languageClient.getAiIntegrationState(getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)),
       isSonarQubeRulesFileConfigured(),
-      hookAgent ? isHookInstalled(hookAgent) : Promise.resolve(false)
+      hookAgent !== undefined ? isHookInstalled(hookAgent) : Promise.resolve(false)
     ]);
     const mcpConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
     const cliSupportByAgent = new Map(
