@@ -773,19 +773,48 @@ export namespace ExtendedServer {
     );
   }
 
-  export type AiAgent = 'CURSOR' | 'GITHUB_COPILOT' | 'KIRO' | 'WINDSURF' | 'CLAUDE_CODE' | 'CODEX' | 'GITHUB_COPILOT_CLI' | 'ANTIGRAVITY';
-  export type AiAgentDetectionSource = 'IDE' | 'CLI';
+  // SLLS sends SLCORE enum values as numeric ordinals in responses.
+  export enum AiAgent {
+    CURSOR = 0,
+    GITHUB_COPILOT = 1,
+    KIRO = 2,
+    WINDSURF = 3,
+    CLAUDE_CODE = 4,
+    CODEX = 5,
+    GITHUB_COPILOT_CLI = 6,
+    ANTIGRAVITY = 7
+  }
+
+  export enum AiAgentDetectionSource {
+    IDE = 0,
+    CLI = 1
+  }
+
   export type AiIntegrationHost = 'VSCODE' | 'CURSOR' | 'WINDSURF' | 'KIRO' | 'INTELLIJ' | 'VISUAL_STUDIO' | 'OTHER';
   export type AiIntegrationScope = 'GLOBAL' | 'PROJECT';
-  export type CliInstallationStatus = 'NOT_INSTALLED' | 'INSTALLED' | 'UNUSABLE';
-  export type CliAuthenticationStatus =
-    | 'AUTHENTICATED'
-    | 'UNAUTHENTICATED'
-    | 'INVALID'
-    | 'UNVERIFIED'
-    | 'UNAVAILABLE'
-    | 'UNKNOWN';
-  export type McpConfigurationState = 'NOT_CONFIGURED' | 'STANDALONE' | 'CLI_MANAGED' | 'UNKNOWN' | 'MALFORMED';
+
+  export enum CliInstallationStatus {
+    NOT_INSTALLED = 0,
+    INSTALLED = 1,
+    UNUSABLE = 2
+  }
+
+  export enum CliAuthenticationStatus {
+    AUTHENTICATED = 0,
+    UNAUTHENTICATED = 1,
+    INVALID = 2,
+    UNVERIFIED = 3,
+    UNAVAILABLE = 4,
+    UNKNOWN = 5
+  }
+
+  export enum McpConfigurationState {
+    NOT_CONFIGURED = 0,
+    STANDALONE = 1,
+    CLI_MANAGED = 2,
+    UNKNOWN = 3,
+    MALFORMED = 4
+  }
 
   export interface GetAiIntegrationStateParams {
     ideHost: AiIntegrationHost;
