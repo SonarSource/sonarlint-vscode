@@ -64,14 +64,15 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
     }
 
     const items: AIAgentsConfigurationItem[] = [];
-    const isSupportingMCP = getCurrentAgentWithMCPSupport();
+    const isSupportingMCP = getCurrentAgentWithMCPSupport() !== undefined;
     const agentWithHookSupport = getCurrentAgentWithHookSupport();
+    const hasHookSupport = agentWithHookSupport !== undefined;
 
     const sonarQubeMCPServerConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
     const rulesFileConfigured = await isSonarQubeRulesFileConfigured();
-    const hookScriptInstalled = agentWithHookSupport ? await isHookInstalled(agentWithHookSupport) : false;
+    const hookScriptInstalled = hasHookSupport ? await isHookInstalled(agentWithHookSupport) : false;
 
-    if (!sonarQubeMCPServerConfigured && !rulesFileConfigured && !isSupportingMCP && !agentWithHookSupport) {
+    if (!sonarQubeMCPServerConfigured && !rulesFileConfigured && !isSupportingMCP && !hasHookSupport) {
       return [];
     }
 
@@ -101,7 +102,7 @@ export class AIAgentsConfigurationTreeDataProvider implements VSCode.TreeDataPro
       );
     }
 
-    if (agentWithHookSupport) {
+    if (hasHookSupport) {
       items.push(
         new AIAgentsConfigurationItem(
           'hookScript',
