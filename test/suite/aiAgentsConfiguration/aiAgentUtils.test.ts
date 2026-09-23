@@ -108,7 +108,7 @@ suite('aiAgentUtils', () => {
 
     expect(getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.PROJECT, 'scope-id')).to.deep.equal({
       ideHost: AiIntegration.AiIntegrationHost.VSCODE,
-      detectedAgents: [AiIntegration.AiAgent.GITHUB_COPILOT, AiIntegration.AiAgent.CODEX],
+      detectedAgents: [1, 5],
       scope: AiIntegration.AiIntegrationScope.PROJECT,
       configurationScopeId: 'scope-id'
     });

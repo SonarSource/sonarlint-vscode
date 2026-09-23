@@ -9,20 +9,21 @@
 import * as lsp from 'vscode-languageserver-protocol';
 
 export namespace AiIntegration {
+  // LSP4J serializes Java response enums as ordinals. Keep these values aligned with SLCORE.
   export enum AiAgent {
-    CURSOR = 'CURSOR',
-    GITHUB_COPILOT = 'GITHUB_COPILOT',
-    KIRO = 'KIRO',
-    WINDSURF = 'WINDSURF',
-    CLAUDE_CODE = 'CLAUDE_CODE',
-    CODEX = 'CODEX',
-    GITHUB_COPILOT_CLI = 'GITHUB_COPILOT_CLI',
-    ANTIGRAVITY = 'ANTIGRAVITY'
+    CURSOR = 0,
+    GITHUB_COPILOT = 1,
+    KIRO = 2,
+    WINDSURF = 3,
+    CLAUDE_CODE = 4,
+    CODEX = 5,
+    GITHUB_COPILOT_CLI = 6,
+    ANTIGRAVITY = 7
   }
 
   export enum AiAgentDetectionSource {
-    IDE = 'IDE',
-    CLI = 'CLI'
+    IDE = 0,
+    CLI = 1
   }
 
   export enum AiIntegrationHost {
@@ -41,26 +42,26 @@ export namespace AiIntegration {
   }
 
   export enum CliInstallationStatus {
-    NOT_INSTALLED = 'NOT_INSTALLED',
-    INSTALLED = 'INSTALLED',
-    UNUSABLE = 'UNUSABLE'
+    NOT_INSTALLED = 0,
+    INSTALLED = 1,
+    UNUSABLE = 2
   }
 
   export enum CliAuthenticationStatus {
-    AUTHENTICATED = 'AUTHENTICATED',
-    UNAUTHENTICATED = 'UNAUTHENTICATED',
-    INVALID = 'INVALID',
-    UNVERIFIED = 'UNVERIFIED',
-    UNAVAILABLE = 'UNAVAILABLE',
-    UNKNOWN = 'UNKNOWN'
+    AUTHENTICATED = 0,
+    UNAUTHENTICATED = 1,
+    INVALID = 2,
+    UNVERIFIED = 3,
+    UNAVAILABLE = 4,
+    UNKNOWN = 5
   }
 
   export enum McpConfigurationState {
-    NOT_CONFIGURED = 'NOT_CONFIGURED',
-    STANDALONE = 'STANDALONE',
-    CLI_MANAGED = 'CLI_MANAGED',
-    UNKNOWN = 'UNKNOWN',
-    MALFORMED = 'MALFORMED'
+    NOT_CONFIGURED = 0,
+    STANDALONE = 1,
+    CLI_MANAGED = 2,
+    UNKNOWN = 3,
+    MALFORMED = 4
   }
 
   export interface GetAiIntegrationStateParams {

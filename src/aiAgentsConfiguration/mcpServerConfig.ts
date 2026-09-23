@@ -59,7 +59,7 @@ export function getMCPConfigPath(): string {
 
 export function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefined {
   const currentAgent = getCurrentAgentWithMCPSupport();
-  if (!currentAgent) {
+  if (currentAgent === undefined) {
     return undefined;
   }
   const configPath = getMCPConfigPath();
