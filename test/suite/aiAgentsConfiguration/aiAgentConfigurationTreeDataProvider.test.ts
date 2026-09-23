@@ -39,6 +39,16 @@ suite('aiAgentConfigurationTreeDataProvider', () => {
     expect(children.length).to.equal(0);
   });
 
+  test('getChildren should offer setup for an unconfigured Cursor agent', async () => {
+    sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns(undefined);
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
+    sinon.stub(aiAgentUtils, 'getCurrentAgentWithMCPSupport').returns(IntegrationTarget.CURSOR);
+
+    const children = await underTest.getChildren();
+
+    expect(children.map(item => item.id)).to.deep.equal(['mcpServer', 'rulesFile']);
+  });
+
   test('getChildren should return MCP server and rules file items when both are configured', async () => {
 
     sinon.stub(mcpServerConfig, 'getCurrentSonarQubeMCPServerConfig').returns({
