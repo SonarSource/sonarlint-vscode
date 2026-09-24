@@ -23,7 +23,13 @@ import {
 import { logToSonarLintOutput } from '../util/logging';
 import { Commands } from '../util/commands';
 import { getVSCodeSettingsBaseDir } from '../util/util';
-import { getCurrentIdeHost, getDetectedIdeAgents, getWindsurfDirectory, IdeHost } from './aiAgentUtils';
+import {
+  getCurrentIdeHost,
+  getDetectedIdeAgents,
+  getWindsurfDirectory,
+  IdeHost,
+  isAgentActiveForMcp
+} from './aiAgentUtils';
 
 const LEGACY_MCP_CONNECTION_KEY = 'aiAgentsConfiguration.mcpConnection';
 const MCP_CONNECTION_KEY_PREFIX = 'aiAgentsConfiguration.mcpConnection.';
@@ -80,6 +86,26 @@ export function getMCPConfigPath(agent: AiIntegration.AiAgent): string {
 
 export function getActiveMcpAgent(): AiIntegration.AiAgent | undefined {
   return activeMcpAgent;
+}
+
+export function isStandaloneMcpReady(agent: AiIntegration.AiAgent): boolean {
+  return supportsStandaloneMCP(agent) && isAgentActiveForMcp(agent);
+}
+
+export function hasActiveStandaloneMcpAgent(): boolean {
+  return standaloneMcpCandidates().length > 0;
+}
+
+function standaloneMcpCandidates() {
+  return getDetectedIdeAgents().filter(agent => isStandaloneMcpReady(agent.id));
+}
+
+async function refreshAiAgentsView(): Promise<void> {
+  try {
+    await vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
+  } catch (error) {
+    logToSonarLintOutput(`Could not refresh the AI integrations view: ${String(error)}`);
+  }
 }
 
 export async function inspectMCPConfiguration(
@@ -179,7 +205,6 @@ export async function configureMCPServer(
     return;
   }
   mcpSetupInProgress = true;
-  activeMcpAgent = requestedAgent;
   let selectedConnection = connection;
   try {
     await migrateLegacyMCPConnection(extensionContext);
@@ -187,6 +212,8 @@ export async function configureMCPServer(
     if (agent === undefined) {
       return;
     }
+    activeMcpAgent = agent;
+    await refreshAiAgentsView();
     const document = readMcpDocument(agent);
     const inspection = await inspectMcpDocument(languageClient, document);
     if (!isUpdateAllowed(inspection.state)) {
@@ -263,6 +290,12 @@ async function selectMCPAgent(requestedAgent?: AiIntegration.AiAgent): Promise<A
       await vscode.window.showInformationMessage(`${displayName(requestedAgent)} was not detected in this IDE.`);
       return undefined;
     }
+    if (!isAgentActiveForMcp(requestedAgent)) {
+      await vscode.window.showInformationMessage(
+        `${displayName(requestedAgent)} must be active before MCP can be configured.`
+      );
+      return undefined;
+    }
     if (!supportsStandaloneMCP(requestedAgent)) {
       await vscode.window.showInformationMessage(
         `${displayName(requestedAgent)} MCP integration is available through CLI.`
@@ -272,7 +305,7 @@ async function selectMCPAgent(requestedAgent?: AiIntegration.AiAgent): Promise<A
     return requestedAgent;
   }
 
-  const agents = detectedAgents.filter(agent => supportsStandaloneMCP(agent.id));
+  const agents = standaloneMcpCandidates();
   if (agents.length === 0) {
     await vscode.window.showInformationMessage('No agent with standalone MCP support was detected in this IDE.');
     return undefined;
@@ -348,27 +381,24 @@ export async function onEmbeddedServerStarted(
     embeddedServerRefreshPending = true;
     return;
   }
-  do {
-    embeddedServerRefreshPending = false;
-    mcpSetupInProgress = true;
-    try {
-      await migrateLegacyMCPConnection(extensionContext);
-      const agents = getDetectedIdeAgents().filter(agent => supportsStandaloneMCP(agent.id));
-      await Promise.all(
-        agents.map(agent => refreshStandaloneMCPConfiguration(agent.id, languageClient, extensionContext))
-      );
-    } catch (error) {
-      logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configurations: ${error.message}`);
-    } finally {
-      mcpSetupInProgress = false;
-    }
-  } while (embeddedServerRefreshPending);
-
+  embeddedServerRefreshPending = false;
+  mcpSetupInProgress = true;
   try {
-    await vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
+    await migrateLegacyMCPConnection(extensionContext);
+    const agents = standaloneMcpCandidates();
+    await Promise.all(
+      agents.map(agent => refreshStandaloneMCPConfiguration(agent.id, languageClient, extensionContext))
+    );
   } catch (error) {
-    logToSonarLintOutput(`Could not refresh the AI integrations view: ${String(error)}`);
+    logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configurations: ${error.message}`);
+  } finally {
+    mcpSetupInProgress = false;
   }
+  if (embeddedServerRefreshPending) {
+    await onEmbeddedServerStarted(languageClient, extensionContext);
+    return;
+  }
+  await refreshAiAgentsView();
 }
 
 async function refreshStandaloneMCPConfiguration(

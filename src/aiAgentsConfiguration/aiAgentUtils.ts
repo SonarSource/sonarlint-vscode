@@ -121,6 +121,13 @@ function isCopilotInstalledAndActive(): boolean {
   return vscode.extensions.getExtension(COPILOT_CHAT_EXTENSION_ID)?.isActive === true;
 }
 
+export function isAgentActiveForMcp(agent: AiIntegration.AiAgent): boolean {
+  if (agent === AiIntegration.AiAgent.GITHUB_COPILOT) {
+    return isCopilotInstalledAndActive();
+  }
+  return true;
+}
+
 function findMatchingHost(appName: string): IdeHostDefinition | undefined {
   return IDE_HOSTS.find(host => appName.includes(host.appNameMatch));
 }
