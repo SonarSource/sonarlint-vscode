@@ -71,7 +71,7 @@ export async function introduceSonarQubeRulesFile(languageClient: SonarLintExten
   }
 }
 
-export async function openSonarQubeRulesFile(): Promise<void> {
+export async function openSonarQubeRulesFile(offerCreation = true): Promise<void> {
   try {
     const currentAgent = getCurrentAgentWithMCPSupport();
     if (currentAgent === undefined) {
@@ -89,9 +89,10 @@ export async function openSonarQubeRulesFile(): Promise<void> {
 
     try {
       await vscode.workspace.fs.stat(rulesFileUri);
-      const document = await vscode.workspace.openTextDocument(rulesFileUri);
-      await vscode.window.showTextDocument(document);
     } catch {
+      if (!offerCreation) {
+        return;
+      }
       const action = await vscode.window.showWarningMessage(
         'SonarQube rules file not found. Would you like to create one?',
         'Create Rules File'
@@ -100,7 +101,11 @@ export async function openSonarQubeRulesFile(): Promise<void> {
       if (action === 'Create Rules File') {
         vscode.commands.executeCommand('SonarLint.IntroduceSonarQubeRulesFile');
       }
+      return;
     }
+
+    const document = await vscode.workspace.openTextDocument(rulesFileUri);
+    await vscode.window.showTextDocument(document);
   } catch (error) {
     vscode.window.showErrorMessage(`Error opening SonarQube rules file: ${error.message}`);
   }
