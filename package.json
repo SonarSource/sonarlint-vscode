@@ -415,7 +415,7 @@
         "category": "SonarQube"
       },
       {
-        "command": "SonarLint.RefreshAIAgentsConfiguration",
+        "command": "SonarLint.UserRefreshAIAgentsConfiguration",
         "title": "Refresh",
         "icon": "$(refresh)",
         "category": "SonarQube",
@@ -960,7 +960,7 @@
           "group": "inline"
         },
         {
-          "command": "SonarLint.RefreshAIAgentsConfiguration",
+          "command": "SonarLint.UserRefreshAIAgentsConfiguration",
           "when": "view == SonarLint.AIAgentsConfiguration",
           "group": "navigation"
         },

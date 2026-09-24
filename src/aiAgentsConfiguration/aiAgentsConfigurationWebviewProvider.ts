@@ -147,6 +147,13 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     }
   }
 
+  async refreshOnRequest(): Promise<void> {
+    if (this.cliSetupSession) {
+      this.cliSetupSession.notice = undefined;
+    }
+    await this.refresh();
+  }
+
   private async buildState(): Promise<AIAgentsConfigurationState> {
     const ide = getCurrentIdeHost();
     const detectedAgents = getDetectedIdeAgents();
@@ -202,8 +209,10 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private async handleMessage(message: { command?: string; agent?: AiIntegration.AiAgent }): Promise<void> {
     switch (message.command) {
       case 'ready':
-      case 'refresh':
         await this.refresh();
+        break;
+      case 'refresh':
+        await this.refreshOnRequest();
         break;
       case 'configureMcp':
         await vscode.commands.executeCommand(Commands.CONFIGURE_MCP_SERVER);
