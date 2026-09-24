@@ -59,6 +59,7 @@ export namespace Commands {
   export const OPEN_AI_AGENT_HOOK_SCRIPT = 'SonarLint.OpenAiAgentHookScript';
   export const OPEN_AI_AGENT_HOOK_CONFIGURATION = 'SonarLint.OpenAiAgentHookConfiguration';
   export const REFRESH_AI_AGENTS_CONFIGURATION = 'SonarLint.RefreshAIAgentsConfiguration';
+  export const USER_REFRESH_AI_AGENTS_CONFIGURATION = 'SonarLint.UserRefreshAIAgentsConfiguration';
   export const OPEN_AIAGENTS_CONFIGURATION_DOC = 'SonarLint.OpenAIAgentsConfigurationDoc';
 
   export const ADD_PROJECT_BINDING = 'SonarLint.AddProjectBinding';
