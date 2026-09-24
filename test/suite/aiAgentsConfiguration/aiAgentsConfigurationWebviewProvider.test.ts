@@ -322,7 +322,8 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     await provider.handleMessage({ command: 'configureMcp' });
 
-    expect(executeCommand.calledOnceWith(Commands.CONFIGURE_MCP_SERVER)).to.be.true;
+    expect(executeCommand.calledOnceWithExactly(Commands.CONFIGURE_MCP_SERVER, undefined, { skipViewRefresh: true })).to
+      .be.true;
     expect(provider.refresh.calledTwice).to.be.true;
     expect(provider.mcpSetupInProgress).to.be.false;
   });
@@ -337,7 +338,8 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     await Promise.resolve();
     await provider.handleMessage({ command: 'configureMcp' });
 
-    expect(executeCommand.calledOnceWith(Commands.CONFIGURE_MCP_SERVER)).to.be.true;
+    expect(executeCommand.calledOnceWithExactly(Commands.CONFIGURE_MCP_SERVER, undefined, { skipViewRefresh: true })).to
+      .be.true;
     expect(provider.mcpSetupInProgress).to.be.true;
     finishSetup();
     await firstSetup;

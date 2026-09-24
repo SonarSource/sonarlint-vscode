@@ -434,7 +434,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     this.mcpSetupInProgress = true;
     await this.refresh();
     try {
-      await vscode.commands.executeCommand(Commands.CONFIGURE_MCP_SERVER);
+      await vscode.commands.executeCommand(Commands.CONFIGURE_MCP_SERVER, undefined, { skipViewRefresh: true });
     } finally {
       this.mcpSetupInProgress = false;
       await this.refresh();
