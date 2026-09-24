@@ -21,7 +21,8 @@ import {
   getAiIntegrationStateParams,
   getCurrentAgentWithHookSupport,
   getCurrentIdeHost,
-  getDetectedIdeAgents
+  getDetectedIdeAgents,
+  isAgentActiveForMcp
 } from './aiAgentUtils';
 import {
   canIntegrateAgent,
@@ -36,8 +37,8 @@ import {
   hasPersistedMCPConnection,
   inspectMCPConfiguration,
   isMCPSetupInProgress,
-  migrateLegacyMCPConnection,
-  supportsStandaloneMCP
+  isStandaloneMcpReady,
+  migrateLegacyMCPConnection
 } from './mcpServerConfig';
 
 const WEBVIEW_UI_DIR = 'webview-ui';
@@ -183,6 +184,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private async buildState(): Promise<AIAgentsConfigurationState> {
     const ide = getCurrentIdeHost();
     const detectedAgents = getDetectedIdeAgents();
+    const mcpAgents = detectedAgents.filter(agent => isAgentActiveForMcp(agent.id));
     const hookAgent = getCurrentAgentWithHookSupport();
     await migrateLegacyMCPConnection(this.extensionContext);
     const [integrationState, legacyInstructionsConfigured, hookConfigured] = await Promise.all([
@@ -192,9 +194,9 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     ]);
     const capabilitiesByAgent = new Map(integrationState.agents.map(capability => [capability.agent, capability]));
     const inspections = await Promise.all(
-      detectedAgents
+      mcpAgents
         .filter(
-          agent => supportsStandaloneMCP(agent.id) && capabilitiesByAgent.get(agent.id)?.standaloneMcpSupported === true
+          agent => isStandaloneMcpReady(agent.id) && capabilitiesByAgent.get(agent.id)?.standaloneMcpSupported === true
         )
         .map(async agent => {
           try {
@@ -221,8 +223,8 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     const inspectionByAgent = new Map(inspections.map(result => [result.agent, result.inspection]));
     const mcpOperationInProgress = isMCPSetupInProgress();
     const activeMcpAgent = getActiveMcpAgent();
-    const mcpIntegrations = detectedAgents.map(agent => {
-      const jsonConfigurationSupported = supportsStandaloneMCP(agent.id);
+    const mcpIntegrations = mcpAgents.map(agent => {
+      const jsonConfigurationSupported = isStandaloneMcpReady(agent.id);
       const inspection = inspectionByAgent.get(agent.id);
       const standaloneSupported =
         jsonConfigurationSupported && capabilitiesByAgent.get(agent.id)?.standaloneMcpSupported === true;
