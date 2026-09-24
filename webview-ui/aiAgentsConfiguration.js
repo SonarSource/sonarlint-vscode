@@ -163,9 +163,7 @@ function renderCliAuthentication(cli) {
 
 function renderCliAction(state) {
   if (state.cli.operationInProgress) {
-    setVisible(cliAction, true);
-    cliAction.textContent = 'Setup running in terminal…';
-    cliAction.disabled = true;
+    setVisible(cliAction, false);
     cliAction.onclick = undefined;
     return;
   }
@@ -182,18 +180,9 @@ function renderCliAction(state) {
 }
 
 function renderCliFeedback(cli) {
-  if (cli.operationInProgress) {
-    cliFeedback.hidden = false;
-    cliFeedback.textContent = 'Setup is running in the SonarQube CLI terminal.';
-    return;
-  }
-  if (cli.notice) {
-    cliFeedback.hidden = false;
-    cliFeedback.textContent = cli.notice.message;
-    return;
-  }
-  cliFeedback.hidden = true;
-  cliFeedback.textContent = '';
+  const message = cli.operationInProgress ? 'Setup is running in the SonarQube CLI terminal.' : cli.notice?.message;
+  cliFeedback.hidden = !message;
+  cliFeedback.textContent = message ?? '';
 }
 
 function renderMcp(state) {

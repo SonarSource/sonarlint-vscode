@@ -249,6 +249,9 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
         this.aiAgentsConfigurationWebviewProvider.refresh()
       ),
+      vscode.commands.registerCommand(Commands.USER_REFRESH_AI_AGENTS_CONFIGURATION, () =>
+        this.aiAgentsConfigurationWebviewProvider.refreshOnRequest()
+      ),
       vscode.commands.registerCommand(Commands.OPEN_AIAGENTS_CONFIGURATION_DOC, () => {
         vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'aiAgentsConfigurationDoc');
       }),
