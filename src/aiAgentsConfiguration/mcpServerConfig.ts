@@ -28,6 +28,9 @@ const MCP_CONNECTION_KEY = 'aiAgentsConfiguration.mcpConnection';
 const UNSUPPORTED_AGENT_MESSAGE = 'Standalone MCP is not supported by the current IDE agent.';
 const BLOCKED_CONFIGURATION_MESSAGE = 'The existing SonarQube MCP configuration cannot be updated safely.';
 const WRITE_FAILED_PREFIX = 'Failed to configure SonarQube MCP Server for';
+const MCP_SETUP_IN_PROGRESS_MESSAGE =
+  'A SonarQube MCP configuration operation is already running. Try again in a moment.';
+let mcpSetupInProgress = false;
 
 interface PersistedMCPConnection {
   id: string;
@@ -41,9 +44,8 @@ interface McpDocument {
 }
 
 interface ResolvedMcpConnection {
-  settingsConnectionId: string | undefined;
   sllsConnectionId: string;
-  type: Connection['contextValue'];
+  tokenStorageKey: string;
 }
 
 export function getMCPConfigPath(): string {
@@ -151,12 +153,21 @@ function writeMcpDocument(configPath: string, content: string): void {
   fs.writeFileSync(configPath, content, 'utf8');
 }
 
+export function isMCPSetupInProgress(): boolean {
+  return mcpSetupInProgress;
+}
+
 export async function configureMCPServer(
   languageClient: SonarLintExtendedLanguageClient,
   allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
   extensionContext: vscode.ExtensionContext,
   connection?: Connection
 ): Promise<void> {
+  if (mcpSetupInProgress) {
+    await vscode.window.showInformationMessage(MCP_SETUP_IN_PROGRESS_MESSAGE);
+    return;
+  }
+  mcpSetupInProgress = true;
   let selectedConnection = connection;
   try {
     const document = readMcpDocument();
@@ -220,6 +231,8 @@ export async function configureMCPServer(
     vscode.window.showErrorMessage(errorMessage);
     logToSonarLintOutput(errorMessage);
     throw error;
+  } finally {
+    mcpSetupInProgress = false;
   }
 }
 
@@ -294,7 +307,7 @@ export async function onEmbeddedServerStarted(
     if (!connection) {
       return;
     }
-    const token = await getTokenForResolvedConnection(connection);
+    const token = await ConnectionSettingsService.instance.getServerToken(connection.tokenStorageKey);
     if (!token) {
       return;
     }
@@ -333,23 +346,9 @@ function resolvePersistedConnection(extensionContext: vscode.ExtensionContext): 
     return undefined;
   }
   return {
-    settingsConnectionId: match.connectionId,
     sllsConnectionId: match.connectionId || DEFAULT_CONNECTION_ID,
-    type: persistedConnection.type
+    tokenStorageKey: getTokenStorageKey(match)
   };
-}
-
-async function getTokenForResolvedConnection(connection: ResolvedMcpConnection): Promise<string | undefined> {
-  const settings = ConnectionSettingsService.instance;
-  const candidates: Array<SonarQubeConnection | SonarCloudConnection> =
-    connection.type === 'sonarqubeConnection'
-      ? settings.getSonarQubeConnections()
-      : settings.getSonarCloudConnections();
-  const match = candidates.find(candidate => candidate.connectionId === connection.settingsConnectionId);
-  if (!match) {
-    return undefined;
-  }
-  return settings.getServerToken(getTokenStorageKey(match));
 }
 
 export async function openMCPServerConfigurationFile(): Promise<void> {

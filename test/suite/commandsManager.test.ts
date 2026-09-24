@@ -83,9 +83,8 @@ suite('ANALYZE_VCS_CHANGED_FILES command', () => {
 suite('CONFIGURE_MCP_SERVER command', () => {
   teardown(() => sinon.restore());
 
-  test('refreshes direct setup but lets the MCP card own its refreshes', async () => {
-    let configureCommand:
-      ((connection?: unknown, options?: { skipViewRefresh?: boolean }) => Promise<void>) | undefined;
+  test('refreshes the AI integrations view around MCP setup', async () => {
+    let configureCommand: ((connection?: unknown) => Promise<void>) | undefined;
     sinon.stub(vscode.commands, 'registerCommand').callsFake((command, callback) => {
       if (command === Commands.CONFIGURE_MCP_SERVER) {
         configureCommand = callback as typeof configureCommand;
@@ -107,10 +106,8 @@ suite('CONFIGURE_MCP_SERVER command', () => {
     manager.registerCommands();
 
     expect(configureCommand).to.not.be.undefined;
-    await configureCommand!(undefined, { skipViewRefresh: true });
-    expect(refreshStub.called).to.be.false;
     await configureCommand!();
-    expect(refreshStub.calledOnce).to.be.true;
-    expect(configureStub.calledTwice).to.be.true;
+    expect(refreshStub.calledTwice).to.be.true;
+    expect(configureStub.calledOnce).to.be.true;
   });
 });

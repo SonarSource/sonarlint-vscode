@@ -36,7 +36,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     provider = Object.create(AIAgentsConfigurationWebviewProvider.prototype);
     provider.extensionContext = { subscriptions: [] };
-    provider.mcpSetupInProgress = false;
     getIntegrationState = sinon.stub().resolves({
       cli: {
         installationStatus: AiIntegration.CliInstallationStatus.NOT_INSTALLED,
@@ -318,32 +317,10 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
   test('routes MCP setup through the existing command', async () => {
     const executeCommand = sinon.stub(vscode.commands, 'executeCommand').resolves();
-    provider.refresh = sinon.stub().resolves();
 
     await provider.handleMessage({ command: 'configureMcp' });
 
-    expect(executeCommand.calledOnceWithExactly(Commands.CONFIGURE_MCP_SERVER, undefined, { skipViewRefresh: true })).to
-      .be.true;
-    expect(provider.refresh.calledTwice).to.be.true;
-    expect(provider.mcpSetupInProgress).to.be.false;
-  });
-
-  test('ignores repeated MCP setup requests while one is running', async () => {
-    let finishSetup: () => void;
-    const setupFinished = new Promise<void>(resolve => (finishSetup = resolve));
-    const executeCommand = sinon.stub(vscode.commands, 'executeCommand').returns(setupFinished);
-    provider.refresh = sinon.stub().resolves();
-
-    const firstSetup = provider.handleMessage({ command: 'configureMcp' });
-    await Promise.resolve();
-    await provider.handleMessage({ command: 'configureMcp' });
-
-    expect(executeCommand.calledOnceWithExactly(Commands.CONFIGURE_MCP_SERVER, undefined, { skipViewRefresh: true })).to
-      .be.true;
-    expect(provider.mcpSetupInProgress).to.be.true;
-    finishSetup();
-    await firstSetup;
-    expect(provider.mcpSetupInProgress).to.be.false;
+    expect(executeCommand.calledOnceWithExactly(Commands.CONFIGURE_MCP_SERVER)).to.be.true;
   });
 
   test('opens hook configuration from the CLI card', async () => {

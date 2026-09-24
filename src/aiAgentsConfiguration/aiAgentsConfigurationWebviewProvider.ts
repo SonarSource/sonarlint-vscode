@@ -31,7 +31,11 @@ import {
   CliSetupSession,
   resolveCliPrimaryAction
 } from './cliSetup';
-import { hasPersistedMCPConnection, inspectCurrentMCPConfiguration } from './mcpServerConfig';
+import {
+  hasPersistedMCPConnection,
+  inspectCurrentMCPConfiguration,
+  isMCPSetupInProgress
+} from './mcpServerConfig';
 
 const WEBVIEW_UI_DIR = 'webview-ui';
 const CLI_DOCUMENTATION_URL = vscode.Uri.parse('https://docs.sonarsource.com/sonarqube-cli');
@@ -233,7 +237,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private view?: vscode.WebviewView;
   private resolver?: ResourceResolver;
   private cliSetupSession?: CliSetupSession;
-  private mcpSetupInProgress = false;
 
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
@@ -342,7 +345,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
       diagnostic,
       requiresSetup: mcpRequiresSetup,
       isRemote,
-      operationInProgress: this.mcpSetupInProgress
+      operationInProgress: isMCPSetupInProgress()
     });
 
     return {
@@ -369,7 +372,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         supported: mcpAgent !== undefined,
         configurationStatus,
         diagnostic,
-        operationInProgress: this.mcpSetupInProgress,
+        operationInProgress: isMCPSetupInProgress(),
         requiresSetup: mcpRequiresSetup,
         agentName: mcpAgentName,
         legacyInstructionsConfigured,
@@ -387,7 +390,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         await this.refreshOnRequest();
         break;
       case 'configureMcp':
-        await this.runMcpSetup();
+        await vscode.commands.executeCommand(Commands.CONFIGURE_MCP_SERVER);
         break;
       case 'openMcpConfiguration':
         await vscode.commands.executeCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION);
@@ -425,20 +428,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private getCliSetup(): CliSetupSession {
     this.cliSetupSession ??= new CliSetupSession(this.extensionContext, this.languageClient, () => this.refresh());
     return this.cliSetupSession;
-  }
-
-  private async runMcpSetup(): Promise<void> {
-    if (this.mcpSetupInProgress) {
-      return;
-    }
-    this.mcpSetupInProgress = true;
-    await this.refresh();
-    try {
-      await vscode.commands.executeCommand(Commands.CONFIGURE_MCP_SERVER, undefined, { skipViewRefresh: true });
-    } finally {
-      this.mcpSetupInProgress = false;
-      await this.refresh();
-    }
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
