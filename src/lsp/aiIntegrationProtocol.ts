@@ -64,6 +64,98 @@ export namespace AiIntegration {
     MALFORMED = 4
   }
 
+  export type AiAgentName = keyof typeof AiAgent;
+  export type AiAgentDetectionSourceName = keyof typeof AiAgentDetectionSource;
+  export type CliInstallationStatusName = keyof typeof CliInstallationStatus;
+  export type CliAuthenticationStatusName = keyof typeof CliAuthenticationStatus;
+  export type McpConfigurationStateName = keyof typeof McpConfigurationState;
+
+  export enum AiIntegrationAction {
+    OPEN_CLI_DOCUMENTATION = 'OPEN_CLI_DOCUMENTATION',
+    OPEN_VORTEX_DOCUMENTATION = 'OPEN_VORTEX_DOCUMENTATION',
+    OPEN_MCP_DOCUMENTATION = 'OPEN_MCP_DOCUMENTATION',
+    INSTALL_CLI = 'INSTALL_CLI',
+    LOGIN_CLI = 'LOGIN_CLI',
+    INTEGRATE_AGENT = 'INTEGRATE_AGENT',
+    CONFIGURE_MCP = 'CONFIGURE_MCP',
+    OPEN_MCP_CONFIGURATION = 'OPEN_MCP_CONFIGURATION',
+    REFRESH = 'REFRESH'
+  }
+
+  export enum AiIntegrationActionStatus {
+    STARTED = 'STARTED',
+    SUCCEEDED = 'SUCCEEDED',
+    CANCELLED = 'CANCELLED',
+    FAILED = 'FAILED',
+    UNKNOWN = 'UNKNOWN'
+  }
+
+  export enum AiIntegrationFailureCategory {
+    BACKEND_ERROR = 'BACKEND_ERROR',
+    UNSUPPORTED = 'UNSUPPORTED',
+    TERMINAL_ERROR = 'TERMINAL_ERROR',
+    FILESYSTEM_ERROR = 'FILESYSTEM_ERROR',
+    MALFORMED_CONFIGURATION = 'MALFORMED_CONFIGURATION',
+    CONNECTION_UNAVAILABLE = 'CONNECTION_UNAVAILABLE',
+    UNKNOWN = 'UNKNOWN'
+  }
+
+  export enum AiIntegrationObservationTrigger {
+    INITIAL_LOAD = 'INITIAL_LOAD',
+    MANUAL_REFRESH = 'MANUAL_REFRESH',
+    POST_ACTION = 'POST_ACTION'
+  }
+
+  export enum AiIntegrationEnvironment {
+    LOCAL = 'LOCAL',
+    REMOTE = 'REMOTE',
+    UNKNOWN = 'UNKNOWN'
+  }
+
+  export interface AiIntegrationActionParams {
+    action: AiIntegrationAction;
+    status: AiIntegrationActionStatus;
+    failureCategory: AiIntegrationFailureCategory | null;
+    agent: AiAgentName | null;
+    scope: AiIntegrationScope | null;
+    host: AiIntegrationHost;
+    environment: AiIntegrationEnvironment;
+  }
+
+  export namespace ReportAiIntegrationAction {
+    export const type = new lsp.NotificationType<AiIntegrationActionParams>('sonarlint/aiIntegrationAction');
+  }
+
+  export interface AiIntegrationCliStateObservedParams {
+    trigger: AiIntegrationObservationTrigger;
+    installationStatus: CliInstallationStatusName;
+    authenticationStatus: CliAuthenticationStatusName;
+    vortexAvailable: boolean;
+    host: AiIntegrationHost;
+    environment: AiIntegrationEnvironment;
+  }
+
+  export namespace ReportAiIntegrationCliStateObserved {
+    export const type = new lsp.NotificationType<AiIntegrationCliStateObservedParams>(
+      'sonarlint/aiIntegrationCliStateObserved'
+    );
+  }
+
+  export interface AiAgentIntegrationStateObservedParams {
+    trigger: AiIntegrationObservationTrigger;
+    agent: AiAgentName;
+    detectionSources: AiAgentDetectionSourceName[];
+    standaloneMcpState: McpConfigurationStateName;
+    host: AiIntegrationHost;
+    environment: AiIntegrationEnvironment;
+  }
+
+  export namespace ReportAiAgentIntegrationStateObserved {
+    export const type = new lsp.NotificationType<AiAgentIntegrationStateObservedParams>(
+      'sonarlint/aiAgentIntegrationStateObserved'
+    );
+  }
+
   export interface GetAiIntegrationStateParams {
     ideHost: AiIntegrationHost;
     detectedAgents: AiAgent[];
@@ -75,6 +167,7 @@ export namespace AiIntegration {
   export interface SonarQubeCliState {
     installationStatus: CliInstallationStatus;
     authenticationStatus: CliAuthenticationStatus;
+    vortexAvailable: boolean;
     executablePath?: string | null;
     version?: string | null;
     serverUrl?: string | null;
