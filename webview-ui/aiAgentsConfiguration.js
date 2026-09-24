@@ -173,22 +173,15 @@ function renderCliFeedback(cli) {
 }
 
 function renderMcp(state) {
-  let status = 'Unavailable';
-  let statusKind = 'unavailable';
-  if (state.mcp.supported) {
-    status = state.mcp.configured ? 'Configured' : 'Not configured';
-    statusKind = state.mcp.configured ? 'configured' : 'notConfigured';
-  }
-  setStatus(mcpStatus, status, statusKind);
-
+  const action = state.mcp.primaryAction;
+  setStatus(mcpStatus, state.mcp.statusLabel, state.mcp.statusKind);
   mcpAgent.textContent = state.mcp.agentName ?? `No supported MCP agent detected in ${state.ideName}`;
-  mcpReadiness.textContent = state.mcp.configured ? 'Connection not verified' : '';
-  mcpAction.disabled = !state.mcp.supported || (!state.mcp.configured && state.isRemote);
-  mcpAction.textContent = state.mcp.configured ? 'Open configuration' : 'Set up MCP';
-  mcpAction.onclick = () =>
-    vscode.postMessage({
-      command: state.mcp.configured ? 'openMcpConfiguration' : 'configureMcp'
-    });
+  mcpReadiness.textContent = state.mcp.readiness;
+  mcpAction.disabled = action.disabled;
+  mcpAction.textContent = action.label;
+  mcpAction.onclick = action.disabled
+    ? undefined
+    : () => vscode.postMessage({ command: action.command });
 
   setVisible(legacyInstructionsRow, state.mcp.legacyInstructionsConfigured);
 }

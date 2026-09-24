@@ -7,29 +7,43 @@
 'use strict';
 
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { logToSonarLintOutput } from '../util/logging';
+import { DEFAULT_CONNECTION_ID } from '../commons';
 import { AllConnectionsTreeDataProvider, Connection } from '../connected/connections';
-import { ConnectionSettingsService } from '../settings/connectionsettings';
+import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import * as os from 'node:os';
+import {
+  ConnectionSettingsService,
+  getTokenStorageKey,
+  SonarCloudConnection,
+  SonarQubeConnection
+} from '../settings/connectionsettings';
+import { logToSonarLintOutput } from '../util/logging';
 import { getVSCodeSettingsBaseDir } from '../util/util';
-import { Commands } from '../util/commands';
-import { getCurrentAgentWithMCPSupport, IntegrationTarget, getWindsurfDirectory } from './aiAgentUtils';
+import { getCurrentAgentWithMCPSupport, getWindsurfDirectory, IntegrationTarget } from './aiAgentUtils';
 
-interface MCPServerConfig {
-  command: string;
-  args: string[];
-  env?: Record<string, string>;
+const MCP_CONNECTION_KEY = 'aiAgentsConfiguration.mcpConnection';
+const UNSUPPORTED_AGENT_MESSAGE = 'Standalone MCP is not supported by the current IDE agent.';
+const BLOCKED_CONFIGURATION_MESSAGE = 'The existing SonarQube MCP configuration cannot be updated safely.';
+const WRITE_FAILED_PREFIX = 'Failed to configure SonarQube MCP Server for';
+
+interface PersistedMCPConnection {
+  id: string;
+  type: Connection['contextValue'];
 }
 
-interface MCPConfigurationOthers {
-  mcpServers: Record<string, MCPServerConfig>;
+interface McpDocument {
+  agent: IntegrationTarget;
+  path: string;
+  content: string | null;
 }
 
-interface MCPConfigurationVSCode {
-  servers: Record<string, MCPServerConfig>;
+interface ResolvedMcpConnection {
+  settingsConnectionId: string | undefined;
+  sllsConnectionId: string;
+  type: Connection['contextValue'];
 }
 
 export function getMCPConfigPath(): string {
@@ -42,12 +56,12 @@ export function getMCPConfigPath(): string {
     case IntegrationTarget.KIRO:
       return path.join(os.homedir(), '.kiro', 'settings', 'mcp.json');
     case IntegrationTarget.GITHUB_COPILOT:
-      // For GitHub Copilot, detect if it's VSCode or VSCode Insiders
-      if (vscode.env.appName.toLowerCase().includes('insiders')) {
-        return path.join(getVSCodeSettingsBaseDir(), 'Code - Insiders', 'User', 'mcp.json');
-      } else {
-        return path.join(getVSCodeSettingsBaseDir(), 'Code', 'User', 'mcp.json');
-      }
+      return path.join(
+        getVSCodeSettingsBaseDir(),
+        vscode.env.appName.toLowerCase().includes('insiders') ? 'Code - Insiders' : 'Code',
+        'User',
+        'mcp.json'
+      );
     case undefined:
       throw new Error(`Unsupported agent: ${currentAgent}`);
     default: {
@@ -57,117 +71,164 @@ export function getMCPConfigPath(): string {
   }
 }
 
-export function getCurrentSonarQubeMCPServerConfig(): MCPServerConfig | undefined {
-  const currentAgent = getCurrentAgentWithMCPSupport();
-  if (currentAgent === undefined) {
+export async function inspectCurrentMCPConfiguration(
+  languageClient: SonarLintExtendedLanguageClient
+): Promise<AiIntegration.McpConfigurationInspectionResponse | undefined> {
+  const document = readMcpDocument();
+  if (!document) {
+    return undefined;
+  }
+  return inspectMcpDocument(languageClient, document);
+}
+
+function readMcpDocument(): McpDocument | undefined {
+  const agent = getCurrentAgentWithMCPSupport();
+  if (agent === undefined) {
     return undefined;
   }
   const configPath = getMCPConfigPath();
-  const config = readMCPConfig(configPath);
-  return currentAgent === IntegrationTarget.GITHUB_COPILOT
-    ? (config as MCPConfigurationVSCode).servers?.sonarqube
-    : (config as MCPConfigurationOthers).mcpServers?.sonarqube;
+  return { agent, path: configPath, content: readMCPConfigContent(configPath) };
 }
 
-function readMCPConfig(configPath: string): MCPConfigurationOthers | MCPConfigurationVSCode {
-  try {
-    if (fs.existsSync(configPath)) {
-      const content = fs.readFileSync(configPath, 'utf8');
-      return JSON.parse(content);
-    }
-  } catch (error) {
-    logToSonarLintOutput(`Error reading MCP config: ${error.message}`);
-  }
-
-  const currentAgent = getCurrentAgentWithMCPSupport();
-  return currentAgent === IntegrationTarget.GITHUB_COPILOT
-    ? {
-        servers: {}
-      }
-    : {
-        mcpServers: {}
-      };
+function readMCPConfigContent(configPath: string): string | null {
+  return fs.existsSync(configPath) ? fs.readFileSync(configPath, 'utf8') : null;
 }
 
-function writeSonarQubeMCPConfig(sonarQubeMCPConfig: MCPServerConfig): void {
-  try {
-    const currentAgent = getCurrentAgentWithMCPSupport();
-    const configPath = getMCPConfigPath();
-    const config = readMCPConfig(configPath);
+async function inspectMcpDocument(
+  languageClient: SonarLintExtendedLanguageClient,
+  document: McpDocument
+): Promise<AiIntegration.McpConfigurationInspectionResponse> {
+  return languageClient.inspectMcpConfiguration({
+    agent: document.agent,
+    content: document.content
+  });
+}
 
-    if (currentAgent === IntegrationTarget.GITHUB_COPILOT) {
-      const vscodeConfig = config as MCPConfigurationVSCode;
-      vscodeConfig.servers ??= {};
-      vscodeConfig.servers.sonarqube = sonarQubeMCPConfig;
-    } else {
-      const agentConfig = config as MCPConfigurationOthers;
-      agentConfig.mcpServers ??= {};
-      agentConfig.mcpServers.sonarqube = sonarQubeMCPConfig;
+async function planMcpDocument(
+  languageClient: SonarLintExtendedLanguageClient,
+  document: McpDocument,
+  connectionId: string,
+  token: string
+): Promise<AiIntegration.McpConfigurationUpdatePlanResponse> {
+  const sonarQubeMCPConfig = await languageClient.getMCPServerConfiguration(connectionId, token);
+  return languageClient.planMcpConfigurationUpdate({
+    agent: document.agent,
+    content: document.content,
+    sonarMcpConfiguration: sonarQubeMCPConfig.jsonConfiguration
+  });
+}
+
+function isUpdateAllowed(state: AiIntegration.McpConfigurationState): boolean {
+  switch (state) {
+    case AiIntegration.McpConfigurationState.NOT_CONFIGURED:
+    case AiIntegration.McpConfigurationState.STANDALONE:
+      return true;
+    case AiIntegration.McpConfigurationState.CLI_MANAGED:
+    case AiIntegration.McpConfigurationState.UNKNOWN:
+    case AiIntegration.McpConfigurationState.MALFORMED:
+      return false;
+    default: {
+      const _exhaustive: never = state;
+      return _exhaustive;
     }
-
-    const configDir = path.dirname(configPath);
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
-    }
-
-    const content = JSON.stringify(config, null, 2);
-    fs.writeFileSync(configPath, content, 'utf8');
-
-    logToSonarLintOutput(`MCP configuration updated: ${configPath}`);
-  } catch (error) {
-    logToSonarLintOutput(`Error writing MCP config: ${error.message}`);
-    throw error;
   }
+}
+
+function showBlockedConfigurationMessage(inspection: AiIntegration.McpConfigurationInspectionResponse): void {
+  const message = inspection.diagnostics[0] ?? BLOCKED_CONFIGURATION_MESSAGE;
+  if (inspection.state === AiIntegration.McpConfigurationState.MALFORMED) {
+    vscode.window.showErrorMessage(message);
+  } else {
+    vscode.window.showWarningMessage(message);
+  }
+}
+
+export function backupMcpConfig(configPath: string): void {
+  const backupPath = `${configPath}.bak`;
+  if (!fs.existsSync(backupPath)) {
+    fs.copyFileSync(configPath, backupPath);
+  }
+}
+
+function writeMcpDocument(configPath: string, content: string): void {
+  const configExists = fs.existsSync(configPath);
+  const configDir = path.dirname(configPath);
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+  if (configExists) {
+    backupMcpConfig(configPath);
+  }
+  fs.writeFileSync(configPath, content, 'utf8');
 }
 
 export async function configureMCPServer(
   languageClient: SonarLintExtendedLanguageClient,
   allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
+  extensionContext: vscode.ExtensionContext,
   connection?: Connection
 ): Promise<void> {
+  let selectedConnection = connection;
   try {
-    const selectedConnection = await getSelectedConnection(allConnectionsTreeDataProvider, connection);
+    const document = readMcpDocument();
+    if (!document) {
+      throw new Error(UNSUPPORTED_AGENT_MESSAGE);
+    }
+    const inspection = await inspectMcpDocument(languageClient, document);
+    if (!isUpdateAllowed(inspection.state)) {
+      showBlockedConfigurationMessage(inspection);
+      return;
+    }
 
+    selectedConnection = await getSelectedConnection(allConnectionsTreeDataProvider, connection);
     if (!selectedConnection) {
       return;
     }
 
     const token = await ConnectionSettingsService.instance.getTokenForConnection(selectedConnection);
-
     if (!token) {
       const proceed = await vscode.window.showWarningMessage(
         `The SonarQube connection "${selectedConnection.label}" doesn't have a token configured. The MCP server will be created but may not function properly without a valid token.`,
         'Proceed Anyway',
         'Cancel'
       );
-
       if (proceed !== 'Proceed Anyway') {
         return;
       }
     }
 
-    const sonarQubeMCPConfig = await languageClient.getMCPServerConfiguration(selectedConnection.id, token);
-
-    writeSonarQubeMCPConfig(JSON.parse(sonarQubeMCPConfig.jsonConfiguration));
-    void vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
-
-    openMCPServersListIfCursor();
-
-    const openFile = await vscode.window.showInformationMessage(
-      `SonarQube MCP Server configured for "${selectedConnection.label}"`,
-      'Open Configuration File'
-    );
-
-    if (openFile === 'Open Configuration File') {
-      await openMCPServerConfigurationFile();
+    const connectionId = selectedConnection.id || DEFAULT_CONNECTION_ID;
+    const currentDocument = readMcpDocument() ?? document;
+    const updatePlan = await planMcpDocument(languageClient, currentDocument, connectionId, token ?? '');
+    if (!isUpdateAllowed(updatePlan.state) || updatePlan.updatedContent == null) {
+      showBlockedConfigurationMessage(updatePlan);
+      return;
     }
 
+    writeMcpDocument(currentDocument.path, updatePlan.updatedContent);
+    await extensionContext.globalState.update(MCP_CONNECTION_KEY, {
+      id: connectionId,
+      type: selectedConnection.contextValue
+    } satisfies PersistedMCPConnection);
+    openMCPServersListIfCursor();
+
+    void vscode.window
+      .showInformationMessage(
+        `SonarQube MCP Server configured for "${selectedConnection.label}"`,
+        'Open Configuration File'
+      )
+      .then(async openFile => {
+        if (openFile === 'Open Configuration File') {
+          await openMCPServerConfigurationFile();
+        }
+      });
     logToSonarLintOutput(`SonarQube MCP Server configured successfully for connection: ${selectedConnection.label}`);
   } catch (error) {
-    const connectionLabel = connection?.label || 'unknown connection';
-    const errorMessage = `Failed to configure SonarQube MCP Server for "${connectionLabel}": ${error.message}`;
+    const connectionLabel = selectedConnection?.label ?? 'unknown connection';
+    const errorMessage = `${WRITE_FAILED_PREFIX} "${connectionLabel}": ${error.message}`;
     vscode.window.showErrorMessage(errorMessage);
     logToSonarLintOutput(errorMessage);
+    throw error;
   }
 }
 
@@ -183,33 +244,29 @@ async function getSelectedConnection(
     ...(await allConnectionsTreeDataProvider.getConnections('__sonarqube__')),
     ...(await allConnectionsTreeDataProvider.getConnections('__sonarcloud__'))
   ];
-
   if (allConnections.length === 0) {
     warnNoConnectionConfigured();
     return undefined;
-  } else if (allConnections.length === 1) {
+  }
+  if (allConnections.length === 1) {
     return allConnections[0];
-  } else {
-    const connectionItems = allConnections.map(conn => ({
-      label: conn.label,
-      description: conn.contextValue === 'sonarqubeConnection' ? 'SonarQube Server' : 'SonarQube Cloud',
-      connection: conn
-    }));
+  }
 
-    const selectedItem = await vscode.window.showQuickPick(connectionItems, {
+  const selectedItem = await vscode.window.showQuickPick(
+    allConnections.map(candidate => ({
+      label: candidate.label,
+      description: candidate.contextValue === 'sonarqubeConnection' ? 'SonarQube Server' : 'SonarQube Cloud',
+      connection: candidate
+    })),
+    {
       placeHolder: 'Select a SonarQube connection for MCP server configuration',
       matchOnDescription: true
-    });
-
-    if (!selectedItem) {
-      return undefined;
     }
-
-    return selectedItem.connection;
-  }
+  );
+  return selectedItem?.connection;
 }
 
-function warnNoConnectionConfigured() {
+function warnNoConnectionConfigured(): void {
   vscode.window
     .showWarningMessage(
       'No SonarQube (Server or Cloud) connections found. Please set up a connection first.',
@@ -222,25 +279,93 @@ function warnNoConnectionConfigured() {
     });
 }
 
-function openMCPServersListIfCursor() {
-  const currentAgent = getCurrentAgentWithMCPSupport();
-  if (currentAgent === IntegrationTarget.CURSOR) {
+function openMCPServersListIfCursor(): void {
+  if (getCurrentAgentWithMCPSupport() === IntegrationTarget.CURSOR) {
     vscode.commands.executeCommand('workbench.action.openMCPSettings');
   }
 }
 
-export function onEmbeddedServerStarted(port: number): void {
-  const currentSonarQubeMCPConfig = getCurrentSonarQubeMCPServerConfig();
-  if (!currentSonarQubeMCPConfig) {
-    // if the MCP server is not configured, we don't need to update the config
-    return;
-  }
-  currentSonarQubeMCPConfig.env.SONARQUBE_IDE_PORT = port.toString();
+export async function onEmbeddedServerStarted(
+  languageClient: SonarLintExtendedLanguageClient,
+  extensionContext: vscode.ExtensionContext
+): Promise<void> {
+  try {
+    const document = readMcpDocument();
+    if (document?.content == null) {
+      return;
+    }
+    const inspection = await inspectMcpDocument(languageClient, document);
+    if (inspection.state !== AiIntegration.McpConfigurationState.STANDALONE) {
+      return;
+    }
 
-  writeSonarQubeMCPConfig(currentSonarQubeMCPConfig);
+    const connection = resolvePersistedConnection(extensionContext);
+    if (!connection) {
+      return;
+    }
+    const token = await getTokenForResolvedConnection(connection);
+    if (!token) {
+      return;
+    }
+    const updatePlan = await planMcpDocument(languageClient, document, connection.sllsConnectionId, token);
+    if (
+      updatePlan.state === AiIntegration.McpConfigurationState.STANDALONE &&
+      updatePlan.updatedContent != null &&
+      updatePlan.updatedContent !== document.content
+    ) {
+      writeMcpDocument(document.path, updatePlan.updatedContent);
+    }
+  } catch (error) {
+    logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configuration: ${error.message}`);
+  }
+}
+
+export function hasPersistedMCPConnection(extensionContext: vscode.ExtensionContext): boolean {
+  return resolvePersistedConnection(extensionContext) !== undefined;
+}
+
+function resolvePersistedConnection(extensionContext: vscode.ExtensionContext): ResolvedMcpConnection | undefined {
+  const persistedConnection = extensionContext.globalState.get<PersistedMCPConnection>(MCP_CONNECTION_KEY);
+  if (!persistedConnection) {
+    return undefined;
+  }
+
+  const settings = ConnectionSettingsService.instance;
+  const candidates: Array<SonarQubeConnection | SonarCloudConnection> =
+    persistedConnection.type === 'sonarqubeConnection'
+      ? settings.getSonarQubeConnections()
+      : settings.getSonarCloudConnections();
+  const match = candidates.find(
+    candidate => (candidate.connectionId || DEFAULT_CONNECTION_ID) === persistedConnection.id
+  );
+  if (!match) {
+    return undefined;
+  }
+  return {
+    settingsConnectionId: match.connectionId,
+    sllsConnectionId: match.connectionId || DEFAULT_CONNECTION_ID,
+    type: persistedConnection.type
+  };
+}
+
+async function getTokenForResolvedConnection(connection: ResolvedMcpConnection): Promise<string | undefined> {
+  const settings = ConnectionSettingsService.instance;
+  const candidates: Array<SonarQubeConnection | SonarCloudConnection> =
+    connection.type === 'sonarqubeConnection'
+      ? settings.getSonarQubeConnections()
+      : settings.getSonarCloudConnections();
+  const match = candidates.find(candidate => candidate.connectionId === connection.settingsConnectionId);
+  if (!match) {
+    return undefined;
+  }
+  return settings.getServerToken(getTokenStorageKey(match));
 }
 
 export async function openMCPServerConfigurationFile(): Promise<void> {
-  const uri = vscode.Uri.file(getMCPConfigPath());
-  await vscode.window.showTextDocument(uri);
+  const configPath = getMCPConfigPath();
+  if (!fs.existsSync(configPath)) {
+    await vscode.window.showInformationMessage('The MCP configuration file has not been created yet.');
+    return;
+  }
+  await vscode.window.showTextDocument(vscode.Uri.file(configPath));
 }
