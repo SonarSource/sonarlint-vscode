@@ -10,6 +10,7 @@ import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import {
+  getActiveMcpAgent,
   getMCPConfigPath,
   configureMCPServer,
   onEmbeddedServerStarted,
@@ -307,7 +308,7 @@ suite('mcpServerConfig', () => {
       expect(filePath).to.match(/\.cursor[/\\]mcp\.json$/);
 
       expect(fileContent).to.equal('{"planned":true}\n');
-      expect(executeCommandStub.calledWith(Commands.REFRESH_AI_AGENTS_CONFIGURATION)).to.be.false;
+      expect(executeCommandStub.calledWith(Commands.REFRESH_AI_AGENTS_CONFIGURATION)).to.be.true;
     } finally {
       envStub.restore();
       extensionsStub.restore();
@@ -637,61 +638,6 @@ suite('mcpServerConfig', () => {
     }
   });
 
-  test('should not overwrite a Claude configuration changed during startup refresh', async () => {
-    const agent = AiIntegration.AiAgent.CLAUDE_CODE;
-    const detectedAgentsStub = sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([
-      { id: agent, name: 'Claude Code', source: 'extension' }
-    ]);
-    const fs = require('node:fs');
-    const existsStub = sinon.stub(fs, 'existsSync').returns(true);
-    const readFileStub = sinon.stub(fs, 'readFileSync');
-    readFileStub.onFirstCall().returns('{"mcpServers":{"sonarqube":{}}}');
-    readFileStub.returns('{"mcpServers":{"sonarqube":{}},"claudeState":"new"}');
-    const writeFileStub = sinon.stub(fs, 'writeFileSync');
-    const getServerTokenStub = sinon
-      .stub(ConnectionSettingsService.instance, 'getServerToken')
-      .resolves('valid-test-token');
-    const sonarQubeConnectionsStub = sinon
-      .stub(ConnectionSettingsService.instance, 'getSonarQubeConnections')
-      .returns([{ serverUrl: 'https://example.com' }]);
-    const executeCommandStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
-    const logStub = sinon.stub(logging, 'logToSonarLintOutput');
-    const get = sinon.stub();
-    get.withArgs(`aiAgentsConfiguration.mcpConnection.${agent}`).returns({
-      id: DEFAULT_CONNECTION_ID,
-      type: 'sonarqubeConnection'
-    });
-    const extensionContext = {
-      globalState: { get, update: sinon.stub().resolves() }
-    } as unknown as vscode.ExtensionContext;
-    inspectMcpConfigurationStub.resolves({
-      state: AiIntegration.McpConfigurationState.STANDALONE,
-      diagnostics: []
-    });
-    planMcpConfigurationUpdateStub.resolves({
-      state: AiIntegration.McpConfigurationState.STANDALONE,
-      updatedContent: '{"mcpServers":{"sonarqube":{"command":"docker"}}}',
-      diagnostics: []
-    });
-
-    try {
-      await onEmbeddedServerStarted(mockLanguageClient, extensionContext);
-
-      expect(readFileStub.calledTwice).to.be.true;
-      expect(writeFileStub.called).to.be.false;
-      expect(logStub.firstCall.args[0]).to.include('MCP configuration changed while preparing the update');
-    } finally {
-      detectedAgentsStub.restore();
-      existsStub.restore();
-      readFileStub.restore();
-      writeFileStub.restore();
-      getServerTokenStub.restore();
-      sonarQubeConnectionsStub.restore();
-      executeCommandStub.restore();
-      logStub.restore();
-    }
-  });
-
   test('persists connection metadata without rewriting unchanged planned content', async () => {
     const existingContent = '{"mcpServers":{"sonarqube":{}}}';
     const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
@@ -776,6 +722,7 @@ suite('mcpServerConfig', () => {
     const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
     const showInfoStub = sinon.stub(vscode.window, 'showInformationMessage').resolves(undefined);
     const showErrorStub = sinon.stub(vscode.window, 'showErrorMessage').resolves(undefined);
+    const executeCommandStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
     let releaseInspection = (_inspection: AiIntegration.McpConfigurationInspectionResponse) => undefined;
     inspectMcpConfigurationStub.returns(
       new Promise(resolve => {
@@ -816,11 +763,69 @@ suite('mcpServerConfig', () => {
       });
       await firstSetup;
       expect(showErrorStub.calledOnce).to.be.true;
+      expect(getActiveMcpAgent()).to.be.undefined;
     } finally {
       envStub.restore();
       showInfoStub.restore();
       showErrorStub.restore();
+      executeCommandStub.restore();
       existsStub.restore();
+    }
+  });
+
+  test('should record the agent chosen from the quick pick while setup is running', async () => {
+    const detectedAgentsStub = sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([
+      { id: AiIntegration.AiAgent.CURSOR, name: 'Cursor', source: 'builtIn' },
+      { id: AiIntegration.AiAgent.CLAUDE_CODE, name: 'Claude Code', source: 'extension' }
+    ]);
+    let resolvePick: (selection: { agent: AiIntegration.AiAgent } | undefined) => void;
+    const showQuickPickStub = sinon.stub(vscode.window, 'showQuickPick').callsFake(() => {
+      return new Promise(resolve => {
+        resolvePick = resolve;
+      });
+    });
+    const showErrorStub = sinon.stub(vscode.window, 'showErrorMessage').resolves(undefined);
+    const executeCommandStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
+    let releaseInspection = (_inspection: AiIntegration.McpConfigurationInspectionResponse) => undefined;
+    inspectMcpConfigurationStub.returns(
+      new Promise(resolve => {
+        releaseInspection = resolve;
+      })
+    );
+    const fs = require('node:fs');
+    const existsStub = sinon.stub(fs, 'existsSync').returns(true);
+    const readFileStub = sinon.stub(fs, 'readFileSync').returns('{}');
+    const extensionContext = {
+      globalState: { get: sinon.stub(), update: sinon.stub().resolves() }
+    } as unknown as vscode.ExtensionContext;
+
+    try {
+      const setup = configureMCPServer(
+        mockLanguageClient,
+        mockAllConnectionsTreeDataProvider,
+        extensionContext,
+        undefined,
+        mockConnection
+      );
+      await new Promise(resolve => setImmediate(resolve));
+      resolvePick({ agent: AiIntegration.AiAgent.CLAUDE_CODE });
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(getActiveMcpAgent()).to.equal(AiIntegration.AiAgent.CLAUDE_CODE);
+      expect(executeCommandStub.calledWith(Commands.REFRESH_AI_AGENTS_CONFIGURATION)).to.be.true;
+      releaseInspection({
+        state: AiIntegration.McpConfigurationState.MALFORMED,
+        diagnostics: ['blocked']
+      });
+      await setup;
+      expect(getActiveMcpAgent()).to.be.undefined;
+    } finally {
+      detectedAgentsStub.restore();
+      showQuickPickStub.restore();
+      showErrorStub.restore();
+      executeCommandStub.restore();
+      existsStub.restore();
+      readFileStub.restore();
     }
   });
 

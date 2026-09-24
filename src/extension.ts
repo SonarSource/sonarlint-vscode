@@ -70,7 +70,7 @@ import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeT
 import { AnalyzeFileTool } from './languageModelTools/analyzeFileTool';
 import { TaintVulnerabilityDecorator } from './issue/taintVulnerabilityDecorator';
 import { AutomaticAnalysisService } from './settings/automaticAnalysis';
-import { onEmbeddedServerStarted } from './aiAgentsConfiguration/mcpServerConfig';
+import { onEmbeddedServerStarted, scheduleCopilotActivationMcpRefresh } from './aiAgentsConfiguration/mcpServerConfig';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 import { LabsWebviewProvider } from './labs/labsWebviewProvider';
 import { StatusBarService } from './statusbar/statusBar';
@@ -567,6 +567,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   });
   languageClient.onNotification(ExtendedClient.EmbeddedServerStartedNotification.type, () => {
     void onEmbeddedServerStarted(languageClient, context);
+    context.subscriptions.push(scheduleCopilotActivationMcpRefresh(languageClient, context));
   });
   languageClient.onRequest(ExtendedClient.HasJoinedIdeLabs.type, () => {
     return IdeLabsFlagManagementService.instance.isIdeLabsJoined();
