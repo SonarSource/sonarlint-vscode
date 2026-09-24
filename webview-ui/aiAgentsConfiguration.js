@@ -9,6 +9,7 @@
 const vscode = acquireVsCodeApi();
 
 const loading = document.getElementById('loading');
+const loadError = document.getElementById('load-error');
 const content = document.getElementById('content');
 const cliStatus = document.getElementById('cli-status');
 const detectedLabel = document.getElementById('detected-label');
@@ -33,9 +34,16 @@ window.addEventListener('message', event => {
     render(event.data.state);
   } else if (event.data.command === 'error') {
     content.hidden = true;
-    loading.hidden = false;
-    loading.textContent = 'Could not load AI integrations. Reload the view to try again.';
+    loading.hidden = true;
+    loadError.hidden = false;
   }
+});
+
+document.getElementById('retry-loading').addEventListener('click', () => {
+  loadError.hidden = true;
+  loading.hidden = false;
+  loading.textContent = 'Loading AI integrations…';
+  vscode.postMessage({ command: 'refresh' });
 });
 
 document
@@ -53,6 +61,7 @@ document
 
 function render(state) {
   loading.hidden = true;
+  loadError.hidden = true;
   content.hidden = false;
   remoteNotice.hidden = !state.isRemote;
 

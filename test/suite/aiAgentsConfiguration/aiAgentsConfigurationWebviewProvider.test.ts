@@ -208,7 +208,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     await provider.handleMessage({ command: 'openCliDocumentation' });
 
-    expect(openExternal.calledOnceWith(vscode.Uri.parse('https://cli.sonarqube.com/'))).to.be.true;
+    expect(openExternal.calledOnceWith(vscode.Uri.parse('https://docs.sonarsource.com/sonarqube-cli'))).to.be.true;
   });
 
   test('opens the Vortex documentation from the CLI card', async () => {

@@ -27,7 +27,7 @@ import {
 import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 
 const WEBVIEW_UI_DIR = 'webview-ui';
-const CLI_DOCUMENTATION_URL = vscode.Uri.parse('https://cli.sonarqube.com/');
+const CLI_DOCUMENTATION_URL = vscode.Uri.parse('https://docs.sonarsource.com/sonarqube-cli');
 const VORTEX_DOCUMENTATION_URL = vscode.Uri.parse('https://docs.sonarsource.com/agent-centric-development-cycle/inside-your-agent-the-agentic-loop/sonar-vortex');
 const MCP_CONFIGURATOR_URL = vscode.Uri.parse('https://mcp.sonarqube.com/');
 type CliInstallationStatus = 'INSTALLED' | 'NOT_INSTALLED' | 'UNUSABLE';
