@@ -10,7 +10,7 @@ import * as os from 'node:os';
 import * as vscode from 'vscode';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { getAiIntegrationStateParams, getDetectedIdeAgents } from './aiAgentUtils';
+import { getAiIntegrationStateParams, getDetectedIntegrationAgents } from './aiAgentUtils';
 
 export type CliSetupStep = 'install' | 'authenticate' | 'integrate';
 export type SetupOutcome = 'completed' | 'cancelled' | 'failed' | 'unknown';
@@ -196,18 +196,18 @@ export class CliSetupSession {
     isRemote: boolean,
     agentId?: AiIntegration.AiAgent
   ): Promise<boolean> {
-    const detectedAgent = getDetectedIdeAgents().find(agent => agent.id === agentId);
-    const capability = state.agents.find(agent => agent.agent === detectedAgent?.id);
+    const agent = getDetectedIntegrationAgents(state).find(
+      detected => detected.agent === agentId && detected.cliIntegrationSupported
+    );
     if (
       !isAgentIntegrationAllowed(state.cli.installationStatus, state.cli.authenticationStatus, isRemote) ||
-      !detectedAgent ||
-      !capability?.cliIntegrationSupported
+      !agent
     ) {
       return false;
     }
     return this.openInteractiveCommand(
-      `SonarQube CLI · ${detectedAgent.name}`,
-      await this.languageClient.prepareIntegrateCliCommand({ agent: detectedAgent.id }),
+      `SonarQube CLI · ${agent.name}`,
+      await this.languageClient.prepareIntegrateCliCommand({ agent: agent.agent }),
       INTEGRATE_NOT_INTERACTIVE
     );
   }
