@@ -10,6 +10,7 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { expect } from 'chai';
 import { ExtendedServer } from '../../src/lsp/protocol';
+import { AiIntegration } from '../../src/lsp/aiIntegrationProtocol';
 import { Commands } from '../../src/util/commands';
 import { LanguageClient } from 'vscode-languageclient/node';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
@@ -91,23 +92,30 @@ suite('CONFIGURE_MCP_SERVER command', () => {
       }
       return { dispose: () => undefined };
     });
-    const configureStub = sinon.stub(mcpServerConfig, 'configureMCPServer').resolves();
+    sinon.stub(mcpServerConfig, 'isMCPSetupInProgress').returns(false);
+    const configureStub = sinon.stub(mcpServerConfig, 'configureMCPServer').resolves({
+      status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED
+    });
     const refreshStub = sinon.stub().resolves();
+    const postActionRefreshStub = sinon.stub().resolves();
+    const actionNotification = sinon.stub().resolves();
     const context = { subscriptions: [] } as unknown as vscode.ExtensionContext;
     const manager = new CommandsManager(
       context,
+      { aiIntegrationAction: actionNotification } as never,
       undefined as never,
       undefined as never,
       undefined as never,
       undefined as never,
-      undefined as never,
-      { refresh: refreshStub } as never
+      { refresh: refreshStub, refreshAfterAction: postActionRefreshStub } as never
     );
     manager.registerCommands();
 
     expect(configureCommand).to.not.be.undefined;
     await configureCommand!();
-    expect(refreshStub.calledTwice).to.be.true;
+    expect(refreshStub.calledOnce).to.be.true;
+    expect(postActionRefreshStub.calledOnce).to.be.true;
     expect(configureStub.calledOnce).to.be.true;
+    expect(actionNotification.getCalls().map(call => call.args[0].status)).to.deep.equal(['STARTED', 'SUCCEEDED']);
   });
 });

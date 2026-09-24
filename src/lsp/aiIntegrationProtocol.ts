@@ -64,6 +64,69 @@ export namespace AiIntegration {
     MALFORMED = 4
   }
 
+  export type AiAgentName = keyof typeof AiAgent;
+  export type AiAgentDetectionSourceName = keyof typeof AiAgentDetectionSource;
+  export type CliInstallationStatusName = keyof typeof CliInstallationStatus;
+  export type CliAuthenticationStatusName = keyof typeof CliAuthenticationStatus;
+  export type McpConfigurationStateName = keyof typeof McpConfigurationState;
+
+  // These notification enums are serialized as names. Response enums above stay ordinals.
+  export enum AiIntegrationAction {
+    OPEN_CLI_DOCUMENTATION = 'OPEN_CLI_DOCUMENTATION',
+    OPEN_VORTEX_DOCUMENTATION = 'OPEN_VORTEX_DOCUMENTATION',
+    OPEN_MCP_DOCUMENTATION = 'OPEN_MCP_DOCUMENTATION',
+    INSTALL_CLI = 'INSTALL_CLI',
+    LOGIN_CLI = 'LOGIN_CLI',
+    INTEGRATE_AGENT = 'INTEGRATE_AGENT',
+    CONFIGURE_MCP = 'CONFIGURE_MCP',
+    OPEN_MCP_CONFIGURATION = 'OPEN_MCP_CONFIGURATION',
+    REFRESH = 'REFRESH'
+  }
+
+  export enum AiIntegrationActionStatus {
+    STARTED = 'STARTED',
+    SUCCEEDED = 'SUCCEEDED',
+    CANCELLED = 'CANCELLED',
+    FAILED = 'FAILED',
+    UNKNOWN = 'UNKNOWN'
+  }
+
+  export interface AiIntegrationActionParams {
+    action: AiIntegrationAction;
+    status: AiIntegrationActionStatus;
+    agent: AiAgentName | null;
+    host: AiIntegrationHost;
+  }
+
+  export namespace ReportAiIntegrationAction {
+    export const type = new lsp.NotificationType<AiIntegrationActionParams>('sonarlint/aiIntegrationAction');
+  }
+
+  export interface AiIntegrationCliStateObservedParams {
+    installationStatus: CliInstallationStatusName;
+    authenticationStatus: CliAuthenticationStatusName;
+    host: AiIntegrationHost;
+  }
+
+  export namespace ReportAiIntegrationCliStateObserved {
+    export const type = new lsp.NotificationType<AiIntegrationCliStateObservedParams>(
+      'sonarlint/aiIntegrationCliStateObserved'
+    );
+  }
+
+  export interface AiAgentIntegrationStateObservedParams {
+    agent: AiAgentName;
+    detectionSources: AiAgentDetectionSourceName[];
+    standaloneMcpState: McpConfigurationStateName;
+    host: AiIntegrationHost;
+  }
+
+  export namespace ReportAiAgentIntegrationStateObserved {
+    export const type = new lsp.NotificationType<AiAgentIntegrationStateObservedParams>(
+      'sonarlint/aiAgentIntegrationStateObserved'
+    );
+  }
+
   export interface GetAiIntegrationStateParams {
     ideHost: AiIntegrationHost;
     detectedAgents: AiAgent[];
