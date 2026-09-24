@@ -87,7 +87,6 @@ export interface AIAgentsConfigurationState {
     name: string;
     supportsCliIntegration: boolean;
   }>;
-  setupInProgress: boolean;
   cli: {
     installationStatus: CliInstallationStatus;
     authenticationStatus: CliAuthenticationStatus;
@@ -122,7 +121,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private view?: vscode.WebviewView;
   private resolver?: ResourceResolver;
   private cliSetupSession?: CliSetupSession;
-  private setupActionRunning = false;
 
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
@@ -259,7 +257,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
       ideName: ide.name,
       isRemote,
       agents,
-      setupInProgress: this.isSetupInProgress(),
       cli: {
         installationStatus: CLI_INSTALLATION_STATUS_NAMES[installationStatus],
         authenticationStatus: CLI_AUTHENTICATION_STATUS_NAMES[authenticationStatus],
@@ -295,15 +292,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         await this.refreshOnRequest();
         break;
       case 'configureMcp':
-        await this.runSetupAction(async () => {
-          const configuration = vscode.commands.executeCommand(
-            Commands.CONFIGURE_MCP_SERVER,
-            message.agent,
-            { skipViewRefresh: true }
-          );
-          await this.refresh();
-          await configuration;
-        });
+        await vscode.commands.executeCommand(Commands.CONFIGURE_MCP_SERVER, message.agent);
         break;
       case 'openMcpConfiguration':
         await vscode.commands.executeCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, message.agent);
@@ -312,7 +301,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         await vscode.commands.executeCommand(Commands.OPEN_SONARQUBE_RULES_FILE, false);
         break;
       case 'installHook':
-        await this.runSetupAction(() => vscode.commands.executeCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT));
+        await vscode.commands.executeCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT);
         break;
       case 'openHook':
         await vscode.commands.executeCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION);
@@ -321,13 +310,13 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         await vscode.env.openExternal(CLI_DOCUMENTATION_URL);
         break;
       case 'installCli':
-        await this.runSetupAction(() => this.getCliSetup().run('install'));
+        await this.getCliSetup().run('install');
         break;
       case 'authenticateCli':
-        await this.runSetupAction(() => this.getCliSetup().run('authenticate'));
+        await this.getCliSetup().run('authenticate');
         break;
       case 'integrateAgent':
-        await this.runSetupAction(() => this.getCliSetup().run('integrate', message.agent));
+        await this.getCliSetup().run('integrate', message.agent);
         break;
       case 'openVortexDocumentation':
         await vscode.env.openExternal(VORTEX_DOCUMENTATION_URL);
@@ -341,24 +330,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private getCliSetup(): CliSetupSession {
     this.cliSetupSession ??= new CliSetupSession(this.extensionContext, this.languageClient, () => this.refresh());
     return this.cliSetupSession;
-  }
-
-  private isSetupInProgress(): boolean {
-    return this.setupActionRunning || this.getCliSetup().operationInProgress || isMCPSetupInProgress();
-  }
-
-  private async runSetupAction(action: () => Thenable<unknown> | Promise<unknown>): Promise<void> {
-    if (this.isSetupInProgress()) {
-      await this.refresh();
-      return;
-    }
-    this.setupActionRunning = true;
-    try {
-      await action();
-    } finally {
-      this.setupActionRunning = false;
-      await this.refresh();
-    }
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
