@@ -11,7 +11,6 @@ const vscode = acquireVsCodeApi();
 const loading = document.getElementById('loading');
 const content = document.getElementById('content');
 const cliStatus = document.getElementById('cli-status');
-const cliAction = document.getElementById('cli-action');
 const detectedLabel = document.getElementById('detected-label');
 const agentList = document.getElementById('agent-list');
 const noAgents = document.getElementById('no-agents');
@@ -39,7 +38,9 @@ window.addEventListener('message', event => {
   }
 });
 
-cliAction.addEventListener('click', () => vscode.postMessage({ command: 'openCliDocumentation' }));
+document
+  .getElementById('cli-docs')
+  .addEventListener('click', () => vscode.postMessage({ command: 'openCliDocumentation' }));
 document
   .getElementById('vortex-docs')
   .addEventListener('click', () => vscode.postMessage({ command: 'openVortexDocumentation' }));
@@ -60,9 +61,7 @@ function render(state) {
 }
 
 function renderCli(state) {
-  const cliInstalled = state.cli.installationStatus === 'INSTALLED';
   renderCliStatus(state.cli.installationStatus);
-  cliAction.textContent = cliInstalled ? 'Learn more about SonarQube CLI' : 'View installation guide';
 
   agentList.replaceChildren();
   const compatibleAgents = state.agents.filter(agent => agent.supportsCliIntegration);
