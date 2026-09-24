@@ -194,7 +194,9 @@ export async function configureMCPServer(
       return;
     }
 
-    writeMcpDocument(currentDocument.path, updatePlan.updatedContent);
+    if (updatePlan.updatedContent !== currentDocument.content) {
+      writeMcpDocument(currentDocument.path, updatePlan.updatedContent);
+    }
     await extensionContext.globalState.update(MCP_CONNECTION_KEY, {
       id: connectionId,
       type: selectedConnection.contextValue

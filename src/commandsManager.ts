@@ -162,7 +162,9 @@ export class CommandsManager {
         (workspaceUri: string, issueKey: string, fileUri: string, isTaintIssue: boolean, isDependencyRisk = false) =>
           resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue, isDependencyRisk)
       ),
-      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () => IssueService.instance.reopenLocalIssues()),
+      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () =>
+        IssueService.instance.reopenLocalIssues()
+      ),
       vscode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
         const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
         if (connectionDeleted) {

@@ -360,6 +360,57 @@ suite('mcpServerConfig', () => {
     }
   });
 
+  test('does not write when the update plan reclassifies an initially safe file', async () => {
+    const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
+    const tokenStub = sinon
+      .stub(ConnectionSettingsService.instance, 'getTokenForConnection')
+      .resolves('valid-test-token');
+    const showErrorStub = sinon.stub(vscode.window, 'showErrorMessage').resolves(undefined);
+    const showWarningStub = sinon.stub(vscode.window, 'showWarningMessage').resolves(undefined);
+    const fs = require('node:fs');
+    const existsStub = sinon.stub(fs, 'existsSync').returns(true);
+    const readFileStub = sinon.stub(fs, 'readFileSync').returns('{"mcpServers":{}}');
+    const writeFileStub = sinon.stub(fs, 'writeFileSync');
+    const globalStateUpdateStub = sinon.stub().resolves();
+    const extensionContext = {
+      globalState: { update: globalStateUpdateStub }
+    } as unknown as vscode.ExtensionContext;
+
+    try {
+      for (const state of [
+        AiIntegration.McpConfigurationState.CLI_MANAGED,
+        AiIntegration.McpConfigurationState.MALFORMED
+      ]) {
+        planMcpConfigurationUpdateStub.resolves({
+          state,
+          updatedContent: null,
+          diagnostics: ['Configuration changed.']
+        });
+        await configureMCPServer(
+          mockLanguageClient,
+          mockAllConnectionsTreeDataProvider,
+          extensionContext,
+          mockConnection
+        );
+      }
+
+      expect(inspectMcpConfigurationStub.callCount).to.equal(2);
+      expect(planMcpConfigurationUpdateStub.callCount).to.equal(2);
+      expect(writeFileStub.called).to.be.false;
+      expect(globalStateUpdateStub.called).to.be.false;
+      expect(showWarningStub.calledOnce).to.be.true;
+      expect(showErrorStub.calledOnce).to.be.true;
+    } finally {
+      envStub.restore();
+      tokenStub.restore();
+      showErrorStub.restore();
+      showWarningStub.restore();
+      existsStub.restore();
+      readFileStub.restore();
+      writeFileStub.restore();
+    }
+  });
+
   test('should not update malformed, CLI-managed, or unknown configurations', async () => {
     const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
     const showErrorStub = sinon.stub(vscode.window, 'showErrorMessage').resolves(undefined);
@@ -593,7 +644,7 @@ suite('mcpServerConfig', () => {
     }
   });
 
-  test('should persist a standalone configure even when planned content is unchanged', async () => {
+  test('persists connection metadata without rewriting unchanged planned content', async () => {
     const existingContent = '{"mcpServers":{"sonarqube":{}}}';
     const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
     const connectionServiceStub = sinon
@@ -629,7 +680,7 @@ suite('mcpServerConfig', () => {
 
       expect(inspectMcpConfigurationStub.firstCall.args[0].content).to.equal(existingContent);
       expect(planMcpConfigurationUpdateStub.firstCall.args[0].content).to.equal(existingContent);
-      expect(writeFileStub.calledOnceWith(sinon.match.string, existingContent, 'utf8')).to.be.true;
+      expect(writeFileStub.called).to.be.false;
       expect(globalStateUpdateStub.calledOnce).to.be.true;
     } finally {
       envStub.restore();
