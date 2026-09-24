@@ -14,6 +14,7 @@ import * as vscode from 'vscode';
 import { expect } from 'chai';
 import { TextEncoder } from 'node:util';
 import * as path from 'node:path';
+import { rm } from 'node:fs/promises';
 import { selectFirstQuickPickItem, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 import { sleep } from '../testutil';
 import { deduplicateSuggestions } from '../../src/util/connectionSuggestionUtils';
@@ -125,12 +126,7 @@ suite('Shared Connected Mode service test suite', () => {
     const workspaceFolderUri = workspaceFolder.uri;
     const expectedFileUri = vscode.Uri.file(path.resolve(workspaceFolderUri.fsPath, '.sonarlint/connectedMode.json'));
 
-    try {
-      // make sure we start with a clean state
-      await vscode.workspace.fs.delete(expectedFileUri);
-    } catch (e) {
-      console.log(e);
-    }
+    await rm(expectedFileUri.fsPath, { force: true });
 
     await FileSystemServiceImpl.instance.crawlDirectory(workspaceFolder.uri);
 
@@ -144,7 +140,7 @@ suite('Shared Connected Mode service test suite', () => {
     expect(fileContent).to.not.be.null;
     expect(fileContent.toString()).to.contain(SHARED_CONNECTED_MODE_FILE_CONTENT);
 
-    vscode.workspace.fs.delete(expectedFileUri);
+    await rm(expectedFileUri.fsPath, { force: true });
   }).timeout(5000);
 
   test('Should deduplicate suggestions', () => {
