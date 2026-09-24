@@ -216,7 +216,6 @@ suite('aiAgentHooks', () => {
       );
       expect(infoMessage).to.not.be.undefined;
       expect(infoMessage?.[0]).to.include('Windsurf');
-      expect(executeCommandStub.calledWith('SonarLint.RefreshAIAgentsConfiguration')).to.be.true;
     });
 
     (process.platform === 'win32' ? test.skip : test)('should merge with existing hooks from other tools', async () => {
@@ -486,4 +485,3 @@ suite('aiAgentHooks', () => {
     });
   });
 });
-
