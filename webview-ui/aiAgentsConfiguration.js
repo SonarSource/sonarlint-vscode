@@ -39,10 +39,6 @@ window.addEventListener('message', event => {
     content.hidden = true;
     loading.hidden = true;
     loadError.hidden = false;
-  } else if (event.data.command === 'setupOutcome') {
-    cliFeedback.hidden = false;
-    cliFeedback.dataset.running = 'false';
-    cliFeedback.textContent = event.data.message;
   }
 });
 
