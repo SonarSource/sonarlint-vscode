@@ -203,12 +203,20 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(executeCommand.calledOnceWith(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION)).to.be.true;
   });
 
+  test('opens the SonarQube CLI guide from the CLI card', async () => {
+    const openExternal = sinon.stub(vscode.env, 'openExternal').resolves(true);
+
+    await provider.handleMessage({ command: 'openCliDocumentation' });
+
+    expect(openExternal.calledOnceWith(vscode.Uri.parse('https://cli.sonarqube.com/'))).to.be.true;
+  });
+
   test('opens the Vortex documentation from the CLI card', async () => {
     const openExternal = sinon.stub(vscode.env, 'openExternal').resolves(true);
 
     await provider.handleMessage({ command: 'openVortexDocumentation' });
 
-    expect(openExternal.calledOnceWith(vscode.Uri.parse('https://www.sonarsource.com/blog/introducing-sonar-vortex/')))
+    expect(openExternal.calledOnceWith(vscode.Uri.parse('https://docs.sonarsource.com/agent-centric-development-cycle/inside-your-agent-the-agentic-loop/sonar-vortex')))
       .to.be.true;
   });
 
