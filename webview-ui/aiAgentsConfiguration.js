@@ -193,7 +193,7 @@ function renderCliFeedback(cli) {
 
 function renderMcp(state) {
   if (state.mcp.configurableCount === 0) {
-    setStatus(mcpStatus, 'No standalone agents', 'unavailable');
+    setStatus(mcpStatus, 'No agents with MCP configuration files', 'unavailable');
   } else {
     const allConfigured = state.mcp.configuredCount === state.mcp.configurableCount;
     setStatus(
