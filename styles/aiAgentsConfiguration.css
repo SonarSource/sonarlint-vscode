@@ -64,8 +64,7 @@ main {
 }
 
 .status,
-.supporting-text,
-.agent-source {
+.supporting-text {
   color: var(--vscode-descriptionForeground);
   font-size: 12px;
 }
@@ -74,11 +73,21 @@ main {
   color: var(--vscode-testing-iconPassed, var(--vscode-descriptionForeground));
 }
 
-.agent-summary,
-.mcp-list {
-  padding-top: 12px;
-  margin: 14px 0;
-  border-top: 1px solid var(--vscode-panel-border);
+.agent-count {
+  margin: 12px 0 4px;
+}
+
+.agent-disclosure {
+  margin: 0 0 12px;
+}
+
+.agent-disclosure summary {
+  color: var(--vscode-textLink-foreground);
+  cursor: pointer;
+}
+
+.agent-disclosure[open] summary {
+  margin-bottom: 6px;
 }
 
 .cli-authentication {
@@ -112,15 +121,19 @@ main {
   justify-content: space-between;
   gap: 12px;
   min-height: 28px;
+  padding: 4px 0;
 }
 
 .agent-details {
-  display: grid;
-  gap: 2px;
+  min-width: 0;
 }
 
 .agent-action {
   flex: 0 0 auto;
+}
+
+.agent-availability {
+  text-align: right;
 }
 
 .notice {
@@ -152,6 +165,10 @@ main {
 
   .agent-action {
     width: 100%;
+  }
+
+  .agent-availability {
+    text-align: left;
   }
 }
 
@@ -220,7 +237,8 @@ button {
 }
 
 .mcp-list {
-  padding-left: 0;
+  padding: 0;
+  margin: 0;
   list-style: none;
 }
 
@@ -234,6 +252,7 @@ button {
 .mcp-integration-details,
 .mcp-integration-action {
   display: grid;
+  min-width: 0;
   gap: 3px;
 }
 
@@ -289,5 +308,15 @@ button:focus-visible {
 
   .mcp-integration-action {
     justify-items: stretch;
+  }
+}
+
+@media (max-width: 300px) {
+  .mcp-integration-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mcp-integration-action {
+    justify-items: start;
   }
 }
