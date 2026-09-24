@@ -247,7 +247,7 @@ export class CommandsManager {
       }),
       vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, () => openMCPServerConfigurationFile()),
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
-        this.aiAgentsConfigurationWebviewProvider.refresh()
+        this.aiAgentsConfigurationWebviewProvider.refreshOnRequest()
       ),
       vscode.commands.registerCommand(Commands.OPEN_AIAGENTS_CONFIGURATION_DOC, () => {
         vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'aiAgentsConfigurationDoc');
