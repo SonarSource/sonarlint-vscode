@@ -18,11 +18,15 @@ export const IntegrationTarget = {
 
 export type IntegrationTarget = (typeof IntegrationTarget)[keyof typeof IntegrationTarget];
 
-const AGENT_DISPLAY_NAMES: Record<IntegrationTarget, string> = {
-  [IntegrationTarget.GITHUB_COPILOT]: 'GitHub Copilot',
+const AGENT_DISPLAY_NAMES: Record<AiIntegration.AiAgent, string> = {
+  [IntegrationTarget.GITHUB_COPILOT]: 'Copilot in VS Code',
   [IntegrationTarget.CURSOR]: 'Cursor',
   [IntegrationTarget.WINDSURF]: 'Windsurf',
-  [IntegrationTarget.KIRO]: 'Kiro'
+  [IntegrationTarget.KIRO]: 'Kiro',
+  [AiIntegration.AiAgent.CLAUDE_CODE]: 'Claude Code',
+  [AiIntegration.AiAgent.CODEX]: 'Codex',
+  [AiIntegration.AiAgent.GITHUB_COPILOT_CLI]: 'GitHub Copilot CLI',
+  [AiIntegration.AiAgent.ANTIGRAVITY]: 'Antigravity'
 };
 
 export const IdeHost = {
@@ -55,8 +59,24 @@ export function toAgentKey(agent: AiIntegration.AiAgent): string {
   return AiIntegration.AiAgent[agent].toLowerCase();
 }
 
-export function toAgentDisplayName(agent: IntegrationTarget): string {
-  return AGENT_DISPLAY_NAMES[agent];
+export function toAgentDisplayName(agent: AiIntegration.AiAgent): string {
+  return AGENT_DISPLAY_NAMES[agent] ?? 'AI agent';
+}
+
+export interface DetectedIntegrationAgent extends AiIntegration.AiIntegrationAgentCapability {
+  name: string;
+}
+
+export function getDetectedIntegrationAgents(
+  state: AiIntegration.GetAiIntegrationStateResponse
+): DetectedIntegrationAgent[] {
+  const ideAgents = getDetectedIdeAgents();
+  const ideOrder = new Map<AiIntegration.AiAgent, number>(ideAgents.map((agent, index) => [agent.id, index]));
+  const ideNames = new Map<AiIntegration.AiAgent, string>(ideAgents.map(agent => [agent.id, agent.name]));
+  return state.agents
+    .filter(agent => agent.detectionSources.length > 0)
+    .map(agent => ({ ...agent, name: ideNames.get(agent.agent) ?? toAgentDisplayName(agent.agent) }))
+    .sort((a, b) => (ideOrder.get(a.agent) ?? Infinity) - (ideOrder.get(b.agent) ?? Infinity));
 }
 
 const COPILOT_CHAT_EXTENSION_ID = 'github.copilot-chat';
@@ -204,7 +224,8 @@ export function getAiIntegrationStateParams(
     ideHost: getCurrentIdeHost().id,
     detectedAgents: getDetectedIdeAgents().map(agent => agent.id),
     scope,
-    configurationScopeId
+    configurationScopeId,
+    discoverLocalAgentClis: true
   };
 }
 
