@@ -255,7 +255,7 @@ export async function configureMCPServer(
 
     void vscode.window
       .showInformationMessage(
-        `SonarQube MCP Server configured for ${displayName(agent)} with "${selectedConnection.label}"`,
+        `SonarQube MCP Server configured for ${toAgentDisplayName(agent)} with "${selectedConnection.label}"`,
         'Open Configuration File'
       )
       .then(async openFile => {
@@ -264,7 +264,7 @@ export async function configureMCPServer(
         }
       });
     logToSonarLintOutput(
-      `SonarQube MCP Server configured successfully for ${displayName(agent)} and connection: ${selectedConnection.label}`
+      `SonarQube MCP Server configured successfully for ${toAgentDisplayName(agent)} and connection: ${selectedConnection.label}`
     );
   } catch (error) {
     const connectionLabel = selectedConnection?.label ?? 'unknown connection';
@@ -298,13 +298,13 @@ async function selectMCPAgent(
   if (requestedAgent !== undefined) {
     if (!isAgentActiveForMcp(requestedAgent)) {
       await vscode.window.showInformationMessage(
-        `${displayName(requestedAgent)} must be active before MCP can be configured.`
+        `${toAgentDisplayName(requestedAgent)} must be active before MCP can be configured.`
       );
       return undefined;
     }
     if (!agents.some(agent => agent.agent === requestedAgent)) {
       await vscode.window.showInformationMessage(
-        `${displayName(requestedAgent)} is no longer available for standalone MCP setup.`
+        `${toAgentDisplayName(requestedAgent)} is no longer available for standalone MCP setup.`
       );
       return undefined;
     }
@@ -459,7 +459,7 @@ async function refreshStandaloneMCPConfiguration(
     }
   } catch (error) {
     logToSonarLintOutput(
-      `Could not refresh the standalone SonarQube MCP configuration for ${displayName(agent)}: ${error.message}`
+      `Could not refresh the standalone SonarQube MCP configuration for ${toAgentDisplayName(agent)}: ${error.message}`
     );
   }
 }
@@ -539,13 +539,10 @@ export async function openMCPServerConfigurationFile(
   const configPath = getMCPConfigPath(agent);
   if (!fs.existsSync(configPath)) {
     await vscode.window.showInformationMessage(
-      `The ${displayName(agent)} MCP configuration file has not been created yet.`
+      `The ${toAgentDisplayName(agent)} MCP configuration file has not been created yet.`
     );
     return;
   }
   await vscode.window.showTextDocument(vscode.Uri.file(configPath));
 }
 
-function displayName(agent: AiIntegration.AiAgent): string {
-  return toAgentDisplayName(agent);
-}
