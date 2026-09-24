@@ -189,6 +189,21 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(state.mcp.supported).to.be.false;
   });
 
+  test('keeps CLI setup feedback on webview load and clears it on explicit refresh', async () => {
+    const notice = { outcome: 'completed', message: 'Setup finished.' };
+    const postMessage = sinon.stub().resolves();
+    provider.cliSetupSession = { notice };
+    provider.view = { webview: { postMessage } };
+    provider.buildState = sinon.stub().callsFake(async () => ({ cli: { notice: provider.cliSetupSession.notice } }));
+
+    await provider.handleMessage({ command: 'ready' });
+    expect(postMessage.firstCall.args[0].state.cli.notice).to.equal(notice);
+
+    await provider.handleMessage({ command: 'refresh' });
+    expect(provider.cliSetupSession.notice).to.be.undefined;
+    expect(postMessage.secondCall.args[0].state.cli.notice).to.be.undefined;
+  });
+
   test('shows a generic error state and recovers on a later refresh', async () => {
     const postMessage = sinon.stub().resolves();
     const log = sinon.stub(logging, 'logToSonarLintOutput');
