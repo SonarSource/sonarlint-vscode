@@ -460,8 +460,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     expect(executeCommand.calledOnceWithExactly(
       Commands.CONFIGURE_MCP_SERVER,
-      AiIntegration.AiAgent.CURSOR,
-      { skipViewRefresh: true }
+      AiIntegration.AiAgent.CURSOR
     )).to.be.true;
   });
 
@@ -724,29 +723,40 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(prepareIntegrateCliCommand.notCalled).to.be.true;
   });
 
-  test('rejects overlapping setup actions across cards', async () => {
-    let finishMcp: () => void;
-    const mcpCommand = new Promise<void>(resolve => { finishMcp = resolve; });
-    const executeCommand = sinon.stub(vscode.commands, 'executeCommand').returns(mcpCommand);
+  test('allows CLI setup while background MCP work is running', async () => {
+    sinon.stub(mcpServerConfig, 'isMCPSetupInProgress').returns(true);
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    prepareInstallCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['install'],
+      interactive: true
+    });
     provider.refresh = sinon.stub().resolves();
 
-    const firstAction = provider.handleMessage({ command: 'configureMcp', agent: AiIntegration.AiAgent.CURSOR });
     await provider.handleMessage({ command: 'installCli' });
 
-    expect(executeCommand.calledOnce).to.be.true;
-    expect(prepareInstallCliCommand.notCalled).to.be.true;
-    finishMcp!();
-    await firstAction;
+    expect(prepareInstallCliCommand.calledOnce).to.be.true;
+    expect(terminal.show.calledOnce).to.be.true;
   });
 
-  test('refreshes the view after a setup click is rejected during background MCP work', async () => {
-    sinon.stub(mcpServerConfig, 'isMCPSetupInProgress').returns(true);
+  test('allows MCP setup while a CLI terminal remains open', async () => {
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    prepareInstallCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['install'],
+      interactive: true
+    });
+    const executeCommand = sinon.stub(vscode.commands, 'executeCommand').resolves();
     provider.refresh = sinon.stub().resolves();
 
     await provider.handleMessage({ command: 'installCli' });
+    await provider.handleMessage({ command: 'configureMcp', agent: AiIntegration.AiAgent.CURSOR });
 
-    expect(prepareInstallCliCommand.notCalled).to.be.true;
-    expect(provider.refresh.calledOnce).to.be.true;
+    expect(executeCommand.calledOnceWithExactly(Commands.CONFIGURE_MCP_SERVER, AiIntegration.AiAgent.CURSOR)).to.be.true;
   });
 
   test('opens only existing legacy instructions', async () => {
