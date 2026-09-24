@@ -10,11 +10,9 @@ import * as vscode from 'vscode';
 import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
-import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
-import {
-  getCurrentAgentWithHookSupport,
-  getCurrentAgentWithMCPSupport
-} from './aiAgentsConfiguration/aiAgentUtils';
+import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
+import { getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
+import { hasActiveStandaloneMcpAgent } from './aiAgentsConfiguration/mcpServerConfig';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
@@ -64,7 +62,7 @@ export class ContextManager {
   }
 
   setMCPServerSupportedAgentContext() {
-    const isSupportedTarget = getCurrentAgentWithMCPSupport() !== undefined;
+    const isSupportedTarget = hasActiveStandaloneMcpAgent();
     vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_AGENT, isSupportedTarget);
   }
 
@@ -81,7 +79,11 @@ export class ContextManager {
     const hasConnectionConfigured = ConnectionSettingsService.instance.hasConnectionConfigured();
     const hasClickedGetStartedLink = context.globalState.get(HAS_CLICKED_GET_STARTED_LINK, false);
     // only show the get started view if user has no connection AND has not clicked the link
-    vscode.commands.executeCommand('setContext', SHOULD_SHOW_GET_STARTED_VIEW, !hasConnectionConfigured && !hasClickedGetStartedLink);
+    vscode.commands.executeCommand(
+      'setContext',
+      SHOULD_SHOW_GET_STARTED_VIEW,
+      !hasConnectionConfigured && !hasClickedGetStartedLink
+    );
   }
 
   setFlightRecorderRunningContext() {
@@ -116,5 +118,4 @@ export class ContextManager {
     vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_AGENT, undefined);
     vscode.commands.executeCommand('setContext', HOOK_SCRIPT_SUPPORTED_AGENT, undefined);
   }
-
 }
