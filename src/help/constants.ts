@@ -98,7 +98,7 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   },
   {
     id: 'aiAgentsConfigurationDoc',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents#sonarqube-mcp-server',
+    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents',
     viewItem: false
   },
   {
