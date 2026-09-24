@@ -11,6 +11,7 @@ import * as os from 'node:os';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { AIAgentsConfigurationWebviewProvider } from '../../../src/aiAgentsConfiguration/aiAgentsConfigurationWebviewProvider';
+import { AiIntegrationTelemetry } from '../../../src/aiAgentsConfiguration/aiIntegrationTelemetry';
 import * as aiAgentHooks from '../../../src/aiAgentsConfiguration/aiAgentHooks';
 import * as aiAgentRuleConfig from '../../../src/aiAgentsConfiguration/aiAgentRuleConfig';
 import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
@@ -29,10 +30,12 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
   let prepareInstallCliCommand: sinon.SinonStub;
   let prepareAuthenticateCliCommand: sinon.SinonStub;
   let prepareIntegrateCliCommand: sinon.SinonStub;
+  let mcpInProgressStub: sinon.SinonStub;
 
   setup(function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     provider = Object.create(AIAgentsConfigurationWebviewProvider.prototype);
+    mcpInProgressStub = sinon.stub(mcpServerConfig, 'isMCPSetupInProgress').returns(false);
     provider.extensionContext = {
       subscriptions: [],
       globalState: { get: sinon.stub(), update: sinon.stub().resolves() }
@@ -40,7 +43,8 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     getIntegrationState = sinon.stub().resolves({
       cli: {
         installationStatus: AiIntegration.CliInstallationStatus.NOT_INSTALLED,
-        authenticationStatus: AiIntegration.CliAuthenticationStatus.UNKNOWN
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.UNKNOWN,
+        vortexAvailable: false
       },
       agents: [],
       connectionChoices: []
@@ -52,11 +56,38 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       getAiIntegrationState: getIntegrationState,
       prepareInstallCliCommand,
       prepareAuthenticateCliCommand,
-      prepareIntegrateCliCommand
+      prepareIntegrateCliCommand,
+      aiIntegrationAction: sinon.stub().resolves(),
+      aiIntegrationCliStateObserved: sinon.stub().resolves(),
+      aiAgentIntegrationStateObserved: sinon.stub().resolves()
     };
+    provider.telemetry = new AiIntegrationTelemetry(provider.languageClient);
   });
 
   teardown(() => sinon.restore());
+
+  test('records initial load only once per view opening', async () => {
+    const refreshWithObservation = sinon.stub(provider, 'refreshWithObservation').resolves(true);
+    provider.initialObservationPending = true;
+
+    await provider.handleMessage({ command: 'ready' });
+    await provider.handleMessage({ command: 'ready' });
+
+    expect(refreshWithObservation.firstCall.args[0]).to.equal('INITIAL_LOAD');
+    expect(refreshWithObservation.secondCall.args[0]).to.be.undefined;
+  });
+
+  test('reports a manual refresh action around one eligible observation', async () => {
+    sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.VSCODE, name: 'VS Code' });
+    const refreshWithObservation = sinon.stub(provider, 'refreshWithObservation').resolves(true);
+
+    await provider.refreshOnRequest();
+
+    expect(refreshWithObservation.calledOnceWithExactly('MANUAL_REFRESH')).to.be.true;
+    const reports = provider.languageClient.aiIntegrationAction.getCalls().map(call => call.args[0]);
+    expect(reports.map(report => report.status)).to.deep.equal(['STARTED', 'SUCCEEDED']);
+    expect(reports.every(report => report.action === 'REFRESH')).to.be.true;
+  });
 
   test('builds independent MCP state for detected agents', async () => {
     const detectedAgents = [
@@ -72,7 +103,8 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     getIntegrationState.resolves({
       cli: {
         installationStatus: 1,
-        authenticationStatus: 0
+        authenticationStatus: 0,
+        vortexAvailable: true
       },
       agents: detectedAgents.map(agent => ({
         agent: agent.id,
@@ -93,7 +125,23 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     }));
     sinon.stub(mcpServerConfig, 'hasPersistedMCPConnection').returns(true);
 
-    const state = await provider.buildState();
+    const state = await provider.buildState(AiIntegration.AiIntegrationObservationTrigger.INITIAL_LOAD);
+
+    const cliReport = provider.languageClient.aiIntegrationCliStateObserved;
+    const agentReport = provider.languageClient.aiAgentIntegrationStateObserved;
+    expect(cliReport.calledOnce).to.be.true;
+    expect(cliReport.firstCall.args[0]).to.include({
+      trigger: 'INITIAL_LOAD',
+      installationStatus: 'INSTALLED',
+      authenticationStatus: 'AUTHENTICATED',
+      vortexAvailable: true
+    });
+    expect(agentReport.callCount).to.equal(3);
+    expect(agentReport.getCalls().map(call => call.args[0].agent)).to.have.members([
+      'GITHUB_COPILOT', 'CLAUDE_CODE', 'CODEX'
+    ]);
+    expect(agentReport.getCalls().find(call => call.args[0].agent === 'CODEX').args[0].standaloneMcpState)
+      .to.equal('UNKNOWN');
 
     expect(state.ideName).to.equal('VS Code');
     expect(getIntegrationState.calledOnce).to.be.true;
