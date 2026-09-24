@@ -70,7 +70,12 @@ import { SetUpConnectedModeTool } from './languageModelTools/setUpConnectedModeT
 import { AnalyzeFileTool } from './languageModelTools/analyzeFileTool';
 import { TaintVulnerabilityDecorator } from './issue/taintVulnerabilityDecorator';
 import { AutomaticAnalysisService } from './settings/automaticAnalysis';
-import { onEmbeddedServerStarted, scheduleCopilotActivationMcpRefresh } from './aiAgentsConfiguration/mcpServerConfig';
+import {
+  onEmbeddedServerStarted,
+  refreshStandaloneMCPAgentContext,
+  scheduleCopilotActivationMcpRefresh
+} from './aiAgentsConfiguration/mcpServerConfig';
+import { COPILOT_ACTIVATION_DELAY_MS } from './aiAgentsConfiguration/aiAgentUtils';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 import { LabsWebviewProvider } from './labs/labsWebviewProvider';
 import { StatusBarService } from './statusbar/statusBar';
@@ -268,6 +273,11 @@ export async function activate(context: VSCode.ExtensionContext) {
   );
 
   installCustomRequestHandlers(context);
+  void refreshStandaloneMCPAgentContext(languageClient);
+  const mcpContextRefreshTimer = setTimeout(() => {
+    void refreshStandaloneMCPAgentContext(languageClient);
+  }, COPILOT_ACTIVATION_DELAY_MS);
+  context.subscriptions.push(new VSCode.Disposable(() => clearTimeout(mcpContextRefreshTimer)));
   initializeLanguageModelTools(context);
 
   const scm = await initScm(languageClient);
