@@ -16,6 +16,7 @@ import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ContextManager } from '../contextManager';
 import { isHookInstalled } from './aiAgentHooks';
+import { AiIntegrationTelemetry } from './aiIntegrationTelemetry';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import {
   getAiIntegrationStateParams,
@@ -122,12 +123,15 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private view?: vscode.WebviewView;
   private resolver?: ResourceResolver;
   private cliSetupSession?: CliSetupSession;
+  private readonly telemetry: AiIntegrationTelemetry;
   private setupActionRunning = false;
+  private initialObservationPending = false;
 
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
     private readonly languageClient: SonarLintExtendedLanguageClient
   ) {
+    this.telemetry = new AiIntegrationTelemetry(languageClient);
     extensionContext.subscriptions.push(
       vscode.extensions.onDidChange(() => this.refresh()),
       vscode.workspace.onDidChangeWorkspaceFolders(() => this.refresh())
@@ -140,10 +144,12 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     _token: vscode.CancellationToken
   ): void {
     this.view = webviewView;
+    this.initialObservationPending = true;
     webviewView.onDidDispose(
       () => {
         if (this.view === webviewView) {
           this.view = undefined;
+          this.initialObservationPending = false;
         }
       },
       undefined,
@@ -168,33 +174,85 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   }
 
   async refresh(): Promise<void> {
-    const view = this.view;
-    if (!view) {
-      return;
-    }
-    try {
-      await view.webview.postMessage({ command: 'state', state: await this.buildState() });
-    } catch (error) {
-      logToSonarLintOutput(`Could not refresh AI integrations state: ${String(error)}`);
-      if (this.view === view) {
-        await view.webview.postMessage({ command: 'error' }).then(undefined, () => undefined);
-      }
-    }
+    await this.refreshWithObservation();
   }
 
   async refreshOnRequest(): Promise<void> {
     if (this.cliSetupSession) {
       this.cliSetupSession.notice = undefined;
     }
-    await this.refresh();
+    this.telemetry.action(AiIntegration.AiIntegrationAction.REFRESH, {
+      status: AiIntegration.AiIntegrationActionStatus.STARTED
+    });
+    const succeeded = await this.refreshWithObservation(AiIntegration.AiIntegrationObservationTrigger.MANUAL_REFRESH);
+    this.telemetry.action(AiIntegration.AiIntegrationAction.REFRESH, succeeded
+      ? { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED }
+      : {
+          status: AiIntegration.AiIntegrationActionStatus.FAILED,
+          failureCategory: AiIntegration.AiIntegrationFailureCategory.BACKEND_ERROR
+        });
   }
 
-  private async buildState(): Promise<AIAgentsConfigurationState> {
+  async refreshAfterAction(): Promise<void> {
+    await this.refreshWithObservation(AiIntegration.AiIntegrationObservationTrigger.POST_ACTION);
+  }
+
+  private async refreshWithObservation(trigger?: AiIntegration.AiIntegrationObservationTrigger): Promise<boolean> {
+    const view = this.view;
+    if (!view) {
+      if (trigger === undefined) {
+        return false;
+      }
+      try {
+        await this.observeWithoutView(trigger);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    try {
+      await view.webview.postMessage({ command: 'state', state: await this.buildState(trigger) });
+      return true;
+    } catch (error) {
+      logToSonarLintOutput(`Could not refresh AI integrations state: ${String(error)}`);
+      if (this.view === view) {
+        await view.webview.postMessage({ command: 'error' }).then(undefined, () => undefined);
+      }
+      return false;
+    }
+  }
+
+  private async observeWithoutView(trigger: AiIntegration.AiIntegrationObservationTrigger): Promise<void> {
+    const state = await this.languageClient.getAiIntegrationState(
+      getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
+    );
+    this.telemetry.cliState(trigger, state.cli);
+    const inspectedStates = new Map<AiIntegration.AiAgent, AiIntegration.McpConfigurationState>();
+    const detectedAgents = getDetectedIntegrationAgents(state);
+    await Promise.all(detectedAgents
+      .filter(agent => agent.standaloneMcpSupported && isStandaloneMcpReady(agent.agent))
+      .map(async agent => {
+        try {
+          const inspection = await inspectMCPConfiguration(this.languageClient, agent.agent);
+          inspectedStates.set(agent.agent, inspection.state);
+        } catch {
+          inspectedStates.set(agent.agent, AiIntegration.McpConfigurationState.UNKNOWN);
+        }
+      }));
+    this.telemetry.agentStates(trigger, state.agents, inspectedStates);
+  }
+
+  private async buildState(trigger?: AiIntegration.AiIntegrationObservationTrigger): Promise<AIAgentsConfigurationState> {
     const ide = getCurrentIdeHost();
     const hookAgent = getCurrentAgentWithHookSupport();
+    const integrationState = await this.languageClient.getAiIntegrationState(
+      getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
+    );
+    if (trigger !== undefined) {
+      this.telemetry.cliState(trigger, integrationState.cli);
+    }
     await migrateLegacyMCPConnection(this.extensionContext);
-    const [integrationState, legacyInstructionsConfigured, hookConfigured] = await Promise.all([
-      this.languageClient.getAiIntegrationState(getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)),
+    const [legacyInstructionsConfigured, hookConfigured] = await Promise.all([
       isSonarQubeRulesFileConfigured(),
       hookAgent !== undefined ? isHookInstalled(hookAgent) : Promise.resolve(false)
     ]);
@@ -221,6 +279,13 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
           }
         })
     );
+    if (trigger !== undefined) {
+      this.telemetry.agentStates(
+        trigger,
+        integrationState.agents,
+        new Map(inspections.map(result => [result.agent, result.inspection.state]))
+      );
+    }
     const agents = detectedAgents.map(agent => ({
       id: agent.agent,
       name: agent.name,
@@ -288,9 +353,14 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
 
   private async handleMessage(message: { command?: string; agent?: AiIntegration.AiAgent }): Promise<void> {
     switch (message.command) {
-      case 'ready':
-        await this.refresh();
+      case 'ready': {
+        const trigger = this.initialObservationPending
+          ? AiIntegration.AiIntegrationObservationTrigger.INITIAL_LOAD
+          : undefined;
+        this.initialObservationPending = false;
+        await this.refreshWithObservation(trigger);
         break;
+      }
       case 'refresh':
         await this.refreshOnRequest();
         break;
@@ -318,29 +388,73 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         await vscode.commands.executeCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION);
         break;
       case 'openCliDocumentation':
-        await vscode.env.openExternal(CLI_DOCUMENTATION_URL);
+        await this.openDocumentation(AiIntegration.AiIntegrationAction.OPEN_CLI_DOCUMENTATION, CLI_DOCUMENTATION_URL);
         break;
       case 'installCli':
-        await this.runSetupAction(() => this.getCliSetup().run('install'));
+        await this.runCliSetup(AiIntegration.AiIntegrationAction.INSTALL_CLI, 'install');
         break;
       case 'authenticateCli':
-        await this.runSetupAction(() => this.getCliSetup().run('authenticate'));
+        await this.runCliSetup(AiIntegration.AiIntegrationAction.LOGIN_CLI, 'authenticate');
         break;
       case 'integrateAgent':
-        await this.runSetupAction(() => this.getCliSetup().run('integrate', message.agent));
+        await this.runCliSetup(AiIntegration.AiIntegrationAction.INTEGRATE_AGENT, 'integrate', message.agent);
         break;
       case 'openVortexDocumentation':
-        await vscode.env.openExternal(VORTEX_DOCUMENTATION_URL);
+        await this.openDocumentation(AiIntegration.AiIntegrationAction.OPEN_VORTEX_DOCUMENTATION, VORTEX_DOCUMENTATION_URL);
         break;
       case 'openMcpDocumentation':
-        await vscode.env.openExternal(MCP_CONFIGURATOR_URL);
+        await this.openDocumentation(AiIntegration.AiIntegrationAction.OPEN_MCP_DOCUMENTATION, MCP_CONFIGURATOR_URL);
         break;
     }
   }
 
   private getCliSetup(): CliSetupSession {
-    this.cliSetupSession ??= new CliSetupSession(this.extensionContext, this.languageClient, () => this.refresh());
+    this.cliSetupSession ??= new CliSetupSession(
+      this.extensionContext,
+      this.languageClient,
+      () => this.refresh(),
+      async (step, agent, outcome) => {
+        let action = AiIntegration.AiIntegrationAction.INTEGRATE_AGENT;
+        if (step === 'install') {
+          action = AiIntegration.AiIntegrationAction.INSTALL_CLI;
+        } else if (step === 'authenticate') {
+          action = AiIntegration.AiIntegrationAction.LOGIN_CLI;
+        }
+        this.telemetry.action(action, { ...outcome, agent }, AiIntegration.AiIntegrationScope.GLOBAL);
+        await this.refreshAfterAction();
+      }
+    );
     return this.cliSetupSession;
+  }
+
+  private async runCliSetup(
+    action: AiIntegration.AiIntegrationAction,
+    step: 'install' | 'authenticate' | 'integrate',
+    agent?: AiIntegration.AiAgent
+  ): Promise<void> {
+    await this.runSetupAction(async () => {
+      this.telemetry.action(action, { status: AiIntegration.AiIntegrationActionStatus.STARTED, agent },
+        AiIntegration.AiIntegrationScope.GLOBAL);
+      await this.getCliSetup().run(step, agent);
+    });
+  }
+
+  private async openDocumentation(action: AiIntegration.AiIntegrationAction, url: vscode.Uri): Promise<void> {
+    this.telemetry.action(action, { status: AiIntegration.AiIntegrationActionStatus.STARTED });
+    try {
+      const opened = await vscode.env.openExternal(url);
+      this.telemetry.action(action, opened
+        ? { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED }
+        : {
+            status: AiIntegration.AiIntegrationActionStatus.FAILED,
+            failureCategory: AiIntegration.AiIntegrationFailureCategory.UNKNOWN
+          });
+    } catch {
+      this.telemetry.action(action, {
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        failureCategory: AiIntegration.AiIntegrationFailureCategory.UNKNOWN
+      });
+    }
   }
 
   private isSetupInProgress(): boolean {

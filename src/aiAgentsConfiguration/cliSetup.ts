@@ -11,6 +11,7 @@ import * as vscode from 'vscode';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { getAiIntegrationStateParams, getDetectedIntegrationAgents } from './aiAgentUtils';
+import type { AiIntegrationOutcome } from './aiIntegrationTelemetry';
 
 export type CliSetupStep = 'install' | 'authenticate' | 'integrate';
 export type SetupOutcome = 'completed' | 'cancelled' | 'failed' | 'unknown';
@@ -107,12 +108,20 @@ export class CliSetupSession {
   private activeSetupTerminal?: vscode.Terminal;
   private terminalCloseListener?: vscode.Disposable;
   private inProgress = false;
+  private activeStep?: CliSetupStep;
+  private activeAgent?: AiIntegration.AiAgent;
+  private pendingOutcome?: AiIntegrationOutcome;
   notice?: CliSetupNotice;
 
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
     private readonly languageClient: SonarLintExtendedLanguageClient,
-    private readonly onChange: () => Thenable<void>
+    private readonly onChange: () => Thenable<void>,
+    private readonly onFinished?: (
+      step: CliSetupStep,
+      agent: AiIntegration.AiAgent | undefined,
+      outcome: AiIntegrationOutcome
+    ) => Thenable<void> | Promise<void>
   ) {}
 
   get operationInProgress(): boolean {
@@ -126,24 +135,71 @@ export class CliSetupSession {
     }
 
     this.inProgress = true;
+    this.activeStep = step;
+    this.activeAgent = agentId;
+    this.pendingOutcome = undefined;
     this.notice = undefined;
-    await this.onChange();
     let terminalStarted = false;
     try {
+      await this.onChange();
       terminalStarted = await this.execute(step, agentId);
     } catch {
       this.notice = { outcome: 'failed', message: SETUP_START_FAILED };
+      this.pendingOutcome ??= {
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        failureCategory: AiIntegration.AiIntegrationFailureCategory.BACKEND_ERROR
+      };
     } finally {
       if (!terminalStarted) {
         this.inProgress = false;
-        await this.onChange();
+        try {
+          await this.onChange();
+        } finally {
+          await this.finish(this.pendingOutcome ?? {
+            status: AiIntegration.AiIntegrationActionStatus.FAILED,
+            failureCategory: AiIntegration.AiIntegrationFailureCategory.UNSUPPORTED
+          });
+        }
       }
     }
   }
 
   async handleTerminalClosed(exitStatus?: vscode.TerminalExitStatus): Promise<void> {
     this.notice = noticeForTerminalExit(exitStatus);
-    await this.onChange();
+    let outcome: AiIntegrationOutcome;
+    switch (this.notice.outcome) {
+      case 'completed':
+        outcome = { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED };
+        break;
+      case 'cancelled':
+        outcome = { status: AiIntegration.AiIntegrationActionStatus.CANCELLED };
+        break;
+      case 'unknown':
+        outcome = { status: AiIntegration.AiIntegrationActionStatus.UNKNOWN };
+        break;
+      case 'failed':
+        outcome = {
+          status: AiIntegration.AiIntegrationActionStatus.FAILED,
+          failureCategory: AiIntegration.AiIntegrationFailureCategory.TERMINAL_ERROR
+        };
+        break;
+    }
+    try {
+      await this.onChange();
+    } finally {
+      await this.finish(outcome);
+    }
+  }
+
+  private async finish(outcome: AiIntegrationOutcome): Promise<void> {
+    const step = this.activeStep;
+    const agent = this.activeAgent;
+    this.activeStep = undefined;
+    this.activeAgent = undefined;
+    this.pendingOutcome = undefined;
+    if (step !== undefined) {
+      await this.onFinished?.(step, agent, outcome);
+    }
   }
 
   private async execute(step: CliSetupStep, agentId?: AiIntegration.AiAgent): Promise<boolean> {
@@ -167,6 +223,10 @@ export class CliSetupSession {
 
   private async startInstall(state: AiIntegration.GetAiIntegrationStateResponse, isRemote: boolean): Promise<boolean> {
     if (isRemote || state.cli.installationStatus !== AiIntegration.CliInstallationStatus.NOT_INSTALLED) {
+      this.pendingOutcome = {
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        failureCategory: AiIntegration.AiIntegrationFailureCategory.UNSUPPORTED
+      };
       return false;
     }
     return this.openSetupTerminal('SonarQube CLI installation', await this.languageClient.prepareInstallCliCommand());
@@ -177,11 +237,16 @@ export class CliSetupSession {
     isRemote: boolean
   ): Promise<boolean> {
     if (!canStartAuthenticationFlow(state, isRemote)) {
+      this.pendingOutcome = {
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        failureCategory: AiIntegration.AiIntegrationFailureCategory.UNSUPPORTED
+      };
       return false;
     }
     const pick = await selectConnection(state);
     if (pick.kind === 'cancelled') {
       this.notice = { outcome: 'cancelled', message: LOGIN_CANCELLED };
+      this.pendingOutcome = { status: AiIntegration.AiIntegrationActionStatus.CANCELLED };
       return false;
     }
     return this.openInteractiveCommand(
@@ -203,6 +268,10 @@ export class CliSetupSession {
       !isAgentIntegrationAllowed(state.cli.installationStatus, state.cli.authenticationStatus, isRemote) ||
       !agent
     ) {
+      this.pendingOutcome = {
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        failureCategory: AiIntegration.AiIntegrationFailureCategory.UNSUPPORTED
+      };
       return false;
     }
     return this.openInteractiveCommand(
@@ -219,22 +288,34 @@ export class CliSetupSession {
   ): boolean {
     if (!command.interactive) {
       this.notice = { outcome: 'failed', message: nonInteractiveMessage };
+      this.pendingOutcome = {
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        failureCategory: AiIntegration.AiIntegrationFailureCategory.UNSUPPORTED
+      };
       return false;
     }
     return this.openSetupTerminal(name, command);
   }
 
   private openSetupTerminal(name: string, command: AiIntegration.PrepareCliCommandResponse): boolean {
-    const terminal = vscode.window.createTerminal({
-      name,
-      shellPath: command.executable,
-      shellArgs: command.arguments,
-      cwd: os.homedir()
-    });
-    this.activeSetupTerminal = terminal;
-    this.ensureTerminalCloseListener();
-    terminal.show();
-    return true;
+    try {
+      const terminal = vscode.window.createTerminal({
+        name,
+        shellPath: command.executable,
+        shellArgs: command.arguments,
+        cwd: os.homedir()
+      });
+      this.activeSetupTerminal = terminal;
+      this.ensureTerminalCloseListener();
+      terminal.show();
+      return true;
+    } catch {
+      this.pendingOutcome = {
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        failureCategory: AiIntegration.AiIntegrationFailureCategory.TERMINAL_ERROR
+      };
+      return false;
+    }
   }
 
   private ensureTerminalCloseListener(): void {
