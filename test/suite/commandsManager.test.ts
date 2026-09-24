@@ -13,6 +13,8 @@ import { ExtendedServer } from '../../src/lsp/protocol';
 import { Commands } from '../../src/util/commands';
 import { LanguageClient } from 'vscode-languageclient/node';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
+import { CommandsManager } from '../../src/commandsManager';
+import * as mcpServerConfig from '../../src/aiAgentsConfiguration/mcpServerConfig';
 
 suite('ANALYZE_VCS_CHANGED_FILES command', () => {
   const FINDINGS_FOCUS_COMMAND = 'SonarQube.Findings.focus';
@@ -78,3 +80,34 @@ suite('ANALYZE_VCS_CHANGED_FILES command', () => {
   });
 });
 
+suite('CONFIGURE_MCP_SERVER command', () => {
+  teardown(() => sinon.restore());
+
+  test('refreshes the AI integrations view around MCP setup', async () => {
+    let configureCommand: ((connection?: unknown) => Promise<void>) | undefined;
+    sinon.stub(vscode.commands, 'registerCommand').callsFake((command, callback) => {
+      if (command === Commands.CONFIGURE_MCP_SERVER) {
+        configureCommand = callback as typeof configureCommand;
+      }
+      return { dispose: () => undefined };
+    });
+    const configureStub = sinon.stub(mcpServerConfig, 'configureMCPServer').resolves();
+    const refreshStub = sinon.stub().resolves();
+    const context = { subscriptions: [] } as unknown as vscode.ExtensionContext;
+    const manager = new CommandsManager(
+      context,
+      undefined as never,
+      undefined as never,
+      undefined as never,
+      undefined as never,
+      undefined as never,
+      { refresh: refreshStub } as never
+    );
+    manager.registerCommands();
+
+    expect(configureCommand).to.not.be.undefined;
+    await configureCommand!();
+    expect(refreshStub.calledTwice).to.be.true;
+    expect(configureStub.calledOnce).to.be.true;
+  });
+});
