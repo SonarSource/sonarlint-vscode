@@ -124,6 +124,10 @@ main {
   display: none;
 }
 
+#cli-feedback {
+  margin-bottom: 0;
+}
+
 @media (max-width: 360px) {
   .agent-list li {
     align-items: stretch;
@@ -185,7 +189,13 @@ button {
 }
 
 .link-action {
-  margin-top: 10px;
+  display: block;
+  margin-top: 4px;
+}
+
+.primary-action:not([hidden]) ~ .link-action,
+.notice:not([hidden]) + .link-action {
+  margin-top: 8px;
 }
 
 .inline-link-action:hover,
