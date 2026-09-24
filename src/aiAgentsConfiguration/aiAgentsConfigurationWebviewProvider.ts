@@ -24,6 +24,13 @@ import {
   getCurrentIdeHost,
   getDetectedIdeAgents
 } from './aiAgentUtils';
+import {
+  canIntegrateAgent,
+  CliPrimaryAction,
+  CliSetupNotice,
+  CliSetupSession,
+  resolveCliPrimaryAction
+} from './cliSetup';
 import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
 
 const WEBVIEW_UI_DIR = 'webview-ui';
@@ -31,11 +38,27 @@ const CLI_DOCUMENTATION_URL = vscode.Uri.parse('https://cli.sonarqube.com/');
 const VORTEX_DOCUMENTATION_URL = vscode.Uri.parse('https://docs.sonarsource.com/agent-centric-development-cycle/inside-your-agent-the-agentic-loop/sonar-vortex');
 const MCP_CONFIGURATOR_URL = vscode.Uri.parse('https://mcp.sonarqube.com/');
 type CliInstallationStatus = 'INSTALLED' | 'NOT_INSTALLED' | 'UNUSABLE';
+type CliAuthenticationStatus =
+  | 'AUTHENTICATED'
+  | 'UNAUTHENTICATED'
+  | 'INVALID'
+  | 'UNVERIFIED'
+  | 'UNAVAILABLE'
+  | 'UNKNOWN';
 
-const CLI_INSTALLATION_STATUS_BY_PROTOCOL: Record<AiIntegration.CliInstallationStatus, CliInstallationStatus> = {
+const CLI_INSTALLATION_STATUS_NAMES: Record<AiIntegration.CliInstallationStatus, CliInstallationStatus> = {
   [AiIntegration.CliInstallationStatus.NOT_INSTALLED]: 'NOT_INSTALLED',
   [AiIntegration.CliInstallationStatus.INSTALLED]: 'INSTALLED',
   [AiIntegration.CliInstallationStatus.UNUSABLE]: 'UNUSABLE'
+};
+
+const CLI_AUTHENTICATION_STATUS_NAMES: Record<AiIntegration.CliAuthenticationStatus, CliAuthenticationStatus> = {
+  [AiIntegration.CliAuthenticationStatus.AUTHENTICATED]: 'AUTHENTICATED',
+  [AiIntegration.CliAuthenticationStatus.UNAUTHENTICATED]: 'UNAUTHENTICATED',
+  [AiIntegration.CliAuthenticationStatus.INVALID]: 'INVALID',
+  [AiIntegration.CliAuthenticationStatus.UNVERIFIED]: 'UNVERIFIED',
+  [AiIntegration.CliAuthenticationStatus.UNAVAILABLE]: 'UNAVAILABLE',
+  [AiIntegration.CliAuthenticationStatus.UNKNOWN]: 'UNKNOWN'
 };
 
 export interface AIAgentsConfigurationState {
@@ -44,6 +67,13 @@ export interface AIAgentsConfigurationState {
   agents: Array<DetectedIdeAgent & { supportsCliIntegration: boolean }>;
   cli: {
     installationStatus: CliInstallationStatus;
+    authenticationStatus: CliAuthenticationStatus;
+    serverUrl?: string;
+    organization?: string;
+    operationInProgress: boolean;
+    notice?: CliSetupNotice;
+    primaryAction?: CliPrimaryAction;
+    canIntegrate: boolean;
     hook: { supported: boolean; configured: boolean };
   };
   mcp: {
@@ -57,6 +87,7 @@ export interface AIAgentsConfigurationState {
 export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
   private resolver?: ResourceResolver;
+  private cliSetupSession?: CliSetupSession;
 
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
@@ -116,6 +147,13 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     }
   }
 
+  async refreshOnRequest(): Promise<void> {
+    if (this.cliSetupSession) {
+      this.cliSetupSession.notice = undefined;
+    }
+    await this.refresh();
+  }
+
   private async buildState(): Promise<AIAgentsConfigurationState> {
     const ide = getCurrentIdeHost();
     const detectedAgents = getDetectedIdeAgents();
@@ -135,13 +173,28 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
       supportsCliIntegration: cliSupportByAgent.get(agent.id) ?? false
     }));
     const mcpAgentName = agents.find(agent => agent.id === mcpAgent)?.name;
+    const isRemote = vscode.env.remoteName !== undefined;
+    const cliSetup = this.getCliSetup();
+    const { installationStatus, authenticationStatus } = integrationState.cli;
 
     return {
       ideName: ide.name,
-      isRemote: vscode.env.remoteName !== undefined,
+      isRemote,
       agents,
       cli: {
-        installationStatus: CLI_INSTALLATION_STATUS_BY_PROTOCOL[integrationState.cli.installationStatus],
+        installationStatus: CLI_INSTALLATION_STATUS_NAMES[installationStatus],
+        authenticationStatus: CLI_AUTHENTICATION_STATUS_NAMES[authenticationStatus],
+        serverUrl: integrationState.cli.serverUrl ?? undefined,
+        organization: integrationState.cli.organization ?? undefined,
+        operationInProgress: cliSetup.operationInProgress,
+        notice: cliSetup.notice,
+        primaryAction: resolveCliPrimaryAction(installationStatus, authenticationStatus, isRemote),
+        canIntegrate: canIntegrateAgent(
+          installationStatus,
+          authenticationStatus,
+          isRemote,
+          cliSetup.operationInProgress
+        ),
         hook: { supported: hookAgent !== undefined, configured: hookConfigured }
       },
       mcp: {
@@ -153,11 +206,13 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     };
   }
 
-  private async handleMessage(message: { command?: string }): Promise<void> {
+  private async handleMessage(message: { command?: string; agent?: AiIntegration.AiAgent }): Promise<void> {
     switch (message.command) {
       case 'ready':
-      case 'refresh':
         await this.refresh();
+        break;
+      case 'refresh':
+        await this.refreshOnRequest();
         break;
       case 'configureMcp':
         await vscode.commands.executeCommand(Commands.CONFIGURE_MCP_SERVER);
@@ -177,6 +232,15 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
       case 'openCliDocumentation':
         await vscode.env.openExternal(CLI_DOCUMENTATION_URL);
         break;
+      case 'installCli':
+        await this.getCliSetup().run('install');
+        break;
+      case 'authenticateCli':
+        await this.getCliSetup().run('authenticate');
+        break;
+      case 'integrateAgent':
+        await this.getCliSetup().run('integrate', message.agent);
+        break;
       case 'openVortexDocumentation':
         await vscode.env.openExternal(VORTEX_DOCUMENTATION_URL);
         break;
@@ -184,6 +248,11 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         await vscode.env.openExternal(MCP_CONFIGURATOR_URL);
         break;
     }
+  }
+
+  private getCliSetup(): CliSetupSession {
+    this.cliSetupSession ??= new CliSetupSession(this.extensionContext, this.languageClient, () => this.refresh());
+    return this.cliSetupSession;
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
