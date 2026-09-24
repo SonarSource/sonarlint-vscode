@@ -22,12 +22,13 @@ import {
 } from '../settings/connectionsettings';
 import { logToSonarLintOutput } from '../util/logging';
 import { getVSCodeSettingsBaseDir } from '../util/util';
-import { getCurrentAgentWithMCPSupport, getWindsurfDirectory, IntegrationTarget } from './aiAgentUtils';
+import { getCurrentIdeHost, getDetectedIdeAgents, getWindsurfDirectory, IdeHost } from './aiAgentUtils';
 
-const MCP_CONNECTION_KEY = 'aiAgentsConfiguration.mcpConnection';
-const UNSUPPORTED_AGENT_MESSAGE = 'Standalone MCP is not supported by the current IDE agent.';
+const LEGACY_MCP_CONNECTION_KEY = 'aiAgentsConfiguration.mcpConnection';
+const MCP_CONNECTION_KEY_PREFIX = 'aiAgentsConfiguration.mcpConnection.';
 const BLOCKED_CONFIGURATION_MESSAGE = 'The existing SonarQube MCP configuration cannot be updated safely.';
 const WRITE_FAILED_PREFIX = 'Failed to configure SonarQube MCP Server for';
+let mcpSetupInProgress = false;
 
 interface PersistedMCPConnection {
   id: string;
@@ -35,7 +36,7 @@ interface PersistedMCPConnection {
 }
 
 interface McpDocument {
-  agent: IntegrationTarget;
+  agent: AiIntegration.AiAgent;
   path: string;
   content: string | null;
 }
@@ -46,47 +47,48 @@ interface ResolvedMcpConnection {
   type: Connection['contextValue'];
 }
 
-export function getMCPConfigPath(): string {
-  const currentAgent = getCurrentAgentWithMCPSupport();
-  switch (currentAgent) {
-    case IntegrationTarget.CURSOR:
+export function supportsStandaloneMCP(agent: AiIntegration.AiAgent): boolean {
+  return [
+    AiIntegration.AiAgent.GITHUB_COPILOT,
+    AiIntegration.AiAgent.CLAUDE_CODE,
+    AiIntegration.AiAgent.CURSOR,
+    AiIntegration.AiAgent.WINDSURF,
+    AiIntegration.AiAgent.KIRO
+  ].includes(agent);
+}
+
+export function getMCPConfigPath(agent: AiIntegration.AiAgent): string {
+  switch (agent) {
+    case AiIntegration.AiAgent.CURSOR:
       return path.join(os.homedir(), '.cursor', 'mcp.json');
-    case IntegrationTarget.WINDSURF:
+    case AiIntegration.AiAgent.WINDSURF:
       return path.join(os.homedir(), '.codeium', getWindsurfDirectory(), 'mcp_config.json');
-    case IntegrationTarget.KIRO:
+    case AiIntegration.AiAgent.KIRO:
       return path.join(os.homedir(), '.kiro', 'settings', 'mcp.json');
-    case IntegrationTarget.GITHUB_COPILOT:
+    case AiIntegration.AiAgent.GITHUB_COPILOT:
       return path.join(
         getVSCodeSettingsBaseDir(),
         vscode.env.appName.toLowerCase().includes('insiders') ? 'Code - Insiders' : 'Code',
         'User',
         'mcp.json'
       );
-    case undefined:
-      throw new Error(`Unsupported agent: ${currentAgent}`);
-    default: {
-      const _exhaustive: never = currentAgent;
-      throw new Error(`Unsupported agent: ${_exhaustive}`);
-    }
+    case AiIntegration.AiAgent.CLAUDE_CODE:
+      return path.join(os.homedir(), '.claude.json');
+    default:
+      throw new Error(`Standalone MCP is not supported for ${AiIntegration.AiAgent[agent] ?? agent}.`);
   }
 }
 
-export async function inspectCurrentMCPConfiguration(
-  languageClient: SonarLintExtendedLanguageClient
-): Promise<AiIntegration.McpConfigurationInspectionResponse | undefined> {
-  const document = readMcpDocument();
-  if (!document) {
-    return undefined;
-  }
+export async function inspectMCPConfiguration(
+  languageClient: SonarLintExtendedLanguageClient,
+  agent: AiIntegration.AiAgent
+): Promise<AiIntegration.McpConfigurationInspectionResponse> {
+  const document = readMcpDocument(agent);
   return inspectMcpDocument(languageClient, document);
 }
 
-function readMcpDocument(): McpDocument | undefined {
-  const agent = getCurrentAgentWithMCPSupport();
-  if (agent === undefined) {
-    return undefined;
-  }
-  const configPath = getMCPConfigPath();
+function readMcpDocument(agent: AiIntegration.AiAgent): McpDocument {
+  const configPath = getMCPConfigPath(agent);
   return { agent, path: configPath, content: readMCPConfigContent(configPath) };
 }
 
@@ -151,18 +153,36 @@ function writeMcpDocument(configPath: string, content: string): void {
   fs.writeFileSync(configPath, content, 'utf8');
 }
 
+export function isMCPSetupInProgress(): boolean {
+  return mcpSetupInProgress;
+}
+
 export async function configureMCPServer(
   languageClient: SonarLintExtendedLanguageClient,
   allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
   extensionContext: vscode.ExtensionContext,
+  requestedAgent?: AiIntegration.AiAgent,
   connection?: Connection
 ): Promise<void> {
+  if (vscode.env.remoteName !== undefined) {
+    await vscode.window.showInformationMessage('Standalone MCP setup is not available in remote IDE windows.');
+    return;
+  }
+  if (mcpSetupInProgress) {
+    await vscode.window.showInformationMessage(
+      'A SonarQube MCP configuration operation is already running. Try again in a moment.'
+    );
+    return;
+  }
+  mcpSetupInProgress = true;
   let selectedConnection = connection;
   try {
-    const document = readMcpDocument();
-    if (!document) {
-      throw new Error(UNSUPPORTED_AGENT_MESSAGE);
+    await migrateLegacyMCPConnection(extensionContext);
+    const agent = await selectMCPAgent(requestedAgent);
+    if (agent === undefined) {
+      return;
     }
+    const document = readMcpDocument(agent);
     const inspection = await inspectMcpDocument(languageClient, document);
     if (!isUpdateAllowed(inspection.state)) {
       showBlockedConfigurationMessage(inspection);
@@ -187,7 +207,7 @@ export async function configureMCPServer(
     }
 
     const connectionId = selectedConnection.id || DEFAULT_CONNECTION_ID;
-    const currentDocument = readMcpDocument() ?? document;
+    const currentDocument = readMcpDocument(agent);
     const updatePlan = await planMcpDocument(languageClient, currentDocument, connectionId, token ?? '');
     if (!isUpdateAllowed(updatePlan.state) || updatePlan.updatedContent == null) {
       showBlockedConfigurationMessage(updatePlan);
@@ -197,30 +217,65 @@ export async function configureMCPServer(
     if (updatePlan.updatedContent !== currentDocument.content) {
       writeMcpDocument(currentDocument.path, updatePlan.updatedContent);
     }
-    await extensionContext.globalState.update(MCP_CONNECTION_KEY, {
+    await extensionContext.globalState.update(mcpConnectionKey(agent), {
       id: connectionId,
       type: selectedConnection.contextValue
     } satisfies PersistedMCPConnection);
-    openMCPServersListIfCursor();
+    openMCPServersListIfCursor(agent);
 
     void vscode.window
       .showInformationMessage(
-        `SonarQube MCP Server configured for "${selectedConnection.label}"`,
+        `SonarQube MCP Server configured for ${displayName(agent)} with "${selectedConnection.label}"`,
         'Open Configuration File'
       )
       .then(async openFile => {
         if (openFile === 'Open Configuration File') {
-          await openMCPServerConfigurationFile();
+          await openMCPServerConfigurationFile(agent);
         }
       });
-    logToSonarLintOutput(`SonarQube MCP Server configured successfully for connection: ${selectedConnection.label}`);
+    logToSonarLintOutput(
+      `SonarQube MCP Server configured successfully for ${displayName(agent)} and connection: ${selectedConnection.label}`
+    );
   } catch (error) {
     const connectionLabel = selectedConnection?.label ?? 'unknown connection';
     const errorMessage = `${WRITE_FAILED_PREFIX} "${connectionLabel}": ${error.message}`;
     vscode.window.showErrorMessage(errorMessage);
     logToSonarLintOutput(errorMessage);
     throw error;
+  } finally {
+    mcpSetupInProgress = false;
   }
+}
+
+async function selectMCPAgent(requestedAgent?: AiIntegration.AiAgent): Promise<AiIntegration.AiAgent | undefined> {
+  const detectedAgents = getDetectedIdeAgents();
+  if (requestedAgent !== undefined) {
+    if (!detectedAgents.some(agent => agent.id === requestedAgent)) {
+      await vscode.window.showInformationMessage(`${displayName(requestedAgent)} was not detected in this IDE.`);
+      return undefined;
+    }
+    if (!supportsStandaloneMCP(requestedAgent)) {
+      await vscode.window.showInformationMessage(
+        `${displayName(requestedAgent)} MCP integration is available through CLI.`
+      );
+      return undefined;
+    }
+    return requestedAgent;
+  }
+
+  const agents = detectedAgents.filter(agent => supportsStandaloneMCP(agent.id));
+  if (agents.length === 0) {
+    await vscode.window.showInformationMessage('No agent with standalone MCP support was detected in this IDE.');
+    return undefined;
+  }
+  if (agents.length === 1) {
+    return agents[0].id;
+  }
+  const selected = await vscode.window.showQuickPick(
+    agents.map(agent => ({ label: agent.name, description: getMCPConfigPath(agent.id), agent: agent.id })),
+    { placeHolder: 'Choose an agent to configure with SonarQube MCP' }
+  );
+  return selected?.agent;
 }
 
 async function getSelectedConnection(
@@ -270,9 +325,9 @@ function warnNoConnectionConfigured(): void {
     });
 }
 
-function openMCPServersListIfCursor(): void {
-  if (getCurrentAgentWithMCPSupport() === IntegrationTarget.CURSOR) {
-    vscode.commands.executeCommand('workbench.action.openMCPSettings');
+function openMCPServersListIfCursor(agent: AiIntegration.AiAgent): void {
+  if (agent === AiIntegration.AiAgent.CURSOR) {
+    void vscode.commands.executeCommand('workbench.action.openMCPSettings');
   }
 }
 
@@ -280,9 +335,31 @@ export async function onEmbeddedServerStarted(
   languageClient: SonarLintExtendedLanguageClient,
   extensionContext: vscode.ExtensionContext
 ): Promise<void> {
+  if (mcpSetupInProgress) {
+    return;
+  }
+  mcpSetupInProgress = true;
   try {
-    const document = readMcpDocument();
-    if (document?.content == null) {
+    await migrateLegacyMCPConnection(extensionContext);
+    const agents = getDetectedIdeAgents().filter(agent => supportsStandaloneMCP(agent.id));
+    await Promise.all(
+      agents.map(agent => refreshStandaloneMCPConfiguration(agent.id, languageClient, extensionContext))
+    );
+  } catch (error) {
+    logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configurations: ${error.message}`);
+  } finally {
+    mcpSetupInProgress = false;
+  }
+}
+
+async function refreshStandaloneMCPConfiguration(
+  agent: AiIntegration.AiAgent,
+  languageClient: SonarLintExtendedLanguageClient,
+  extensionContext: vscode.ExtensionContext
+): Promise<void> {
+  try {
+    const document = readMcpDocument(agent);
+    if (document.content == null) {
       return;
     }
     const inspection = await inspectMcpDocument(languageClient, document);
@@ -290,7 +367,7 @@ export async function onEmbeddedServerStarted(
       return;
     }
 
-    const connection = resolvePersistedConnection(extensionContext);
+    const connection = resolvePersistedConnection(extensionContext, agent);
     if (!connection) {
       return;
     }
@@ -307,16 +384,51 @@ export async function onEmbeddedServerStarted(
       writeMcpDocument(document.path, updatePlan.updatedContent);
     }
   } catch (error) {
-    logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configuration: ${error.message}`);
+    logToSonarLintOutput(
+      `Could not refresh the standalone SonarQube MCP configuration for ${displayName(agent)}: ${error.message}`
+    );
   }
 }
 
-export function hasPersistedMCPConnection(extensionContext: vscode.ExtensionContext): boolean {
-  return resolvePersistedConnection(extensionContext) !== undefined;
+export async function migrateLegacyMCPConnection(extensionContext: vscode.ExtensionContext): Promise<void> {
+  const legacyConnection = extensionContext.globalState.get<PersistedMCPConnection>(LEGACY_MCP_CONNECTION_KEY);
+  const legacyTarget = getLegacyMCPAgent();
+  if (!legacyConnection || legacyTarget === undefined || !supportsStandaloneMCP(legacyTarget)) {
+    return;
+  }
+  if (!extensionContext.globalState.get<PersistedMCPConnection>(mcpConnectionKey(legacyTarget))) {
+    await extensionContext.globalState.update(mcpConnectionKey(legacyTarget), legacyConnection);
+  }
+  await extensionContext.globalState.update(LEGACY_MCP_CONNECTION_KEY, undefined);
 }
 
-function resolvePersistedConnection(extensionContext: vscode.ExtensionContext): ResolvedMcpConnection | undefined {
-  const persistedConnection = extensionContext.globalState.get<PersistedMCPConnection>(MCP_CONNECTION_KEY);
+function getLegacyMCPAgent(): AiIntegration.AiAgent | undefined {
+  switch (getCurrentIdeHost().id) {
+    case IdeHost.VSCODE:
+      return AiIntegration.AiAgent.GITHUB_COPILOT;
+    case IdeHost.CURSOR:
+      return AiIntegration.AiAgent.CURSOR;
+    case IdeHost.WINDSURF:
+      return AiIntegration.AiAgent.WINDSURF;
+    case IdeHost.KIRO:
+      return AiIntegration.AiAgent.KIRO;
+    default:
+      return undefined;
+  }
+}
+
+export function hasPersistedMCPConnection(
+  extensionContext: vscode.ExtensionContext,
+  agent: AiIntegration.AiAgent
+): boolean {
+  return resolvePersistedConnection(extensionContext, agent) !== undefined;
+}
+
+function resolvePersistedConnection(
+  extensionContext: vscode.ExtensionContext,
+  agent: AiIntegration.AiAgent
+): ResolvedMcpConnection | undefined {
+  const persistedConnection = extensionContext.globalState.get<PersistedMCPConnection>(mcpConnectionKey(agent));
   if (!persistedConnection) {
     return undefined;
   }
@@ -352,11 +464,37 @@ async function getTokenForResolvedConnection(connection: ResolvedMcpConnection):
   return settings.getServerToken(getTokenStorageKey(match));
 }
 
-export async function openMCPServerConfigurationFile(): Promise<void> {
-  const configPath = getMCPConfigPath();
+function mcpConnectionKey(agent: AiIntegration.AiAgent): string {
+  return `${MCP_CONNECTION_KEY_PREFIX}${agent}`;
+}
+
+export async function openMCPServerConfigurationFile(requestedAgent?: AiIntegration.AiAgent): Promise<void> {
+  const agent = await selectMCPAgent(requestedAgent);
+  if (agent === undefined) {
+    return;
+  }
+  const configPath = getMCPConfigPath(agent);
   if (!fs.existsSync(configPath)) {
-    await vscode.window.showInformationMessage('The MCP configuration file has not been created yet.');
+    await vscode.window.showInformationMessage(
+      `The ${displayName(agent)} MCP configuration file has not been created yet.`
+    );
     return;
   }
   await vscode.window.showTextDocument(vscode.Uri.file(configPath));
+}
+
+function displayName(agent: AiIntegration.AiAgent): string {
+  return (
+    getDetectedIdeAgents().find(detectedAgent => detectedAgent.id === agent)?.name ??
+    {
+      [AiIntegration.AiAgent.GITHUB_COPILOT]: 'Copilot in VS Code',
+      [AiIntegration.AiAgent.CURSOR]: 'Cursor',
+      [AiIntegration.AiAgent.WINDSURF]: 'Windsurf',
+      [AiIntegration.AiAgent.KIRO]: 'Kiro',
+      [AiIntegration.AiAgent.CLAUDE_CODE]: 'Claude Code',
+      [AiIntegration.AiAgent.CODEX]: 'Codex',
+      [AiIntegration.AiAgent.GITHUB_COPILOT_CLI]: 'GitHub Copilot CLI',
+      [AiIntegration.AiAgent.ANTIGRAVITY]: 'Antigravity'
+    }[agent]
+  );
 }
