@@ -162,9 +162,7 @@ export class CommandsManager {
         (workspaceUri: string, issueKey: string, fileUri: string, isTaintIssue: boolean, isDependencyRisk = false) =>
           resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue, isDependencyRisk)
       ),
-      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () =>
-        IssueService.instance.reopenLocalIssues()
-      ),
+      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () => IssueService.instance.reopenLocalIssues()),
       vscode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
         const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
         if (connectionDeleted) {
@@ -242,9 +240,25 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.CAPTURE_HEAP_DUMP, () =>
         FlightRecorderService.instance.captureHeapDump()
       ),
-      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async connection => {
-        await configureMCPServer(this.languageClient, this.allConnectionsTreeDataProvider, connection);
-      }),
+      vscode.commands.registerCommand(
+        Commands.CONFIGURE_MCP_SERVER,
+        async (connection, options?: { skipViewRefresh?: boolean }) => {
+          try {
+            await configureMCPServer(
+              this.languageClient,
+              this.allConnectionsTreeDataProvider,
+              this.context,
+              connection
+            );
+          } catch {
+            // configureMCPServer already reported the error to the user.
+          } finally {
+            if (!options?.skipViewRefresh) {
+              await this.aiAgentsConfigurationWebviewProvider.refresh();
+            }
+          }
+        }
+      ),
       vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, () => openMCPServerConfigurationFile()),
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
         this.aiAgentsConfigurationWebviewProvider.refresh()
