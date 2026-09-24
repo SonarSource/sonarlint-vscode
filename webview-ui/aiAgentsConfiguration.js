@@ -27,7 +27,6 @@ const mcpDetectedLabel = document.getElementById('mcp-detected-label');
 const mcpList = document.getElementById('mcp-list');
 const noMcpAgents = document.getElementById('no-mcp-agents');
 const legacyInstructionsRow = document.getElementById('legacy-instructions-row');
-let setupPending = false;
 
 document.addEventListener('DOMContentLoaded', () => vscode.postMessage({ command: 'ready' }));
 window.addEventListener('message', event => {
@@ -64,7 +63,6 @@ document
   .addEventListener('click', () => vscode.postMessage({ command: 'openLegacyInstructions' }));
 
 function render(state) {
-  setupPending = false;
   loading.hidden = true;
   loadError.hidden = true;
   content.hidden = false;
@@ -92,11 +90,9 @@ function renderCli(state) {
       ? 'Enabled'
       : 'Runs SonarQube analysis automatically when enabled';
     hookAction.textContent = state.cli.hook.configured ? 'Open configuration' : 'Enable';
-    hookAction.dataset.setupAction = state.cli.hook.configured ? '' : 'true';
-    hookAction.disabled = !state.cli.hook.configured && (state.isRemote || state.setupInProgress);
+    hookAction.disabled = !state.cli.hook.configured && state.isRemote;
     const command = state.cli.hook.configured ? 'openHook' : 'installHook';
-    hookAction.onclick = () =>
-      state.cli.hook.configured ? vscode.postMessage({ command }) : postSetupAction(command);
+    hookAction.onclick = () => vscode.postMessage({ command });
   }
 }
 
@@ -114,9 +110,8 @@ function createCliAgentRow(agent, state) {
     action.className = 'secondary-action agent-action';
     action.type = 'button';
     action.textContent = 'Integrate for all projects';
-    action.dataset.setupAction = 'true';
-    action.disabled = !state.cli.canIntegrate || state.setupInProgress;
-    action.addEventListener('click', () => postSetupAction('integrateAgent', agent.id));
+    action.disabled = !state.cli.canIntegrate;
+    action.addEventListener('click', () => vscode.postMessage({ command: 'integrateAgent', agent: agent.id }));
     item.append(action);
   } else {
     const guidance = document.createElement('span');
@@ -190,11 +185,8 @@ function renderCliAction(state) {
     return;
   }
   cliAction.textContent = action.label;
-  const isSetupAction = ['installCli', 'authenticateCli'].includes(action.command);
-  cliAction.dataset.setupAction = isSetupAction ? 'true' : '';
-  cliAction.disabled = isSetupAction && state.setupInProgress;
-  cliAction.onclick = () =>
-    isSetupAction ? postSetupAction(action.command) : vscode.postMessage({ command: action.command });
+  cliAction.disabled = false;
+  cliAction.onclick = () => vscode.postMessage({ command: action.command });
 }
 
 function renderCliFeedback(cli) {
@@ -281,8 +273,7 @@ function createMcpIntegrationRow(integration, state) {
 
   const hasAction = action.textContent.length > 0;
   action.hidden = !hasAction;
-  action.dataset.setupAction = setupAction ? 'true' : '';
-  action.disabled = hasAction && setupAction && (state.setupInProgress || state.isRemote);
+  action.disabled = hasAction && setupAction && (state.mcp.operationInProgress || state.isRemote);
   if (integration.operationInProgress) {
     action.textContent = 'Setting up…';
   }
@@ -317,16 +308,11 @@ function configureOpenAction(action, agent) {
 }
 
 function configureSetupAction(action, agent) {
-  action.addEventListener('click', () => postSetupAction('configureMcp', agent));
-}
-
-function postSetupAction(command, agent) {
-  if (setupPending) {
-    return;
-  }
-  setupPending = true;
-  document.querySelectorAll('[data-setup-action="true"]').forEach(button => (button.disabled = true));
-  vscode.postMessage({ command, agent });
+  action.addEventListener('click', () => {
+    mcpList.querySelectorAll('button').forEach(button => (button.disabled = true));
+    action.textContent = 'Setting up…';
+    vscode.postMessage({ command: 'configureMcp', agent });
+  });
 }
 
 function setVisible(element, visible) {

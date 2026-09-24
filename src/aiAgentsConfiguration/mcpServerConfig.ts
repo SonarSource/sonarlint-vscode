@@ -197,9 +197,7 @@ export async function configureMCPServer(
   connection?: Connection
 ): Promise<void> {
   if (vscode.env.remoteName !== undefined) {
-    await vscode.window.showInformationMessage(
-      'MCP setup through agent configuration files is not available in remote IDE windows.'
-    );
+    await vscode.window.showInformationMessage('MCP setup via configuration files is unavailable in remote windows.');
     return;
   }
   if (mcpSetupInProgress) {
@@ -259,7 +257,7 @@ export async function configureMCPServer(
 
     void vscode.window
       .showInformationMessage(
-        `SonarQube MCP Server configured for ${displayName(agent)} with "${selectedConnection.label}"`,
+        `SonarQube MCP Server configured for ${toAgentDisplayName(agent)} with "${selectedConnection.label}"`,
         'Open Configuration File'
       )
       .then(async openFile => {
@@ -268,7 +266,7 @@ export async function configureMCPServer(
         }
       });
     logToSonarLintOutput(
-      `SonarQube MCP Server configured successfully for ${displayName(agent)} and connection: ${selectedConnection.label}`
+      `SonarQube MCP Server configured successfully for ${toAgentDisplayName(agent)} and connection: ${selectedConnection.label}`
     );
   } catch (error) {
     const connectionLabel = selectedConnection?.label ?? 'unknown connection';
@@ -302,13 +300,13 @@ async function selectMCPAgent(
   if (requestedAgent !== undefined) {
     if (!isAgentActiveForMcp(requestedAgent)) {
       await vscode.window.showInformationMessage(
-        `${displayName(requestedAgent)} must be active before MCP can be configured.`
+        `${toAgentDisplayName(requestedAgent)} must be active before MCP can be configured.`
       );
       return undefined;
     }
     if (!agents.some(agent => agent.agent === requestedAgent)) {
       await vscode.window.showInformationMessage(
-        `MCP setup through a configuration file is no longer available for ${displayName(requestedAgent)}.`
+        `MCP setup through a configuration file is no longer available for ${toAgentDisplayName(requestedAgent)}.`
       );
       return undefined;
     }
@@ -316,9 +314,7 @@ async function selectMCPAgent(
   }
 
   if (agents.length === 0) {
-    await vscode.window.showInformationMessage(
-      'No detected agent supports MCP setup through a configuration file.'
-    );
+    await vscode.window.showInformationMessage('No detected agent supports MCP setup via a configuration file.');
     return undefined;
   }
   if (agents.length === 1) {
@@ -465,7 +461,7 @@ async function refreshStandaloneMCPConfiguration(
     }
   } catch (error) {
     logToSonarLintOutput(
-      `Could not refresh the standalone SonarQube MCP configuration for ${displayName(agent)}: ${error.message}`
+      `Could not refresh the standalone SonarQube MCP configuration for ${toAgentDisplayName(agent)}: ${error.message}`
     );
   }
 }
@@ -545,13 +541,9 @@ export async function openMCPServerConfigurationFile(
   const configPath = getMCPConfigPath(agent);
   if (!fs.existsSync(configPath)) {
     await vscode.window.showInformationMessage(
-      `The ${displayName(agent)} MCP configuration file has not been created yet.`
+      `The ${toAgentDisplayName(agent)} MCP configuration file has not been created yet.`
     );
     return;
   }
   await vscode.window.showTextDocument(vscode.Uri.file(configPath));
-}
-
-function displayName(agent: AiIntegration.AiAgent): string {
-  return toAgentDisplayName(agent);
 }
