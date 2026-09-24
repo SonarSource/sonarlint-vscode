@@ -49,7 +49,6 @@ type CliAuthenticationStatus =
   | 'UNVERIFIED'
   | 'UNAVAILABLE'
   | 'UNKNOWN';
-type McpConfigurationStatus = 'NOT_CONFIGURED' | 'STANDALONE' | 'CLI_MANAGED' | 'UNKNOWN' | 'MALFORMED';
 
 const CLI_INSTALLATION_STATUS_NAMES: Record<AiIntegration.CliInstallationStatus, CliInstallationStatus> = {
   [AiIntegration.CliInstallationStatus.NOT_INSTALLED]: 'NOT_INSTALLED',
@@ -65,26 +64,6 @@ const CLI_AUTHENTICATION_STATUS_NAMES: Record<AiIntegration.CliAuthenticationSta
   [AiIntegration.CliAuthenticationStatus.UNAVAILABLE]: 'UNAVAILABLE',
   [AiIntegration.CliAuthenticationStatus.UNKNOWN]: 'UNKNOWN'
 };
-
-const MCP_CONFIGURATION_STATUS_BY_PROTOCOL: Record<AiIntegration.McpConfigurationState, McpConfigurationStatus> = {
-  [AiIntegration.McpConfigurationState.NOT_CONFIGURED]: 'NOT_CONFIGURED',
-  [AiIntegration.McpConfigurationState.STANDALONE]: 'STANDALONE',
-  [AiIntegration.McpConfigurationState.CLI_MANAGED]: 'CLI_MANAGED',
-  [AiIntegration.McpConfigurationState.UNKNOWN]: 'UNKNOWN',
-  [AiIntegration.McpConfigurationState.MALFORMED]: 'MALFORMED'
-};
-
-const MCP_STATUS_UNAVAILABLE = 'Unavailable';
-const MCP_STATUS_CONFIGURED = 'Configured';
-const MCP_STATUS_CLI_MANAGED = 'Managed by CLI';
-const MCP_STATUS_NEEDS_ATTENTION = 'Needs attention';
-const MCP_STATUS_NOT_CONFIGURED = 'Not configured';
-const MCP_LABEL_SETUP = 'Set up MCP';
-const MCP_LABEL_SETUP_AGAIN = 'Set up MCP again';
-const MCP_LABEL_OPEN = 'Open configuration';
-const MCP_LABEL_IN_PROGRESS = 'Setting up MCP…';
-const MCP_READINESS_REQUIRES_SETUP = 'Set up MCP again to update the IDE connection.';
-const MCP_READINESS_UNVERIFIED = 'Connection not verified';
 
 export type McpPrimaryCommand = 'configureMcp' | 'openMcpConfiguration';
 export type McpStatusKind = 'configured' | 'notConfigured' | 'unavailable';
@@ -102,105 +81,61 @@ export interface McpCardViewModel {
   primaryAction: McpPrimaryAction;
 }
 
+const MCP_STATUS: Record<
+  AiIntegration.McpConfigurationState,
+  Pick<McpCardViewModel, 'statusLabel' | 'statusKind'>
+> = {
+  [AiIntegration.McpConfigurationState.NOT_CONFIGURED]: {
+    statusLabel: 'Not configured',
+    statusKind: 'notConfigured'
+  },
+  [AiIntegration.McpConfigurationState.STANDALONE]: { statusLabel: 'Configured', statusKind: 'configured' },
+  [AiIntegration.McpConfigurationState.CLI_MANAGED]: { statusLabel: 'Managed by CLI', statusKind: 'configured' },
+  [AiIntegration.McpConfigurationState.UNKNOWN]: { statusLabel: 'Needs attention', statusKind: 'unavailable' },
+  [AiIntegration.McpConfigurationState.MALFORMED]: { statusLabel: 'Needs attention', statusKind: 'unavailable' }
+};
+
 export function resolveMcpCard(params: {
   supported: boolean;
-  configurationStatus?: McpConfigurationStatus;
-  diagnostic?: string;
-  requiresSetup: boolean;
+  inspection?: AiIntegration.McpConfigurationInspectionResponse;
+  hasPersistedConnection: boolean;
   isRemote: boolean;
   operationInProgress: boolean;
 }): McpCardViewModel {
-  const { statusLabel, statusKind } = resolveMcpStatus(params.supported, params.configurationStatus);
-  return {
-    statusLabel,
-    statusKind,
-    readiness: resolveMcpReadiness(params.configurationStatus, params.diagnostic, params.requiresSetup),
-    primaryAction: resolveMcpPrimaryAction(params)
-  };
-}
-
-function resolveMcpStatus(
-  supported: boolean,
-  configurationStatus?: McpConfigurationStatus
-): { statusLabel: string; statusKind: McpStatusKind } {
-  if (!supported || configurationStatus === undefined) {
-    return { statusLabel: MCP_STATUS_UNAVAILABLE, statusKind: 'unavailable' };
-  }
-  switch (configurationStatus) {
-    case 'STANDALONE':
-      return { statusLabel: MCP_STATUS_CONFIGURED, statusKind: 'configured' };
-    case 'CLI_MANAGED':
-      return { statusLabel: MCP_STATUS_CLI_MANAGED, statusKind: 'configured' };
-    case 'MALFORMED':
-    case 'UNKNOWN':
-      return { statusLabel: MCP_STATUS_NEEDS_ATTENTION, statusKind: 'unavailable' };
-    case 'NOT_CONFIGURED':
-      return { statusLabel: MCP_STATUS_NOT_CONFIGURED, statusKind: 'notConfigured' };
-    default: {
-      const _exhaustive: never = configurationStatus;
-      return _exhaustive;
-    }
-  }
-}
-
-function resolveMcpReadiness(
-  configurationStatus: McpConfigurationStatus | undefined,
-  diagnostic: string | undefined,
-  requiresSetup: boolean
-): string {
+  const configurationStatus = params.inspection?.state;
+  const status: Pick<McpCardViewModel, 'statusLabel' | 'statusKind'> =
+    params.supported && configurationStatus !== undefined
+      ? MCP_STATUS[configurationStatus]
+      : { statusLabel: 'Unavailable', statusKind: 'unavailable' };
+  const requiresSetup =
+    configurationStatus === AiIntegration.McpConfigurationState.STANDALONE && !params.hasPersistedConnection;
+  const diagnostic = params.inspection?.diagnostics[0];
+  let readiness = diagnostic ?? '';
   if (requiresSetup) {
-    return MCP_READINESS_REQUIRES_SETUP;
+    readiness = 'Set up MCP again to update the IDE connection.';
+  } else if (configurationStatus === AiIntegration.McpConfigurationState.STANDALONE && !diagnostic) {
+    readiness = 'Connection not verified';
   }
-  if (configurationStatus === 'STANDALONE' && !diagnostic) {
-    return MCP_READINESS_UNVERIFIED;
-  }
-  return diagnostic ?? '';
-}
 
-function resolveMcpPrimaryAction(params: {
-  supported: boolean;
-  configurationStatus?: McpConfigurationStatus;
-  requiresSetup: boolean;
-  isRemote: boolean;
-  operationInProgress: boolean;
-}): McpPrimaryAction {
+  let primaryAction: McpPrimaryAction;
   if (params.operationInProgress) {
-    return { command: 'configureMcp', label: MCP_LABEL_IN_PROGRESS, disabled: true };
+    primaryAction = { command: 'configureMcp', label: 'Setting up MCP…', disabled: true };
+  } else if (requiresSetup) {
+    primaryAction = { command: 'configureMcp', label: 'Set up MCP again', disabled: !params.supported };
+  } else if (
+    configurationStatus !== undefined &&
+    configurationStatus !== AiIntegration.McpConfigurationState.NOT_CONFIGURED
+  ) {
+    primaryAction = { command: 'openMcpConfiguration', label: 'Open configuration', disabled: !params.supported };
+  } else {
+    primaryAction = {
+      command: 'configureMcp',
+      label: 'Set up MCP',
+      disabled: !params.supported || params.isRemote
+    };
   }
-  const shouldOpenConfiguration = canOpenMcpConfiguration(params.configurationStatus, params.requiresSetup);
-  if (shouldOpenConfiguration) {
-    return { command: 'openMcpConfiguration', label: MCP_LABEL_OPEN, disabled: !params.supported };
-  }
-  if (params.requiresSetup) {
-    return { command: 'configureMcp', label: MCP_LABEL_SETUP_AGAIN, disabled: !params.supported };
-  }
-  return {
-    command: 'configureMcp',
-    label: MCP_LABEL_SETUP,
-    disabled: !params.supported || params.isRemote
-  };
-}
 
-function canOpenMcpConfiguration(
-  configurationStatus: McpConfigurationStatus | undefined,
-  requiresSetup: boolean
-): boolean {
-  if (requiresSetup || configurationStatus === undefined) {
-    return false;
-  }
-  switch (configurationStatus) {
-    case 'STANDALONE':
-    case 'CLI_MANAGED':
-    case 'MALFORMED':
-    case 'UNKNOWN':
-      return true;
-    case 'NOT_CONFIGURED':
-      return false;
-    default: {
-      const _exhaustive: never = configurationStatus;
-      return _exhaustive;
-    }
-  }
+  return { ...status, readiness, primaryAction };
 }
 
 export interface AIAgentsConfigurationState {
@@ -218,18 +153,9 @@ export interface AIAgentsConfigurationState {
     canIntegrate: boolean;
     hook: { supported: boolean; configured: boolean };
   };
-  mcp: {
-    supported: boolean;
-    configurationStatus?: McpConfigurationStatus;
-    diagnostic?: string;
-    operationInProgress: boolean;
-    requiresSetup: boolean;
+  mcp: McpCardViewModel & {
     agentName?: string;
     legacyInstructionsConfigured: boolean;
-    statusLabel: string;
-    statusKind: McpStatusKind;
-    readiness: string;
-    primaryAction: McpPrimaryAction;
   };
 }
 
@@ -333,17 +259,12 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     const isRemote = vscode.env.remoteName !== undefined;
     const cliSetup = this.getCliSetup();
     const { installationStatus, authenticationStatus } = integrationState.cli;
-    const mcpRequiresSetup =
-      mcpInspection?.state === AiIntegration.McpConfigurationState.STANDALONE &&
-      !hasPersistedMCPConnection(this.extensionContext);
-    const configurationStatus =
-      mcpInspection === undefined ? undefined : MCP_CONFIGURATION_STATUS_BY_PROTOCOL[mcpInspection.state];
-    const diagnostic = mcpInspection?.diagnostics[0];
     const mcpCard = resolveMcpCard({
       supported: mcpAgent !== undefined,
-      configurationStatus,
-      diagnostic,
-      requiresSetup: mcpRequiresSetup,
+      inspection: mcpInspection,
+      hasPersistedConnection:
+        mcpInspection?.state === AiIntegration.McpConfigurationState.STANDALONE &&
+        hasPersistedMCPConnection(this.extensionContext),
       isRemote,
       operationInProgress: isMCPSetupInProgress()
     });
@@ -369,11 +290,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         hook: { supported: hookAgent !== undefined, configured: hookConfigured }
       },
       mcp: {
-        supported: mcpAgent !== undefined,
-        configurationStatus,
-        diagnostic,
-        operationInProgress: isMCPSetupInProgress(),
-        requiresSetup: mcpRequiresSetup,
         agentName: mcpAgentName,
         legacyInstructionsConfigured,
         ...mcpCard

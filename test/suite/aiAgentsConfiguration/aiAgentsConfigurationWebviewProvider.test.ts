@@ -116,11 +116,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       hook: { supported: false, configured: false }
     });
     expect(state.mcp).to.deep.equal({
-      supported: true,
-      configurationStatus: 'STANDALONE',
-      diagnostic: undefined,
-      operationInProgress: false,
-      requiresSetup: false,
       agentName: undefined,
       legacyInstructionsConfigured: true,
       statusLabel: 'Configured',
@@ -144,8 +139,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     const state = await provider.buildState();
 
-    expect(state.mcp.configurationStatus).to.equal('STANDALONE');
-    expect(state.mcp.requiresSetup).to.be.true;
     expect(state.mcp.readiness).to.equal('Set up MCP again to update the IDE connection.');
     expect(state.mcp.primaryAction).to.deep.equal({
       command: 'configureMcp',
@@ -166,8 +159,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     });
 
     const malformedState = await provider.buildState();
-    expect(malformedState.mcp.configurationStatus).to.equal('MALFORMED');
-    expect(malformedState.mcp.diagnostic).to.equal('Fix the malformed MCP configuration.');
+    expect(malformedState.mcp.statusLabel).to.equal('Needs attention');
     expect(malformedState.mcp.readiness).to.equal('Fix the malformed MCP configuration.');
     expect(malformedState.mcp.primaryAction).to.deep.equal({
       command: 'openMcpConfiguration',
@@ -180,8 +172,8 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       diagnostics: ['Managed by the CLI.']
     });
     const cliManagedState = await provider.buildState();
-    expect(cliManagedState.mcp.configurationStatus).to.equal('CLI_MANAGED');
-    expect(cliManagedState.mcp.diagnostic).to.equal('Managed by the CLI.');
+    expect(cliManagedState.mcp.statusLabel).to.equal('Managed by CLI');
+    expect(cliManagedState.mcp.readiness).to.equal('Managed by the CLI.');
   });
 
   test('keeps the other integration state available when MCP inspection fails', async () => {
@@ -196,8 +188,8 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     const state = await provider.buildState();
 
     expect(state.cli.installationStatus).to.equal('NOT_INSTALLED');
-    expect(state.mcp.configurationStatus).to.equal('UNKNOWN');
-    expect(state.mcp.diagnostic).to.equal('Could not inspect the MCP configuration.');
+    expect(state.mcp.statusLabel).to.equal('Needs attention');
+    expect(state.mcp.readiness).to.equal('Could not inspect the MCP configuration.');
     expect(log.calledOnceWith('Could not inspect MCP configuration: Error: read failed')).to.be.true;
   });
 
@@ -267,7 +259,8 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       hook: { supported: false, configured: false }
     });
     expect(state.agents[0].supportsCliIntegration).to.be.true;
-    expect(state.mcp.supported).to.be.false;
+    expect(state.mcp.statusLabel).to.equal('Unavailable');
+    expect(state.mcp.primaryAction.disabled).to.be.true;
   });
 
   test('keeps CLI setup feedback on webview load and clears it on explicit refresh', async () => {
@@ -543,162 +536,41 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(provider.refresh.called).to.be.false;
   });
 
-  test('resolves MCP card actions for local and remote states', () => {
-    const cases: Array<{
-      name: string;
-      params: Parameters<typeof resolveMcpCard>[0];
-      expected: ReturnType<typeof resolveMcpCard>;
-    }> = [
-      {
-        name: 'remote + requiresSetup enables re-setup',
-        params: {
-          supported: true,
-          configurationStatus: 'STANDALONE',
-          requiresSetup: true,
-          isRemote: true,
-          operationInProgress: false
+  test('resolves MCP actions for setup, existing files, and progress', () => {
+    const inspection = (state: AiIntegration.McpConfigurationState) => ({ state, diagnostics: [] });
+    const base: Parameters<typeof resolveMcpCard>[0] = {
+      supported: true,
+      inspection: inspection(AiIntegration.McpConfigurationState.NOT_CONFIGURED),
+      hasPersistedConnection: true,
+      isRemote: false,
+      operationInProgress: false
+    };
+    const cases: Array<[Partial<typeof base>, ReturnType<typeof resolveMcpCard>['primaryAction']]> = [
+      [{}, { command: 'configureMcp', label: 'Set up MCP', disabled: false }],
+      [{ isRemote: true }, { command: 'configureMcp', label: 'Set up MCP', disabled: true }],
+      [
+        {
+          inspection: inspection(AiIntegration.McpConfigurationState.STANDALONE),
+          hasPersistedConnection: false,
+          isRemote: true
         },
-        expected: {
-          statusLabel: 'Configured',
-          statusKind: 'configured',
-          readiness: 'Set up MCP again to update the IDE connection.',
-          primaryAction: { command: 'configureMcp', label: 'Set up MCP again', disabled: false }
-        }
-      },
-      {
-        name: 'remote + NOT_CONFIGURED stays disabled',
-        params: {
-          supported: true,
-          configurationStatus: 'NOT_CONFIGURED',
-          requiresSetup: false,
-          isRemote: true,
-          operationInProgress: false
-        },
-        expected: {
-          statusLabel: 'Not configured',
-          statusKind: 'notConfigured',
-          readiness: '',
-          primaryAction: { command: 'configureMcp', label: 'Set up MCP', disabled: true }
-        }
-      },
-      {
-        name: 'local + NOT_CONFIGURED enables setup',
-        params: {
-          supported: true,
-          configurationStatus: 'NOT_CONFIGURED',
-          requiresSetup: false,
-          isRemote: false,
-          operationInProgress: false
-        },
-        expected: {
-          statusLabel: 'Not configured',
-          statusKind: 'notConfigured',
-          readiness: '',
-          primaryAction: { command: 'configureMcp', label: 'Set up MCP', disabled: false }
-        }
-      },
-      {
-        name: 'STANDALONE persisted opens configuration',
-        params: {
-          supported: true,
-          configurationStatus: 'STANDALONE',
-          requiresSetup: false,
-          isRemote: true,
-          operationInProgress: false
-        },
-        expected: {
-          statusLabel: 'Configured',
-          statusKind: 'configured',
-          readiness: 'Connection not verified',
-          primaryAction: { command: 'openMcpConfiguration', label: 'Open configuration', disabled: false }
-        }
-      },
-      {
-        name: 'CLI_MANAGED opens configuration',
-        params: {
-          supported: true,
-          configurationStatus: 'CLI_MANAGED',
-          diagnostic: 'Managed by the CLI.',
-          requiresSetup: false,
-          isRemote: false,
-          operationInProgress: false
-        },
-        expected: {
-          statusLabel: 'Managed by CLI',
-          statusKind: 'configured',
-          readiness: 'Managed by the CLI.',
-          primaryAction: { command: 'openMcpConfiguration', label: 'Open configuration', disabled: false }
-        }
-      },
-      {
-        name: 'MALFORMED opens configuration',
-        params: {
-          supported: true,
-          configurationStatus: 'MALFORMED',
-          diagnostic: 'Fix the malformed MCP configuration.',
-          requiresSetup: false,
-          isRemote: false,
-          operationInProgress: false
-        },
-        expected: {
-          statusLabel: 'Needs attention',
-          statusKind: 'unavailable',
-          readiness: 'Fix the malformed MCP configuration.',
-          primaryAction: { command: 'openMcpConfiguration', label: 'Open configuration', disabled: false }
-        }
-      },
-      {
-        name: 'UNKNOWN opens configuration',
-        params: {
-          supported: true,
-          configurationStatus: 'UNKNOWN',
-          diagnostic: 'Could not inspect.',
-          requiresSetup: false,
-          isRemote: false,
-          operationInProgress: false
-        },
-        expected: {
-          statusLabel: 'Needs attention',
-          statusKind: 'unavailable',
-          readiness: 'Could not inspect.',
-          primaryAction: { command: 'openMcpConfiguration', label: 'Open configuration', disabled: false }
-        }
-      },
-      {
-        name: 'unsupported is unavailable and disabled',
-        params: {
-          supported: false,
-          requiresSetup: false,
-          isRemote: false,
-          operationInProgress: false
-        },
-        expected: {
-          statusLabel: 'Unavailable',
-          statusKind: 'unavailable',
-          readiness: '',
-          primaryAction: { command: 'configureMcp', label: 'Set up MCP', disabled: true }
-        }
-      },
-      {
-        name: 'operation in progress disables the action',
-        params: {
-          supported: true,
-          configurationStatus: 'NOT_CONFIGURED',
-          requiresSetup: false,
-          isRemote: false,
-          operationInProgress: true
-        },
-        expected: {
-          statusLabel: 'Not configured',
-          statusKind: 'notConfigured',
-          readiness: '',
-          primaryAction: { command: 'configureMcp', label: 'Setting up MCP…', disabled: true }
-        }
-      }
+        { command: 'configureMcp', label: 'Set up MCP again', disabled: false }
+      ],
+      [
+        { inspection: inspection(AiIntegration.McpConfigurationState.STANDALONE) },
+        { command: 'openMcpConfiguration', label: 'Open configuration', disabled: false }
+      ],
+      [
+        { inspection: inspection(AiIntegration.McpConfigurationState.CLI_MANAGED) },
+        { command: 'openMcpConfiguration', label: 'Open configuration', disabled: false }
+      ],
+      [{ supported: false, inspection: undefined }, { command: 'configureMcp', label: 'Set up MCP', disabled: true }],
+      [{ operationInProgress: true }, { command: 'configureMcp', label: 'Setting up MCP…', disabled: true }]
     ];
 
-    for (const testCase of cases) {
-      expect(resolveMcpCard(testCase.params)).to.deep.equal(testCase.expected);
+    expect(resolveMcpCard(base).statusLabel).to.equal('Not configured');
+    for (const [params, action] of cases) {
+      expect(resolveMcpCard({ ...base, ...params }).primaryAction).to.deep.equal(action);
     }
   });
 });
