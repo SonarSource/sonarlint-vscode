@@ -36,11 +36,12 @@
             to find bugs and vulnerabilities before you commit.
           </p>
           <p id="cli-authentication" class="supporting-text cli-authentication"></p>
-          <div class="agent-summary">
-            <span id="detected-label" class="supporting-text"></span>
+          <p id="detected-label" class="supporting-text agent-count"></p>
+          <details class="agent-disclosure">
+            <summary>Manage agents</summary>
             <ul id="agent-list" class="agent-list"></ul>
-            <p id="no-agents" class="supporting-text" hidden>No CLI-compatible agents detected in this IDE.</p>
-          </div>
+            <p id="no-agents" class="supporting-text" hidden>No supported AI agents detected.</p>
+          </details>
           <button id="cli-action" class="primary-action" type="button"></button>
           <output id="cli-feedback" class="notice" aria-live="polite" hidden></output>
           <button id="cli-docs" class="link-action" type="button">SonarQube CLI guide</button>
@@ -62,8 +63,12 @@
           <p class="description">
             Ask your agent about issues, quality gates, and coverage in your SonarQube projects.
           </p>
-          <ul id="mcp-list" class="mcp-list"></ul>
-          <p id="no-mcp-agents" class="supporting-text" hidden>No AI agents detected in this IDE.</p>
+          <p id="mcp-detected-label" class="supporting-text agent-count"></p>
+          <details class="agent-disclosure">
+            <summary>Manage agents</summary>
+            <ul id="mcp-list" class="mcp-list"></ul>
+            <p id="no-mcp-agents" class="supporting-text" hidden>No supported AI agents detected.</p>
+          </details>
           <button id="mcp-docs" class="link-action" type="button">MCP configuration guide</button>
           <div id="legacy-instructions-row" class="component-row" hidden>
             <div class="component-details">
