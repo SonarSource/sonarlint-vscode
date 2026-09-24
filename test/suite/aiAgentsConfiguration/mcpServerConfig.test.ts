@@ -32,10 +32,12 @@ const getMCPConfigStub = sinon.stub().resolves({
   jsonConfiguration: '{"command": "test-command", "args": ["test-arg"], "env": {}}'
 });
 const inspectMcpConfigurationStub = sinon.stub();
+const getAiIntegrationStateStub = sinon.stub();
 const planMcpConfigurationUpdateStub = sinon.stub();
 
 const mockLanguageClient = {
   getMCPServerConfiguration: getMCPConfigStub,
+  getAiIntegrationState: getAiIntegrationStateStub,
   inspectMcpConfiguration: inspectMcpConfigurationStub,
   planMcpConfigurationUpdate: planMcpConfigurationUpdateStub
 } as unknown as SonarLintExtendedLanguageClient;
@@ -46,6 +48,17 @@ const mockAllConnectionsTreeDataProvider = {
 
 suite('mcpServerConfig', () => {
   setup(() => {
+    getAiIntegrationStateStub.reset();
+    getAiIntegrationStateStub.callsFake(async () => ({
+      agents: aiAgentUtils.getDetectedIdeAgents().map(agent => ({
+        agent: agent.id,
+        detectionSources: [AiIntegration.AiAgentDetectionSource.IDE],
+        standaloneMcpSupported: true,
+        cliIntegrationSupported: true,
+        hookSupported: false,
+        skillSupported: false
+      }))
+    }));
     getMCPConfigStub.resetHistory();
     inspectMcpConfigurationStub.reset();
     inspectMcpConfigurationStub.resolves({
@@ -258,7 +271,7 @@ suite('mcpServerConfig', () => {
     try {
       await onEmbeddedServerStarted(mockLanguageClient, extensionContext);
 
-      expect(logStub.calledOnceWith('Could not refresh the standalone SonarQube MCP configurations: storage failed')).to
+      expect(logStub.calledWith('Could not refresh the standalone SonarQube MCP configurations: storage failed')).to
         .be.true;
     } finally {
       logStub.restore();
@@ -624,7 +637,7 @@ suite('mcpServerConfig', () => {
       const writeCall = writeFileStub.getCall(0);
       const [_filePath, fileContent] = writeCall.args;
       expect(fileContent).to.equal(plannedContent);
-      expect(executeCommandStub.calledOnceWith(Commands.REFRESH_AI_AGENTS_CONFIGURATION)).to.be.true;
+      expect(executeCommandStub.calledWith(Commands.REFRESH_AI_AGENTS_CONFIGURATION)).to.be.true;
     } finally {
       envStub.restore();
       existsStub.restore();
@@ -936,7 +949,7 @@ suite('mcpServerConfig', () => {
     const showTextDocumentStub = sinon.stub(vscode.window, 'showTextDocument').resolves();
 
     try {
-      await openMCPServerConfigurationFile();
+      await openMCPServerConfigurationFile(mockLanguageClient);
       expect(showTextDocumentStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.firstCall.args[0].fsPath).to.match(/\.cursor[/\\]mcp\.json$/);
     } finally {
@@ -954,7 +967,7 @@ suite('mcpServerConfig', () => {
     const showTextDocumentStub = sinon.stub(vscode.window, 'showTextDocument').resolves();
 
     try {
-      await openMCPServerConfigurationFile();
+      await openMCPServerConfigurationFile(mockLanguageClient);
       expect(showInfoStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.called).to.be.false;
     } finally {

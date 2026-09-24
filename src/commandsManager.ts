@@ -263,7 +263,7 @@ export class CommandsManager {
         }
       }),
       vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, agent =>
-        openMCPServerConfigurationFile(agent)
+        openMCPServerConfigurationFile(this.languageClient, agent)
       ),
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
         this.aiAgentsConfigurationWebviewProvider.refresh()
