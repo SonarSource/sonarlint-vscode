@@ -66,6 +66,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.VSCODE, name: 'VS Code' });
     sinon.stub(aiAgentUtils, 'getCurrentAgentWithHookSupport').returns(undefined);
     sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns(detectedAgents);
+    sinon.stub(aiAgentUtils, 'isAgentActiveForMcp').returns(true);
     sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(true);
     sinon.stub(aiAgentUtils, 'getAiIntegrationStateParams').returns({
       ideHost: IdeHost.VSCODE,
@@ -126,6 +127,48 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       requiresSetup: false,
       operationInProgress: false
     });
+  });
+
+  test('omits inactive Copilot from standalone MCP rows', async () => {
+    const detectedAgents = [
+      { id: AiIntegration.AiAgent.GITHUB_COPILOT, name: 'Copilot in VS Code', source: 'extension' as const },
+      { id: AiIntegration.AiAgent.CLAUDE_CODE, name: 'Claude Code', source: 'extension' as const }
+    ];
+    sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.VSCODE, name: 'VS Code' });
+    sinon.stub(aiAgentUtils, 'getCurrentAgentWithHookSupport').returns(undefined);
+    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns(detectedAgents);
+    sinon
+      .stub(aiAgentUtils, 'isAgentActiveForMcp')
+      .callsFake(agent => agent !== AiIntegration.AiAgent.GITHUB_COPILOT);
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.NOT_INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.UNKNOWN
+      },
+      agents: detectedAgents.map(agent => ({
+        agent: agent.id,
+        detectionSources: [AiIntegration.AiAgentDetectionSource.IDE],
+        cliIntegrationSupported: false,
+        standaloneMcpSupported: true,
+        hookSupported: false,
+        skillSupported: false
+      })),
+      connectionChoices: []
+    });
+    const inspect = sinon.stub(mcpServerConfig, 'inspectMCPConfiguration').resolves({
+      state: AiIntegration.McpConfigurationState.NOT_CONFIGURED,
+      diagnostics: []
+    });
+
+    const state = await provider.buildState();
+
+    expect(state.agents.map(agent => agent.id)).to.deep.equal(detectedAgents.map(agent => agent.id));
+    expect(state.mcp.integrations.map(integration => integration.agentId)).to.deep.equal([
+      AiIntegration.AiAgent.CLAUDE_CODE
+    ]);
+    expect(inspect.calledOnce).to.be.true;
+    expect(inspect.firstCall.args[1]).to.equal(AiIntegration.AiAgent.CLAUDE_CODE);
   });
 
   test('keeps other MCP integrations available when one inspection fails', async () => {
