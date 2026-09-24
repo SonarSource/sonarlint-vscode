@@ -11,13 +11,14 @@ import { showLogOutput } from './util/logging';
 import { enableVerboseLogs } from './settings/settings';
 import { AllRulesTreeDataProvider, LanguageNode, RuleNode, toggleRule } from './rules/rules';
 import { FindingNode } from './findings/findingTypes/findingNode';
+import { AiIntegration } from './lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
 import { openSonarQubeRulesFile, introduceSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
 import { configureMCPServer, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
 import { configureCompilationDatabase } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
 import { BindingService } from './connected/binding';
-import { AllConnectionsTreeDataProvider, ConnectionType, ConnectionsNode } from './connected/connections';
+import { AllConnectionsTreeDataProvider, Connection, ConnectionType, ConnectionsNode } from './connected/connections';
 import {
   connectToSonarQube,
   connectToSonarCloud,
@@ -242,14 +243,22 @@ export class CommandsManager {
       ),
       vscode.commands.registerCommand(
         Commands.CONFIGURE_MCP_SERVER,
-        async (connection, options?: { skipViewRefresh?: boolean }) => {
+        async (agentOrConnection, options?: { skipViewRefresh?: boolean }) => {
+          const agent =
+            typeof agentOrConnection === 'number' ? (agentOrConnection as AiIntegration.AiAgent) : undefined;
+          const connection = typeof agentOrConnection === 'number' ? undefined : (agentOrConnection as Connection);
+          const configuration = configureMCPServer(
+            this.languageClient,
+            this.allConnectionsTreeDataProvider,
+            this.context,
+            agent,
+            connection
+          );
+          if (!options?.skipViewRefresh) {
+            await this.aiAgentsConfigurationWebviewProvider.refresh();
+          }
           try {
-            await configureMCPServer(
-              this.languageClient,
-              this.allConnectionsTreeDataProvider,
-              this.context,
-              connection
-            );
+            await configuration;
           } catch {
             // configureMCPServer already reported the error to the user.
           } finally {
@@ -259,7 +268,9 @@ export class CommandsManager {
           }
         }
       ),
-      vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, () => openMCPServerConfigurationFile()),
+      vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, agent =>
+        openMCPServerConfigurationFile(agent)
+      ),
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
         this.aiAgentsConfigurationWebviewProvider.refresh()
       ),
