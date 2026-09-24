@@ -243,7 +243,7 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.CAPTURE_HEAP_DUMP, () =>
         FlightRecorderService.instance.captureHeapDump()
       ),
-      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async agentOrConnection => {
+      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async (agentOrConnection, options?: { skipViewRefresh?: boolean }) => {
         const agent = typeof agentOrConnection === 'number' ? (agentOrConnection as AiIntegration.AiAgent) : undefined;
         const connection = typeof agentOrConnection === 'number' ? undefined : (agentOrConnection as Connection);
         const configuration = configureMCPServer(
@@ -253,17 +253,21 @@ export class CommandsManager {
           agent,
           connection
         );
-        await this.aiAgentsConfigurationWebviewProvider.refresh();
+        if (!options?.skipViewRefresh) {
+          await this.aiAgentsConfigurationWebviewProvider.refresh();
+        }
         try {
           await configuration;
         } catch {
           // configureMCPServer already reported the error to the user.
         } finally {
-          await this.aiAgentsConfigurationWebviewProvider.refresh();
+          if (!options?.skipViewRefresh) {
+            await this.aiAgentsConfigurationWebviewProvider.refresh();
+          }
         }
       }),
       vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, agent =>
-        openMCPServerConfigurationFile(agent)
+        openMCPServerConfigurationFile(this.languageClient, agent)
       ),
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
         this.aiAgentsConfigurationWebviewProvider.refresh()
