@@ -84,7 +84,7 @@ suite('CONFIGURE_MCP_SERVER command', () => {
   teardown(() => sinon.restore());
 
   test('refreshes the AI integrations view around MCP setup', async () => {
-    let configureCommand: ((connection?: unknown, options?: { skipViewRefresh?: boolean }) => Promise<void>) | undefined;
+    let configureCommand: ((connection?: unknown) => Promise<void>) | undefined;
     sinon.stub(vscode.commands, 'registerCommand').callsFake((command, callback) => {
       if (command === Commands.CONFIGURE_MCP_SERVER) {
         configureCommand = callback as typeof configureCommand;
@@ -109,9 +109,5 @@ suite('CONFIGURE_MCP_SERVER command', () => {
     await configureCommand!();
     expect(refreshStub.calledTwice).to.be.true;
     expect(configureStub.calledOnce).to.be.true;
-
-    await configureCommand!(undefined, { skipViewRefresh: true });
-    expect(refreshStub.calledTwice).to.be.true;
-    expect(configureStub.calledTwice).to.be.true;
   });
 });
