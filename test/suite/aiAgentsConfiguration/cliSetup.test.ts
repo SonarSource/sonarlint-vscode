@@ -123,6 +123,64 @@ suite('cliSetup', () => {
     ).to.deep.equal({ kind: 'cancelled' });
   });
 
+  test('finishes CLI telemetry only after the setup terminal exits', async () => {
+    const onFinished = sinon.stub().resolves();
+    const terminal = { show: sinon.stub() } as unknown as vscode.Terminal;
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    const session = new CliSetupSession(
+      { subscriptions: [] } as unknown as vscode.ExtensionContext,
+      {
+        getAiIntegrationState: sinon.stub().resolves({
+          cli: {
+            installationStatus: NOT_INSTALLED,
+            authenticationStatus: UNKNOWN
+          },
+          agents: [],
+          connectionChoices: []
+        }),
+        prepareInstallCliCommand: sinon.stub().resolves({
+          executable: 'sonar',
+          arguments: ['install'],
+          interactive: true
+        })
+      } as never,
+      sinon.stub().resolves(),
+      onFinished
+    );
+
+    await session.run('install');
+    expect(onFinished.notCalled).to.be.true;
+
+    await session.handleTerminalClosed({ code: 0, reason: vscode.TerminalExitReason.Process });
+    expect(onFinished.calledOnce).to.be.true;
+    expect(onFinished.firstCall.args[2]).to.deep.equal({ status: 'SUCCEEDED' });
+  });
+
+  test('finishes an unsupported CLI attempt before opening a terminal', async () => {
+    const onFinished = sinon.stub().resolves();
+    const session = new CliSetupSession(
+      { subscriptions: [] } as unknown as vscode.ExtensionContext,
+      {
+        getAiIntegrationState: sinon.stub().resolves({
+          cli: {
+            installationStatus: INSTALLED,
+            authenticationStatus: AUTHENTICATED
+          },
+          agents: [],
+          connectionChoices: []
+        })
+      } as never,
+      sinon.stub().resolves(),
+      onFinished
+    );
+
+    await session.run('install');
+
+    expect(onFinished.calledOnce).to.be.true;
+    expect(onFinished.firstCall.args[2]).to.deep.equal({ status: 'FAILED' });
+  });
+
   test('records only the observable terminal exit as a notice', async () => {
     const onChange = sinon.stub().resolves();
     const session = new CliSetupSession(
