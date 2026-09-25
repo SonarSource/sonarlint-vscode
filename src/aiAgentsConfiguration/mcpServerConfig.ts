@@ -606,7 +606,11 @@ export async function openMCPServerConfigurationFile(
     }
     await vscode.window.showTextDocument(vscode.Uri.file(configPath));
     return { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent };
-  } catch {
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    const message = `Could not open the SonarQube MCP configuration file: ${detail}`;
+    logToSonarLintOutput(message);
+    void vscode.window.showErrorMessage(message);
     return mcpFailed(requestedAgent);
   }
 }

@@ -113,7 +113,7 @@ suite('CONFIGURE_MCP_SERVER command', () => {
 
     expect(configureCommand).to.not.be.undefined;
     await configureCommand!();
-    expect(refreshStub.calledOnce).to.be.true;
+    expect(refreshStub.called).to.be.false;
     expect(postActionRefreshStub.calledOnce).to.be.true;
     expect(configureStub.calledOnce).to.be.true;
     expect(actionNotification.getCalls().map(call => call.args[0].status)).to.deep.equal(['STARTED', 'SUCCEEDED']);
