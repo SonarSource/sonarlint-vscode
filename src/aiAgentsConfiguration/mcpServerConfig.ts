@@ -11,6 +11,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { DEFAULT_CONNECTION_ID } from '../commons';
+import { ContextManager } from '../contextManager';
 import { AllConnectionsTreeDataProvider, Connection } from '../connected/connections';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
@@ -25,11 +26,14 @@ import { Commands } from '../util/commands';
 import { getVSCodeSettingsBaseDir } from '../util/util';
 import {
   COPILOT_ACTIVATION_DELAY_MS,
+  getAiIntegrationStateParams,
   getCurrentIdeHost,
   getDetectedIdeAgents,
+  getDetectedIntegrationAgents,
   getWindsurfDirectory,
   IdeHost,
-  isAgentActiveForMcp
+  isAgentActiveForMcp,
+  toAgentDisplayName
 } from './aiAgentUtils';
 
 const LEGACY_MCP_CONNECTION_KEY = 'aiAgentsConfiguration.mcpConnection';
@@ -94,14 +98,6 @@ export function getActiveMcpAgent(): AiIntegration.AiAgent | undefined {
 
 export function isStandaloneMcpReady(agent: AiIntegration.AiAgent): boolean {
   return supportsStandaloneMCP(agent) && isAgentActiveForMcp(agent);
-}
-
-export function hasActiveStandaloneMcpAgent(): boolean {
-  return standaloneMcpCandidates().length > 0;
-}
-
-function standaloneMcpCandidates() {
-  return getDetectedIdeAgents().filter(agent => isStandaloneMcpReady(agent.id));
 }
 
 async function refreshAiAgentsView(): Promise<void> {
@@ -201,9 +197,7 @@ export async function configureMCPServer(
   connection?: Connection
 ): Promise<void> {
   if (vscode.env.remoteName !== undefined) {
-    await vscode.window.showInformationMessage(
-      'MCP setup through agent configuration files is not available in remote IDE windows.'
-    );
+    await vscode.window.showInformationMessage('MCP setup via configuration files is unavailable in remote windows.');
     return;
   }
   if (mcpSetupInProgress) {
@@ -214,7 +208,7 @@ export async function configureMCPServer(
   let selectedConnection = connection;
   try {
     await migrateLegacyMCPConnection(extensionContext);
-    const agent = await selectMCPAgent(requestedAgent);
+    const agent = await selectMCPAgent(languageClient, requestedAgent);
     if (agent === undefined) {
       return;
     }
@@ -263,16 +257,16 @@ export async function configureMCPServer(
 
     void vscode.window
       .showInformationMessage(
-        `SonarQube MCP Server configured for ${displayName(agent)} with "${selectedConnection.label}"`,
+        `SonarQube MCP Server configured for ${toAgentDisplayName(agent)} with "${selectedConnection.label}"`,
         'Open Configuration File'
       )
       .then(async openFile => {
         if (openFile === 'Open Configuration File') {
-          await openMCPServerConfigurationFile(agent);
+          await openMCPServerConfigurationFile(languageClient, agent);
         }
       });
     logToSonarLintOutput(
-      `SonarQube MCP Server configured successfully for ${displayName(agent)} and connection: ${selectedConnection.label}`
+      `SonarQube MCP Server configured successfully for ${toAgentDisplayName(agent)} and connection: ${selectedConnection.label}`
     );
   } catch (error) {
     const connectionLabel = selectedConnection?.label ?? 'unknown connection';
@@ -289,40 +283,45 @@ export async function configureMCPServer(
   }
 }
 
-async function selectMCPAgent(requestedAgent?: AiIntegration.AiAgent): Promise<AiIntegration.AiAgent | undefined> {
-  const detectedAgents = getDetectedIdeAgents();
+export async function getStandaloneMCPAgents(languageClient: SonarLintExtendedLanguageClient) {
+  const state = await languageClient.getAiIntegrationState(
+    getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
+  );
+  const agents = getDetectedIntegrationAgents(state).filter(agent => agent.standaloneMcpSupported && isStandaloneMcpReady(agent.agent));
+  ContextManager.instance.setMCPServerSupportedAgentContext(agents.length > 0);
+  return agents;
+}
+
+async function selectMCPAgent(
+  languageClient: SonarLintExtendedLanguageClient,
+  requestedAgent?: AiIntegration.AiAgent
+): Promise<AiIntegration.AiAgent | undefined> {
+  const agents = await getStandaloneMCPAgents(languageClient);
   if (requestedAgent !== undefined) {
-    if (!detectedAgents.some(agent => agent.id === requestedAgent)) {
-      await vscode.window.showInformationMessage(`${displayName(requestedAgent)} was not detected in this IDE.`);
-      return undefined;
-    }
     if (!isAgentActiveForMcp(requestedAgent)) {
       await vscode.window.showInformationMessage(
-        `${displayName(requestedAgent)} must be active before MCP can be configured.`
+        `${toAgentDisplayName(requestedAgent)} must be active before MCP can be configured.`
       );
       return undefined;
     }
-    if (!supportsStandaloneMCP(requestedAgent)) {
+    if (!agents.some(agent => agent.agent === requestedAgent)) {
       await vscode.window.showInformationMessage(
-        `${displayName(requestedAgent)} MCP integration is available through CLI.`
+        `MCP setup through a configuration file is no longer available for ${toAgentDisplayName(requestedAgent)}.`
       );
       return undefined;
     }
     return requestedAgent;
   }
 
-  const agents = standaloneMcpCandidates();
   if (agents.length === 0) {
-    await vscode.window.showInformationMessage(
-      'No detected agent supports MCP setup through a configuration file.'
-    );
+    await vscode.window.showInformationMessage('No detected agent supports MCP setup via a configuration file.');
     return undefined;
   }
   if (agents.length === 1) {
-    return agents[0].id;
+    return agents[0].agent;
   }
   const selected = await vscode.window.showQuickPick(
-    agents.map(agent => ({ label: agent.name, description: getMCPConfigPath(agent.id), agent: agent.id })),
+    agents.map(agent => ({ label: agent.name, description: getMCPConfigPath(agent.agent), agent: agent.agent })),
     { placeHolder: 'Choose an agent to configure with SonarQube MCP' }
   );
   return selected?.agent;
@@ -381,18 +380,13 @@ function openMCPServersListIfCursor(agent: AiIntegration.AiAgent): void {
   }
 }
 
-function isCopilotAwaitingActivation(): boolean {
-  return (
-    getDetectedIdeAgents().some(agent => agent.id === AiIntegration.AiAgent.GITHUB_COPILOT) &&
-    !isAgentActiveForMcp(AiIntegration.AiAgent.GITHUB_COPILOT)
-  );
-}
-
 export function scheduleCopilotActivationMcpRefresh(
   languageClient: SonarLintExtendedLanguageClient,
   extensionContext: vscode.ExtensionContext
 ): vscode.Disposable {
-  if (!isCopilotAwaitingActivation() || copilotActivationRefresh !== undefined) {
+  const copilot = AiIntegration.AiAgent.GITHUB_COPILOT;
+  const needsRefresh = getDetectedIdeAgents().some(agent => agent.id === copilot) && !isAgentActiveForMcp(copilot);
+  if (!needsRefresh || copilotActivationRefresh !== undefined) {
     return vscode.Disposable.from();
   }
   const timer = setTimeout(() => {
@@ -416,23 +410,21 @@ export async function onEmbeddedServerStarted(
     embeddedServerRefreshPending = true;
     return;
   }
-  embeddedServerRefreshPending = false;
-  mcpSetupInProgress = true;
-  try {
-    await migrateLegacyMCPConnection(extensionContext);
-    const agents = standaloneMcpCandidates();
-    await Promise.all(
-      agents.map(agent => refreshStandaloneMCPConfiguration(agent.id, languageClient, extensionContext))
-    );
-  } catch (error) {
-    logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configurations: ${error.message}`);
-  } finally {
-    mcpSetupInProgress = false;
-  }
-  if (embeddedServerRefreshPending) {
-    await onEmbeddedServerStarted(languageClient, extensionContext);
-    return;
-  }
+  do {
+    embeddedServerRefreshPending = false;
+    mcpSetupInProgress = true;
+    try {
+      await migrateLegacyMCPConnection(extensionContext);
+      const agents = await getStandaloneMCPAgents(languageClient);
+      await Promise.all(
+        agents.map(agent => refreshStandaloneMCPConfiguration(agent.agent, languageClient, extensionContext))
+      );
+    } catch (error) {
+      logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configurations: ${error.message}`);
+    } finally {
+      mcpSetupInProgress = false;
+    }
+  } while (embeddedServerRefreshPending);
   await refreshAiAgentsView();
 }
 
@@ -469,7 +461,7 @@ async function refreshStandaloneMCPConfiguration(
     }
   } catch (error) {
     logToSonarLintOutput(
-      `Could not refresh the standalone SonarQube MCP configuration for ${displayName(agent)}: ${error.message}`
+      `Could not refresh the standalone SonarQube MCP configuration for ${toAgentDisplayName(agent)}: ${error.message}`
     );
   }
 }
@@ -538,33 +530,20 @@ function mcpConnectionKey(agent: AiIntegration.AiAgent): string {
   return `${MCP_CONNECTION_KEY_PREFIX}${agent}`;
 }
 
-export async function openMCPServerConfigurationFile(requestedAgent?: AiIntegration.AiAgent): Promise<void> {
-  const agent = await selectMCPAgent(requestedAgent);
+export async function openMCPServerConfigurationFile(
+  languageClient: SonarLintExtendedLanguageClient,
+  requestedAgent?: AiIntegration.AiAgent
+): Promise<void> {
+  const agent = await selectMCPAgent(languageClient, requestedAgent);
   if (agent === undefined) {
     return;
   }
   const configPath = getMCPConfigPath(agent);
   if (!fs.existsSync(configPath)) {
     await vscode.window.showInformationMessage(
-      `The ${displayName(agent)} MCP configuration file has not been created yet.`
+      `The ${toAgentDisplayName(agent)} MCP configuration file has not been created yet.`
     );
     return;
   }
   await vscode.window.showTextDocument(vscode.Uri.file(configPath));
-}
-
-function displayName(agent: AiIntegration.AiAgent): string {
-  return (
-    getDetectedIdeAgents().find(detectedAgent => detectedAgent.id === agent)?.name ??
-    {
-      [AiIntegration.AiAgent.GITHUB_COPILOT]: 'Copilot in VS Code',
-      [AiIntegration.AiAgent.CURSOR]: 'Cursor',
-      [AiIntegration.AiAgent.WINDSURF]: 'Windsurf',
-      [AiIntegration.AiAgent.KIRO]: 'Kiro',
-      [AiIntegration.AiAgent.CLAUDE_CODE]: 'Claude Code',
-      [AiIntegration.AiAgent.CODEX]: 'Codex',
-      [AiIntegration.AiAgent.GITHUB_COPILOT_CLI]: 'GitHub Copilot CLI',
-      [AiIntegration.AiAgent.ANTIGRAVITY]: 'Antigravity'
-    }[agent]
-  );
 }
