@@ -134,7 +134,8 @@ suite('aiAgentUtils', () => {
     const agents = getDetectedIntegrationAgents({
       cli: {
         installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
-        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED,
+        vortexAvailable: false
       },
       agents: [
         capability(AiIntegration.AiAgent.CODEX, [AiIntegration.AiAgentDetectionSource.CLI]),
