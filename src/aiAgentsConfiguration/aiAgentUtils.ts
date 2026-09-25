@@ -60,6 +60,7 @@ export function toAgentDisplayName(agent: IntegrationTarget): string {
 }
 
 const COPILOT_CHAT_EXTENSION_ID = 'github.copilot-chat';
+export const COPILOT_ACTIVATION_DELAY_MS = 10000;
 
 interface BuiltInAgent {
   id: IntegrationTarget;
@@ -119,6 +120,13 @@ function isExtensionInstalled(extensionId: string): boolean {
 
 function isCopilotInstalledAndActive(): boolean {
   return vscode.extensions.getExtension(COPILOT_CHAT_EXTENSION_ID)?.isActive === true;
+}
+
+export function isAgentActiveForMcp(agent: AiIntegration.AiAgent): boolean {
+  if (agent === AiIntegration.AiAgent.GITHUB_COPILOT) {
+    return isCopilotInstalledAndActive();
+  }
+  return true;
 }
 
 function findMatchingHost(appName: string): IdeHostDefinition | undefined {
