@@ -17,6 +17,7 @@ import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { IdeHost, IntegrationTarget } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import * as mcpServerConfig from '../../../src/aiAgentsConfiguration/mcpServerConfig';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
+import { ContextManager } from '../../../src/contextManager';
 import { Commands } from '../../../src/util/commands';
 import * as logging from '../../../src/util/logging';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
@@ -68,12 +69,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns(detectedAgents);
     sinon.stub(aiAgentUtils, 'isAgentActiveForMcp').returns(true);
     sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(true);
-    sinon.stub(aiAgentUtils, 'getAiIntegrationStateParams').returns({
-      ideHost: IdeHost.VSCODE,
-      detectedAgents: detectedAgents.map(agent => agent.id),
-      scope: AiIntegration.AiIntegrationScope.GLOBAL,
-      configurationScopeId: undefined
-    });
     getIntegrationState.resolves({
       cli: {
         installationStatus: 1,
@@ -102,6 +97,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     expect(state.ideName).to.equal('VS Code');
     expect(getIntegrationState.calledOnce).to.be.true;
+    expect(getIntegrationState.firstCall.args[0].discoverLocalAgentClis).to.be.true;
     expect(state.agents[2].supportsCliIntegration).to.be.true;
     expect(state.cli.installationStatus).to.equal('INSTALLED');
     expect(state.cli.authenticationStatus).to.equal('AUTHENTICATED');
@@ -111,6 +107,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       agentId: AiIntegration.AiAgent.GITHUB_COPILOT,
       agentName: 'Copilot in VS Code',
       standaloneSupported: true,
+      availableThroughCli: false,
       configurationPath: mcpServerConfig.getMCPConfigPath(AiIntegration.AiAgent.GITHUB_COPILOT),
       configurationStatus: 'STANDALONE',
       diagnostic: undefined,
@@ -121,6 +118,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       agentId: AiIntegration.AiAgent.CODEX,
       agentName: 'Codex',
       standaloneSupported: false,
+      availableThroughCli: true,
       configurationPath: undefined,
       configurationStatus: undefined,
       diagnostic: undefined,
@@ -169,6 +167,79 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     ]);
     expect(inspect.calledOnce).to.be.true;
     expect(inspect.firstCall.args[1]).to.equal(AiIntegration.AiAgent.CLAUDE_CODE);
+  });
+
+  test('includes CLI-only agents and inspects their supported standalone configurations', async () => {
+    const setMcpContext = sinon.stub(ContextManager.instance, 'setMCPServerSupportedAgentContext');
+    sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.VSCODE, name: 'VS Code' });
+    sinon.stub(aiAgentUtils, 'getCurrentAgentWithHookSupport').returns(undefined);
+    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([
+      { id: AiIntegration.AiAgent.GITHUB_COPILOT, name: 'Copilot in VS Code', source: 'extension' }
+    ]);
+    sinon.stub(aiAgentUtils, 'isAgentActiveForMcp').returns(true);
+    sinon.stub(aiAgentRuleConfig, 'isSonarQubeRulesFileConfigured').resolves(false);
+    const capability = (
+      agent: AiIntegration.AiAgent,
+      detectionSources: AiIntegration.AiAgentDetectionSource[],
+      standaloneMcpSupported: boolean
+    ) => ({
+      agent,
+      detectionSources,
+      cliIntegrationSupported: true,
+      standaloneMcpSupported,
+      hookSupported: false,
+      skillSupported: false
+    });
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED
+      },
+      agents: [
+        capability(AiIntegration.AiAgent.CURSOR, [AiIntegration.AiAgentDetectionSource.CLI], true),
+        capability(AiIntegration.AiAgent.CODEX, [AiIntegration.AiAgentDetectionSource.CLI], false),
+        capability(AiIntegration.AiAgent.GITHUB_COPILOT_CLI, [AiIntegration.AiAgentDetectionSource.CLI], false),
+        capability(AiIntegration.AiAgent.CLAUDE_CODE, [
+          AiIntegration.AiAgentDetectionSource.IDE,
+          AiIntegration.AiAgentDetectionSource.CLI
+        ], true),
+        capability(AiIntegration.AiAgent.GITHUB_COPILOT, [AiIntegration.AiAgentDetectionSource.IDE], true)
+      ],
+      connectionChoices: []
+    });
+    const inspect = sinon.stub(mcpServerConfig, 'inspectMCPConfiguration').resolves({
+      state: AiIntegration.McpConfigurationState.NOT_CONFIGURED,
+      diagnostics: []
+    });
+
+    const state = await provider.buildState();
+
+    expect(state.agents.map(agent => agent.id)).to.have.members([
+      AiIntegration.AiAgent.GITHUB_COPILOT,
+      AiIntegration.AiAgent.CURSOR,
+      AiIntegration.AiAgent.CODEX,
+      AiIntegration.AiAgent.GITHUB_COPILOT_CLI,
+      AiIntegration.AiAgent.CLAUDE_CODE
+    ]);
+    expect(state.agents).to.have.length(5);
+    expect(setMcpContext.calledOnceWithExactly(true)).to.be.true;
+    expect(inspect.getCalls().map(call => call.args[1])).to.have.members([
+      AiIntegration.AiAgent.GITHUB_COPILOT,
+      AiIntegration.AiAgent.CURSOR,
+      AiIntegration.AiAgent.CLAUDE_CODE
+    ]);
+    expect(state.mcp.integrations.find(row => row.agentId === AiIntegration.AiAgent.CURSOR)).to.include({
+      standaloneSupported: true,
+      configurationStatus: 'NOT_CONFIGURED'
+    });
+    expect(state.mcp.integrations.find(row => row.agentId === AiIntegration.AiAgent.CODEX)).to.include({
+      availableThroughCli: true,
+      standaloneSupported: false
+    });
+    expect(state.mcp.integrations.find(row => row.agentId === AiIntegration.AiAgent.GITHUB_COPILOT_CLI)).to.include({
+      availableThroughCli: true,
+      standaloneSupported: false
+    });
   });
 
   test('keeps other MCP integrations available when one inspection fails', async () => {
@@ -387,7 +458,10 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
     await provider.handleMessage({ command: 'configureMcp', agent: AiIntegration.AiAgent.CURSOR });
 
-    expect(executeCommand.calledOnceWithExactly(Commands.CONFIGURE_MCP_SERVER, AiIntegration.AiAgent.CURSOR)).to.be.true;
+    expect(executeCommand.calledOnceWithExactly(
+      Commands.CONFIGURE_MCP_SERVER,
+      AiIntegration.AiAgent.CURSOR
+    )).to.be.true;
   });
 
   test('opens hook configuration from the CLI card', async () => {
@@ -415,7 +489,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       .to.be.true;
   });
 
-  test('runs the prepared installation command in one visible terminal', async () => {
+  test('reuses and reveals the installation terminal on a repeated setup request', async () => {
     const terminal = { show: sinon.stub() };
     const createTerminal = sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
     const closeListener = { dispose: sinon.stub() };
@@ -598,6 +672,91 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       })
     ).to.be.true;
     expect(terminal.show.calledOnce).to.be.true;
+  });
+
+  test('integrates a CLI-only agent after fresh backend validation', async () => {
+    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([]);
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED
+      },
+      agents: [{
+        agent: AiIntegration.AiAgent.CODEX,
+        detectionSources: [AiIntegration.AiAgentDetectionSource.CLI],
+        cliIntegrationSupported: true,
+        standaloneMcpSupported: false,
+        hookSupported: false,
+        skillSupported: false
+      }],
+      connectionChoices: []
+    });
+    prepareIntegrateCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['integrate', 'codex', '--global'],
+      interactive: true
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'integrateAgent', agent: AiIntegration.AiAgent.CODEX });
+
+    expect(prepareIntegrateCliCommand.calledOnceWithExactly({ agent: AiIntegration.AiAgent.CODEX })).to.be.true;
+    expect(terminal.show.calledOnce).to.be.true;
+  });
+
+  test('rejects a stale CLI integration target before command preparation', async () => {
+    getIntegrationState.resolves({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED
+      },
+      agents: [],
+      connectionChoices: []
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'integrateAgent', agent: AiIntegration.AiAgent.CODEX });
+
+    expect(prepareIntegrateCliCommand.notCalled).to.be.true;
+  });
+
+  test('allows CLI setup while background MCP work is running', async () => {
+    sinon.stub(mcpServerConfig, 'isMCPSetupInProgress').returns(true);
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    prepareInstallCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['install'],
+      interactive: true
+    });
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'installCli' });
+
+    expect(prepareInstallCliCommand.calledOnce).to.be.true;
+    expect(terminal.show.calledOnce).to.be.true;
+  });
+
+  test('allows MCP setup while a CLI terminal remains open', async () => {
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    prepareInstallCliCommand.resolves({
+      executable: '/usr/local/bin/sonar',
+      arguments: ['install'],
+      interactive: true
+    });
+    const executeCommand = sinon.stub(vscode.commands, 'executeCommand').resolves();
+    provider.refresh = sinon.stub().resolves();
+
+    await provider.handleMessage({ command: 'installCli' });
+    await provider.handleMessage({ command: 'configureMcp', agent: AiIntegration.AiAgent.CURSOR });
+
+    expect(executeCommand.calledOnceWithExactly(Commands.CONFIGURE_MCP_SERVER, AiIntegration.AiAgent.CURSOR)).to.be.true;
   });
 
   test('opens only existing legacy instructions', async () => {

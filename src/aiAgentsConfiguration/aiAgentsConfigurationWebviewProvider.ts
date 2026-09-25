@@ -14,14 +14,14 @@ import { logToSonarLintOutput } from '../util/logging';
 import { ResourceResolver } from '../util/webview';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { ContextManager } from '../contextManager';
 import { isHookInstalled } from './aiAgentHooks';
 import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import {
-  DetectedIdeAgent,
   getAiIntegrationStateParams,
   getCurrentAgentWithHookSupport,
   getCurrentIdeHost,
-  getDetectedIdeAgents,
+  getDetectedIntegrationAgents,
   isAgentActiveForMcp
 } from './aiAgentUtils';
 import {
@@ -38,7 +38,8 @@ import {
   inspectMCPConfiguration,
   isMCPSetupInProgress,
   isStandaloneMcpReady,
-  migrateLegacyMCPConnection
+  migrateLegacyMCPConnection,
+  supportsStandaloneMCP
 } from './mcpServerConfig';
 
 const WEBVIEW_UI_DIR = 'webview-ui';
@@ -81,7 +82,11 @@ const MCP_CONFIGURATION_STATUS_BY_PROTOCOL: Record<AiIntegration.McpConfiguratio
 export interface AIAgentsConfigurationState {
   ideName: string;
   isRemote: boolean;
-  agents: Array<DetectedIdeAgent & { supportsCliIntegration: boolean }>;
+  agents: Array<{
+    id: AiIntegration.AiAgent;
+    name: string;
+    supportsCliIntegration: boolean;
+  }>;
   cli: {
     installationStatus: CliInstallationStatus;
     authenticationStatus: CliAuthenticationStatus;
@@ -98,6 +103,7 @@ export interface AIAgentsConfigurationState {
       agentId: AiIntegration.AiAgent;
       agentName: string;
       standaloneSupported: boolean;
+      availableThroughCli: boolean;
       configurationPath?: string;
       configurationStatus?: McpConfigurationStatus;
       diagnostic?: string;
@@ -183,8 +189,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
 
   private async buildState(): Promise<AIAgentsConfigurationState> {
     const ide = getCurrentIdeHost();
-    const detectedAgents = getDetectedIdeAgents();
-    const mcpAgents = detectedAgents.filter(agent => isAgentActiveForMcp(agent.id));
     const hookAgent = getCurrentAgentWithHookSupport();
     await migrateLegacyMCPConnection(this.extensionContext);
     const [integrationState, legacyInstructionsConfigured, hookConfigured] = await Promise.all([
@@ -192,19 +196,21 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
       isSonarQubeRulesFileConfigured(),
       hookAgent !== undefined ? isHookInstalled(hookAgent) : Promise.resolve(false)
     ]);
-    const capabilitiesByAgent = new Map(integrationState.agents.map(capability => [capability.agent, capability]));
+    const detectedAgents = getDetectedIntegrationAgents(integrationState);
+    const mcpAgents = detectedAgents.filter(agent => isAgentActiveForMcp(agent.agent));
+    ContextManager.instance.setMCPServerSupportedAgentContext(
+      mcpAgents.some(agent => agent.standaloneMcpSupported && isStandaloneMcpReady(agent.agent))
+    );
     const inspections = await Promise.all(
       mcpAgents
-        .filter(
-          agent => isStandaloneMcpReady(agent.id) && capabilitiesByAgent.get(agent.id)?.standaloneMcpSupported === true
-        )
+        .filter(agent => isStandaloneMcpReady(agent.agent) && agent.standaloneMcpSupported)
         .map(async agent => {
           try {
-            return { agent: agent.id, inspection: await inspectMCPConfiguration(this.languageClient, agent.id) };
+            return { agent: agent.agent, inspection: await inspectMCPConfiguration(this.languageClient, agent.agent) };
           } catch (error) {
             logToSonarLintOutput(`Could not inspect ${agent.name} MCP configuration: ${String(error)}`);
             return {
-              agent: agent.id,
+              agent: agent.agent,
               inspection: {
                 state: AiIntegration.McpConfigurationState.UNKNOWN,
                 diagnostics: [`Could not inspect ${agent.name} MCP configuration.`]
@@ -214,8 +220,9 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         })
     );
     const agents = detectedAgents.map(agent => ({
-      ...agent,
-      supportsCliIntegration: capabilitiesByAgent.get(agent.id)?.cliIntegrationSupported ?? false
+      id: agent.agent,
+      name: agent.name,
+      supportsCliIntegration: agent.cliIntegrationSupported
     }));
     const isRemote = vscode.env.remoteName !== undefined;
     const cliSetup = this.getCliSetup();
@@ -224,22 +231,21 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     const mcpOperationInProgress = isMCPSetupInProgress();
     const activeMcpAgent = getActiveMcpAgent();
     const mcpIntegrations = mcpAgents.map(agent => {
-      const jsonConfigurationSupported = isStandaloneMcpReady(agent.id);
-      const inspection = inspectionByAgent.get(agent.id);
-      const standaloneSupported =
-        jsonConfigurationSupported && capabilitiesByAgent.get(agent.id)?.standaloneMcpSupported === true;
+      const standaloneSupported = isStandaloneMcpReady(agent.agent) && agent.standaloneMcpSupported;
+      const inspection = inspectionByAgent.get(agent.agent);
       return {
-        agentId: agent.id,
+        agentId: agent.agent,
         agentName: agent.name,
         standaloneSupported,
-        configurationPath: jsonConfigurationSupported ? getMCPConfigPath(agent.id) : undefined,
+        availableThroughCli: !supportsStandaloneMCP(agent.agent) && agent.cliIntegrationSupported,
+        configurationPath: standaloneSupported ? getMCPConfigPath(agent.agent) : undefined,
         configurationStatus:
           inspection === undefined ? undefined : MCP_CONFIGURATION_STATUS_BY_PROTOCOL[inspection.state],
         diagnostic: inspection?.diagnostics[0],
         requiresSetup:
           inspection?.state === AiIntegration.McpConfigurationState.STANDALONE &&
-          !hasPersistedMCPConnection(this.extensionContext, agent.id),
-        operationInProgress: mcpOperationInProgress && activeMcpAgent === agent.id
+          !hasPersistedMCPConnection(this.extensionContext, agent.agent),
+        operationInProgress: mcpOperationInProgress && activeMcpAgent === agent.agent
       };
     });
     const configurableIntegrations = mcpIntegrations.filter(integration => integration.standaloneSupported);

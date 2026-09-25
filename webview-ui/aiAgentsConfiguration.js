@@ -23,6 +23,7 @@ const hookRow = document.getElementById('hook-row');
 const hookStatus = document.getElementById('hook-status');
 const hookAction = document.getElementById('hook-action');
 const mcpStatus = document.getElementById('mcp-status');
+const mcpDetectedLabel = document.getElementById('mcp-detected-label');
 const mcpList = document.getElementById('mcp-list');
 const noMcpAgents = document.getElementById('no-mcp-agents');
 const legacyInstructionsRow = document.getElementById('legacy-instructions-row');
@@ -77,36 +78,11 @@ function renderCli(state) {
   renderCliAction(state);
   renderCliFeedback(state.cli);
 
-  agentList.replaceChildren();
-  const compatibleAgents = state.agents.filter(agent => agent.supportsCliIntegration);
-  for (const agent of compatibleAgents) {
-    const item = document.createElement('li');
-    const name = document.createElement('span');
-    const source = document.createElement('span');
-    name.textContent = agent.name;
-    source.className = 'agent-source';
-    source.textContent = agent.source === 'builtIn' ? 'Built in' : 'Extension';
-    const details = document.createElement('div');
-    details.className = 'agent-details';
-    details.append(name, source);
-    const action = document.createElement('button');
-    action.className = 'secondary-action agent-action';
-    action.type = 'button';
-    action.textContent = 'Integrate for all projects';
-    action.disabled = !state.cli.canIntegrate;
-    action.addEventListener('click', () => vscode.postMessage({ command: 'integrateAgent', agent: agent.id }));
-    item.append(details, action);
-    agentList.append(item);
-  }
-  const hasCompatibleAgents = compatibleAgents.length > 0;
-  detectedLabel.hidden = !hasCompatibleAgents;
-  agentList.hidden = !hasCompatibleAgents;
-  noAgents.hidden = hasCompatibleAgents;
-  if (hasCompatibleAgents) {
-    detectedLabel.textContent = `CLI-compatible agents detected in ${state.ideName}`;
-  } else {
-    noAgents.textContent = `No CLI-compatible agents detected in ${state.ideName}.`;
-  }
+  agentList.replaceChildren(...state.agents.map(agent => createCliAgentRow(agent, state)));
+  const agentCount = state.agents.length;
+  detectedLabel.textContent = `${agentCount} ${agentCount === 1 ? 'agent' : 'agents'} detected`;
+  agentList.hidden = agentCount === 0;
+  noAgents.hidden = agentCount !== 0;
 
   setVisible(hookRow, state.cli.hook.supported);
   if (state.cli.hook.supported) {
@@ -118,6 +94,34 @@ function renderCli(state) {
     const command = state.cli.hook.configured ? 'openHook' : 'installHook';
     hookAction.onclick = () => vscode.postMessage({ command });
   }
+}
+
+function createCliAgentRow(agent, state) {
+  const item = document.createElement('li');
+  const name = document.createElement('span');
+  name.textContent = agent.name;
+  const details = document.createElement('div');
+  details.className = 'agent-details';
+  details.append(name);
+  item.append(details);
+
+  if (agent.supportsCliIntegration) {
+    const action = document.createElement('button');
+    action.className = 'secondary-action agent-action';
+    action.type = 'button';
+    action.textContent = 'Integrate for all projects';
+    action.disabled = !state.cli.canIntegrate;
+    action.addEventListener('click', () => vscode.postMessage({ command: 'integrateAgent', agent: agent.id }));
+    item.append(action);
+  } else {
+    const guidance = document.createElement('span');
+    guidance.className = 'supporting-text agent-availability';
+    guidance.textContent = state.mcp.integrations.some(
+      integration => integration.agentId === agent.id && integration.standaloneSupported
+    ) ? 'Use MCP below' : 'CLI integration unavailable';
+    item.append(guidance);
+  }
+  return item;
 }
 
 function renderCliStatus(installationStatus) {
@@ -193,7 +197,7 @@ function renderCliFeedback(cli) {
 
 function renderMcp(state) {
   if (state.mcp.configurableCount === 0) {
-    setStatus(mcpStatus, 'No standalone agents', 'unavailable');
+    setStatus(mcpStatus, 'No standalone setup', 'unavailable');
   } else {
     const allConfigured = state.mcp.configuredCount === state.mcp.configurableCount;
     setStatus(
@@ -203,6 +207,8 @@ function renderMcp(state) {
     );
   }
 
+  const agentCount = state.mcp.integrations.length;
+  mcpDetectedLabel.textContent = `${agentCount} ${agentCount === 1 ? 'agent' : 'agents'} detected`;
   mcpList.replaceChildren();
   for (const integration of state.mcp.integrations) {
     mcpList.append(createMcpIntegrationRow(integration, state));
@@ -222,10 +228,13 @@ function createMcpIntegrationRow(integration, state) {
   details.className = 'mcp-integration-details';
   const name = document.createElement('span');
   name.textContent = integration.agentName;
-  const file = document.createElement('span');
-  file.className = 'supporting-text mcp-configuration-path';
-  file.textContent = integration.configurationPath ?? 'MCP setup uses SonarQube CLI';
-  details.append(name, file);
+  details.append(name);
+  if (integration.configurationPath) {
+    const file = document.createElement('span');
+    file.className = 'supporting-text mcp-configuration-path';
+    file.textContent = integration.configurationPath;
+    details.append(file);
+  }
 
   const stateAndAction = document.createElement('div');
   stateAndAction.className = 'mcp-integration-action';
@@ -236,8 +245,8 @@ function createMcpIntegrationRow(integration, state) {
   const needsAttention = ['MALFORMED', 'UNKNOWN'].includes(integration.configurationStatus);
   let setupAction = false;
 
-  if (!integration.configurationPath) {
-    setStatus(status, 'Status not checked', 'unavailable');
+  if (integration.availableThroughCli) {
+    setStatus(status, 'Available through CLI', 'unavailable');
   } else if (!integration.standaloneSupported) {
     setStatus(status, 'Unavailable', 'unavailable');
   } else if (integration.configurationStatus === 'CLI_MANAGED') {
@@ -264,7 +273,7 @@ function createMcpIntegrationRow(integration, state) {
 
   const hasAction = action.textContent.length > 0;
   action.hidden = !hasAction;
-  action.disabled = hasAction && (state.mcp.operationInProgress || (state.isRemote && setupAction));
+  action.disabled = hasAction && setupAction && (state.mcp.operationInProgress || state.isRemote);
   if (integration.operationInProgress) {
     action.textContent = 'Setting up…';
   }
