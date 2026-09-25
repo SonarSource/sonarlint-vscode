@@ -705,14 +705,14 @@
         "title": "Introduce SonarQube Rules File",
         "category": "SonarQube",
         "icon": "$(file-text)",
-        "enablement": "sonarqube.mcpServerSupportedAgent"
+        "enablement": "sonarqube.rulesFileSupportedAgent"
       },
       {
         "command": "SonarLint.OpenSonarQubeRulesFile",
         "title": "Open SonarQube Rules File",
         "category": "SonarQube",
         "icon": "$(file-text)",
-        "enablement": "sonarqube.mcpServerSupportedAgent"
+        "enablement": "sonarqube.rulesFileSupportedAgent"
       },
       {
         "command": "SonarLint.InstallAiAgentHookScript",

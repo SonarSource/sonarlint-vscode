@@ -16,7 +16,8 @@ import {
   getCurrentAgentWithHookSupport,
   getCurrentAgentWithMCPSupport,
   getCurrentIdeHost,
-  getDetectedIdeAgents
+  getDetectedIdeAgents,
+  getDetectedIntegrationAgents
 } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
@@ -110,8 +111,59 @@ suite('aiAgentUtils', () => {
       ideHost: AiIntegration.AiIntegrationHost.VSCODE,
       detectedAgents: [1, 5],
       scope: AiIntegration.AiIntegrationScope.PROJECT,
-      configurationScopeId: 'scope-id'
+      configurationScopeId: 'scope-id',
+      discoverLocalAgentClis: true
     });
+  });
+
+  test('keeps backend detections canonical, ordered with IDE agents first', () => {
+    sinon.stub(vscode.env, 'appName').value('Visual Studio Code');
+    stubExtensions({ 'github.copilot-chat': {}, 'anthropic.claude-code': {} });
+    const capability = (
+      agent: AiIntegration.AiAgent,
+      detectionSources: AiIntegration.AiAgentDetectionSource[]
+    ): AiIntegration.AiIntegrationAgentCapability => ({
+      agent,
+      detectionSources,
+      cliIntegrationSupported: true,
+      standaloneMcpSupported: false,
+      hookSupported: false,
+      skillSupported: false
+    });
+
+    const agents = getDetectedIntegrationAgents({
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED
+      },
+      agents: [
+        capability(AiIntegration.AiAgent.CODEX, [AiIntegration.AiAgentDetectionSource.CLI]),
+        capability(AiIntegration.AiAgent.CLAUDE_CODE, [
+          AiIntegration.AiAgentDetectionSource.IDE,
+          AiIntegration.AiAgentDetectionSource.CLI
+        ]),
+        capability(AiIntegration.AiAgent.GITHUB_COPILOT_CLI, [AiIntegration.AiAgentDetectionSource.CLI]),
+        capability(AiIntegration.AiAgent.GITHUB_COPILOT, [AiIntegration.AiAgentDetectionSource.IDE])
+      ],
+      connectionChoices: []
+    });
+
+    expect(agents.map(agent => agent.agent)).to.deep.equal([
+      AiIntegration.AiAgent.GITHUB_COPILOT,
+      AiIntegration.AiAgent.CLAUDE_CODE,
+      AiIntegration.AiAgent.CODEX,
+      AiIntegration.AiAgent.GITHUB_COPILOT_CLI
+    ]);
+    expect(agents.map(agent => agent.name)).to.deep.equal([
+      'Copilot in VS Code',
+      'Claude Code',
+      'Codex',
+      'GitHub Copilot CLI'
+    ]);
+    expect(agents[1].detectionSources).to.deep.equal([
+      AiIntegration.AiAgentDetectionSource.IDE,
+      AiIntegration.AiAgentDetectionSource.CLI
+    ]);
   });
 
   test('falls back to OTHER for unrecognized hosts', () => {
