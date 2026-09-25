@@ -13,6 +13,7 @@ import {
   getActiveMcpAgent,
   getMCPConfigPath,
   configureMCPServer,
+  isMCPSetupInProgress,
   onEmbeddedServerStarted,
   openMCPServerConfigurationFile
 } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
@@ -47,7 +48,11 @@ const mockAllConnectionsTreeDataProvider = {
 } as unknown as AllConnectionsTreeDataProvider;
 
 suite('mcpServerConfig', () => {
-  setup(() => {
+  setup(async function () {
+    this.timeout(30_000);
+    while (isMCPSetupInProgress()) {
+      await new Promise(resolve => setTimeout(resolve, 25));
+    }
     getAiIntegrationStateStub.reset();
     getAiIntegrationStateStub.callsFake(async () => ({
       agents: aiAgentUtils.getDetectedIdeAgents().map(agent => ({
@@ -179,8 +184,10 @@ suite('mcpServerConfig', () => {
     get.onSecondCall().returns(undefined);
     const extensionContext = { globalState: { get, update } } as unknown as vscode.ExtensionContext;
 
+    let startupRefresh: Promise<void> | undefined;
     try {
-      const startupRefresh = onEmbeddedServerStarted(mockLanguageClient, extensionContext);
+      startupRefresh = onEmbeddedServerStarted(mockLanguageClient, extensionContext);
+      expect(update.calledOnce).to.be.true;
       await configureMCPServer(
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
@@ -194,9 +201,9 @@ suite('mcpServerConfig', () => {
           'A SonarQube MCP configuration operation is already running. Try again in a moment.'
         )
       ).to.be.true;
+    } finally {
       finishMigration();
       await startupRefresh;
-    } finally {
       envStub.restore();
       detectedAgentsStub.restore();
       showInfoStub.restore();
@@ -235,7 +242,11 @@ suite('mcpServerConfig', () => {
         AiIntegration.AiAgent.CURSOR,
         mockConnection
       );
-      await tokenRequest;
+      const firstStep = await Promise.race([
+        tokenRequest.then(() => 'token-requested'),
+        setup.then(outcome => JSON.stringify(outcome))
+      ]);
+      expect(firstStep).to.equal('token-requested');
       await onEmbeddedServerStarted(mockLanguageClient, extensionContext);
       expect(inspectMcpConfigurationStub.calledOnce).to.be.true;
 
@@ -515,13 +526,15 @@ suite('mcpServerConfig', () => {
     try {
       for (const state of blockedStates) {
         inspectMcpConfigurationStub.resolves({ state, diagnostics: ['Configuration was not changed.'] });
-        await configureMCPServer(
+        const outcome = await configureMCPServer(
           mockLanguageClient,
           mockAllConnectionsTreeDataProvider,
           extensionContext,
           IntegrationTarget.CURSOR,
           mockConnection
         );
+        expect(outcome.status).to.equal(AiIntegration.AiIntegrationActionStatus.FAILED);
+        expect(outcome.agent).to.equal(IntegrationTarget.CURSOR);
       }
 
       expect(planMcpConfigurationUpdateStub.called).to.be.false;
@@ -554,20 +567,18 @@ suite('mcpServerConfig', () => {
     } as unknown as vscode.ExtensionContext;
 
     try {
-      let failure: Error | undefined;
-      try {
-        await configureMCPServer(
-          mockLanguageClient,
-          mockAllConnectionsTreeDataProvider,
-          extensionContext,
-          IntegrationTarget.CURSOR,
-          mockConnection
-        );
-      } catch (error) {
-        failure = error;
-      }
+      const outcome = await configureMCPServer(
+        mockLanguageClient,
+        mockAllConnectionsTreeDataProvider,
+        extensionContext,
+        IntegrationTarget.CURSOR,
+        mockConnection
+      );
 
-      expect(failure?.message).to.equal('write failed');
+      expect(outcome).to.deep.equal({
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        agent: IntegrationTarget.CURSOR
+      });
       expect(globalStateUpdateStub.called).to.be.false;
     } finally {
       envStub.restore();
@@ -961,6 +972,29 @@ suite('mcpServerConfig', () => {
     }
   });
 
+  test('shows and logs a failure when the MCP configuration file cannot be opened', async () => {
+    const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
+    const fs = require('node:fs');
+    const existsStub = sinon.stub(fs, 'existsSync').returns(true);
+    const showTextDocumentStub = sinon.stub(vscode.window, 'showTextDocument').rejects(new Error('permission denied'));
+    const showErrorStub = sinon.stub(vscode.window, 'showErrorMessage').resolves(undefined);
+    const logStub = sinon.stub(logging, 'logToSonarLintOutput');
+
+    try {
+      const outcome = await openMCPServerConfigurationFile(mockLanguageClient);
+      expect(outcome.status).to.equal(AiIntegration.AiIntegrationActionStatus.FAILED);
+      expect(showErrorStub.calledOnce).to.be.true;
+      expect(showErrorStub.firstCall.args[0]).to.include('permission denied');
+      expect(logStub.calledOnce).to.be.true;
+    } finally {
+      envStub.restore();
+      existsStub.restore();
+      showTextDocumentStub.restore();
+      showErrorStub.restore();
+      logStub.restore();
+    }
+  });
+
   test('should tell the user when the MCP configuration file is missing', async () => {
     const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
     const fs = require('node:fs');
@@ -969,7 +1003,8 @@ suite('mcpServerConfig', () => {
     const showTextDocumentStub = sinon.stub(vscode.window, 'showTextDocument').resolves();
 
     try {
-      await openMCPServerConfigurationFile(mockLanguageClient);
+      const outcome = await openMCPServerConfigurationFile(mockLanguageClient);
+      expect(outcome.status).to.equal(AiIntegration.AiIntegrationActionStatus.FAILED);
       expect(showInfoStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.called).to.be.false;
     } finally {
