@@ -1494,7 +1494,7 @@
     {
       "groupId": "org.sonarsource.javascript",
       "artifactId": "sonar-javascript-plugin",
-      "version": "13.9.0.44793",
+      "version": "14.0.0.46108",
       "output": "analyzers/sonarjs.jar"
     },
     {

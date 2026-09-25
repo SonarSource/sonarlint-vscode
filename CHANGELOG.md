@@ -8,6 +8,7 @@
 * Update PHP analyzer 4.0 -> [4.1](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-php/releases/tag/4.1.0.16998)
 * Update IaC analyzer 2.19 -> [2.20](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-iac/releases/tag/2.20.0.24052)
 * Update Java analyzer 8.43 -> [8.44](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-java/releases/tag/8.44.0.48651)
+* Update JS/TS/CSS analyzer 13.9 -> [14.0](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/SonarJS/releases/tag/14.0.0.46108)
 
 ## 5.10
 * Update IaC analyzer 2.15 -> [2.16](https://github.com/SonarSource/sonar-iac/releases/tag/2.16.0.22905) -> [2.17](https://github.com/SonarSource/sonar-iac/releases/tag/2.17.0.23172) -> [2.18](https://github.com/SonarSource/sonar-iac/releases/tag/2.18.0.23895)
