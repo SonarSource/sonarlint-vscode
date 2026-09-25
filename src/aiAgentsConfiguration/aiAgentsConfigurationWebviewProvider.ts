@@ -31,7 +31,11 @@ import {
   CliSetupSession,
   resolveCliPrimaryAction
 } from './cliSetup';
-import { getCurrentSonarQubeMCPServerConfig } from './mcpServerConfig';
+import {
+  hasPersistedMCPConnection,
+  inspectCurrentMCPConfiguration,
+  isMCPSetupInProgress
+} from './mcpServerConfig';
 
 const WEBVIEW_UI_DIR = 'webview-ui';
 const CLI_DOCUMENTATION_URL = vscode.Uri.parse('https://docs.sonarsource.com/sonarqube-cli');
@@ -61,6 +65,79 @@ const CLI_AUTHENTICATION_STATUS_NAMES: Record<AiIntegration.CliAuthenticationSta
   [AiIntegration.CliAuthenticationStatus.UNKNOWN]: 'UNKNOWN'
 };
 
+export type McpPrimaryCommand = 'configureMcp' | 'openMcpConfiguration';
+export type McpStatusKind = 'configured' | 'notConfigured' | 'unavailable';
+
+export interface McpPrimaryAction {
+  command: McpPrimaryCommand;
+  label: string;
+  disabled: boolean;
+}
+
+export interface McpCardViewModel {
+  statusLabel: string;
+  statusKind: McpStatusKind;
+  readiness: string;
+  primaryAction: McpPrimaryAction;
+}
+
+const MCP_STATUS: Record<
+  AiIntegration.McpConfigurationState,
+  Pick<McpCardViewModel, 'statusLabel' | 'statusKind'>
+> = {
+  [AiIntegration.McpConfigurationState.NOT_CONFIGURED]: {
+    statusLabel: 'Not configured',
+    statusKind: 'notConfigured'
+  },
+  [AiIntegration.McpConfigurationState.STANDALONE]: { statusLabel: 'Configured', statusKind: 'configured' },
+  [AiIntegration.McpConfigurationState.CLI_MANAGED]: { statusLabel: 'Managed by CLI', statusKind: 'configured' },
+  [AiIntegration.McpConfigurationState.UNKNOWN]: { statusLabel: 'Needs attention', statusKind: 'unavailable' },
+  [AiIntegration.McpConfigurationState.MALFORMED]: { statusLabel: 'Needs attention', statusKind: 'unavailable' }
+};
+
+export function resolveMcpCard(params: {
+  supported: boolean;
+  inspection?: AiIntegration.McpConfigurationInspectionResponse;
+  hasPersistedConnection: boolean;
+  isRemote: boolean;
+  operationInProgress: boolean;
+}): McpCardViewModel {
+  const configurationStatus = params.inspection?.state;
+  const status: Pick<McpCardViewModel, 'statusLabel' | 'statusKind'> =
+    params.supported && configurationStatus !== undefined
+      ? MCP_STATUS[configurationStatus]
+      : { statusLabel: 'Unavailable', statusKind: 'unavailable' };
+  const requiresSetup =
+    configurationStatus === AiIntegration.McpConfigurationState.STANDALONE && !params.hasPersistedConnection;
+  const diagnostic = params.inspection?.diagnostics[0];
+  let readiness = diagnostic ?? '';
+  if (requiresSetup) {
+    readiness = 'Set up MCP again to update the IDE connection.';
+  } else if (configurationStatus === AiIntegration.McpConfigurationState.STANDALONE && !diagnostic) {
+    readiness = 'Connection not verified';
+  }
+
+  let primaryAction: McpPrimaryAction;
+  if (params.operationInProgress) {
+    primaryAction = { command: 'configureMcp', label: 'Setting up MCP…', disabled: true };
+  } else if (requiresSetup) {
+    primaryAction = { command: 'configureMcp', label: 'Set up MCP again', disabled: !params.supported };
+  } else if (
+    configurationStatus !== undefined &&
+    configurationStatus !== AiIntegration.McpConfigurationState.NOT_CONFIGURED
+  ) {
+    primaryAction = { command: 'openMcpConfiguration', label: 'Open configuration', disabled: !params.supported };
+  } else {
+    primaryAction = {
+      command: 'configureMcp',
+      label: 'Set up MCP',
+      disabled: !params.supported || params.isRemote
+    };
+  }
+
+  return { ...status, readiness, primaryAction };
+}
+
 export interface AIAgentsConfigurationState {
   ideName: string;
   isRemote: boolean;
@@ -76,9 +153,7 @@ export interface AIAgentsConfigurationState {
     canIntegrate: boolean;
     hook: { supported: boolean; configured: boolean };
   };
-  mcp: {
-    supported: boolean;
-    configured: boolean;
+  mcp: McpCardViewModel & {
     agentName?: string;
     legacyInstructionsConfigured: boolean;
   };
@@ -159,12 +234,20 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     const detectedAgents = getDetectedIdeAgents();
     const mcpAgent = getCurrentAgentWithMCPSupport();
     const hookAgent = getCurrentAgentWithHookSupport();
-    const [integrationState, legacyInstructionsConfigured, hookConfigured] = await Promise.all([
+    const [integrationState, legacyInstructionsConfigured, hookConfigured, mcpInspection] = await Promise.all([
       this.languageClient.getAiIntegrationState(getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)),
       isSonarQubeRulesFileConfigured(),
-      hookAgent !== undefined ? isHookInstalled(hookAgent) : Promise.resolve(false)
+      hookAgent !== undefined ? isHookInstalled(hookAgent) : Promise.resolve(false),
+      mcpAgent !== undefined
+        ? inspectCurrentMCPConfiguration(this.languageClient).catch(error => {
+            logToSonarLintOutput(`Could not inspect MCP configuration: ${String(error)}`);
+            return {
+              state: AiIntegration.McpConfigurationState.UNKNOWN,
+              diagnostics: ['Could not inspect the MCP configuration.']
+            };
+          })
+        : Promise.resolve(undefined)
     ]);
-    const mcpConfigured = getCurrentSonarQubeMCPServerConfig() !== undefined;
     const cliSupportByAgent = new Map(
       integrationState.agents.map(capability => [capability.agent, capability.cliIntegrationSupported])
     );
@@ -176,6 +259,15 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     const isRemote = vscode.env.remoteName !== undefined;
     const cliSetup = this.getCliSetup();
     const { installationStatus, authenticationStatus } = integrationState.cli;
+    const mcpCard = resolveMcpCard({
+      supported: mcpAgent !== undefined,
+      inspection: mcpInspection,
+      hasPersistedConnection:
+        mcpInspection?.state === AiIntegration.McpConfigurationState.STANDALONE &&
+        hasPersistedMCPConnection(this.extensionContext),
+      isRemote,
+      operationInProgress: isMCPSetupInProgress()
+    });
 
     return {
       ideName: ide.name,
@@ -198,10 +290,9 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         hook: { supported: hookAgent !== undefined, configured: hookConfigured }
       },
       mcp: {
-        supported: mcpAgent !== undefined,
-        configured: mcpConfigured,
         agentName: mcpAgentName,
-        legacyInstructionsConfigured
+        legacyInstructionsConfigured,
+        ...mcpCard
       }
     };
   }
