@@ -265,16 +265,14 @@ export class CommandsManager {
           status: AiIntegration.AiIntegrationActionStatus.STARTED,
           agent
         });
-        const configuration = configureMCPServer(
-          this.languageClient,
-          this.allConnectionsTreeDataProvider,
-          this.context,
-          agent,
-          connection
-        );
-        await this.aiAgentsConfigurationWebviewProvider.refresh();
         try {
-          const outcome = await configuration;
+          const outcome = await configureMCPServer(
+            this.languageClient,
+            this.allConnectionsTreeDataProvider,
+            this.context,
+            agent,
+            connection
+          );
           this.aiIntegrationTelemetry.action(AiIntegration.AiIntegrationAction.CONFIGURE_MCP, outcome);
         } finally {
           await this.aiAgentsConfigurationWebviewProvider.refreshAfterAction();

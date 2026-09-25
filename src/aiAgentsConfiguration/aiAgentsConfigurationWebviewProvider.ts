@@ -263,17 +263,17 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private async buildState(report = false): Promise<AIAgentsConfigurationState> {
     const ide = getCurrentIdeHost();
     const hookAgent = getCurrentAgentWithHookSupport();
-    const integrationState = await this.languageClient.getAiIntegrationState(
-      getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
-    );
-    if (report) {
-      this.telemetry.cliState(integrationState.cli);
-    }
     await migrateLegacyMCPConnection(this.extensionContext);
-    const [legacyInstructionsConfigured, hookConfigured] = await Promise.all([
+    const [integrationState, legacyInstructionsConfigured, hookConfigured] = await Promise.all([
+      this.languageClient.getAiIntegrationState(
+        getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
+      ),
       isSonarQubeRulesFileConfigured(),
       hookAgent !== undefined ? isHookInstalled(hookAgent) : Promise.resolve(false)
     ]);
+    if (report) {
+      this.telemetry.cliState(integrationState.cli);
+    }
     const detectedAgents = getDetectedIntegrationAgents(integrationState);
     const mcpAgents = detectedAgents.filter(agent => isAgentActiveForMcp(agent.agent));
     ContextManager.instance.setMCPServerSupportedAgentContext(

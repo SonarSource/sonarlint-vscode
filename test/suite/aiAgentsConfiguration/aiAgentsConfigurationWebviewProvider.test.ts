@@ -769,7 +769,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
   });
 
   test('allows CLI setup while background MCP work is running', async () => {
-    sinon.stub(mcpServerConfig, 'isMCPSetupInProgress').returns(true);
+    mcpInProgressStub.returns(true);
     const terminal = { show: sinon.stub() };
     sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
     sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
