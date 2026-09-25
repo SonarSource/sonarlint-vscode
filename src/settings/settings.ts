@@ -67,7 +67,7 @@ export function onConfigurationChange() {
         }
       });
     }
-    migrateConnectedModeSettings(newConfig, ConnectionSettingsService.instance);
+    void migrateConnectedModeSettings(newConfig, ConnectionSettingsService.instance);
   });
 }
 

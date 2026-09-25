@@ -96,15 +96,15 @@ export class SharedConnectedModeSettingsService implements FileSystemSubscriber 
     if (suggestions.length === 0) {
       logToSonarLintOutput(`Ignoring empty suggestions for ${configScopeId}`);
     } else if (suggestions.length === 1) {
-      this.suggestBindSingleOption(suggestions[0], workspaceFolder);
+      await this.suggestBindSingleOption(suggestions[0], workspaceFolder);
     } else {
       // multiple suggestions for the same config scope
       // deduplicate suggestions first
       const uniqueSuggestions = deduplicateSuggestions(suggestions);
       if (uniqueSuggestions.length === 1) {
-        this.suggestBindSingleOption({ connectionSuggestion: uniqueSuggestions[0] }, workspaceFolder);
+        await this.suggestBindSingleOption({ connectionSuggestion: uniqueSuggestions[0] }, workspaceFolder);
       } else {
-        this.suggestBindingMultiOption(uniqueSuggestions, workspaceFolder);
+        await this.suggestBindingMultiOption(uniqueSuggestions, workspaceFolder);
       }
     }
   }

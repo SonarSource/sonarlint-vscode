@@ -349,7 +349,7 @@ function renderBindingParagraph(maybeFolderUri: string, maybeProjectKey: string)
 }
 
 async function handleMessage(message) {
-  handleMessageWithConnectionSettingsService(message, ConnectionSettingsService.instance);
+  await handleMessageWithConnectionSettingsService(message, ConnectionSettingsService.instance);
 }
 
 /*
@@ -378,7 +378,7 @@ export async function handleMessageWithConnectionSettingsService(
       if (message.serverUrl) {
         message.serverUrl = cleanServerUrl(message.serverUrl);
       }
-      saveConnection(message, connectionSettingsService);
+      await saveConnection(message, connectionSettingsService);
       break;
     case SONARCLOUD_FREE_SIGNUP_LINK_COMMAND:
       delete message.command;

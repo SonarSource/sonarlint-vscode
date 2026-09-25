@@ -1,0 +1,293 @@
+body {
+  padding: 16px;
+  margin: 0;
+  color: var(--vscode-foreground);
+  background: var(--vscode-sideBar-background);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+main {
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.loading {
+  color: var(--vscode-descriptionForeground);
+}
+
+.page-header h1 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.page-header p,
+.description {
+  margin: 0;
+  color: var(--vscode-descriptionForeground);
+  line-height: 1.5;
+}
+
+.product-card {
+  padding: 16px;
+  margin-top: 16px;
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  background: var(--vscode-editor-background);
+}
+
+.product-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.product-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.product-card h2 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.status,
+.supporting-text,
+.agent-source {
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+
+.status-configured {
+  color: var(--vscode-testing-iconPassed, var(--vscode-descriptionForeground));
+}
+
+.agent-summary,
+.mcp-list {
+  padding-top: 12px;
+  margin: 14px 0;
+  border-top: 1px solid var(--vscode-panel-border);
+}
+
+.cli-authentication {
+  margin-top: 10px;
+}
+
+.cli-authentication-line {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cli-authentication-connection {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-list {
+  padding: 0;
+  margin: 6px 0 0;
+  list-style: none;
+}
+
+.agent-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+}
+
+.agent-details {
+  display: grid;
+  gap: 2px;
+}
+
+.agent-action {
+  flex: 0 0 auto;
+}
+
+.notice {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 10px;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+  color: var(--vscode-descriptionForeground);
+  background: var(--vscode-textBlockQuote-background);
+  border-left: 2px solid var(--vscode-textBlockQuote-border);
+}
+
+.notice[hidden] {
+  display: none;
+}
+
+#cli-feedback {
+  margin-bottom: 0;
+}
+
+@media (max-width: 360px) {
+  .agent-list li {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .agent-action {
+    width: 100%;
+  }
+}
+
+button {
+  font: inherit;
+}
+
+.primary-action,
+.secondary-action {
+  padding: 6px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.primary-action {
+  width: 100%;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  border: 1px solid transparent;
+}
+
+.primary-action:hover:not(:disabled) {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.primary-action:disabled,
+.secondary-action:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.secondary-action {
+  color: var(--vscode-button-secondaryForeground);
+  background: var(--vscode-button-secondaryBackground);
+  border: 1px solid transparent;
+}
+
+.secondary-action:hover:not(:disabled) {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.link-action,
+.inline-link-action {
+  padding: 0;
+  color: var(--vscode-textLink-foreground);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.link-action {
+  display: block;
+  margin-top: 4px;
+}
+
+.primary-action:not([hidden]) ~ .link-action,
+.notice:not([hidden]) + .link-action {
+  margin-top: 8px;
+}
+
+.inline-link-action:hover,
+.link-action:hover {
+  color: var(--vscode-textLink-activeForeground);
+  text-decoration: underline;
+}
+
+.mcp-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.mcp-integration-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  padding: 4px 0;
+}
+
+.mcp-integration-details,
+.mcp-integration-action {
+  display: grid;
+  gap: 3px;
+}
+
+.mcp-integration-action {
+  justify-items: end;
+}
+
+.mcp-configuration-path,
+.mcp-diagnostic {
+  overflow-wrap: anywhere;
+}
+
+.mcp-diagnostic {
+  grid-column: 1 / -1;
+}
+
+.component-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--vscode-panel-border);
+}
+
+.component-row[hidden] {
+  display: none;
+}
+
+.component-details {
+  display: grid;
+  gap: 2px;
+}
+
+button:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+}
+
+@media (max-width: 360px) {
+  body {
+    padding: 12px;
+  }
+
+  .product-card {
+    padding: 13px;
+  }
+
+  .mcp-integration-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mcp-integration-action {
+    justify-items: stretch;
+  }
+}

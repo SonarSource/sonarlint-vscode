@@ -55,7 +55,7 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$PULL_REQUEST" == "false" ]; then
   # Analyze with SNAPSHOT version as long as SQ does not correctly handle
   # purge of release data
 
-  npx sonar-scanner \
+  npx sonar-scanner-npm \
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
@@ -80,7 +80,7 @@ elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; t
 
   git fetch origin "${GITHUB_BRANCH}"
 
-  npx sonar-scanner \
+  npx sonar-scanner-npm \
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
@@ -96,7 +96,7 @@ elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; t
 elif [ "$PULL_REQUEST" != "false" ]; then
   echo '======= Analyze pull request'
 
-  npx sonar-scanner \
+  npx sonar-scanner-npm \
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \
@@ -112,7 +112,7 @@ elif [ "$PULL_REQUEST" != "false" ]; then
 elif [[ "$GITHUB_BRANCH" == "feature/long/"* ]] && [ "$PULL_REQUEST" == "false" ]; then
   echo '======= Analyze long lived feature branch'
 
-  npx sonar-scanner \
+  npx sonar-scanner-npm \
       -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
       -Dsonar.organization="$SONAR_ORGANIZATION" \
       -Dsonar.projectName="$SONAR_PROJECT_NAME" \

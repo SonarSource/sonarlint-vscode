@@ -10,6 +10,7 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import { ExtendedServer, AnalysisFile, ShowRuleDescriptionParams } from './protocol';
+import { AiIntegration } from './aiIntegrationProtocol';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 
 export class SonarLintExtendedLanguageClient extends LanguageClient {
@@ -20,16 +21,16 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   didClasspathUpdate(projectRoot: VSCode.Uri): void {
     const projectUri = code2ProtocolConverter(projectRoot);
-    this.sendNotification(ExtendedServer.DidClasspathUpdateNotification.type, { projectUri });
+    void this.sendNotification(ExtendedServer.DidClasspathUpdateNotification.type, { projectUri });
   }
 
   didJavaServerModeChange(serverMode: ServerMode) {
-    this.sendNotification(ExtendedServer.DidJavaServerModeChangeNotification.type, { serverMode });
+    void this.sendNotification(ExtendedServer.DidJavaServerModeChangeNotification.type, { serverMode });
   }
 
   didLocalBranchNameChange(folderRoot: VSCode.Uri, branchName?: string) {
     const folderUri = code2ProtocolConverter(folderRoot);
-    this.sendNotification(ExtendedServer.DidLocalBranchNameChangeNotification.type, { folderUri, branchName });
+    void this.sendNotification(ExtendedServer.DidLocalBranchNameChangeNotification.type, { folderUri, branchName });
   }
 
   checkConnection(connectionId: string) {
@@ -60,23 +61,23 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   showHotspotLocations(hotspotKey: string, fileUri: string): void {
-    this.sendRequest(ExtendedServer.ShowHotspotLocations.type, { hotspotKey, fileUri });
+    void this.sendRequest(ExtendedServer.ShowHotspotLocations.type, { hotspotKey, fileUri });
   }
 
   showHotspotRuleDescription(hotspotId: string, fileUri: string) {
-    this.sendNotification(ExtendedServer.ShowHotspotRuleDescriptionNotification.type, { hotspotId, fileUri });
+    void this.sendNotification(ExtendedServer.ShowHotspotRuleDescriptionNotification.type, { hotspotId, fileUri });
   }
 
   openHotspotOnServer(hotspotId: string, fileUri: string) {
-    this.sendNotification(ExtendedServer.OpenHotspotOnServer.type, { hotspotId, fileUri });
+    void this.sendNotification(ExtendedServer.OpenHotspotOnServer.type, { hotspotId, fileUri });
   }
 
   openDependencyRiskInBrowser(folderUri: string, issueId: string) {
-    this.sendNotification(ExtendedServer.OpenDependencyRiskInBrowser.type, { folderUri, issueId });
+    void this.sendNotification(ExtendedServer.OpenDependencyRiskInBrowser.type, { folderUri, issueId });
   }
 
   dependencyRiskInvestigatedLocally() {
-    this.sendNotification(ExtendedServer.DependencyRiskInvestigatedLocally.type);
+    void this.sendNotification(ExtendedServer.DependencyRiskInvestigatedLocally.type);
   }
 
   getDependencyRiskTransitions(dependencyRiskId: string): Promise<ExtendedServer.GetDependencyRiskTransitionsResponse> {
@@ -84,19 +85,19 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   helpAndFeedbackLinkClicked(itemId: string) {
-    this.sendNotification(ExtendedServer.HelpAndFeedbackLinkClicked.type, { id: itemId });
+    void this.sendNotification(ExtendedServer.HelpAndFeedbackLinkClicked.type, { id: itemId });
   }
 
   lmToolCalled(toolName: string, success: boolean) {
-    this.sendNotification(ExtendedServer.LMToolCalled.type, { toolName, success });
+    void this.sendNotification(ExtendedServer.LMToolCalled.type, { toolName, success });
   }
 
   scanFolderForHotspots(params: ExtendedServer.ScanFolderForHotspotsParams) {
-    this.sendNotification(ExtendedServer.ScanFolderForHotspots.type, params);
+    void this.sendNotification(ExtendedServer.ScanFolderForHotspots.type, params);
   }
 
   forgetFolderHotspots() {
-    this.sendNotification(ExtendedServer.ForgetFolderHotspots.type);
+    void this.sendNotification(ExtendedServer.ForgetFolderHotspots.type);
   }
 
   getFilePatternsForAnalysis(folderUri: string): Promise<ExtendedServer.GetFilePatternsForAnalysisResponse> {
@@ -131,6 +132,40 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
 
   getMCPServerConfiguration(connectionId: string, token: string): Promise<ExtendedServer.GetMCPServerConfigurationResponse> {
     return this.sendRequest(ExtendedServer.GetMCPServerConfiguration.type, { connectionId, token });
+  }
+
+  getAiIntegrationState(
+    params: AiIntegration.GetAiIntegrationStateParams
+  ): Promise<AiIntegration.GetAiIntegrationStateResponse> {
+    return this.sendRequest(AiIntegration.GetAiIntegrationState.type, params);
+  }
+
+  prepareInstallCliCommand(): Promise<AiIntegration.PrepareCliCommandResponse> {
+    return this.sendRequest(AiIntegration.PrepareInstallCliCommand.type);
+  }
+
+  prepareAuthenticateCliCommand(
+    params: AiIntegration.PrepareAuthenticateCliCommandParams
+  ): Promise<AiIntegration.PrepareCliCommandResponse> {
+    return this.sendRequest(AiIntegration.PrepareAuthenticateCliCommand.type, params);
+  }
+
+  prepareIntegrateCliCommand(
+    params: AiIntegration.PrepareIntegrateCliCommandParams
+  ): Promise<AiIntegration.PrepareCliCommandResponse> {
+    return this.sendRequest(AiIntegration.PrepareIntegrateCliCommand.type, params);
+  }
+
+  inspectMcpConfiguration(
+    params: AiIntegration.McpConfigurationInspectionParams
+  ): Promise<AiIntegration.McpConfigurationInspectionResponse> {
+    return this.sendRequest(AiIntegration.InspectMcpConfiguration.type, params);
+  }
+
+  planMcpConfigurationUpdate(
+    params: AiIntegration.McpConfigurationUpdateParams
+  ): Promise<AiIntegration.McpConfigurationUpdatePlanResponse> {
+    return this.sendRequest(AiIntegration.PlanMcpConfigurationUpdate.type, params);
   }
 
   getMCPRulesFileContent(aiAssistedIde: string): Promise<ExtendedServer.GetMCPRulesFileContentResponse> {
@@ -231,11 +266,11 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   labsExternalLinkClicked(linkId: string) {
-    this.sendNotification(ExtendedServer.LabsExternalLinkClicked.type, linkId);
+    void this.sendNotification(ExtendedServer.LabsExternalLinkClicked.type, linkId);
   }
 
   labsFeedbackLinkClicked(featureId: string) {
-    this.sendNotification(ExtendedServer.LabsFeedbackLinkClicked.type, featureId);
+    void this.sendNotification(ExtendedServer.LabsFeedbackLinkClicked.type, featureId);
   }
 
   getPluginStatuses(configurationScopeId: string | null): Promise<ExtendedServer.GetPluginStatusesResponse> {
@@ -243,11 +278,11 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
   }
 
   supportedLanguagesPanelOpened() {
-    this.sendNotification(ExtendedServer.SupportedLanguagesPanelOpened.type);
+    void this.sendNotification(ExtendedServer.SupportedLanguagesPanelOpened.type);
   }
 
   supportedLanguagesPanelCtaClicked() {
-    this.sendNotification(ExtendedServer.SupportedLanguagesPanelCtaClicked.type);
+    void this.sendNotification(ExtendedServer.SupportedLanguagesPanelCtaClicked.type);
   }
 
 }

@@ -1,3 +1,24 @@
+## 5.11
+* Increase minimal supported VSCode version to 1.100.0
+* Update PHP analyzer 3.60 -> [4.0](https://github.com/SonarSource/sonar-php/releases/tag/4.0.0.16889)
+* Update Text & Secrets analyzer 2.50 -> [2.51](https://github.com/SonarSource/sonar-text/releases/tag/2.51.0.13430)
+* Update Java analyzer 8.41 -> [8.43](https://github.com/SonarSource/sonar-java/releases/tag/8.43.0.47668)
+* Update IaC analyzer 2.18 -> [2.19](https://github.com/SonarSource/sonar-iac/releases/tag/2.19.0.23980)
+
+## 5.10
+* Update IaC analyzer 2.15 -> [2.16](https://github.com/SonarSource/sonar-iac/releases/tag/2.16.0.22905) -> [2.17](https://github.com/SonarSource/sonar-iac/releases/tag/2.17.0.23172) -> [2.18](https://github.com/SonarSource/sonar-iac/releases/tag/2.18.0.23895)
+* Update JS/TS/CSS analyzer 13.8 -> [13.9](https://github.com/SonarSource/SonarJS/releases/tag/13.9.0.44793)
+* Update Text & Secrets analyzer 2.49 -> [2.50](https://github.com/SonarSource/sonar-text/releases/tag/2.50.0.13411)
+* Update Go analyzer 1.43 -> [1.44](https://github.com/SonarSource/sonar-go/releases/tag/1.44.0.8969)
+* Support analysis of Rust in Connected Mode
+
+## 5.9
+* Update Go analyzer 1.41 -> [1.42](https://github.com/SonarSource/sonar-go/releases/tag/1.42.0.7579) -> [1.43](https://github.com/SonarSource/sonar-go/releases/tag/1.43.0.7704)
+* Update Java analyzer 8.39 -> [8.40](https://github.com/SonarSource/sonar-java/releases/tag/8.40.0.46617) -> [8.41](https://github.com/SonarSource/sonar-java/releases/tag/8.41.0.47177)
+* Update Python analyzer 5.29 -> [5.30](https://github.com/SonarSource/sonar-python/releases/tag/5.30.0.36259) -> [5.31](https://github.com/SonarSource/sonar-python/releases/tag/5.31.0.36502)
+* Update Text & Secrets analyzer 2.48 -> [2.49](https://github.com/SonarSource/sonar-text/releases/tag/2.49.0.12346)
+* Update JS/TS/CSS analyzer 13.7 -> [13.8](https://github.com/SonarSource/SonarJS/releases/tag/13.8.0.44569)
+
 ## 5.8
 * Update Text & Secrets analyzer 2.47 -> [2.48](https://github.com/SonarSource/sonar-text/releases/tag/2.48.0.12108)
 * Update Java analyzer 8.36 -> [8.37](https://github.com/SonarSource/sonar-java/releases/tag/8.37.0.45887) -> [8.38](https://github.com/SonarSource/sonar-java/releases/tag/8.38.0.46176) -> [8.39](https://github.com/SonarSource/sonar-java/releases/tag/8.39.0.46279)
@@ -6,7 +27,6 @@
 * Update JS/TS/CSS analyzer 13.4 -> [13.5](https://github.com/SonarSource/SonarJS/releases/tag/13.5.0.44127) -> [13.6](https://github.com/SonarSource/SonarJS/releases/tag/13.6.0.44263) -> [13.7](https://github.com/SonarSource/SonarJS/releases/tag/13.7.0.44407)
 * Update IaC analyzer 2.13 -> [2.14](https://github.com/SonarSource/sonar-iac/releases/tag/2.14.0.22356) -> [2.15](https://github.com/SonarSource/sonar-iac/releases/tag/2.15.0.22475)
 * Update Go analyzer 1.40 -> [1.41](https://github.com/SonarSource/sonar-go/releases/tag/1.41.0.7435)
-* Update Java Symbolic Execution analyzer 8.16 -> [8.22](https://github.com/SonarSource/sonar-java-symbolic-execution/releases/tag/8.22.0.2207)
 
 ## 5.7
 

@@ -46,7 +46,7 @@ export class RemediationWebviewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(
       message => {
         if (message.command === 'navigateToEvent') {
-          this.handleNavigateToEvent(message.eventId);
+          void this.handleNavigateToEvent(message.eventId);
         }
       },
       undefined,

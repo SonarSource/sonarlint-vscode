@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
+        "customConditions": ["node"],
         "target": "es2021",
         "outDir": "out",
         "lib": [
@@ -9,7 +10,9 @@
         ],
         "sourceMap": true,
         "rootDir": ".",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "strict": false,
+        "types": ["node", "mocha"]
     },
     "exclude": [
         "node_modules",

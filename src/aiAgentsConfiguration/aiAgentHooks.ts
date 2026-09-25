@@ -12,7 +12,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Commands } from '../util/commands';
-import { AGENT, getWindsurfDirectory } from './aiAgentUtils';
+import { IntegrationTarget, getWindsurfDirectory, toAgentDisplayName, toAgentKey } from './aiAgentUtils';
 
 interface HookConfig {
   command: string;
@@ -35,27 +35,29 @@ const HOOK_SCRIPT_PATTERN = /sonarqube_analysis_hook\.(js|py|sh)$/;
  * For Windsurf: ~/.codeium/windsurf or ~/.codeium/windsurf-next
  * For Cursor: not yet supported
  */
-function getIdeConfigDirectory(agent: AGENT): string | undefined {
+function getIdeConfigDirectory(agent: IntegrationTarget): string | undefined {
   switch (agent) {
-    case AGENT.WINDSURF: {
+    case IntegrationTarget.WINDSURF: {
       const windsurfDir = getWindsurfDirectory();
       return path.join(os.homedir(), '.codeium', windsurfDir);
     }
-    case AGENT.CURSOR:
+    case IntegrationTarget.CURSOR:
+    case IntegrationTarget.KIRO:
+    case IntegrationTarget.GITHUB_COPILOT:
       return undefined;
-    case AGENT.KIRO:
-      return undefined;
-    default:
-      return undefined;
+    default: {
+      const _exhaustive: never = agent;
+      throw new Error(`Unsupported agent: ${_exhaustive}`);
+    }
   }
 }
 
-function getHooksConfigPath(agent: AGENT): string | undefined {
+function getHooksConfigPath(agent: IntegrationTarget): string | undefined {
   const ideConfigDir = getIdeConfigDirectory(agent);
   return ideConfigDir ? path.join(ideConfigDir, 'hooks.json') : undefined;
 }
 
-function getHookScriptDirectory(agent: AGENT): string | undefined {
+function getHookScriptDirectory(agent: IntegrationTarget): string | undefined {
   const ideConfigDir = getIdeConfigDirectory(agent);
   return ideConfigDir ? path.join(ideConfigDir, 'hooks') : undefined;
 }
@@ -90,7 +92,7 @@ function isSonarQubeHook(command: string, scriptDir: string): boolean {
   );
 }
 
-export async function isHookInstalled(agent: AGENT): Promise<boolean> {
+export async function isHookInstalled(agent: IntegrationTarget): Promise<boolean> {
   const configPath = getHooksConfigPath(agent);
   const scriptDir = getHookScriptDirectory(agent);
   
@@ -122,18 +124,18 @@ export async function isHookInstalled(agent: AGENT): Promise<boolean> {
 
 export async function installHook(
   languageClient: SonarLintExtendedLanguageClient,
-  agent: AGENT
+  agent: IntegrationTarget
 ): Promise<void> {
   const configPath = getHooksConfigPath(agent);
   const scriptDir = getHookScriptDirectory(agent);
   
   if (!configPath || !scriptDir) {
-    vscode.window.showErrorMessage(`Hook configuration not supported for ${agent}`);
+    vscode.window.showErrorMessage(`Hook configuration not supported for ${toAgentDisplayName(agent)}`);
     return;
   }
 
   try {
-    const response = await languageClient.getAiAgentHookScriptContent(agent.toLowerCase());
+    const response = await languageClient.getAiAgentHookScriptContent(toAgentKey(agent));
     
     // Create hooks directory if it doesn't exist
     await fs.promises.mkdir(scriptDir, { recursive: true });
@@ -174,22 +176,20 @@ export async function installHook(
 
     await writeHooksConfig(configPath, existingConfig);
 
-    await vscode.commands.executeCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION);
-
     vscode.window.showInformationMessage(
-      `Hook script installed successfully for ${agent}. Code will be analyzed automatically after AI generation.`
+      `Hook script installed successfully for ${toAgentDisplayName(agent)}. Code will be analyzed automatically after AI generation.`
     );
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to install hook script: ${error.message}`);
   }
 }
 
-export async function uninstallHook(agent: AGENT): Promise<void> {
+export async function uninstallHook(agent: IntegrationTarget): Promise<void> {
   const configPath = getHooksConfigPath(agent);
   const scriptDir = getHookScriptDirectory(agent);
   
   if (!configPath || !scriptDir) {
-    vscode.window.showErrorMessage(`Hook configuration not supported for ${agent}`);
+    vscode.window.showErrorMessage(`Hook configuration not supported for ${toAgentDisplayName(agent)}`);
     return;
   }
 
@@ -237,11 +237,11 @@ export async function uninstallHook(agent: AGENT): Promise<void> {
   }
 }
 
-export async function openHookScript(agent: AGENT): Promise<void> {
+export async function openHookScript(agent: IntegrationTarget): Promise<void> {
   const configPath = getHooksConfigPath(agent);
   
   if (!configPath) {
-    vscode.window.showErrorMessage(`Hook configuration not supported for ${agent}`);
+    vscode.window.showErrorMessage(`Hook configuration not supported for ${toAgentDisplayName(agent)}`);
     return;
   }
 
@@ -263,11 +263,11 @@ export async function openHookScript(agent: AGENT): Promise<void> {
   }
 }
 
-export async function openHookConfiguration(agent: AGENT): Promise<void> {
+export async function openHookConfiguration(agent: IntegrationTarget): Promise<void> {
   const configPath = getHooksConfigPath(agent);
   
   if (!configPath) {
-    vscode.window.showErrorMessage(`Hook configuration not supported for ${agent}`);
+    vscode.window.showErrorMessage(`Hook configuration not supported for ${toAgentDisplayName(agent)}`);
     return;
   }
 
@@ -283,4 +283,3 @@ export async function openHookConfiguration(agent: AGENT): Promise<void> {
     vscode.window.showErrorMessage(`Failed to open hook configuration: ${error.message}`);
   }
 }
-

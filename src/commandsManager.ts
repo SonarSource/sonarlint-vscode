@@ -11,13 +11,14 @@ import { showLogOutput } from './util/logging';
 import { enableVerboseLogs } from './settings/settings';
 import { AllRulesTreeDataProvider, LanguageNode, RuleNode, toggleRule } from './rules/rules';
 import { FindingNode } from './findings/findingTypes/findingNode';
+import { AiIntegration } from './lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
 import { openSonarQubeRulesFile, introduceSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
 import { configureMCPServer, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
 import { configureCompilationDatabase } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
 import { BindingService } from './connected/binding';
-import { AllConnectionsTreeDataProvider, ConnectionType, ConnectionsNode } from './connected/connections';
+import { AllConnectionsTreeDataProvider, Connection, ConnectionType, ConnectionsNode } from './connected/connections';
 import {
   connectToSonarQube,
   connectToSonarCloud,
@@ -41,9 +42,14 @@ import { ExtendedServer } from './lsp/protocol';
 import { FlightRecorderService } from './monitoring/flightrecorder';
 import { ConnectionSettingsService } from './settings/connectionsettings';
 import { installManagedJre, resolveRequirements } from './util/requirements';
-import { AIAgentsConfigurationTreeDataProvider } from './aiAgentsConfiguration/aiAgentsConfigurationTreeDataProvider';
+import { AIAgentsConfigurationWebviewProvider } from './aiAgentsConfiguration/aiAgentsConfigurationWebviewProvider';
 import { Commands } from './util/commands';
-import { installHook, openHookConfiguration, openHookScript, uninstallHook } from './aiAgentsConfiguration/aiAgentHooks';
+import {
+  installHook,
+  openHookConfiguration,
+  openHookScript,
+  uninstallHook
+} from './aiAgentsConfiguration/aiAgentHooks';
 import { getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
 import { code2ProtocolConverter } from './util/uri';
 import { StatusBarService } from './statusbar/statusBar';
@@ -58,7 +64,7 @@ export class CommandsManager {
     private readonly allRulesView: vscode.TreeView<LanguageNode>,
     private readonly allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
     private readonly allConnectionsView: vscode.TreeView<ConnectionsNode>,
-    private readonly aiAgentsConfigurationTreeDataProvider: AIAgentsConfigurationTreeDataProvider
+    private readonly aiAgentsConfigurationWebviewProvider: AIAgentsConfigurationWebviewProvider
   ) {}
 
   registerCommands() {
@@ -157,13 +163,13 @@ export class CommandsManager {
         (workspaceUri: string, issueKey: string, fileUri: string, isTaintIssue: boolean, isDependencyRisk = false) =>
           resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue, isDependencyRisk)
       ),
-      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () => {
-        IssueService.instance.reopenLocalIssues();
-      }),
+      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () =>
+        IssueService.instance.reopenLocalIssues()
+      ),
       vscode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
         const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
         if (connectionDeleted) {
-          BindingService.instance.deleteBindingsForConnection(connection);
+          await BindingService.instance.deleteBindingsForConnection(connection);
         }
       }),
       vscode.commands.registerCommand(Commands.EDIT_PROJECT_BINDING, binding =>
@@ -191,20 +197,22 @@ export class CommandsManager {
         this.languageClient.forgetFolderHotspots()
       ),
       vscode.commands.registerCommand(Commands.ENABLE_VERBOSE_LOGS, () => enableVerboseLogs()),
-      vscode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, () => {
-        IssueService.instance.analyseOpenFileIgnoringExcludes(true);
-        vscode.commands.executeCommand('SonarQube.Findings.focus');
+      vscode.commands.registerCommand(Commands.ANALYSE_OPEN_FILE, async () => {
+        await IssueService.instance.analyseOpenFileIgnoringExcludes(true);
+        void vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
       vscode.commands.registerCommand(Commands.ANALYZE_VCS_CHANGED_FILES, () => {
         const workspaceFolderUris = vscode.workspace.workspaceFolders?.map(f => code2ProtocolConverter(f.uri));
         if (!workspaceFolderUris) {
-          vscode.window.showWarningMessage('No workspace folders found; Ignoring request to analyze VCS changed files.');
+          vscode.window.showWarningMessage(
+            'No workspace folders found; Ignoring request to analyze VCS changed files.'
+          );
           return;
         }
-        this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
+        void this.languageClient.sendNotification(ExtendedServer.AnalyzeVCSChangedFiles.type, {
           configScopeIds: workspaceFolderUris
         });
-        vscode.commands.executeCommand('SonarQube.Findings.focus');
+        void vscode.commands.executeCommand('SonarQube.Findings.focus');
       }),
       vscode.commands.registerCommand(
         Commands.FOCUS_ON_CONNECTION,
@@ -235,43 +243,66 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.CAPTURE_HEAP_DUMP, () =>
         FlightRecorderService.instance.captureHeapDump()
       ),
-      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, connection => {
-        configureMCPServer(this.languageClient, this.allConnectionsTreeDataProvider, connection);
-        this.aiAgentsConfigurationTreeDataProvider.refresh();
+      vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async agentOrConnection => {
+        const agent = typeof agentOrConnection === 'number' ? (agentOrConnection as AiIntegration.AiAgent) : undefined;
+        const connection = typeof agentOrConnection === 'number' ? undefined : (agentOrConnection as Connection);
+        const configuration = configureMCPServer(
+          this.languageClient,
+          this.allConnectionsTreeDataProvider,
+          this.context,
+          agent,
+          connection
+        );
+        await this.aiAgentsConfigurationWebviewProvider.refresh();
+        try {
+          await configuration;
+        } catch {
+          // configureMCPServer already reported the error to the user.
+        } finally {
+          await this.aiAgentsConfigurationWebviewProvider.refresh();
+        }
       }),
-      vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, () => openMCPServerConfigurationFile()),
+      vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, agent =>
+        openMCPServerConfigurationFile(agent)
+      ),
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
-        this.aiAgentsConfigurationTreeDataProvider.refresh()
+        this.aiAgentsConfigurationWebviewProvider.refresh()
+      ),
+      vscode.commands.registerCommand(Commands.USER_REFRESH_AI_AGENTS_CONFIGURATION, () =>
+        this.aiAgentsConfigurationWebviewProvider.refreshOnRequest()
       ),
       vscode.commands.registerCommand(Commands.OPEN_AIAGENTS_CONFIGURATION_DOC, () => {
         vscode.commands.executeCommand(Commands.TRIGGER_HELP_AND_FEEDBACK_LINK, 'aiAgentsConfigurationDoc');
       }),
-      vscode.commands.registerCommand(Commands.OPEN_SONARQUBE_RULES_FILE, () => openSonarQubeRulesFile()),
+      vscode.commands.registerCommand(Commands.OPEN_SONARQUBE_RULES_FILE, (offerCreation = true) =>
+        openSonarQubeRulesFile(offerCreation)
+      ),
       vscode.commands.registerCommand(Commands.INTRODUCE_SONARQUBE_RULES_FILE, () =>
         introduceSonarQubeRulesFile(this.languageClient)
       ),
-      vscode.commands.registerCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT, () => {
+      vscode.commands.registerCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
-        if (agent) {
-          installHook(this.languageClient, agent);
+        if (agent !== undefined) {
+          await installHook(this.languageClient, agent);
+          await this.aiAgentsConfigurationWebviewProvider.refresh();
         }
       }),
-      vscode.commands.registerCommand(Commands.UNINSTALL_AI_AGENT_HOOK_SCRIPT, () => {
+      vscode.commands.registerCommand(Commands.UNINSTALL_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
-        if (agent) {
-          uninstallHook(agent);
+        if (agent !== undefined) {
+          await uninstallHook(agent);
         }
       }),
-      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_SCRIPT, () => {
+      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_SCRIPT, async () => {
         const agent = getCurrentAgentWithHookSupport();
-        if (agent) {
-          openHookScript(agent);
+        if (agent !== undefined) {
+          await openHookScript(agent);
         }
       }),
-      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION, () => {
+      vscode.commands.registerCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION, async () => {
         const agent = getCurrentAgentWithHookSupport();
-        if (agent) {
-          openHookConfiguration(agent);
+        if (agent !== undefined) {
+          await openHookConfiguration(agent);
         }
       }),
       vscode.commands.registerCommand(Commands.SHOW_SUPPORTED_LANGUAGES, async () => {

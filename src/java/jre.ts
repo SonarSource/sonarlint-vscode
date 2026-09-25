@@ -8,7 +8,7 @@
 import * as followRedirects from 'follow-redirects';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as inly from 'inly';
+import inly = require('inly');
 
 const https = followRedirects.https;
 

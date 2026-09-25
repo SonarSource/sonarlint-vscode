@@ -35,9 +35,9 @@ export class AnalyzeFileTool implements vscode.LanguageModelTool<IAnalyzeFilePar
       preview: true
     });
     // Analyze the file
-    IssueService.instance.analyseOpenFileIgnoringExcludes(false, textDocument);
+    await IssueService.instance.analyseOpenFileIgnoringExcludes(false, textDocument);
     // Focus on the SonarQube Findings view
-    vscode.commands.executeCommand('SonarQube.Findings.focus');
+    void vscode.commands.executeCommand('SonarQube.Findings.focus');
    
     this.client.lmToolCalled(`lm_${AnalyzeFileTool.toolName}`, true);
     return new vscode.LanguageModelToolResult([

@@ -5,7 +5,7 @@
  * Licensed under the LGPLv3 License. See LICENSE.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 'use strict';
-import { writeFileSync } from 'fs';
+import { writeFileSync } from 'node:fs';
 import { info } from 'fancy-log';
 import { getPackageJSON } from './fsUtils.mjs';
 

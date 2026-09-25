@@ -11,7 +11,7 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { introduceSonarQubeRulesFile, isSonarQubeRulesFileConfigured, openSonarQubeRulesFile } from '../../../src/aiAgentsConfiguration/aiAgentRuleConfig';
 import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
-import { AGENT } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { IntegrationTarget } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 suite('aiAgentRuleConfig', () => {
@@ -45,7 +45,7 @@ suite('aiAgentRuleConfig', () => {
 
   suite('isSonarQubeRulesFileConfigured', () => {
     test('should return true when SonarQube rules file exists for Cursor', async () => {
-        getCurrentAgentStub.returns(AGENT.CURSOR);
+        getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
         const mockWorkspaceFolder = {
           uri: vscode.Uri.file('/mock/workspace'),
           name: 'test-workspace',
@@ -67,7 +67,7 @@ suite('aiAgentRuleConfig', () => {
       });
 
     test('should return true when SonarQube rules file exists for Windsurf', async () => {
-        getCurrentAgentStub.returns(AGENT.WINDSURF);
+        getCurrentAgentStub.returns(IntegrationTarget.WINDSURF);
         const mockWorkspaceFolder = {
           uri: vscode.Uri.file('/mock/workspace'),
           name: 'test-workspace',
@@ -89,7 +89,7 @@ suite('aiAgentRuleConfig', () => {
       });
 
     test('should return true when SonarQube rules file exists for Kiro', async () => {
-        getCurrentAgentStub.returns(AGENT.KIRO);
+        getCurrentAgentStub.returns(IntegrationTarget.KIRO);
         const mockWorkspaceFolder = {
           uri: vscode.Uri.file('/mock/workspace'),
           name: 'test-workspace',
@@ -111,7 +111,7 @@ suite('aiAgentRuleConfig', () => {
       });
 
     test('should return true when SonarQube rules file exists for GitHub Copilot', async () => {
-        getCurrentAgentStub.returns(AGENT.GITHUB_COPILOT);
+        getCurrentAgentStub.returns(IntegrationTarget.GITHUB_COPILOT);
         const mockWorkspaceFolder = {
           uri: vscode.Uri.file('/mock/workspace'),
           name: 'test-workspace',
@@ -133,7 +133,7 @@ suite('aiAgentRuleConfig', () => {
       });
     
       test('should return false when SonarQube rules file does not exist', async () => {
-        getCurrentAgentStub.returns(AGENT.CURSOR);
+        getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
         const mockWorkspaceFolder = {
           uri: vscode.Uri.file('/mock/workspace'),
           name: 'test-workspace',
@@ -179,7 +179,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should show error when workspace folder cannot be found', async () => {
-      getCurrentAgentStub.returns(AGENT.CURSOR);
+      getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
       workspaceStub.value(undefined);
 
       await openSonarQubeRulesFile();
@@ -189,7 +189,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should show warning and offer to create file when rules file does not exist', async () => {
-      getCurrentAgentStub.returns(AGENT.CURSOR);
+      getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
         name: 'test-workspace',
@@ -215,8 +215,19 @@ suite('aiAgentRuleConfig', () => {
       expect(executeCommandStub.calledWith('SonarLint.IntroduceSonarQubeRulesFile')).to.be.true;
     });
 
+    test('should not offer to create a missing file when opening from the legacy instructions row', async () => {
+      getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
+      workspaceStub.value([{ uri: vscode.Uri.file('/mock/workspace'), name: 'test-workspace', index: 0 }]);
+      fsStub.value({ stat: sinon.stub().rejects(new Error('File not found')) });
+
+      await openSonarQubeRulesFile(false);
+
+      expect(showWarningMessageStub.called).to.be.false;
+      expect(executeCommandStub.called).to.be.false;
+    });
+
     test('should open and show text document when rules file exists for Cursor', async () => {
-      getCurrentAgentStub.returns(AGENT.CURSOR);
+      getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
         name: 'test-workspace',
@@ -242,7 +253,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should open and show text document when rules file exists for GitHub Copilot', async () => {
-      getCurrentAgentStub.returns(AGENT.GITHUB_COPILOT);
+      getCurrentAgentStub.returns(IntegrationTarget.GITHUB_COPILOT);
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
         name: 'test-workspace',
@@ -266,6 +277,20 @@ suite('aiAgentRuleConfig', () => {
       expect(showTextDocumentStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.calledWith(mockDocument)).to.be.true;
     });
+
+    test('should report an opening error without offering to recreate an existing rules file', async () => {
+      getCurrentAgentStub.returns(IntegrationTarget.GITHUB_COPILOT);
+      workspaceStub.value([{ uri: vscode.Uri.file('/mock/workspace'), name: 'test-workspace', index: 0 }]);
+      fsStub.value({
+        stat: sinon.stub().resolves({ type: vscode.FileType.File, ctime: 0, mtime: 0, size: 100 })
+      });
+      openTextDocumentStub.rejects(new Error('Permission denied'));
+
+      await openSonarQubeRulesFile();
+
+      expect(showWarningMessageStub.called).to.be.false;
+      expect(showErrorMessageStub.calledWith('Error opening SonarQube rules file: Permission denied')).to.be.true;
+    });
   });
 
   suite('introduceSonarQubeRulesFile', () => {
@@ -280,7 +305,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should return early when user does not confirm', async () => {
-      getCurrentAgentStub.returns(AGENT.CURSOR);
+      getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
       showInformationMessageStub.resolves(undefined);
 
       const mockLanguageClient = {} as any;
@@ -292,7 +317,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should show error when workspace folder does not exist', async () => {
-      getCurrentAgentStub.returns(AGENT.CURSOR);
+      getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
       showInformationMessageStub.resolves('OK');
       workspaceStub.value(undefined);
 
@@ -305,7 +330,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should create file for Cursor when user confirms and folder exists', async () => {
-      getCurrentAgentStub.returns(AGENT.CURSOR);
+      getCurrentAgentStub.returns(IntegrationTarget.CURSOR);
       showInformationMessageStub.resolves('OK');
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
@@ -341,7 +366,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should create file for Windsurf with correct path', async () => {
-      getCurrentAgentStub.returns(AGENT.WINDSURF);
+      getCurrentAgentStub.returns(IntegrationTarget.WINDSURF);
       showInformationMessageStub.resolves('OK');
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
@@ -373,7 +398,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should create file for Kiro with correct path', async () => {
-      getCurrentAgentStub.returns(AGENT.KIRO);
+      getCurrentAgentStub.returns(IntegrationTarget.KIRO);
       showInformationMessageStub.resolves('OK');
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),
@@ -405,7 +430,7 @@ suite('aiAgentRuleConfig', () => {
     });
 
     test('should create file for GitHub Copilot with correct path and extension', async () => {
-      getCurrentAgentStub.returns(AGENT.GITHUB_COPILOT);
+      getCurrentAgentStub.returns(IntegrationTarget.GITHUB_COPILOT);
       showInformationMessageStub.resolves('OK');
       const mockWorkspaceFolder = {
         uri: vscode.Uri.file('/mock/workspace'),

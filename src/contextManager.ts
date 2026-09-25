@@ -10,8 +10,9 @@ import * as vscode from 'vscode';
 import { BindingService } from './connected/binding';
 import { allFalse, allTrue } from './rules/rules';
 import { ConnectionSettingsService } from './settings/connectionsettings';
-import { HAS_CLICKED_GET_STARTED_LINK } from './commons'
-import { getCurrentAgentWithMCPSupport, getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
+import { HAS_CLICKED_GET_STARTED_LINK } from './commons';
+import { COPILOT_ACTIVATION_DELAY_MS, getCurrentAgentWithHookSupport } from './aiAgentsConfiguration/aiAgentUtils';
+import { hasActiveStandaloneMcpAgent } from './aiAgentsConfiguration/mcpServerConfig';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 const SOME_CONNECTED_MODE_CONTEXT_KEY = 'sonarqube.someFoldersUseConnectedMode';
@@ -23,7 +24,6 @@ const MCP_SERVER_SUPPORTED_AGENT = 'sonarqube.mcpServerSupportedAgent';
 const HOOK_SCRIPT_SUPPORTED_AGENT = 'sonarqube.hookScriptSupportedAgent';
 const IDE_LABS_ENABLED_FLAG_KEY = 'sonarqube.ideLabsEnabled';
 const IDE_LABS_JOINED_FLAG_KEY = 'sonarqube.ideLabsJoined';
-const COPILOT_ACTIVATION_DELAY_MS = 10000;
 
 export class ContextManager {
   private static _instance: ContextManager;
@@ -61,13 +61,13 @@ export class ContextManager {
   }
 
   setMCPServerSupportedAgentContext() {
-    const isSupportedAgent = getCurrentAgentWithMCPSupport() !== undefined;
-    vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_AGENT, isSupportedAgent);
+    const isSupportedTarget = hasActiveStandaloneMcpAgent();
+    vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_AGENT, isSupportedTarget);
   }
 
   setHookScriptSupportedAgentContext() {
-    const isSupportedAgent = getCurrentAgentWithHookSupport() !== undefined;
-    vscode.commands.executeCommand('setContext', HOOK_SCRIPT_SUPPORTED_AGENT, isSupportedAgent);
+    const isSupportedTarget = getCurrentAgentWithHookSupport() !== undefined;
+    vscode.commands.executeCommand('setContext', HOOK_SCRIPT_SUPPORTED_AGENT, isSupportedTarget);
   }
 
   setIssueLocationsContext() {
@@ -78,7 +78,11 @@ export class ContextManager {
     const hasConnectionConfigured = ConnectionSettingsService.instance.hasConnectionConfigured();
     const hasClickedGetStartedLink = context.globalState.get(HAS_CLICKED_GET_STARTED_LINK, false);
     // only show the get started view if user has no connection AND has not clicked the link
-    vscode.commands.executeCommand('setContext', SHOULD_SHOW_GET_STARTED_VIEW, !hasConnectionConfigured && !hasClickedGetStartedLink);
+    vscode.commands.executeCommand(
+      'setContext',
+      SHOULD_SHOW_GET_STARTED_VIEW,
+      !hasConnectionConfigured && !hasClickedGetStartedLink
+    );
   }
 
   setFlightRecorderRunningContext() {
@@ -113,5 +117,4 @@ export class ContextManager {
     vscode.commands.executeCommand('setContext', MCP_SERVER_SUPPORTED_AGENT, undefined);
     vscode.commands.executeCommand('setContext', HOOK_SCRIPT_SUPPORTED_AGENT, undefined);
   }
-
 }
