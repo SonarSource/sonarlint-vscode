@@ -13,6 +13,7 @@ import {
   getActiveMcpAgent,
   getMCPConfigPath,
   configureMCPServer,
+  isMCPSetupInProgress,
   onEmbeddedServerStarted,
   openMCPServerConfigurationFile
 } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
@@ -47,7 +48,11 @@ const mockAllConnectionsTreeDataProvider = {
 } as unknown as AllConnectionsTreeDataProvider;
 
 suite('mcpServerConfig', () => {
-  setup(() => {
+  setup(async function () {
+    this.timeout(30_000);
+    while (isMCPSetupInProgress()) {
+      await new Promise(resolve => setTimeout(resolve, 25));
+    }
     getAiIntegrationStateStub.reset();
     getAiIntegrationStateStub.callsFake(async () => ({
       agents: aiAgentUtils.getDetectedIdeAgents().map(agent => ({
@@ -179,8 +184,10 @@ suite('mcpServerConfig', () => {
     get.onSecondCall().returns(undefined);
     const extensionContext = { globalState: { get, update } } as unknown as vscode.ExtensionContext;
 
+    let startupRefresh: Promise<void> | undefined;
     try {
-      const startupRefresh = onEmbeddedServerStarted(mockLanguageClient, extensionContext);
+      startupRefresh = onEmbeddedServerStarted(mockLanguageClient, extensionContext);
+      expect(update.calledOnce).to.be.true;
       await configureMCPServer(
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
@@ -194,9 +201,9 @@ suite('mcpServerConfig', () => {
           'A SonarQube MCP configuration operation is already running. Try again in a moment.'
         )
       ).to.be.true;
+    } finally {
       finishMigration();
       await startupRefresh;
-    } finally {
       envStub.restore();
       detectedAgentsStub.restore();
       showInfoStub.restore();
@@ -235,7 +242,11 @@ suite('mcpServerConfig', () => {
         AiIntegration.AiAgent.CURSOR,
         mockConnection
       );
-      await tokenRequest;
+      const firstStep = await Promise.race([
+        tokenRequest.then(() => 'token-requested'),
+        setup.then(outcome => JSON.stringify(outcome))
+      ]);
+      expect(firstStep).to.equal('token-requested');
       await onEmbeddedServerStarted(mockLanguageClient, extensionContext);
       expect(inspectMcpConfigurationStub.calledOnce).to.be.true;
 
@@ -515,12 +526,18 @@ suite('mcpServerConfig', () => {
     try {
       for (const state of blockedStates) {
         inspectMcpConfigurationStub.resolves({ state, diagnostics: ['Configuration was not changed.'] });
-        await configureMCPServer(
+        const outcome = await configureMCPServer(
           mockLanguageClient,
           mockAllConnectionsTreeDataProvider,
           extensionContext,
           IntegrationTarget.CURSOR,
           mockConnection
+        );
+        expect(outcome.status).to.equal(AiIntegration.AiIntegrationActionStatus.FAILED);
+        expect(outcome.failureCategory).to.equal(
+          state === AiIntegration.McpConfigurationState.MALFORMED
+            ? AiIntegration.AiIntegrationFailureCategory.MALFORMED_CONFIGURATION
+            : AiIntegration.AiIntegrationFailureCategory.UNSUPPORTED
         );
       }
 
@@ -554,20 +571,19 @@ suite('mcpServerConfig', () => {
     } as unknown as vscode.ExtensionContext;
 
     try {
-      let failure: Error | undefined;
-      try {
-        await configureMCPServer(
-          mockLanguageClient,
-          mockAllConnectionsTreeDataProvider,
-          extensionContext,
-          IntegrationTarget.CURSOR,
-          mockConnection
-        );
-      } catch (error) {
-        failure = error;
-      }
+      const outcome = await configureMCPServer(
+        mockLanguageClient,
+        mockAllConnectionsTreeDataProvider,
+        extensionContext,
+        IntegrationTarget.CURSOR,
+        mockConnection
+      );
 
-      expect(failure?.message).to.equal('write failed');
+      expect(outcome).to.deep.equal({
+        status: AiIntegration.AiIntegrationActionStatus.FAILED,
+        failureCategory: AiIntegration.AiIntegrationFailureCategory.FILESYSTEM_ERROR,
+        agent: IntegrationTarget.CURSOR
+      });
       expect(globalStateUpdateStub.called).to.be.false;
     } finally {
       envStub.restore();
@@ -969,7 +985,9 @@ suite('mcpServerConfig', () => {
     const showTextDocumentStub = sinon.stub(vscode.window, 'showTextDocument').resolves();
 
     try {
-      await openMCPServerConfigurationFile(mockLanguageClient);
+      const outcome = await openMCPServerConfigurationFile(mockLanguageClient);
+      expect(outcome.status).to.equal(AiIntegration.AiIntegrationActionStatus.FAILED);
+      expect(outcome.failureCategory).to.equal(AiIntegration.AiIntegrationFailureCategory.FILESYSTEM_ERROR);
       expect(showInfoStub.calledOnce).to.be.true;
       expect(showTextDocumentStub.called).to.be.false;
     } finally {
