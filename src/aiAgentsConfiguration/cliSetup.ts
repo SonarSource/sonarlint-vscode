@@ -121,7 +121,7 @@ export class CliSetupSession {
       step: CliSetupStep,
       agent: AiIntegration.AiAgent | undefined,
       outcome: AiIntegrationOutcome
-    ) => Thenable<void> | Promise<void>
+    ) => void | Thenable<void> | Promise<void>
   ) {}
 
   get operationInProgress(): boolean {
@@ -139,9 +139,9 @@ export class CliSetupSession {
     this.activeAgent = agentId;
     this.pendingOutcome = undefined;
     this.notice = undefined;
+    await this.onChange();
     let terminalStarted = false;
     try {
-      await this.onChange();
       terminalStarted = await this.execute(step, agentId);
     } catch {
       this.notice = { outcome: 'failed', message: SETUP_START_FAILED };

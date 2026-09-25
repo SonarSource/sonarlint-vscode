@@ -181,6 +181,76 @@ suite('cliSetup', () => {
     expect(onFinished.firstCall.args[2]).to.deep.equal({ status: 'FAILED' });
   });
 
+  test('shows in-progress state before the setup terminal opens', async () => {
+    const terminal = { show: sinon.stub() } as unknown as vscode.Terminal;
+    const createTerminal = sinon.stub(vscode.window, 'createTerminal').returns(terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    let session!: CliSetupSession;
+    let refreshedWhileInProgress = false;
+    const onChange = sinon.stub().callsFake(() => {
+      refreshedWhileInProgress = session.operationInProgress && createTerminal.notCalled;
+      return Promise.resolve();
+    });
+    session = new CliSetupSession(
+      { subscriptions: [] } as unknown as vscode.ExtensionContext,
+      {
+        getAiIntegrationState: sinon.stub().resolves({
+          cli: {
+            installationStatus: NOT_INSTALLED,
+            authenticationStatus: UNKNOWN
+          },
+          agents: [],
+          connectionChoices: []
+        }),
+        prepareInstallCliCommand: sinon.stub().resolves({
+          executable: 'sonar',
+          arguments: ['install'],
+          interactive: true
+        })
+      } as never,
+      onChange
+    );
+
+    await session.run('install');
+
+    expect(refreshedWhileInProgress).to.be.true;
+    expect(onChange.calledOnce).to.be.true;
+    expect(onChange.firstCall.args).to.deep.equal([]);
+    expect(createTerminal.calledOnce).to.be.true;
+    expect(session.operationInProgress).to.be.true;
+  });
+
+  test('reports the finished state when setup ends before a terminal opens', async () => {
+    const reports: Array<boolean | undefined> = [];
+    const onChange = sinon.stub().callsFake((report?: boolean) => {
+      reports.push(report);
+      return Promise.resolve();
+    });
+    const onFinished = sinon.stub().resolves();
+    const session = new CliSetupSession(
+      { subscriptions: [] } as unknown as vscode.ExtensionContext,
+      {
+        getAiIntegrationState: sinon.stub().resolves({
+          cli: {
+            installationStatus: INSTALLED,
+            authenticationStatus: AUTHENTICATED
+          },
+          agents: [],
+          connectionChoices: []
+        })
+      } as never,
+      onChange,
+      onFinished
+    );
+
+    await session.run('install');
+
+    expect(reports).to.deep.equal([undefined, true]);
+    expect(session.operationInProgress).to.be.false;
+    expect(onFinished.calledOnce).to.be.true;
+    expect(onFinished.firstCall.args[2]).to.deep.equal({ status: 'FAILED' });
+  });
+
   test('records only the observable terminal exit as a notice', async () => {
     const onChange = sinon.stub().resolves();
     const session = new CliSetupSession(

@@ -972,6 +972,29 @@ suite('mcpServerConfig', () => {
     }
   });
 
+  test('shows and logs a failure when the MCP configuration file cannot be opened', async () => {
+    const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
+    const fs = require('node:fs');
+    const existsStub = sinon.stub(fs, 'existsSync').returns(true);
+    const showTextDocumentStub = sinon.stub(vscode.window, 'showTextDocument').rejects(new Error('permission denied'));
+    const showErrorStub = sinon.stub(vscode.window, 'showErrorMessage').resolves(undefined);
+    const logStub = sinon.stub(logging, 'logToSonarLintOutput');
+
+    try {
+      const outcome = await openMCPServerConfigurationFile(mockLanguageClient);
+      expect(outcome.status).to.equal(AiIntegration.AiIntegrationActionStatus.FAILED);
+      expect(showErrorStub.calledOnce).to.be.true;
+      expect(showErrorStub.firstCall.args[0]).to.include('permission denied');
+      expect(logStub.calledOnce).to.be.true;
+    } finally {
+      envStub.restore();
+      existsStub.restore();
+      showTextDocumentStub.restore();
+      showErrorStub.restore();
+      logStub.restore();
+    }
+  });
+
   test('should tell the user when the MCP configuration file is missing', async () => {
     const envStub = sinon.stub(vscode.env, 'appName').value('Cursor');
     const fs = require('node:fs');
