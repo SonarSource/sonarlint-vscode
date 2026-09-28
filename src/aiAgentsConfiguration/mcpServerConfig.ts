@@ -45,6 +45,7 @@ const MCP_SETUP_IN_PROGRESS_MESSAGE =
 let mcpSetupInProgress = false;
 let copilotActivationRefresh: ReturnType<typeof setTimeout> | undefined;
 let embeddedServerRefreshPending = false;
+let embeddedServerRefreshTask: Promise<void> | undefined;
 let activeMcpAgent: AiIntegration.AiAgent | undefined;
 
 const STANDALONE_MCP_CONFIG_PATHS: Partial<Record<AiIntegration.AiAgent, () => string>> = {
@@ -402,30 +403,57 @@ export function scheduleCopilotActivationMcpRefresh(
   });
 }
 
-export async function onEmbeddedServerStarted(
+async function runEmbeddedServerRefreshPass(
+  languageClient: SonarLintExtendedLanguageClient,
+  extensionContext: vscode.ExtensionContext
+): Promise<void> {
+  embeddedServerRefreshPending = false;
+  mcpSetupInProgress = true;
+  try {
+    await migrateLegacyMCPConnection(extensionContext);
+    const agents = await getStandaloneMCPAgents(languageClient);
+    await Promise.all(
+      agents.map(agent => refreshStandaloneMCPConfiguration(agent.agent, languageClient, extensionContext))
+    );
+  } catch (error) {
+    logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configurations: ${error.message}`);
+  } finally {
+    mcpSetupInProgress = false;
+  }
+}
+
+function enqueueEmbeddedServerRefreshPass(
+  languageClient: SonarLintExtendedLanguageClient,
+  extensionContext: vscode.ExtensionContext
+): Promise<void> {
+  const runPass = async (): Promise<void> => {
+    await runEmbeddedServerRefreshPass(languageClient, extensionContext);
+    if (!embeddedServerRefreshPending) {
+      await refreshAiAgentsView();
+      embeddedServerRefreshTask = undefined;
+    }
+  };
+
+  if (embeddedServerRefreshTask) {
+    embeddedServerRefreshTask = embeddedServerRefreshTask.catch(() => undefined).then(runPass);
+  } else {
+    embeddedServerRefreshTask = runPass();
+  }
+  return embeddedServerRefreshTask;
+}
+
+export function onEmbeddedServerStarted(
   languageClient: SonarLintExtendedLanguageClient,
   extensionContext: vscode.ExtensionContext
 ): Promise<void> {
   if (mcpSetupInProgress) {
     embeddedServerRefreshPending = true;
-    return;
-  }
-  do {
-    embeddedServerRefreshPending = false;
-    mcpSetupInProgress = true;
-    try {
-      await migrateLegacyMCPConnection(extensionContext);
-      const agents = await getStandaloneMCPAgents(languageClient);
-      await Promise.all(
-        agents.map(agent => refreshStandaloneMCPConfiguration(agent.agent, languageClient, extensionContext))
-      );
-    } catch (error) {
-      logToSonarLintOutput(`Could not refresh the standalone SonarQube MCP configurations: ${error.message}`);
-    } finally {
-      mcpSetupInProgress = false;
+    if (embeddedServerRefreshTask) {
+      return enqueueEmbeddedServerRefreshPass(languageClient, extensionContext);
     }
-  } while (embeddedServerRefreshPending);
-  await refreshAiAgentsView();
+    return Promise.resolve();
+  }
+  return enqueueEmbeddedServerRefreshPass(languageClient, extensionContext);
 }
 
 async function refreshStandaloneMCPConfiguration(
