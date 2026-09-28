@@ -70,7 +70,48 @@ export namespace AiIntegration {
   export type CliAuthenticationStatusName = keyof typeof CliAuthenticationStatus;
   export type McpConfigurationStateName = keyof typeof McpConfigurationState;
 
-  // These notification enums are serialized as names. Response enums above stay ordinals.
+  // Response enums above stay ordinals. Notifications send these names.
+  // Indexing the enum object is a reverse lookup, so it is not used as the name.
+  export const AI_AGENT_NAMES: Record<AiAgent, AiAgentName> = {
+    [AiAgent.CURSOR]: 'CURSOR',
+    [AiAgent.GITHUB_COPILOT]: 'GITHUB_COPILOT',
+    [AiAgent.KIRO]: 'KIRO',
+    [AiAgent.WINDSURF]: 'WINDSURF',
+    [AiAgent.CLAUDE_CODE]: 'CLAUDE_CODE',
+    [AiAgent.CODEX]: 'CODEX',
+    [AiAgent.GITHUB_COPILOT_CLI]: 'GITHUB_COPILOT_CLI',
+    [AiAgent.ANTIGRAVITY]: 'ANTIGRAVITY'
+  };
+
+  export const AI_AGENT_DETECTION_SOURCE_NAMES: Record<AiAgentDetectionSource, AiAgentDetectionSourceName> = {
+    [AiAgentDetectionSource.IDE]: 'IDE',
+    [AiAgentDetectionSource.CLI]: 'CLI'
+  };
+
+  export const CLI_INSTALLATION_STATUS_NAMES: Record<CliInstallationStatus, CliInstallationStatusName> = {
+    [CliInstallationStatus.NOT_INSTALLED]: 'NOT_INSTALLED',
+    [CliInstallationStatus.INSTALLED]: 'INSTALLED',
+    [CliInstallationStatus.UNUSABLE]: 'UNUSABLE'
+  };
+
+  export const CLI_AUTHENTICATION_STATUS_NAMES: Record<CliAuthenticationStatus, CliAuthenticationStatusName> = {
+    [CliAuthenticationStatus.AUTHENTICATED]: 'AUTHENTICATED',
+    [CliAuthenticationStatus.UNAUTHENTICATED]: 'UNAUTHENTICATED',
+    [CliAuthenticationStatus.INVALID]: 'INVALID',
+    [CliAuthenticationStatus.UNVERIFIED]: 'UNVERIFIED',
+    [CliAuthenticationStatus.UNAVAILABLE]: 'UNAVAILABLE',
+    [CliAuthenticationStatus.UNKNOWN]: 'UNKNOWN'
+  };
+
+  export const MCP_CONFIGURATION_STATE_NAMES: Record<McpConfigurationState, McpConfigurationStateName> = {
+    [McpConfigurationState.NOT_CONFIGURED]: 'NOT_CONFIGURED',
+    [McpConfigurationState.STANDALONE]: 'STANDALONE',
+    [McpConfigurationState.CLI_MANAGED]: 'CLI_MANAGED',
+    [McpConfigurationState.UNKNOWN]: 'UNKNOWN',
+    [McpConfigurationState.MALFORMED]: 'MALFORMED'
+  };
+
+  // These notification enums are serialized as names.
   export enum AiIntegrationAction {
     OPEN_CLI_DOCUMENTATION = 'OPEN_CLI_DOCUMENTATION',
     OPEN_VORTEX_DOCUMENTATION = 'OPEN_VORTEX_DOCUMENTATION',
@@ -89,6 +130,12 @@ export namespace AiIntegration {
     CANCELLED = 'CANCELLED',
     FAILED = 'FAILED',
     UNKNOWN = 'UNKNOWN'
+  }
+
+  // Domain result of an attempted action. Telemetry reports it; it is not a notification payload.
+  export interface AiIntegrationOutcome {
+    status: AiIntegrationActionStatus;
+    agent?: AiAgent;
   }
 
   export interface AiIntegrationActionParams {

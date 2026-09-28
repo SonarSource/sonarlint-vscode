@@ -11,29 +11,28 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { logToSonarLintOutput } from '../util/logging';
 import { getCurrentIdeHost } from './aiAgentUtils';
 
-export interface AiIntegrationOutcome {
-  status: AiIntegration.AiIntegrationActionStatus;
-  agent?: AiIntegration.AiAgent;
-}
-
 export class AiIntegrationTelemetry {
   constructor(private readonly languageClient: SonarLintExtendedLanguageClient) {}
 
-  action(action: AiIntegration.AiIntegrationAction, outcome: AiIntegrationOutcome): void {
-    this.send(() => this.languageClient.aiIntegrationAction({
-      action,
-      status: outcome.status,
-      agent: outcome.agent === undefined ? null : AiIntegration.AiAgent[outcome.agent] as AiIntegration.AiAgentName,
-      host: getCurrentIdeHost().id
-    }));
+  action(action: AiIntegration.AiIntegrationAction, outcome: AiIntegration.AiIntegrationOutcome): void {
+    this.send(() =>
+      this.languageClient.aiIntegrationAction({
+        action,
+        status: outcome.status,
+        agent: outcome.agent === undefined ? null : AiIntegration.AI_AGENT_NAMES[outcome.agent],
+        host: getCurrentIdeHost().id
+      })
+    );
   }
 
   cliState(cli: AiIntegration.SonarQubeCliState): void {
-    this.send(() => this.languageClient.aiIntegrationCliStateObserved({
-      installationStatus: AiIntegration.CliInstallationStatus[cli.installationStatus] as AiIntegration.CliInstallationStatusName,
-      authenticationStatus: AiIntegration.CliAuthenticationStatus[cli.authenticationStatus] as AiIntegration.CliAuthenticationStatusName,
-      host: getCurrentIdeHost().id
-    }));
+    this.send(() =>
+      this.languageClient.aiIntegrationCliStateObserved({
+        installationStatus: AiIntegration.CLI_INSTALLATION_STATUS_NAMES[cli.installationStatus],
+        authenticationStatus: AiIntegration.CLI_AUTHENTICATION_STATUS_NAMES[cli.authenticationStatus],
+        host: getCurrentIdeHost().id
+      })
+    );
   }
 
   agentStates(
@@ -54,17 +53,19 @@ export class AiIntegrationTelemetry {
     for (const [agent, sources] of sourcesByAgent) {
       const detectionSources = [AiIntegration.AiAgentDetectionSource.IDE, AiIntegration.AiAgentDetectionSource.CLI]
         .filter(source => sources.has(source))
-        .map(source => AiIntegration.AiAgentDetectionSource[source] as AiIntegration.AiAgentDetectionSourceName);
+        .map(source => AiIntegration.AI_AGENT_DETECTION_SOURCE_NAMES[source]);
       if (detectionSources.length === 0) {
         continue;
       }
       const standaloneMcpState = inspectedStates.get(agent) ?? AiIntegration.McpConfigurationState.UNKNOWN;
-      this.send(() => this.languageClient.aiAgentIntegrationStateObserved({
-        agent: AiIntegration.AiAgent[agent] as AiIntegration.AiAgentName,
-        detectionSources,
-        standaloneMcpState: AiIntegration.McpConfigurationState[standaloneMcpState] as AiIntegration.McpConfigurationStateName,
-        host: getCurrentIdeHost().id
-      }));
+      this.send(() =>
+        this.languageClient.aiAgentIntegrationStateObserved({
+          agent: AiIntegration.AI_AGENT_NAMES[agent],
+          detectionSources,
+          standaloneMcpState: AiIntegration.MCP_CONFIGURATION_STATE_NAMES[standaloneMcpState],
+          host: getCurrentIdeHost().id
+        })
+      );
     }
   }
 

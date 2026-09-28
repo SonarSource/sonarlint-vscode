@@ -14,7 +14,11 @@ import { FindingNode } from './findings/findingTypes/findingNode';
 import { AiIntegration } from './lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
 import { openSonarQubeRulesFile, introduceSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
-import { configureMCPServer, isMCPSetupInProgress, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
+import {
+  configureMCPServer,
+  isMCPSetupInProgress,
+  openMCPServerConfigurationFile
+} from './aiAgentsConfiguration/mcpServerConfig';
 import { AiIntegrationTelemetry } from './aiAgentsConfiguration/aiIntegrationTelemetry';
 import { configureCompilationDatabase } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
@@ -168,9 +172,7 @@ export class CommandsManager {
         (workspaceUri: string, issueKey: string, fileUri: string, isTaintIssue: boolean, isDependencyRisk = false) =>
           resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue, isDependencyRisk)
       ),
-      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () =>
-        IssueService.instance.reopenLocalIssues()
-      ),
+      vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () => IssueService.instance.reopenLocalIssues()),
       vscode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
         const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
         if (connectionDeleted) {
@@ -251,6 +253,9 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async agentOrConnection => {
         const agent = typeof agentOrConnection === 'number' ? (agentOrConnection as AiIntegration.AiAgent) : undefined;
         const connection = typeof agentOrConnection === 'number' ? undefined : (agentOrConnection as Connection);
+        // Already-running setup is not a new action: configureMCPServer only shows a notice.
+        // STARTED has to be decided before that dialog returns, so the guard stays here.
+        // Skip telemetry and the post-action refresh so the in-flight attempt is left alone.
         if (isMCPSetupInProgress()) {
           await configureMCPServer(
             this.languageClient,
