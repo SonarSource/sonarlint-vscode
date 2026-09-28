@@ -140,6 +140,18 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(AiIntegration.GetAiIntegrationState.type, params);
   }
 
+  aiIntegrationAction(params: AiIntegration.AiIntegrationActionParams): Promise<void> {
+    return this.sendNotification(AiIntegration.ReportAiIntegrationAction.type, params);
+  }
+
+  aiIntegrationCliStateObserved(params: AiIntegration.AiIntegrationCliStateObservedParams): Promise<void> {
+    return this.sendNotification(AiIntegration.ReportAiIntegrationCliStateObserved.type, params);
+  }
+
+  aiAgentIntegrationStateObserved(params: AiIntegration.AiAgentIntegrationStateObservedParams): Promise<void> {
+    return this.sendNotification(AiIntegration.ReportAiAgentIntegrationStateObserved.type, params);
+  }
+
   prepareInstallCliCommand(): Promise<AiIntegration.PrepareCliCommandResponse> {
     return this.sendRequest(AiIntegration.PrepareInstallCliCommand.type);
   }
