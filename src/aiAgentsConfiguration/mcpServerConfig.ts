@@ -430,7 +430,7 @@ async function runEmbeddedServerRefreshPasses(
   if (embeddedServerRefreshPending) {
     return runEmbeddedServerRefreshPasses(languageClient, extensionContext);
   }
-  await refreshAiAgentsView();
+  return refreshAiAgentsView();
 }
 
 export function onEmbeddedServerStarted(
