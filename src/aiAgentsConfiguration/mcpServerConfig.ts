@@ -24,7 +24,6 @@ import {
 import { logToSonarLintOutput } from '../util/logging';
 import { Commands } from '../util/commands';
 import { getVSCodeSettingsBaseDir } from '../util/util';
-import type { AiIntegrationOutcome } from './aiIntegrationTelemetry';
 import {
   COPILOT_ACTIVATION_DELAY_MS,
   getAiIntegrationStateParams,
@@ -80,14 +79,13 @@ interface ResolvedMcpConnection {
   tokenStorageKey: string;
 }
 type McpAgentSelection =
-  | { kind: 'selected'; agent: AiIntegration.AiAgent }
-  | { kind: 'cancelled' }
-  | { kind: 'unsupported' };
+  { kind: 'selected'; agent: AiIntegration.AiAgent } | { kind: 'cancelled' } | { kind: 'unsupported' };
 
 type McpConnectionSelection =
-  | { kind: 'selected'; connection: Connection }
-  | { kind: 'cancelled' }
-  | { kind: 'unavailable' };
+  { kind: 'selected'; connection: Connection } | { kind: 'cancelled' } | { kind: 'unavailable' };
+
+// Protocol type, not the telemetry module: MCP setup returns a result and the command reports it.
+type AiIntegrationOutcome = AiIntegration.AiIntegrationOutcome;
 
 function mcpFailed(agent?: AiIntegration.AiAgent): AiIntegrationOutcome {
   return { status: AiIntegration.AiIntegrationActionStatus.FAILED, agent };
@@ -137,7 +135,6 @@ async function refreshPendingMcpSetup(
     logToSonarLintOutput('Could not refresh standalone MCP configurations after setup.');
   }
 }
-
 
 export function supportsStandaloneMCP(agent: AiIntegration.AiAgent): boolean {
   return STANDALONE_MCP_CONFIG_PATHS[agent] !== undefined;
@@ -345,7 +342,9 @@ export async function getStandaloneMCPAgents(languageClient: SonarLintExtendedLa
   const state = await languageClient.getAiIntegrationState(
     getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
   );
-  const agents = getDetectedIntegrationAgents(state).filter(agent => agent.standaloneMcpSupported && isStandaloneMcpReady(agent.agent));
+  const agents = getDetectedIntegrationAgents(state).filter(
+    agent => agent.standaloneMcpSupported && isStandaloneMcpReady(agent.agent)
+  );
   ContextManager.instance.setMCPServerSupportedAgentContext(agents.length > 0);
   return agents;
 }
