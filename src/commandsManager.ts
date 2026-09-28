@@ -14,7 +14,8 @@ import { FindingNode } from './findings/findingTypes/findingNode';
 import { AiIntegration } from './lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from './lsp/client';
 import { openSonarQubeRulesFile, introduceSonarQubeRulesFile } from './aiAgentsConfiguration/aiAgentRuleConfig';
-import { configureMCPServer, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
+import { configureMCPServer, isMCPSetupInProgress, openMCPServerConfigurationFile } from './aiAgentsConfiguration/mcpServerConfig';
+import { AiIntegrationTelemetry } from './aiAgentsConfiguration/aiIntegrationTelemetry';
 import { configureCompilationDatabase } from './cfamily/cfamily';
 import { AutoBindingService } from './connected/autobinding';
 import { BindingService } from './connected/binding';
@@ -57,6 +58,8 @@ import { RemediationService } from './remediationPanel/remediationService';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 
 export class CommandsManager {
+  private readonly aiIntegrationTelemetry: AiIntegrationTelemetry;
+
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly languageClient: SonarLintExtendedLanguageClient,
@@ -65,7 +68,9 @@ export class CommandsManager {
     private readonly allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
     private readonly allConnectionsView: vscode.TreeView<ConnectionsNode>,
     private readonly aiAgentsConfigurationWebviewProvider: AIAgentsConfigurationWebviewProvider
-  ) {}
+  ) {
+    this.aiIntegrationTelemetry = new AiIntegrationTelemetry(languageClient);
+  }
 
   registerCommands() {
     this.context.subscriptions.push(
@@ -246,25 +251,41 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.CONFIGURE_MCP_SERVER, async agentOrConnection => {
         const agent = typeof agentOrConnection === 'number' ? (agentOrConnection as AiIntegration.AiAgent) : undefined;
         const connection = typeof agentOrConnection === 'number' ? undefined : (agentOrConnection as Connection);
-        const configuration = configureMCPServer(
-          this.languageClient,
-          this.allConnectionsTreeDataProvider,
-          this.context,
-          agent,
-          connection
-        );
-        await this.aiAgentsConfigurationWebviewProvider.refresh();
+        if (isMCPSetupInProgress()) {
+          await configureMCPServer(
+            this.languageClient,
+            this.allConnectionsTreeDataProvider,
+            this.context,
+            agent,
+            connection
+          );
+          return;
+        }
+        this.aiIntegrationTelemetry.action(AiIntegration.AiIntegrationAction.CONFIGURE_MCP, {
+          status: AiIntegration.AiIntegrationActionStatus.STARTED,
+          agent
+        });
         try {
-          await configuration;
-        } catch {
-          // configureMCPServer already reported the error to the user.
+          const outcome = await configureMCPServer(
+            this.languageClient,
+            this.allConnectionsTreeDataProvider,
+            this.context,
+            agent,
+            connection
+          );
+          this.aiIntegrationTelemetry.action(AiIntegration.AiIntegrationAction.CONFIGURE_MCP, outcome);
         } finally {
-          await this.aiAgentsConfigurationWebviewProvider.refresh();
+          await this.aiAgentsConfigurationWebviewProvider.refreshAfterAction();
         }
       }),
-      vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, agent =>
-        openMCPServerConfigurationFile(this.languageClient, agent)
-      ),
+      vscode.commands.registerCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, async agent => {
+        this.aiIntegrationTelemetry.action(AiIntegration.AiIntegrationAction.OPEN_MCP_CONFIGURATION, {
+          status: AiIntegration.AiIntegrationActionStatus.STARTED,
+          agent
+        });
+        const outcome = await openMCPServerConfigurationFile(this.languageClient, agent);
+        this.aiIntegrationTelemetry.action(AiIntegration.AiIntegrationAction.OPEN_MCP_CONFIGURATION, outcome);
+      }),
       vscode.commands.registerCommand(Commands.REFRESH_AI_AGENTS_CONFIGURATION, () =>
         this.aiAgentsConfigurationWebviewProvider.refresh()
       ),
