@@ -422,24 +422,15 @@ async function runEmbeddedServerRefreshPass(
   }
 }
 
-function enqueueEmbeddedServerRefreshPass(
+async function runEmbeddedServerRefreshPasses(
   languageClient: SonarLintExtendedLanguageClient,
   extensionContext: vscode.ExtensionContext
 ): Promise<void> {
-  const runPass = async (): Promise<void> => {
-    await runEmbeddedServerRefreshPass(languageClient, extensionContext);
-    if (!embeddedServerRefreshPending) {
-      await refreshAiAgentsView();
-      embeddedServerRefreshTask = undefined;
-    }
-  };
-
-  if (embeddedServerRefreshTask) {
-    embeddedServerRefreshTask = embeddedServerRefreshTask.catch(() => undefined).then(runPass);
-  } else {
-    embeddedServerRefreshTask = runPass();
+  await runEmbeddedServerRefreshPass(languageClient, extensionContext);
+  if (embeddedServerRefreshPending) {
+    return runEmbeddedServerRefreshPasses(languageClient, extensionContext);
   }
-  return embeddedServerRefreshTask;
+  await refreshAiAgentsView();
 }
 
 export function onEmbeddedServerStarted(
@@ -448,12 +439,15 @@ export function onEmbeddedServerStarted(
 ): Promise<void> {
   if (mcpSetupInProgress) {
     embeddedServerRefreshPending = true;
-    if (embeddedServerRefreshTask) {
-      return enqueueEmbeddedServerRefreshPass(languageClient, extensionContext);
-    }
-    return Promise.resolve();
+    return embeddedServerRefreshTask ?? Promise.resolve();
   }
-  return enqueueEmbeddedServerRefreshPass(languageClient, extensionContext);
+  const task = runEmbeddedServerRefreshPasses(languageClient, extensionContext).finally(() => {
+    if (embeddedServerRefreshTask === task) {
+      embeddedServerRefreshTask = undefined;
+    }
+  });
+  embeddedServerRefreshTask = task;
+  return task;
 }
 
 async function refreshStandaloneMCPConfiguration(
