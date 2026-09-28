@@ -1009,7 +1009,7 @@ export interface GetHookScriptContentResponse {
     source: ArtifactSourceDto;
     actualVersion?: string;
     overriddenVersion?: string;
-    /** Version of the SonarQube Server that provided this plugin (e.g. "10.8.1"). Only set when source is SONARQUBE_SERVER. */
+    /** Version of the SonarQube Server that provided this plugin (e.g. "2025.1"). Only set when source is SONARQUBE_SERVER. */
     serverVersion?: string;
   }
 
