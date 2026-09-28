@@ -4,7 +4,7 @@
 * Update Text & Secrets analyzer 2.50 -> [2.51](https://github.com/SonarSource/sonar-text/releases/tag/2.51.0.13430)
 * Update Java analyzer 8.41 -> [8.43](https://github.com/SonarSource/sonar-java/releases/tag/8.43.0.47668)
 * Update IaC analyzer 2.18 -> [2.19](https://github.com/SonarSource/sonar-iac/releases/tag/2.19.0.23980)
-* Update Go analyzer 1.44 -> [1.45](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-go/releases/tag/1.45.0.9057)
+* Update Go analyzer 1.44 -> [1.45](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-go/releases/tag/1.45.0.9057) -> [1.46](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-go/releases/tag/1.46.0.9107)
 * Update PHP analyzer 4.0 -> [4.1](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-php/releases/tag/4.1.0.16998)
 * Update IaC analyzer 2.19 -> [2.20](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-iac/releases/tag/2.20.0.24052)
 * Update Java analyzer 8.43 -> [8.44](https://github.com/%53%6F%6E%61%72%53%6F%75%72%63%65/sonar-java/releases/tag/8.44.0.48651)
