@@ -103,7 +103,7 @@ suite('pluginStatusPanel', () => {
     });
 
     test('formats SONARQUBE_SERVER source with version when serverVersion is provided', () => {
-      expect(formatSource('SONARQUBE_SERVER', '10.8.1')).to.equal('SonarQube Server 10.8.1');
+      expect(formatSource('SONARQUBE_SERVER', '2025.1')).to.equal('SonarQube Server 2025.1');
     });
 
     test('formats SONARQUBE_CLOUD source', () => {

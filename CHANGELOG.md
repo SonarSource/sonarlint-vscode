@@ -1,5 +1,6 @@
 ## 6.0
 * Increase minimal supported VSCode version to 1.100.0
+* Increase minimal supported SonarQube Server version to 2025.1
 * Update PHP analyzer 3.60 -> [4.0](https://github.com/SonarSource/sonar-php/releases/tag/4.0.0.16889) -> [4.1](https://github.com/SonarSource/sonar-php/releases/tag/4.1.0.16998)
 * Update Text & Secrets analyzer 2.50 -> [2.51](https://github.com/SonarSource/sonar-text/releases/tag/2.51.0.13430)
 * Update Java analyzer 8.41 -> [8.43](https://github.com/SonarSource/sonar-java/releases/tag/8.43.0.47668) -> [8.44](https://github.com/SonarSource/sonar-java/releases/tag/8.44.0.48651)
