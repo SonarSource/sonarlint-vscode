@@ -46,6 +46,21 @@ export class MonitoringService implements vscode.TelemetrySender {
 
       const client = new NodeClient({
         dsn: 'https://5e3853ab83d91a04bfc8d81347dadc14@o1316750.ingest.us.sentry.io/4508460058214400',
+        // Preserve the restrictive v10 defaults; v11 collects more data unless configured.
+        dataCollection: {
+          userInfo: false,
+          cookies: false,
+          httpHeaders: {
+            request: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] },
+            response: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] },
+          },
+          httpBodies: [],
+          urlQueryParams: { deny: ['forwarded', '-ip', 'remote-', 'via', '-user'] },
+          genAI: { inputs: false, outputs: false },
+          databaseQueryData: false,
+          queues: false,
+          graphQL: { document: false, variables: false },
+        },
         transport: makeNodeTransport,
         stackParser: defaultStackParser,
         integrations,
