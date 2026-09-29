@@ -2,5 +2,5 @@ name: ovsx-publish
 author: SonarSource
 description: Publish sonarlint-vscode to OpenVSX
 runs:
-  using: node20
+  using: node24
   main: main.js
