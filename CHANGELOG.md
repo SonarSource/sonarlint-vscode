@@ -9,6 +9,7 @@
 * Update Go analyzer 1.44 -> [1.45](https://github.com/SonarSource/sonar-go/releases/tag/1.45.0.9057) -> [1.46](https://github.com/SonarSource/sonar-go/releases/tag/1.46.0.9107)
 * Update JS/TS/CSS analyzer 13.9 -> [14.0](https://github.com/SonarSource/SonarJS/releases/tag/14.0.0.46108)
 * Update Python analyzer 5.31 -> [5.32](https://github.com/SonarSource/sonar-python/releases/tag/5.32.0.37250)
+* Update C# analyzer 1.44 -> [1.45](https://github.com/SonarSource/sonarlint-omnisharp/releases/tag/1.45.0.102027) -> [1.46](https://github.com/SonarSource/sonarlint-omnisharp/releases/tag/1.46.0.102069) -> [1.47](https://github.com/SonarSource/sonarlint-omnisharp/releases/tag/1.47.0.102096)
 
 ## 5.10
 * Update IaC analyzer 2.15 -> [2.16](https://github.com/SonarSource/sonar-iac/releases/tag/2.16.0.22905) -> [2.17](https://github.com/SonarSource/sonar-iac/releases/tag/2.17.0.23172) -> [2.18](https://github.com/SonarSource/sonar-iac/releases/tag/2.18.0.23895)
