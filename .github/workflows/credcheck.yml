@@ -17,10 +17,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           clean: false
-      - name: Use Node 18
+      - name: Use Node 22
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: '18'
+          node-version: '22'
       - name: Get vault secrets
         id: secrets
         uses: SonarSource/vault-action-wrapper@a7fa5fd4a4e4e0f2593f6137c0812cac196cf4ce # 3.7.0
@@ -50,7 +50,7 @@ jobs:
           npm install
           npx vsce verify-pat -p "${VSCE_TOKEN}" SonarSource
 
-      - name: Check Microsoft marketplace publisher personal access token
+      - name: Check Open VSX publisher personal access token
         if: ${{ !cancelled() }}
         env:
           ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
