@@ -36,11 +36,9 @@ import {
 import {
   getActiveMcpAgent,
   getMCPConfigPath,
-  hasPersistedMCPConnection,
   inspectMCPConfiguration,
   isMCPSetupInProgress,
   isStandaloneMcpReady,
-  migrateLegacyMCPConnection,
   supportsStandaloneMCP
 } from './mcpServerConfig';
 
@@ -95,7 +93,6 @@ export interface AIAgentsConfigurationState {
       configurationPath?: string;
       configurationStatus?: AiIntegration.McpConfigurationStateName;
       diagnostic?: string;
-      requiresSetup: boolean;
       operationInProgress: boolean;
     }>;
     configuredCount: number;
@@ -249,7 +246,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   private async buildState(observe = false): Promise<AIAgentsConfigurationState> {
     const ide = getCurrentIdeHost();
     const hookAgent = getCurrentAgentWithHookSupport();
-    await migrateLegacyMCPConnection(this.extensionContext);
     const [snapshot, legacyInstructionsConfigured, hookConfigured] = await Promise.all([
       this.loadInspectedIntegration(),
       isSonarQubeRulesFileConfigured(),
@@ -287,9 +283,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         configurationStatus:
           inspection === undefined ? undefined : AiIntegration.MCP_CONFIGURATION_STATE_NAMES[inspection.state],
         diagnostic: inspection?.diagnostics[0],
-        requiresSetup:
-          inspection?.state === AiIntegration.McpConfigurationState.STANDALONE &&
-          !hasPersistedMCPConnection(this.extensionContext, agent.agent),
         operationInProgress: mcpOperationInProgress && activeMcpAgent === agent.agent
       };
     });
