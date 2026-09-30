@@ -260,7 +260,6 @@ export class CommandsManager {
           await configureMCPServer(
             this.languageClient,
             this.allConnectionsTreeDataProvider,
-            this.context,
             agent,
             connection
           );
@@ -274,7 +273,6 @@ export class CommandsManager {
           const outcome = await configureMCPServer(
             this.languageClient,
             this.allConnectionsTreeDataProvider,
-            this.context,
             agent,
             connection
           );
