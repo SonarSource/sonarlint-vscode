@@ -21,7 +21,6 @@ import { ConnectionSettingsService } from '../../../src/settings/connectionsetti
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
 import { Commands } from '../../../src/util/commands';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
-import { DEFAULT_CONNECTION_ID } from '../../../src/commons';
 import * as logging from '../../../src/util/logging';
 
 const mockConnection = new Connection('test-connection-id', 'Test SonarQube', 'sonarqubeConnection', 'ok');
@@ -74,22 +73,17 @@ suite('MCP agent discovery', () => {
       ]
     });
     const showInfoStub = sinon.stub(vscode.window, 'showInformationMessage').resolves(undefined);
-    const context = {
-      globalState: { get: sinon.stub(), update: sinon.stub().resolves() }
-    } as unknown as vscode.ExtensionContext;
 
     try {
       await configureMCPServer(
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
-        context,
         AiIntegration.AiAgent.CODEX,
         mockConnection
       );
       await configureMCPServer(
         mockLanguageClient,
         mockAllConnectionsTreeDataProvider,
-        context,
         AiIntegration.AiAgent.CLAUDE_CODE,
         mockConnection
       );
@@ -146,9 +140,7 @@ suite('MCP agent discovery', () => {
       await getStandaloneMCPAgents(mockLanguageClient);
       getAiIntegrationStateStub.rejects(new Error('Temporary backend failure'));
 
-      await onEmbeddedServerStarted(mockLanguageClient, {
-        globalState: { get: sinon.stub().returns(undefined) }
-      } as unknown as vscode.ExtensionContext);
+      await onEmbeddedServerStarted(mockLanguageClient, 64121);
 
       expect(executeCommandStub.calledWithExactly('setContext', 'sonarqube.mcpServerSupportedAgent', true)).to.be.true;
       expect(executeCommandStub.calledWithExactly('setContext', 'sonarqube.mcpServerSupportedAgent', false)).to.be
@@ -174,23 +166,16 @@ suite('MCP agent discovery', () => {
         }
       ]
     });
-    const fs = require('node:fs');
-    const existsStub = sinon.stub(fs, 'existsSync').returns(true);
-    const readFileStub = sinon.stub(fs, 'readFileSync').returns('{"mcpServers":{"sonarqube":{}}}');
-    const writeFileStub = sinon.stub(fs, 'writeFileSync');
+    const existsFileStub = sinon.stub(require('node:fs'), 'existsSync').returns(true);
+    const readFileStub = sinon
+      .stub(require('node:fs'), 'readFileSync')
+      .returns('{"mcpServers":{"sonarqube":{"command":"docker"}}}');
+    const writeFileStub = sinon.stub(require('node:fs'), 'writeFileSync');
+    const mkdirStub = sinon.stub(require('node:fs'), 'mkdirSync');
     const executeCommandStub = sinon.stub(vscode.commands, 'executeCommand').resolves();
-    const tokenStub = sinon.stub(ConnectionSettingsService.instance, 'getServerToken').resolves('token');
-    const connectionsStub = sinon
-      .stub(ConnectionSettingsService.instance, 'getSonarQubeConnections')
-      .returns([{ serverUrl: 'https://example.com' }]);
-    const get = sinon.stub();
-    get.withArgs(`aiAgentsConfiguration.mcpConnection.${agent}`).returns({
-      id: DEFAULT_CONNECTION_ID,
-      type: 'sonarqubeConnection'
-    });
-    const context = {
-      globalState: { get, update: sinon.stub().resolves() }
-    } as unknown as vscode.ExtensionContext;
+    const tokenStub = sinon
+      .stub(ConnectionSettingsService.instance, 'getServerToken')
+      .throws(new Error('Unexpected token lookup'));
     inspectMcpConfigurationStub.resolves({
       state: AiIntegration.McpConfigurationState.STANDALONE,
       diagnostics: []
@@ -202,19 +187,21 @@ suite('MCP agent discovery', () => {
     });
 
     try {
-      await onEmbeddedServerStarted(mockLanguageClient, context);
+      await onEmbeddedServerStarted(mockLanguageClient, 64121);
 
       expect(writeFileStub.calledOnce).to.be.true;
       expect(writeFileStub.firstCall.args[0]).to.equal(getMCPConfigPath(agent));
+      expect(tokenStub.called).to.be.false;
+      expect(getMCPConfigStub.called).to.be.false;
       expect(executeCommandStub.calledWithExactly('setContext', 'sonarqube.mcpServerSupportedAgent', true)).to.be.true;
       expect(executeCommandStub.calledWith(Commands.REFRESH_AI_AGENTS_CONFIGURATION)).to.be.true;
     } finally {
-      existsStub.restore();
+      existsFileStub.restore();
       readFileStub.restore();
       writeFileStub.restore();
+      mkdirStub.restore();
       executeCommandStub.restore();
       tokenStub.restore();
-      connectionsStub.restore();
     }
   });
 
