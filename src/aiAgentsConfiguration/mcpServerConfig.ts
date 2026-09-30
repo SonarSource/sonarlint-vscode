@@ -31,6 +31,7 @@ import {
 
 const BLOCKED_CONFIGURATION_MESSAGE = 'The existing SonarQube MCP configuration cannot be updated safely.';
 const WRITE_FAILED_PREFIX = 'Failed to configure SonarQube MCP Server for';
+const MAX_TCP_PORT = 65_535;
 const MCP_SETUP_IN_PROGRESS_MESSAGE =
   'A SonarQube MCP configuration operation is already running. Try again in a moment.';
 let mcpSetupInProgress = false;
@@ -69,6 +70,15 @@ type McpConnectionSelection =
 
 // Protocol type, not the telemetry module: MCP setup returns a result and the command reports it.
 type AiIntegrationOutcome = AiIntegration.AiIntegrationOutcome;
+
+type McpUpdatePreparation =
+  | {
+      kind: 'ready';
+      document: McpDocument;
+      updatePlan: AiIntegration.McpConfigurationUpdatePlanResponse;
+      successMessage: string;
+    }
+  | { kind: 'finished'; outcome: AiIntegrationOutcome };
 
 function mcpFailed(agent?: AiIntegration.AiAgent): AiIntegrationOutcome {
   return { status: AiIntegration.AiIntegrationActionStatus.FAILED, agent };
@@ -224,6 +234,54 @@ function planMcpPortUpdate(
   });
 }
 
+async function prepareMcpUpdate(
+  languageClient: SonarLintExtendedLanguageClient,
+  allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
+  document: McpDocument,
+  state: AiIntegration.McpConfigurationState,
+  connection?: Connection
+): Promise<McpUpdatePreparation> {
+  const agent = document.agent;
+  if (state === AiIntegration.McpConfigurationState.STANDALONE) {
+    if (embeddedServerPort === undefined) {
+      await vscode.window.showErrorMessage('The IDE connection is unavailable. Restart the IDE and try again.');
+      return { kind: 'finished', outcome: mcpFailed(agent) };
+    }
+    const updatePlan = await planMcpPortUpdate(languageClient, document, embeddedServerPort);
+    if (updatePlan.state !== AiIntegration.McpConfigurationState.STANDALONE) {
+      showBlockedConfigurationMessage(updatePlan);
+      return { kind: 'finished', outcome: mcpFailed(agent) };
+    }
+    const successMessage = updatePlan.updatedContent === document.content
+      ? `SonarQube MCP IDE port is already up to date for ${toAgentDisplayName(agent)}.`
+      : `SonarQube MCP IDE port updated for ${toAgentDisplayName(agent)}. Your server settings were preserved.`;
+    return { kind: 'ready', document, updatePlan, successMessage };
+  }
+
+  const connectionSelection = await getSelectedConnection(allConnectionsTreeDataProvider, connection);
+  if (connectionSelection.kind !== 'selected') {
+    return { kind: 'finished', outcome: unselectedMcpConnectionOutcome(connectionSelection, agent) };
+  }
+  const selectedConnection = connectionSelection.connection;
+  const tokenSelection = await resolveMcpToken(selectedConnection);
+  if (tokenSelection.cancelled) {
+    return { kind: 'finished', outcome: mcpCancelled(agent) };
+  }
+  const currentDocument = readMcpDocument(agent);
+  const updatePlan = await planMcpDocument(
+    languageClient,
+    currentDocument,
+    selectedConnection.id || DEFAULT_CONNECTION_ID,
+    tokenSelection.token ?? ''
+  );
+  if (updatePlan.state !== AiIntegration.McpConfigurationState.NOT_CONFIGURED) {
+    showBlockedConfigurationMessage(updatePlan);
+    return { kind: 'finished', outcome: mcpFailed(agent) };
+  }
+  const successMessage = `SonarQube MCP Server configured for ${toAgentDisplayName(agent)} with "${selectedConnection.label}"`;
+  return { kind: 'ready', document: currentDocument, updatePlan, successMessage };
+}
+
 function writeMcpDocument(document: McpDocument, content: string): void {
   if (readMCPConfigContent(document.path) !== document.content) {
     throw new Error('MCP configuration changed while preparing the update. Try again.');
@@ -261,59 +319,30 @@ export async function configureMCPServer(
     selectedAgent = agent;
     activeMcpAgent = agent;
     await refreshAiAgentsView();
-    let document = readMcpDocument(agent);
+    const document = readMcpDocument(agent);
     const inspection = await inspectMcpDocument(languageClient, document);
     if (!isUpdateAllowed(inspection.state)) {
       showBlockedConfigurationMessage(inspection);
       return mcpFailed(agent);
     }
 
-    let updatePlan: AiIntegration.McpConfigurationUpdatePlanResponse;
-    let successMessage: string;
-    if (inspection.state === AiIntegration.McpConfigurationState.STANDALONE) {
-      if (embeddedServerPort === undefined) {
-        await vscode.window.showErrorMessage(
-          'The IDE connection is unavailable. Restart the IDE and try again.'
-        );
-        return mcpFailed(agent);
-      }
-      updatePlan = await planMcpPortUpdate(languageClient, document, embeddedServerPort);
-      if (updatePlan.state !== AiIntegration.McpConfigurationState.STANDALONE) {
-        showBlockedConfigurationMessage(updatePlan);
-        return mcpFailed(agent);
-      }
-      successMessage = updatePlan.updatedContent === document.content
-        ? `SonarQube MCP IDE port is already up to date for ${toAgentDisplayName(agent)}.`
-        : `SonarQube MCP IDE port updated for ${toAgentDisplayName(agent)}. Your server settings were preserved.`;
-    } else {
-      const connectionSelection = await getSelectedConnection(allConnectionsTreeDataProvider, connection);
-      if (connectionSelection.kind !== 'selected') {
-        return unselectedMcpConnectionOutcome(connectionSelection, agent);
-      }
-      const selectedConnection = connectionSelection.connection;
-      const tokenSelection = await resolveMcpToken(selectedConnection);
-      if (tokenSelection.cancelled) {
-        return mcpCancelled(agent);
-      }
-      document = readMcpDocument(agent);
-      updatePlan = await planMcpDocument(
-        languageClient,
-        document,
-        selectedConnection.id || DEFAULT_CONNECTION_ID,
-        tokenSelection.token ?? ''
-      );
-      if (updatePlan.state !== AiIntegration.McpConfigurationState.NOT_CONFIGURED) {
-        showBlockedConfigurationMessage(updatePlan);
-        return mcpFailed(agent);
-      }
-      successMessage = `SonarQube MCP Server configured for ${toAgentDisplayName(agent)} with "${selectedConnection.label}"`;
+    const preparation = await prepareMcpUpdate(
+      languageClient,
+      allConnectionsTreeDataProvider,
+      document,
+      inspection.state,
+      connection
+    );
+    if (preparation.kind === 'finished') {
+      return preparation.outcome;
     }
+    const { document: currentDocument, updatePlan, successMessage } = preparation;
     if (updatePlan.updatedContent == null) {
       showBlockedConfigurationMessage(updatePlan);
       return mcpFailed(agent);
     }
-    if (updatePlan.updatedContent !== document.content) {
-      writeMcpDocument(document, updatePlan.updatedContent);
+    if (updatePlan.updatedContent !== currentDocument.content) {
+      writeMcpDocument(currentDocument, updatePlan.updatedContent);
     }
     openMCPServersListIfCursor(agent);
 
@@ -491,7 +520,7 @@ export function onEmbeddedServerStarted(
   port?: number
 ): Promise<void> {
   if (port !== undefined) {
-    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    if (!Number.isInteger(port) || port < 1 || port > MAX_TCP_PORT) {
       embeddedServerPort = undefined;
       return Promise.resolve();
     }

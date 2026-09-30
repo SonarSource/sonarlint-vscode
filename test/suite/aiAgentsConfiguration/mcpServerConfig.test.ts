@@ -495,11 +495,13 @@ suite('MCP configuration workflow', () => {
     sinon
       .stub(vscode.window, 'showQuickPick')
       .resolves({ agent: AiIntegration.AiAgent.CLAUDE_CODE } as never);
+    let agentDuringInspection: AiIntegration.AiAgent | undefined;
     inspect.callsFake(async () => {
-      expect(getActiveMcpAgent()).to.equal(AiIntegration.AiAgent.CLAUDE_CODE);
+      agentDuringInspection = getActiveMcpAgent();
       return { state: AiIntegration.McpConfigurationState.MALFORMED, diagnostics: ['blocked'] };
     });
     await configureMCPServer(client, connections);
+    expect(agentDuringInspection).to.equal(AiIntegration.AiAgent.CLAUDE_CODE);
     expect(getActiveMcpAgent()).to.be.undefined;
   });
 
