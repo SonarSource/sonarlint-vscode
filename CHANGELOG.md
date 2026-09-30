@@ -1,3 +1,7 @@
+## 6.0.1
+
+* Fixed an issue where opening VS Code could overwrite custom SonarQube MCP server settings.
+
 ## 6.0
 * Introduce new AI Integrations panel for SonarQube CLI and SonarQube MCP Server integrations
 * Increase minimal supported VSCode version to 1.100.0
