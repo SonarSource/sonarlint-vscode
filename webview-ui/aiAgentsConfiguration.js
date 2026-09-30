@@ -257,13 +257,7 @@ function createMcpIntegrationRow(integration, state) {
     configureOpenAction(action, integration.agentId);
   } else if (integration.configurationStatus === 'STANDALONE') {
     setStatus(status, 'Configured', 'configured');
-    if (integration.requiresSetup && !state.isRemote) {
-      action.textContent = 'Set up again';
-      configureSetupAction(action, integration.agentId);
-      setupAction = true;
-    } else {
-      configureOpenAction(action, integration.agentId);
-    }
+    configureOpenAction(action, integration.agentId);
   } else {
     setStatus(status, 'Not configured', 'notConfigured');
     action.textContent = 'Set up';
@@ -280,26 +274,13 @@ function createMcpIntegrationRow(integration, state) {
   stateAndAction.append(status, action);
   row.append(details, stateAndAction);
 
-  const diagnostic = getMcpDiagnostic(integration, state.isRemote);
-  if (diagnostic) {
+  if (integration.configurationStatus !== 'CLI_MANAGED' && integration.diagnostic) {
     const message = document.createElement('span');
     message.className = 'supporting-text mcp-diagnostic';
-    message.textContent = diagnostic;
+    message.textContent = integration.diagnostic;
     row.append(message);
   }
   return row;
-}
-
-function getMcpDiagnostic(integration, isRemote) {
-  if (integration.configurationStatus === 'CLI_MANAGED') {
-    return undefined;
-  }
-  if (!integration.requiresSetup) {
-    return integration.diagnostic;
-  }
-  return isRemote
-    ? 'This configuration has no saved IDE connection. Automatic port updates are unavailable in remote windows.'
-    : 'Set up again to select the IDE connection for this agent.';
 }
 
 function configureOpenAction(action, agent) {

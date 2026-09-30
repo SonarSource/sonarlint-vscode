@@ -121,7 +121,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
           : AiIntegration.McpConfigurationState.NOT_CONFIGURED,
       diagnostics: []
     }));
-    sinon.stub(mcpServerConfig, 'hasPersistedMCPConnection').returns(true);
 
     const state = await provider.buildState(true);
 
@@ -156,7 +155,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       configurationPath: mcpServerConfig.getMCPConfigPath(AiIntegration.AiAgent.GITHUB_COPILOT),
       configurationStatus: 'STANDALONE',
       diagnostic: undefined,
-      requiresSetup: false,
       operationInProgress: false
     });
     expect(state.mcp.integrations).to.deep.include({
@@ -167,7 +165,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       configurationPath: undefined,
       configurationStatus: undefined,
       diagnostic: undefined,
-      requiresSetup: false,
       operationInProgress: false
     });
   });
@@ -326,7 +323,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(log.calledOnceWith('Could not inspect Cursor MCP configuration: Error: read failed')).to.be.true;
   });
 
-  test('requires setup again for a standalone config with no persisted connection', async () => {
+  test('shows an existing standalone config as configured', async () => {
     const cursor = { id: AiIntegration.AiAgent.CURSOR, name: 'Cursor', source: 'ide' as const };
     sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.CURSOR, name: 'Cursor' });
     sinon.stub(aiAgentUtils, 'getCurrentAgentWithHookSupport').returns(undefined);
@@ -353,12 +350,11 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       state: AiIntegration.McpConfigurationState.STANDALONE,
       diagnostics: []
     });
-    sinon.stub(mcpServerConfig, 'hasPersistedMCPConnection').returns(false);
 
     const state = await provider.buildState();
 
     expect(state.mcp.integrations[0].configurationStatus).to.equal('STANDALONE');
-    expect(state.mcp.integrations[0].requiresSetup).to.be.true;
+    expect(state.mcp.integrations[0].diagnostic).to.be.undefined;
   });
 
   test('exposes malformed and CLI-managed states independently', async () => {
