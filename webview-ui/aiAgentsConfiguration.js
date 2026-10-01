@@ -19,14 +19,10 @@ const detectedLabel = document.getElementById('detected-label');
 const agentList = document.getElementById('agent-list');
 const noAgents = document.getElementById('no-agents');
 const remoteNotice = document.getElementById('remote-notice');
-const hookRow = document.getElementById('hook-row');
-const hookStatus = document.getElementById('hook-status');
-const hookAction = document.getElementById('hook-action');
 const mcpStatus = document.getElementById('mcp-status');
 const mcpDetectedLabel = document.getElementById('mcp-detected-label');
 const mcpList = document.getElementById('mcp-list');
 const noMcpAgents = document.getElementById('no-mcp-agents');
-const legacyInstructionsRow = document.getElementById('legacy-instructions-row');
 
 document.addEventListener('DOMContentLoaded', () => vscode.postMessage({ command: 'ready' }));
 window.addEventListener('message', event => {
@@ -58,9 +54,6 @@ document
 document
   .getElementById('mcp-docs')
   .addEventListener('click', () => vscode.postMessage({ command: 'openMcpDocumentation' }));
-document
-  .getElementById('legacy-instructions-action')
-  .addEventListener('click', () => vscode.postMessage({ command: 'openLegacyInstructions' }));
 
 function render(state) {
   loading.hidden = true;
@@ -83,17 +76,6 @@ function renderCli(state) {
   detectedLabel.textContent = `${agentCount} ${agentCount === 1 ? 'agent' : 'agents'} detected`;
   agentList.hidden = agentCount === 0;
   noAgents.hidden = agentCount !== 0;
-
-  setVisible(hookRow, state.cli.hook.supported);
-  if (state.cli.hook.supported) {
-    hookStatus.textContent = state.cli.hook.configured
-      ? 'Enabled'
-      : 'Runs SonarQube analysis automatically when enabled';
-    hookAction.textContent = state.cli.hook.configured ? 'Open configuration' : 'Enable';
-    hookAction.disabled = !state.cli.hook.configured && state.isRemote;
-    const command = state.cli.hook.configured ? 'openHook' : 'installHook';
-    hookAction.onclick = () => vscode.postMessage({ command });
-  }
 }
 
 function createCliAgentRow(agent, state) {
@@ -216,8 +198,6 @@ function renderMcp(state) {
   const hasAgents = state.mcp.integrations.length > 0;
   mcpList.hidden = !hasAgents;
   noMcpAgents.hidden = hasAgents;
-
-  setVisible(legacyInstructionsRow, state.mcp.legacyInstructionsConfigured);
 }
 
 function createMcpIntegrationRow(integration, state) {

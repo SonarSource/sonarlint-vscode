@@ -15,12 +15,9 @@ import { ResourceResolver } from '../util/webview';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ContextManager } from '../contextManager';
-import { isHookInstalled } from './aiAgentHooks';
 import { AiIntegrationTelemetry } from './aiIntegrationTelemetry';
-import { isSonarQubeRulesFileConfigured } from './aiAgentRuleConfig';
 import {
   getAiIntegrationStateParams,
-  getCurrentAgentWithHookSupport,
   getCurrentIdeHost,
   getDetectedIntegrationAgents,
   isAgentActiveForMcp
@@ -82,7 +79,6 @@ export interface AIAgentsConfigurationState {
     notice?: CliSetupNotice;
     primaryAction?: CliPrimaryAction;
     canIntegrate: boolean;
-    hook: { supported: boolean; configured: boolean };
   };
   mcp: {
     integrations: Array<{
@@ -98,7 +94,6 @@ export interface AIAgentsConfigurationState {
     configuredCount: number;
     configurableCount: number;
     operationInProgress: boolean;
-    legacyInstructionsConfigured: boolean;
   };
 }
 
@@ -204,7 +199,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   }
 
   // One snapshot feeds the view and telemetry. CLI and agent observations are emitted together from it.
-  // Rules and hook state stay on the view path; a closed view does not read them.
   private async loadInspectedIntegration(): Promise<InspectedIntegration> {
     const integrationState = await this.languageClient.getAiIntegrationState(
       getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
@@ -245,12 +239,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
 
   private async buildState(observe = false): Promise<AIAgentsConfigurationState> {
     const ide = getCurrentIdeHost();
-    const hookAgent = getCurrentAgentWithHookSupport();
-    const [snapshot, legacyInstructionsConfigured, hookConfigured] = await Promise.all([
-      this.loadInspectedIntegration(),
-      isSonarQubeRulesFileConfigured(),
-      hookAgent !== undefined ? isHookInstalled(hookAgent) : Promise.resolve(false)
-    ]);
+    const snapshot = await this.loadInspectedIntegration();
     if (observe) {
       this.emitObservation(snapshot);
     }
@@ -308,15 +297,13 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
           authenticationStatus,
           isRemote,
           cliSetup.operationInProgress
-        ),
-        hook: { supported: hookAgent !== undefined, configured: hookConfigured }
+        )
       },
       mcp: {
         integrations: mcpIntegrations,
         configuredCount,
         configurableCount: configurableIntegrations.length,
-        operationInProgress: mcpOperationInProgress,
-        legacyInstructionsConfigured
+        operationInProgress: mcpOperationInProgress
       }
     };
   }
@@ -337,15 +324,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         break;
       case 'openMcpConfiguration':
         await vscode.commands.executeCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, message.agent);
-        break;
-      case 'openLegacyInstructions':
-        await vscode.commands.executeCommand(Commands.OPEN_SONARQUBE_RULES_FILE, false);
-        break;
-      case 'installHook':
-        await vscode.commands.executeCommand(Commands.INSTALL_AI_AGENT_HOOK_SCRIPT);
-        break;
-      case 'openHook':
-        await vscode.commands.executeCommand(Commands.OPEN_AI_AGENT_HOOK_CONFIGURATION);
         break;
       case 'openCliDocumentation':
         await this.openDocumentation(AiIntegration.AiIntegrationAction.OPEN_CLI_DOCUMENTATION, CLI_DOCUMENTATION_URL);

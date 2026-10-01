@@ -13,11 +13,10 @@ import {
   IdeHost,
   IntegrationTarget,
   getAiIntegrationStateParams,
-  getCurrentAgentWithHookSupport,
-  getCurrentAgentWithMCPSupport,
   getCurrentIdeHost,
   getDetectedIdeAgents,
-  getDetectedIntegrationAgents
+  getDetectedIntegrationAgents,
+  isAgentActiveForMcp
 } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
@@ -54,7 +53,7 @@ suite('aiAgentUtils', () => {
       IntegrationTarget.GITHUB_COPILOT,
       AiIntegration.AiAgent.CODEX
     ]);
-    expect(getCurrentAgentWithMCPSupport()).to.be.undefined;
+    expect(isAgentActiveForMcp(IntegrationTarget.GITHUB_COPILOT)).to.be.false;
   });
 
   test('requires Copilot to be active before reporting MCP support', () => {
@@ -64,7 +63,7 @@ suite('aiAgentUtils', () => {
     });
 
     expect(getDetectedIdeAgents().map(agent => agent.id)).to.deep.equal([IntegrationTarget.GITHUB_COPILOT]);
-    expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.GITHUB_COPILOT);
+    expect(isAgentActiveForMcp(IntegrationTarget.GITHUB_COPILOT)).to.be.true;
   });
 
   test('reports Cursor only when hosted by Cursor', () => {
@@ -82,8 +81,6 @@ suite('aiAgentUtils', () => {
         source: 'builtIn'
       }
     ]);
-    expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.CURSOR);
-    expect(getCurrentAgentWithHookSupport()).to.be.undefined;
   });
 
   test('reports Windsurf plus installed extension agents', () => {
@@ -96,8 +93,6 @@ suite('aiAgentUtils', () => {
       IntegrationTarget.WINDSURF,
       AiIntegration.AiAgent.CLAUDE_CODE
     ]);
-    expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.WINDSURF);
-    expect(getCurrentAgentWithHookSupport()).to.equal(IntegrationTarget.WINDSURF);
   });
 
   test('maps the current host and detected agents onto the SLLS request', () => {
@@ -126,9 +121,7 @@ suite('aiAgentUtils', () => {
       agent,
       detectionSources,
       cliIntegrationSupported: true,
-      standaloneMcpSupported: false,
-      hookSupported: false,
-      skillSupported: false
+      standaloneMcpSupported: false
     });
 
     const agents = getDetectedIntegrationAgents({
@@ -175,6 +168,5 @@ suite('aiAgentUtils', () => {
       name: 'Some Editor'
     });
     expect(getDetectedIdeAgents()).to.deep.equal([]);
-    expect(getCurrentAgentWithMCPSupport()).to.be.undefined;
   });
 });

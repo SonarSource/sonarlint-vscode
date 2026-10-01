@@ -119,3 +119,31 @@ suite('CONFIGURE_MCP_SERVER command', () => {
     expect(actionNotification.getCalls().map(call => call.args[0].status)).to.deep.equal(['STARTED', 'SUCCEEDED']);
   });
 });
+
+suite('AI integrations commands', () => {
+  teardown(() => sinon.restore());
+
+  test('registers standalone MCP configuration and integration view commands', () => {
+    const registerCommand = sinon.stub(vscode.commands, 'registerCommand').returns({ dispose: () => undefined });
+    const context = { subscriptions: [] } as unknown as vscode.ExtensionContext;
+    const manager = new CommandsManager(
+      context,
+      {} as never,
+      undefined as never,
+      undefined as never,
+      undefined as never,
+      undefined as never,
+      {} as never
+    );
+
+    manager.registerCommands();
+
+    expect(registerCommand.getCalls().map(call => call.args[0])).to.include.members([
+      Commands.CONFIGURE_MCP_SERVER,
+      Commands.OPEN_MCP_SERVER_CONFIGURATION,
+      Commands.REFRESH_AI_AGENTS_CONFIGURATION,
+      Commands.USER_REFRESH_AI_AGENTS_CONFIGURATION,
+      Commands.OPEN_AIAGENTS_CONFIGURATION_DOC
+    ]);
+  });
+});
