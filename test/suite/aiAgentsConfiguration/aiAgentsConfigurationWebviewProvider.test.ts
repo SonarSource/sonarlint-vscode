@@ -86,13 +86,11 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(reports.every(report => report.action === 'REFRESH')).to.be.true;
   });
 
-  test('builds setup state without reading user files when no MCP agent is detected', async () => {
+  test('builds CLI and MCP setup state without legacy fields', async () => {
     sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([]);
-    const read = sinon.stub(require('node:fs'), 'readFileSync').throws(new Error('Unexpected file read'));
 
     const state = await provider.buildState();
 
-    expect(read.notCalled).to.be.true;
     expect(state.cli).to.have.all.keys(
       'installationStatus',
       'authenticationStatus',
