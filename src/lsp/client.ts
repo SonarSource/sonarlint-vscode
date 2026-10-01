@@ -162,6 +162,13 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(AiIntegration.PrepareAuthenticateCliCommand.type, params);
   }
 
+  authenticateCliWithConnection(
+    params: AiIntegration.AuthenticateCliWithConnectionParams,
+    token: VSCode.CancellationToken
+  ): Promise<AiIntegration.AuthenticateCliWithConnectionResponse> {
+    return this.sendRequest(AiIntegration.AuthenticateCliWithConnection.type, params, token);
+  }
+
   prepareIntegrateCliCommand(
     params: AiIntegration.PrepareIntegrateCliCommandParams
   ): Promise<AiIntegration.PrepareCliCommandResponse> {
