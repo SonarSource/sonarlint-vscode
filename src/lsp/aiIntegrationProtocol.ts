@@ -292,7 +292,7 @@ export namespace AiIntegration {
 
   export interface AuthenticateCliWithConnectionResponse {
     status: AuthenticateCliWithConnectionStatus;
-    diagnostic?: string | null;
+    message?: string | null;
   }
 
   export namespace AuthenticateCliWithConnection {

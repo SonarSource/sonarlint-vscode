@@ -388,19 +388,21 @@ suite('cliSetup', () => {
     });
 
     for (const response of [
-      { status: status.UPGRADE_REQUIRED, diagnostic: 'Update to 1.9.0.' },
-      { status: status.FAILED, diagnostic: 'The saved token was rejected.' },
+      { status: status.UPGRADE_REQUIRED, message: 'Update SonarQube CLI to the latest version.' },
+      { status: status.UPGRADE_REQUIRED },
+      { status: status.FAILED, message: 'The saved token was rejected.' },
       { status: status.FAILED }
     ]) {
-      test(`shows ${status[response.status]} without interactive login (${response.diagnostic ?? 'no diagnostic'})`, async () => {
+      test(`shows ${status[response.status]} without interactive login (${response.message ?? 'no message'})`, async () => {
         client.authenticateCliWithConnection.resolves(response);
         await session.run('authenticate');
         expect(session.notice).to.deep.equal({
           outcome: 'failed',
           message:
-            response.status === status.UPGRADE_REQUIRED
+            response.message ??
+            (response.status === status.UPGRADE_REQUIRED
               ? 'Update SonarQube CLI to the latest version to reuse a saved connection token.'
-              : (response.diagnostic ?? 'Could not authenticate SonarQube CLI. Try again.')
+              : 'Could not authenticate SonarQube CLI. Try again.')
         });
         expect(client.prepareAuthenticateCliCommand.notCalled).to.be.true;
         expect(createTerminal.notCalled).to.be.true;

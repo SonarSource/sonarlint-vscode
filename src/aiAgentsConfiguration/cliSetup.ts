@@ -292,10 +292,10 @@ export class CliSetupSession {
             this.notice = { outcome: 'completed', message: LOGIN_COMPLETED };
             return didNotStart(AiIntegration.AiIntegrationActionStatus.SUCCEEDED);
           case AiIntegration.AuthenticateCliWithConnectionStatus.UPGRADE_REQUIRED:
-            this.notice = { outcome: 'failed', message: CLI_UPGRADE_REQUIRED };
+            this.notice = { outcome: 'failed', message: response.message || CLI_UPGRADE_REQUIRED };
             return didNotStart(AiIntegration.AiIntegrationActionStatus.FAILED);
           case AiIntegration.AuthenticateCliWithConnectionStatus.FAILED:
-            this.notice = { outcome: 'failed', message: response.diagnostic || LOGIN_FAILED };
+            this.notice = { outcome: 'failed', message: response.message || LOGIN_FAILED };
             return didNotStart(AiIntegration.AiIntegrationActionStatus.FAILED);
           case AiIntegration.AuthenticateCliWithConnectionStatus.INTERACTIVE_LOGIN_REQUIRED:
             break;
