@@ -196,8 +196,6 @@ export namespace AiIntegration {
     detectionSources: AiAgentDetectionSource[];
     cliIntegrationSupported: boolean;
     standaloneMcpSupported: boolean;
-    hookSupported: boolean;
-    skillSupported: boolean;
   }
 
   export interface AiIntegrationConnection {

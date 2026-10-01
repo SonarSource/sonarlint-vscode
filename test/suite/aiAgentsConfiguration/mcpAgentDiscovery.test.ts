@@ -66,9 +66,7 @@ suite('MCP agent discovery', () => {
           agent: AiIntegration.AiAgent.CODEX,
           detectionSources: [AiIntegration.AiAgentDetectionSource.CLI],
           standaloneMcpSupported: false,
-          cliIntegrationSupported: true,
-          hookSupported: false,
-          skillSupported: false
+          cliIntegrationSupported: true
         }
       ]
     });
@@ -103,9 +101,7 @@ suite('MCP agent discovery', () => {
           agent: AiIntegration.AiAgent.CLAUDE_CODE,
           detectionSources: [AiIntegration.AiAgentDetectionSource.CLI],
           standaloneMcpSupported: true,
-          cliIntegrationSupported: true,
-          hookSupported: false,
-          skillSupported: false
+          cliIntegrationSupported: true
         }
       ]
     });
@@ -127,9 +123,7 @@ suite('MCP agent discovery', () => {
           agent: AiIntegration.AiAgent.CLAUDE_CODE,
           detectionSources: [AiIntegration.AiAgentDetectionSource.CLI],
           standaloneMcpSupported: true,
-          cliIntegrationSupported: true,
-          hookSupported: false,
-          skillSupported: false
+          cliIntegrationSupported: true
         }
       ]
     });
@@ -160,9 +154,7 @@ suite('MCP agent discovery', () => {
           agent,
           detectionSources: [AiIntegration.AiAgentDetectionSource.CLI],
           standaloneMcpSupported: true,
-          cliIntegrationSupported: true,
-          hookSupported: false,
-          skillSupported: false
+          cliIntegrationSupported: true
         }
       ]
     });
@@ -212,9 +204,7 @@ suite('MCP agent discovery', () => {
           agent: AiIntegration.AiAgent.CODEX,
           detectionSources: [AiIntegration.AiAgentDetectionSource.CLI],
           standaloneMcpSupported: false,
-          cliIntegrationSupported: true,
-          hookSupported: false,
-          skillSupported: false
+          cliIntegrationSupported: true
         }
       ]
     });
