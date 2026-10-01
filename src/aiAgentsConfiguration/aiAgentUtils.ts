@@ -85,7 +85,6 @@ export const COPILOT_ACTIVATION_DELAY_MS = 10000;
 interface BuiltInAgent {
   id: IntegrationTarget;
   name: string;
-  hookSupported: boolean;
 }
 
 interface IdeHostDefinition {
@@ -100,19 +99,19 @@ const IDE_HOSTS: readonly IdeHostDefinition[] = [
     id: IdeHost.CURSOR,
     name: 'Cursor',
     appNameMatch: 'cursor',
-    builtInAgent: { id: IntegrationTarget.CURSOR, name: 'Cursor', hookSupported: false }
+    builtInAgent: { id: IntegrationTarget.CURSOR, name: 'Cursor' }
   },
   {
     id: IdeHost.WINDSURF,
     name: 'Windsurf',
     appNameMatch: 'windsurf',
-    builtInAgent: { id: IntegrationTarget.WINDSURF, name: 'Windsurf', hookSupported: true }
+    builtInAgent: { id: IntegrationTarget.WINDSURF, name: 'Windsurf' }
   },
   {
     id: IdeHost.KIRO,
     name: 'Kiro',
     appNameMatch: 'kiro',
-    builtInAgent: { id: IntegrationTarget.KIRO, name: 'Kiro', hookSupported: false }
+    builtInAgent: { id: IntegrationTarget.KIRO, name: 'Kiro' }
   },
   {
     id: IdeHost.VSCODE,
@@ -167,7 +166,7 @@ export function getCurrentIdeHost(): CurrentIdeHost {
  *
  * Copilot is reported when the extension is installed, even if it is not yet
  * activated. MCP configuration still requires Copilot to be active — see
- * getCurrentAgentWithMCPSupport.
+ * isAgentActiveForMcp.
  */
 export function getDetectedIdeAgents(): DetectedIdeAgent[] {
   const host = findMatchingHost(vscode.env.appName.toLowerCase());
@@ -198,22 +197,6 @@ export function getDetectedIdeAgents(): DetectedIdeAgent[] {
   }
 
   return agents;
-}
-
-export function getCurrentAgentWithMCPSupport(): IntegrationTarget | undefined {
-  const host = findMatchingHost(vscode.env.appName.toLowerCase());
-  if (host?.builtInAgent) {
-    return host.builtInAgent.id;
-  }
-  if (host?.id === IdeHost.VSCODE && isCopilotInstalledAndActive()) {
-    return IntegrationTarget.GITHUB_COPILOT;
-  }
-  return undefined;
-}
-
-export function getCurrentAgentWithHookSupport(): IntegrationTarget | undefined {
-  const host = findMatchingHost(vscode.env.appName.toLowerCase());
-  return host?.builtInAgent?.hookSupported ? host.builtInAgent.id : undefined;
 }
 
 export function getAiIntegrationStateParams(

@@ -18,7 +18,7 @@ import {
   openMCPServerConfigurationFile,
   scheduleCopilotActivationMcpRefresh
 } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
-import { getCurrentAgentWithMCPSupport, IntegrationTarget } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import { IntegrationTarget } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { AllConnectionsTreeDataProvider, Connection } from '../../../src/connected/connections';
 import { ConnectionSettingsService } from '../../../src/settings/connectionsettings';
@@ -29,41 +29,6 @@ import { DEFAULT_CONNECTION_ID } from '../../../src/commons';
 import * as logging from '../../../src/util/logging';
 
 suite('MCP configuration paths', () => {
-  test('should detect supported IDEs based on app name', () => {
-    const envStub = sinon.stub(vscode.env, 'appName');
-    const extensionsStub = sinon.stub(vscode.extensions, 'getExtension');
-
-    try {
-      envStub.value('Cursor');
-      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.CURSOR);
-
-      envStub.value('Windsurf');
-      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.WINDSURF);
-
-      envStub.value('Kiro');
-      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.KIRO);
-
-      envStub.value('Visual Studio Code');
-      extensionsStub.withArgs('github.copilot-chat').returns({ isActive: true });
-      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.GITHUB_COPILOT);
-
-      envStub.value('Visual Studio Code');
-      extensionsStub.withArgs('github.copilot-chat').returns({ isActive: false });
-      expect(getCurrentAgentWithMCPSupport()).to.be.undefined;
-
-      envStub.value('Visual Studio Code - Insiders');
-      extensionsStub.withArgs('github.copilot-chat').returns({ isActive: true });
-      expect(getCurrentAgentWithMCPSupport()).to.equal(IntegrationTarget.GITHUB_COPILOT);
-
-      envStub.value('Unknown IDE');
-      extensionsStub.withArgs('github.copilot-chat').returns(undefined);
-      expect(getCurrentAgentWithMCPSupport()).to.be.undefined;
-    } finally {
-      envStub.restore();
-      extensionsStub.restore();
-    }
-  });
-
   test('should return different config paths for different IDEs', () => {
     const envStub = sinon.stub(vscode.env, 'appName');
     const extensionsStub = sinon.stub(vscode.extensions, 'getExtension');
@@ -101,6 +66,18 @@ suite('MCP configuration paths', () => {
     } finally {
       envStub.restore();
       extensionsStub.restore();
+    }
+  });
+
+  test('keeps the Windsurf Next MCP configuration separate from Windsurf', () => {
+    const envStub = sinon.stub(vscode.env, 'appName');
+    try {
+      envStub.value('Windsurf');
+      expect(getMCPConfigPath(IntegrationTarget.WINDSURF)).to.match(/windsurf[/\\]mcp_config\.json$/);
+      envStub.value('Windsurf Next');
+      expect(getMCPConfigPath(IntegrationTarget.WINDSURF)).to.match(/windsurf-next[/\\]mcp_config\.json$/);
+    } finally {
+      envStub.restore();
     }
   });
 
