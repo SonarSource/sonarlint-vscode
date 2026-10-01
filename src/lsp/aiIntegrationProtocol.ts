@@ -279,6 +279,30 @@ export namespace AiIntegration {
     );
   }
 
+  export enum AuthenticateCliWithConnectionStatus {
+    AUTHENTICATED = 0,
+    INTERACTIVE_LOGIN_REQUIRED = 1,
+    UPGRADE_REQUIRED = 2,
+    FAILED = 3
+  }
+
+  export interface AuthenticateCliWithConnectionParams {
+    connectionId: string;
+  }
+
+  export interface AuthenticateCliWithConnectionResponse {
+    status: AuthenticateCliWithConnectionStatus;
+    diagnostic?: string | null;
+  }
+
+  export namespace AuthenticateCliWithConnection {
+    export const type = new lsp.RequestType<
+      AuthenticateCliWithConnectionParams,
+      AuthenticateCliWithConnectionResponse,
+      null
+    >('sonarlint/authenticateCliWithConnection');
+  }
+
   export namespace PrepareIntegrateCliCommand {
     export const type = new lsp.RequestType<PrepareIntegrateCliCommandParams, PrepareCliCommandResponse, null>(
       'sonarlint/prepareIntegrateCliCommand'
