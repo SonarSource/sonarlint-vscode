@@ -1432,7 +1432,7 @@
     "openpgp": "^6.3.0",
     "path-exists": "^5.0.0",
     "properties": "^1.2.1",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "tar": "^7.5.11",
     "underscore": "^1.13.8",
     "vscode-languageclient": "^10.1.1",
