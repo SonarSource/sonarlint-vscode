@@ -1,3 +1,7 @@
+## 6.1
+
+* Update Language Server analyzer 6.0.2 -> [6.1.0](https://github.com/SonarSource/sonarlint-language-server/releases/tag/6.1.0.79773)
+
 ## 6.0.1
 
 * Fixed an issue where opening VS Code could overwrite custom SonarQube MCP server settings.
