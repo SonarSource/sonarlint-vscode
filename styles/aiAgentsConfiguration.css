@@ -269,25 +269,6 @@ button {
   grid-column: 1 / -1;
 }
 
-.component-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 12px;
-  margin-top: 12px;
-  border-top: 1px solid var(--vscode-panel-border);
-}
-
-.component-row[hidden] {
-  display: none;
-}
-
-.component-details {
-  display: grid;
-  gap: 2px;
-}
-
 button:focus-visible {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: 2px;

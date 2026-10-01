@@ -79,9 +79,7 @@ suite('AiIntegrationTelemetry', () => {
       agent: AiIntegration.AiAgent.CLAUDE_CODE,
       detectionSources: sources,
       cliIntegrationSupported: true,
-      standaloneMcpSupported: true,
-      hookSupported: false,
-      skillSupported: false
+      standaloneMcpSupported: true
     });
     reporter.agentStates([
       capability([AiIntegration.AiAgentDetectionSource.CLI]),
