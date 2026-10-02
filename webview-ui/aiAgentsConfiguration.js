@@ -80,6 +80,7 @@ function renderCli(state) {
 
 function createCliAgentRow(agent, state) {
   const item = document.createElement('li');
+  item.className = 'cli-integration-row';
   const name = document.createElement('span');
   name.textContent = agent.name;
   const details = document.createElement('div');
@@ -88,10 +89,22 @@ function createCliAgentRow(agent, state) {
   item.append(details);
 
   if (agent.supportsCliIntegration) {
+    const status = document.createElement('span');
+    if (agent.recordingStatus === 'RECORDED') {
+      setStatus(status, 'Integration recorded', 'configured');
+    } else if (agent.recordingStatus === 'NOT_RECORDED') {
+      setStatus(status, 'No integration recorded', 'notConfigured');
+    } else {
+      setStatus(status, 'Unknown', 'unavailable');
+    }
+    status.classList.add('cli-recording-status');
+    details.append(status);
     const action = document.createElement('button');
     action.className = 'secondary-action agent-action';
     action.type = 'button';
-    action.textContent = 'Integrate for all projects';
+    action.textContent = agent.recordingStatus === 'RECORDED'
+      ? 'Configure integration'
+      : 'Integrate for all projects';
     action.disabled = !state.cli.canIntegrate;
     action.addEventListener('click', () => vscode.postMessage({ command: 'integrateAgent', agent: agent.id }));
     item.append(action);
@@ -103,7 +116,43 @@ function createCliAgentRow(agent, state) {
     ) ? 'Use MCP below' : 'CLI integration unavailable';
     item.append(guidance);
   }
+  if (agent.configurations?.length) {
+    item.append(createCliConfigurationDetails(agent.configurations));
+  }
   return item;
+}
+
+function createCliConfigurationDetails(configurations) {
+  const details = document.createElement('details');
+  details.className = 'cli-configuration-details';
+  const summary = document.createElement('summary');
+  summary.textContent = 'Configuration details';
+  details.append(summary);
+  for (const configuration of configurations) {
+    const entry = document.createElement('div');
+    entry.className = 'cli-configuration-entry supporting-text';
+    if (configuration.path) {
+      const path = document.createElement('span');
+      path.className = 'cli-configuration-path';
+      path.textContent = configuration.path;
+      entry.append(path);
+    }
+    for (const [key, label] of [['mcp', 'MCP'], ['hooks', 'Hooks']]) {
+      if (configuration[key] !== undefined) {
+        const status = document.createElement('span');
+        const checkLabels = {
+          CONFIGURED: 'Configured',
+          NOT_CONFIGURED: 'Not configured',
+          INVALID: 'Invalid configuration',
+          UNKNOWN: 'Unknown'
+        };
+        status.textContent = `${label}: ${checkLabels[configuration[key]] ?? 'Unknown'}`;
+        entry.append(status);
+      }
+    }
+    details.append(entry);
+  }
+  return details;
 }
 
 function renderCliStatus(installationStatus) {
