@@ -56,6 +56,19 @@ export namespace AiIntegration {
     UNKNOWN = 5
   }
 
+  export enum CliIntegrationRecordingStatus {
+    RECORDED = 0,
+    NOT_RECORDED = 1,
+    UNKNOWN = 2
+  }
+
+  export enum CliIntegrationCheckStatus {
+    CONFIGURED = 0,
+    NOT_CONFIGURED = 1,
+    INVALID = 2,
+    UNKNOWN = 3
+  }
+
   export enum McpConfigurationState {
     NOT_CONFIGURED = 0,
     STANDALONE = 1,
@@ -68,6 +81,8 @@ export namespace AiIntegration {
   export type AiAgentDetectionSourceName = keyof typeof AiAgentDetectionSource;
   export type CliInstallationStatusName = keyof typeof CliInstallationStatus;
   export type CliAuthenticationStatusName = keyof typeof CliAuthenticationStatus;
+  export type CliIntegrationRecordingStatusName = keyof typeof CliIntegrationRecordingStatus;
+  export type CliIntegrationCheckStatusName = keyof typeof CliIntegrationCheckStatus;
   export type McpConfigurationStateName = keyof typeof McpConfigurationState;
 
   // Response enums above stay ordinals. Notifications send these names.
@@ -101,6 +116,22 @@ export namespace AiIntegration {
     [CliAuthenticationStatus.UNVERIFIED]: 'UNVERIFIED',
     [CliAuthenticationStatus.UNAVAILABLE]: 'UNAVAILABLE',
     [CliAuthenticationStatus.UNKNOWN]: 'UNKNOWN'
+  };
+
+  export const CLI_INTEGRATION_RECORDING_STATUS_NAMES: Record<
+    CliIntegrationRecordingStatus,
+    CliIntegrationRecordingStatusName
+  > = {
+    [CliIntegrationRecordingStatus.RECORDED]: 'RECORDED',
+    [CliIntegrationRecordingStatus.NOT_RECORDED]: 'NOT_RECORDED',
+    [CliIntegrationRecordingStatus.UNKNOWN]: 'UNKNOWN'
+  };
+
+  export const CLI_INTEGRATION_CHECK_STATUS_NAMES: Record<CliIntegrationCheckStatus, CliIntegrationCheckStatusName> = {
+    [CliIntegrationCheckStatus.CONFIGURED]: 'CONFIGURED',
+    [CliIntegrationCheckStatus.NOT_CONFIGURED]: 'NOT_CONFIGURED',
+    [CliIntegrationCheckStatus.INVALID]: 'INVALID',
+    [CliIntegrationCheckStatus.UNKNOWN]: 'UNKNOWN'
   };
 
   export const MCP_CONFIGURATION_STATE_NAMES: Record<McpConfigurationState, McpConfigurationStateName> = {
@@ -204,11 +235,24 @@ export namespace AiIntegration {
     organization?: string | null;
   }
 
+  export interface CliIntegrationConfiguration {
+    path?: string | null;
+    mcp?: CliIntegrationCheckStatus | null;
+    hooks?: CliIntegrationCheckStatus | null;
+  }
+
+  export interface CliIntegrationState {
+    agent: AiAgent;
+    recordingStatus: CliIntegrationRecordingStatus;
+    configurations: CliIntegrationConfiguration[];
+  }
+
   export interface GetAiIntegrationStateResponse {
     cli: SonarQubeCliState;
     agents: AiIntegrationAgentCapability[];
     connectionChoices: AiIntegrationConnection[];
     recommendedConnectionId?: string | null;
+    cliIntegrations?: CliIntegrationState[] | null;
   }
 
   export namespace GetAiIntegrationState {
