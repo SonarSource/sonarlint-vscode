@@ -1,3 +1,7 @@
+## 6.1
+
+* Update Text & Secrets analyzer 2.51 -> [2.52](https://github.com/SonarSource/sonar-text/releases/tag/2.52.0.13617)
+
 ## 6.0.1
 
 * Fixed an issue where opening VS Code could overwrite custom SonarQube MCP server settings.
