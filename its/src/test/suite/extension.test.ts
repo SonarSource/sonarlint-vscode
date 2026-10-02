@@ -47,7 +47,7 @@ suite('Extension Test Suite', () => {
 
     assert.strictEqual(diags.length, 2);
     assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
-    assert.strictEqual(diags[1].message, "Unexpected var, use let or const instead.");
+    assert.strictEqual(diags[1].message, 'Replace "var" with "let" or "const", which are scoped to the block that declares them.');
     assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable.");
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');

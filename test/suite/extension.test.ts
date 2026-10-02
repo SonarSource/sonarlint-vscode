@@ -72,7 +72,7 @@ async function checkSonarLintDiagnostics(fileUri: vscode.Uri) {
 
   assert.strictEqual(diags.length, 2);
   assert.strictEqual(diags[0].message, 'Remove the declaration of the unused \'i\' variable.');
-  assert.strictEqual(diags[1].message, 'Unexpected var, use let or const instead.');
+  assert.strictEqual(diags[1].message, 'Replace "var" with "let" or "const", which are scoped to the block that declares them.');
 }
 
 async function waitForSonarLintDiagnostics(fileUri: vscode.Uri) {
