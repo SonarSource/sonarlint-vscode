@@ -33,6 +33,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
   setup(function () {
     this.timeout(SETUP_TEARDOWN_HOOK_TIMEOUT);
     provider = Object.create(AIAgentsConfigurationWebviewProvider.prototype);
+    provider.refreshGeneration = 0;
     mcpInProgressStub = sinon.stub(mcpServerConfig, 'isMCPSetupInProgress').returns(false);
     provider.extensionContext = {
       subscriptions: [],
@@ -107,6 +108,118 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       'configurableCount',
       'operationInProgress'
     );
+  });
+
+  function cliIntegrationState(
+    cliIntegrations?: AiIntegration.CliIntegrationState[] | null
+  ): AiIntegration.GetAiIntegrationStateResponse {
+    return {
+      cli: {
+        installationStatus: AiIntegration.CliInstallationStatus.INSTALLED,
+        authenticationStatus: AiIntegration.CliAuthenticationStatus.AUTHENTICATED
+      },
+      agents: [{
+        agent: AiIntegration.AiAgent.CODEX,
+        detectionSources: [AiIntegration.AiAgentDetectionSource.CLI],
+        cliIntegrationSupported: true,
+        standaloneMcpSupported: false
+      }],
+      connectionChoices: [],
+      cliIntegrations
+    };
+  }
+
+  test('maps recording ordinals independently of configuration health', async () => {
+    for (const [recordingStatus, expected] of [
+      [0, 'RECORDED'], [1, 'NOT_RECORDED'], [2, 'UNKNOWN'], [99, 'UNKNOWN'], ['0', 'UNKNOWN']
+    ] as const) {
+      getIntegrationState.resolves(cliIntegrationState([{
+        agent: AiIntegration.AiAgent.CODEX,
+        recordingStatus: recordingStatus as AiIntegration.CliIntegrationRecordingStatus,
+        configurations: [{ mcp: AiIntegration.CliIntegrationCheckStatus.INVALID }]
+      }]));
+
+      const state = await provider.buildState();
+
+      expect(state.agents[0].recordingStatus).to.equal(expected);
+      expect(state.agents[0].configurations[0].mcp).to.equal('INVALID');
+    }
+  });
+
+  test('falls back to unknown for old responses and missing agent records', async () => {
+    for (const cliIntegrations of [undefined, null, [], [{
+      agent: AiIntegration.AiAgent.CLAUDE_CODE,
+      recordingStatus: AiIntegration.CliIntegrationRecordingStatus.RECORDED,
+      configurations: []
+    }]]) {
+      const response = cliIntegrationState(cliIntegrations);
+      if (cliIntegrations === undefined) {
+        delete response.cliIntegrations;
+      }
+      getIntegrationState.resolves(response);
+
+      const state = await provider.buildState();
+
+      expect(state.agents[0].recordingStatus).to.equal('UNKNOWN');
+      expect(state.agents[0].configurations).to.deep.equal([]);
+    }
+  });
+
+  test('preserves duplicate and pathless configurations and only reported checks', async () => {
+    getIntegrationState.resolves(cliIntegrationState([{
+      agent: AiIntegration.AiAgent.CODEX,
+      recordingStatus: AiIntegration.CliIntegrationRecordingStatus.RECORDED,
+      configurations: [
+        { path: '/project/config', mcp: 0, hooks: 1 },
+        { path: '/project/config', hooks: 2 },
+        { mcp: 3, hooks: null },
+        { path: null, mcp: 99 as AiIntegration.CliIntegrationCheckStatus },
+        { hooks: '0' as unknown as AiIntegration.CliIntegrationCheckStatus }
+      ]
+    }]));
+
+    const state = await provider.buildState();
+
+    expect(state.agents[0].configurations).to.deep.equal([
+      { path: '/project/config', mcp: 'CONFIGURED', hooks: 'NOT_CONFIGURED' },
+      { path: '/project/config', mcp: undefined, hooks: 'INVALID' },
+      { path: undefined, mcp: 'UNKNOWN', hooks: undefined },
+      { path: undefined, mcp: 'UNKNOWN', hooks: undefined },
+      { path: undefined, mcp: undefined, hooks: 'UNKNOWN' }
+    ]);
+  });
+
+  test('does not infer detection from recorded integrations', async () => {
+    const response = cliIntegrationState([{
+      agent: AiIntegration.AiAgent.CODEX,
+      recordingStatus: AiIntegration.CliIntegrationRecordingStatus.RECORDED,
+      configurations: []
+    }]);
+    response.agents[0].detectionSources = [];
+    getIntegrationState.resolves(response);
+
+    const state = await provider.buildState();
+
+    expect(state.agents).to.deep.equal([]);
+  });
+
+  test('recording status leaves authentication, remote and setup gates in force', async () => {
+    const response = cliIntegrationState([{
+      agent: AiIntegration.AiAgent.CODEX,
+      recordingStatus: AiIntegration.CliIntegrationRecordingStatus.RECORDED,
+      configurations: []
+    }]);
+    const remote = sinon.stub(vscode.env, 'remoteName').value(undefined);
+    getIntegrationState.resolves(response);
+    expect((await provider.buildState()).cli.canIntegrate).to.be.true;
+    response.cli.authenticationStatus = AiIntegration.CliAuthenticationStatus.UNAUTHENTICATED;
+    expect((await provider.buildState()).cli.canIntegrate).to.be.false;
+    response.cli.authenticationStatus = AiIntegration.CliAuthenticationStatus.AUTHENTICATED;
+    remote.value('ssh-remote');
+    expect((await provider.buildState()).cli.canIntegrate).to.be.false;
+    remote.value(undefined);
+    provider.cliSetupSession = { operationInProgress: true };
+    expect((await provider.buildState()).cli.canIntegrate).to.be.false;
   });
 
   test('builds independent MCP state for detected agents', async () => {
@@ -472,6 +585,83 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     await provider.refresh();
 
     expect(postMessage.callCount).to.equal(2);
+  });
+
+  test('discards an older successful refresh after a newer state is published', async () => {
+    const postMessage = sinon.stub().resolves();
+    provider.view = { webview: { postMessage } };
+    let completeOlder: (state: unknown) => void;
+    provider.buildState = sinon.stub()
+      .onFirstCall().returns(new Promise(resolve => { completeOlder = resolve; }))
+      .onSecondCall().resolves({ version: 'newer' });
+
+    const older = provider.refresh();
+    await provider.refresh();
+    completeOlder({ version: 'older' });
+    await older;
+
+    expect(postMessage.calledOnceWithExactly({ command: 'state', state: { version: 'newer' } })).to.be.true;
+  });
+
+  test('does not publish an older error over a newer state', async () => {
+    const postMessage = sinon.stub().resolves();
+    sinon.stub(logging, 'logToSonarLintOutput');
+    provider.view = { webview: { postMessage } };
+    let rejectOlder: (error: Error) => void;
+    provider.buildState = sinon.stub()
+      .onFirstCall().returns(new Promise((_resolve, reject) => { rejectOlder = reject; }))
+      .onSecondCall().resolves({ version: 'newer' });
+
+    const older = provider.refresh();
+    await provider.refresh();
+    rejectOlder(new Error('old request failed'));
+    await older;
+
+    expect(postMessage.calledOnceWithExactly({ command: 'state', state: { version: 'newer' } })).to.be.true;
+  });
+
+  for (const outcome of ['success', 'error']) {
+    test(`discards pending refresh ${outcome} after disposal or replacement of the view`, async () => {
+      const postMessage = sinon.stub().resolves();
+      const replacementPostMessage = sinon.stub().resolves();
+      sinon.stub(logging, 'logToSonarLintOutput');
+      for (const replacement of [undefined, { webview: { postMessage: replacementPostMessage } }]) {
+        provider.view = { webview: { postMessage } };
+        let settle: () => void;
+        provider.buildState = sinon.stub().returns(new Promise((resolve, reject) => {
+          settle = () => outcome === 'success' ? resolve({}) : reject(new Error('disposed'));
+        }));
+        const pending = provider.refresh();
+        provider.view = replacement;
+        settle();
+        await pending;
+      }
+      expect(postMessage.notCalled).to.be.true;
+      expect(replacementPostMessage.notCalled).to.be.true;
+    });
+  }
+
+  test('refreshes recorded integration state after CLI setup completes', async () => {
+    const response = cliIntegrationState([{
+      agent: AiIntegration.AiAgent.CODEX,
+      recordingStatus: AiIntegration.CliIntegrationRecordingStatus.NOT_RECORDED,
+      configurations: []
+    }]);
+    getIntegrationState.resolves(response);
+    const postMessage = sinon.stub().resolves();
+    provider.view = { webview: { postMessage } };
+    const terminal = { show: sinon.stub() };
+    sinon.stub(vscode.window, 'createTerminal').returns(terminal as unknown as vscode.Terminal);
+    sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+    prepareIntegrateCliCommand.resolves({ executable: '/usr/local/bin/sonar', arguments: ['integrate', 'codex'], interactive: true });
+
+    await provider.handleMessage({ command: 'integrateAgent', agent: AiIntegration.AiAgent.CODEX });
+    expect(postMessage.firstCall.args[0].state.agents[0].recordingStatus).to.equal('NOT_RECORDED');
+    response.cliIntegrations[0].recordingStatus = AiIntegration.CliIntegrationRecordingStatus.RECORDED;
+    await provider.cliSetupSession.handleTerminalClosed({ code: 0, reason: vscode.TerminalExitReason.Process });
+
+    expect(postMessage.lastCall.args[0].state.agents[0].recordingStatus).to.equal('RECORDED');
+    expect(provider.languageClient.aiIntegrationCliStateObserved.calledOnce).to.be.true;
   });
 
   test('routes MCP setup through the existing command', async () => {

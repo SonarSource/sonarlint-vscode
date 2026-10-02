@@ -132,6 +132,37 @@ main {
   flex: 0 0 auto;
 }
 
+.agent-list .cli-integration-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.cli-recording-status {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.cli-configuration-details {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.cli-configuration-details summary {
+  color: var(--vscode-textLink-foreground);
+  cursor: pointer;
+}
+
+.cli-configuration-entry {
+  display: grid;
+  gap: 3px;
+  margin: 6px 0;
+}
+
+.cli-configuration-path {
+  overflow-wrap: anywhere;
+}
+
 .agent-availability {
   text-align: right;
 }
@@ -157,6 +188,9 @@ main {
 }
 
 @media (max-width: 360px) {
+  .agent-list .cli-integration-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .agent-list li {
     align-items: stretch;
     flex-direction: column;
