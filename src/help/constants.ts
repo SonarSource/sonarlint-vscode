@@ -98,7 +98,7 @@ export const helpAndFeedbackItems: HelpAndFeedbackItem[] = [
   },
   {
     id: 'aiAgentsConfigurationDoc',
-    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/agents',
+    url: 'https://docs.sonarsource.com/sonarqube-for-vs-code/ai-capabilities/integrations',
     viewItem: false
   },
   {
