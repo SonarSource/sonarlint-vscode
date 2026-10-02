@@ -209,7 +209,8 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     try {
       const state = await this.buildState(observe);
       if (this.view !== view || this.refreshGeneration !== generation) {
-        return false;
+        // Loading succeeded; a newer refresh or view owns publication.
+        return true;
       }
       await view.webview.postMessage({ command: 'state', state });
       return true;

@@ -587,7 +587,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(postMessage.callCount).to.equal(2);
   });
 
-  test('discards an older successful refresh after a newer state is published', async () => {
+  test('reports a superseded manual refresh as successful without publishing its stale state', async () => {
     const postMessage = sinon.stub().resolves();
     provider.view = { webview: { postMessage } };
     let completeOlder: (state: unknown) => void;
@@ -595,15 +595,17 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       .onFirstCall().returns(new Promise(resolve => { completeOlder = resolve; }))
       .onSecondCall().resolves({ version: 'newer' });
 
-    const older = provider.refresh();
+    const older = provider.refreshOnRequest();
     await provider.refresh();
     completeOlder({ version: 'older' });
     await older;
 
     expect(postMessage.calledOnceWithExactly({ command: 'state', state: { version: 'newer' } })).to.be.true;
+    const reports = provider.languageClient.aiIntegrationAction.getCalls().map(call => call.args[0]);
+    expect(reports.map(report => report.status)).to.deep.equal(['STARTED', 'SUCCEEDED']);
   });
 
-  test('does not publish an older error over a newer state', async () => {
+  test('reports a failed manual refresh without publishing its error over a newer state', async () => {
     const postMessage = sinon.stub().resolves();
     sinon.stub(logging, 'logToSonarLintOutput');
     provider.view = { webview: { postMessage } };
@@ -612,12 +614,14 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       .onFirstCall().returns(new Promise((_resolve, reject) => { rejectOlder = reject; }))
       .onSecondCall().resolves({ version: 'newer' });
 
-    const older = provider.refresh();
+    const older = provider.refreshOnRequest();
     await provider.refresh();
     rejectOlder(new Error('old request failed'));
     await older;
 
     expect(postMessage.calledOnceWithExactly({ command: 'state', state: { version: 'newer' } })).to.be.true;
+    const reports = provider.languageClient.aiIntegrationAction.getCalls().map(call => call.args[0]);
+    expect(reports.map(report => report.status)).to.deep.equal(['STARTED', 'FAILED']);
   });
 
   for (const outcome of ['success', 'error']) {
