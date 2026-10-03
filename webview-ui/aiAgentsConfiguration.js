@@ -92,6 +92,7 @@ function createCliAgentRow(agent, state) {
     const status = document.createElement('span');
     if (agent.recordingStatus === 'RECORDED') {
       setStatus(status, 'Integration recorded', 'configured');
+      setConfigurationPathHover(status, (agent.configurations ?? []).map(configuration => configuration.path));
     } else if (agent.recordingStatus === 'NOT_RECORDED') {
       setStatus(status, 'No integration recorded', 'notConfigured');
     } else {
@@ -102,9 +103,9 @@ function createCliAgentRow(agent, state) {
     const action = document.createElement('button');
     action.className = 'secondary-action agent-action';
     action.type = 'button';
-    action.textContent = agent.recordingStatus === 'RECORDED'
-      ? 'Configure integration'
-      : 'Integrate for all projects';
+    action.textContent = 'Integrate';
+    action.title = 'Integrate for all projects';
+    action.setAttribute('aria-label', `${action.title}: ${agent.name}`);
     action.disabled = !state.cli.canIntegrate;
     action.addEventListener('click', () => vscode.postMessage({ command: 'integrateAgent', agent: agent.id }));
     item.append(action);
@@ -116,43 +117,7 @@ function createCliAgentRow(agent, state) {
     ) ? 'Use MCP below' : 'CLI integration unavailable';
     item.append(guidance);
   }
-  if (agent.configurations?.length) {
-    item.append(createCliConfigurationDetails(agent.configurations));
-  }
   return item;
-}
-
-function createCliConfigurationDetails(configurations) {
-  const details = document.createElement('details');
-  details.className = 'cli-configuration-details';
-  const summary = document.createElement('summary');
-  summary.textContent = 'Configuration details';
-  details.append(summary);
-  for (const configuration of configurations) {
-    const entry = document.createElement('div');
-    entry.className = 'cli-configuration-entry supporting-text';
-    if (configuration.path) {
-      const path = document.createElement('span');
-      path.className = 'cli-configuration-path';
-      path.textContent = configuration.path;
-      entry.append(path);
-    }
-    for (const [key, label] of [['mcp', 'MCP'], ['hooks', 'Hooks']]) {
-      if (configuration[key] !== undefined) {
-        const status = document.createElement('span');
-        const checkLabels = {
-          CONFIGURED: 'Configured',
-          NOT_CONFIGURED: 'Not configured',
-          INVALID: 'Invalid configuration',
-          UNKNOWN: 'Unknown'
-        };
-        status.textContent = `${label}: ${checkLabels[configuration[key]] ?? 'Unknown'}`;
-        entry.append(status);
-      }
-    }
-    details.append(entry);
-  }
-  return details;
 }
 
 function renderCliStatus(installationStatus) {
@@ -258,15 +223,6 @@ function createMcpIntegrationRow(integration, state) {
   const name = document.createElement('span');
   name.textContent = integration.agentName;
   details.append(name);
-  if (integration.configurationPath) {
-    const file = document.createElement('span');
-    file.className = 'supporting-text mcp-configuration-path';
-    file.textContent = integration.configurationPath;
-    details.append(file);
-  }
-
-  const stateAndAction = document.createElement('div');
-  stateAndAction.className = 'mcp-integration-action';
   const status = document.createElement('span');
   const action = document.createElement('button');
   action.className = 'secondary-action';
@@ -300,8 +256,12 @@ function createMcpIntegrationRow(integration, state) {
   if (integration.operationInProgress) {
     action.textContent = 'Setting up…';
   }
-  stateAndAction.append(status, action);
-  row.append(details, stateAndAction);
+  if (integration.configurationPath || (hasAction && !setupAction)) {
+    setConfigurationPathHover(status, [integration.configurationPath]);
+  }
+  status.classList.add('mcp-configuration-status');
+  details.append(status);
+  row.append(details, action);
 
   if (integration.configurationStatus !== 'CLI_MANAGED' && integration.diagnostic) {
     const message = document.createElement('span');
@@ -310,6 +270,13 @@ function createMcpIntegrationRow(integration, state) {
     row.append(message);
   }
   return row;
+}
+
+function setConfigurationPathHover(status, paths) {
+  const missingPath = 'Configuration path not reported';
+  status.title = paths.map(path => path || missingPath).join('\n') || missingPath;
+  status.setAttribute('aria-label', `${status.textContent}. ${status.title}`);
+  status.tabIndex = 0;
 }
 
 function configureOpenAction(action, agent) {

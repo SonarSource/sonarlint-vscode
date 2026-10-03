@@ -17,14 +17,25 @@ import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 interface RenderedAgent {
   status: string;
   action: string;
+  actionTitle: string;
   disabled: boolean;
-  paths: string[];
-  checks: string[];
-  expanded?: boolean;
+  tooltip: string;
+  buttons: number;
+  additionalDetails: boolean;
+}
+
+interface RenderedMcpAgent {
+  status: string;
+  tooltip: string;
+  action: string;
+  statusBelowName: boolean;
+  pathVisible: boolean;
+  diagnostic: string;
 }
 
 async function renderWebview(state: AIAgentsConfigurationState): Promise<{
   agents: RenderedAgent[];
+  mcpAgents: RenderedMcpAgent[];
   injectedElement: boolean;
   actions: Array<{ command: string; agent: AiIntegration.AiAgent }>;
 }> {
@@ -36,31 +47,44 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
   const probe = `<script nonce="${nonce}">
     window.addEventListener('message', event => {
       if (event.data.command !== 'state') return;
+      document.querySelectorAll('.agent-disclosure').forEach(disclosure => disclosure.open = true);
       const agents = Array.from(document.querySelectorAll('#agent-list > li')).map(row => {
-        const disclosure = row.querySelector('details');
-        disclosure?.querySelector('summary').click();
-        row.querySelector('button')?.click();
+        row.querySelector('.agent-action')?.click();
         return {
           status: row.querySelector('.cli-recording-status')?.textContent,
-          action: row.querySelector('button')?.textContent,
-          disabled: row.querySelector('button')?.disabled,
-          paths: Array.from(row.querySelectorAll('.cli-configuration-path')).map(path => path.textContent),
-          checks: Array.from(row.querySelectorAll('.cli-configuration-entry span:not(.cli-configuration-path)'))
-            .map(check => check.textContent),
-          expanded: disclosure?.open
+          action: row.querySelector('.agent-action')?.textContent,
+          actionTitle: row.querySelector('.agent-action')?.title,
+          disabled: row.querySelector('.agent-action')?.disabled,
+          tooltip: row.querySelector('.cli-recording-status')?.title,
+          buttons: row.querySelectorAll('button').length,
+          additionalDetails: Boolean(row.querySelector('.cli-configuration-toggle, .cli-configuration-details, .cli-feature-checks'))
         };
       });
-      vscode.postMessage({ command: 'rendered', agents, injectedElement: Boolean(document.querySelector('img')) });
+      const mcpAgents = Array.from(document.querySelectorAll('#mcp-list > li')).map(row => {
+        const name = row.querySelector('.mcp-integration-details')?.firstElementChild;
+        const status = row.querySelector('.mcp-configuration-status');
+        return {
+          status: status?.textContent,
+          tooltip: status?.title,
+          action: row.querySelector('button')?.textContent,
+          statusBelowName: status?.previousElementSibling === name
+            && status.getBoundingClientRect().top >= name.getBoundingClientRect().bottom,
+          pathVisible: Boolean(status?.title && row.textContent.includes(status.title)),
+          diagnostic: row.querySelector('.mcp-diagnostic')?.textContent ?? ''
+        };
+      });
+      document.querySelectorAll('#mcp-list button:not([hidden])').forEach(button => button.click());
+      vscode.postMessage({ command: 'rendered', agents, mcpAgents, injectedElement: Boolean(document.querySelector('img')) });
     });
   </script>`;
   const actions: Array<{ command: string; agent: AiIntegration.AiAgent }> = [];
   let listener: vscode.Disposable;
   try {
-    const rendered = new Promise<{ agents: RenderedAgent[]; injectedElement: boolean }>(resolve => {
+    const rendered = new Promise<{ agents: RenderedAgent[]; mcpAgents: RenderedMcpAgent[]; injectedElement: boolean }>(resolve => {
       listener = panel.webview.onDidReceiveMessage(message => {
         if (message.command === 'ready') {
           void panel.webview.postMessage({ command: 'state', state });
-        } else if (message.command === 'integrateAgent') {
+        } else if (['integrateAgent', 'openMcpConfiguration', 'configureMcp'].includes(message.command)) {
           actions.push(message);
         } else if (message.command === 'rendered') {
           resolve(message);
@@ -107,7 +131,7 @@ suite('AI integrations webview rendering', () => {
     };
   }
 
-  test('renders recording badges, action labels and reported configuration details safely', async function () {
+  test('renders recording status, safe configuration-path hovers and a consistent integrate action', async function () {
     this.timeout(15_000);
     const rendered = await renderWebview(state(true));
 
@@ -115,24 +139,84 @@ suite('AI integrations webview rendering', () => {
       '✓ Integration recorded', 'No integration recorded', 'Unknown'
     ]);
     expect(rendered.agents.map(agent => agent.action)).to.deep.equal([
-      'Configure integration', 'Integrate for all projects', 'Integrate for all projects'
+      'Integrate', 'Integrate', 'Integrate'
     ]);
-    expect(rendered.agents[0].paths).to.deep.equal([
-      '<img src=x onerror=alert(1)>', '<img src=x onerror=alert(1)>'
-    ]);
-    expect(rendered.agents[0].checks).to.deep.equal([
-      'MCP: Invalid configuration', 'MCP: Configured', 'Hooks: Not configured', 'Hooks: Unknown'
-    ]);
-    expect(rendered.agents[0].expanded).to.be.true;
+    expect(rendered.agents.every(agent => agent.actionTitle === 'Integrate for all projects')).to.be.true;
+    expect(rendered.agents[0].tooltip).to.equal(
+      '<img src=x onerror=alert(1)>\n<img src=x onerror=alert(1)>\nConfiguration path not reported'
+    );
+    expect(rendered.agents.slice(1).every(agent => agent.tooltip === '')).to.be.true;
+    expect(rendered.agents.every(agent => agent.buttons === 1 && !agent.additionalDetails)).to.be.true;
     expect(rendered.injectedElement).to.be.false;
     expect(rendered.actions.map(action => action.agent)).to.deep.equal(state(true).agents.map(agent => agent.id));
   });
 
-  test('disables both configure and integrate actions when setup is unavailable', async function () {
+  test('provides a tooltip fallback when a recorded integration has no configuration path', async function () {
+    this.timeout(15_000);
+    const input = state(true);
+    input.agents[0].configurations = [];
+
+    const rendered = await renderWebview(input);
+
+    expect(rendered.agents[0].status).to.equal('✓ Integration recorded');
+    expect(rendered.agents[0].tooltip).to.equal('Configuration path not reported');
+  });
+
+  test('disables integration actions when setup is unavailable', async function () {
     this.timeout(15_000);
     const rendered = await renderWebview(state(false));
 
     expect(rendered.agents.every(agent => agent.disabled)).to.be.true;
     expect(rendered.actions).to.deep.equal([]);
+  });
+
+  test('places MCP statuses under agent names with safe path hovers and existing actions', async function () {
+    this.timeout(15_000);
+    const input = state(true);
+    input.agents = [];
+    input.mcp.integrations = [
+      {
+        agentId: AiIntegration.AiAgent.CODEX, agentName: 'Codex', standaloneSupported: true,
+        availableThroughCli: false, configurationStatus: 'STANDALONE',
+        configurationPath: '<img src=x onerror=alert(1)>', operationInProgress: false
+      },
+      {
+        agentId: AiIntegration.AiAgent.CURSOR, agentName: 'Cursor', standaloneSupported: true,
+        availableThroughCli: false, configurationStatus: 'CLI_MANAGED', configurationPath: '~/.cursor/mcp.json',
+        diagnostic: 'Managed by the CLI', operationInProgress: false
+      },
+      {
+        agentId: AiIntegration.AiAgent.WINDSURF, agentName: 'Windsurf', standaloneSupported: true,
+        availableThroughCli: false, configurationStatus: 'MALFORMED', configurationPath: '/project/mcp.json',
+        diagnostic: 'Invalid JSON', operationInProgress: false
+      },
+      {
+        agentId: AiIntegration.AiAgent.KIRO, agentName: 'Kiro', standaloneSupported: true,
+        availableThroughCli: false, configurationStatus: 'NOT_CONFIGURED', operationInProgress: false
+      }
+    ];
+    input.mcp.configurableCount = input.mcp.integrations.length;
+    input.mcp.configuredCount = 2;
+
+    const rendered = await renderWebview(input);
+
+    expect(rendered.mcpAgents.map(agent => agent.status)).to.deep.equal([
+      '✓ Configured', '✓ Managed by CLI', 'Needs attention', 'Not configured'
+    ]);
+    expect(rendered.mcpAgents.map(agent => agent.tooltip)).to.deep.equal([
+      '<img src=x onerror=alert(1)>', '~/.cursor/mcp.json', '/project/mcp.json', ''
+    ]);
+    expect(rendered.mcpAgents.every(agent => agent.statusBelowName && !agent.pathVisible)).to.be.true;
+    expect(rendered.mcpAgents.map(agent => agent.action)).to.deep.equal([
+      'Open configuration', 'Open configuration', 'Open configuration', 'Set up'
+    ]);
+    expect(rendered.mcpAgents.map(agent => agent.diagnostic)).to.deep.equal(['', '', 'Invalid JSON', '']);
+    expect(rendered.actions).to.deep.equal([
+      { command: 'openMcpConfiguration', agent: AiIntegration.AiAgent.CODEX },
+      { command: 'openMcpConfiguration', agent: AiIntegration.AiAgent.CURSOR },
+      { command: 'openMcpConfiguration', agent: AiIntegration.AiAgent.WINDSURF },
+      { command: 'configureMcp', agent: AiIntegration.AiAgent.KIRO }
+    ]);
+    expect(rendered.injectedElement).to.be.false;
   });
 });
