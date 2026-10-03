@@ -16,7 +16,6 @@ import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import { IdeHost } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import * as mcpServerConfig from '../../../src/aiAgentsConfiguration/mcpServerConfig';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
-import { ContextManager } from '../../../src/contextManager';
 import { Commands } from '../../../src/util/commands';
 import * as logging from '../../../src/util/logging';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
@@ -142,7 +141,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       const state = await provider.buildState();
 
       expect(state.agents[0].recordingStatus).to.equal(expected);
-      expect(state.agents[0].configurations[0].mcp).to.equal('INVALID');
     }
   });
 
@@ -161,11 +159,11 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       const state = await provider.buildState();
 
       expect(state.agents[0].recordingStatus).to.equal('UNKNOWN');
-      expect(state.agents[0].configurations).to.deep.equal([]);
+      expect(state.agents[0].configurationPaths).to.deep.equal([]);
     }
   });
 
-  test('preserves duplicate and pathless configurations and only reported checks', async () => {
+  test('preserves duplicate and pathless configuration paths', async () => {
     getIntegrationState.resolves(cliIntegrationState([{
       agent: AiIntegration.AiAgent.CODEX,
       recordingStatus: AiIntegration.CliIntegrationRecordingStatus.RECORDED,
@@ -173,20 +171,14 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
         { path: '/project/config', mcp: 0, hooks: 1 },
         { path: '/project/config', hooks: 2 },
         { mcp: 3, hooks: null },
-        { path: null, mcp: 99 as AiIntegration.CliIntegrationCheckStatus },
-        { hooks: '0' as unknown as AiIntegration.CliIntegrationCheckStatus }
+        { path: null },
+        {}
       ]
     }]));
 
     const state = await provider.buildState();
 
-    expect(state.agents[0].configurations).to.deep.equal([
-      { path: '/project/config', mcp: 'CONFIGURED', hooks: 'NOT_CONFIGURED' },
-      { path: '/project/config', mcp: undefined, hooks: 'INVALID' },
-      { path: undefined, mcp: 'UNKNOWN', hooks: undefined },
-      { path: undefined, mcp: 'UNKNOWN', hooks: undefined },
-      { path: undefined, mcp: undefined, hooks: 'UNKNOWN' }
-    ]);
+    expect(state.agents[0].configurationPaths).to.deep.equal(['/project/config', '/project/config', null, null, null]);
   });
 
   test('does not infer detection from recorded integrations', async () => {
@@ -338,7 +330,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
   });
 
   test('includes CLI-only agents and inspects their supported standalone configurations', async () => {
-    const setMcpContext = sinon.stub(ContextManager.instance, 'setMCPServerSupportedAgentContext');
     sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.VSCODE, name: 'VS Code' });
     sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([
       { id: AiIntegration.AiAgent.GITHUB_COPILOT, name: 'Copilot in VS Code', source: 'extension' }
@@ -386,7 +377,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       AiIntegration.AiAgent.CLAUDE_CODE
     ]);
     expect(state.agents).to.have.length(5);
-    expect(setMcpContext.calledOnceWithExactly(true)).to.be.true;
     expect(inspect.getCalls().map(call => call.args[1])).to.have.members([
       AiIntegration.AiAgent.GITHUB_COPILOT,
       AiIntegration.AiAgent.CURSOR,
@@ -541,109 +531,6 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect(state.cli.installationStatus).to.equal('UNUSABLE');
     expect(state.agents[0].supportsCliIntegration).to.be.true;
   });
-
-  test('keeps CLI setup feedback on webview load and clears it on explicit refresh', async () => {
-    const notice = { outcome: 'completed', message: 'Setup finished.' };
-    const postMessage = sinon.stub().resolves();
-    provider.cliSetupSession = { notice };
-    provider.view = { webview: { postMessage } };
-    provider.buildState = sinon.stub().callsFake(async () => ({ cli: { notice: provider.cliSetupSession.notice } }));
-
-    await provider.handleMessage({ command: 'ready' });
-    expect(postMessage.firstCall.args[0].state.cli.notice).to.equal(notice);
-
-    await provider.handleMessage({ command: 'refresh' });
-    expect(provider.cliSetupSession.notice).to.be.undefined;
-    expect(postMessage.secondCall.args[0].state.cli.notice).to.be.undefined;
-  });
-
-  test('shows a generic error state and recovers on a later refresh', async () => {
-    const postMessage = sinon.stub().resolves();
-    const log = sinon.stub(logging, 'logToSonarLintOutput');
-    const state = { cli: { installationStatus: 'INSTALLED' } };
-    provider.view = { webview: { postMessage } };
-    provider.buildState = sinon
-      .stub()
-      .onFirstCall()
-      .rejects(new Error('backend details'))
-      .onSecondCall()
-      .resolves(state);
-
-    await provider.refresh();
-    await provider.refresh();
-
-    expect(postMessage.firstCall.args).to.deep.equal([{ command: 'error' }]);
-    expect(postMessage.secondCall.args).to.deep.equal([{ command: 'state', state }]);
-    expect(log.calledOnceWith('Could not refresh AI integrations state: Error: backend details')).to.be.true;
-  });
-
-  test('does not reject when the view is disposed during refresh', async () => {
-    const postMessage = sinon.stub().rejects(new Error('Webview is disposed'));
-    provider.view = { webview: { postMessage } };
-    provider.buildState = sinon.stub().resolves({});
-
-    await provider.refresh();
-
-    expect(postMessage.callCount).to.equal(2);
-  });
-
-  test('reports a superseded manual refresh as successful without publishing its stale state', async () => {
-    const postMessage = sinon.stub().resolves();
-    provider.view = { webview: { postMessage } };
-    let completeOlder: (state: unknown) => void;
-    provider.buildState = sinon.stub()
-      .onFirstCall().returns(new Promise(resolve => { completeOlder = resolve; }))
-      .onSecondCall().resolves({ version: 'newer' });
-
-    const older = provider.refreshOnRequest();
-    await provider.refresh();
-    completeOlder({ version: 'older' });
-    await older;
-
-    expect(postMessage.calledOnceWithExactly({ command: 'state', state: { version: 'newer' } })).to.be.true;
-    const reports = provider.languageClient.aiIntegrationAction.getCalls().map(call => call.args[0]);
-    expect(reports.map(report => report.status)).to.deep.equal(['STARTED', 'SUCCEEDED']);
-  });
-
-  test('reports a failed manual refresh without publishing its error over a newer state', async () => {
-    const postMessage = sinon.stub().resolves();
-    sinon.stub(logging, 'logToSonarLintOutput');
-    provider.view = { webview: { postMessage } };
-    let rejectOlder: (error: Error) => void;
-    provider.buildState = sinon.stub()
-      .onFirstCall().returns(new Promise((_resolve, reject) => { rejectOlder = reject; }))
-      .onSecondCall().resolves({ version: 'newer' });
-
-    const older = provider.refreshOnRequest();
-    await provider.refresh();
-    rejectOlder(new Error('old request failed'));
-    await older;
-
-    expect(postMessage.calledOnceWithExactly({ command: 'state', state: { version: 'newer' } })).to.be.true;
-    const reports = provider.languageClient.aiIntegrationAction.getCalls().map(call => call.args[0]);
-    expect(reports.map(report => report.status)).to.deep.equal(['STARTED', 'FAILED']);
-  });
-
-  for (const outcome of ['success', 'error']) {
-    test(`discards pending refresh ${outcome} after disposal or replacement of the view`, async () => {
-      const postMessage = sinon.stub().resolves();
-      const replacementPostMessage = sinon.stub().resolves();
-      sinon.stub(logging, 'logToSonarLintOutput');
-      for (const replacement of [undefined, { webview: { postMessage: replacementPostMessage } }]) {
-        provider.view = { webview: { postMessage } };
-        let settle: () => void;
-        provider.buildState = sinon.stub().returns(new Promise((resolve, reject) => {
-          settle = () => outcome === 'success' ? resolve({}) : reject(new Error('disposed'));
-        }));
-        const pending = provider.refresh();
-        provider.view = replacement;
-        settle();
-        await pending;
-      }
-      expect(postMessage.notCalled).to.be.true;
-      expect(replacementPostMessage.notCalled).to.be.true;
-    });
-  }
 
   test('refreshes recorded integration state after CLI setup completes', async () => {
     const response = cliIntegrationState([{

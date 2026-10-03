@@ -115,7 +115,7 @@ main {
   list-style: none;
 }
 
-.agent-list li {
+.agent-list > li {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -149,9 +149,24 @@ main {
   font-size: 12px;
 }
 
-.cli-recording-status[title],
-.mcp-configuration-status[title] {
-  cursor: help;
+.configuration-paths {
+  margin-top: 3px;
+}
+
+.configuration-paths summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.configuration-paths summary .status {
+  display: inline;
+  margin-top: 0;
+}
+
+.configuration-path-list {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  overflow-wrap: anywhere;
 }
 
 .agent-availability {
@@ -261,8 +276,7 @@ button {
 }
 
 button:focus-visible,
-.cli-recording-status:focus-visible,
-.mcp-configuration-status:focus-visible {
+.configuration-paths summary:focus-visible {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: 2px;
 }

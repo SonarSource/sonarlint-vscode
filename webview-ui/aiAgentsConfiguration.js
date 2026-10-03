@@ -90,16 +90,17 @@ function createCliAgentRow(agent, state) {
 
   if (agent.supportsCliIntegration) {
     const status = document.createElement('span');
+    let statusContent = status;
     if (agent.recordingStatus === 'RECORDED') {
       setStatus(status, 'Integration recorded', 'configured');
-      setConfigurationPathHover(status, (agent.configurations ?? []).map(configuration => configuration.path));
+      statusContent = createConfigurationPathDisclosure(status, agent.configurationPaths);
     } else if (agent.recordingStatus === 'NOT_RECORDED') {
       setStatus(status, 'No integration recorded', 'notConfigured');
     } else {
       setStatus(status, 'Unknown', 'unavailable');
     }
     status.classList.add('cli-recording-status');
-    details.append(status);
+    details.append(statusContent);
     const action = document.createElement('button');
     action.className = 'secondary-action agent-action';
     action.type = 'button';
@@ -256,11 +257,10 @@ function createMcpIntegrationRow(integration, state) {
   if (integration.operationInProgress) {
     action.textContent = 'Setting up…';
   }
-  if (integration.configurationPath || (hasAction && !setupAction)) {
-    setConfigurationPathHover(status, [integration.configurationPath]);
-  }
   status.classList.add('mcp-configuration-status');
-  details.append(status);
+  details.append(integration.configurationPath || (hasAction && !setupAction)
+    ? createConfigurationPathDisclosure(status, [integration.configurationPath])
+    : status);
   row.append(details, action);
 
   if (integration.configurationStatus !== 'CLI_MANAGED' && integration.diagnostic) {
@@ -272,11 +272,23 @@ function createMcpIntegrationRow(integration, state) {
   return row;
 }
 
-function setConfigurationPathHover(status, paths) {
+function createConfigurationPathDisclosure(status, paths) {
   const missingPath = 'Configuration path not reported';
-  status.title = paths.map(path => path || missingPath).join('\n') || missingPath;
-  status.setAttribute('aria-label', `${status.textContent}. ${status.title}`);
-  status.tabIndex = 0;
+  const labels = (paths.length ? paths : [null]).map(path => path || missingPath);
+  const disclosure = document.createElement('details');
+  disclosure.className = 'configuration-paths';
+  const summary = document.createElement('summary');
+  summary.title = labels.join('\n');
+  summary.append(status);
+  const list = document.createElement('ul');
+  list.className = 'configuration-path-list supporting-text';
+  for (const label of labels) {
+    const item = document.createElement('li');
+    item.textContent = label;
+    list.append(item);
+  }
+  disclosure.append(summary, list);
+  return disclosure;
 }
 
 function configureOpenAction(action, agent) {

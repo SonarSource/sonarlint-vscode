@@ -82,7 +82,6 @@ export namespace AiIntegration {
   export type CliInstallationStatusName = keyof typeof CliInstallationStatus;
   export type CliAuthenticationStatusName = keyof typeof CliAuthenticationStatus;
   export type CliIntegrationRecordingStatusName = keyof typeof CliIntegrationRecordingStatus;
-  export type CliIntegrationCheckStatusName = keyof typeof CliIntegrationCheckStatus;
   export type McpConfigurationStateName = keyof typeof McpConfigurationState;
 
   // Response enums above stay ordinals. Notifications send these names.
@@ -125,13 +124,6 @@ export namespace AiIntegration {
     [CliIntegrationRecordingStatus.RECORDED]: 'RECORDED',
     [CliIntegrationRecordingStatus.NOT_RECORDED]: 'NOT_RECORDED',
     [CliIntegrationRecordingStatus.UNKNOWN]: 'UNKNOWN'
-  };
-
-  export const CLI_INTEGRATION_CHECK_STATUS_NAMES: Record<CliIntegrationCheckStatus, CliIntegrationCheckStatusName> = {
-    [CliIntegrationCheckStatus.CONFIGURED]: 'CONFIGURED',
-    [CliIntegrationCheckStatus.NOT_CONFIGURED]: 'NOT_CONFIGURED',
-    [CliIntegrationCheckStatus.INVALID]: 'INVALID',
-    [CliIntegrationCheckStatus.UNKNOWN]: 'UNKNOWN'
   };
 
   export const MCP_CONFIGURATION_STATE_NAMES: Record<McpConfigurationState, McpConfigurationStateName> = {

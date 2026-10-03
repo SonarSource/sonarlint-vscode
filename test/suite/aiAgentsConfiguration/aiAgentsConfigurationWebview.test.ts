@@ -14,22 +14,28 @@ import * as vscode from 'vscode';
 import { AIAgentsConfigurationState } from '../../../src/aiAgentsConfiguration/aiAgentsConfigurationWebviewProvider';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 
-interface RenderedAgent {
+interface RenderedConfigurationPaths {
+  configurationPaths: string[];
+  pathsInitiallyHidden: boolean;
+  pathsVisibleOnExpansion: boolean;
+  pathsHiddenOnCollapse: boolean;
+  pathsFocusable: boolean;
+}
+
+interface RenderedAgent extends RenderedConfigurationPaths {
   status: string;
   action: string;
   actionTitle: string;
   disabled: boolean;
   tooltip: string;
   buttons: number;
-  additionalDetails: boolean;
 }
 
-interface RenderedMcpAgent {
+interface RenderedMcpAgent extends RenderedConfigurationPaths {
   status: string;
   tooltip: string;
   action: string;
   statusBelowName: boolean;
-  pathVisible: boolean;
   diagnostic: string;
 }
 
@@ -45,6 +51,23 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
     { enableScripts: true, localResourceRoots: [vscode.Uri.file(root)] });
   const nonce = randomUUID();
   const probe = `<script nonce="${nonce}">
+    function inspectPaths(row) {
+      const summary = row.querySelector('.configuration-paths summary');
+      const list = row.querySelector('.configuration-path-list');
+      const pathsInitiallyHidden = !list || !list.checkVisibility();
+      summary?.focus();
+      const pathsFocusable = Boolean(summary && document.activeElement === summary);
+      summary?.click();
+      const pathsVisibleOnExpansion = Boolean(list && list.checkVisibility());
+      summary?.click();
+      return {
+        configurationPaths: Array.from(row.querySelectorAll('.configuration-path-list > li')).map(item => item.textContent),
+        pathsInitiallyHidden,
+        pathsVisibleOnExpansion,
+        pathsHiddenOnCollapse: !list || !list.checkVisibility(),
+        pathsFocusable
+      };
+    }
     window.addEventListener('message', event => {
       if (event.data.command !== 'state') return;
       document.querySelectorAll('.agent-disclosure').forEach(disclosure => disclosure.open = true);
@@ -55,9 +78,9 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
           action: row.querySelector('.agent-action')?.textContent,
           actionTitle: row.querySelector('.agent-action')?.title,
           disabled: row.querySelector('.agent-action')?.disabled,
-          tooltip: row.querySelector('.cli-recording-status')?.title,
+          tooltip: row.querySelector('.configuration-paths summary')?.title ?? '',
           buttons: row.querySelectorAll('button').length,
-          additionalDetails: Boolean(row.querySelector('.cli-configuration-toggle, .cli-configuration-details, .cli-feature-checks'))
+          ...inspectPaths(row)
         };
       });
       const mcpAgents = Array.from(document.querySelectorAll('#mcp-list > li')).map(row => {
@@ -65,12 +88,11 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
         const status = row.querySelector('.mcp-configuration-status');
         return {
           status: status?.textContent,
-          tooltip: status?.title,
+          tooltip: row.querySelector('.configuration-paths summary')?.title ?? '',
           action: row.querySelector('button')?.textContent,
-          statusBelowName: status?.previousElementSibling === name
-            && status.getBoundingClientRect().top >= name.getBoundingClientRect().bottom,
-          pathVisible: Boolean(status?.title && row.textContent.includes(status.title)),
-          diagnostic: row.querySelector('.mcp-diagnostic')?.textContent ?? ''
+          statusBelowName: status.getBoundingClientRect().top >= name.getBoundingClientRect().bottom,
+          diagnostic: row.querySelector('.mcp-diagnostic')?.textContent ?? '',
+          ...inspectPaths(row)
         };
       });
       document.querySelectorAll('#mcp-list button:not([hidden])').forEach(button => button.click());
@@ -109,19 +131,15 @@ suite('AI integrations webview rendering', () => {
     const agents: AIAgentsConfigurationState['agents'] = [
       {
         id: AiIntegration.AiAgent.CODEX, name: 'Codex', supportsCliIntegration: true, recordingStatus: 'RECORDED',
-        configurations: [
-          { path: '<img src=x onerror=alert(1)>', mcp: 'INVALID' },
-          { path: '<img src=x onerror=alert(1)>', mcp: 'CONFIGURED', hooks: 'NOT_CONFIGURED' },
-          { hooks: 'UNKNOWN' }
-        ]
+        configurationPaths: ['<img src=x onerror=alert(1)>', '<img src=x onerror=alert(1)>', null]
       },
       {
         id: AiIntegration.AiAgent.CLAUDE_CODE, name: 'Claude Code', supportsCliIntegration: true,
-        recordingStatus: 'NOT_RECORDED', configurations: []
+        recordingStatus: 'NOT_RECORDED', configurationPaths: []
       },
       {
         id: AiIntegration.AiAgent.GITHUB_COPILOT_CLI, name: 'GitHub Copilot CLI', supportsCliIntegration: true,
-        recordingStatus: 'UNKNOWN', configurations: []
+        recordingStatus: 'UNKNOWN', configurationPaths: []
       }
     ];
     return {
@@ -131,7 +149,7 @@ suite('AI integrations webview rendering', () => {
     };
   }
 
-  test('renders recording status, safe configuration-path hovers and a consistent integrate action', async function () {
+  test('renders recording status, accessible configuration paths and a consistent integrate action', async function () {
     this.timeout(15_000);
     const rendered = await renderWebview(state(true));
 
@@ -146,20 +164,28 @@ suite('AI integrations webview rendering', () => {
       '<img src=x onerror=alert(1)>\n<img src=x onerror=alert(1)>\nConfiguration path not reported'
     );
     expect(rendered.agents.slice(1).every(agent => agent.tooltip === '')).to.be.true;
-    expect(rendered.agents.every(agent => agent.buttons === 1 && !agent.additionalDetails)).to.be.true;
+    expect(rendered.agents.every(agent => agent.buttons === 1)).to.be.true;
+    expect(rendered.agents[0].configurationPaths).to.deep.equal([
+      '<img src=x onerror=alert(1)>', '<img src=x onerror=alert(1)>', 'Configuration path not reported'
+    ]);
+    expect(rendered.agents[0]).to.include({
+      pathsInitiallyHidden: true, pathsVisibleOnExpansion: true, pathsHiddenOnCollapse: true, pathsFocusable: true
+    });
     expect(rendered.injectedElement).to.be.false;
     expect(rendered.actions.map(action => action.agent)).to.deep.equal(state(true).agents.map(agent => agent.id));
   });
 
-  test('provides a tooltip fallback when a recorded integration has no configuration path', async function () {
+  test('provides an accessible fallback when a recorded integration has no configuration path', async function () {
     this.timeout(15_000);
     const input = state(true);
-    input.agents[0].configurations = [];
+    input.agents[0].configurationPaths = [];
 
     const rendered = await renderWebview(input);
 
     expect(rendered.agents[0].status).to.equal('✓ Integration recorded');
     expect(rendered.agents[0].tooltip).to.equal('Configuration path not reported');
+    expect(rendered.agents[0].configurationPaths).to.deep.equal(['Configuration path not reported']);
+    expect(rendered.agents[0].pathsVisibleOnExpansion).to.be.true;
   });
 
   test('disables integration actions when setup is unavailable', async function () {
@@ -170,7 +196,7 @@ suite('AI integrations webview rendering', () => {
     expect(rendered.actions).to.deep.equal([]);
   });
 
-  test('places MCP statuses under agent names with safe path hovers and existing actions', async function () {
+  test('places MCP statuses under agent names with accessible paths and existing actions', async function () {
     this.timeout(15_000);
     const input = state(true);
     input.agents = [];
@@ -206,7 +232,13 @@ suite('AI integrations webview rendering', () => {
     expect(rendered.mcpAgents.map(agent => agent.tooltip)).to.deep.equal([
       '<img src=x onerror=alert(1)>', '~/.cursor/mcp.json', '/project/mcp.json', ''
     ]);
-    expect(rendered.mcpAgents.every(agent => agent.statusBelowName && !agent.pathVisible)).to.be.true;
+    expect(rendered.mcpAgents.every(agent => agent.statusBelowName && agent.pathsInitiallyHidden)).to.be.true;
+    expect(rendered.mcpAgents.slice(0, 3).every(agent =>
+      agent.pathsVisibleOnExpansion && agent.pathsHiddenOnCollapse && agent.pathsFocusable
+    )).to.be.true;
+    expect(rendered.mcpAgents.map(agent => agent.configurationPaths)).to.deep.equal([
+      ['<img src=x onerror=alert(1)>'], ['~/.cursor/mcp.json'], ['/project/mcp.json'], []
+    ]);
     expect(rendered.mcpAgents.map(agent => agent.action)).to.deep.equal([
       'Open configuration', 'Open configuration', 'Open configuration', 'Set up'
     ]);

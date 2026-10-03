@@ -62,17 +62,6 @@ interface InspectedIntegration {
   inspections: StandaloneMcpInspection[];
 }
 
-function toCliIntegrationCheckStatus(
-  status: AiIntegration.CliIntegrationCheckStatus | null | undefined
-): AiIntegration.CliIntegrationCheckStatusName | undefined {
-  if (status === undefined || status === null) {
-    return undefined;
-  }
-  return typeof status === 'number'
-    ? AiIntegration.CLI_INTEGRATION_CHECK_STATUS_NAMES[status] ?? 'UNKNOWN'
-    : 'UNKNOWN';
-}
-
 export interface AIAgentsConfigurationState {
   ideName: string;
   isRemote: boolean;
@@ -81,11 +70,7 @@ export interface AIAgentsConfigurationState {
     name: string;
     supportsCliIntegration: boolean;
     recordingStatus: AiIntegration.CliIntegrationRecordingStatusName;
-    configurations: Array<{
-      path?: string;
-      mcp?: AiIntegration.CliIntegrationCheckStatusName;
-      hooks?: AiIntegration.CliIntegrationCheckStatusName;
-    }>;
+    configurationPaths: Array<string | null>;
   }>;
   cli: {
     installationStatus: AiIntegration.CliInstallationStatusName;
@@ -212,6 +197,9 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         // Loading succeeded; a newer refresh or view owns publication.
         return true;
       }
+      ContextManager.instance.setMCPServerSupportedAgentContext(
+        state.mcp.integrations.some(integration => integration.standaloneSupported)
+      );
       await view.webview.postMessage({ command: 'state', state });
       return true;
     } catch (error) {
@@ -271,9 +259,6 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     const { integrationState, inspections } = snapshot;
     const detectedAgents = getDetectedIntegrationAgents(integrationState);
     const mcpAgents = detectedAgents.filter(agent => isAgentActiveForMcp(agent.agent));
-    ContextManager.instance.setMCPServerSupportedAgentContext(
-      mcpAgents.some(agent => agent.standaloneMcpSupported && isStandaloneMcpReady(agent.agent))
-    );
     const agents = detectedAgents.map(agent => {
       const integration = integrationState.cliIntegrations?.find(state => state.agent === agent.agent);
       const recordingStatus = integration?.recordingStatus;
@@ -284,11 +269,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         recordingStatus: typeof recordingStatus === 'number'
           ? AiIntegration.CLI_INTEGRATION_RECORDING_STATUS_NAMES[recordingStatus] ?? 'UNKNOWN'
           : 'UNKNOWN' as const,
-        configurations: (integration?.configurations ?? []).map(configuration => ({
-          path: configuration.path ?? undefined,
-          mcp: toCliIntegrationCheckStatus(configuration.mcp),
-          hooks: toCliIntegrationCheckStatus(configuration.hooks)
-        }))
+        configurationPaths: (integration?.configurations ?? []).map(configuration => configuration.path ?? null)
       };
     });
     const isRemote = vscode.env.remoteName !== undefined;
