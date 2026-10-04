@@ -8,7 +8,6 @@
 
 import * as os from 'node:os';
 import * as vscode from 'vscode';
-import { ErrorCodes, ResponseError } from 'vscode-languageclient/node';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { getAiIntegrationStateParams, getDetectedIntegrationAgents } from './aiAgentUtils';
@@ -268,23 +267,18 @@ export class CliSetupSession {
         const response = await vscode.window.withProgress<AiIntegration.AuthenticateCliWithConnectionResponse>(
           { location: vscode.ProgressLocation.Notification, title: 'Signing in to SonarQube CLI', cancellable: true },
           async (_progress, token) => {
+            if (token.isCancellationRequested) {
+              cancellation.cancel();
+            }
+            if (cancellation.token.isCancellationRequested) {
+              throw new vscode.CancellationError();
+            }
             const listener = token.onCancellationRequested(() => cancellation.cancel());
             try {
-              if (token.isCancellationRequested) {
-                cancellation.cancel();
-              }
-              if (cancellation.token.isCancellationRequested) {
-                throw new vscode.CancellationError();
-              }
               return await this.languageClient.authenticateCliWithConnection(
                 { connectionId: pick.connection.connectionId },
                 cancellation.token
               );
-            } catch (error) {
-              if (error instanceof ResponseError && error.code === ErrorCodes.MethodNotFound) {
-                return { status: AiIntegration.AuthenticateCliWithConnectionStatus.INTERACTIVE_LOGIN_REQUIRED };
-              }
-              throw error;
             } finally {
               listener.dispose();
             }
@@ -367,6 +361,9 @@ export class CliSetupSession {
   }
 
   private openSetupTerminal(name: string, command: AiIntegration.PrepareCliCommandResponse): SetupStart {
+    if (this.disposed) {
+      return didNotStart(AiIntegration.AiIntegrationActionStatus.CANCELLED);
+    }
     try {
       const terminal = vscode.window.createTerminal({
         name,

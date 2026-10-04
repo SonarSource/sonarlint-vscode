@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 import * as VSCode from 'vscode';
-import { LanguageClient } from 'vscode-languageclient/node';
+import { ErrorCodes, LanguageClient, ResponseError } from 'vscode-languageclient/node';
 import { ServerMode } from '../java/java';
 import { code2ProtocolConverter } from '../util/uri';
 import { ExtendedServer, AnalysisFile, ShowRuleDescriptionParams } from './protocol';
@@ -162,11 +162,18 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(AiIntegration.PrepareAuthenticateCliCommand.type, params);
   }
 
-  authenticateCliWithConnection(
+  async authenticateCliWithConnection(
     params: AiIntegration.AuthenticateCliWithConnectionParams,
     token: VSCode.CancellationToken
   ): Promise<AiIntegration.AuthenticateCliWithConnectionResponse> {
-    return this.sendRequest(AiIntegration.AuthenticateCliWithConnection.type, params, token);
+    try {
+      return await this.sendRequest(AiIntegration.AuthenticateCliWithConnection.type, params, token);
+    } catch (error) {
+      if (error instanceof ResponseError && error.code === ErrorCodes.MethodNotFound) {
+        return { status: AiIntegration.AuthenticateCliWithConnectionStatus.INTERACTIVE_LOGIN_REQUIRED };
+      }
+      throw error;
+    }
   }
 
   prepareIntegrateCliCommand(
