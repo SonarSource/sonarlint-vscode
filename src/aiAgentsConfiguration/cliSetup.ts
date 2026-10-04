@@ -8,6 +8,7 @@
 
 import * as os from 'node:os';
 import * as vscode from 'vscode';
+import { ErrorCodes, ResponseError } from 'vscode-languageclient/node';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { getAiIntegrationStateParams, getDetectedIntegrationAgents } from './aiAgentUtils';
@@ -264,7 +265,7 @@ export class CliSetupSession {
     this.activeAuthentication = cancellation;
     try {
       if (pick.kind === 'connection') {
-        const response = await vscode.window.withProgress(
+        const response = await vscode.window.withProgress<AiIntegration.AuthenticateCliWithConnectionResponse>(
           { location: vscode.ProgressLocation.Notification, title: 'Signing in to SonarQube CLI', cancellable: true },
           async (_progress, token) => {
             const listener = token.onCancellationRequested(() => cancellation.cancel());
@@ -279,6 +280,11 @@ export class CliSetupSession {
                 { connectionId: pick.connection.connectionId },
                 cancellation.token
               );
+            } catch (error) {
+              if (error instanceof ResponseError && error.code === ErrorCodes.MethodNotFound) {
+                return { status: AiIntegration.AuthenticateCliWithConnectionStatus.INTERACTIVE_LOGIN_REQUIRED };
+              }
+              throw error;
             } finally {
               listener.dispose();
             }
