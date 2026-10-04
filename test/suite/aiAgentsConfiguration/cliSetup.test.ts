@@ -272,6 +272,55 @@ suite('cliSetup', () => {
     expect(onChange.callCount).to.equal(4);
   });
 
+  for (const step of ['install', 'integrate'] as const) {
+    test(`disposal during ${step} command preparation prevents opening a terminal`, async () => {
+      const command = deferred<AiIntegration.PrepareCliCommandResponse>();
+      const preparing = deferred<void>();
+      const prepareCommand = sinon.stub().callsFake(() => {
+        preparing.resolve();
+        return command.promise;
+      });
+      const createTerminal = sinon.stub(vscode.window, 'createTerminal');
+      const onChange = sinon.stub().resolves();
+      const onFinished = sinon.stub().resolves();
+      const session = new CliSetupSession(
+        { subscriptions: [] } as unknown as vscode.ExtensionContext,
+        {
+          getAiIntegrationState: sinon.stub().resolves({
+            cli: {
+              installationStatus: step === 'install' ? NOT_INSTALLED : INSTALLED,
+              authenticationStatus: AUTHENTICATED
+            },
+            agents: [
+              {
+                agent: AiIntegration.AiAgent.CODEX,
+                detectionSources: [AiIntegration.AiAgentDetectionSource.CLI],
+                cliIntegrationSupported: true,
+                standaloneMcpSupported: false
+              }
+            ],
+            connectionChoices: []
+          }),
+          prepareInstallCliCommand: prepareCommand,
+          prepareIntegrateCliCommand: prepareCommand
+        } as never,
+        onChange,
+        onFinished
+      );
+
+      const attempt = session.run(step, AiIntegration.AiAgent.CODEX);
+      await preparing.promise;
+      session.dispose();
+      command.resolve({ executable: 'sonar', arguments: [step], interactive: true });
+      await attempt;
+
+      expect(createTerminal.notCalled).to.be.true;
+      expect(onFinished.notCalled).to.be.true;
+      expect(onChange.calledOnce).to.be.true;
+      expect(session.operationInProgress).to.be.false;
+    });
+  }
+
   suite('saved connection authentication', () => {
     const status = AiIntegration.AuthenticateCliWithConnectionStatus;
     let session: CliSetupSession;
@@ -285,6 +334,7 @@ suite('cliSetup', () => {
     let createTerminal: sinon.SinonStub;
     let progressCancellation: vscode.CancellationTokenSource;
     let requestStarted: ReturnType<typeof deferred<void>>;
+    let sendRequest: sinon.SinonStub;
 
     setup(() => {
       progressCancellation = new vscode.CancellationTokenSource();
@@ -294,16 +344,21 @@ suite('cliSetup', () => {
       createTerminal = sinon.stub(vscode.window, 'createTerminal').returns({ show: sinon.stub() } as never);
       sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
       requestStarted = deferred<void>();
+      sendRequest = sinon.stub().callsFake(() => {
+        requestStarted.resolve();
+        return Promise.resolve({ status: status.AUTHENTICATED });
+      });
       client = {
         getAiIntegrationState: sinon.stub().resolves({
           cli: { installationStatus: INSTALLED, authenticationStatus: UNAUTHENTICATED },
           agents: [],
           connectionChoices: [{ connectionId: 'cloud', serverUrl: 'https://sonarcloud.io', organization: 'example' }]
         }),
-        authenticateCliWithConnection: sinon.stub().callsFake(() => {
-          requestStarted.resolve();
-          return Promise.resolve({ status: status.AUTHENTICATED });
-        }),
+        authenticateCliWithConnection: sinon
+          .stub()
+          .callsFake((params, token) =>
+            SonarLintExtendedLanguageClient.prototype.authenticateCliWithConnection.call({ sendRequest }, params, token)
+          ),
         prepareAuthenticateCliCommand: sinon.stub().resolves({
           executable: 'sonar',
           arguments: ['auth', 'login'],
@@ -326,7 +381,6 @@ suite('cliSetup', () => {
     });
 
     test('forwards only the connection ID and cancellation token through the client', async () => {
-      const sendRequest = sinon.stub().resolves({ status: status.AUTHENTICATED });
       const params = { connectionId: 'cloud' };
       await SonarLintExtendedLanguageClient.prototype.authenticateCliWithConnection.call(
         { sendRequest },
@@ -377,7 +431,7 @@ suite('cliSetup', () => {
     });
 
     test('uses interactive login when an older server does not support saved-token authentication', async () => {
-      client.authenticateCliWithConnection.rejects(new ResponseError(ErrorCodes.MethodNotFound, 'Unknown method'));
+      sendRequest.rejects(new ResponseError(ErrorCodes.MethodNotFound, 'Unknown method'));
       await session.run('authenticate');
       expect(
         client.prepareAuthenticateCliCommand.calledOnceWithExactly({
@@ -390,7 +444,7 @@ suite('cliSetup', () => {
     });
 
     test('does not start interactive login for other RPC errors', async () => {
-      client.authenticateCliWithConnection.rejects(new ResponseError(ErrorCodes.InternalError, 'Request failed'));
+      sendRequest.rejects(new ResponseError(ErrorCodes.InternalError, 'Request failed'));
       await session.run('authenticate');
       expect(client.prepareAuthenticateCliCommand.notCalled).to.be.true;
       expect(createTerminal.notCalled).to.be.true;
@@ -482,7 +536,7 @@ suite('cliSetup', () => {
     for (const dispose of [false, true]) {
       test(`ignores a late MethodNotFound after ${dispose ? 'disposal' : 'cancellation'}`, async () => {
         const response = deferred<AiIntegration.AuthenticateCliWithConnectionResponse>();
-        client.authenticateCliWithConnection.callsFake(() => {
+        sendRequest.callsFake(() => {
           requestStarted.resolve();
           return response.promise;
         });
