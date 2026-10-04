@@ -9,6 +9,7 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
+import { ErrorCodes, ResponseError } from 'vscode-languageclient/node';
 import {
   canIntegrateAgent,
   CliSetupSession,
@@ -375,6 +376,28 @@ suite('cliSetup', () => {
       expect(onFinished.calledOnce).to.be.true;
     });
 
+    test('uses interactive login when an older server does not support saved-token authentication', async () => {
+      client.authenticateCliWithConnection.rejects(new ResponseError(ErrorCodes.MethodNotFound, 'Unknown method'));
+      await session.run('authenticate');
+      expect(
+        client.prepareAuthenticateCliCommand.calledOnceWithExactly({
+          serverUrl: 'https://sonarcloud.io',
+          organization: 'example'
+        })
+      ).to.be.true;
+      expect(createTerminal.calledOnce).to.be.true;
+      expect(onFinished.notCalled).to.be.true;
+    });
+
+    test('does not start interactive login for other RPC errors', async () => {
+      client.authenticateCliWithConnection.rejects(new ResponseError(ErrorCodes.InternalError, 'Request failed'));
+      await session.run('authenticate');
+      expect(client.prepareAuthenticateCliCommand.notCalled).to.be.true;
+      expect(createTerminal.notCalled).to.be.true;
+      expect(onFinished.firstCall.args[2]).to.deep.equal({ status: 'FAILED' });
+      expect(session.operationInProgress).to.be.false;
+    });
+
     test('keeps interactive login when there is no saved connection', async () => {
       client.getAiIntegrationState.resolves({
         cli: { installationStatus: INSTALLED, authenticationStatus: UNAUTHENTICATED },
@@ -456,6 +479,34 @@ suite('cliSetup', () => {
       expect(session.operationInProgress).to.be.false;
     });
 
+    for (const dispose of [false, true]) {
+      test(`ignores a late MethodNotFound after ${dispose ? 'disposal' : 'cancellation'}`, async () => {
+        const response = deferred<AiIntegration.AuthenticateCliWithConnectionResponse>();
+        client.authenticateCliWithConnection.callsFake(() => {
+          requestStarted.resolve();
+          return response.promise;
+        });
+        const attempt = session.run('authenticate');
+        await requestStarted.promise;
+        if (dispose) {
+          session.dispose();
+        } else {
+          progressCancellation.cancel();
+        }
+        response.reject(new ResponseError(ErrorCodes.MethodNotFound, 'Unknown method'));
+        await attempt;
+        expect(client.prepareAuthenticateCliCommand.notCalled).to.be.true;
+        expect(createTerminal.notCalled).to.be.true;
+        expect(session.operationInProgress).to.be.false;
+        if (dispose) {
+          expect(onFinished.notCalled).to.be.true;
+          expect(onChange.calledOnce).to.be.true;
+        } else {
+          expect(onFinished.firstCall.args[2]).to.deep.equal({ status: 'CANCELLED' });
+        }
+      });
+    }
+
     test('disposal cancels the request without late completion or refresh', async () => {
       const response = deferred<AiIntegration.AuthenticateCliWithConnectionResponse>();
       client.authenticateCliWithConnection.callsFake(() => {
@@ -511,8 +562,10 @@ suite('cliSetup', () => {
 
 function deferred<T>() {
   let resolve!: (value: T | PromiseLike<T>) => void;
-  const promise = new Promise<T>(done => {
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((done, fail) => {
     resolve = done;
+    reject = fail;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 }

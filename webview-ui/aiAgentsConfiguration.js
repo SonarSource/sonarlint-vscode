@@ -172,7 +172,7 @@ function renderCliAction(state) {
 }
 
 function renderCliFeedback(cli) {
-  const message = cli.operationInProgress ? 'Setup is running in the SonarQube CLI terminal.' : cli.notice?.message;
+  const message = cli.operationInProgress ? 'SonarQube CLI setup is in progress.' : cli.notice?.message;
   cliFeedback.hidden = !message;
   cliFeedback.textContent = message ?? '';
 }
