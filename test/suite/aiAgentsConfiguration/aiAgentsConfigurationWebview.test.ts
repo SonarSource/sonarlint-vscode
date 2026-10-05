@@ -223,7 +223,7 @@ suite('AI integrations webview rendering', () => {
     const rendered = await renderWebview(input);
 
     expect(rendered.mcpAgents.map(agent => agent.status)).to.deep.equal([
-      '✓ Configured', '✓ Managed by CLI', 'Needs attention', 'Not configured'
+      '✓ Configured', '✓ Configured', 'Needs attention', 'Not configured'
     ]);
     expect(rendered.mcpAgents.map(agent => agent.tooltip)).to.deep.equal([
       '<img src=x onerror=alert(1)>', '~/.cursor/mcp.json', '/project/mcp.json', ''

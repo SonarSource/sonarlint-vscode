@@ -235,14 +235,11 @@ function createMcpIntegrationRow(integration, state) {
     setStatus(status, 'Available through CLI', 'unavailable');
   } else if (!integration.standaloneSupported) {
     setStatus(status, 'Unavailable', 'unavailable');
-  } else if (integration.configurationStatus === 'CLI_MANAGED') {
-    setStatus(status, 'Managed by CLI', 'configured');
+  } else if (['CLI_MANAGED', 'STANDALONE'].includes(integration.configurationStatus)) {
+    setStatus(status, 'Configured', 'configured');
     configureOpenAction(action, integration.agentId);
   } else if (needsAttention) {
     setStatus(status, 'Needs attention', 'unavailable');
-    configureOpenAction(action, integration.agentId);
-  } else if (integration.configurationStatus === 'STANDALONE') {
-    setStatus(status, 'Configured', 'configured');
     configureOpenAction(action, integration.agentId);
   } else {
     setStatus(status, 'Not configured', 'notConfigured');
