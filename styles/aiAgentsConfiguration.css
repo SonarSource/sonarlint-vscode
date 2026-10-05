@@ -150,23 +150,28 @@ main {
 }
 
 .configuration-paths {
-  margin-top: 3px;
+  position: relative;
 }
 
-.configuration-paths summary {
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.configuration-paths summary .status {
-  display: inline;
-  margin-top: 0;
-}
-
-.configuration-path-list {
-  margin: 4px 0 0;
-  padding-left: 16px;
+.configuration-path-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 64px));
+  padding: 6px 8px;
+  color: var(--vscode-editorHoverWidget-foreground);
+  background: var(--vscode-editorHoverWidget-background);
+  border: 1px solid var(--vscode-editorHoverWidget-border);
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
+  visibility: hidden;
+}
+
+.configuration-paths:hover .configuration-path-tooltip,
+.configuration-paths:focus-within .configuration-path-tooltip {
+  visibility: visible;
 }
 
 .agent-availability {
@@ -276,7 +281,7 @@ button {
 }
 
 button:focus-visible,
-.configuration-paths summary:focus-visible {
+.configuration-paths .status:focus-visible {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: 2px;
 }

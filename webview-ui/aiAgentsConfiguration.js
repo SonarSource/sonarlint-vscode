@@ -90,17 +90,17 @@ function createCliAgentRow(agent, state) {
 
   if (agent.supportsCliIntegration) {
     const status = document.createElement('span');
-    let statusContent = status;
     if (agent.recordingStatus === 'RECORDED') {
       setStatus(status, 'Integration recorded', 'configured');
-      statusContent = createConfigurationPathDisclosure(status, agent.configurationPaths);
     } else if (agent.recordingStatus === 'NOT_RECORDED') {
       setStatus(status, 'No integration recorded', 'notConfigured');
     } else {
       setStatus(status, 'Unknown', 'unavailable');
     }
     status.classList.add('cli-recording-status');
-    details.append(statusContent);
+    details.append(agent.recordingStatus === 'RECORDED'
+      ? createConfigurationPathsTooltip(status, agent.configurationPaths)
+      : status);
     const action = document.createElement('button');
     action.className = 'secondary-action agent-action';
     action.type = 'button';
@@ -259,7 +259,7 @@ function createMcpIntegrationRow(integration, state) {
   }
   status.classList.add('mcp-configuration-status');
   details.append(integration.configurationPath || (hasAction && !setupAction)
-    ? createConfigurationPathDisclosure(status, [integration.configurationPath])
+    ? createConfigurationPathsTooltip(status, [integration.configurationPath])
     : status);
   row.append(details, action);
 
@@ -272,23 +272,20 @@ function createMcpIntegrationRow(integration, state) {
   return row;
 }
 
-function createConfigurationPathDisclosure(status, paths) {
+function createConfigurationPathsTooltip(status, paths) {
   const missingPath = 'Configuration path not reported';
   const labels = (paths.length ? paths : [null]).map(path => path || missingPath);
-  const disclosure = document.createElement('details');
-  disclosure.className = 'configuration-paths';
-  const summary = document.createElement('summary');
-  summary.title = labels.join('\n');
-  summary.append(status);
-  const list = document.createElement('ul');
-  list.className = 'configuration-path-list supporting-text';
-  for (const label of labels) {
-    const item = document.createElement('li');
-    item.textContent = label;
-    list.append(item);
-  }
-  disclosure.append(summary, list);
-  return disclosure;
+  const tooltip = document.createElement('span');
+  tooltip.id = `configuration-paths-${crypto.randomUUID()}`;
+  tooltip.className = 'configuration-path-tooltip supporting-text';
+  tooltip.setAttribute('role', 'tooltip');
+  tooltip.textContent = labels.join('\n');
+  status.tabIndex = 0;
+  status.setAttribute('aria-describedby', tooltip.id);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'configuration-paths';
+  wrapper.append(status, tooltip);
+  return wrapper;
 }
 
 function configureOpenAction(action, agent) {
