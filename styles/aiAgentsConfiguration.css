@@ -149,6 +149,31 @@ main {
   font-size: 12px;
 }
 
+.configuration-paths {
+  position: relative;
+}
+
+.configuration-path-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 64px));
+  padding: 6px 8px;
+  color: var(--vscode-editorHoverWidget-foreground);
+  background: var(--vscode-editorHoverWidget-background);
+  border: 1px solid var(--vscode-editorHoverWidget-border);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  visibility: hidden;
+}
+
+.configuration-paths:hover .configuration-path-tooltip,
+.configuration-paths:focus-within .configuration-path-tooltip {
+  visibility: visible;
+}
+
 .agent-availability {
   text-align: right;
 }
@@ -255,7 +280,8 @@ button {
   grid-column: 1 / -1;
 }
 
-button:focus-visible {
+button:focus-visible,
+.configuration-paths .status:focus-visible {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: 2px;
 }

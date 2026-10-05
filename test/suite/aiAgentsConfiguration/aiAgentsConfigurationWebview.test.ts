@@ -14,19 +14,25 @@ import * as vscode from 'vscode';
 import { AIAgentsConfigurationState } from '../../../src/aiAgentsConfiguration/aiAgentsConfigurationWebviewProvider';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 
-interface RenderedAgent {
+interface RenderedTooltip {
+  tooltip: string;
+  pathsFocusable: boolean;
+  pathsInitiallyHidden: boolean;
+  pathsVisibleOnFocus: boolean;
+  pathsHiddenOnBlur: boolean;
+}
+
+interface RenderedAgent extends RenderedTooltip {
   status: string;
   action: string;
   actionTitle: string;
   disabled: boolean;
-  tooltip: string;
   hasPathDropdown: boolean;
   buttons: number;
 }
 
-interface RenderedMcpAgent {
+interface RenderedMcpAgent extends RenderedTooltip {
   status: string;
-  tooltip: string;
   hasPathDropdown: boolean;
   action: string;
   statusBelowName: boolean;
@@ -45,6 +51,21 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
     { enableScripts: true, localResourceRoots: [vscode.Uri.file(root)] });
   const nonce = randomUUID();
   const probe = `<script nonce="${nonce}">
+    function inspectTooltip(status) {
+      const tooltip = document.getElementById(status?.getAttribute('aria-describedby'));
+      const pathsInitiallyHidden = !tooltip || !tooltip.checkVisibility({ visibilityProperty: true });
+      status?.focus();
+      const pathsFocusable = document.activeElement === status;
+      const pathsVisibleOnFocus = Boolean(tooltip && tooltip.checkVisibility({ visibilityProperty: true }));
+      status?.blur();
+      return {
+        tooltip: tooltip?.textContent ?? '',
+        pathsFocusable,
+        pathsInitiallyHidden,
+        pathsVisibleOnFocus,
+        pathsHiddenOnBlur: !tooltip || !tooltip.checkVisibility({ visibilityProperty: true })
+      };
+    }
     window.addEventListener('message', event => {
       if (event.data.command !== 'state') return;
       document.querySelectorAll('.agent-disclosure').forEach(disclosure => disclosure.open = true);
@@ -55,7 +76,7 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
           action: row.querySelector('.agent-action')?.textContent,
           actionTitle: row.querySelector('.agent-action')?.title,
           disabled: row.querySelector('.agent-action')?.disabled,
-          tooltip: row.querySelector('.cli-recording-status')?.title ?? '',
+          ...inspectTooltip(row.querySelector('.cli-recording-status')),
           hasPathDropdown: Boolean(row.querySelector('details, summary')),
           buttons: row.querySelectorAll('button').length
         };
@@ -65,7 +86,7 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
         const status = row.querySelector('.mcp-configuration-status');
         return {
           status: status?.textContent,
-          tooltip: status?.title ?? '',
+          ...inspectTooltip(status),
           hasPathDropdown: Boolean(row.querySelector('details, summary')),
           action: row.querySelector('button')?.textContent,
           statusBelowName: status.getBoundingClientRect().top >= name.getBoundingClientRect().bottom,
@@ -143,6 +164,9 @@ suite('AI integrations webview rendering', () => {
     expect(rendered.agents.slice(1).every(agent => agent.tooltip === '')).to.be.true;
     expect(rendered.agents.every(agent => agent.buttons === 1)).to.be.true;
     expect(rendered.agents.every(agent => !agent.hasPathDropdown)).to.be.true;
+    expect(rendered.agents[0]).to.include({
+      pathsFocusable: true, pathsInitiallyHidden: true, pathsVisibleOnFocus: true, pathsHiddenOnBlur: true
+    });
     expect(rendered.injectedElement).to.be.false;
     expect(rendered.actions.map(action => action.agent)).to.deep.equal(state(true).agents.map(agent => agent.id));
   });
@@ -157,6 +181,7 @@ suite('AI integrations webview rendering', () => {
     expect(rendered.agents[0].status).to.equal('✓ Integration recorded');
     expect(rendered.agents[0].tooltip).to.equal('Configuration path not reported');
     expect(rendered.agents[0].hasPathDropdown).to.be.false;
+    expect(rendered.agents[0].pathsVisibleOnFocus).to.be.true;
   });
 
   test('disables integration actions when setup is unavailable', async function () {
@@ -204,6 +229,9 @@ suite('AI integrations webview rendering', () => {
       '<img src=x onerror=alert(1)>', '~/.cursor/mcp.json', '/project/mcp.json', ''
     ]);
     expect(rendered.mcpAgents.every(agent => agent.statusBelowName && !agent.hasPathDropdown)).to.be.true;
+    expect(rendered.mcpAgents.slice(0, 3).every(agent =>
+      agent.pathsFocusable && agent.pathsInitiallyHidden && agent.pathsVisibleOnFocus && agent.pathsHiddenOnBlur
+    )).to.be.true;
     expect(rendered.mcpAgents.map(agent => agent.action)).to.deep.equal([
       'Open configuration', 'Open configuration', 'Open configuration', 'Set up'
     ]);
