@@ -102,7 +102,8 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       'operationInProgress',
       'notice',
       'primaryAction',
-      'canIntegrate'
+      'canIntegrate',
+      'uninstallAvailable'
     );
     expect(state.mcp).to.have.all.keys(
       'integrations',
@@ -110,6 +111,33 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       'configurableCount',
       'operationInProgress'
     );
+  });
+
+  test('offers uninstall for any backend-supported local installation, and hides it remotely or when missing', async () => {
+    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([]);
+    sinon.stub(vscode.env, 'remoteName').value(undefined);
+    const backendState = cliIntegrationState();
+    backendState.cli.uninstallAvailable = true;
+    getIntegrationState.resolves(backendState);
+    expect((await provider.buildState()).cli.uninstallAvailable).to.be.true;
+
+    sinon.stub(vscode.env, 'remoteName').value('ssh-remote');
+    expect((await provider.buildState()).cli.uninstallAvailable).to.be.false;
+    sinon.stub(vscode.env, 'remoteName').value(undefined);
+    delete backendState.cli.uninstallAvailable;
+    expect((await provider.buildState()).cli.uninstallAvailable).to.be.false;
+  });
+
+  test('routes uninstall and opens existing output without adding telemetry actions', async () => {
+    const uninstall = sinon.stub(provider.getCliSetup(), 'uninstall').resolves();
+    const showOutput = sinon.stub(logging, 'showLogOutput');
+
+    await provider.handleMessage({ command: 'uninstallCli' });
+    await provider.handleMessage({ command: 'showCliOutput' });
+
+    expect(uninstall.calledOnce).to.be.true;
+    expect(showOutput.calledOnce).to.be.true;
+    expect(provider.languageClient.aiIntegrationAction.notCalled).to.be.true;
   });
 
   function cliIntegrationState(

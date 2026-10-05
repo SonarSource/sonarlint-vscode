@@ -77,6 +77,54 @@ suite('AI integrations refresh publication', () => {
     expect(setMcpSupported.notCalled).to.be.true;
   });
 
+  test('uninstall refreshes CLI and integrations and enables reinstall', async () => {
+    provider.cliSetupSession = undefined;
+    provider.extensionContext = { subscriptions: [] };
+    const installed = response(true);
+    installed.cli.uninstallAvailable = true;
+    installed.cliIntegrations = [{
+      agent: AiIntegration.AiAgent.CLAUDE_CODE,
+      recordingStatus: AiIntegration.CliIntegrationRecordingStatus.RECORDED,
+      configurations: []
+    }];
+    getIntegrationState.resolves(installed);
+    const inspect = mcpServerConfig.inspectMCPConfiguration as sinon.SinonStub;
+    inspect.resolves({ state: AiIntegration.McpConfigurationState.CLI_MANAGED, diagnostics: [] });
+    provider.languageClient.uninstallCli = sinon.stub().callsFake(() => {
+      const removed = response(true);
+      removed.cli.installationStatus = AiIntegration.CliInstallationStatus.NOT_INSTALLED;
+      removed.cli.authenticationStatus = AiIntegration.CliAuthenticationStatus.UNKNOWN;
+      removed.cliIntegrations = [{
+        agent: AiIntegration.AiAgent.CLAUDE_CODE,
+        recordingStatus: AiIntegration.CliIntegrationRecordingStatus.NOT_RECORDED,
+        configurations: []
+      }];
+      getIntegrationState.resolves(removed);
+      inspect.resolves({ state: AiIntegration.McpConfigurationState.NOT_CONFIGURED, diagnostics: [] });
+      return Promise.resolve({ status: AiIntegration.UninstallCliStatus.UNINSTALLED, stdout: '', stderr: 'Cleanup warning' });
+    });
+    sinon.stub(vscode.window, 'showWarningMessage').resolves('Uninstall' as never);
+    const cancellation = new vscode.CancellationTokenSource();
+    sinon.stub(vscode.window, 'withProgress')
+      .callsFake((_options, task) => task({ report: sinon.stub() }, cancellation.token));
+    try {
+      await provider.handleMessage({ command: 'uninstallCli' });
+    } finally {
+      cancellation.dispose();
+    }
+
+    const before = postMessage.firstCall.args[0].state;
+    expect(before.cli.operationInProgress).to.be.true;
+    expect(before.agents[0].recordingStatus).to.equal('RECORDED');
+    expect(before.mcp.configuredCount).to.equal(1);
+    const after = postMessage.lastCall.args[0].state;
+    expect(after.cli).to.include({ installationStatus: 'NOT_INSTALLED', operationInProgress: false, uninstallAvailable: false });
+    expect(after.cli.primaryAction.command).to.equal('installCli');
+    expect(after.cli.notice.showOutput).to.be.true;
+    expect(after.agents[0].recordingStatus).to.equal('NOT_RECORDED');
+    expect(after.mcp.configuredCount).to.equal(0);
+  });
+
   test('keeps CLI setup feedback on webview load and clears it on explicit refresh', async () => {
     const notice = { outcome: 'completed', message: 'Setup finished.' };
     provider.cliSetupSession.notice = notice;
