@@ -45,10 +45,9 @@ suite('Extension Test Suite', () => {
 
     const diags = await waitForSonarLintDiagnostics(fileUri, { atLeastIssues: 2, timeoutMillis: 30_000 });
 
-    assert.strictEqual(diags.length, 2);
-    assert.strictEqual(diags[0].message, "Remove the declaration of the unused 'i' variable.");
-    assert.strictEqual(diags[1].message, "Unexpected var, use let or const instead.");
-    assert.equal(diags[0].message, "Remove the declaration of the unused 'i' variable.");
+    const issues = diags.map(d => [d.code, d.range.start.line]).sort();
+    assert.deepStrictEqual(issues, [['javascript:S1481', 1], ['javascript:S3504', 1]]);
+    assert.ok(diags.every(d => d.message.length > 0));
 
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
   }).timeout(ONE_MINUTE_MS);
