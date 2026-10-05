@@ -261,14 +261,12 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     const mcpAgents = detectedAgents.filter(agent => isAgentActiveForMcp(agent.agent));
     const agents = detectedAgents.map(agent => {
       const integration = integrationState.cliIntegrations?.find(state => state.agent === agent.agent);
-      const recordingStatus = integration?.recordingStatus;
+      const recordingStatus = integration?.recordingStatus ?? AiIntegration.CliIntegrationRecordingStatus.UNKNOWN;
       return {
         id: agent.agent,
         name: agent.name,
         supportsCliIntegration: agent.cliIntegrationSupported,
-        recordingStatus: typeof recordingStatus === 'number'
-          ? AiIntegration.CLI_INTEGRATION_RECORDING_STATUS_NAMES[recordingStatus] ?? 'UNKNOWN'
-          : 'UNKNOWN' as const,
+        recordingStatus: AiIntegration.CLI_INTEGRATION_RECORDING_STATUS_NAMES[recordingStatus] ?? 'UNKNOWN',
         configurationPaths: (integration?.configurations ?? []).map(configuration => configuration.path ?? null)
       };
     });

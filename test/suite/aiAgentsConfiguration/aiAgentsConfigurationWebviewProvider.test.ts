@@ -130,11 +130,14 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
   test('maps recording ordinals independently of configuration health', async () => {
     for (const [recordingStatus, expected] of [
-      [0, 'RECORDED'], [1, 'NOT_RECORDED'], [2, 'UNKNOWN'], [99, 'UNKNOWN'], ['0', 'UNKNOWN']
+      [AiIntegration.CliIntegrationRecordingStatus.RECORDED, 'RECORDED'],
+      [AiIntegration.CliIntegrationRecordingStatus.NOT_RECORDED, 'NOT_RECORDED'],
+      [AiIntegration.CliIntegrationRecordingStatus.UNKNOWN, 'UNKNOWN'],
+      [99 as AiIntegration.CliIntegrationRecordingStatus, 'UNKNOWN']
     ] as const) {
       getIntegrationState.resolves(cliIntegrationState([{
         agent: AiIntegration.AiAgent.CODEX,
-        recordingStatus: recordingStatus as AiIntegration.CliIntegrationRecordingStatus,
+        recordingStatus,
         configurations: [{ mcp: AiIntegration.CliIntegrationCheckStatus.INVALID }]
       }]));
 
