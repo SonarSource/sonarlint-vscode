@@ -52,6 +52,9 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     provider.languageClient = {
       getAiIntegrationState: getIntegrationState,
       prepareInstallCliCommand,
+      authenticateCliWithConnection: sinon.stub().resolves({
+        status: AiIntegration.AuthenticateCliWithConnectionStatus.INTERACTIVE_LOGIN_REQUIRED
+      }),
       prepareAuthenticateCliCommand,
       prepareIntegrateCliCommand,
       aiIntegrationAction: sinon.stub().resolves(),
@@ -611,7 +614,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       })
     ).to.be.true;
     expect(terminal.show.calledTwice).to.be.true;
-    expect(provider.extensionContext.subscriptions).to.deep.equal([closeListener]);
+    expect(provider.extensionContext.subscriptions).to.deep.equal([provider.cliSetupSession, closeListener]);
 
     const exitStatus = { code: undefined, reason: vscode.TerminalExitReason.User };
     Object.assign(terminal, { exitStatus });
