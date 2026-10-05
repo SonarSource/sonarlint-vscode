@@ -39,10 +39,19 @@ interface RenderedMcpAgent extends RenderedTooltip {
   diagnostic: string;
 }
 
+interface RenderedCli {
+  uninstallHidden: boolean;
+  uninstallDisabled: boolean;
+  uninstallLabel: string;
+  outputHidden: boolean;
+  feedback: string;
+}
+
 async function renderWebview(state: AIAgentsConfigurationState): Promise<{
   agents: RenderedAgent[];
   mcpAgents: RenderedMcpAgent[];
   injectedElement: boolean;
+  cli: RenderedCli;
   actions: Array<{ command: string; agent: AiIntegration.AiAgent }>;
 }> {
   const root = path.resolve(__dirname, '../../../..');
@@ -94,17 +103,25 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
         };
       });
       document.querySelectorAll('#mcp-list button:not([hidden])').forEach(button => button.click());
-      vscode.postMessage({ command: 'rendered', agents, mcpAgents, injectedElement: Boolean(document.querySelector('img')) });
+      const uninstall = document.getElementById('cli-uninstall');
+      const output = document.getElementById('cli-output');
+      if (!uninstall.hidden) uninstall.click();
+      if (!output.hidden) output.click();
+      const cli = {
+        uninstallHidden: uninstall.hidden, uninstallDisabled: uninstall.disabled, uninstallLabel: uninstall.textContent,
+        outputHidden: output.hidden, feedback: document.getElementById('cli-feedback').textContent
+      };
+      vscode.postMessage({ command: 'rendered', agents, mcpAgents, cli, injectedElement: Boolean(document.querySelector('img')) });
     });
   </script>`;
   const actions: Array<{ command: string; agent: AiIntegration.AiAgent }> = [];
   let listener: vscode.Disposable;
   try {
-    const rendered = new Promise<{ agents: RenderedAgent[]; mcpAgents: RenderedMcpAgent[]; injectedElement: boolean }>(resolve => {
+    const rendered = new Promise<{ agents: RenderedAgent[]; mcpAgents: RenderedMcpAgent[]; cli: RenderedCli; injectedElement: boolean }>(resolve => {
       listener = panel.webview.onDidReceiveMessage(message => {
         if (message.command === 'ready') {
           void panel.webview.postMessage({ command: 'state', state });
-        } else if (['integrateAgent', 'openMcpConfiguration', 'configureMcp'].includes(message.command)) {
+        } else if (['integrateAgent', 'openMcpConfiguration', 'configureMcp', 'uninstallCli', 'showCliOutput'].includes(message.command)) {
           actions.push(message);
         } else if (message.command === 'rendered') {
           resolve(message);
@@ -142,10 +159,53 @@ suite('AI integrations webview rendering', () => {
     ];
     return {
       ideName: 'VS Code', isRemote: false, agents,
-      cli: { installationStatus: 'INSTALLED', authenticationStatus: 'AUTHENTICATED', operationInProgress: false, canIntegrate },
+      cli: { installationStatus: 'INSTALLED', authenticationStatus: 'AUTHENTICATED', operationInProgress: false, canIntegrate, uninstallAvailable: false },
       mcp: { integrations: [], configuredCount: 0, configurableCount: 0, operationInProgress: false }
     };
   }
+
+  test('offers secondary uninstall and exposes cleanup feedback through Show output', async function () {
+    this.timeout(15_000);
+    const input = state(false);
+    input.cli.uninstallAvailable = true;
+    input.cli.notice = { outcome: 'completed', message: 'Some configuration may remain: <img src=x>', showOutput: true };
+
+    const rendered = await renderWebview(input);
+
+    expect(rendered.cli).to.deep.equal({
+      uninstallHidden: false, uninstallDisabled: false, uninstallLabel: 'Uninstall CLI…', outputHidden: false,
+      feedback: input.cli.notice.message
+    });
+    expect(rendered.actions.map(action => action.command)).to.deep.equal(['uninstallCli', 'showCliOutput']);
+    expect(rendered.injectedElement).to.be.false;
+  });
+
+  test('disables uninstall and output while CLI setup is in progress', async function () {
+    this.timeout(15_000);
+    const input = state(false);
+    input.cli.uninstallAvailable = true;
+    input.cli.operationInProgress = true;
+    input.cli.notice = { outcome: 'failed', message: 'Previous failure', showOutput: true };
+
+    const rendered = await renderWebview(input);
+
+    expect(rendered.cli.uninstallHidden).to.be.false;
+    expect(rendered.cli.uninstallDisabled).to.be.true;
+    expect(rendered.cli.outputHidden).to.be.true;
+    expect(rendered.actions).to.deep.equal([]);
+  });
+
+  test('hides uninstall in remote sessions and after the CLI is removed', async function () {
+    this.timeout(15_000);
+    const input = state(false);
+    input.cli.uninstallAvailable = true;
+    input.isRemote = true;
+    expect((await renderWebview(input)).cli.uninstallHidden).to.be.true;
+    input.isRemote = false;
+    input.cli.uninstallAvailable = false;
+    input.cli.installationStatus = 'NOT_INSTALLED';
+    expect((await renderWebview(input)).cli.uninstallHidden).to.be.true;
+  });
 
   test('renders recording status with configuration path tooltips and a consistent integrate action', async function () {
     this.timeout(15_000);

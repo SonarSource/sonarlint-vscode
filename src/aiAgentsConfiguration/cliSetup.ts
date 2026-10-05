@@ -11,6 +11,7 @@ import * as vscode from 'vscode';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { getAiIntegrationStateParams, getDetectedIntegrationAgents } from './aiAgentUtils';
+import { runCliUninstall, cliUninstallFailure } from './cliUninstall';
 
 // Setup returns this result. The view reports it; cli setup does not talk to telemetry.
 type AiIntegrationOutcome = AiIntegration.AiIntegrationOutcome;
@@ -32,6 +33,7 @@ export interface CliPrimaryAction {
 export interface CliSetupNotice {
   outcome: SetupOutcome;
   message: string;
+  showOutput?: boolean;
 }
 
 export type ConnectionPick =
@@ -143,6 +145,31 @@ export class CliSetupSession {
 
   get operationInProgress(): boolean {
     return this.inProgress;
+  }
+
+  async uninstall(): Promise<void> {
+    if (this.disposed || this.inProgress || vscode.env.remoteName !== undefined) {
+      return;
+    }
+    this.inProgress = true;
+    this.notice = undefined;
+    try {
+      await this.onChange();
+      const notice = await runCliUninstall(this.languageClient, () => this.disposed);
+      if (!this.disposed) {
+        this.notice = notice;
+      }
+    } catch (error) {
+      const notice = cliUninstallFailure(error);
+      if (!this.disposed) {
+        this.notice = notice;
+      }
+    } finally {
+      this.inProgress = false;
+      if (!this.disposed) {
+        await this.onChange(true);
+      }
+    }
   }
 
   async run(step: CliSetupStep, agentId?: AiIntegration.AiAgent): Promise<void> {

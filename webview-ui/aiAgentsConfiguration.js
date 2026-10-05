@@ -13,6 +13,8 @@ const loadError = document.getElementById('load-error');
 const content = document.getElementById('content');
 const cliStatus = document.getElementById('cli-status');
 const cliAction = document.getElementById('cli-action');
+const cliUninstall = document.getElementById('cli-uninstall');
+const cliOutput = document.getElementById('cli-output');
 const cliAuthentication = document.getElementById('cli-authentication');
 const cliFeedback = document.getElementById('cli-feedback');
 const detectedLabel = document.getElementById('detected-label');
@@ -25,6 +27,8 @@ const mcpList = document.getElementById('mcp-list');
 const noMcpAgents = document.getElementById('no-mcp-agents');
 
 document.addEventListener('DOMContentLoaded', () => vscode.postMessage({ command: 'ready' }));
+cliUninstall.addEventListener('click', () => vscode.postMessage({ command: 'uninstallCli' }));
+cliOutput.addEventListener('click', () => vscode.postMessage({ command: 'showCliOutput' }));
 window.addEventListener('message', event => {
   if (event.origin && !event.origin.startsWith('vscode-webview://')) {
     return;
@@ -169,6 +173,8 @@ function renderCliAuthentication(cli) {
 }
 
 function renderCliAction(state) {
+  setVisible(cliUninstall, state.cli.uninstallAvailable && !state.isRemote);
+  cliUninstall.disabled = state.cli.operationInProgress;
   if (state.cli.operationInProgress) {
     setVisible(cliAction, false);
     cliAction.onclick = undefined;
@@ -190,6 +196,7 @@ function renderCliFeedback(cli) {
   const message = cli.operationInProgress ? 'SonarQube CLI setup is in progress.' : cli.notice?.message;
   cliFeedback.hidden = !message;
   cliFeedback.textContent = message ?? '';
+  setVisible(cliOutput, !cli.operationInProgress && Boolean(cli.notice?.showOutput));
 }
 
 function renderMcp(state) {
