@@ -90,17 +90,16 @@ function createCliAgentRow(agent, state) {
 
   if (agent.supportsCliIntegration) {
     const status = document.createElement('span');
-    let statusContent = status;
     if (agent.recordingStatus === 'RECORDED') {
       setStatus(status, 'Integration recorded', 'configured');
-      statusContent = createConfigurationPathDisclosure(status, agent.configurationPaths);
+      setConfigurationPathsTooltip(status, agent.configurationPaths);
     } else if (agent.recordingStatus === 'NOT_RECORDED') {
       setStatus(status, 'No integration recorded', 'notConfigured');
     } else {
       setStatus(status, 'Unknown', 'unavailable');
     }
     status.classList.add('cli-recording-status');
-    details.append(statusContent);
+    details.append(status);
     const action = document.createElement('button');
     action.className = 'secondary-action agent-action';
     action.type = 'button';
@@ -258,9 +257,10 @@ function createMcpIntegrationRow(integration, state) {
     action.textContent = 'Setting up…';
   }
   status.classList.add('mcp-configuration-status');
-  details.append(integration.configurationPath || (hasAction && !setupAction)
-    ? createConfigurationPathDisclosure(status, [integration.configurationPath])
-    : status);
+  if (integration.configurationPath || (hasAction && !setupAction)) {
+    setConfigurationPathsTooltip(status, [integration.configurationPath]);
+  }
+  details.append(status);
   row.append(details, action);
 
   if (integration.configurationStatus !== 'CLI_MANAGED' && integration.diagnostic) {
@@ -272,23 +272,10 @@ function createMcpIntegrationRow(integration, state) {
   return row;
 }
 
-function createConfigurationPathDisclosure(status, paths) {
+function setConfigurationPathsTooltip(status, paths) {
   const missingPath = 'Configuration path not reported';
   const labels = (paths.length ? paths : [null]).map(path => path || missingPath);
-  const disclosure = document.createElement('details');
-  disclosure.className = 'configuration-paths';
-  const summary = document.createElement('summary');
-  summary.title = labels.join('\n');
-  summary.append(status);
-  const list = document.createElement('ul');
-  list.className = 'configuration-path-list supporting-text';
-  for (const label of labels) {
-    const item = document.createElement('li');
-    item.textContent = label;
-    list.append(item);
-  }
-  disclosure.append(summary, list);
-  return disclosure;
+  status.title = labels.join('\n');
 }
 
 function configureOpenAction(action, agent) {
