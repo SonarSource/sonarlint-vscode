@@ -149,26 +149,6 @@ main {
   font-size: 12px;
 }
 
-.configuration-paths {
-  margin-top: 3px;
-}
-
-.configuration-paths summary {
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.configuration-paths summary .status {
-  display: inline;
-  margin-top: 0;
-}
-
-.configuration-path-list {
-  margin: 4px 0 0;
-  padding-left: 16px;
-  overflow-wrap: anywhere;
-}
-
 .agent-availability {
   text-align: right;
 }
@@ -275,8 +255,7 @@ button {
   grid-column: 1 / -1;
 }
 
-button:focus-visible,
-.configuration-paths summary:focus-visible {
+button:focus-visible {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: 2px;
 }
