@@ -115,7 +115,7 @@ main {
   list-style: none;
 }
 
-.agent-list li {
+.agent-list > li {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -124,12 +124,49 @@ main {
   padding: 4px 0;
 }
 
-.agent-details {
+.agent-details,
+.mcp-integration-details {
   min-width: 0;
 }
 
 .agent-action {
   flex: 0 0 auto;
+}
+
+.agent-list .cli-integration-row,
+.mcp-integration-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 6px 0;
+}
+
+.cli-recording-status,
+.mcp-configuration-status {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.configuration-paths {
+  margin-top: 3px;
+}
+
+.configuration-paths summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.configuration-paths summary .status {
+  display: inline;
+  margin-top: 0;
+}
+
+.configuration-path-list {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  overflow-wrap: anywhere;
 }
 
 .agent-availability {
@@ -157,18 +194,9 @@ main {
 }
 
 @media (max-width: 360px) {
-  .agent-list li {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .agent-action {
-    width: 100%;
-  }
-
-  .agent-availability {
-    text-align: left;
+  .agent-list .cli-integration-row,
+  .mcp-integration-row {
+    column-gap: 8px;
   }
 }
 
@@ -242,34 +270,13 @@ button {
   list-style: none;
 }
 
-.mcp-integration-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 12px;
-  padding: 4px 0;
-}
-
-.mcp-integration-details,
-.mcp-integration-action {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.mcp-integration-action {
-  justify-items: end;
-}
-
-.mcp-configuration-path,
 .mcp-diagnostic {
   overflow-wrap: anywhere;
-}
-
-.mcp-diagnostic {
   grid-column: 1 / -1;
 }
 
-button:focus-visible {
+button:focus-visible,
+.configuration-paths summary:focus-visible {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: 2px;
 }
@@ -282,22 +289,10 @@ button:focus-visible {
   .product-card {
     padding: 13px;
   }
-
-  .mcp-integration-row {
-    grid-template-columns: 1fr;
-  }
-
-  .mcp-integration-action {
-    justify-items: stretch;
-  }
 }
 
 @media (max-width: 300px) {
   .mcp-integration-row {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .mcp-integration-action {
-    justify-items: start;
   }
 }
