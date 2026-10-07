@@ -23,6 +23,7 @@ import {
 } from './proofWorker';
 
 import { requestDev16CodeFix } from './dev16CodeFix';
+import { ProofDemoCaptions, PROOF_CAPTIONS_VIEW } from './proofDemoCaptions';
 
 const COMMAND = 'SonarQube.RefactorWithProof';
 const NATIVE_COMMAND = 'SonarLint.SuggestFixFromCodeAction';
@@ -41,6 +42,8 @@ export function interceptProofSuggestion(params: ExtendedClient.ShowFixSuggestio
 }
 
 export function registerRefactorWithProof(context: vscode.ExtensionContext, client: SonarLintExtendedLanguageClient) {
+  const captions = new ProofDemoCaptions();
+  context.subscriptions.push(vscode.window.registerWebviewViewProvider(PROOF_CAPTIONS_VIEW, captions));
   context.subscriptions.push(
     vscode.workspace.registerTextDocumentContentProvider('sonar-proof', {
       provideTextDocumentContent: uri => previews.get(uri.toString()) ?? ''
@@ -89,7 +92,14 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
       }
       if (pending.has(uri.toString()))
         return void vscode.window.showErrorMessage('A CodeFix request is already pending for this file.');
+      const demoPresentation = vscode.workspace
+        .getConfiguration('sonarlint', fileUri)
+        .get<boolean>('refactorWithProof.demoPresentation', false);
       try {
+        if (demoPresentation) {
+          captions.update('Preparing one Rust function', 'Freeze the original project and translate it into Lean.');
+          await captions.show();
+        }
         await vscode.window.withProgress(
           { location: vscode.ProgressLocation.Notification, title: 'Refactor with proof', cancellable: true },
           async (progress, token) => {
@@ -171,6 +181,11 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
               token
             );
             progress.report({ message: 'Requesting refactor from existing AI CodeFix endpoint…' });
+            if (demoPresentation)
+              captions.update(
+                'AI CodeFix generates the refactor',
+                'A live Cloud request targets the selected complexity issue.'
+              );
             const suggestion = native
               ? await new Promise<ExtendedClient.ShowFixSuggestionParams>((resolve, reject) => {
                   let expired = false;
@@ -216,6 +231,11 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
             const candidate = applyLineEdits(original, suggestion.textEdits);
             const patch = candidatePatch(path.relative(project, fileUri.fsPath), original, candidate);
             progress.report({ message: 'Checking complexity and proving the exact diff…' });
+            if (demoPresentation)
+              captions.update(
+                'Lean checks the generated refactor',
+                'Local verification checks the exact candidate asynchronously.'
+              );
             let result: any;
             try {
               result = await verify(job, image, prepared, patch, token);
@@ -232,6 +252,17 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
               : `Original ${prepared.targets.issue.complexity}; candidate improvement not established`;
             const report = `# Refactor with proof\n\n**${verified ? 'Verified Lean models' : 'Not verified'}**\n\nCognitive complexity: ${score}\n\n${result.detail ?? result.stage}\n\n## Assumptions and limits\n\n- Equality applies to Aeneas-generated Lean models; complete Rust semantics and trusted external models have not been audited.\n- Linux Cargo library target, default features; dependencies must be cached in the local Docker image.\n- One selected function and issue. Sonar analysis must confirm resolution after applying.\n- A failed proof is not evidence that the refactor is incorrect. Inspect the worker report for counterexamples or unsupported constructs.\n\n## AI explanation\n\n${suggestion.explanation}${!native && config.get<string>('refactorWithProof.generationGuidance') ? '\n\n## Generation constraints\n\n' + config.get<string>('refactorWithProof.generationGuidance') : ''}\n\n## Evidence\n\nIssue source: ${diagnostic.source ?? 'SonarQube'}\n\nOriginal digest: ${digest}\n\nWorker artifacts and exact patch: ${job}\n`;
             await fs.writeFile(path.join(job, 'review.md'), report);
+            if (demoPresentation) {
+              captions.update(
+                verified ? `Lean models verified · ${score}` : `Not verified · ${score}`,
+                verified
+                  ? 'The candidate is saved. Review is required before applying.'
+                  : 'The candidate is saved for review. A failed proof does not establish incorrectness.',
+                'Proof scope: Aeneas-generated Lean models; full Rust semantics and external models remain assumptions.'
+              );
+              if (native) void client.fixSuggestionResolved(suggestion.suggestionId, false);
+              return;
+            }
             const review = await vscode.workspace.openTextDocument(vscode.Uri.file(path.join(job, 'review.md')));
             await vscode.window.showTextDocument(review, vscode.ViewColumn.Beside);
             const id = randomUUID();
@@ -269,6 +300,12 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
           }
         );
       } catch (error) {
+        if (demoPresentation)
+          captions.update(
+            'Refactor request stopped',
+            error.message,
+            'No candidate was applied. Inspect the error before retrying.'
+          );
         void vscode.window.showErrorMessage(`Refactor with proof: ${error.message}`);
       }
     })

@@ -388,6 +388,11 @@
           "default": false,
           "description": "Enable the hackathon Rust refactor-with-proof action. Uses existing AI CodeFix and a local Docker verifier."
         },
+        "sonarlint.refactorWithProof.demoPresentation": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show live demo captions and keep the source visible instead of automatically opening the diff and review. Saves the candidate and review artifacts without applying."
+        },
         "sonarlint.refactorWithProof.symbol": {
           "type": "string",
           "default": "",
@@ -784,6 +789,12 @@
           "id": "SonarQube",
           "title": "SonarQube",
           "when": "sonarqube.someFoldersUseConnectedMode"
+        },
+        {
+          "icon": "images/sonarqube_for_ide.svg",
+          "id": "SonarQubeProofDemo",
+          "title": "Refactor with proof",
+          "when": "config.sonarlint.refactorWithProof.demoPresentation"
         }
       ]
     },
@@ -820,6 +831,14 @@
         {
           "id": "SonarLint.HelpAndFeedback",
           "name": "Help and Feedback"
+        }
+      ],
+      "SonarQubeProofDemo": [
+        {
+          "id": "SonarQube.ProofDemoCaptions",
+          "name": "Live demo captions",
+          "type": "webview",
+          "when": "config.sonarlint.refactorWithProof.demoPresentation"
         }
       ],
       "SonarQube": [

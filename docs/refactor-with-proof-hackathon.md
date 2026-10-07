@@ -47,6 +47,15 @@ The Cloud companion draft PR needs `deploy-GA-Dev16`. The adapter calls only
 full-issue JSON contract. Authentication, access, enablement and usage limits remain
 Cloud checks. No public extension marketplace publishing is part of this demo.
 
+For a shorter recording, enable `sonarlint.refactorWithProof.demoPresentation`.
+The **Refactor with proof** bottom panel shows captions driven by actual preparation,
+Cloud generation and local Lean verification events. The Rust source stays visible;
+the diff and Markdown review do not open automatically. The final caption shows the
+measured complexity, verdict, proof scope and review requirement. Candidate, diff and
+review artifacts are still saved; this mode never applies the refactor. Disable it
+to use the ordinary review and application flow. This shortens presentation, not
+generation or proof execution time.
+
 For the pinned real-world ruint target, set `symbol` to
 `ruint::algorithms::gcd::matrix::{ruint::algorithms::gcd::matrix::Matrix}::from_u64_prefix`
 and `charonSymbol` to `crate::algorithms::gcd::matrix::Matrix::from_u64_prefix`.
