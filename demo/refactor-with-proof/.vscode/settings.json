@@ -1,0 +1,5 @@
+{
+  "sonarlint.refactorWithProof.enabled": true,
+  "sonarlint.refactorWithProof.symbol": "crate::classify",
+  "sonarlint.refactorWithProof.dockerImage": "cognitive-verifier:integration"
+}
