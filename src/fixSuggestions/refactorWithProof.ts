@@ -163,6 +163,7 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
                 project: '.',
                 file: path.relative(project, fileUri.fsPath),
                 symbol,
+                charonSymbol: config.get<string>('refactorWithProof.charonSymbol') || undefined,
                 cargoTarget: 'lib',
                 maxComplexity: Number(threshold),
                 issueLine: diagnostic.range.start.line + 1

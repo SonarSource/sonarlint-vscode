@@ -393,6 +393,11 @@
           "default": "",
           "description": "Qualified Rust function selected for the demo, e.g. crate::classify. One Cargo library function per request."
         },
+        "sonarlint.refactorWithProof.charonSymbol": {
+          "type": "string",
+          "default": "",
+          "description": "Optional Charon entry-point name when it differs from the qualified model symbol, for example crate::algorithms::gcd::matrix::Matrix::from_u64_prefix."
+        },
         "sonarlint.refactorWithProof.dockerImage": {
           "type": "string",
           "default": "cognitive-verifier:integration",

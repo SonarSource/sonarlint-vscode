@@ -39,6 +39,13 @@ The Cloud companion draft PR needs `deploy-GA-Dev16`. The adapter calls only
 full-issue JSON contract. Authentication, access, enablement and usage limits remain
 Cloud checks. No public extension marketplace publishing is part of this demo.
 
+For the pinned real-world ruint target, set `symbol` to
+`ruint::algorithms::gcd::matrix::{ruint::algorithms::gcd::matrix::Matrix}::from_u64_prefix`
+and `charonSymbol` to `crate::algorithms::gcd::matrix::Matrix::from_u64_prefix`.
+Use the native Cargo workspace and pinned dependency lock, with dependencies cached
+in the verifier image. Its documented score is 27: threshold 15 reproduces the
+experimental finding and is below Rust's production default of 30.
+
 ## Shortcuts and proof scope
 
 When a real `rust:S3776` IDE diagnostic and native AI CodeFix action are available,
