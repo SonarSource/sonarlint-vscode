@@ -62,6 +62,7 @@ import { ExtendedClient } from './lsp/protocol';
 import { maybeShowWiderLanguageSupportNotification } from './promotions/promotionalNotifications';
 import { SharedConnectedModeSettingsService } from './connected/sharedConnectedModeSettingsService';
 import { FileSystemServiceImpl } from './fileSystem/fileSystemServiceImpl';
+import { interceptProofSuggestion, registerRefactorWithProof } from './fixSuggestions/refactorWithProof';
 import { FixSuggestionService } from './fixSuggestions/fixSuggestionsService';
 import { ContextManager } from './contextManager';
 import { ListPotentialSecurityIssuesTool } from './languageModelTools/listPotentialSecurityIssuesTool';
@@ -256,6 +257,7 @@ export async function activate(context: VSCode.ExtensionContext) {
     /* ignored */
   });
   FixSuggestionService.init(languageClient);
+  registerRefactorWithProof(context, languageClient);
   IdeLabsFlagManagementService.init(context);
 
   ContextManager.instance.initializeContext(context);
@@ -480,6 +482,7 @@ function initializeLanguageModelTools(context: VSCode.ExtensionContext) {
 
 function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
   languageClient.onNotification(ExtendedClient.ShowFixSuggestion.type, params => {
+    if (interceptProofSuggestion(params)) return;
     if (IdeLabsFlagManagementService.instance.isIdeLabsEnabled()) {
       // Labs enabled: Only track in panel, user views from there
       RemediationService.instance.trackFixSuggestionEvent(params);
