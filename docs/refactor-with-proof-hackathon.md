@@ -32,7 +32,10 @@ is required. It supports **one Rust function / one issue in a small Cargo librar
    Optional `sonarlint.refactorWithProof.generationGuidance` adds explicit
    refactoring constraints to the direct Dev16 request. For the native ruint
    experiment, keep arithmetic and loop bodies unchanged and extract only the
-   final even/odd matrix selection into private helpers. This guides generation;
+   final even/odd matrix selection into private helpers. Preserve existing function
+   attributes and add no attributes to the helpers: the current source-mapping
+   guard treats new helper attributes as changes outside translated functions.
+   This guides generation;
    the worker still checks the exact returned patch independently.
 6. Wait for preparation, Cloud generation and local verification. Inspect the result
    document (complexity, verdict, assumptions, AI explanation, artifacts) alongside
