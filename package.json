@@ -382,6 +382,42 @@
           "default": false,
           "markdownDescription": "By sharing anonymous SonarQube for IDE usage statistics and error data, you help us understand how SonarQube for IDE is used so we can improve the plugin to work even better for you. This data is aggregated and does not contain source code, IP addresses, or any personally identifying information. We utilize Sentry for crash tracking. Check this box to opt-out of this collection. See a [sample of the data](https://github.com/SonarSource/sonarlint-vscode/blob/master/telemetry-sample.md).",
           "scope": "window"
+        },
+        "sonarlint.refactorWithProof.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable the hackathon Rust refactor-with-proof action. Uses existing AI CodeFix and a local Docker verifier."
+        },
+        "sonarlint.refactorWithProof.symbol": {
+          "type": "string",
+          "default": "",
+          "description": "Qualified Rust function selected for the demo, e.g. crate::classify. One Cargo library function per request."
+        },
+        "sonarlint.refactorWithProof.charonSymbol": {
+          "type": "string",
+          "default": "",
+          "description": "Optional Charon entry-point name when it differs from the qualified model symbol, for example crate::algorithms::gcd::matrix::Matrix::from_u64_prefix."
+        },
+        "sonarlint.refactorWithProof.dockerImage": {
+          "type": "string",
+          "default": "cognitive-verifier:integration",
+          "description": "Locally built verification worker image. No network access is granted to verification containers."
+        },
+        "sonarlint.refactorWithProof.projectKey": {
+          "type": "string",
+          "default": "",
+          "description": "AI CodeFix-enabled Dev16 project key for the direct endpoint demo adapter."
+        },
+        "sonarlint.refactorWithProof.organizationKey": {
+          "type": "string",
+          "default": "",
+          "description": "Dev16 organization key for the direct endpoint demo adapter."
+        },
+        "sonarlint.refactorWithProof.maxComplexity": {
+          "type": "integer",
+          "default": 30,
+          "minimum": 0,
+          "description": "Demo cogc threshold. Match the Dev16 Rust quality profile. Native issues use their reported threshold."
         }
       }
     },
@@ -720,6 +756,12 @@
         "category": "SonarQube",
         "icon": "$(list-unordered)",
         "enablement": "sonarqube.ideLabsEnabled"
+      },
+      {
+        "command": "SonarQube.RefactorWithProof",
+        "title": "Refactor with proof (Hackathon)",
+        "category": "SonarQube",
+        "enablement": "editorLangId == rust && config.sonarlint.refactorWithProof.enabled"
       }
     ],
     "viewsContainers": {
@@ -1367,7 +1409,8 @@
     "deploy-all": "node build-sonarlint/deployAll.mjs",
     "deploy-universal": "node build-sonarlint/deploy.mjs",
     "package": "node build-sonarlint/package.mjs",
-    "package-all": "node build-sonarlint/package-all.mjs"
+    "package-all": "node build-sonarlint/package-all.mjs",
+    "test:proof": "npm run compile && node --test out/test/proof/*.node.js"
   },
   "dependencies": {
     "@openpgp/web-stream-tools": "^0.3.0",
