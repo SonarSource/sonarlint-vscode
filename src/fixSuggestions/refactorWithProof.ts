@@ -254,17 +254,16 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
             await fs.writeFile(path.join(job, 'review.md'), report);
             if (demoPresentation) {
               captions.update(
-                verified ? `Lean models verified · ${score}` : `Not verified · ${score}`,
+                `Review the diff · ${score}`,
                 verified
-                  ? 'The candidate is saved. Review is required before applying.'
-                  : 'The candidate is saved for review. A failed proof does not establish incorrectness.',
+                  ? 'Lean models verified. Review the highlighted changes before applying.'
+                  : 'Not verified. Review the changes; a failed proof does not establish incorrectness.',
                 'Proof scope: Aeneas-generated Lean models; full Rust semantics and external models remain assumptions.'
               );
-              if (native) void client.fixSuggestionResolved(suggestion.suggestionId, false);
-              return;
+            } else {
+              const review = await vscode.workspace.openTextDocument(vscode.Uri.file(path.join(job, 'review.md')));
+              await vscode.window.showTextDocument(review, vscode.ViewColumn.Beside);
             }
-            const review = await vscode.workspace.openTextDocument(vscode.Uri.file(path.join(job, 'review.md')));
-            await vscode.window.showTextDocument(review, vscode.ViewColumn.Beside);
             const id = randomUUID();
             const before = vscode.Uri.parse(`sonar-proof:/${id}/original.rs`),
               after = vscode.Uri.parse(`sonar-proof:/${id}/candidate.rs`);
@@ -283,6 +282,11 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
             );
             let applied = false;
             if (choice === 'Apply reviewed refactor') {
+              if (demoPresentation)
+                captions.update(
+                  'Applying the reviewed refactor',
+                  'Check that the original project still matches the verified baseline.'
+                );
               if (token.isCancellationRequested) throw new Error('Verification cancelled');
               if (document.isDirty || document.getText() !== original || (await projectDigest(project)) !== digest) {
                 throw new Error('Original project changed. Generate and verify a fresh suggestion before applying.');
@@ -295,7 +299,25 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
                 { label: 'Reviewed refactor with proof', needsConfirmation: true }
               );
               applied = await vscode.workspace.applyEdit(edit);
+              if (demoPresentation && applied) {
+                const editor = await vscode.window.showTextDocument(document, vscode.ViewColumn.Active);
+                let firstChange = 0;
+                while (firstChange < original.length && original[firstChange] === candidate[firstChange]) firstChange++;
+                const position = document.positionAt(firstChange);
+                editor.selection = new vscode.Selection(position, position);
+                editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+              }
             }
+            if (demoPresentation)
+              captions.update(
+                applied ? `Refactor applied · ${score}` : `Candidate kept for review · ${score}`,
+                applied
+                  ? `${verified ? 'The exact candidate with verified Lean models' : 'The reviewed, unverified candidate'} is now in the editor.`
+                  : 'The original source is unchanged. Candidate and review evidence are saved.',
+                applied
+                  ? 'Save the file and rerun Sonar analysis to confirm issue resolution. Proof scope: generated Lean models.'
+                  : 'Proof scope: Aeneas-generated Lean models; review is required before application.'
+              );
             if (native) void client.fixSuggestionResolved(suggestion.suggestionId, applied);
           }
         );
@@ -304,7 +326,7 @@ export function registerRefactorWithProof(context: vscode.ExtensionContext, clie
           captions.update(
             'Refactor request stopped',
             error.message,
-            'No candidate was applied. Inspect the error before retrying.'
+            'Inspect the error and saved evidence before retrying.'
           );
         void vscode.window.showErrorMessage(`Refactor with proof: ${error.message}`);
       }

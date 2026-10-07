@@ -391,7 +391,7 @@
         "sonarlint.refactorWithProof.demoPresentation": {
           "type": "boolean",
           "default": false,
-          "description": "Show live demo captions and keep the source visible instead of automatically opening the diff and review. Saves the candidate and review artifacts without applying."
+          "description": "Show live captions for generation, verification, diff review and explicit application without automatically opening the Markdown review. Saves all candidate and review artifacts."
         },
         "sonarlint.refactorWithProof.symbol": {
           "type": "string",

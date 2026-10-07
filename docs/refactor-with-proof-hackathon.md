@@ -49,12 +49,13 @@ Cloud checks. No public extension marketplace publishing is part of this demo.
 
 For a shorter recording, enable `sonarlint.refactorWithProof.demoPresentation`.
 The **Refactor with proof** bottom panel shows captions driven by actual preparation,
-Cloud generation and local Lean verification events. The Rust source stays visible;
-the diff and Markdown review do not open automatically. The final caption shows the
-measured complexity, verdict, proof scope and review requirement. Candidate, diff and
-review artifacts are still saved; this mode never applies the refactor. Disable it
-to use the ordinary review and application flow. This shortens presentation, not
-generation or proof execution time.
+Cloud generation, local Lean verification, diff review and application events. The
+read-only diff opens after verification; review it and choose **Apply reviewed refactor**
+to apply the exact candidate after the source freshness check and VS Code confirmation.
+Captions then show the edited source and actual application result. Save the file and
+rerun Sonar analysis to confirm issue resolution. The Markdown review stays saved
+without opening automatically; all candidate and proof artifacts are retained. This
+shortens presentation, not generation or proof execution time.
 
 For the pinned real-world ruint target, set `symbol` to
 `ruint::algorithms::gcd::matrix::{ruint::algorithms::gcd::matrix::Matrix}::from_u64_prefix`

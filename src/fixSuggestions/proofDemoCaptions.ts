@@ -20,7 +20,7 @@ const escapeHtml = (text: string) =>
 export class ProofDemoCaptions implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
   private title = 'Refactor with proof';
-  private explanation = 'Trigger AI CodeFix for one Rust complexity issue.';
+  private explanation = 'Generate, verify, review the diff, then apply one Rust refactor.';
   private note = PIPELINE_NOTE;
 
   resolveWebviewView(view: vscode.WebviewView) {
