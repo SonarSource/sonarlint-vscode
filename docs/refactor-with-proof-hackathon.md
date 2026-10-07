@@ -29,6 +29,11 @@ is required. It supports **one Rust function / one issue in a small Cargo librar
    palette or editor refactoring actions. The first direct request prompts for your
    **Dev16** token and stores it in VS Code SecretStorage, never workspace settings.
    Original translation must pass before generation starts.
+   Optional `sonarlint.refactorWithProof.generationGuidance` adds explicit
+   refactoring constraints to the direct Dev16 request. For the native ruint
+   experiment, keep arithmetic and loop bodies unchanged and extract only the
+   final even/odd matrix selection into private helpers. This guides generation;
+   the worker still checks the exact returned patch independently.
 6. Wait for preparation, Cloud generation and local verification. Inspect the result
    document (complexity, verdict, assumptions, AI explanation, artifacts) alongside
    the read-only original/candidate diff. Choose **Apply reviewed refactor** only

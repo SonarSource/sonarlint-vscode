@@ -22,6 +22,7 @@ export async function requestDev16CodeFix(
   const config = vscode.workspace.getConfiguration('sonarlint', uri);
   const projectKey = config.get<string>('refactorWithProof.projectKey');
   const organizationKey = config.get<string>('refactorWithProof.organizationKey');
+  const guidance = config.get<string>('refactorWithProof.generationGuidance', '').trim();
   if (!projectKey || !organizationKey)
     throw new Error(
       'Set sonarlint.refactorWithProof.projectKey and organizationKey to your AI CodeFix-enabled Dev16 project.'
@@ -50,7 +51,13 @@ export async function requestDev16CodeFix(
       body: JSON.stringify({
         projectKey,
         organizationKey,
-        issue: { ruleKey: 'rust:S3776', sourceCode: source, message, startLine, endLine }
+        issue: {
+          ruleKey: 'rust:S3776',
+          sourceCode: source,
+          message: guidance ? `${message}\nRefactoring constraints: ${guidance}` : message,
+          startLine,
+          endLine
+        }
       })
     });
     if (!response.ok) {

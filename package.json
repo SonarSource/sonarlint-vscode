@@ -398,6 +398,12 @@
           "default": "",
           "description": "Optional Charon entry-point name when it differs from the qualified model symbol, for example crate::algorithms::gcd::matrix::Matrix::from_u64_prefix."
         },
+        "sonarlint.refactorWithProof.generationGuidance": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Optional refactoring constraints sent to Dev16 AI CodeFix for the Hackathon demo.",
+          "scope": "resource"
+        },
         "sonarlint.refactorWithProof.dockerImage": {
           "type": "string",
           "default": "cognitive-verifier:integration",
