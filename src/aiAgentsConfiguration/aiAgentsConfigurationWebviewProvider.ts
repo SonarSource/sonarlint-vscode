@@ -353,7 +353,12 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         await this.runCliSetup(AiIntegration.AiIntegrationAction.LOGIN_CLI, 'authenticate');
         break;
       case 'uninstallCli':
-        await this.getCliSetup().uninstall();
+        await this.getCliSetup().uninstall(
+          () => this.telemetry.action(AiIntegration.AiIntegrationAction.UNINSTALL_CLI, {
+            status: AiIntegration.AiIntegrationActionStatus.STARTED
+          }),
+          outcome => this.telemetry.action(AiIntegration.AiIntegrationAction.UNINSTALL_CLI, outcome)
+        );
         break;
       case 'showCliOutput':
         showLogOutput();
