@@ -1446,7 +1446,7 @@
     {
       "groupId": "org.sonarsource.go",
       "artifactId": "sonar-go-plugin",
-      "version": "1.46.0.9107",
+      "version": "1.47.0.9174",
       "output": "analyzers/sonargo.jar"
     },
     {
@@ -1500,7 +1500,7 @@
     {
       "groupId": "org.sonarsource.iac",
       "artifactId": "sonar-iac-plugin",
-      "version": "2.20.0.24052",
+      "version": "2.21.0.24162",
       "output": "analyzers/sonariac.jar"
     },
     {
