@@ -244,4 +244,23 @@ suite('AI integrations webview rendering', () => {
     ]);
     expect(rendered.injectedElement).to.be.false;
   });
+
+  test('keeps MCP setup available in remote windows', async function () {
+    this.timeout(15_000);
+    const input = state(false);
+    input.isRemote = true;
+    input.agents = [];
+    input.mcp.integrations = [
+      {
+        agentId: AiIntegration.AiAgent.KIRO, agentName: 'Kiro', standaloneSupported: true,
+        availableThroughCli: false, configurationStatus: 'NOT_CONFIGURED', operationInProgress: false
+      }
+    ];
+    input.mcp.configurableCount = 1;
+
+    const rendered = await renderWebview(input);
+
+    expect(rendered.mcpAgents.map(agent => agent.action)).to.deep.equal(['Set up']);
+    expect(rendered.actions).to.deep.equal([{ command: 'configureMcp', agent: AiIntegration.AiAgent.KIRO }]);
+  });
 });
