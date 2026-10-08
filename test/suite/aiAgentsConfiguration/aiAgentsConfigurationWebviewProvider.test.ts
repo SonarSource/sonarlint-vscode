@@ -128,7 +128,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect((await provider.buildState()).cli.uninstallAvailable).to.be.false;
   });
 
-  test('routes uninstall and opens existing output without adding telemetry actions', async () => {
+  test('routes uninstall callbacks and opens existing output', async () => {
     const uninstall = sinon.stub(provider.getCliSetup(), 'uninstall').resolves();
     const showOutput = sinon.stub(logging, 'showLogOutput');
 
@@ -136,8 +136,117 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     await provider.handleMessage({ command: 'showCliOutput' });
 
     expect(uninstall.calledOnce).to.be.true;
+    expect(uninstall.firstCall.args).to.have.length(2);
     expect(showOutput.calledOnce).to.be.true;
     expect(provider.languageClient.aiIntegrationAction.notCalled).to.be.true;
+  });
+
+  suite('CLI uninstall telemetry', () => {
+    let uninstall: sinon.SinonStub;
+    let confirm: sinon.SinonStub;
+    let refreshAfterAction: sinon.SinonStub;
+    let cancellation: vscode.CancellationTokenSource;
+
+    setup(() => {
+      sinon.stub(vscode.env, 'remoteName').value(undefined);
+      sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.VSCODE, name: 'VS Code' });
+      sinon.stub(provider, 'refresh').resolves();
+      refreshAfterAction = sinon.stub(provider, 'refreshAfterAction').resolves();
+      const state = cliIntegrationState();
+      state.cli.uninstallAvailable = true;
+      getIntegrationState.resolves(state);
+      uninstall = sinon.stub().resolves({ status: AiIntegration.UninstallCliStatus.UNINSTALLED, stdout: '', stderr: '' });
+      provider.languageClient.uninstallCli = uninstall;
+      confirm = sinon.stub(vscode.window, 'showWarningMessage').resolves('Uninstall' as never);
+      cancellation = new vscode.CancellationTokenSource();
+      sinon.stub(vscode.window, 'withProgress')
+        .callsFake((_options, task) => task({ report: sinon.stub() }, cancellation.token));
+      sinon.stub(logging, 'logToSonarLintOutput');
+    });
+
+    teardown(() => {
+      provider.getCliSetup().dispose();
+      cancellation.dispose();
+    });
+
+    function expectReports(status: AiIntegration.AiIntegrationActionStatus): void {
+      const action = provider.languageClient.aiIntegrationAction;
+      expect(action.getCalls().map(call => call.args[0])).to.deep.equal([
+        { action: 'UNINSTALL_CLI', status: 'STARTED', agent: null, host: 'VSCODE' },
+        { action: 'UNINSTALL_CLI', status, agent: null, host: 'VSCODE' }
+      ]);
+      expect(action.firstCall.calledBefore(getIntegrationState.firstCall)).to.be.true;
+      expect(action.lastCall.calledBefore(refreshAfterAction.firstCall)).to.be.true;
+    }
+
+    test('reports an accepted uninstall and successful cleanup warnings', async () => {
+      uninstall.resolves({ status: AiIntegration.UninstallCliStatus.UNINSTALLED, stdout: '', stderr: 'Cleanup warning' });
+
+      await provider.handleMessage({ command: 'uninstallCli' });
+
+      expectReports(AiIntegration.AiIntegrationActionStatus.SUCCEEDED);
+    });
+
+    test('reports confirmation dismissal as cancelled', async () => {
+      confirm.resolves(undefined);
+
+      await provider.handleMessage({ command: 'uninstallCli' });
+
+      expectReports(AiIntegration.AiIntegrationActionStatus.CANCELLED);
+      expect(uninstall.notCalled).to.be.true;
+    });
+
+    test('reports an RPC error once as failed', async () => {
+      uninstall.rejects(new Error('transport failed'));
+
+      await provider.handleMessage({ command: 'uninstallCli' });
+
+      expectReports(AiIntegration.AiIntegrationActionStatus.FAILED);
+    });
+
+    test('keeps a future backend status unknown', async () => {
+      uninstall.resolves({ status: 99, stdout: '', stderr: '' });
+
+      await provider.handleMessage({ command: 'uninstallCli' });
+
+      expectReports(AiIntegration.AiIntegrationActionStatus.UNKNOWN);
+    });
+
+    test('guarded remote and disposed requests emit no actions', async () => {
+      sinon.stub(vscode.env, 'remoteName').value('ssh-remote');
+      await provider.handleMessage({ command: 'uninstallCli' });
+      sinon.stub(vscode.env, 'remoteName').value(undefined);
+      provider.getCliSetup().dispose();
+      await provider.handleMessage({ command: 'uninstallCli' });
+
+      expect(provider.languageClient.aiIntegrationAction.notCalled).to.be.true;
+      expect(getIntegrationState.notCalled).to.be.true;
+    });
+
+    test('notification transport failures preserve the uninstall result and release the lock', async () => {
+      provider.languageClient.aiIntegrationAction.rejects(new Error('telemetry failed'));
+
+      await provider.handleMessage({ command: 'uninstallCli' });
+
+      expectReports(AiIntegration.AiIntegrationActionStatus.SUCCEEDED);
+      expect(uninstall.calledOnce).to.be.true;
+      expect(provider.getCliSetup().operationInProgress).to.be.false;
+    });
+
+    test('a failed refresh cannot replace or duplicate the successful terminal notification', async () => {
+      const failure = new Error('refresh failed');
+      refreshAfterAction.rejects(failure);
+
+      try {
+        await provider.handleMessage({ command: 'uninstallCli' });
+        expect.fail('refresh should fail');
+      } catch (error) {
+        expect(error).to.equal(failure);
+      }
+
+      expectReports(AiIntegration.AiIntegrationActionStatus.SUCCEEDED);
+      expect(provider.getCliSetup().operationInProgress).to.be.false;
+    });
   });
 
   function cliIntegrationState(

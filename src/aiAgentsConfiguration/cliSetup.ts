@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { getAiIntegrationStateParams, getDetectedIntegrationAgents } from './aiAgentUtils';
-import { runCliUninstall, cliUninstallFailure } from './cliUninstall';
+import { runCliUninstall, cliUninstallFailure, CliUninstallResult } from './cliUninstall';
 
 // Setup returns this result. The view reports it; cli setup does not talk to telemetry.
 type AiIntegrationOutcome = AiIntegration.AiIntegrationOutcome;
@@ -147,22 +147,38 @@ export class CliSetupSession {
     return this.inProgress;
   }
 
-  async uninstall(): Promise<void> {
+  async uninstall(
+    onAccepted?: () => void | Thenable<void>,
+    onFinished?: (outcome: AiIntegrationOutcome) => void | Thenable<void>
+  ): Promise<void> {
     if (this.disposed || this.inProgress || vscode.env.remoteName !== undefined) {
       return;
     }
     this.inProgress = true;
     this.notice = undefined;
     try {
-      await this.onChange();
-      const notice = await runCliUninstall(this.languageClient, () => this.disposed);
-      if (!this.disposed) {
-        this.notice = notice;
+      try {
+        await onAccepted?.();
+      } catch {
+        // Reporting must not interrupt the accepted uninstall attempt.
       }
-    } catch (error) {
-      const notice = cliUninstallFailure(error);
+      let result: CliUninstallResult;
+      let rpcStarted = false;
+      try {
+        await this.onChange();
+        result = await runCliUninstall(this.languageClient, () => this.disposed, () => { rpcStarted = true; });
+      } catch (error) {
+        result = this.disposed && !rpcStarted
+          ? { outcome: { status: AiIntegration.AiIntegrationActionStatus.CANCELLED } }
+          : cliUninstallFailure(error);
+      }
       if (!this.disposed) {
-        this.notice = notice;
+        this.notice = result.notice;
+      }
+      try {
+        await onFinished?.(result.outcome);
+      } catch {
+        // Completion reporting is independent of the view and its refresh.
       }
     } finally {
       this.inProgress = false;
