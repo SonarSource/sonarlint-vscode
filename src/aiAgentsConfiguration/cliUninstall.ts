@@ -56,6 +56,9 @@ export async function runCliUninstall(
   const response = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: 'Uninstalling SonarQube CLI', cancellable: false },
     () => {
+      if (isDisposed()) {
+        throw new vscode.CancellationError();
+      }
       onRpcStarted?.();
       return languageClient.uninstallCli();
     }

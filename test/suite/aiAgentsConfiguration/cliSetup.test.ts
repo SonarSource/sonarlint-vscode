@@ -490,6 +490,19 @@ suite('cliSetup', () => {
       expect(onFinished.calledOnceWithExactly({ status: AiIntegration.AiIntegrationActionStatus.CANCELLED })).to.be.true;
     });
 
+    test('reports cancellation when disposed before the progress task starts', async () => {
+      progress.callsFake((_options, task) => {
+        session.dispose();
+        return task({ report: sinon.stub() }, cancellation.token);
+      });
+
+      await attemptUninstall();
+
+      expect(uninstall.notCalled).to.be.true;
+      expect(onFinished.calledOnceWithExactly({ status: AiIntegration.AiIntegrationActionStatus.CANCELLED })).to.be.true;
+      expect(session.operationInProgress).to.be.false;
+    });
+
     for (const [result, expected] of [
       [status.UNINSTALLED, AiIntegration.AiIntegrationActionStatus.SUCCEEDED],
       [status.FAILED, AiIntegration.AiIntegrationActionStatus.FAILED],
