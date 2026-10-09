@@ -242,7 +242,8 @@ function createMcpIntegrationRow(integration, state) {
     setStatus(status, 'Needs attention', 'unavailable');
     configureOpenAction(action, integration.agentId);
   } else {
-    setStatus(status, 'Not configured', 'notConfigured');
+    const inspected = integration.configurationStatus !== undefined;
+    setStatus(status, inspected ? 'Not configured' : 'Not checked', inspected ? 'notConfigured' : 'unavailable');
     action.textContent = 'Set up';
     configureSetupAction(action, integration.agentId);
     setupAction = true;
@@ -250,7 +251,7 @@ function createMcpIntegrationRow(integration, state) {
 
   const hasAction = action.textContent.length > 0;
   action.hidden = !hasAction;
-  action.disabled = hasAction && setupAction && (state.mcp.operationInProgress || state.isRemote);
+  action.disabled = hasAction && setupAction && state.mcp.operationInProgress;
   if (integration.operationInProgress) {
     action.textContent = 'Setting up…';
   }

@@ -19,6 +19,7 @@ import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { logToSonarLintOutput } from '../util/logging';
 import { Commands } from '../util/commands';
 import { getVSCodeSettingsBaseDir } from '../util/util';
+import { getRemoteMcpConfigUri, openRemoteMcpConfiguration } from './remoteMcpConfiguration';
 import {
   COPILOT_ACTIVATION_DELAY_MS,
   getAiIntegrationStateParams,
@@ -41,24 +42,31 @@ let embeddedServerRefreshTask: Promise<void> | undefined;
 let embeddedServerPort: number | undefined;
 let activeMcpAgent: AiIntegration.AiAgent | undefined;
 
-const STANDALONE_MCP_CONFIG_PATHS: Partial<Record<AiIntegration.AiAgent, () => string>> = {
+const STANDALONE_MCP_CONFIG_PATHS: Partial<Record<AiIntegration.AiAgent, () => string | undefined>> = {
   [AiIntegration.AiAgent.CURSOR]: () => path.join(os.homedir(), '.cursor', 'mcp.json'),
   [AiIntegration.AiAgent.WINDSURF]: () =>
     path.join(os.homedir(), '.codeium', getWindsurfDirectory(), 'mcp_config.json'),
   [AiIntegration.AiAgent.KIRO]: () => path.join(os.homedir(), '.kiro', 'settings', 'mcp.json'),
   [AiIntegration.AiAgent.GITHUB_COPILOT]: () =>
-    path.join(
-      getVSCodeSettingsBaseDir(),
-      vscode.env.appName.toLowerCase().includes('insiders') ? 'Code - Insiders' : 'Code',
-      'User',
-      'mcp.json'
-    ),
+    vscode.env.remoteName === undefined
+      ? path.join(
+          getVSCodeSettingsBaseDir(),
+          vscode.env.appName.toLowerCase().includes('insiders') ? 'Code - Insiders' : 'Code',
+          'User',
+          'mcp.json'
+        )
+      : getRemoteMcpConfigUri()?.fsPath,
   [AiIntegration.AiAgent.CLAUDE_CODE]: () => path.join(os.homedir(), '.claude.json')
 };
+
+function isRemoteCopilot(agent: AiIntegration.AiAgent): boolean {
+  return agent === AiIntegration.AiAgent.GITHUB_COPILOT && vscode.env.remoteName !== undefined;
+}
 
 interface McpDocument {
   agent: AiIntegration.AiAgent;
   path: string;
+  uri?: vscode.Uri;
   content: string | null;
 }
 
@@ -130,7 +138,7 @@ export function supportsStandaloneMCP(agent: AiIntegration.AiAgent): boolean {
   return STANDALONE_MCP_CONFIG_PATHS[agent] !== undefined;
 }
 
-export function getMCPConfigPath(agent: AiIntegration.AiAgent): string {
+export function getMCPConfigPath(agent: AiIntegration.AiAgent): string | undefined {
   const resolvePath = STANDALONE_MCP_CONFIG_PATHS[agent];
   if (resolvePath === undefined) {
     throw new Error(
@@ -160,13 +168,31 @@ export async function inspectMCPConfiguration(
   languageClient: SonarLintExtendedLanguageClient,
   agent: AiIntegration.AiAgent
 ): Promise<AiIntegration.McpConfigurationInspectionResponse> {
-  const document = readMcpDocument(agent);
+  const document = await readMcpDocument(agent);
   return inspectMcpDocument(languageClient, document);
 }
 
-function readMcpDocument(agent: AiIntegration.AiAgent): McpDocument {
+async function readMcpDocument(agent: AiIntegration.AiAgent, uri?: vscode.Uri): Promise<McpDocument> {
+  if (isRemoteCopilot(agent)) {
+    uri ??= getRemoteMcpConfigUri();
+    if (!uri) {
+      throw new Error('Open the remote MCP configuration before inspecting it.');
+    }
+    return { agent, path: uri.fsPath, uri, content: await readRemoteMcpContent(uri) };
+  }
   const configPath = getMCPConfigPath(agent);
   return { agent, path: configPath, content: readMCPConfigContent(configPath) };
+}
+
+async function readRemoteMcpContent(uri: vscode.Uri): Promise<string | null> {
+  try {
+    return Buffer.from(await vscode.workspace.fs.readFile(uri)).toString('utf8');
+  } catch (error) {
+    if (error instanceof vscode.FileSystemError && error.code === 'FileNotFound') {
+      return null;
+    }
+    throw error;
+  }
 }
 
 function readMCPConfigContent(configPath: string): string | null {
@@ -267,7 +293,7 @@ async function prepareMcpUpdate(
   if (tokenSelection.cancelled) {
     return { kind: 'finished', outcome: mcpCancelled(agent) };
   }
-  const currentDocument = readMcpDocument(agent);
+  const currentDocument = await readMcpDocument(agent, document.uri);
   const updatePlan = await planMcpDocument(
     languageClient,
     currentDocument,
@@ -282,7 +308,22 @@ async function prepareMcpUpdate(
   return { kind: 'ready', document: currentDocument, updatePlan, successMessage };
 }
 
-function writeMcpDocument(document: McpDocument, content: string): void {
+async function writeMcpDocument(document: McpDocument, content: string): Promise<void> {
+  if (document.uri) {
+    const uri = document.uri;
+    if ((await readRemoteMcpContent(uri)) !== document.content) {
+      throw new Error('MCP configuration changed while preparing the update. Try again.');
+    }
+    if (
+      vscode.workspace.textDocuments.some(
+        editorDocument => editorDocument.uri.toString() === uri.toString() && editorDocument.isDirty
+      )
+    ) {
+      throw new Error('Save the MCP configuration file before configuring SonarQube MCP.');
+    }
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(content, 'utf8'));
+    return;
+  }
   if (readMCPConfigContent(document.path) !== document.content) {
     throw new Error('MCP configuration changed while preparing the update. Try again.');
   }
@@ -300,10 +341,6 @@ export async function configureMCPServer(
   requestedAgent?: AiIntegration.AiAgent,
   connection?: Connection
 ): Promise<AiIntegrationOutcome> {
-  if (vscode.env.remoteName !== undefined) {
-    await vscode.window.showInformationMessage('MCP setup via configuration files is unavailable in remote windows.');
-    return mcpFailed(requestedAgent);
-  }
   if (mcpSetupInProgress) {
     await vscode.window.showInformationMessage(MCP_SETUP_IN_PROGRESS_MESSAGE);
     return mcpCancelled(requestedAgent);
@@ -319,7 +356,8 @@ export async function configureMCPServer(
     selectedAgent = agent;
     activeMcpAgent = agent;
     await refreshAiAgentsView();
-    const document = readMcpDocument(agent);
+    const uri = isRemoteCopilot(agent) ? await openRemoteMcpConfiguration() : undefined;
+    const document = await readMcpDocument(agent, uri);
     const inspection = await inspectMcpDocument(languageClient, document);
     if (!isUpdateAllowed(inspection.state)) {
       showBlockedConfigurationMessage(inspection);
@@ -342,7 +380,7 @@ export async function configureMCPServer(
       return mcpFailed(agent);
     }
     if (updatePlan.updatedContent !== currentDocument.content) {
-      writeMcpDocument(currentDocument, updatePlan.updatedContent);
+      await writeMcpDocument(currentDocument, updatePlan.updatedContent);
     }
     openMCPServersListIfCursor(agent);
 
@@ -545,7 +583,10 @@ async function refreshStandaloneMCPConfiguration(
   port: number
 ): Promise<void> {
   try {
-    const document = readMcpDocument(agent);
+    if (isRemoteCopilot(agent) && getRemoteMcpConfigUri() === undefined) {
+      return;
+    }
+    const document = await readMcpDocument(agent);
     if (document.content == null) {
       return;
     }
@@ -560,7 +601,7 @@ async function refreshStandaloneMCPConfiguration(
       updatePlan.updatedContent != null &&
       updatePlan.updatedContent !== document.content
     ) {
-      writeMcpDocument(document, updatePlan.updatedContent);
+      await writeMcpDocument(document, updatePlan.updatedContent);
     }
   } catch (error) {
     logToSonarLintOutput(
@@ -579,6 +620,11 @@ export async function openMCPServerConfigurationFile(
       return unselectedMcpAgentOutcome(selection, requestedAgent);
     }
     const agent = selection.agent;
+    if (isRemoteCopilot(agent)) {
+      await openRemoteMcpConfiguration();
+      await onEmbeddedServerStarted(languageClient);
+      return { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent };
+    }
     const configPath = getMCPConfigPath(agent);
     if (!fs.existsSync(configPath)) {
       await vscode.window.showInformationMessage(
