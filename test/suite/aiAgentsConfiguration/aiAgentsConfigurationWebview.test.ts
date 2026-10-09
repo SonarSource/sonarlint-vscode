@@ -263,4 +263,21 @@ suite('AI integrations webview rendering', () => {
     expect(rendered.mcpAgents.map(agent => agent.action)).to.deep.equal(['Set up']);
     expect(rendered.actions).to.deep.equal([{ command: 'configureMcp', agent: AiIntegration.AiAgent.KIRO }]);
   });
+
+  test('offers setup for a remote Copilot profile that has not been checked', async function () {
+    this.timeout(15_000);
+    const input = state(false);
+    input.isRemote = true;
+    input.agents = [];
+    input.mcp.integrations = [{
+      agentId: AiIntegration.AiAgent.GITHUB_COPILOT, agentName: 'Copilot in VS Code',
+      standaloneSupported: true, availableThroughCli: false, operationInProgress: false
+    }];
+    input.mcp.configurableCount = 1;
+
+    const rendered = await renderWebview(input);
+
+    expect(rendered.mcpAgents[0]).to.include({ status: 'Not checked', action: 'Set up' });
+    expect(rendered.actions).to.deep.equal([{ command: 'configureMcp', agent: AiIntegration.AiAgent.GITHUB_COPILOT }]);
+  });
 });

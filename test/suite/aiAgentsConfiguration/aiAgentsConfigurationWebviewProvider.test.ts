@@ -18,6 +18,7 @@ import * as mcpServerConfig from '../../../src/aiAgentsConfiguration/mcpServerCo
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 import { Commands } from '../../../src/util/commands';
 import * as logging from '../../../src/util/logging';
+import * as util from '../../../src/util/util';
 import { SETUP_TEARDOWN_HOOK_TIMEOUT } from '../commons';
 
 suite('AIAgentsConfigurationWebviewProvider', () => {
@@ -110,6 +111,29 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
       'configurableCount',
       'operationInProgress'
     );
+  });
+
+  test('keeps unresolved remote Copilot setup available without inspecting the default profile', async () => {
+    const copilot = AiIntegration.AiAgent.GITHUB_COPILOT;
+    sinon.stub(vscode.env, 'remoteName').value('dev-container');
+    sinon.stub(util, 'extensionContext').value({});
+    sinon.stub(aiAgentUtils, 'getDetectedIdeAgents').returns([{ id: copilot, name: 'Copilot', source: 'extension' }]);
+    sinon.stub(aiAgentUtils, 'isAgentActiveForMcp').returns(true);
+    const inspect = sinon.stub(mcpServerConfig, 'inspectMCPConfiguration');
+    const commands = sinon.stub(vscode.commands, 'executeCommand').resolves();
+    getIntegrationState.resolves({
+      cli: { installationStatus: 0, authenticationStatus: 0 },
+      agents: [{ agent: copilot, detectionSources: [AiIntegration.AiAgentDetectionSource.IDE], standaloneMcpSupported: true }]
+    });
+
+    const state = await provider.buildState();
+
+    expect(state.mcp.integrations[0]).to.include({
+      standaloneSupported: true, configurationPath: undefined, configurationStatus: undefined
+    });
+    expect(state.mcp.configurableCount).to.equal(1);
+    expect(state.mcp.configuredCount).to.equal(0);
+    expect(inspect.called || commands.called).to.be.false;
   });
 
   function cliIntegrationState(

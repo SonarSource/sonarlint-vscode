@@ -30,6 +30,7 @@ import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 import { DEFAULT_CONNECTION_ID } from '../../../src/commons';
 import * as logging from '../../../src/util/logging';
 import * as util from '../../../src/util/util';
+import { getRemoteMcpConfigUri, openRemoteMcpConfiguration } from '../../../src/aiAgentsConfiguration/remoteMcpConfiguration';
 
 suite('MCP configuration paths', () => {
   test('should return different config paths for different IDEs', () => {
@@ -72,15 +73,13 @@ suite('MCP configuration paths', () => {
     }
   });
 
-  test('uses the remote user data folder for Copilot in remote windows', () => {
+  test('does not infer the remote Copilot configuration from shared global storage', () => {
     sinon.stub(vscode.env, 'remoteName').value('dev-container');
     sinon.stub(util, 'extensionContext').value({
       globalStorageUri: vscode.Uri.file('/home/vscode/.vscode-server/data/User/globalStorage/sonarsource.sonarlint-vscode')
     });
     try {
-      expect(getMCPConfigPath(IntegrationTarget.GITHUB_COPILOT)).to.equal(
-        path.join('/home/vscode/.vscode-server/data/User', 'mcp.json')
-      );
+      expect(getMCPConfigPath(IntegrationTarget.GITHUB_COPILOT)).to.be.undefined;
       expect(getMCPConfigPath(IntegrationTarget.CURSOR)).to.equal(path.join(os.homedir(), '.cursor', 'mcp.json'));
     } finally {
       sinon.restore();
@@ -114,6 +113,85 @@ suite('MCP configuration paths', () => {
       envStub.restore();
       extensionsStub.restore();
     }
+  });
+});
+
+suite('Remote MCP profile selection', () => {
+  let context: sinon.SinonStub;
+  let commands: sinon.SinonStub;
+  let activeEditor: sinon.SinonStub;
+  let editorChanged: (editor: vscode.TextEditor) => void;
+  let dispose: sinon.SinonSpy;
+
+  setup(() => {
+    sinon.stub(vscode.env, 'remoteName').value('dev-container');
+    context = sinon.stub(util, 'extensionContext').value({});
+    commands = sinon.stub(vscode.commands, 'executeCommand').resolves();
+    activeEditor = sinon.stub(vscode.window, 'activeTextEditor').value(undefined);
+    dispose = sinon.spy();
+    sinon.stub(vscode.window, 'onDidChangeActiveTextEditor').callsFake(listener => {
+      editorChanged = listener;
+      return { dispose };
+    });
+  });
+
+  teardown(() => sinon.restore());
+
+  function editor(uri: vscode.Uri, isDirty = false): vscode.TextEditor {
+    return { document: { uri, isDirty } } as vscode.TextEditor;
+  }
+
+  test('uses VS Code to select default and named remote profile configurations', async () => {
+    for (const relativePath of ['mcp.json', 'profiles/review-profile/mcp.json']) {
+      const uri = vscode.Uri.parse(`vscode-remote://dev-container+test/home/vscode/.vscode-server/data/User/${relativePath}`);
+      commands.callsFake(async () => editorChanged(editor(uri)));
+
+      expect(await openRemoteMcpConfiguration()).to.equal(uri);
+      expect(getMCPConfigPath(IntegrationTarget.GITHUB_COPILOT)).to.equal(uri.fsPath);
+    }
+    expect(commands.alwaysCalledWithExactly('workbench.mcp.openRemoteUserMcpJson')).to.be.true;
+    expect(dispose.callCount).to.equal(2);
+  });
+
+  test('can resolve an MCP configuration that is already the active editor', async () => {
+    const uri = vscode.Uri.file('/remote/User/profiles/test/mcp.json');
+    activeEditor.value(editor(uri));
+
+    expect(await openRemoteMcpConfiguration()).to.equal(uri);
+    context.value({});
+    expect(getRemoteMcpConfigUri()).to.be.undefined;
+  });
+
+  test('rejects unresolved and unsaved documents without retaining an earlier URI', async () => {
+    const uri = vscode.Uri.file('/remote/User/profiles/test/mcp.json');
+    activeEditor.value(editor(uri));
+    await openRemoteMcpConfiguration();
+
+    for (const invalidEditor of [undefined, editor(vscode.Uri.file('/remote/settings.json')), editor(uri, true)]) {
+      activeEditor.value(invalidEditor);
+      let failure: Error;
+      try {
+        await openRemoteMcpConfiguration();
+      } catch (error) {
+        failure = error;
+      }
+      expect(failure).to.be.instanceOf(Error);
+      expect(getRemoteMcpConfigUri()).to.be.undefined;
+    }
+    expect(dispose.callCount).to.equal(4);
+  });
+
+  test('propagates command failures and disposes the editor listener', async () => {
+    commands.rejects(new Error('command unavailable'));
+    let failure: Error;
+    try {
+      await openRemoteMcpConfiguration();
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure.message).to.equal('command unavailable');
+    expect(getRemoteMcpConfigUri()).to.be.undefined;
+    expect(dispose.calledOnce).to.be.true;
   });
 });
 
@@ -523,6 +601,121 @@ suite('MCP configuration workflow', () => {
     const outcome = await configureMCPServer(client, connections, agent, connection);
     expect(outcome).to.deep.equal({ status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent });
     expect(write.calledOnce).to.be.true;
+  });
+
+  function remoteCopilot() {
+    const copilot = AiIntegration.AiAgent.GITHUB_COPILOT;
+    remoteName.value('dev-container');
+    sinon.stub(util, 'extensionContext').value({});
+    sinon.stub(aiAgentUtils, 'isAgentActiveForMcp').returns(true);
+    discover.resolves({
+      agents: [{ agent: copilot, detectionSources: [AiIntegration.AiAgentDetectionSource.IDE], standaloneMcpSupported: true }]
+    });
+    const uri = vscode.Uri.parse('vscode-remote://dev-container+test/home/vscode/.vscode-server/data/User/profiles/review-profile/mcp.json');
+    const document = { uri, isDirty: false };
+    sinon.stub(vscode.window, 'activeTextEditor').value({ document });
+    sinon.stub(vscode.workspace, 'textDocuments').value([document]);
+    const remoteRead = sinon.stub().resolves(Buffer.from('{}'));
+    const remoteWrite = sinon.stub().resolves();
+    sinon.stub(vscode.workspace, 'fs').value({ ...vscode.workspace.fs, readFile: remoteRead, writeFile: remoteWrite });
+    return { copilot, uri, document, remoteRead, remoteWrite };
+  }
+
+  test('reads and writes the named remote profile selected by VS Code', async () => {
+    const { copilot, uri, remoteRead, remoteWrite } = remoteCopilot();
+    const outcome = await configureMCPServer(client, connections, copilot, connection);
+
+    expect(outcome.status).to.equal(AiIntegration.AiIntegrationActionStatus.SUCCEEDED);
+    expect(commands.calledWithExactly('workbench.mcp.openRemoteUserMcpJson')).to.be.true;
+    expect(remoteRead.alwaysCalledWithExactly(uri)).to.be.true;
+    expect(remoteWrite.calledOnceWithExactly(uri, Buffer.from(updated))).to.be.true;
+    expect(read.called || exists.called || write.called).to.be.false;
+    expect(getMCPConfigPath(copilot)).to.equal(uri.fsPath);
+  });
+
+  test('reuses the resolved remote URI when re-reading after connection selection', async () => {
+    const { copilot, uri, remoteRead, remoteWrite } = remoteCopilot();
+    const latest = '{"servers":{"other":{"command":"other-server"}}}';
+    remoteRead.onFirstCall().resolves(Buffer.from('{}'));
+    remoteRead.resolves(Buffer.from(latest));
+
+    await configureMCPServer(client, connections, copilot, connection);
+
+    expect(plan.firstCall.args[0].content).to.equal(latest);
+    expect(remoteRead.alwaysCalledWithExactly(uri)).to.be.true;
+    expect(remoteWrite.calledOnce).to.be.true;
+  });
+
+  test('rejects concurrent remote file changes before writing', async () => {
+    const { copilot, remoteRead, remoteWrite } = remoteCopilot();
+    remoteRead.onThirdCall().resolves(Buffer.from('{"changed":true}'));
+
+    expect((await configureMCPServer(client, connections, copilot, connection)).status).to.equal(
+      AiIntegration.AiIntegrationActionStatus.FAILED
+    );
+    expect(remoteWrite.called).to.be.false;
+    expect(error.firstCall.args[0]).to.include('changed while preparing');
+  });
+
+  test('preserves unsaved remote edits made while setup is running', async () => {
+    const { copilot, document, remoteWrite } = remoteCopilot();
+    plan.callsFake(async () => {
+      document.isDirty = true;
+      return { state: AiIntegration.McpConfigurationState.NOT_CONFIGURED, updatedContent: updated, diagnostics: [] };
+    });
+
+    expect((await configureMCPServer(client, connections, copilot, connection)).status).to.equal(
+      AiIntegration.AiIntegrationActionStatus.FAILED
+    );
+    expect(remoteWrite.called).to.be.false;
+    expect(error.firstCall.args[0]).to.include('Save the MCP configuration');
+  });
+
+  test('skips background Copilot refresh until the profile URI has been resolved', async () => {
+    const { remoteRead, remoteWrite } = remoteCopilot();
+
+    await onEmbeddedServerStarted(client, 64121);
+
+    expect(commands.calledWith('workbench.mcp.openRemoteUserMcpJson')).to.be.false;
+    expect(remoteRead.called || remoteWrite.called || inspect.called || read.called || write.called).to.be.false;
+  });
+
+  test('refreshes only the resolved remote profile in later startup notifications', async () => {
+    const { copilot, uri, remoteRead, remoteWrite } = remoteCopilot();
+    await configureMCPServer(client, connections, copilot, connection);
+    commands.resetHistory();
+    remoteRead.resolves(Buffer.from(original));
+    inspect.resolves({ state: AiIntegration.McpConfigurationState.STANDALONE, diagnostics: [] });
+    plan.resolves({ state: AiIntegration.McpConfigurationState.STANDALONE, updatedContent: updated, diagnostics: [] });
+    remoteWrite.resetHistory();
+
+    await onEmbeddedServerStarted(client, 64125);
+
+    expect(remoteWrite.calledOnceWithExactly(uri, Buffer.from(updated))).to.be.true;
+    expect(plan.lastCall.args[0].sonarMcpConfiguration).to.equal('{"env":{"SONARQUBE_IDE_PORT":"64125"}}');
+    expect(commands.calledWith('workbench.mcp.openRemoteUserMcpJson')).to.be.false;
+  });
+
+  test('opens the active remote profile through VS Code', async () => {
+    const { copilot, uri } = remoteCopilot();
+    const open = sinon.stub(vscode.window, 'showTextDocument').resolves();
+
+    expect((await openMCPServerConfigurationFile(client, copilot)).status).to.equal(
+      AiIntegration.AiIntegrationActionStatus.SUCCEEDED
+    );
+    expect(commands.calledWithExactly('workbench.mcp.openRemoteUserMcpJson')).to.be.true;
+    expect(getMCPConfigPath(copilot)).to.equal(uri.fsPath);
+    expect(open.called).to.be.false;
+  });
+
+  test('reports remote read failures without writing a different configuration', async () => {
+    const { copilot, remoteRead, remoteWrite } = remoteCopilot();
+    remoteRead.rejects(vscode.FileSystemError.NoPermissions('remote configuration'));
+
+    expect((await configureMCPServer(client, connections, copilot, connection)).status).to.equal(
+      AiIntegration.AiIntegrationActionStatus.FAILED
+    );
+    expect(remoteWrite.called || write.called).to.be.false;
   });
 
   test('uses the latest startup port for the delayed Copilot activation retry', async () => {

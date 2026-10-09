@@ -232,7 +232,12 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
   ): Promise<StandaloneMcpInspection[]> {
     return Promise.all(
       getDetectedIntegrationAgents(integrationState)
-        .filter(agent => agent.standaloneMcpSupported && isStandaloneMcpReady(agent.agent))
+        .filter(
+          agent =>
+            agent.standaloneMcpSupported &&
+            isStandaloneMcpReady(agent.agent) &&
+            getMCPConfigPath(agent.agent) !== undefined
+        )
         .map(async agent => {
           try {
             return { agent: agent.agent, inspection: await inspectMCPConfiguration(this.languageClient, agent.agent) };
