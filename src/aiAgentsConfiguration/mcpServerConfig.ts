@@ -18,7 +18,7 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { logToSonarLintOutput } from '../util/logging';
 import { Commands } from '../util/commands';
-import { getVSCodeSettingsBaseDir } from '../util/util';
+import { extensionContext, getVSCodeSettingsBaseDir } from '../util/util';
 import {
   COPILOT_ACTIVATION_DELAY_MS,
   getAiIntegrationStateParams,
@@ -47,14 +47,21 @@ const STANDALONE_MCP_CONFIG_PATHS: Partial<Record<AiIntegration.AiAgent, () => s
     path.join(os.homedir(), '.codeium', getWindsurfDirectory(), 'mcp_config.json'),
   [AiIntegration.AiAgent.KIRO]: () => path.join(os.homedir(), '.kiro', 'settings', 'mcp.json'),
   [AiIntegration.AiAgent.GITHUB_COPILOT]: () =>
-    path.join(
-      getVSCodeSettingsBaseDir(),
-      vscode.env.appName.toLowerCase().includes('insiders') ? 'Code - Insiders' : 'Code',
-      'User',
-      'mcp.json'
-    ),
+    vscode.env.remoteName === undefined
+      ? path.join(
+          getVSCodeSettingsBaseDir(),
+          vscode.env.appName.toLowerCase().includes('insiders') ? 'Code - Insiders' : 'Code',
+          'User',
+          'mcp.json'
+        )
+      : getRemoteUserMcpConfigPath(),
   [AiIntegration.AiAgent.CLAUDE_CODE]: () => path.join(os.homedir(), '.claude.json')
 };
+
+// In remote windows, VS Code reads MCP servers from the remote user data folder, which also holds our global storage
+function getRemoteUserMcpConfigPath(): string {
+  return path.join(extensionContext.globalStorageUri.fsPath, '..', '..', 'mcp.json');
+}
 
 interface McpDocument {
   agent: AiIntegration.AiAgent;
@@ -300,10 +307,6 @@ export async function configureMCPServer(
   requestedAgent?: AiIntegration.AiAgent,
   connection?: Connection
 ): Promise<AiIntegrationOutcome> {
-  if (vscode.env.remoteName !== undefined) {
-    await vscode.window.showInformationMessage('MCP setup via configuration files is unavailable in remote windows.');
-    return mcpFailed(requestedAgent);
-  }
   if (mcpSetupInProgress) {
     await vscode.window.showInformationMessage(MCP_SETUP_IN_PROGRESS_MESSAGE);
     return mcpCancelled(requestedAgent);
