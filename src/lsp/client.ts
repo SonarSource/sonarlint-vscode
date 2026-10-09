@@ -156,6 +156,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(AiIntegration.PrepareInstallCliCommand.type);
   }
 
+  uninstallCli(): Promise<AiIntegration.UninstallCliResponse> {
+    return this.sendRequest(AiIntegration.UninstallCli.type);
+  }
+
   prepareAuthenticateCliCommand(
     params: AiIntegration.PrepareAuthenticateCliCommandParams
   ): Promise<AiIntegration.PrepareCliCommandResponse> {
