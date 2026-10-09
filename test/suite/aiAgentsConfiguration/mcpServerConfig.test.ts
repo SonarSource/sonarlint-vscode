@@ -7,6 +7,8 @@
 'use strict';
 
 import { expect } from 'chai';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import {
@@ -27,6 +29,7 @@ import { Commands } from '../../../src/util/commands';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 import { DEFAULT_CONNECTION_ID } from '../../../src/commons';
 import * as logging from '../../../src/util/logging';
+import * as util from '../../../src/util/util';
 
 suite('MCP configuration paths', () => {
   test('should return different config paths for different IDEs', () => {
@@ -66,6 +69,21 @@ suite('MCP configuration paths', () => {
     } finally {
       envStub.restore();
       extensionsStub.restore();
+    }
+  });
+
+  test('uses the remote user data folder for Copilot in remote windows', () => {
+    sinon.stub(vscode.env, 'remoteName').value('dev-container');
+    sinon.stub(util, 'extensionContext').value({
+      globalStorageUri: vscode.Uri.file('/home/vscode/.vscode-server/data/User/globalStorage/sonarsource.sonarlint-vscode')
+    });
+    try {
+      expect(getMCPConfigPath(IntegrationTarget.GITHUB_COPILOT)).to.equal(
+        path.join('/home/vscode/.vscode-server/data/User', 'mcp.json')
+      );
+      expect(getMCPConfigPath(IntegrationTarget.CURSOR)).to.equal(path.join(os.homedir(), '.cursor', 'mcp.json'));
+    } finally {
+      sinon.restore();
     }
   });
 
@@ -500,13 +518,11 @@ suite('MCP configuration workflow', () => {
     expect(isMCPSetupInProgress()).to.be.false;
   });
 
-  test('keeps remote manual setup unavailable', async () => {
-    remoteName.value('ssh-remote');
-    expect((await configureMCPServer(client, connections, agent)).status).to.equal(
-      AiIntegration.AiIntegrationActionStatus.FAILED
-    );
-    expect(read.called).to.be.false;
-    expect(discover.called).to.be.false;
+  test('configures MCP in remote windows', async () => {
+    remoteName.value('dev-container');
+    const outcome = await configureMCPServer(client, connections, agent, connection);
+    expect(outcome).to.deep.equal({ status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent });
+    expect(write.calledOnce).to.be.true;
   });
 
   test('uses the latest startup port for the delayed Copilot activation retry', async () => {
