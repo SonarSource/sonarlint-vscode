@@ -79,7 +79,7 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
 
   test('reports a manual refresh action around one eligible observation', async () => {
     sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.VSCODE, name: 'VS Code' });
-    const refreshWithObservation = sinon.stub(provider, 'refreshWithObservation').resolves(true);
+    const refreshWithObservation = sinon.stub(provider, 'refreshWithObservation').resolves({ ok: true });
 
     await provider.refreshOnRequest();
 

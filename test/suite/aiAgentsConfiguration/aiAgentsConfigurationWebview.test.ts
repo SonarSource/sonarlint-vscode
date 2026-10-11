@@ -195,13 +195,9 @@ suite('AI integrations webview rendering', () => {
     expect(rendered.actions).to.deep.equal([]);
   });
 
-  test('hides uninstall in remote sessions and after the CLI is removed', async function () {
+  test('hides uninstall after the CLI is removed', async function () {
     this.timeout(15_000);
     const input = state(false);
-    input.cli.uninstallAvailable = true;
-    input.isRemote = true;
-    expect((await renderWebview(input)).cli.uninstallHidden).to.be.true;
-    input.isRemote = false;
     input.cli.uninstallAvailable = false;
     input.cli.installationStatus = 'NOT_INSTALLED';
     expect((await renderWebview(input)).cli.uninstallHidden).to.be.true;

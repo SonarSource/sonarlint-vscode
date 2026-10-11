@@ -173,7 +173,7 @@ function renderCliAuthentication(cli) {
 }
 
 function renderCliAction(state) {
-  setVisible(cliUninstall, state.cli.uninstallAvailable && !state.isRemote);
+  setVisible(cliUninstall, state.cli.uninstallAvailable);
   cliUninstall.disabled = state.cli.operationInProgress;
   if (state.cli.operationInProgress) {
     setVisible(cliAction, false);

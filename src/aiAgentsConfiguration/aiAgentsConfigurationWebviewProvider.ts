@@ -154,8 +154,8 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     );
   }
 
-  async refresh(): Promise<void> {
-    await this.refreshWithObservation();
+  async refresh(): Promise<boolean | undefined> {
+    return (await this.refreshWithObservation()).uninstallAvailable;
   }
 
   async refreshOnRequest(): Promise<void> {
@@ -165,7 +165,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     this.telemetry.action(AiIntegration.AiIntegrationAction.REFRESH, {
       status: AiIntegration.AiIntegrationActionStatus.STARTED
     });
-    const succeeded = await this.refreshWithObservation(true);
+    const succeeded = (await this.refreshWithObservation(true)).ok;
     this.telemetry.action(AiIntegration.AiIntegrationAction.REFRESH, {
       status: succeeded
         ? AiIntegration.AiIntegrationActionStatus.SUCCEEDED
@@ -177,38 +177,41 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     await this.refreshWithObservation(true);
   }
 
-  private async refreshWithObservation(observe = false): Promise<boolean> {
+  private async refreshWithObservation(
+    observe = false
+  ): Promise<{ ok: boolean; uninstallAvailable?: boolean }> {
     this.refreshGeneration++;
     const generation = this.refreshGeneration;
     const view = this.view;
     if (!view) {
       if (!observe) {
-        return false;
+        return { ok: false };
       }
       try {
         this.emitObservation(await this.loadInspectedIntegration());
-        return true;
+        return { ok: true };
       } catch {
-        return false;
+        return { ok: false };
       }
     }
     try {
       const state = await this.buildState(observe);
+      const uninstallAvailable = state.cli.uninstallAvailable;
       if (this.view !== view || this.refreshGeneration !== generation) {
         // Loading succeeded; a newer refresh or view owns publication.
-        return true;
+        return { ok: true, uninstallAvailable };
       }
       ContextManager.instance.setMCPServerSupportedAgentContext(
         state.mcp.integrations.some(integration => integration.standaloneSupported)
       );
       await view.webview.postMessage({ command: 'state', state });
-      return true;
+      return { ok: true, uninstallAvailable };
     } catch (error) {
       logToSonarLintOutput(`Could not refresh AI integrations state: ${String(error)}`);
       if (this.view === view && this.refreshGeneration === generation) {
         await view.webview.postMessage({ command: 'error' }).then(undefined, () => undefined);
       }
-      return false;
+      return { ok: false };
     }
   }
 

@@ -114,7 +114,7 @@ suite('AI integrations refresh publication', () => {
     }
 
     const before = postMessage.firstCall.args[0].state;
-    expect(before.cli.operationInProgress).to.be.true;
+    expect(before.cli.operationInProgress).to.be.false;
     expect(before.agents[0].recordingStatus).to.equal('RECORDED');
     expect(before.mcp.configuredCount).to.equal(1);
     const after = postMessage.lastCall.args[0].state;

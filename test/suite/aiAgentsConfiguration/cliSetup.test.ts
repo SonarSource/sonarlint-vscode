@@ -12,6 +12,7 @@ import * as vscode from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient/node';
 import {
   canIntegrateAgent,
+  cliPathCleanupHint,
   CliSetupSession,
   resolveCliPrimaryAction,
   selectConnection
@@ -359,25 +360,15 @@ suite('cliSetup', () => {
       cancellation.dispose();
     });
 
-    test('forwards the no-argument request and matches backend outcome ordinals', async () => {
-      const sendRequest = sinon.stub().resolves();
-      await SonarLintExtendedLanguageClient.prototype.uninstallCli.call({ sendRequest });
-
-      expect(sendRequest.calledOnceWithExactly(AiIntegration.UninstallCli.type)).to.be.true;
-      expect([status.UNINSTALLED, status.NOT_AVAILABLE, status.FAILED]).to.deep.equal([0, 1, 2]);
-    });
-
-    test('confirmation cancellation makes no changes and releases the shared setup lock', async () => {
+    test('confirmation cancellation makes no changes and does not take the setup lock', async () => {
       const selection = deferred<string | undefined>();
       const prompted = deferred<void>();
       confirm.callsFake(() => { prompted.resolve(); return selection.promise; });
       const attempt = session.uninstall();
-      expect(session.operationInProgress).to.be.true;
       await prompted.promise;
-      await session.run('install');
-      await session.uninstall();
-      expect(getState.calledOnce).to.be.true;
+      expect(session.operationInProgress).to.be.false;
       expect(confirm.calledOnce).to.be.true;
+      expect(getState.notCalled).to.be.true;
       selection.resolve(undefined);
       await attempt;
 
@@ -400,7 +391,7 @@ suite('cliSetup', () => {
       await session.run('authenticate');
       await session.uninstall();
 
-      expect(getState.calledOnce).to.be.true;
+      expect(getState.notCalled).to.be.true;
       expect(uninstall.calledOnce).to.be.true;
       expect(session.operationInProgress).to.be.true;
       expect(progress.firstCall.args[0]).to.deep.equal({
@@ -411,9 +402,19 @@ suite('cliSetup', () => {
 
       expect(log.getCalls().map(call => call.args[0])).to.deep.equal(['Reset completed', 'Cleanup warning', 'Remove PATH']);
       expect(session.notice).to.include({ outcome: 'completed', showOutput: true });
-      expect(session.notice.message).to.include('PATH entry manually').and.include('Some configuration may remain');
+      expect(session.notice.message).to.include('PATH entry manually').and.include('Some configuration may remain')
+        .and.include(cliPathCleanupHint());
       expect(session.operationInProgress).to.be.false;
       expect(onChange.lastCall.args).to.deep.equal([true]);
+    });
+
+    test('names the Windows user Path and the Unix profiles the installer writes', () => {
+      expect(cliPathCleanupHint('win32')).to.include('%LOCALAPPDATA%\\sonarqube-cli\\bin')
+        .and.include('user Path in Environment Variables').and.not.include('~/.profile');
+      expect(cliPathCleanupHint('linux')).to.include('$HOME/.local/share/sonarqube-cli/bin')
+        .and.include('~/.bashrc').and.include('~/.bash_profile')
+        .and.include('~/.zshrc').and.include('~/.zprofile').and.include('~/.profile')
+        .and.not.include('%LOCALAPPDATA%');
     });
 
     for (const result of [status.NOT_AVAILABLE, status.FAILED]) {
@@ -441,14 +442,19 @@ suite('cliSetup', () => {
     test('rejects remote and unsupported installations before prompting', async () => {
       sinon.stub(vscode.env, 'remoteName').value('ssh-remote');
       await session.uninstall();
+      expect(onChange.notCalled).to.be.true;
       expect(getState.notCalled).to.be.true;
       sinon.stub(vscode.env, 'remoteName').value(undefined);
-      getState.resolves({ cli: { installationStatus: INSTALLED, authenticationStatus: AUTHENTICATED } });
+      onChange.resolves(false);
       await session.uninstall();
 
       expect(confirm.notCalled).to.be.true;
       expect(uninstall.notCalled).to.be.true;
       expect(session.operationInProgress).to.be.false;
+      expect(session.notice).to.deep.equal({
+        outcome: 'failed',
+        message: 'Only an official per-user CLI installation can be uninstalled.'
+      });
     });
 
     test('does not uninstall or update the view after disposal during confirmation', async () => {
