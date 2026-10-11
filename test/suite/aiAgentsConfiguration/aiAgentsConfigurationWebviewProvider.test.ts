@@ -128,16 +128,23 @@ suite('AIAgentsConfigurationWebviewProvider', () => {
     expect((await provider.buildState()).cli.uninstallAvailable).to.be.false;
   });
 
-  test('routes uninstall and opens existing output without adding telemetry actions', async () => {
+  test('routes uninstall callbacks and opens existing output', async () => {
+    sinon.stub(aiAgentUtils, 'getCurrentIdeHost').returns({ id: IdeHost.VSCODE, name: 'VS Code' });
     const uninstall = sinon.stub(provider.getCliSetup(), 'uninstall').resolves();
     const showOutput = sinon.stub(logging, 'showLogOutput');
 
     await provider.handleMessage({ command: 'uninstallCli' });
     await provider.handleMessage({ command: 'showCliOutput' });
 
-    expect(uninstall.calledOnce).to.be.true;
+    const [onAccepted, onFinished] = uninstall.firstCall.args;
+    onAccepted();
+    onFinished({ status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED });
+
+    expect(provider.languageClient.aiIntegrationAction.getCalls().map(call => call.args[0])).to.deep.equal([
+      { action: 'UNINSTALL_CLI', status: 'STARTED', agent: null, host: 'VSCODE' },
+      { action: 'UNINSTALL_CLI', status: 'SUCCEEDED', agent: null, host: 'VSCODE' }
+    ]);
     expect(showOutput.calledOnce).to.be.true;
-    expect(provider.languageClient.aiIntegrationAction.notCalled).to.be.true;
   });
 
   function cliIntegrationState(
