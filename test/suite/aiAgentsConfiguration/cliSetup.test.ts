@@ -325,12 +325,15 @@ suite('cliSetup', () => {
 
   suite('CLI uninstall', () => {
     const status = AiIntegration.UninstallCliStatus;
+    const actionStatus = AiIntegration.AiIntegrationActionStatus;
     let session: CliSetupSession;
     let getState: sinon.SinonStub;
     let uninstall: sinon.SinonStub;
     let confirm: sinon.SinonStub;
     let progress: sinon.SinonStub;
     let onChange: sinon.SinonStub;
+    let onAccepted: sinon.SinonStub;
+    let onFinished: sinon.SinonStub;
     let log: sinon.SinonStub;
     let cancellation: vscode.CancellationTokenSource;
 
@@ -347,6 +350,8 @@ suite('cliSetup', () => {
       progress = sinon.stub(vscode.window, 'withProgress')
         .callsFake((_options, task) => task({ report: sinon.stub() }, cancellation.token));
       onChange = sinon.stub().resolves();
+      onAccepted = sinon.stub().resolves();
+      onFinished = sinon.stub().resolves();
       log = sinon.stub(logging, 'logToSonarLintOutput');
       session = new CliSetupSession(
         { subscriptions: [] } as unknown as vscode.ExtensionContext,
@@ -360,11 +365,20 @@ suite('cliSetup', () => {
       cancellation.dispose();
     });
 
+    function attemptUninstall(): Promise<void> {
+      return session.uninstall(onAccepted, onFinished);
+    }
+
+    function expectOutcome(expected: AiIntegration.AiIntegrationActionStatus): void {
+      expect(onAccepted.calledOnce).to.be.true;
+      expect(onFinished.calledOnceWithExactly({ status: expected })).to.be.true;
+    }
+
     test('confirmation cancellation makes no changes and does not take the setup lock', async () => {
       const selection = deferred<string | undefined>();
       const prompted = deferred<void>();
       confirm.callsFake(() => { prompted.resolve(); return selection.promise; });
-      const attempt = session.uninstall();
+      const attempt = attemptUninstall();
       await prompted.promise;
       expect(session.operationInProgress).to.be.false;
       expect(confirm.calledOnce).to.be.true;
@@ -372,6 +386,7 @@ suite('cliSetup', () => {
       selection.resolve(undefined);
       await attempt;
 
+      expectOutcome(actionStatus.CANCELLED);
       expect(uninstall.notCalled).to.be.true;
       expect(progress.notCalled).to.be.true;
       expect(session.operationInProgress).to.be.false;
@@ -386,10 +401,10 @@ suite('cliSetup', () => {
       const response = deferred<AiIntegration.UninstallCliResponse>();
       const started = deferred<void>();
       uninstall.callsFake(() => { started.resolve(); return response.promise; });
-      const attempt = session.uninstall();
+      const attempt = attemptUninstall();
       await started.promise;
       await session.run('authenticate');
-      await session.uninstall();
+      await attemptUninstall();
 
       expect(getState.notCalled).to.be.true;
       expect(uninstall.calledOnce).to.be.true;
@@ -400,6 +415,7 @@ suite('cliSetup', () => {
       response.resolve({ status: status.UNINSTALLED, stdout: 'Reset completed', stderr: 'Cleanup warning', message: 'Remove PATH' });
       await attempt;
 
+      expectOutcome(actionStatus.SUCCEEDED);
       expect(log.getCalls().map(call => call.args[0])).to.deep.equal(['Reset completed', 'Cleanup warning', 'Remove PATH']);
       expect(session.notice).to.include({ outcome: 'completed', showOutput: true });
       expect(session.notice.message).to.include('PATH entry manually').and.include('Some configuration may remain')
@@ -417,22 +433,52 @@ suite('cliSetup', () => {
         .and.not.include('%LOCALAPPDATA%');
     });
 
-    for (const result of [status.NOT_AVAILABLE, status.FAILED]) {
-      test(`shows outcome ${result} with all reset output available and refreshes`, async () => {
-        uninstall.resolves({ status: result, stdout: 'Partial reset', stderr: 'Reset error', message: 'Backend diagnostic' });
-        await session.uninstall();
+    for (const [backendStatus, telemetryStatus] of [
+      [status.UNINSTALLED, actionStatus.SUCCEEDED],
+      [status.NOT_AVAILABLE, actionStatus.FAILED],
+      [status.FAILED, actionStatus.FAILED],
+      [99 as AiIntegration.UninstallCliStatus, actionStatus.UNKNOWN],
+      [undefined, actionStatus.UNKNOWN]
+    ] as const) {
+      test(`maps backend status ${String(backendStatus)} to ${telemetryStatus}`, async () => {
+        uninstall.resolves(backendStatus === undefined
+          ? undefined
+          : { status: backendStatus, stdout: 'Partial reset', stderr: 'Reset error', message: 'Backend diagnostic' });
 
-        expect(session.notice).to.deep.equal({ outcome: 'failed', message: 'Backend diagnostic', showOutput: true });
+        await attemptUninstall();
+
+        expectOutcome(telemetryStatus);
+        if (backendStatus === undefined) {
+          expect(session.notice).to.be.undefined;
+          return;
+        }
         expect(log.getCalls().map(call => call.args[0])).to.deep.equal(['Partial reset', 'Reset error', 'Backend diagnostic']);
-        expect(onChange.lastCall.args).to.deep.equal([true]);
-        expect(session.operationInProgress).to.be.false;
+        if (backendStatus === status.UNINSTALLED) {
+          expect(session.notice).to.include({ outcome: 'completed', showOutput: true });
+        } else {
+          expect(session.notice).to.deep.equal({ outcome: 'failed', message: 'Backend diagnostic', showOutput: true });
+        }
       });
     }
 
+    test('keeps unavailable and failed fallback copy distinct', async () => {
+      uninstall.resolves({ status: status.NOT_AVAILABLE, stdout: '', stderr: '' });
+      await attemptUninstall();
+      expect(session.notice.message).to.equal('Only an official per-user CLI installation can be uninstalled.');
+
+      onAccepted.resetHistory();
+      onFinished.resetHistory();
+      uninstall.resolves({ status: status.FAILED, stdout: '', stderr: '' });
+      await attemptUninstall();
+      expectOutcome(actionStatus.FAILED);
+      expect(session.notice.message).to.equal('Could not uninstall SonarQube CLI. Review the output for details.');
+    });
+
     test('reports transport failures and refreshes the state', async () => {
       uninstall.rejects(new Error('connection lost'));
-      await session.uninstall();
+      await attemptUninstall();
 
+      expectOutcome(actionStatus.FAILED);
       expect(session.notice).to.include({ outcome: 'failed', showOutput: true });
       expect(log.calledOnceWithExactly('Could not uninstall SonarQube CLI: connection lost')).to.be.true;
       expect(onChange.lastCall.args).to.deep.equal([true]);
@@ -441,13 +487,16 @@ suite('cliSetup', () => {
 
     test('rejects remote and unsupported installations before prompting', async () => {
       sinon.stub(vscode.env, 'remoteName').value('ssh-remote');
-      await session.uninstall();
+      await attemptUninstall();
       expect(onChange.notCalled).to.be.true;
       expect(getState.notCalled).to.be.true;
+      expect(onAccepted.notCalled).to.be.true;
+      expect(onFinished.notCalled).to.be.true;
       sinon.stub(vscode.env, 'remoteName').value(undefined);
       onChange.resolves(false);
-      await session.uninstall();
+      await attemptUninstall();
 
+      expectOutcome(actionStatus.FAILED);
       expect(confirm.notCalled).to.be.true;
       expect(uninstall.notCalled).to.be.true;
       expect(session.operationInProgress).to.be.false;
@@ -461,7 +510,7 @@ suite('cliSetup', () => {
       const selection = deferred<string>();
       const prompted = deferred<void>();
       confirm.callsFake(() => { prompted.resolve(); return selection.promise; });
-      const attempt = session.uninstall();
+      const attempt = attemptUninstall();
       await prompted.promise;
       session.dispose();
       selection.resolve('Uninstall');
@@ -470,18 +519,20 @@ suite('cliSetup', () => {
       expect(uninstall.notCalled).to.be.true;
       expect(progress.notCalled).to.be.true;
       expect(onChange.calledOnce).to.be.true;
+      expect(onAccepted.calledOnce).to.be.true;
+      expect(onFinished.calledOnceWithExactly({ status: actionStatus.CANCELLED })).to.be.true;
     });
 
-    test('does not uninstall when disposed before the progress task starts', async () => {
+    test('reports cancellation when disposed before the progress task starts', async () => {
       progress.callsFake((_options, task) => {
         session.dispose();
         return task({ report: sinon.stub() }, cancellation.token);
       });
 
-      await session.uninstall();
+      await attemptUninstall();
 
       expect(uninstall.notCalled).to.be.true;
-      expect(session.notice).to.be.undefined;
+      expect(onFinished.calledOnceWithExactly({ status: actionStatus.CANCELLED })).to.be.true;
       expect(session.operationInProgress).to.be.false;
     });
 
@@ -489,7 +540,7 @@ suite('cliSetup', () => {
       const response = deferred<AiIntegration.UninstallCliResponse>();
       const started = deferred<void>();
       uninstall.callsFake(() => { started.resolve(); return response.promise; });
-      const attempt = session.uninstall();
+      const attempt = attemptUninstall();
       await started.promise;
       session.dispose();
       response.resolve({ status: status.UNINSTALLED, stdout: 'Reset output', stderr: 'Cleanup warning' });
@@ -498,6 +549,89 @@ suite('cliSetup', () => {
       expect(log.getCalls().map(call => call.args[0])).to.deep.equal(['Reset output', 'Cleanup warning']);
       expect(onChange.calledOnce).to.be.true;
       expect(session.notice).to.be.undefined;
+      expect(onAccepted.calledOnce).to.be.true;
+      expect(onFinished.calledOnceWithExactly({ status: actionStatus.SUCCEEDED })).to.be.true;
+    });
+
+    test('rejects an already disposed session without reporting an attempt', async () => {
+      session.dispose();
+
+      await attemptUninstall();
+
+      expect(onAccepted.notCalled).to.be.true;
+      expect(onFinished.notCalled).to.be.true;
+      expect(getState.notCalled).to.be.true;
+      expect(onChange.notCalled).to.be.true;
+    });
+
+    test('reports a confirmation error as failed and releases the setup lock', async () => {
+      confirm.rejects(new Error('request failed'));
+
+      await attemptUninstall();
+
+      expectOutcome(actionStatus.FAILED);
+      expect(uninstall.notCalled).to.be.true;
+      expect(session.operationInProgress).to.be.false;
+    });
+
+    test('reports a rejected confirmation after disposal as cancellation before the uninstall RPC', async () => {
+      const pending = deferred<never>();
+      const started = deferred<void>();
+      confirm.callsFake(() => {
+        started.resolve();
+        return pending.promise;
+      });
+      const attempt = attemptUninstall();
+      await started.promise;
+      session.dispose();
+      pending.reject(new Error('view disposed'));
+      await attempt;
+
+      expect(onAccepted.calledOnce).to.be.true;
+      expect(onFinished.calledOnceWithExactly({ status: actionStatus.CANCELLED })).to.be.true;
+      expect(uninstall.notCalled).to.be.true;
+      expect(progress.notCalled).to.be.true;
+      expect(onChange.calledOnce).to.be.true;
+      expect(session.notice).to.be.undefined;
+      expect(session.operationInProgress).to.be.false;
+    });
+
+    test('preserves a rejected running uninstall RPC as failed after disposal', async () => {
+      const pending = deferred<AiIntegration.UninstallCliResponse>();
+      const started = deferred<void>();
+      uninstall.callsFake(() => {
+        started.resolve();
+        return pending.promise;
+      });
+      const attempt = attemptUninstall();
+      await started.promise;
+      session.dispose();
+      pending.reject(new Error('uninstall request failed'));
+      await attempt;
+
+      expect(onAccepted.calledOnce).to.be.true;
+      expect(onFinished.calledOnceWithExactly({ status: actionStatus.FAILED })).to.be.true;
+      expect(uninstall.calledOnce).to.be.true;
+      expect(progress.calledOnce).to.be.true;
+      expect(onChange.calledOnce).to.be.true;
+      expect(session.notice).to.be.undefined;
+      expect(session.operationInProgress).to.be.false;
+      expect(log.calledOnceWithExactly('Could not uninstall SonarQube CLI: uninstall request failed')).to.be.true;
+    });
+
+    test('reports success once before a failed refresh and releases the setup lock', async () => {
+      const failure = new Error('refresh failed');
+      onChange.onSecondCall().rejects(failure);
+
+      try {
+        await attemptUninstall();
+        expect.fail('refresh should fail');
+      } catch (error) {
+        expect(error).to.equal(failure);
+      }
+
+      expectOutcome(actionStatus.SUCCEEDED);
+      expect(session.operationInProgress).to.be.false;
     });
   });
 
