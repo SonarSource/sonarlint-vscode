@@ -408,6 +408,8 @@ suite('cliSetup', () => {
       await session.run('install');
       expect(session.operationInProgress).to.be.true;
       expect(session.operationMessage).to.equal('SonarQube CLI setup is in progress.');
+      const installNotice = { outcome: 'failed' as const, message: 'Install is still running' };
+      session.notice = installNotice;
 
       selection.resolve('Uninstall');
       await attempt;
@@ -416,6 +418,8 @@ suite('cliSetup', () => {
       expect(progress.notCalled).to.be.true;
       expect(session.operationInProgress).to.be.true;
       expect(session.operationMessage).to.equal('SonarQube CLI setup is in progress.');
+      expect(session.notice).to.equal(installNotice);
+      expect(onChange.getCalls().map(call => call.args)).to.deep.equal([[], [], []]);
     });
 
     test('uses noncancellable progress and blocks setup until the request finishes', async () => {

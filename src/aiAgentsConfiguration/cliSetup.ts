@@ -200,21 +200,22 @@ export class CliSetupSession {
     this.notice = undefined;
     try {
       const notice = await this.confirmAndUninstall(owned);
-      if (!this.disposed) {
+      if (!this.disposed && (owned.progress || !this.inProgress)) {
         this.notice = notice;
       }
     } catch (error) {
       const notice = uninstallFailure(error);
-      if (!this.disposed) {
+      if (!this.disposed && (owned.progress || !this.inProgress)) {
         this.notice = notice;
       }
     } finally {
       this.uninstalling = false;
+      const yieldedToRunningOperation = !owned.progress && this.inProgress;
       if (owned.progress) {
         this.inProgress = false;
       }
       if (!this.disposed) {
-        await this.onChange(true);
+        await (yieldedToRunningOperation ? this.onChange() : this.onChange(true));
       }
     }
   }
