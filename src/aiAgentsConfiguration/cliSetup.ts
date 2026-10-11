@@ -73,25 +73,46 @@ export function cliPathCleanupHint(platform: NodeJS.Platform = os.platform()): s
   return platform === 'win32' ? WINDOWS_PATH_HINT : UNIX_PATH_HINT;
 }
 
-function uninstallFailure(error: unknown): CliSetupNotice {
-  const diagnostic = error instanceof Error ? error.message : UNINSTALL_FAILED;
-  logToSonarLintOutput(`Could not uninstall SonarQube CLI: ${diagnostic}`);
-  return { outcome: 'failed', message: UNINSTALL_FAILED, showOutput: true };
+interface UninstallAttempt {
+  outcome: AiIntegrationOutcome;
+  notice?: CliSetupNotice;
 }
 
-function uninstallNotice(response: AiIntegration.UninstallCliResponse): CliSetupNotice {
+function uninstallFailure(error: unknown): UninstallAttempt {
+  const diagnostic = error instanceof Error ? error.message : UNINSTALL_FAILED;
+  logToSonarLintOutput(`Could not uninstall SonarQube CLI: ${diagnostic}`);
+  return {
+    outcome: { status: AiIntegration.AiIntegrationActionStatus.FAILED },
+    notice: { outcome: 'failed', message: UNINSTALL_FAILED, showOutput: true }
+  };
+}
+
+function uninstallAttempt(response: AiIntegration.UninstallCliResponse): UninstallAttempt {
   switch (response.status) {
     case AiIntegration.UninstallCliStatus.UNINSTALLED:
       return {
-        outcome: 'completed',
-        message: `${UNINSTALL_COMPLETED}\n\n${cliPathCleanupHint()}`,
-        showOutput: true
+        outcome: { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED },
+        notice: {
+          outcome: 'completed',
+          message: `${UNINSTALL_COMPLETED}\n\n${cliPathCleanupHint()}`,
+          showOutput: true
+        }
       };
     case AiIntegration.UninstallCliStatus.NOT_AVAILABLE:
-      return { outcome: 'failed', message: response.message || UNINSTALL_UNAVAILABLE, showOutput: true };
+      return {
+        outcome: { status: AiIntegration.AiIntegrationActionStatus.FAILED },
+        notice: { outcome: 'failed', message: response.message || UNINSTALL_UNAVAILABLE, showOutput: true }
+      };
     case AiIntegration.UninstallCliStatus.FAILED:
+      return {
+        outcome: { status: AiIntegration.AiIntegrationActionStatus.FAILED },
+        notice: { outcome: 'failed', message: response.message || UNINSTALL_FAILED, showOutput: true }
+      };
     default:
-      return { outcome: 'failed', message: response.message || UNINSTALL_FAILED, showOutput: true };
+      return {
+        outcome: { status: AiIntegration.AiIntegrationActionStatus.UNKNOWN },
+        notice: { outcome: 'failed', message: response.message || UNINSTALL_FAILED, showOutput: true }
+      };
   }
 }
 
@@ -191,23 +212,23 @@ export class CliSetupSession {
     return this.progressText;
   }
 
-  async uninstall(): Promise<void> {
+  async uninstall(
+    onAccepted?: () => void | Thenable<void>,
+    onFinished?: (outcome: AiIntegrationOutcome) => void | Thenable<void>
+  ): Promise<void> {
     if (this.disposed || this.inProgress || this.uninstalling || vscode.env.remoteName !== undefined) {
       return;
     }
     this.uninstalling = true;
     const owned = { progress: false };
     this.notice = undefined;
+    await onAccepted?.();
     try {
-      const notice = await this.confirmAndUninstall(owned);
+      const result = await this.confirmAndUninstall(owned);
       if (!this.disposed) {
-        this.notice = notice;
+        this.notice = result.notice;
       }
-    } catch (error) {
-      const notice = uninstallFailure(error);
-      if (!this.disposed) {
-        this.notice = notice;
-      }
+      await onFinished?.(result.outcome);
     } finally {
       this.uninstalling = false;
       if (owned.progress) {
@@ -220,46 +241,69 @@ export class CliSetupSession {
   }
 
   // The setup lock stays down until the user confirms, so the panel does not say setup is running.
-  private async confirmAndUninstall(owned: { progress: boolean }): Promise<CliSetupNotice | undefined> {
-    const uninstallAvailable = await this.onChange();
-    if (this.disposed) {
-      return undefined;
+  private async confirmAndUninstall(owned: { progress: boolean }): Promise<UninstallAttempt> {
+    const cancelled = AiIntegration.AiIntegrationActionStatus.CANCELLED;
+    try {
+      const uninstallAvailable = await this.onChange();
+      if (this.disposed) {
+        return { outcome: { status: cancelled } };
+      }
+      if (uninstallAvailable === false) {
+        return {
+          outcome: { status: AiIntegration.AiIntegrationActionStatus.FAILED },
+          notice: { outcome: 'failed', message: UNINSTALL_UNAVAILABLE }
+        };
+      }
+      const confirm = await vscode.window.showWarningMessage(
+        'Uninstall SonarQube CLI?',
+        {
+          modal: true,
+          detail:
+            'This removes the shared CLI used by terminals, IDEs, and agents. Reset removes credentials and registered integrations and may revoke recorded server tokens.'
+        },
+        'Uninstall'
+      );
+      if (confirm !== 'Uninstall' || this.disposed || this.inProgress) {
+        return { outcome: { status: cancelled } };
+      }
+    } catch (error) {
+      return this.disposed ? { outcome: { status: cancelled } } : uninstallFailure(error);
     }
-    if (uninstallAvailable === false) {
-      return { outcome: 'failed', message: UNINSTALL_UNAVAILABLE };
-    }
-    const confirm = await vscode.window.showWarningMessage(
-      'Uninstall SonarQube CLI?',
-      {
-        modal: true,
-        detail:
-          'This removes the shared CLI used by terminals, IDEs, and agents. Reset removes credentials and registered integrations and may revoke recorded server tokens.'
-      },
-      'Uninstall'
-    );
-    if (confirm !== 'Uninstall' || this.disposed || this.inProgress) {
-      return undefined;
-    }
+
     this.inProgress = true;
     owned.progress = true;
     this.progressText = UNINSTALL_IN_PROGRESS;
-    await this.onChange();
-    if (this.disposed) {
-      return undefined;
-    }
-    const response = await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: 'Uninstalling SonarQube CLI', cancellable: false },
-      () => (this.disposed ? undefined : this.languageClient.uninstallCli())
-    );
-    if (!response) {
-      return undefined;
-    }
-    for (const output of [response.stdout, response.stderr, response.message]) {
-      if (output) {
-        logToSonarLintOutput(output);
+    let uninstallRequested = false;
+    try {
+      await this.onChange();
+      if (this.disposed) {
+        return { outcome: { status: cancelled } };
       }
+      const response = await vscode.window.withProgress(
+        { location: vscode.ProgressLocation.Notification, title: 'Uninstalling SonarQube CLI', cancellable: false },
+        () => {
+          if (this.disposed) {
+            throw new vscode.CancellationError();
+          }
+          uninstallRequested = true;
+          return this.languageClient.uninstallCli();
+        }
+      );
+      if (!response) {
+        return { outcome: { status: AiIntegration.AiIntegrationActionStatus.UNKNOWN } };
+      }
+      for (const output of [response.stdout, response.stderr, response.message]) {
+        if (output) {
+          logToSonarLintOutput(output);
+        }
+      }
+      return uninstallAttempt(response);
+    } catch (error) {
+      if (this.disposed && !uninstallRequested) {
+        return { outcome: { status: cancelled } };
+      }
+      return uninstallFailure(error);
     }
-    return uninstallNotice(response);
   }
 
   async run(step: CliSetupStep, agentId?: AiIntegration.AiAgent): Promise<void> {
