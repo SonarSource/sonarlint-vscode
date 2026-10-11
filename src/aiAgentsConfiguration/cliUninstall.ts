@@ -24,21 +24,30 @@ function cliPathCleanupHint(): string {
     : 'Remove $HOME/.local/share/sonarqube-cli/bin from PATH in your shell profile (~/.bashrc or ~/.zshrc). Reopen terminals.';
 }
 
+export interface CliUninstallResult {
+  outcome: AiIntegration.AiIntegrationOutcome;
+  notice?: CliSetupNotice;
+}
+
 export async function runCliUninstall(
   languageClient: SonarLintExtendedLanguageClient,
-  isDisposed: () => boolean
-): Promise<CliSetupNotice | undefined> {
+  isDisposed: () => boolean,
+  onRpcStarted?: () => void
+): Promise<CliUninstallResult> {
   if (isDisposed()) {
-    return undefined;
+    return { outcome: { status: AiIntegration.AiIntegrationActionStatus.CANCELLED } };
   }
   const state = await languageClient.getAiIntegrationState(
     getAiIntegrationStateParams(AiIntegration.AiIntegrationScope.GLOBAL)
   );
   if (isDisposed()) {
-    return undefined;
+    return { outcome: { status: AiIntegration.AiIntegrationActionStatus.CANCELLED } };
   }
   if (!state.cli.uninstallAvailable) {
-    return { outcome: 'failed', message: UNINSTALL_UNAVAILABLE };
+    return {
+      outcome: { status: AiIntegration.AiIntegrationActionStatus.FAILED },
+      notice: { outcome: 'failed', message: UNINSTALL_UNAVAILABLE }
+    };
   }
   const confirm = await vscode.window.showWarningMessage(
     'Uninstall SonarQube CLI?',
@@ -49,37 +58,59 @@ export async function runCliUninstall(
     'Uninstall'
   );
   if (confirm !== 'Uninstall' || isDisposed()) {
-    return undefined;
+    return { outcome: { status: AiIntegration.AiIntegrationActionStatus.CANCELLED } };
   }
   const response = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: 'Uninstalling SonarQube CLI', cancellable: false },
-    () => isDisposed() ? undefined : languageClient.uninstallCli()
+    () => {
+      if (isDisposed()) {
+        throw new vscode.CancellationError();
+      }
+      onRpcStarted?.();
+      return languageClient.uninstallCli();
+    }
   );
   if (!response) {
-    return undefined;
+    return { outcome: { status: AiIntegration.AiIntegrationActionStatus.UNKNOWN } };
   }
   for (const output of [response.stdout, response.stderr, response.message]) {
     if (output) {
       logToSonarLintOutput(output);
     }
   }
-  return isDisposed() ? undefined : uninstallNotice(response);
+  return uninstallResult(response);
 }
 
-export function cliUninstallFailure(error: unknown): CliSetupNotice {
+export function cliUninstallFailure(error: unknown): CliUninstallResult {
   const diagnostic = error instanceof Error ? error.message : UNINSTALL_FAILED;
   logToSonarLintOutput(`Could not uninstall SonarQube CLI: ${diagnostic}`);
-  return { outcome: 'failed', message: UNINSTALL_FAILED, showOutput: true };
+  return {
+    outcome: { status: AiIntegration.AiIntegrationActionStatus.FAILED },
+    notice: { outcome: 'failed', message: UNINSTALL_FAILED, showOutput: true }
+  };
 }
 
-function uninstallNotice(response: AiIntegration.UninstallCliResponse): CliSetupNotice {
+function uninstallResult(response: AiIntegration.UninstallCliResponse): CliUninstallResult {
   switch (response.status) {
     case AiIntegration.UninstallCliStatus.UNINSTALLED:
-      return { outcome: 'completed', message: `${UNINSTALL_COMPLETED}\n\n${cliPathCleanupHint()}`, showOutput: true };
+      return {
+        outcome: { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED },
+        notice: { outcome: 'completed', message: `${UNINSTALL_COMPLETED}\n\n${cliPathCleanupHint()}`, showOutput: true }
+      };
     case AiIntegration.UninstallCliStatus.NOT_AVAILABLE:
-      return { outcome: 'failed', message: response.message || UNINSTALL_UNAVAILABLE, showOutput: true };
+      return {
+        outcome: { status: AiIntegration.AiIntegrationActionStatus.FAILED },
+        notice: { outcome: 'failed', message: response.message || UNINSTALL_UNAVAILABLE, showOutput: true }
+      };
     case AiIntegration.UninstallCliStatus.FAILED:
+      return {
+        outcome: { status: AiIntegration.AiIntegrationActionStatus.FAILED },
+        notice: { outcome: 'failed', message: response.message || UNINSTALL_FAILED, showOutput: true }
+      };
     default:
-      return { outcome: 'failed', message: response.message || UNINSTALL_FAILED, showOutput: true };
+      return {
+        outcome: { status: AiIntegration.AiIntegrationActionStatus.UNKNOWN },
+        notice: { outcome: 'failed', message: response.message || UNINSTALL_FAILED, showOutput: true }
+      };
   }
 }
