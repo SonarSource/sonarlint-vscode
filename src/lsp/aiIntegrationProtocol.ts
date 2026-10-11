@@ -212,6 +212,7 @@ export namespace AiIntegration {
     version?: string | null;
     serverUrl?: string | null;
     organization?: string | null;
+    uninstallAvailable?: boolean;
   }
 
   export interface AiIntegrationAgentCapability {
@@ -271,6 +272,23 @@ export namespace AiIntegration {
 
   export namespace PrepareInstallCliCommand {
     export const type = new lsp.RequestType0<PrepareCliCommandResponse, null>('sonarlint/prepareInstallCliCommand');
+  }
+
+  export enum UninstallCliStatus {
+    UNINSTALLED = 0,
+    NOT_AVAILABLE = 1,
+    FAILED = 2
+  }
+
+  export interface UninstallCliResponse {
+    status: UninstallCliStatus;
+    stdout: string;
+    stderr: string;
+    message?: string | null;
+  }
+
+  export namespace UninstallCli {
+    export const type = new lsp.RequestType0<UninstallCliResponse, null>('sonarlint/uninstallCli');
   }
 
   export namespace PrepareAuthenticateCliCommand {

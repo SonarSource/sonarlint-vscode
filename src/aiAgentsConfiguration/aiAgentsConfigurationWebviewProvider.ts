@@ -10,7 +10,7 @@ import * as fs from 'node:fs';
 import * as vscode from 'vscode';
 import * as util from '../util/util';
 import { Commands } from '../util/commands';
-import { logToSonarLintOutput } from '../util/logging';
+import { logToSonarLintOutput, showLogOutput } from '../util/logging';
 import { ResourceResolver } from '../util/webview';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
@@ -81,6 +81,7 @@ export interface AIAgentsConfigurationState {
     notice?: CliSetupNotice;
     primaryAction?: CliPrimaryAction;
     canIntegrate: boolean;
+    uninstallAvailable: boolean;
   };
   mcp: {
     integrations: Array<{
@@ -306,6 +307,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         serverUrl: integrationState.cli.serverUrl ?? undefined,
         organization: integrationState.cli.organization ?? undefined,
         operationInProgress: cliSetup.operationInProgress,
+        uninstallAvailable: !isRemote && integrationState.cli.uninstallAvailable === true,
         notice: cliSetup.notice,
         primaryAction: resolveCliPrimaryAction(installationStatus, authenticationStatus, isRemote),
         canIntegrate: canIntegrateAgent(
@@ -349,6 +351,12 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         break;
       case 'authenticateCli':
         await this.runCliSetup(AiIntegration.AiIntegrationAction.LOGIN_CLI, 'authenticate');
+        break;
+      case 'uninstallCli':
+        await this.getCliSetup().uninstall();
+        break;
+      case 'showCliOutput':
+        showLogOutput();
         break;
       case 'integrateAgent':
         await this.runCliSetup(AiIntegration.AiIntegrationAction.INTEGRATE_AGENT, 'integrate', message.agent);
