@@ -78,6 +78,7 @@ export interface AIAgentsConfigurationState {
     serverUrl?: string;
     organization?: string;
     operationInProgress: boolean;
+    operationMessage?: string;
     notice?: CliSetupNotice;
     primaryAction?: CliPrimaryAction;
     canIntegrate: boolean;
@@ -310,6 +311,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         serverUrl: integrationState.cli.serverUrl ?? undefined,
         organization: integrationState.cli.organization ?? undefined,
         operationInProgress: cliSetup.operationInProgress,
+        ...(cliSetup.operationInProgress ? { operationMessage: cliSetup.operationMessage } : {}),
         uninstallAvailable: !isRemote && integrationState.cli.uninstallAvailable === true,
         notice: cliSetup.notice,
         primaryAction: resolveCliPrimaryAction(installationStatus, authenticationStatus, isRemote),

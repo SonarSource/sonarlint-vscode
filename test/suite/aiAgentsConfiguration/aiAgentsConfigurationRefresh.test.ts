@@ -115,6 +115,8 @@ suite('AI integrations refresh publication', () => {
 
     const before = postMessage.firstCall.args[0].state;
     expect(before.cli.operationInProgress).to.be.false;
+    const running = postMessage.getCalls().map(call => call.args[0].state).find(state => state?.cli?.operationInProgress);
+    expect(running.cli.operationMessage).to.equal('Uninstalling SonarQube CLI…');
     expect(before.agents[0].recordingStatus).to.equal('RECORDED');
     expect(before.mcp.configuredCount).to.equal(1);
     const after = postMessage.lastCall.args[0].state;

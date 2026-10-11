@@ -369,6 +369,8 @@ suite('cliSetup', () => {
       expect(session.operationInProgress).to.be.false;
       expect(confirm.calledOnce).to.be.true;
       expect(getState.notCalled).to.be.true;
+      await session.uninstall();
+      expect(confirm.calledOnce).to.be.true;
       selection.resolve(undefined);
       await attempt;
 
@@ -380,6 +382,40 @@ suite('cliSetup', () => {
       expect(confirm.firstCall.args[1]).to.include({ modal: true });
       expect(confirm.firstCall.args[1].detail).to.include('terminals, IDEs, and agents')
         .and.include('credentials and registered integrations').and.include('may revoke recorded server tokens');
+    });
+
+    test('does not clear an install lock when uninstall is declined or confirms too late', async () => {
+      const selection = deferred<string | undefined>();
+      const prompted = deferred<void>();
+      confirm.callsFake(() => { prompted.resolve(); return selection.promise; });
+      sinon.stub(vscode.window, 'createTerminal').returns({ show: sinon.stub() } as never);
+      sinon.stub(vscode.window, 'onDidCloseTerminal').returns({ dispose: sinon.stub() });
+      const languageClient = (session as unknown as {
+        languageClient: { prepareInstallCliCommand: sinon.SinonStub };
+      }).languageClient;
+      languageClient.prepareInstallCliCommand = sinon.stub().resolves({
+        executable: 'sonar', arguments: ['install'], interactive: true
+      });
+      getState.resolves({
+        cli: { installationStatus: NOT_INSTALLED, authenticationStatus: UNKNOWN },
+        agents: [],
+        connectionChoices: []
+      });
+
+      const attempt = session.uninstall();
+      await prompted.promise;
+      expect(session.operationInProgress).to.be.false;
+      await session.run('install');
+      expect(session.operationInProgress).to.be.true;
+      expect(session.operationMessage).to.equal('SonarQube CLI setup is in progress.');
+
+      selection.resolve('Uninstall');
+      await attempt;
+
+      expect(uninstall.notCalled).to.be.true;
+      expect(progress.notCalled).to.be.true;
+      expect(session.operationInProgress).to.be.true;
+      expect(session.operationMessage).to.equal('SonarQube CLI setup is in progress.');
     });
 
     test('uses noncancellable progress and blocks setup until the request finishes', async () => {
@@ -394,6 +430,7 @@ suite('cliSetup', () => {
       expect(getState.notCalled).to.be.true;
       expect(uninstall.calledOnce).to.be.true;
       expect(session.operationInProgress).to.be.true;
+      expect(session.operationMessage).to.equal('Uninstalling SonarQube CLI…');
       expect(progress.firstCall.args[0]).to.deep.equal({
         location: vscode.ProgressLocation.Notification, title: 'Uninstalling SonarQube CLI', cancellable: false
       });
@@ -496,7 +533,7 @@ suite('cliSetup', () => {
       await attempt;
 
       expect(log.getCalls().map(call => call.args[0])).to.deep.equal(['Reset output', 'Cleanup warning']);
-      expect(onChange.calledOnce).to.be.true;
+      expect(onChange.getCalls().map(call => call.args)).to.deep.equal([[], []]);
       expect(session.notice).to.be.undefined;
     });
   });

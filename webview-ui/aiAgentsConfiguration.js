@@ -193,7 +193,9 @@ function renderCliAction(state) {
 }
 
 function renderCliFeedback(cli) {
-  const message = cli.operationInProgress ? 'SonarQube CLI setup is in progress.' : cli.notice?.message;
+  const message = cli.operationInProgress
+    ? (cli.operationMessage || 'SonarQube CLI setup is in progress.')
+    : cli.notice?.message;
   cliFeedback.hidden = !message;
   cliFeedback.textContent = message ?? '';
   setVisible(cliOutput, !cli.operationInProgress && Boolean(cli.notice?.showOutput));

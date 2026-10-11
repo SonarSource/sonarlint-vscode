@@ -192,7 +192,11 @@ suite('AI integrations webview rendering', () => {
     expect(rendered.cli.uninstallHidden).to.be.false;
     expect(rendered.cli.uninstallDisabled).to.be.true;
     expect(rendered.cli.outputHidden).to.be.true;
+    expect(rendered.cli.feedback).to.equal('SonarQube CLI setup is in progress.');
     expect(rendered.actions).to.deep.equal([]);
+
+    input.cli.operationMessage = 'Uninstalling SonarQube CLI…';
+    expect((await renderWebview(input)).cli.feedback).to.equal('Uninstalling SonarQube CLI…');
   });
 
   test('hides uninstall after the CLI is removed', async function () {
