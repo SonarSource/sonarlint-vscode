@@ -41,7 +41,7 @@ suite('cliUninstall', () => {
   test('returns cancellation without a notice or preflight when already disposed', async () => {
     const result = await runCliUninstall(client, () => true);
 
-    expect(result).to.be.undefined;
+    expect(result).to.deep.equal({ outcome: { status: 'CANCELLED' } });
     expect(getState.notCalled).to.be.true;
     expect(confirm.notCalled).to.be.true;
     expect(uninstall.notCalled).to.be.true;
@@ -52,18 +52,18 @@ suite('cliUninstall', () => {
 
     const result = await runCliUninstall(client, disposed);
 
-    expect(result).to.be.undefined;
+    expect(result).to.deep.equal({ outcome: { status: 'CANCELLED' } });
     expect(getState.calledOnce).to.be.true;
     expect(confirm.notCalled).to.be.true;
     expect(uninstall.notCalled).to.be.true;
   });
 
-  test('returns no notice for an absent response', async () => {
+  test('returns an explicit unknown outcome without a notice for an absent response', async () => {
     uninstall.resolves(undefined);
 
     const result = await runCliUninstall(client, () => false);
 
-    expect(result).to.be.undefined;
+    expect(result).to.deep.equal({ outcome: { status: 'UNKNOWN' } });
   });
 
   for (const platform of ['win32', 'linux', 'darwin'] as const) {
@@ -72,14 +72,31 @@ suite('cliUninstall', () => {
 
       const result = await runCliUninstall(client, () => false);
 
-      expect(result.message).to.include('Reopen terminals.');
+      expect(result.notice.message).to.include('Reopen terminals.');
       if (platform === 'win32') {
-        expect(result.message).to.include('%LOCALAPPDATA%\\sonarqube-cli\\bin')
+        expect(result.notice.message).to.include('%LOCALAPPDATA%\\sonarqube-cli\\bin')
           .and.include('user Path in Environment Variables').and.not.include('~/.bashrc');
       } else {
-        expect(result.message).to.include('$HOME/.local/share/sonarqube-cli/bin')
+        expect(result.notice.message).to.include('$HOME/.local/share/sonarqube-cli/bin')
           .and.include('~/.bashrc').and.include('~/.zshrc').and.not.include('%LOCALAPPDATA%');
       }
+    });
+  }
+
+  for (const [status, expected] of [
+    [AiIntegration.UninstallCliStatus.UNINSTALLED, AiIntegration.AiIntegrationActionStatus.SUCCEEDED],
+    [AiIntegration.UninstallCliStatus.NOT_AVAILABLE, AiIntegration.AiIntegrationActionStatus.FAILED],
+    [AiIntegration.UninstallCliStatus.FAILED, AiIntegration.AiIntegrationActionStatus.FAILED],
+    [99, AiIntegration.AiIntegrationActionStatus.UNKNOWN],
+    [undefined, AiIntegration.AiIntegrationActionStatus.UNKNOWN]
+  ] as const) {
+    test(`returns explicit ${expected} for backend status ${status}`, async () => {
+      uninstall.resolves({ status, stdout: '', stderr: 'Cleanup diagnostic', message: 'Backend diagnostic' });
+
+      const result = await runCliUninstall(client, () => false);
+
+      expect(result.outcome).to.deep.equal({ status: expected });
+      expect(result.notice).not.to.be.undefined;
     });
   }
 });
