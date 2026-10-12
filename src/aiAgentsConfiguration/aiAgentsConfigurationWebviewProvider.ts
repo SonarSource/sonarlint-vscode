@@ -32,7 +32,7 @@ import {
 } from './cliSetup';
 import {
   getActiveMcpAgent,
-  getMCPConfigPath,
+  getMCPConfigurationLocation,
   inspectMCPConfiguration,
   isMCPSetupInProgress,
   isStandaloneMcpReady,
@@ -290,7 +290,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         agentName: agent.name,
         standaloneSupported,
         availableThroughCli: !supportsStandaloneMCP(agent.agent) && agent.cliIntegrationSupported,
-        configurationPath: standaloneSupported ? getMCPConfigPath(agent.agent) : undefined,
+        configurationPath: standaloneSupported ? getMCPConfigurationLocation(agent.agent, inspection?.state) : undefined,
         configurationStatus:
           inspection === undefined ? undefined : AiIntegration.MCP_CONFIGURATION_STATE_NAMES[inspection.state],
         diagnostic: inspection?.diagnostics[0],

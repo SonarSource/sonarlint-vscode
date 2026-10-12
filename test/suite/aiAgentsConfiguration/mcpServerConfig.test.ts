@@ -7,6 +7,8 @@
 'use strict';
 
 import { expect } from 'chai';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import {
@@ -16,10 +18,12 @@ import {
   isMCPSetupInProgress,
   onEmbeddedServerStarted,
   openMCPServerConfigurationFile,
-  scheduleCopilotActivationMcpRefresh
+  scheduleCopilotActivationMcpRefresh,
+  supportsStandaloneMCP
 } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
 import { IntegrationTarget } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import * as copilotMcpProvider from '../../../src/aiAgentsConfiguration/copilotMcpProvider';
 import { AllConnectionsTreeDataProvider, Connection } from '../../../src/connected/connections';
 import { ConnectionSettingsService } from '../../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
@@ -66,6 +70,18 @@ suite('MCP configuration paths', () => {
     } finally {
       envStub.restore();
       extensionsStub.restore();
+    }
+  });
+
+  test('needs the MCP server provider for Copilot in remote windows', () => {
+    sinon.stub(vscode.env, 'remoteName').value('dev-container');
+    sinon.stub(copilotMcpProvider, 'isCopilotMcpProviderRegistered').returns(false);
+    try {
+      expect(supportsStandaloneMCP(IntegrationTarget.GITHUB_COPILOT)).to.be.false;
+      expect(supportsStandaloneMCP(IntegrationTarget.CURSOR)).to.be.true;
+      expect(getMCPConfigPath(IntegrationTarget.CURSOR)).to.equal(path.join(os.homedir(), '.cursor', 'mcp.json'));
+    } finally {
+      sinon.restore();
     }
   });
 
@@ -500,13 +516,11 @@ suite('MCP configuration workflow', () => {
     expect(isMCPSetupInProgress()).to.be.false;
   });
 
-  test('keeps remote manual setup unavailable', async () => {
-    remoteName.value('ssh-remote');
-    expect((await configureMCPServer(client, connections, agent)).status).to.equal(
-      AiIntegration.AiIntegrationActionStatus.FAILED
-    );
-    expect(read.called).to.be.false;
-    expect(discover.called).to.be.false;
+  test('configures MCP in remote windows', async () => {
+    remoteName.value('dev-container');
+    const outcome = await configureMCPServer(client, connections, agent, connection);
+    expect(outcome).to.deep.equal({ status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent });
+    expect(write.calledOnce).to.be.true;
   });
 
   test('uses the latest startup port for the delayed Copilot activation retry', async () => {

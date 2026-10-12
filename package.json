@@ -1232,6 +1232,12 @@
         }
       }
     },
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "sonarqube",
+        "label": "SonarQube"
+      }
+    ],
     "languageModelTools": [
       {
         "name": "sonarqube_list_potential_security_issues",
