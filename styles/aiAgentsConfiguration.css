@@ -56,6 +56,12 @@ main {
   font-weight: 600;
 }
 
+.product-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .product-card h2 {
   margin: 0 0 6px;
   font-size: 16px;
@@ -196,6 +202,7 @@ main {
 
 #cli-feedback {
   margin-bottom: 0;
+  white-space: pre-line;
 }
 
 @media (max-width: 360px) {
@@ -228,7 +235,8 @@ button {
 }
 
 .primary-action:disabled,
-.secondary-action:disabled {
+.secondary-action:disabled,
+.icon-action:disabled {
   cursor: default;
   opacity: 0.5;
 }
@@ -241,6 +249,26 @@ button {
 
 .secondary-action:hover:not(:disabled) {
   background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.icon-action {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  color: var(--vscode-foreground);
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.icon-action:hover:not(:disabled) {
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
+.icon-action .codicon {
+  display: block;
 }
 
 .link-action,

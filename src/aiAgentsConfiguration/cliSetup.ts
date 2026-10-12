@@ -10,6 +10,7 @@ import * as os from 'node:os';
 import * as vscode from 'vscode';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
+import { logToSonarLintOutput } from '../util/logging';
 import { getAiIntegrationStateParams, getDetectedIntegrationAgents } from './aiAgentUtils';
 
 // Setup returns this result. The view reports it; cli setup does not talk to telemetry.
@@ -32,6 +33,7 @@ export interface CliPrimaryAction {
 export interface CliSetupNotice {
   outcome: SetupOutcome;
   message: string;
+  showOutput?: boolean;
 }
 
 export type ConnectionPick =
@@ -54,6 +56,44 @@ const LABEL_TROUBLESHOOT = 'Open troubleshooting guide';
 const LABEL_SIGN_IN = 'Sign in with SonarQube CLI';
 const LABEL_REFRESH = 'Refresh';
 const PLACEHOLDER_CONNECTION = 'Choose a SonarQube connection for CLI login';
+const UNINSTALL_FAILED = 'Could not uninstall SonarQube CLI. Review the output for details.';
+const UNINSTALL_UNAVAILABLE = 'Only an official per-user CLI installation can be uninstalled.';
+const UNINSTALL_COMPLETED =
+  'SonarQube CLI was removed. Remove its PATH entry manually. Some configuration may remain; review the output.';
+const SETUP_IN_PROGRESS = 'SonarQube CLI setup is in progress.';
+const UNINSTALL_IN_PROGRESS = 'Uninstalling SonarQube CLI…';
+const WINDOWS_PATH_HINT = String.raw`Remove %LOCALAPPDATA%\sonarqube-cli\bin from your user Path in Environment Variables. Reopen terminals.`;
+// install.sh detect_profile() writes the export to the first profile that exists: bash prefers
+// ~/.bashrc then ~/.bash_profile, zsh prefers ~/.zshrc then ~/.zprofile, and the fallback is ~/.profile.
+const UNIX_PATH_HINT =
+  'Remove $HOME/.local/share/sonarqube-cli/bin from PATH in the shell profile the installer updated ' +
+  '(~/.bashrc or ~/.bash_profile, ~/.zshrc or ~/.zprofile, or ~/.profile). Reopen terminals.';
+
+export function cliPathCleanupHint(platform: NodeJS.Platform = os.platform()): string {
+  return platform === 'win32' ? WINDOWS_PATH_HINT : UNIX_PATH_HINT;
+}
+
+function uninstallFailure(error: unknown): CliSetupNotice {
+  const diagnostic = error instanceof Error ? error.message : UNINSTALL_FAILED;
+  logToSonarLintOutput(`Could not uninstall SonarQube CLI: ${diagnostic}`);
+  return { outcome: 'failed', message: UNINSTALL_FAILED, showOutput: true };
+}
+
+function uninstallNotice(response: AiIntegration.UninstallCliResponse): CliSetupNotice {
+  switch (response.status) {
+    case AiIntegration.UninstallCliStatus.UNINSTALLED:
+      return {
+        outcome: 'completed',
+        message: `${UNINSTALL_COMPLETED}\n\n${cliPathCleanupHint()}`,
+        showOutput: true
+      };
+    case AiIntegration.UninstallCliStatus.NOT_AVAILABLE:
+      return { outcome: 'failed', message: response.message || UNINSTALL_UNAVAILABLE, showOutput: true };
+    case AiIntegration.UninstallCliStatus.FAILED:
+    default:
+      return { outcome: 'failed', message: response.message || UNINSTALL_FAILED, showOutput: true };
+  }
+}
 
 export function resolveCliPrimaryAction(
   installationStatus: AiIntegration.CliInstallationStatus,
@@ -116,6 +156,8 @@ export class CliSetupSession {
   private activeSetupTerminal?: vscode.Terminal;
   private terminalCloseListener?: vscode.Disposable;
   private inProgress = false;
+  private uninstalling = false;
+  private progressText = SETUP_IN_PROGRESS;
   private activeStep?: CliSetupStep;
   private activeAgent?: AiIntegration.AiAgent;
   private activeAuthentication?: vscode.CancellationTokenSource;
@@ -125,7 +167,7 @@ export class CliSetupSession {
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
     private readonly languageClient: SonarLintExtendedLanguageClient,
-    private readonly onChange: (report?: boolean) => Thenable<void>,
+    private readonly onChange: (report?: boolean) => Thenable<boolean | void>,
     private readonly onFinished?: (
       step: CliSetupStep,
       agent: AiIntegration.AiAgent | undefined,
@@ -145,6 +187,82 @@ export class CliSetupSession {
     return this.inProgress;
   }
 
+  get operationMessage(): string {
+    return this.progressText;
+  }
+
+  async uninstall(): Promise<void> {
+    if (this.disposed || this.inProgress || this.uninstalling || vscode.env.remoteName !== undefined) {
+      return;
+    }
+    this.uninstalling = true;
+    const owned = { progress: false };
+    this.notice = undefined;
+    try {
+      const notice = await this.confirmAndUninstall(owned);
+      if (!this.disposed && (owned.progress || !this.inProgress)) {
+        this.notice = notice;
+      }
+    } catch (error) {
+      const notice = uninstallFailure(error);
+      if (!this.disposed && (owned.progress || !this.inProgress)) {
+        this.notice = notice;
+      }
+    } finally {
+      this.uninstalling = false;
+      const yieldedToRunningOperation = !owned.progress && this.inProgress;
+      if (owned.progress) {
+        this.inProgress = false;
+      }
+      if (!this.disposed) {
+        await (yieldedToRunningOperation ? this.onChange() : this.onChange(true));
+      }
+    }
+  }
+
+  // The setup lock stays down until the user confirms, so the panel does not say setup is running.
+  private async confirmAndUninstall(owned: { progress: boolean }): Promise<CliSetupNotice | undefined> {
+    const uninstallAvailable = await this.onChange();
+    if (this.disposed) {
+      return undefined;
+    }
+    if (uninstallAvailable === false) {
+      return { outcome: 'failed', message: UNINSTALL_UNAVAILABLE };
+    }
+    const confirm = await vscode.window.showWarningMessage(
+      'Uninstall SonarQube CLI?',
+      {
+        modal: true,
+        detail:
+          'This removes the shared CLI used by terminals, IDEs, and agents. Reset removes credentials and registered integrations and may revoke recorded server tokens.'
+      },
+      'Uninstall'
+    );
+    if (confirm !== 'Uninstall' || this.disposed || this.inProgress) {
+      return undefined;
+    }
+    this.inProgress = true;
+    owned.progress = true;
+    this.progressText = UNINSTALL_IN_PROGRESS;
+    await this.onChange();
+    if (this.disposed) {
+      return undefined;
+    }
+    const response = await vscode.window.withProgress(
+      { location: vscode.ProgressLocation.Notification, title: 'Uninstalling SonarQube CLI', cancellable: false },
+      () => (this.disposed ? undefined : this.languageClient.uninstallCli())
+    );
+    if (!response) {
+      return undefined;
+    }
+    for (const output of [response.stdout, response.stderr, response.message]) {
+      if (output) {
+        logToSonarLintOutput(output);
+      }
+    }
+    return uninstallNotice(response);
+  }
+
   async run(step: CliSetupStep, agentId?: AiIntegration.AiAgent): Promise<void> {
     if (this.disposed) {
       return;
@@ -155,6 +273,7 @@ export class CliSetupSession {
     }
 
     this.inProgress = true;
+    this.progressText = SETUP_IN_PROGRESS;
     this.activeStep = step;
     this.activeAgent = agentId;
     this.notice = undefined;
