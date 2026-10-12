@@ -45,6 +45,7 @@ main {
 .product-header {
   display: flex;
   align-items: center;
+  min-height: 16px;
   justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
@@ -253,9 +254,9 @@ button {
 
 .icon-action {
   flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
-  padding: 4px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
   color: var(--vscode-foreground);
   background: transparent;
   border: 0;
