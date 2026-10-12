@@ -10,7 +10,7 @@ import * as fs from 'node:fs';
 import * as vscode from 'vscode';
 import * as util from '../util/util';
 import { Commands } from '../util/commands';
-import { logToSonarLintOutput } from '../util/logging';
+import { logToSonarLintOutput, showLogOutput } from '../util/logging';
 import { ResourceResolver } from '../util/webview';
 import { AiIntegration } from '../lsp/aiIntegrationProtocol';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
@@ -78,9 +78,11 @@ export interface AIAgentsConfigurationState {
     serverUrl?: string;
     organization?: string;
     operationInProgress: boolean;
+    operationMessage?: string;
     notice?: CliSetupNotice;
     primaryAction?: CliPrimaryAction;
     canIntegrate: boolean;
+    uninstallAvailable: boolean;
   };
   mcp: {
     integrations: Array<{
@@ -139,7 +141,8 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
       enableScripts: true,
       localResourceRoots: [
         vscode.Uri.joinPath(this.extensionContext.extensionUri, WEBVIEW_UI_DIR),
-        vscode.Uri.joinPath(this.extensionContext.extensionUri, 'styles')
+        vscode.Uri.joinPath(this.extensionContext.extensionUri, 'styles'),
+        vscode.Uri.joinPath(this.extensionContext.extensionUri, 'node_modules', '@vscode', 'codicons', 'dist')
       ]
     };
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
@@ -153,8 +156,8 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     );
   }
 
-  async refresh(): Promise<void> {
-    await this.refreshWithObservation();
+  async refresh(): Promise<boolean | undefined> {
+    return (await this.refreshWithObservation()).uninstallAvailable;
   }
 
   async refreshOnRequest(): Promise<void> {
@@ -164,7 +167,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     this.telemetry.action(AiIntegration.AiIntegrationAction.REFRESH, {
       status: AiIntegration.AiIntegrationActionStatus.STARTED
     });
-    const succeeded = await this.refreshWithObservation(true);
+    const succeeded = (await this.refreshWithObservation(true)).ok;
     this.telemetry.action(AiIntegration.AiIntegrationAction.REFRESH, {
       status: succeeded
         ? AiIntegration.AiIntegrationActionStatus.SUCCEEDED
@@ -176,38 +179,41 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     await this.refreshWithObservation(true);
   }
 
-  private async refreshWithObservation(observe = false): Promise<boolean> {
+  private async refreshWithObservation(
+    observe = false
+  ): Promise<{ ok: boolean; uninstallAvailable?: boolean }> {
     this.refreshGeneration++;
     const generation = this.refreshGeneration;
     const view = this.view;
     if (!view) {
       if (!observe) {
-        return false;
+        return { ok: false };
       }
       try {
         this.emitObservation(await this.loadInspectedIntegration());
-        return true;
+        return { ok: true };
       } catch {
-        return false;
+        return { ok: false };
       }
     }
     try {
       const state = await this.buildState(observe);
+      const uninstallAvailable = state.cli.uninstallAvailable;
       if (this.view !== view || this.refreshGeneration !== generation) {
         // Loading succeeded; a newer refresh or view owns publication.
-        return true;
+        return { ok: true, uninstallAvailable };
       }
       ContextManager.instance.setMCPServerSupportedAgentContext(
         state.mcp.integrations.some(integration => integration.standaloneSupported)
       );
       await view.webview.postMessage({ command: 'state', state });
-      return true;
+      return { ok: true, uninstallAvailable };
     } catch (error) {
       logToSonarLintOutput(`Could not refresh AI integrations state: ${String(error)}`);
       if (this.view === view && this.refreshGeneration === generation) {
         await view.webview.postMessage({ command: 'error' }).then(undefined, () => undefined);
       }
-      return false;
+      return { ok: false };
     }
   }
 
@@ -306,6 +312,8 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         serverUrl: integrationState.cli.serverUrl ?? undefined,
         organization: integrationState.cli.organization ?? undefined,
         operationInProgress: cliSetup.operationInProgress,
+        ...(cliSetup.operationInProgress ? { operationMessage: cliSetup.operationMessage } : {}),
+        uninstallAvailable: !isRemote && integrationState.cli.uninstallAvailable === true,
         notice: cliSetup.notice,
         primaryAction: resolveCliPrimaryAction(installationStatus, authenticationStatus, isRemote),
         canIntegrate: canIntegrateAgent(
@@ -349,6 +357,12 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
         break;
       case 'authenticateCli':
         await this.runCliSetup(AiIntegration.AiIntegrationAction.LOGIN_CLI, 'authenticate');
+        break;
+      case 'uninstallCli':
+        await this.getCliSetup().uninstall();
+        break;
+      case 'showCliOutput':
+        showLogOutput();
         break;
       case 'integrateAgent':
         await this.runCliSetup(AiIntegration.AiIntegrationAction.INTEGRATE_AGENT, 'integrate', message.agent);
@@ -411,6 +425,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     return template
       .replaceAll('{{cspSource}}', webview.cspSource)
       .replace('{{styleSrc}}', this.resolver.resolve('styles', 'aiAgentsConfiguration.css'))
+      .replace('{{codiconsSrc}}', this.resolver.resolve('node_modules', '@vscode', 'codicons', 'dist', 'codicon.css'))
       .replace('{{scriptSrc}}', this.resolver.resolve(WEBVIEW_UI_DIR, 'aiAgentsConfiguration.js'));
   }
 }
