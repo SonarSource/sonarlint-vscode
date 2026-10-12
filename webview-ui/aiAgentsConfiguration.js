@@ -259,7 +259,7 @@ function createMcpIntegrationRow(integration, state) {
 
   const hasAction = action.textContent.length > 0;
   action.hidden = !hasAction;
-  action.disabled = hasAction && setupAction && (state.mcp.operationInProgress || state.isRemote);
+  action.disabled = hasAction && setupAction && state.mcp.operationInProgress;
   if (integration.operationInProgress) {
     action.textContent = 'Setting up…';
   }
