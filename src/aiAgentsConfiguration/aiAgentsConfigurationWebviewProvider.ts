@@ -141,7 +141,8 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
       enableScripts: true,
       localResourceRoots: [
         vscode.Uri.joinPath(this.extensionContext.extensionUri, WEBVIEW_UI_DIR),
-        vscode.Uri.joinPath(this.extensionContext.extensionUri, 'styles')
+        vscode.Uri.joinPath(this.extensionContext.extensionUri, 'styles'),
+        vscode.Uri.joinPath(this.extensionContext.extensionUri, 'node_modules', '@vscode', 'codicons', 'dist')
       ]
     };
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
@@ -424,6 +425,7 @@ export class AIAgentsConfigurationWebviewProvider implements vscode.WebviewViewP
     return template
       .replaceAll('{{cspSource}}', webview.cspSource)
       .replace('{{styleSrc}}', this.resolver.resolve('styles', 'aiAgentsConfiguration.css'))
+      .replace('{{codiconsSrc}}', this.resolver.resolve('node_modules', '@vscode', 'codicons', 'dist', 'codicon.css'))
       .replace('{{scriptSrc}}', this.resolver.resolve(WEBVIEW_UI_DIR, 'aiAgentsConfiguration.js'));
   }
 }

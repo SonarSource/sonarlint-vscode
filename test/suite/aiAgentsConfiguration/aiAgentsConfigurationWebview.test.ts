@@ -132,6 +132,7 @@ async function renderWebview(state: AIAgentsConfigurationState): Promise<{
       .replaceAll('{{cspSource}}', panel.webview.cspSource)
       .replace('script-src ' + panel.webview.cspSource, `script-src ${panel.webview.cspSource} 'nonce-${nonce}'`)
       .replace('{{styleSrc}}', panel.webview.asWebviewUri(vscode.Uri.file(path.join(root, 'styles/aiAgentsConfiguration.css'))).toString())
+      .replace('{{codiconsSrc}}', panel.webview.asWebviewUri(vscode.Uri.file(path.join(root, 'node_modules/@vscode/codicons/dist/codicon.css'))).toString())
       .replace('{{scriptSrc}}', panel.webview.asWebviewUri(vscode.Uri.file(path.join(root, 'webview-ui/aiAgentsConfiguration.js'))).toString())
       .replace('</body>', probe + '</body>');
     return { ...await rendered, actions };

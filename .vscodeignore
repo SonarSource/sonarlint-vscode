@@ -8,6 +8,8 @@ src/
 .gitignore
 tsconfig.json
 node_modules
+!node_modules/@vscode/codicons/dist/codicon.css
+!node_modules/@vscode/codicons/dist/codicon.ttf
 !node_modules/@vscode/webview-ui-toolkit/dist/toolkit.min.js
 !node_modules/canvas-confetti/dist/confetti.browser.js
 webpack.config.js

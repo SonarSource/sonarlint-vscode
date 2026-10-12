@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; style-src {{cspSource}}; script-src {{cspSource}}"
+      content="default-src 'none'; style-src {{cspSource}}; font-src {{cspSource}}; script-src {{cspSource}}"
     />
     <link rel="stylesheet" type="text/css" href="{{styleSrc}}" />
+    <link rel="stylesheet" type="text/css" href="{{codiconsSrc}}" />
     <title>AI integrations</title>
   </head>
   <body>
@@ -27,7 +28,19 @@
         <section class="product-card" aria-labelledby="cli-value">
           <div class="product-header">
             <span class="product-name">SonarQube CLI</span>
-            <span id="cli-status" class="status"></span>
+            <div class="product-status">
+              <span id="cli-status" class="status"></span>
+              <button
+                id="cli-uninstall"
+                class="icon-action"
+                type="button"
+                title="Uninstall SonarQube CLI"
+                aria-label="Uninstall SonarQube CLI"
+                hidden
+              >
+                <span class="codicon codicon-trash" aria-hidden="true"></span>
+              </button>
+            </div>
           </div>
           <h2 id="cli-value">Catch issues as AI writes code</h2>
           <p class="description">
@@ -45,23 +58,7 @@
           <button id="cli-action" class="primary-action" type="button"></button>
           <output id="cli-feedback" class="notice" aria-live="polite" hidden></output>
           <button id="cli-output" class="inline-link-action" type="button" hidden>Show output</button>
-          <div class="product-footer">
-            <button id="cli-docs" class="inline-link-action" type="button">SonarQube CLI guide</button>
-            <button
-              id="cli-uninstall"
-              class="icon-action"
-              type="button"
-              title="Uninstall SonarQube CLI"
-              aria-label="Uninstall SonarQube CLI"
-              hidden
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path
-                  d="M10 3H6V2H10V3ZM11 3V2L10 1H6L5 2V3H2V4H3V13L4 14H12L13 13V4H14V3H11ZM12 13H4V4H12V13ZM6 5H5V12H6V5ZM9 5H7V12H9V5ZM11 5H10V12H11V5Z"
-                />
-              </svg>
-            </button>
-          </div>
+          <button id="cli-docs" class="link-action" type="button">SonarQube CLI guide</button>
         </section>
 
         <section class="product-card" aria-labelledby="mcp-value">

@@ -56,6 +56,12 @@ main {
   font-weight: 600;
 }
 
+.product-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .product-card h2 {
   margin: 0 0 6px;
   font-size: 16px;
@@ -245,14 +251,6 @@ button {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.product-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 8px;
-}
-
 .icon-action {
   flex: 0 0 auto;
   width: 24px;
@@ -269,7 +267,7 @@ button {
   background: var(--vscode-toolbar-hoverBackground);
 }
 
-.icon-action svg {
+.icon-action .codicon {
   display: block;
 }
 
