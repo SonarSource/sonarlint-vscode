@@ -75,6 +75,7 @@ import {
   getStandaloneMCPAgents,
   scheduleCopilotActivationMcpRefresh
 } from './aiAgentsConfiguration/mcpServerConfig';
+import { registerCopilotMcpProvider } from './aiAgentsConfiguration/copilotMcpProvider';
 import { COPILOT_ACTIVATION_DELAY_MS } from './aiAgentsConfiguration/aiAgentUtils';
 import { IdeLabsFlagManagementService } from './labs/ideLabsFlagManagementService';
 import { LabsWebviewProvider } from './labs/labsWebviewProvider';
@@ -273,6 +274,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   );
 
   installCustomRequestHandlers(context);
+  registerCopilotMcpProvider(context, languageClient);
   const refreshMcpAgentContext = () =>
     getStandaloneMCPAgents(languageClient).catch(error =>
       logToSonarLintOutput(`Could not detect agents supporting standalone MCP: ${String(error)}`)

@@ -18,7 +18,7 @@ import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { logToSonarLintOutput } from '../util/logging';
 import { Commands } from '../util/commands';
-import { extensionContext, getVSCodeSettingsBaseDir } from '../util/util';
+import { getVSCodeSettingsBaseDir } from '../util/util';
 import {
   COPILOT_ACTIVATION_DELAY_MS,
   getAiIntegrationStateParams,
@@ -28,12 +28,20 @@ import {
   isAgentActiveForMcp,
   toAgentDisplayName
 } from './aiAgentUtils';
+import {
+  isCopilotMcpProviderConfigured,
+  isCopilotMcpProviderRegistered,
+  refreshCopilotMcpServer,
+  setCopilotMcpConnection
+} from './copilotMcpProvider';
 
 const BLOCKED_CONFIGURATION_MESSAGE = 'The existing SonarQube MCP configuration cannot be updated safely.';
 const WRITE_FAILED_PREFIX = 'Failed to configure SonarQube MCP Server for';
 const MAX_TCP_PORT = 65_535;
 const MCP_SETUP_IN_PROGRESS_MESSAGE =
   'A SonarQube MCP configuration operation is already running. Try again in a moment.';
+const COPILOT_MCP_PROVIDER_LOCATION = 'Provided by SonarQube for IDE in the active VS Code profile';
+const LIST_MCP_SERVERS_COMMAND = 'workbench.mcp.listServer';
 let mcpSetupInProgress = false;
 let copilotActivationRefresh: ReturnType<typeof setTimeout> | undefined;
 let embeddedServerRefreshPending = false;
@@ -46,22 +54,16 @@ const STANDALONE_MCP_CONFIG_PATHS: Partial<Record<AiIntegration.AiAgent, () => s
   [AiIntegration.AiAgent.WINDSURF]: () =>
     path.join(os.homedir(), '.codeium', getWindsurfDirectory(), 'mcp_config.json'),
   [AiIntegration.AiAgent.KIRO]: () => path.join(os.homedir(), '.kiro', 'settings', 'mcp.json'),
+  // Default profile only. New Copilot setups use the MCP server provider; this file keeps earlier setups working.
   [AiIntegration.AiAgent.GITHUB_COPILOT]: () =>
-    vscode.env.remoteName === undefined
-      ? path.join(
-          getVSCodeSettingsBaseDir(),
-          vscode.env.appName.toLowerCase().includes('insiders') ? 'Code - Insiders' : 'Code',
-          'User',
-          'mcp.json'
-        )
-      : getRemoteUserMcpConfigPath(),
+    path.join(
+      getVSCodeSettingsBaseDir(),
+      vscode.env.appName.toLowerCase().includes('insiders') ? 'Code - Insiders' : 'Code',
+      'User',
+      'mcp.json'
+    ),
   [AiIntegration.AiAgent.CLAUDE_CODE]: () => path.join(os.homedir(), '.claude.json')
 };
-
-// In remote windows, VS Code reads MCP servers from the remote user data folder, which also holds our global storage
-function getRemoteUserMcpConfigPath(): string {
-  return path.join(extensionContext.globalStorageUri.fsPath, '..', '..', 'mcp.json');
-}
 
 interface McpDocument {
   agent: AiIntegration.AiAgent;
@@ -134,7 +136,35 @@ async function refreshPendingMcpSetup(languageClient: SonarLintExtendedLanguageC
 }
 
 export function supportsStandaloneMCP(agent: AiIntegration.AiAgent): boolean {
+  if (agent === AiIntegration.AiAgent.GITHUB_COPILOT && vscode.env.remoteName !== undefined) {
+    return isCopilotMcpProviderRegistered();
+  }
   return STANDALONE_MCP_CONFIG_PATHS[agent] !== undefined;
+}
+
+function usesCopilotMcpProvider(agent: AiIntegration.AiAgent): boolean {
+  return agent === AiIntegration.AiAgent.GITHUB_COPILOT && isCopilotMcpProviderRegistered();
+}
+
+function isCopilotMcpProviderManaged(agent: AiIntegration.AiAgent): boolean {
+  return usesCopilotMcpProvider(agent) && isCopilotMcpProviderConfigured();
+}
+
+// Remote windows ignore the local Copilot mcp.json path, so only the provider counts there
+function hasLegacyMcpDocument(agent: AiIntegration.AiAgent): boolean {
+  return agent !== AiIntegration.AiAgent.GITHUB_COPILOT || vscode.env.remoteName === undefined;
+}
+
+export function getMCPConfigurationLocation(
+  agent: AiIntegration.AiAgent,
+  state?: AiIntegration.McpConfigurationState
+): string {
+  // An existing mcp.json entry stays where it is; anything new goes through the provider
+  const usesLegacyFile =
+    state !== undefined &&
+    state !== AiIntegration.McpConfigurationState.NOT_CONFIGURED &&
+    !isCopilotMcpProviderManaged(agent);
+  return usesCopilotMcpProvider(agent) && !usesLegacyFile ? COPILOT_MCP_PROVIDER_LOCATION : getMCPConfigPath(agent);
 }
 
 export function getMCPConfigPath(agent: AiIntegration.AiAgent): string {
@@ -167,13 +197,17 @@ export async function inspectMCPConfiguration(
   languageClient: SonarLintExtendedLanguageClient,
   agent: AiIntegration.AiAgent
 ): Promise<AiIntegration.McpConfigurationInspectionResponse> {
+  if (isCopilotMcpProviderManaged(agent)) {
+    return { state: AiIntegration.McpConfigurationState.STANDALONE, diagnostics: [] };
+  }
   const document = readMcpDocument(agent);
   return inspectMcpDocument(languageClient, document);
 }
 
 function readMcpDocument(agent: AiIntegration.AiAgent): McpDocument {
   const configPath = getMCPConfigPath(agent);
-  return { agent, path: configPath, content: readMCPConfigContent(configPath) };
+  const content = hasLegacyMcpDocument(agent) ? readMCPConfigContent(configPath) : null;
+  return { agent, path: configPath, content };
 }
 
 function readMCPConfigContent(configPath: string): string | null {
@@ -322,8 +356,16 @@ export async function configureMCPServer(
     selectedAgent = agent;
     activeMcpAgent = agent;
     await refreshAiAgentsView();
+    if (isCopilotMcpProviderManaged(agent)) {
+      refreshCopilotMcpServer();
+      showMcpSuccessMessage(agent, `SonarQube MCP Server is already configured for ${toAgentDisplayName(agent)}.`);
+      return { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent };
+    }
     const document = readMcpDocument(agent);
     const inspection = await inspectMcpDocument(languageClient, document);
+    if (usesCopilotMcpProvider(agent) && inspection.state === AiIntegration.McpConfigurationState.NOT_CONFIGURED) {
+      return await registerCopilotMcpServer(allConnectionsTreeDataProvider, agent, connection);
+    }
     if (!isUpdateAllowed(inspection.state)) {
       showBlockedConfigurationMessage(inspection);
       return mcpFailed(agent);
@@ -348,15 +390,7 @@ export async function configureMCPServer(
       writeMcpDocument(currentDocument, updatePlan.updatedContent);
     }
     openMCPServersListIfCursor(agent);
-
-    void vscode.window
-      .showInformationMessage(successMessage, 'Open Configuration File')
-      .then(async openFile => {
-        if (openFile === 'Open Configuration File') {
-          await vscode.commands.executeCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, agent);
-        }
-      });
-    logToSonarLintOutput(successMessage);
+    showMcpSuccessMessage(agent, successMessage);
     return { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent };
   } catch (error) {
     const target = selectedAgent === undefined ? 'the selected agent' : toAgentDisplayName(selectedAgent);
@@ -369,6 +403,39 @@ export async function configureMCPServer(
     activeMcpAgent = undefined;
     await refreshPendingMcpSetup(languageClient);
   }
+}
+
+// Copilot reads the server from our provider, so setup only records the connection to use
+async function registerCopilotMcpServer(
+  allConnectionsTreeDataProvider: AllConnectionsTreeDataProvider,
+  agent: AiIntegration.AiAgent,
+  connection?: Connection
+): Promise<AiIntegrationOutcome> {
+  const connectionSelection = await getSelectedConnection(allConnectionsTreeDataProvider, connection);
+  if (connectionSelection.kind !== 'selected') {
+    return unselectedMcpConnectionOutcome(connectionSelection, agent);
+  }
+  const selectedConnection = connectionSelection.connection;
+  const tokenSelection = await resolveMcpToken(selectedConnection);
+  if (tokenSelection.cancelled) {
+    return mcpCancelled(agent);
+  }
+  await setCopilotMcpConnection(selectedConnection);
+  showMcpSuccessMessage(
+    agent,
+    `SonarQube MCP Server configured for ${toAgentDisplayName(agent)} with "${selectedConnection.label}"`
+  );
+  return { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent };
+}
+
+function showMcpSuccessMessage(agent: AiIntegration.AiAgent, successMessage: string): void {
+  const openAction = isCopilotMcpProviderManaged(agent) ? 'Show MCP Servers' : 'Open Configuration File';
+  void vscode.window.showInformationMessage(successMessage, openAction).then(async selectedAction => {
+    if (selectedAction === openAction) {
+      await vscode.commands.executeCommand(Commands.OPEN_MCP_SERVER_CONFIGURATION, agent);
+    }
+  });
+  logToSonarLintOutput(successMessage);
 }
 
 export async function getStandaloneMCPAgents(languageClient: SonarLintExtendedLanguageClient) {
@@ -410,11 +477,30 @@ async function selectMCPAgent(
   if (agents.length === 1) {
     return { kind: 'selected', agent: agents[0].agent };
   }
-  const selected = await vscode.window.showQuickPick(
-    agents.map(agent => ({ label: agent.name, description: getMCPConfigPath(agent.agent), agent: agent.agent })),
-    { placeHolder: 'Choose an agent to configure with SonarQube MCP' }
+  // Same location rule as the AI Integrations view, which also depends on the inspected state
+  const items = await Promise.all(
+    agents.map(async agent => ({
+      label: agent.name,
+      description: getMCPConfigurationLocation(agent.agent, await inspectMcpState(languageClient, agent.agent)),
+      agent: agent.agent
+    }))
   );
+  const selected = await vscode.window.showQuickPick(items, {
+    placeHolder: 'Choose an agent to configure with SonarQube MCP'
+  });
   return selected ? { kind: 'selected', agent: selected.agent } : { kind: 'cancelled' };
+}
+
+async function inspectMcpState(
+  languageClient: SonarLintExtendedLanguageClient,
+  agent: AiIntegration.AiAgent
+): Promise<AiIntegration.McpConfigurationState | undefined> {
+  try {
+    return (await inspectMCPConfiguration(languageClient, agent)).state;
+  } catch (error) {
+    logToSonarLintOutput(`Could not inspect ${toAgentDisplayName(agent)} MCP configuration: ${String(error)}`);
+    return undefined;
+  }
 }
 
 async function getSelectedConnection(
@@ -498,6 +584,7 @@ async function runEmbeddedServerRefreshPass(languageClient: SonarLintExtendedLan
     return;
   }
   mcpSetupInProgress = true;
+  refreshCopilotMcpServer();
   try {
     const agents = await getStandaloneMCPAgents(languageClient);
     await Promise.all(
@@ -582,6 +669,10 @@ export async function openMCPServerConfigurationFile(
       return unselectedMcpAgentOutcome(selection, requestedAgent);
     }
     const agent = selection.agent;
+    if (isCopilotMcpProviderManaged(agent)) {
+      await vscode.commands.executeCommand(LIST_MCP_SERVERS_COMMAND);
+      return { status: AiIntegration.AiIntegrationActionStatus.SUCCEEDED, agent };
+    }
     const configPath = getMCPConfigPath(agent);
     if (!fs.existsSync(configPath)) {
       await vscode.window.showInformationMessage(

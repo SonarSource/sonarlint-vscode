@@ -18,10 +18,12 @@ import {
   isMCPSetupInProgress,
   onEmbeddedServerStarted,
   openMCPServerConfigurationFile,
-  scheduleCopilotActivationMcpRefresh
+  scheduleCopilotActivationMcpRefresh,
+  supportsStandaloneMCP
 } from '../../../src/aiAgentsConfiguration/mcpServerConfig';
 import { IntegrationTarget } from '../../../src/aiAgentsConfiguration/aiAgentUtils';
 import * as aiAgentUtils from '../../../src/aiAgentsConfiguration/aiAgentUtils';
+import * as copilotMcpProvider from '../../../src/aiAgentsConfiguration/copilotMcpProvider';
 import { AllConnectionsTreeDataProvider, Connection } from '../../../src/connected/connections';
 import { ConnectionSettingsService } from '../../../src/settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../../../src/lsp/client';
@@ -29,7 +31,6 @@ import { Commands } from '../../../src/util/commands';
 import { AiIntegration } from '../../../src/lsp/aiIntegrationProtocol';
 import { DEFAULT_CONNECTION_ID } from '../../../src/commons';
 import * as logging from '../../../src/util/logging';
-import * as util from '../../../src/util/util';
 
 suite('MCP configuration paths', () => {
   test('should return different config paths for different IDEs', () => {
@@ -72,15 +73,12 @@ suite('MCP configuration paths', () => {
     }
   });
 
-  test('uses the remote user data folder for Copilot in remote windows', () => {
+  test('needs the MCP server provider for Copilot in remote windows', () => {
     sinon.stub(vscode.env, 'remoteName').value('dev-container');
-    sinon.stub(util, 'extensionContext').value({
-      globalStorageUri: vscode.Uri.file('/home/vscode/.vscode-server/data/User/globalStorage/sonarsource.sonarlint-vscode')
-    });
+    sinon.stub(copilotMcpProvider, 'isCopilotMcpProviderRegistered').returns(false);
     try {
-      expect(getMCPConfigPath(IntegrationTarget.GITHUB_COPILOT)).to.equal(
-        path.join('/home/vscode/.vscode-server/data/User', 'mcp.json')
-      );
+      expect(supportsStandaloneMCP(IntegrationTarget.GITHUB_COPILOT)).to.be.false;
+      expect(supportsStandaloneMCP(IntegrationTarget.CURSOR)).to.be.true;
       expect(getMCPConfigPath(IntegrationTarget.CURSOR)).to.equal(path.join(os.homedir(), '.cursor', 'mcp.json'));
     } finally {
       sinon.restore();
