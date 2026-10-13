@@ -1,3 +1,7 @@
+## 6.1.1
+
+* Fix an issue that prevented SonarQube for IDE from starting due to a corrupted H2 database. If the issue persists, close VS Code, delete `.sonarlint/storage/h2/sq-ide.mv.db` in your user home directory, and restart VS Code.
+
 ## 6.1
 
 * Reuse saved Connected Mode tokens to authenticate SonarQube CLI
