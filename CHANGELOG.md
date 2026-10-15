@@ -1,6 +1,7 @@
 ## 6.2
 
 * Update Text & Secrets analyzer 2.52 -> [2.53](https://github.com/SonarSource/sonar-text/releases/tag/2.53.0.13730)
+* Update IaC analyzer 2.21 -> [2.22](https://github.com/SonarSource/sonar-iac/releases/tag/2.22.0.24243)
 
 ## 6.1.1
 
