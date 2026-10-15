@@ -1,3 +1,7 @@
+## 6.2
+
+* Update Text & Secrets analyzer 2.52 -> [2.53](https://github.com/SonarSource/sonar-text/releases/tag/2.53.0.13730)
+
 ## 6.1.1
 
 * Fix an issue that prevented SonarQube for IDE from starting due to a corrupted H2 database. If the issue persists, close VS Code, delete `.sonarlint/storage/h2/sq-ide.mv.db` in your user home directory, and restart VS Code.
