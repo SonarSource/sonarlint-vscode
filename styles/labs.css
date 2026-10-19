@@ -196,7 +196,7 @@ input[type="email"]::placeholder {
     border: 1px solid var(--vscode-panel-border);
     border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0;
+    box-shadow: none;
     transition: box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
