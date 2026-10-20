@@ -11,6 +11,15 @@
       "description": "Keep @types/node aligned with the Node.js version bundled in the minimum supported VS Code (1.100 ships Node 20)",
       "matchPackageNames": ["@types/node"],
       "allowedVersions": "<21"
+    },
+    {
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "addLabels": [
+        "renovate-major-minor"
+      ]
     }
   ],
   "npmrc": "registry=https://repox.jfrog.io/artifactory/api/npm/npm",
