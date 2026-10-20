@@ -312,6 +312,22 @@ export namespace ExtendedClient {
     export const type = new lsp.NotificationType<ConnectionCheckResult>('sonarlint/reportConnectionCheckResult');
   }
 
+  export interface SubProjectScopeInfo {
+    scopeUri: string;
+    projectKey: string;
+    connectionId?: string;
+    relativePath: string;
+  }
+
+  export interface SubProjectScopesChangedParams {
+    parentFolderUri: string;
+    scopes: SubProjectScopeInfo[];
+  }
+
+  export namespace SubProjectScopesChanged {
+    export const type = new lsp.NotificationType<SubProjectScopesChangedParams>('sonarlint/subProjectScopesChanged');
+  }
+
   export enum CanShowMissingRequirementNotificationResult {
     Full = "full",
     ErrorOnly = "error_only",

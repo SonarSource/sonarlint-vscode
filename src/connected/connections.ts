@@ -28,6 +28,26 @@ export class WorkspaceFolderItem extends VSCode.TreeItem {
   }
 }
 
+/**
+ * A leaf representing a `.sonar-config.json`-declared sub-project: a configuration scope bound purely on the
+ * language server's backend, with no corresponding `connectedMode.project` VS Code setting and no real
+ * `VSCode.WorkspaceFolder` of its own — so, unlike `WorkspaceFolderItem`, it's identified by its scope URI and
+ * labelled with its folder name like `WorkspaceFolderItem`, showing the folder's relative path for clarity.
+ */
+export class ConfigScopeItem extends VSCode.TreeItem {
+  constructor(
+    public readonly scopeUri: string,
+    public readonly projectKey: string,
+    public readonly connectionId: string,
+    public readonly relativePath: string
+  ) {
+    super(VSCode.Uri.parse(scopeUri).path.replace(/\/$/, '').split('/').pop() || projectKey, VSCode.TreeItemCollapsibleState.None);
+    this.description = relativePath;
+    this.iconPath = VSCode.ThemeIcon.Folder;
+    this.contextValue = 'configScope';
+  }
+}
+
 export class RemoteProject extends VSCode.TreeItem {
   constructor(
     public readonly connectionId: string,
@@ -82,7 +102,7 @@ export class ConnectionGroup extends VSCode.TreeItem {
   }
 }
 
-export type ConnectionsNode = Connection | ConnectionGroup | RemoteProject | WorkspaceFolderItem;
+export type ConnectionsNode = Connection | ConnectionGroup | RemoteProject | WorkspaceFolderItem | ConfigScopeItem;
 
 export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<ConnectionsNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<Connection | undefined>();
@@ -173,24 +193,25 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
   async getBoundProjects(connectionId, serverType: ServerType) {
     const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
-    if (!boundProjects) {
+    const settingsBasedKeys = boundProjects ? [...boundProjects.keys()] : [];
+    const scopeBasedKeys = BindingService.instance.getAllSubProjectScopeProjectKeys(connectionId);
+    const allKeys = [...new Set([...settingsBasedKeys, ...scopeBasedKeys])];
+    if (allKeys.length === 0) {
       return [];
     }
-    const allKeys = [...boundProjects.keys()];
     const keysToNames = await this.client.getRemoteProjectNamesByKeys(connectionId || DEFAULT_CONNECTION_ID, allKeys);
     return allKeys.map(k => new RemoteProject(connectionId, k, serverType, keysToNames[k]));
   }
 
   getWorkspaceFoldersBoundTo(connectionId, projectKey, serverType: ServerType) {
     const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
-    if (!boundProjects) {
-      return [];
-    }
-    const boundFolders = boundProjects.get(projectKey);
-    if (!boundFolders) {
-      return [];
-    }
-    return boundFolders.map(f => new WorkspaceFolderItem(f.folder.name, f.folder, connectionId, serverType));
+    const boundFolders = boundProjects?.get(projectKey) ?? [];
+    const workspaceFolderItems = boundFolders.map(f => new WorkspaceFolderItem(f.folder.name, f.folder, connectionId, serverType));
+    const subProjectScopes = BindingService.instance.getSubProjectScopesForProjectKey(connectionId, projectKey);
+    const configScopeItems = subProjectScopes.map(
+      s => new ConfigScopeItem(s.scopeUri, s.projectKey, connectionId, s.relativePath)
+    );
+    return [...workspaceFolderItems, ...configScopeItems];
   }
 
   getInitialState(): ConnectionGroup[] {
