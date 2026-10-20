@@ -43,6 +43,8 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
 export class BindingService {
   private static _instance: BindingService;
 
+  private readonly subProjectScopesByParentFolder = new Map<string, ExtendedClient.SubProjectScopeInfo[]>();
+
   static init(
     languageClient: SonarLintExtendedLanguageClient,
     workspaceState: VSCode.Memento,
@@ -61,6 +63,39 @@ export class BindingService {
 
   static get instance(): BindingService {
     return BindingService._instance;
+  }
+
+  updateSubProjectScopes(params: ExtendedClient.SubProjectScopesChangedParams) {
+    this.subProjectScopesByParentFolder.set(params.parentFolderUri, params.scopes);
+  }
+
+  /**
+   * Sub-project scopes (declared via `.sonar-config.json`) are bound purely on the language server's backend —
+   * they never have a corresponding `connectedMode.project` VS Code setting, so they're invisible to
+   * `getAllBindings()`. This is the parallel, scope-based lookup the Connected Mode tree also consults.
+   */
+  getSubProjectScopesForProjectKey(connectionId: string, projectKey: string): ExtendedClient.SubProjectScopeInfo[] {
+    const matches: ExtendedClient.SubProjectScopeInfo[] = [];
+    for (const scopes of this.subProjectScopesByParentFolder.values()) {
+      for (const scope of scopes) {
+        if (scope.projectKey === projectKey && (scope.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID)) {
+          matches.push(scope);
+        }
+      }
+    }
+    return matches;
+  }
+
+  getAllSubProjectScopeProjectKeys(connectionId: string): string[] {
+    const projectKeys = new Set<string>();
+    for (const scopes of this.subProjectScopesByParentFolder.values()) {
+      for (const scope of scopes) {
+        if ((scope.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID)) {
+          projectKeys.add(scope.projectKey);
+        }
+      }
+    }
+    return [...projectKeys];
   }
 
   async deleteBindingWithConfirmation(binding: WorkspaceFolderItem): Promise<void> {
