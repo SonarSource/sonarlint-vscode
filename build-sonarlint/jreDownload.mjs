@@ -15,6 +15,7 @@ import { extract } from 'tar';
 import { parse } from 'node:url';
 
 import { downloadFile } from './downloadUtil.mjs';
+import { updateCertificateTrust } from './certificateTrust.mjs';
 import { cleanJreDir, deleteFile } from './fsUtils.mjs';
 
 export default async function downloadJre(targetPlatform, javaVersion) {
@@ -106,9 +107,14 @@ export default async function downloadJre(targetPlatform, javaVersion) {
 
   return new Promise((resolve, reject) => {
     extractionStream.on('finish', () => {
-      info('Extraction complete.');
-      deleteFile(inputFilePath);
-      resolve();
+      try {
+        updateCertificateTrust(outputFolderPath);
+        info('Extraction complete.');
+        deleteFile(inputFilePath);
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
     });
     compressedReadStream.on('error', err => {
       error('Error reading compressed file:', err);
