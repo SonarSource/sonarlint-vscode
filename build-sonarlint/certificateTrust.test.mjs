@@ -30,7 +30,7 @@ await test('merges current trust data and preserves existing blocks on all platf
   const updated = readFileSync(blocklist, 'utf8');
   assert.ok(updated.includes(additional));
   const upstream = readFileSync(new URL('./blocked.certs', import.meta.url), 'utf8');
-  for (const line of upstream.trim().split('\n')) {
+  for (const line of upstream.trim().split(/\r?\n/)) {
     assert.ok(updated.includes(line));
   }
   updateCertificateTrust(javaHome);
