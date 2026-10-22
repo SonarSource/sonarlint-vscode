@@ -21,6 +21,6 @@ export function updateCertificateTrust(javaHome) {
   const fingerprints = [...new Set(`${existing}\n${updated}`
     .split(/\r?\n/)
     .map(line => line.trim())
-    .filter(line => /^[A-F0-9]{64}$/.test(line)))].sort();
+    .filter(line => /^[A-F0-9]{64}$/.test(line)))].sort((left, right) => left.localeCompare(right));
   writeFileSync(blocklistPath, `Algorithm=SHA-256\n${fingerprints.join('\n')}\n`);
 }

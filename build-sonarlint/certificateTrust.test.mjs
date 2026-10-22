@@ -17,28 +17,32 @@ function runtime(t, contents) {
   const security = join(javaHome, 'lib', 'security');
   mkdirSync(security, { recursive: true });
   const blocklist = join(security, 'blocked.certs');
-  if (contents !== undefined) writeFileSync(blocklist, contents);
+  if (contents !== undefined) {
+    writeFileSync(blocklist, contents);
+  }
   return { javaHome, blocklist };
 }
 
-test('merges current trust data and preserves existing blocks on all platforms', t => {
+await test('merges current trust data and preserves existing blocks on all platforms', t => {
   const additional = 'A'.repeat(64);
   const { javaHome, blocklist } = runtime(t, `Algorithm=SHA-256\r\n${additional}\r\n`);
   updateCertificateTrust(javaHome);
   const updated = readFileSync(blocklist, 'utf8');
   assert.ok(updated.includes(additional));
   const upstream = readFileSync(new URL('./blocked.certs', import.meta.url), 'utf8');
-  for (const line of upstream.trim().split('\n')) assert.ok(updated.includes(line));
+  for (const line of upstream.trim().split('\n')) {
+    assert.ok(updated.includes(line));
+  }
   updateCertificateTrust(javaHome);
   assert.equal(readFileSync(blocklist, 'utf8'), updated);
 });
 
-test('fails packaging when the runtime blocklist is missing', t => {
+await test('fails packaging when the runtime blocklist is missing', t => {
   const { javaHome } = runtime(t);
   assert.throws(() => updateCertificateTrust(javaHome), { code: 'ENOENT' });
 });
 
-test('preserves the original file when its hash algorithm is unsupported', t => {
+await test('preserves the original file when its hash algorithm is unsupported', t => {
   const original = 'Algorithm=SHA-512\n';
   const { javaHome, blocklist } = runtime(t, original);
   assert.throws(() => updateCertificateTrust(javaHome), /Unsupported certificate blocklist/);
