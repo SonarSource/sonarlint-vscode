@@ -1,3 +1,7 @@
+## 6.3
+
+* Update Go analyzer 1.47 -> [1.48](https://github.com/SonarSource/sonar-go/releases/tag/1.48.0.9254)
+
 ## 6.2
 
 * Update Text & Secrets analyzer 2.52 -> [2.53](https://github.com/SonarSource/sonar-text/releases/tag/2.53.0.13730)
