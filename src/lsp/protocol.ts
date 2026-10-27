@@ -312,20 +312,8 @@ export namespace ExtendedClient {
     export const type = new lsp.NotificationType<ConnectionCheckResult>('sonarlint/reportConnectionCheckResult');
   }
 
-  export interface SubProjectScopeInfo {
-    scopeUri: string;
-    projectKey: string;
-    connectionId?: string;
-    relativePath: string;
-  }
-
-  export interface SubProjectScopesChangedParams {
-    parentFolderUri: string;
-    scopes: SubProjectScopeInfo[];
-  }
-
-  export namespace SubProjectScopesChanged {
-    export const type = new lsp.NotificationType<SubProjectScopesChangedParams>('sonarlint/subProjectScopesChanged');
+  export namespace BindingsChanged {
+    export const type = new lsp.NotificationType0('sonarlint/bindingsChanged');
   }
 
   export enum CanShowMissingRequirementNotificationResult {
@@ -628,6 +616,19 @@ export namespace ExtendedServer {
     export const type = new lsp.RequestType<GetRemoteProjectNamesParams, { [key: string]: string }, null>(
       'sonarlint/getRemoteProjectNamesByProjectKeys'
     );
+  }
+
+  export interface BindingInfo {
+    scopeUri: string;
+    name: string;
+    relativePath: string;
+    projectKey: string;
+    connectionId: string;
+    source: 'SETTINGS' | 'SONAR_CONFIG';
+  }
+
+  export namespace GetBindings {
+    export const type = new lsp.RequestType0<BindingInfo[], null>('sonarlint/getBindings');
   }
 
   export interface GenerateTokenParams {

@@ -9,7 +9,7 @@
 import * as VSCode from 'vscode';
 import { BindingService } from './binding';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { ConnectionCheckResult } from '../lsp/protocol';
+import { ConnectionCheckResult, ExtendedServer } from '../lsp/protocol';
 import { BaseConnection, ConnectionSettingsService, SonarCloudConnection } from '../settings/connectionsettings';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 
@@ -192,10 +192,8 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   async getBoundProjects(connectionId, serverType: ServerType) {
-    const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
-    const settingsBasedKeys = boundProjects ? [...boundProjects.keys()] : [];
-    const scopeBasedKeys = BindingService.instance.getAllSubProjectScopeProjectKeys(connectionId);
-    const allKeys = [...new Set([...settingsBasedKeys, ...scopeBasedKeys])];
+    await BindingService.instance.loadBindings();
+    const allKeys = BindingService.instance.getBoundProjectKeys(connectionId);
     if (allKeys.length === 0) {
       return [];
     }
@@ -204,14 +202,18 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   getWorkspaceFoldersBoundTo(connectionId, projectKey, serverType: ServerType) {
-    const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
-    const boundFolders = boundProjects?.get(projectKey) ?? [];
-    const workspaceFolderItems = boundFolders.map(f => new WorkspaceFolderItem(f.folder.name, f.folder, connectionId, serverType));
-    const subProjectScopes = BindingService.instance.getSubProjectScopesForProjectKey(connectionId, projectKey);
-    const configScopeItems = subProjectScopes.map(
-      s => new ConfigScopeItem(s.scopeUri, s.projectKey, connectionId, s.relativePath)
-    );
-    return [...workspaceFolderItems, ...configScopeItems];
+    return BindingService.instance
+      .getBindingsOfProject(connectionId, projectKey)
+      .map(binding => this.toBoundItem(binding, connectionId, serverType))
+      .filter(item => item !== undefined);
+  }
+
+  private toBoundItem(binding: ExtendedServer.BindingInfo, connectionId, serverType: ServerType) {
+    if (binding.source === 'SETTINGS') {
+      const folder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(binding.scopeUri));
+      return folder ? new WorkspaceFolderItem(folder.name, folder, connectionId, serverType) : undefined;
+    }
+    return new ConfigScopeItem(binding.scopeUri, binding.projectKey, connectionId, binding.relativePath);
   }
 
   getInitialState(): ConnectionGroup[] {

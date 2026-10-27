@@ -43,7 +43,7 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
 export class BindingService {
   private static _instance: BindingService;
 
-  private readonly subProjectScopesByParentFolder = new Map<string, ExtendedClient.SubProjectScopeInfo[]>();
+  private bindings: ExtendedServer.BindingInfo[] = [];
 
   static init(
     languageClient: SonarLintExtendedLanguageClient,
@@ -65,37 +65,28 @@ export class BindingService {
     return BindingService._instance;
   }
 
-  updateSubProjectScopes(params: ExtendedClient.SubProjectScopesChangedParams) {
-    this.subProjectScopesByParentFolder.set(params.parentFolderUri, params.scopes);
-  }
-
   /**
-   * Sub-project scopes (declared via `.sonar-config.json`) are bound purely on the language server's backend —
-   * they never have a corresponding `connectedMode.project` VS Code setting, so they're invisible to
-   * `getAllBindings()`. This is the parallel, scope-based lookup the Connected Mode tree also consults.
+   * Asks the language server for the binding of every scope, whichever source declares it: the folder settings or a
+   * `.sonar-config.json`.
    */
-  getSubProjectScopesForProjectKey(connectionId: string, projectKey: string): ExtendedClient.SubProjectScopeInfo[] {
-    const matches: ExtendedClient.SubProjectScopeInfo[] = [];
-    for (const scopes of this.subProjectScopesByParentFolder.values()) {
-      for (const scope of scopes) {
-        if (scope.projectKey === projectKey && (scope.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID)) {
-          matches.push(scope);
-        }
-      }
+  async loadBindings(): Promise<void> {
+    try {
+      this.bindings = await this.languageClient.getBindings();
+    } catch (error) {
+      this.bindings = [];
     }
-    return matches;
   }
 
-  getAllSubProjectScopeProjectKeys(connectionId: string): string[] {
-    const projectKeys = new Set<string>();
-    for (const scopes of this.subProjectScopesByParentFolder.values()) {
-      for (const scope of scopes) {
-        if ((scope.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID)) {
-          projectKeys.add(scope.projectKey);
-        }
-      }
-    }
-    return [...projectKeys];
+  getBoundProjectKeys(connectionId: string): string[] {
+    return [...new Set(this.bindingsOf(connectionId).map(binding => binding.projectKey))];
+  }
+
+  getBindingsOfProject(connectionId: string, projectKey: string): ExtendedServer.BindingInfo[] {
+    return this.bindingsOf(connectionId).filter(binding => binding.projectKey === projectKey);
+  }
+
+  private bindingsOf(connectionId: string): ExtendedServer.BindingInfo[] {
+    return this.bindings.filter(binding => (binding.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID));
   }
 
   async deleteBindingWithConfirmation(binding: WorkspaceFolderItem): Promise<void> {
