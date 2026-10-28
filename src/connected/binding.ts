@@ -43,6 +43,8 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
 export class BindingService {
   private static _instance: BindingService;
 
+  private bindings: ExtendedServer.BindingInfo[] = [];
+
   static init(
     languageClient: SonarLintExtendedLanguageClient,
     workspaceState: VSCode.Memento,
@@ -61,6 +63,30 @@ export class BindingService {
 
   static get instance(): BindingService {
     return BindingService._instance;
+  }
+
+  /**
+   * Asks the language server for the binding of every scope, whichever source declares it: the folder settings or a
+   * `.sonar-config.json`.
+   */
+  async loadBindings(): Promise<void> {
+    try {
+      this.bindings = await this.languageClient.getBindings();
+    } catch (error) {
+      this.bindings = [];
+    }
+  }
+
+  getBoundProjectKeys(connectionId: string): string[] {
+    return [...new Set(this.bindingsOf(connectionId).map(binding => binding.projectKey))];
+  }
+
+  getBindingsOfProject(connectionId: string, projectKey: string): ExtendedServer.BindingInfo[] {
+    return this.bindingsOf(connectionId).filter(binding => binding.projectKey === projectKey);
+  }
+
+  private bindingsOf(connectionId: string): ExtendedServer.BindingInfo[] {
+    return this.bindings.filter(binding => (binding.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID));
   }
 
   async deleteBindingWithConfirmation(binding: WorkspaceFolderItem): Promise<void> {

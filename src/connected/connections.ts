@@ -9,7 +9,7 @@
 import * as VSCode from 'vscode';
 import { BindingService } from './binding';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
-import { ConnectionCheckResult } from '../lsp/protocol';
+import { ConnectionCheckResult, ExtendedServer } from '../lsp/protocol';
 import { BaseConnection, ConnectionSettingsService, SonarCloudConnection } from '../settings/connectionsettings';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 
@@ -25,6 +25,26 @@ export class WorkspaceFolderItem extends VSCode.TreeItem {
     super(name, VSCode.TreeItemCollapsibleState.None);
     this.iconPath = VSCode.ThemeIcon.Folder;
     this.contextValue = 'workspaceFolder';
+  }
+}
+
+/**
+ * A leaf representing a `.sonar-config.json`-declared sub-project: a configuration scope bound purely on the
+ * language server's backend, with no corresponding `connectedMode.project` VS Code setting and no real
+ * `VSCode.WorkspaceFolder` of its own — so, unlike `WorkspaceFolderItem`, it's identified by its scope URI and
+ * labelled with its folder name like `WorkspaceFolderItem`, showing the folder's relative path for clarity.
+ */
+export class ConfigScopeItem extends VSCode.TreeItem {
+  constructor(
+    public readonly scopeUri: string,
+    public readonly projectKey: string,
+    public readonly connectionId: string,
+    public readonly relativePath: string
+  ) {
+    super(VSCode.Uri.parse(scopeUri).path.replace(/\/$/, '').split('/').pop() || projectKey, VSCode.TreeItemCollapsibleState.None);
+    this.description = relativePath;
+    this.iconPath = VSCode.ThemeIcon.Folder;
+    this.contextValue = 'configScope';
   }
 }
 
@@ -82,7 +102,7 @@ export class ConnectionGroup extends VSCode.TreeItem {
   }
 }
 
-export type ConnectionsNode = Connection | ConnectionGroup | RemoteProject | WorkspaceFolderItem;
+export type ConnectionsNode = Connection | ConnectionGroup | RemoteProject | WorkspaceFolderItem | ConfigScopeItem;
 
 export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<ConnectionsNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<Connection | undefined>();
@@ -172,25 +192,28 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   async getBoundProjects(connectionId, serverType: ServerType) {
-    const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
-    if (!boundProjects) {
+    await BindingService.instance.loadBindings();
+    const allKeys = BindingService.instance.getBoundProjectKeys(connectionId);
+    if (allKeys.length === 0) {
       return [];
     }
-    const allKeys = [...boundProjects.keys()];
     const keysToNames = await this.client.getRemoteProjectNamesByKeys(connectionId || DEFAULT_CONNECTION_ID, allKeys);
     return allKeys.map(k => new RemoteProject(connectionId, k, serverType, keysToNames[k]));
   }
 
   getWorkspaceFoldersBoundTo(connectionId, projectKey, serverType: ServerType) {
-    const boundProjects = BindingService.instance.getAllBindings().get(connectionId || DEFAULT_CONNECTION_ID);
-    if (!boundProjects) {
-      return [];
+    return BindingService.instance
+      .getBindingsOfProject(connectionId, projectKey)
+      .map(binding => this.toBoundItem(binding, connectionId, serverType))
+      .filter(item => item !== undefined);
+  }
+
+  private toBoundItem(binding: ExtendedServer.BindingInfo, connectionId, serverType: ServerType) {
+    if (binding.source === 'SETTINGS') {
+      const folder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(binding.scopeUri));
+      return folder ? new WorkspaceFolderItem(folder.name, folder, connectionId, serverType) : undefined;
     }
-    const boundFolders = boundProjects.get(projectKey);
-    if (!boundFolders) {
-      return [];
-    }
-    return boundFolders.map(f => new WorkspaceFolderItem(f.folder.name, f.folder, connectionId, serverType));
+    return new ConfigScopeItem(binding.scopeUri, binding.projectKey, connectionId, binding.relativePath);
   }
 
   getInitialState(): ConnectionGroup[] {
