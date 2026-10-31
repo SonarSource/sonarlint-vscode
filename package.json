@@ -1418,7 +1418,7 @@
     "expect.js": "^0.3.1",
     "fancy-log": "^2.0.0",
     "fs-extra": "^11.4.1",
-    "glob": "^13.0.0",
+    "glob": "^14.0.0",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-instrument": "^6.0.3",
     "istanbul-lib-report": "^3.0.1",
