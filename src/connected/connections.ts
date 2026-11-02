@@ -166,6 +166,7 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
   async getChildren(element?: ConnectionsNode): Promise<ConnectionsNode[]> {
     if (!element) {
+      await BindingService.instance.loadBindings();
       return this.getInitialState();
     } else if (element.contextValue === 'sonarQubeGroup') {
       return this.getConnections('__sonarqube__');
@@ -192,7 +193,6 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   }
 
   async getBoundProjects(connectionId, serverType: ServerType) {
-    await BindingService.instance.loadBindings();
     const allKeys = BindingService.instance.getBoundProjectKeys(connectionId);
     if (allKeys.length === 0) {
       return [];
