@@ -25,7 +25,6 @@ const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
 const OPEN_FOLDER_ACTION = 'Open Folder';
 const BIND_MANUALLY_ACTION = 'Bind Manually';
-export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 
 async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
   const existingSettings = VSCode.workspace
@@ -393,11 +392,6 @@ export class BindingService {
 
     itemsList.sort((i1, i2) => i1.label.localeCompare(i2.label, 'en'));
     return itemsList;
-  }
-
-  shouldBeAutoBound(workspaceFolder: VSCode.WorkspaceFolder) {
-    const foldersToBeIgnored = this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
-    return !this.isBound(workspaceFolder) && !foldersToBeIgnored.includes(workspaceFolder.uri.toString());
   }
 
   isBound(workspaceFolder: VSCode.WorkspaceFolder) {

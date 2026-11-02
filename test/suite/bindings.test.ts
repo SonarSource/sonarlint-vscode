@@ -321,29 +321,6 @@ suite('Bindings Test Suite', () => {
       });
     });
 
-    test('Unbound folder should be autobound', () => {
-      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-
-      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
-      expect(binding).to.be.empty;
-
-      expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.true;
-    });
-
-    test('Bound folder should not be autobound', async () => {
-      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY)
-        .update(CONNECTED_MODE_SETTINGS_SONARQUBE, [TEST_SONARQUBE_CONNECTION], VSCode.ConfigurationTarget.Global);
-
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-        .update(BINDING_SETTINGS, TEST_BINDING);
-
-      expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.false;
-    });
-
     test('should get base server url', async () => {
       expect(await underTest.getBaseServerUrl('connectionId', ServerType.SonarQube)).to.be.equal(
         'https://next.sonarqube.com/sonarqube/dashboard'
