@@ -211,7 +211,15 @@ suite('Bindings Test Suite', () => {
     });
 
     test('Ignore folders that are not in the workspace when removing bindings', async () => {
+      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
+      await underTest.saveSuggestedBinding(TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, TEST_BINDING.connectionId);
+
       await underTest.removeBindingsOfFolders(['file:///not/a/workspace/folder']);
+
+      const binding = VSCode.workspace
+        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
+        .get<ProjectBinding>(BINDING_SETTINGS);
+      expect(binding).to.deep.equal(TEST_BINDING);
     });
 
     test('If connectionId not provided, it should default to <default>', async () => {
