@@ -11,7 +11,6 @@ import { Diagnostic } from 'vscode-languageserver-types';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ExtendedClient, ExtendedServer } from '../lsp/protocol';
 import { Commands } from '../util/commands';
-import { getConnectionIdForFile } from '../util/bindingUtils';
 import { isFocusingOnNewCode } from '../settings/settings';
 import { convertVscodeDiagnosticToLspDiagnostic } from '../util/util';
 import {
@@ -134,7 +133,7 @@ export class FindingsTreeDataProvider implements vscode.TreeDataProvider<Finding
       const showRuleDescriptionCommand = finding.contextValue === 'newHotspotItem' ? Commands.SHOW_HOTSPOT_RULE_DESCRIPTION : Commands.SHOW_HOTSPOT_DETAILS;
       vscode.commands.executeCommand(showRuleDescriptionCommand, finding);
     } else if (finding.findingType === FindingType.TaintVulnerability) {
-      vscode.commands.executeCommand('SonarLint.ShowTaintVulnerabilityFlows', finding.serverIssueKey, getConnectionIdForFile(finding.fileUri));
+      vscode.commands.executeCommand('SonarLint.ShowTaintVulnerabilityFlows', finding.serverIssueKey);
       vscode.commands.executeCommand('SonarLint.ShowIssueDetailsCodeAction', finding.key, finding.fileUri);
     } else if (finding.findingType === FindingType.Issue) {
       if (!(finding instanceof NotebookFindingNode)) {

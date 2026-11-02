@@ -36,8 +36,14 @@ export function protocol2CodeConverter(value: string) {
   return vscode.Uri.parse(value);
 }
 
+export function isSameUri(protocolUri: string, uri: vscode.Uri) {
+  const withoutTrailingSlash = (value: string) => value.replace(/\/$/, '');
+  return withoutTrailingSlash(protocol2CodeConverter(protocolUri).toString()) === withoutTrailingSlash(uri.toString());
+}
+
 export function getFileNameFromFullPath(fullPath: string): string {
-  const fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
+  const withoutTrailingSlash = fullPath.replace(/\/+$/, '');
+  const fileName = withoutTrailingSlash.substring(withoutTrailingSlash.lastIndexOf('/') + 1);
   return decodeURIComponent(fileName);
 }
 
@@ -55,15 +61,14 @@ export function getRelativePathFromFullPath(
   const relativePathWithFileName = getRelativePathWithFileNameFromFullPath(fullPath, workspaceFolder)
   const fileName = getFileNameFromFullPath(fullPath); // main.js
   const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, ''); // samples/
+  // a folder given with a trailing separator has no file name to remove, only the separators left behind
+  const relativePath = relativePathWithFileName.endsWith(path.sep) //NB: Use os-specific path separator
+    ? relativePathWithoutFileName.replace(/[\\/]+$/, '')
+    : relativePathWithoutFileName;
   if (specifyWorkspaceFolderName) {
-    return relativePathWithoutFileName
-      ? `${workspaceFolder.name} • ${relativePathWithoutFileName}`
-      : workspaceFolder.name;
+    return relativePath ? `${workspaceFolder.name} • ${relativePath}` : workspaceFolder.name;
   }
-  if (relativePathWithFileName.endsWith(path.sep)) { //NB: Use os-specific path separator
-    return relativePathWithoutFileName.substring(0, relativePathWithFileName.length - 2);
-  }
-  return relativePathWithoutFileName;
+  return relativePath;
 }
 
 export function getUriFromRelativePath(relativePath: string, workspaceFolder: vscode.WorkspaceFolder): string {
