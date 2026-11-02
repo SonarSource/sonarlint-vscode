@@ -54,6 +54,20 @@ suite('uri', () => {
     expect(getFileNameFromFullPath(fullPath)).to.equal('main.js');
   });
 
+  test('should get the folder name from a full path with a trailing slash', () => {
+    expect(getFileNameFromFullPath('file:///c:/Users/me/monorepo/sonarqube-cli/')).to.equal('sonarqube-cli');
+    expect(getFileNameFromFullPath('file:///c:/Users/me/monorepo/sonarqube-cli')).to.equal('sonarqube-cli');
+  });
+
+  test('should show no relative path for a sub-folder scope given with a trailing slash', () => {
+    const workspaceFolder = vscode.workspace.workspaceFolders[0];
+    const fullPath = `${workspaceFolder.uri}/samples/sample-js/`;
+
+    expect(getFileNameFromFullPath(fullPath)).to.equal('sample-js');
+    expect(getRelativePathFromFullPath(fullPath, workspaceFolder, false)).to.equal('samples');
+    expect(getRelativePathFromFullPath(`${workspaceFolder.uri}/samples/`, workspaceFolder, false)).to.equal('');
+  });
+
   test('should get URI from relative path', () => {
     const relativePath = 'samples/sample-js/main.js';
     const workspaceFolder = vscode.workspace.workspaceFolders[0];
