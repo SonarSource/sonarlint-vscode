@@ -115,7 +115,7 @@ suite('Findings Tree Data Provider Test Suite', () => {
       expect(executeCommandStub.callCount).to.equal(2);
       expect(executeCommandStub.getCall(0).args[0]).to.equal('SonarLint.ShowTaintVulnerabilityFlows');
       expect(executeCommandStub.getCall(0).args[1]).to.equal(TEST_ISSUE_KEY);
-      expect(executeCommandStub.getCall(0).args[2]).to.be.empty;
+      expect(executeCommandStub.getCall(0).args).to.have.length(2);
       expect(executeCommandStub.getCall(1).args[0]).to.equal(SHOW_ISSUE_DETAILS_CODE_ACTION);
       expect(executeCommandStub.getCall(1).args[1]).to.equal(TEST_KEY);
       expect(executeCommandStub.getCall(1).args[2]).to.equal(TEST_FILE_URI);
