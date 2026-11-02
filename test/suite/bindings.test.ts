@@ -16,7 +16,7 @@ import {
 
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
-import { Connection, ServerType, WorkspaceFolderItem } from '../../src/connected/connections';
+import { ServerType, WorkspaceFolderItem } from '../../src/connected/connections';
 import { ExtendedClient, ExtendedServer, ConnectionCheckResult } from '../../src/lsp/protocol';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 import { sleep } from '../testutil';
@@ -189,7 +189,7 @@ suite('Bindings Test Suite', () => {
       expect(selectedFolder).to.equal(workspaceFolders[0].name);
     }).timeout(5_000);
 
-    test('Delete bindings for connection', async () => {
+    test('Remove bindings of the folders the language server asks for', async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
 
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
@@ -202,14 +202,7 @@ suite('Bindings Test Suite', () => {
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(binding).to.deep.equal(TEST_BINDING);
 
-      await underTest.deleteBindingsForConnection(
-        new Connection(
-          TEST_SONARQUBE_CONNECTION.connectionId,
-          TEST_SONARQUBE_CONNECTION.connectionId,
-          'sonarqubeConnection',
-          'ok'
-        )
-      );
+      await underTest.removeBindingsOfFolders([workspaceFolder.uri.toString()]);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -217,58 +210,8 @@ suite('Bindings Test Suite', () => {
       expect(binding).to.be.empty;
     });
 
-    test('Delete bindings for deleted connection', async () => {
-      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-
-      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
-      expect(binding).to.be.empty;
-
-      await underTest.saveSuggestedBinding(TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, TEST_BINDING.connectionId);
-
-      binding = VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-        .get<ProjectBinding>(BINDING_SETTINGS);
-      expect(binding).to.deep.equal(TEST_BINDING);
-
-      await underTest.removeBindingsForRemovedConnections([TEST_BINDING.connectionId]);
-
-      binding = VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-        .get<ProjectBinding>(BINDING_SETTINGS);
-      expect(binding).to.be.empty;
-    })
-
-    test('Default connection ID to <default> if not provided during deletion', async () => {
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY)
-        .update(
-          CONNECTED_MODE_SETTINGS_SONARQUBE,
-          [DEFAULT_TEST_SONARQUBE_CONNECTION],
-          VSCode.ConfigurationTarget.Global
-        );
-      await resetBindings();
-
-      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-
-      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
-      expect(binding).to.be.empty;
-
-      await underTest.saveSuggestedBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, DEFAULT_CONNECTION_ID);
-
-      binding = VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-        .get<ProjectBinding>(BINDING_SETTINGS);
-      expect(binding).to.deep.equal({
-        connectionId: DEFAULT_CONNECTION_ID,
-        projectKey: 'test.project.key'
-      });
-
-      await underTest.deleteBindingsForConnection(
-        new Connection(undefined, TEST_SONARQUBE_CONNECTION.connectionId, 'sonarqubeConnection', 'ok')
-      );
-
-      const defaultConnectionBindings = await underTest.getAllBindings().get(DEFAULT_CONNECTION_ID);
-      expect(defaultConnectionBindings).to.be.equal(undefined);
+    test('Ignore folders that are not in the workspace when removing bindings', async () => {
+      await underTest.removeBindingsOfFolders(['file:///not/a/workspace/folder']);
     });
 
     test('If connectionId not provided, it should default to <default>', async () => {
