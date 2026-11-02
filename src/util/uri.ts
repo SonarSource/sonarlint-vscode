@@ -20,6 +20,7 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { trimEnd } from 'lodash';
 
 // See https://github.com/Microsoft/vscode-languageserver-node/issues/105
 export function code2ProtocolConverter(value: vscode.Uri) {
@@ -42,7 +43,7 @@ export function isSameUri(protocolUri: string, uri: vscode.Uri) {
 }
 
 export function getFileNameFromFullPath(fullPath: string): string {
-  const withoutTrailingSlash = fullPath.replace(/\/+$/, '');
+  const withoutTrailingSlash = trimEnd(fullPath, '/');
   const fileName = withoutTrailingSlash.substring(withoutTrailingSlash.lastIndexOf('/') + 1);
   return decodeURIComponent(fileName);
 }
@@ -63,7 +64,7 @@ export function getRelativePathFromFullPath(
   const relativePathWithoutFileName = relativePathWithFileName.replace(`${fileName}`, ''); // samples/
   // a folder given with a trailing separator has no file name to remove, only the separators left behind
   const relativePath = relativePathWithFileName.endsWith(path.sep) //NB: Use os-specific path separator
-    ? relativePathWithoutFileName.replace(/[\\/]+$/, '')
+    ? trimEnd(relativePathWithoutFileName, String.raw`\/`)
     : relativePathWithoutFileName;
   if (specifyWorkspaceFolderName) {
     return relativePath ? `${workspaceFolder.name} • ${relativePath}` : workspaceFolder.name;
