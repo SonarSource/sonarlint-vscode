@@ -10,8 +10,6 @@
 import * as VSCode from 'vscode';
 import { ServerType } from '../connected/connections';
 import { BindingSuggestion } from '../lsp/protocol';
-import { ProjectBinding } from '../connected/binding';
-import { SONARLINT_CATEGORY } from '../settings/settings';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 
 const EU_SONARCLOUD_BASE_URL = 'https://sonarcloud.io';
@@ -51,11 +49,4 @@ export function buildProjectOverviewBaseServerUrl(serverType: ServerType, server
 
 export interface AutoBindProjectQuickPickItem extends VSCode.QuickPickItem {
   connectionId?: string;
-}
-
-export function getConnectionIdForFile(fileUri: string) {
-  const workspaceFolder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.file(fileUri));
-  const bindingConfig = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder?.uri)
-    .get<ProjectBinding>('connectedMode.project');
-  return bindingConfig?.connectionId ?? '';
 }
