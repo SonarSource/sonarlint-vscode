@@ -518,6 +518,9 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     ConnectionSettingsService.instance.reportConnectionCheckResult(checkResult);
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
   });
+  languageClient.onNotification(ExtendedClient.BindingsChanged.type, () => {
+    allConnectionsTreeDataProvider.refresh();
+  });
   languageClient.onNotification(ExtendedClient.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
   );
