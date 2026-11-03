@@ -43,7 +43,9 @@ export class BindingService {
   private static _instance: BindingService;
 
   private bindings: ExtendedServer.BindingInfo[] = [];
-  private latestBindingsRequest = 0;
+  private refreshing: Promise<void> = Promise.resolve();
+  private readonly _onDidChangeBindings = new VSCode.EventEmitter<void>();
+  readonly onDidChangeBindings = this._onDidChangeBindings.event;
 
   static init(
     languageClient: SonarLintExtendedLanguageClient,
@@ -69,17 +71,11 @@ export class BindingService {
    * Asks the language server for the binding of every scope, whichever source declares it: the folder settings or a
    * `.sonar-config.json`.
    */
-  async loadBindings(): Promise<void> {
-    const request = ++this.latestBindingsRequest;
-    let loaded: ExtendedServer.BindingInfo[];
-    try {
-      loaded = await this.languageClient.getBindings();
-    } catch (error) {
-      loaded = [];
-    }
-    if (request === this.latestBindingsRequest) {
-      this.bindings = loaded;
-    }
+  refreshBindings(): void {
+    this.refreshing = this.refreshing.then(async () => {
+      this.bindings = await this.languageClient.getBindings().catch(() => this.bindings);
+      this._onDidChangeBindings.fire();
+    });
   }
 
   allBindings(): ExtendedServer.BindingInfo[] {

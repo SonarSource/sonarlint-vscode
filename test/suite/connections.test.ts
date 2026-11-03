@@ -38,7 +38,6 @@ const mockClient = {
 
 async function waitForBindingToReachTheLanguageServer(projectKey: string) {
   for (let attempt = 0; attempt < 50; attempt++) {
-    await BindingService.instance.loadBindings();
     if (BindingService.instance.getBoundProjectKeys(undefined).includes(projectKey)) {
       return;
     }

@@ -251,6 +251,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   RemediationService.init();
   SharedConnectedModeSettingsService.init(languageClient, FileSystemServiceImpl.instance, context);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance, SharedConnectedModeSettingsService.instance);
+  BindingService.instance.refreshBindings();
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance, FileSystemServiceImpl.instance, languageClient);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
@@ -519,7 +520,7 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
   });
   languageClient.onNotification(ExtendedClient.BindingsChanged.type, () => {
-    allConnectionsTreeDataProvider.refresh();
+    BindingService.instance.refreshBindings();
   });
   languageClient.onNotification(ExtendedClient.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)

@@ -367,29 +367,56 @@ suite('Bindings Test Suite', () => {
       return { service, requests };
     }
 
-    test('Should keep the answer of the latest request when an older one answers last', async () => {
+    const nextTick = () => new Promise(resolve => setTimeout(resolve, 0));
+
+    test('Should fetch once per refresh and announce every update', async () => {
       const { service, requests } = bindingServiceAnsweringLater();
+      let announced = 0;
+      service.onDidChangeBindings(() => announced++);
 
-      const older = service.loadBindings();
-      const newer = service.loadBindings();
-      requests[1].resolve([newBinding]);
-      await newer;
+      service.refreshBindings();
+      service.refreshBindings();
+      await nextTick();
       requests[0].resolve([oldBinding]);
-      await older;
+      await nextTick();
+      requests[1].resolve([newBinding]);
+      await nextTick();
 
+      expect(requests).to.have.length(2);
+      expect(announced).to.equal(2);
       expect(service.allBindings()).to.deep.equal([newBinding]);
     });
 
-    test('Should keep the answer of the latest request when an older one fails last', async () => {
+    test('Should not send a request while the previous one is running', async () => {
       const { service, requests } = bindingServiceAnsweringLater();
 
-      const older = service.loadBindings();
-      const newer = service.loadBindings();
-      requests[1].resolve([newBinding]);
-      await newer;
-      requests[0].reject(new Error('superseded'));
-      await older;
+      service.refreshBindings();
+      service.refreshBindings();
+      await nextTick();
+      expect(requests).to.have.length(1);
+      requests[0].resolve([oldBinding]);
+      await nextTick();
 
+      expect(requests).to.have.length(2);
+    });
+
+    test('Should keep the previous bindings when a request fails and still serve the next refresh', async () => {
+      const { service, requests } = bindingServiceAnsweringLater();
+      service.refreshBindings();
+      await nextTick();
+      requests[0].resolve([oldBinding]);
+      await nextTick();
+
+      service.refreshBindings();
+      await nextTick();
+      requests[1].reject(new Error('failed'));
+      await nextTick();
+      expect(service.allBindings()).to.deep.equal([oldBinding]);
+
+      service.refreshBindings();
+      await nextTick();
+      requests[2].resolve([newBinding]);
+      await nextTick();
       expect(service.allBindings()).to.deep.equal([newBinding]);
     });
   });

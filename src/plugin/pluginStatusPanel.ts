@@ -66,8 +66,7 @@ export class PluginStatusPanel {
     this.languageClient = languageClient;
   }
 
-  private async getFolders(): Promise<FolderOption[]> {
-    await BindingService.instance.loadBindings();
+  private getFolders(): FolderOption[] {
     const bindings = BindingService.instance.allBindings();
     const workspaceFolders = VSCode.workspace.workspaceFolders ?? [];
     const folderOptions = workspaceFolders.map(folder => {
@@ -121,8 +120,11 @@ export class PluginStatusPanel {
 
     panel.webview.onDidReceiveMessage(msg => instance.handleMessage(msg), null, context.subscriptions);
 
+    const bindingsSubscription = BindingService.instance.onDidChangeBindings(() => void instance.fetchAndShow());
+
     panel.onDidDispose(
       () => {
+        bindingsSubscription.dispose();
         PluginStatusPanel.instance = undefined;
       },
       null,
@@ -150,7 +152,7 @@ export class PluginStatusPanel {
   }
 
   private async fetchAndShow(configScopeId?: string) {
-    this.folders = await this.getFolders();
+    this.folders = this.getFolders();
     let statuses: ExtendedServer.PluginStatusDto[] = [];
     let scopeForApi: string | null = null;
 
@@ -206,7 +208,7 @@ export class PluginStatusPanel {
       return;
     }
 
-    instance.folders = await instance.getFolders();
+    instance.folders = instance.getFolders();
 
     let currentScopeId = instance.selectedScopeId;
     const folderExists = instance.folders.find(f => f.configScopeId === currentScopeId);

@@ -109,7 +109,9 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
   readonly onDidChangeTreeData: VSCode.Event<ConnectionsNode | undefined> = this._onDidChangeTreeData.event;
   private allConnections = { __sonarqube__: Array.from<Connection>([]), __sonarcloud__: Array.from<Connection>([]) };
 
-  constructor(private readonly client: SonarLintExtendedLanguageClient) {}
+  constructor(private readonly client: SonarLintExtendedLanguageClient) {
+    BindingService.instance.onDidChangeBindings(() => this.refresh());
+  }
 
   async getConnections(type: ConnectionType): Promise<Connection[]> {
     const contextValue = type === '__sonarqube__' ? 'sonarqubeConnection' : 'sonarcloudConnection';
@@ -166,7 +168,6 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
   async getChildren(element?: ConnectionsNode): Promise<ConnectionsNode[]> {
     if (!element) {
-      await BindingService.instance.loadBindings();
       return this.getInitialState();
     } else if (element.contextValue === 'sonarQubeGroup') {
       return this.getConnections('__sonarqube__');
