@@ -120,7 +120,7 @@ export class PluginStatusPanel {
 
     panel.webview.onDidReceiveMessage(msg => instance.handleMessage(msg), null, context.subscriptions);
 
-    const bindingsSubscription = BindingService.instance.onDidChangeBindings(() => void instance.fetchAndShow());
+    const bindingsSubscription = BindingService.instance.onDidChangeBindings(() => void instance.fetchAndShow(undefined, false));
 
     panel.onDidDispose(
       () => {
@@ -151,7 +151,7 @@ export class PluginStatusPanel {
     }
   }
 
-  private async fetchAndShow(configScopeId?: string) {
+  private async fetchAndShow(configScopeId?: string, reveal = true) {
     this.folders = this.getFolders();
     let statuses: ExtendedServer.PluginStatusDto[] = [];
     let scopeForApi: string | null = null;
@@ -176,9 +176,11 @@ export class PluginStatusPanel {
       const response = await this.languageClient.getPluginStatuses(scopeForApi);
       statuses = response?.pluginStatuses ?? [];
     } catch (e) {
-      VSCode.window.showErrorMessage(
-        `Could not retrieve plugin statuses: ${e instanceof Error ? e.message : String(e)}`
-      );
+      if (reveal) {
+        VSCode.window.showErrorMessage(
+          `Could not retrieve plugin statuses: ${e instanceof Error ? e.message : String(e)}`
+        );
+      }
       return;
     }
 
@@ -198,8 +200,10 @@ export class PluginStatusPanel {
       );
     }
 
-    this.panel.reveal();
-    VSCode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
+    if (reveal) {
+      this.panel.reveal();
+      VSCode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
+    }
   }
 
   public static async refresh(statuses: ExtendedServer.PluginStatusDto[], updatedScopeId: string) {
