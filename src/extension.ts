@@ -251,6 +251,7 @@ export async function activate(context: VSCode.ExtensionContext) {
   RemediationService.init();
   SharedConnectedModeSettingsService.init(languageClient, FileSystemServiceImpl.instance, context);
   BindingService.init(languageClient, context.workspaceState, ConnectionSettingsService.instance, SharedConnectedModeSettingsService.instance);
+  BindingService.instance.refreshBindings();
   AutoBindingService.init(BindingService.instance, context.workspaceState, ConnectionSettingsService.instance, FileSystemServiceImpl.instance, languageClient);
   migrateConnectedModeSettings(getCurrentConfiguration(), ConnectionSettingsService.instance).catch(e => {
     /* ignored */
@@ -511,12 +512,15 @@ function installCustomRequestHandlers(context: VSCode.ExtensionContext) {
     context.globalState.update(CAN_SHOW_MISSING_REQUIREMENT_NOTIF, false);
   })
   languageClient.onNotification(ExtendedClient.MaybeShowWiderLanguageSupportNotification.type, (language) => maybeShowWiderLanguageSupportNotification(context, language));
-  languageClient.onNotification(ExtendedClient.RemoveBindingsForDeletedConnections.type, async (connectionIds) => {
-    await BindingService.instance.removeBindingsForRemovedConnections(connectionIds);
+  languageClient.onNotification(ExtendedClient.RemoveBindingsForDeletedConnections.type, async (folderUris) => {
+    await BindingService.instance.removeBindingsOfFolders(folderUris);
   });
   languageClient.onNotification(ExtendedClient.ReportConnectionCheckResult.type, checkResult => {
     ConnectionSettingsService.instance.reportConnectionCheckResult(checkResult);
     allConnectionsTreeDataProvider.reportConnectionCheckResult(checkResult);
+  });
+  languageClient.onNotification(ExtendedClient.BindingsChanged.type, () => {
+    BindingService.instance.refreshBindings();
   });
   languageClient.onNotification(ExtendedClient.ShowNotificationForFirstSecretsIssueNotification.type, () =>
     showNotificationForFirstSecretsIssue(context)
