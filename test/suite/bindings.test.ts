@@ -16,7 +16,7 @@ import {
 
 import * as VSCode from 'vscode';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
-import { Connection, ServerType, WorkspaceFolderItem } from '../../src/connected/connections';
+import { ServerType, WorkspaceFolderItem } from '../../src/connected/connections';
 import { ExtendedClient, ExtendedServer, ConnectionCheckResult } from '../../src/lsp/protocol';
 import { DEFAULT_CONNECTION_ID } from '../../src/commons';
 import { sleep } from '../testutil';
@@ -189,7 +189,7 @@ suite('Bindings Test Suite', () => {
       expect(selectedFolder).to.equal(workspaceFolders[0].name);
     }).timeout(5_000);
 
-    test('Delete bindings for connection', async () => {
+    test('Remove bindings of the folders the language server asks for', async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
 
       let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
@@ -202,14 +202,7 @@ suite('Bindings Test Suite', () => {
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(binding).to.deep.equal(TEST_BINDING);
 
-      await underTest.deleteBindingsForConnection(
-        new Connection(
-          TEST_SONARQUBE_CONNECTION.connectionId,
-          TEST_SONARQUBE_CONNECTION.connectionId,
-          'sonarqubeConnection',
-          'ok'
-        )
-      );
+      await underTest.removeBindingsOfFolders([workspaceFolder.uri.toString()]);
 
       binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
@@ -217,58 +210,16 @@ suite('Bindings Test Suite', () => {
       expect(binding).to.be.empty;
     });
 
-    test('Delete bindings for deleted connection', async () => {
+    test('Ignore folders that are not in the workspace when removing bindings', async () => {
       const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-
-      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
-      expect(binding).to.be.empty;
-
       await underTest.saveSuggestedBinding(TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, TEST_BINDING.connectionId);
 
-      binding = VSCode.workspace
+      await underTest.removeBindingsOfFolders(['file:///not/a/workspace/folder']);
+
+      const binding = VSCode.workspace
         .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
         .get<ProjectBinding>(BINDING_SETTINGS);
       expect(binding).to.deep.equal(TEST_BINDING);
-
-      await underTest.removeBindingsForRemovedConnections([TEST_BINDING.connectionId]);
-
-      binding = VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-        .get<ProjectBinding>(BINDING_SETTINGS);
-      expect(binding).to.be.empty;
-    })
-
-    test('Default connection ID to <default> if not provided during deletion', async () => {
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY)
-        .update(
-          CONNECTED_MODE_SETTINGS_SONARQUBE,
-          [DEFAULT_TEST_SONARQUBE_CONNECTION],
-          VSCode.ConfigurationTarget.Global
-        );
-      await resetBindings();
-
-      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-
-      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
-      expect(binding).to.be.empty;
-
-      await underTest.saveSuggestedBinding(DEFAULT_TEST_BINDING.projectKey, workspaceFolder, ExtendedServer.BindingSuggestionOrigin.PROJECT_NAME, DEFAULT_CONNECTION_ID);
-
-      binding = VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-        .get<ProjectBinding>(BINDING_SETTINGS);
-      expect(binding).to.deep.equal({
-        connectionId: DEFAULT_CONNECTION_ID,
-        projectKey: 'test.project.key'
-      });
-
-      await underTest.deleteBindingsForConnection(
-        new Connection(undefined, TEST_SONARQUBE_CONNECTION.connectionId, 'sonarqubeConnection', 'ok')
-      );
-
-      const defaultConnectionBindings = await underTest.getAllBindings().get(DEFAULT_CONNECTION_ID);
-      expect(defaultConnectionBindings).to.be.equal(undefined);
     });
 
     test('If connectionId not provided, it should default to <default>', async () => {
@@ -319,29 +270,6 @@ suite('Bindings Test Suite', () => {
         connectionId: TEST_BINDING.connectionId,
         projectKey: 'projectKey2'
       });
-    });
-
-    test('Unbound folder should be autobound', () => {
-      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-
-      let binding = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri).get(BINDING_SETTINGS);
-      expect(binding).to.be.empty;
-
-      expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.true;
-    });
-
-    test('Bound folder should not be autobound', async () => {
-      const workspaceFolder = VSCode.workspace.workspaceFolders[0];
-
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY)
-        .update(CONNECTED_MODE_SETTINGS_SONARQUBE, [TEST_SONARQUBE_CONNECTION], VSCode.ConfigurationTarget.Global);
-
-      await VSCode.workspace
-        .getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri)
-        .update(BINDING_SETTINGS, TEST_BINDING);
-
-      expect(underTest.shouldBeAutoBound(workspaceFolder)).to.be.false;
     });
 
     test('should get base server url', async () => {
@@ -425,4 +353,71 @@ suite('Bindings Test Suite', () => {
       expect(result.configurationScopeId).to.equal(workspaceFolder.uri.toString())
     }).timeout(5_000);
   })
+
+  suite('Loading the bindings', () => {
+    const oldBinding: ExtendedServer.BindingInfo = { scopeUri: 'file:///ws', name: 'ws', relativePath: '.', projectKey: 'old', connectionId: 'test', source: 'SETTINGS' };
+    const newBinding = { ...oldBinding, projectKey: 'new' };
+
+    function bindingServiceAnsweringLater() {
+      const requests: Array<{ resolve: (bindings: ExtendedServer.BindingInfo[]) => void; reject: (error: Error) => void }> = [];
+      const client = {
+        getBindings: () => new Promise<ExtendedServer.BindingInfo[]>((resolve, reject) => requests.push({ resolve, reject }))
+      } as unknown as SonarLintExtendedLanguageClient;
+      const service = new BindingService(client, mockWorkspaceState, mockSettingsService, sharedConnectedModeSettingsService);
+      return { service, requests };
+    }
+
+    const nextTick = () => new Promise(resolve => setTimeout(resolve, 0));
+
+    test('Should fetch once per refresh and announce every update', async () => {
+      const { service, requests } = bindingServiceAnsweringLater();
+      let announced = 0;
+      service.onDidChangeBindings(() => announced++);
+
+      service.refreshBindings();
+      service.refreshBindings();
+      await nextTick();
+      requests[0].resolve([oldBinding]);
+      await nextTick();
+      requests[1].resolve([newBinding]);
+      await nextTick();
+
+      expect(requests).to.have.length(2);
+      expect(announced).to.equal(2);
+      expect(service.allBindings()).to.deep.equal([newBinding]);
+    });
+
+    test('Should not send a request while the previous one is running', async () => {
+      const { service, requests } = bindingServiceAnsweringLater();
+
+      service.refreshBindings();
+      service.refreshBindings();
+      await nextTick();
+      expect(requests).to.have.length(1);
+      requests[0].resolve([oldBinding]);
+      await nextTick();
+
+      expect(requests).to.have.length(2);
+    });
+
+    test('Should keep the previous bindings when a request fails and still serve the next refresh', async () => {
+      const { service, requests } = bindingServiceAnsweringLater();
+      service.refreshBindings();
+      await nextTick();
+      requests[0].resolve([oldBinding]);
+      await nextTick();
+
+      service.refreshBindings();
+      await nextTick();
+      requests[1].reject(new Error('failed'));
+      await nextTick();
+      expect(service.allBindings()).to.deep.equal([oldBinding]);
+
+      service.refreshBindings();
+      await nextTick();
+      requests[2].resolve([newBinding]);
+      await nextTick();
+      expect(service.allBindings()).to.deep.equal([newBinding]);
+    });
+  });
 });

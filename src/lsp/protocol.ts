@@ -312,6 +312,10 @@ export namespace ExtendedClient {
     export const type = new lsp.NotificationType<ConnectionCheckResult>('sonarlint/reportConnectionCheckResult');
   }
 
+  export namespace BindingsChanged {
+    export const type = new lsp.NotificationType0('sonarlint/bindingsChanged');
+  }
+
   export enum CanShowMissingRequirementNotificationResult {
     Full = "full",
     ErrorOnly = "error_only",
@@ -612,6 +616,19 @@ export namespace ExtendedServer {
     export const type = new lsp.RequestType<GetRemoteProjectNamesParams, { [key: string]: string }, null>(
       'sonarlint/getRemoteProjectNamesByProjectKeys'
     );
+  }
+
+  export interface BindingInfo {
+    scopeUri: string;
+    name: string;
+    relativePath: string;
+    projectKey: string;
+    connectionId: string;
+    source: 'SETTINGS' | 'SONAR_CONFIG';
+  }
+
+  export namespace GetBindings {
+    export const type = new lsp.RequestType0<BindingInfo[], null>('sonarlint/getBindings');
   }
 
   export interface GenerateTokenParams {

@@ -14,6 +14,7 @@ import * as path from 'path';
 import { sampleFolderLocation, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
 import { ThemeIcon } from 'vscode';
 import { ConnectionSettingsService } from '../../src/settings/connectionsettings';
+import { BindingService } from '../../src/connected/binding';
 
 const CONNECTED_MODE_SETTINGS = 'connectedMode.connections';
 const CONNECTED_MODE_SETTINGS_SONARQUBE = 'connectedMode.connections.sonarqube';
@@ -34,6 +35,15 @@ const mockClient = {
     return projectKeysToNames;
   }
 } as SonarLintExtendedLanguageClient;
+
+async function waitForBindingToReachTheLanguageServer(projectKey: string) {
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if (BindingService.instance.getBoundProjectKeys(undefined).includes(projectKey)) {
+      return;
+    }
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+}
 
 suite('Connected Mode Test Suite', () => {
   setup(async function () {
@@ -106,6 +116,7 @@ suite('Connected Mode Test Suite', () => {
         .getConfiguration('sonarlint', sampleFolderUri)
         .update('connectedMode.project', { projectKey: 'projectKey1' }, vscode.ConfigurationTarget.WorkspaceFolder);
 
+      await waitForBindingToReachTheLanguageServer('projectKey1');
       const underTest = new AllConnectionsTreeDataProvider(mockClient);
       ConnectionSettingsService.instance.reportConnectionCheckResult({
         connectionId: '<default>',

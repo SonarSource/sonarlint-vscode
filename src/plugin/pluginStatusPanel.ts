@@ -14,7 +14,7 @@ import { escapeHtml, ResourceResolver } from '../util/webview';
 import { Commands } from '../util/commands';
 
 import { BindingService } from '../connected/binding';
-import { code2ProtocolConverter } from '../util/uri';
+import { code2ProtocolConverter, isSameUri } from '../util/uri';
 import { IdeLabsFlagManagementService } from '../labs/ideLabsFlagManagementService';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
@@ -67,15 +67,20 @@ export class PluginStatusPanel {
   }
 
   private getFolders(): FolderOption[] {
-    const bindingState = BindingService.instance.bindingStatePerFolder();
-    return (VSCode.workspace.workspaceFolders ?? []).map(folder => {
-      const connectionId = BindingService.instance.getConnectionIdForFolder(folder);
+    const bindings = BindingService.instance.allBindings();
+    const workspaceFolders = VSCode.workspace.workspaceFolders ?? [];
+    const folderOptions = workspaceFolders.map(folder => {
+      const binding = bindings.find(b => isSameUri(b.scopeUri, folder.uri));
       return {
-        label: connectionId ? `${folder.name} (${connectionId})` : folder.name,
+        label: binding ? `${folder.name} (${binding.connectionId})` : folder.name,
         configScopeId: code2ProtocolConverter(folder.uri),
-        isStandalone: !bindingState.get(folder.uri)
+        isStandalone: !binding
       };
     });
+    const boundSubScopeOptions = bindings
+      .filter(b => !workspaceFolders.some(folder => isSameUri(b.scopeUri, folder.uri)))
+      .map(b => ({ label: `${b.name} (${b.connectionId})`, configScopeId: b.scopeUri, isStandalone: false }));
+    return [...folderOptions, ...boundSubScopeOptions];
   }
 
   public static async showSupportedLanguages(
@@ -115,8 +120,11 @@ export class PluginStatusPanel {
 
     panel.webview.onDidReceiveMessage(msg => instance.handleMessage(msg), null, context.subscriptions);
 
+    const bindingsSubscription = BindingService.instance.onDidChangeBindings(() => void instance.fetchAndShow(undefined, false));
+
     panel.onDidDispose(
       () => {
+        bindingsSubscription.dispose();
         PluginStatusPanel.instance = undefined;
       },
       null,
@@ -143,7 +151,7 @@ export class PluginStatusPanel {
     }
   }
 
-  private async fetchAndShow(configScopeId?: string) {
+  private async fetchAndShow(configScopeId?: string, reveal = true) {
     this.folders = this.getFolders();
     let statuses: ExtendedServer.PluginStatusDto[] = [];
     let scopeForApi: string | null = null;
@@ -168,9 +176,11 @@ export class PluginStatusPanel {
       const response = await this.languageClient.getPluginStatuses(scopeForApi);
       statuses = response?.pluginStatuses ?? [];
     } catch (e) {
-      VSCode.window.showErrorMessage(
-        `Could not retrieve plugin statuses: ${e instanceof Error ? e.message : String(e)}`
-      );
+      if (reveal) {
+        VSCode.window.showErrorMessage(
+          `Could not retrieve plugin statuses: ${e instanceof Error ? e.message : String(e)}`
+        );
+      }
       return;
     }
 
@@ -190,8 +200,10 @@ export class PluginStatusPanel {
       );
     }
 
-    this.panel.reveal();
-    VSCode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
+    if (reveal) {
+      this.panel.reveal();
+      VSCode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
+    }
   }
 
   public static async refresh(statuses: ExtendedServer.PluginStatusDto[], updatedScopeId: string) {
