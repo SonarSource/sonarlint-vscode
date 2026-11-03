@@ -4,6 +4,7 @@
 * Update PHP analyzer 4.1 -> [4.2](https://github.com/SonarSource/sonar-php/releases/tag/4.2.0.27261)
 * Update IaC analyzer 2.24 -> [2.25](https://github.com/SonarSource/sonar-iac/releases/tag/2.25.0.24536)
 * Update Java analyzer 8.44 -> [8.46](https://github.com/SonarSource/sonar-java/releases/tag/8.46.0.59609)
+* Update IaC analyzer 2.25 -> [2.26](https://github.com/SonarSource/sonar-iac/releases/tag/2.26.0.24580)
 
 ## 6.2
 
