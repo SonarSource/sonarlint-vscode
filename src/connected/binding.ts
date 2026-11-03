@@ -43,6 +43,7 @@ export class BindingService {
   private static _instance: BindingService;
 
   private bindings: ExtendedServer.BindingInfo[] = [];
+  private latestBindingsRequest = 0;
 
   static init(
     languageClient: SonarLintExtendedLanguageClient,
@@ -69,10 +70,15 @@ export class BindingService {
    * `.sonar-config.json`.
    */
   async loadBindings(): Promise<void> {
+    const request = ++this.latestBindingsRequest;
+    let loaded: ExtendedServer.BindingInfo[];
     try {
-      this.bindings = await this.languageClient.getBindings();
+      loaded = await this.languageClient.getBindings();
     } catch (error) {
-      this.bindings = [];
+      loaded = [];
+    }
+    if (request === this.latestBindingsRequest) {
+      this.bindings = loaded;
     }
   }
 

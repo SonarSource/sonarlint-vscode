@@ -353,4 +353,44 @@ suite('Bindings Test Suite', () => {
       expect(result.configurationScopeId).to.equal(workspaceFolder.uri.toString())
     }).timeout(5_000);
   })
+
+  suite('Loading the bindings', () => {
+    const oldBinding: ExtendedServer.BindingInfo = { scopeUri: 'file:///ws', name: 'ws', relativePath: '.', projectKey: 'old', connectionId: 'test', source: 'SETTINGS' };
+    const newBinding = { ...oldBinding, projectKey: 'new' };
+
+    function bindingServiceAnsweringLater() {
+      const requests: Array<{ resolve: (bindings: ExtendedServer.BindingInfo[]) => void; reject: (error: Error) => void }> = [];
+      const client = {
+        getBindings: () => new Promise<ExtendedServer.BindingInfo[]>((resolve, reject) => requests.push({ resolve, reject }))
+      } as unknown as SonarLintExtendedLanguageClient;
+      const service = new BindingService(client, mockWorkspaceState, mockSettingsService, sharedConnectedModeSettingsService);
+      return { service, requests };
+    }
+
+    test('Should keep the answer of the latest request when an older one answers last', async () => {
+      const { service, requests } = bindingServiceAnsweringLater();
+
+      const older = service.loadBindings();
+      const newer = service.loadBindings();
+      requests[1].resolve([newBinding]);
+      await newer;
+      requests[0].resolve([oldBinding]);
+      await older;
+
+      expect(service.allBindings()).to.deep.equal([newBinding]);
+    });
+
+    test('Should keep the answer of the latest request when an older one fails last', async () => {
+      const { service, requests } = bindingServiceAnsweringLater();
+
+      const older = service.loadBindings();
+      const newer = service.loadBindings();
+      requests[1].resolve([newBinding]);
+      await newer;
+      requests[0].reject(new Error('superseded'));
+      await older;
+
+      expect(service.allBindings()).to.deep.equal([newBinding]);
+    });
+  });
 });
