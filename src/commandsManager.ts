@@ -165,12 +165,9 @@ export class CommandsManager {
           resolveIssueMultiStepInput(workspaceUri, issueKey, fileUri, isTaintIssue, isDependencyRisk)
       ),
       vscode.commands.registerCommand(Commands.REOPEN_LOCAL_ISSUES, () => IssueService.instance.reopenLocalIssues()),
-      vscode.commands.registerCommand(Commands.REMOVE_CONNECTION, async connection => {
-        const connectionDeleted = await ConnectionSettingsService.instance.removeConnection(connection);
-        if (connectionDeleted) {
-          await BindingService.instance.deleteBindingsForConnection(connection);
-        }
-      }),
+      vscode.commands.registerCommand(Commands.REMOVE_CONNECTION, connection =>
+        ConnectionSettingsService.instance.removeConnection(connection)
+      ),
       vscode.commands.registerCommand(Commands.EDIT_PROJECT_BINDING, binding =>
         BindingService.instance.createOrEditBinding(
           binding.connectionId,

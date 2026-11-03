@@ -25,7 +25,6 @@ const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
 const OPEN_FOLDER_ACTION = 'Open Folder';
 const BIND_MANUALLY_ACTION = 'Bind Manually';
-export const DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG = 'doNotAskAboutAutoBindingForFolder';
 
 async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
   const existingSettings = VSCode.workspace
@@ -42,6 +41,9 @@ async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
 
 export class BindingService {
   private static _instance: BindingService;
+
+  private bindings: ExtendedServer.BindingInfo[] = [];
+  private latestBindingsRequest = 0;
 
   static init(
     languageClient: SonarLintExtendedLanguageClient,
@@ -63,6 +65,39 @@ export class BindingService {
     return BindingService._instance;
   }
 
+  /**
+   * Asks the language server for the binding of every scope, whichever source declares it: the folder settings or a
+   * `.sonar-config.json`.
+   */
+  async loadBindings(): Promise<void> {
+    const request = ++this.latestBindingsRequest;
+    let loaded: ExtendedServer.BindingInfo[];
+    try {
+      loaded = await this.languageClient.getBindings();
+    } catch (error) {
+      loaded = [];
+    }
+    if (request === this.latestBindingsRequest) {
+      this.bindings = loaded;
+    }
+  }
+
+  allBindings(): ExtendedServer.BindingInfo[] {
+    return this.bindings;
+  }
+
+  getBoundProjectKeys(connectionId: string): string[] {
+    return [...new Set(this.bindingsOf(connectionId).map(binding => binding.projectKey))];
+  }
+
+  getBindingsOfProject(connectionId: string, projectKey: string): ExtendedServer.BindingInfo[] {
+    return this.bindingsOf(connectionId).filter(binding => binding.projectKey === projectKey);
+  }
+
+  private bindingsOf(connectionId: string): ExtendedServer.BindingInfo[] {
+    return this.bindings.filter(binding => (binding.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID));
+  }
+
   async deleteBindingWithConfirmation(binding: WorkspaceFolderItem): Promise<void> {
     const deleteAction = 'Delete';
     const confirm = await VSCode.window.showWarningMessage(
@@ -76,43 +111,22 @@ export class BindingService {
     return this.deleteBinding(binding);
   }
 
-  async deleteBinding(workspaceFolderItem: WorkspaceFolderItem | BoundFolder): Promise<void> {
-    const folder =
-      workspaceFolderItem instanceof WorkspaceFolderItem ? workspaceFolderItem.uri : workspaceFolderItem.folder;
+  async deleteBinding(workspaceFolderItem: WorkspaceFolderItem): Promise<void> {
+    return this.clearBindingSetting(workspaceFolderItem.uri);
+  }
+
+  async removeBindingsOfFolders(folderUris: string[]): Promise<void> {
+    for (const folderUri of folderUris) {
+      const folder = VSCode.workspace.getWorkspaceFolder(VSCode.Uri.parse(folderUri));
+      if (folder) {
+        await this.clearBindingSetting(folder);
+      }
+    }
+  }
+
+  private async clearBindingSetting(folder: VSCode.WorkspaceFolder): Promise<void> {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder);
     return config.update(BINDING_SETTINGS, undefined, VSCode.ConfigurationTarget.WorkspaceFolder);
-  }
-
-  async deleteBindingsForConnection(connection: Connection | string) {
-    const connectionId = typeof connection === 'string' ? connection : connection.id || DEFAULT_CONNECTION_ID;
-    const allBindings = this.getAllBindings();
-    const bindingsForConnection: Map<string, BoundFolder[]> = allBindings.get(connectionId);
-    if (bindingsForConnection) {
-      for (const folders of bindingsForConnection.values()) {
-        await Promise.all(folders.map(f => this.deleteBinding(f)));
-      }
-    }
-  }
-
-  getAllBindings(): Map<string, Map<string, BoundFolder[]>> {
-    const bindingsPerConnectionId = new Map<string, Map<string, BoundFolder[]>>();
-    for (const folder of VSCode.workspace.workspaceFolders || []) {
-      const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
-      const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
-      const projectKey = binding.projectKey;
-      if (projectKey) {
-        const connectionId = binding.connectionId || binding.serverId || DEFAULT_CONNECTION_ID;
-        if (!bindingsPerConnectionId.has(connectionId)) {
-          bindingsPerConnectionId.set(connectionId, new Map<string, BoundFolder[]>());
-        }
-        const connectionBindingsPerProjectKey = bindingsPerConnectionId.get(connectionId);
-        if (!connectionBindingsPerProjectKey.has(projectKey)) {
-          connectionBindingsPerProjectKey.set(projectKey, []);
-        }
-        connectionBindingsPerProjectKey.get(projectKey).push({ folder, binding });
-      }
-    }
-    return bindingsPerConnectionId;
   }
 
   bindingStatePerFolder(): Map<VSCode.Uri, boolean> {
@@ -123,12 +137,6 @@ export class BindingService {
       bindingStatePerFolder.set(folder.uri, binding.projectKey !== undefined);
     }
     return bindingStatePerFolder;
-  }
-
-  getConnectionIdForFolder(folder: VSCode.WorkspaceFolder): string | undefined {
-    const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, folder.uri);
-    const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
-    return binding?.connectionId ?? binding?.serverId;
   }
 
   async assistBinding(params: ExtendedClient.AssistBindingParams) {
@@ -369,21 +377,10 @@ export class BindingService {
     return itemsList;
   }
 
-  shouldBeAutoBound(workspaceFolder: VSCode.WorkspaceFolder) {
-    const foldersToBeIgnored = this.workspaceState.get<string[]>(DO_NOT_ASK_ABOUT_AUTO_BINDING_FOR_FOLDER_FLAG, []);
-    return !this.isBound(workspaceFolder) && !foldersToBeIgnored.includes(workspaceFolder.uri.toString());
-  }
-
   isBound(workspaceFolder: VSCode.WorkspaceFolder) {
     const config = VSCode.workspace.getConfiguration(SONARLINT_CATEGORY, workspaceFolder.uri);
     const binding = config.get<ProjectBinding>(BINDING_SETTINGS);
     return !!binding.projectKey;
-  }
-
-  async removeBindingsForRemovedConnections(connectionIds: string[]) {
-    for (const connectionId of connectionIds) {
-      await this.deleteBindingsForConnection(connectionId);
-    }
   }
 }
 
@@ -402,11 +399,6 @@ export interface ProjectBinding {
   projectKey: string;
   serverId?: string;
   connectionId?: string;
-}
-
-export interface BoundFolder {
-  folder: VSCode.WorkspaceFolder;
-  binding: ProjectBinding;
 }
 
 export interface ServerProject {
