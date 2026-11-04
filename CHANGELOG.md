@@ -5,6 +5,7 @@
 * Update IaC analyzer 2.24 -> [2.25](https://github.com/SonarSource/sonar-iac/releases/tag/2.25.0.24536)
 * Update Java analyzer 8.44 -> [8.46](https://github.com/SonarSource/sonar-java/releases/tag/8.46.0.59609)
 * Update IaC analyzer 2.25 -> [2.26](https://github.com/SonarSource/sonar-iac/releases/tag/2.26.0.24580)
+* Update Text & Secrets analyzer 2.53 -> [2.54](https://github.com/SonarSource/sonar-text/releases/tag/2.54.0.13918)
 
 ## 6.2
 
