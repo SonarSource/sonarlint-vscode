@@ -1056,6 +1056,26 @@
           "group": "inline"
         },
         {
+          "command": "SonarLint.ConnectToSonarQube",
+          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBindingsGroup",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.ConnectToSonarCloud",
+          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBindingsGroup",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.ConnectToSonarQube",
+          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBinding",
+          "group": "navigation"
+        },
+        {
+          "command": "SonarLint.ConnectToSonarCloud",
+          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBinding",
+          "group": "navigation"
+        },
+        {
           "command": "SonarLint.EditSonarQubeConnection",
           "title": "Edit",
           "when": "view == SonarLint.ConnectedMode && viewItem == sonarqubeConnection",
@@ -1441,7 +1461,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.ls",
       "artifactId": "sonarlint-language-server",
-      "version": "6.3.0.79951",
+      "version": "6.3.0.79960",
       "output": "server/sonarlint-ls.jar"
     },
     {
