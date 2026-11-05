@@ -44,6 +44,7 @@ export class BindingService {
 
   private bindings: ExtendedServer.BindingInfo[] = [];
   private refreshing: Promise<void> = Promise.resolve();
+  private warnedAboutUnresolvedBindings = false;
   private readonly _onDidChangeBindings = new VSCode.EventEmitter<void>();
   readonly onDidChangeBindings = this._onDidChangeBindings.event;
 
@@ -75,11 +76,29 @@ export class BindingService {
     this.refreshing = this.refreshing.then(async () => {
       this.bindings = await this.languageClient.getBindings().catch(() => this.bindings);
       this._onDidChangeBindings.fire();
+      this.warnOnceAboutUnresolvedBindings();
     });
   }
 
+  private warnOnceAboutUnresolvedBindings(): void {
+    const count = this.unresolvedBindings().length;
+    if (this.warnedAboutUnresolvedBindings || count === 0) {
+      return;
+    }
+    this.warnedAboutUnresolvedBindings = true;
+    const showAction = 'Show';
+    const subject = count === 1 ? '1 folder is' : `${count} folders are`;
+    VSCode.window
+      .showWarningMessage(`${subject} bound to a project whose connection is not configured.`, showAction)
+      .then(action => (action === showAction ? VSCode.commands.executeCommand('SonarLint.ConnectedMode.focus') : undefined));
+  }
+
   allBindings(): ExtendedServer.BindingInfo[] {
-    return this.bindings;
+    return this.bindings.filter(binding => binding.status !== 'MISSING_CONNECTION');
+  }
+
+  unresolvedBindings(): ExtendedServer.BindingInfo[] {
+    return this.bindings.filter(binding => binding.status === 'MISSING_CONNECTION');
   }
 
   getBoundProjectKeys(connectionId: string): string[] {
@@ -91,7 +110,7 @@ export class BindingService {
   }
 
   private bindingsOf(connectionId: string): ExtendedServer.BindingInfo[] {
-    return this.bindings.filter(binding => (binding.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID));
+    return this.allBindings().filter(binding => (binding.connectionId || DEFAULT_CONNECTION_ID) === (connectionId || DEFAULT_CONNECTION_ID));
   }
 
   async deleteBindingWithConfirmation(binding: WorkspaceFolderItem): Promise<void> {

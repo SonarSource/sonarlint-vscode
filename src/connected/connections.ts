@@ -48,6 +48,30 @@ export class ConfigScopeItem extends VSCode.TreeItem {
   }
 }
 
+export class UnresolvedBindingsGroup extends VSCode.TreeItem {
+  constructor() {
+    super('Needs attention', VSCode.TreeItemCollapsibleState.Expanded);
+    this.iconPath = new VSCode.ThemeIcon('warning', new VSCode.ThemeColor('list.warningForeground'));
+    this.contextValue = 'unresolvedBindingsGroup';
+  }
+}
+
+/**
+ * A folder that is declared bound to a project, whose connection does not exist.
+ */
+export class UnresolvedBindingItem extends VSCode.TreeItem {
+  constructor(public readonly binding: ExtendedServer.BindingInfo) {
+    super(
+      VSCode.Uri.parse(binding.scopeUri).path.replace(/\/$/, '').split('/').pop() || binding.name,
+      VSCode.TreeItemCollapsibleState.None
+    );
+    this.description = `${binding.projectKey}, no connection for ${binding.target}`;
+    this.tooltip = `'${binding.projectKey}' is not bound: no connection is configured for ${binding.target}`;
+    this.iconPath = new VSCode.ThemeIcon('warning', new VSCode.ThemeColor('list.warningForeground'));
+    this.contextValue = 'unresolvedBinding';
+  }
+}
+
 export class RemoteProject extends VSCode.TreeItem {
   constructor(
     public readonly connectionId: string,
@@ -102,7 +126,14 @@ export class ConnectionGroup extends VSCode.TreeItem {
   }
 }
 
-export type ConnectionsNode = Connection | ConnectionGroup | RemoteProject | WorkspaceFolderItem | ConfigScopeItem;
+export type ConnectionsNode =
+  | Connection
+  | ConnectionGroup
+  | RemoteProject
+  | WorkspaceFolderItem
+  | ConfigScopeItem
+  | UnresolvedBindingsGroup
+  | UnresolvedBindingItem;
 
 export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<ConnectionsNode> {
   private readonly _onDidChangeTreeData = new VSCode.EventEmitter<Connection | undefined>();
@@ -168,7 +199,10 @@ export class AllConnectionsTreeDataProvider implements VSCode.TreeDataProvider<C
 
   async getChildren(element?: ConnectionsNode): Promise<ConnectionsNode[]> {
     if (!element) {
-      return this.getInitialState();
+      const unresolved = BindingService.instance.unresolvedBindings();
+      return unresolved.length > 0 ? [...this.getInitialState(), new UnresolvedBindingsGroup()] : this.getInitialState();
+    } else if (element.contextValue === 'unresolvedBindingsGroup') {
+      return BindingService.instance.unresolvedBindings().map(binding => new UnresolvedBindingItem(binding));
     } else if (element.contextValue === 'sonarQubeGroup') {
       return this.getConnections('__sonarqube__');
     } else if (element.contextValue === 'sonarCloudGroup') {
