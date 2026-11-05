@@ -8,7 +8,7 @@
 
 import * as vscode from 'vscode';
 import { expect } from 'chai';
-import { AllConnectionsTreeDataProvider, ConnectionGroup } from '../../src/connected/connections';
+import { AllConnectionsTreeDataProvider, ConnectionGroup, UnresolvedBindingItem } from '../../src/connected/connections';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import * as path from 'path';
 import { sampleFolderLocation, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
@@ -88,6 +88,25 @@ suite('Connected Mode Test Suite', () => {
     test('should return same number of sonarcloud settings as in config file', async () => {
       const connectionConfig = vscode.workspace.getConfiguration('sonarlint.connectedMode.connections');
       expect(connectionConfig.sonarcloud.length).to.equal((await underTest.getConnections('__sonarcloud__')).length);
+    });
+  });
+
+  suite('Bindings without connection', () => {
+    test('should show the folder with what it is declared bound to', () => {
+      const item = new UnresolvedBindingItem({
+        scopeUri: 'file:///repo/moduleB/',
+        name: 'moduleB',
+        relativePath: 'moduleB',
+        projectKey: 'module-b',
+        source: 'SONAR_CONFIG',
+        status: 'MISSING_CONNECTION',
+        target: 'SonarQube Server http://unknown'
+      });
+
+      expect(item.label).to.equal('moduleB');
+      expect(item.description).to.equal('module-b, no connection for SonarQube Server http://unknown');
+      expect(item.contextValue).to.equal('unresolvedBinding');
+      expect((item.iconPath as ThemeIcon).id).to.equal('warning');
     });
   });
 

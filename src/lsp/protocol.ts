@@ -623,8 +623,10 @@ export namespace ExtendedServer {
     name: string;
     relativePath: string;
     projectKey: string;
-    connectionId: string;
+    connectionId?: string;
     source: 'SETTINGS' | 'SONAR_CONFIG';
+    status?: 'BOUND' | 'MISSING_CONNECTION';
+    target?: string;
   }
 
   export namespace GetBindings {

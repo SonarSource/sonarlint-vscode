@@ -15,6 +15,7 @@ import {
 } from '../../src/settings/connectionsettings';
 
 import * as VSCode from 'vscode';
+import * as sinon from 'sinon';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import { ServerType, WorkspaceFolderItem } from '../../src/connected/connections';
 import { ExtendedClient, ExtendedServer, ConnectionCheckResult } from '../../src/lsp/protocol';
@@ -418,6 +419,92 @@ suite('Bindings Test Suite', () => {
       requests[2].resolve([newBinding]);
       await nextTick();
       expect(service.allBindings()).to.deep.equal([newBinding]);
+    });
+
+    test('Should keep the bindings without connection apart from the bound ones', async () => {
+      const { service, requests } = bindingServiceAnsweringLater();
+      const withoutConnection: ExtendedServer.BindingInfo = {
+        scopeUri: 'file:///ws/moduleB',
+        name: 'moduleB',
+        relativePath: 'moduleB',
+        projectKey: 'module-b',
+        source: 'SONAR_CONFIG',
+        status: 'MISSING_CONNECTION',
+        target: 'serverUrl=http://unknown'
+      };
+
+      service.refreshBindings();
+      await nextTick();
+      requests[0].resolve([oldBinding, withoutConnection]);
+      await nextTick();
+
+      expect(service.allBindings()).to.deep.equal([oldBinding]);
+      expect(service.unresolvedBindings()).to.deep.equal([withoutConnection]);
+      expect(service.getBoundProjectKeys(undefined)).to.deep.equal([]);
+      expect(service.getBoundProjectKeys('test')).to.deep.equal(['old']);
+    });
+
+    suite('Warning about the bindings without connection', () => {
+      const withoutConnection: ExtendedServer.BindingInfo = {
+        scopeUri: 'file:///ws/moduleB',
+        name: 'moduleB',
+        relativePath: 'moduleB',
+        projectKey: 'module-b',
+        source: 'SONAR_CONFIG',
+        status: 'MISSING_CONNECTION',
+        target: 'SonarQube Server http://unknown'
+      };
+      let warning: sinon.SinonStub;
+
+      setup(() => {
+        warning = sinon.stub(VSCode.window, 'showWarningMessage').resolves(undefined);
+      });
+
+      teardown(() => {
+        warning.restore();
+      });
+
+      test('Should warn once, however many times the bindings are refreshed', async () => {
+        const { service, requests } = bindingServiceAnsweringLater();
+
+        service.refreshBindings();
+        await nextTick();
+        requests[0].resolve([oldBinding, withoutConnection]);
+        await nextTick();
+        service.refreshBindings();
+        await nextTick();
+        requests[1].resolve([oldBinding, withoutConnection]);
+        await nextTick();
+
+        expect(warning.calledOnce).to.be.true;
+        expect(warning.firstCall.args[0]).to.equal('1 folder is bound to a project whose connection is not configured.');
+      });
+
+      test('Should not warn when every binding has its connection', async () => {
+        const { service, requests } = bindingServiceAnsweringLater();
+
+        service.refreshBindings();
+        await nextTick();
+        requests[0].resolve([oldBinding]);
+        await nextTick();
+
+        expect(warning.called).to.be.false;
+      });
+
+      test('Should warn later if the first answer had none to report', async () => {
+        const { service, requests } = bindingServiceAnsweringLater();
+
+        service.refreshBindings();
+        await nextTick();
+        requests[0].resolve([]);
+        await nextTick();
+        service.refreshBindings();
+        await nextTick();
+        requests[1].resolve([withoutConnection]);
+        await nextTick();
+
+        expect(warning.calledOnce).to.be.true;
+      });
     });
   });
 });
