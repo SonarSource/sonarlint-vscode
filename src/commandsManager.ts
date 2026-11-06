@@ -24,8 +24,8 @@ import { AutoBindingService } from './connected/autobinding';
 import { BindingService } from './connected/binding';
 import { AllConnectionsTreeDataProvider, Connection, ConnectionType, ConnectionsNode } from './connected/connections';
 import {
-  connectToSonarQube,
-  connectToSonarCloud,
+  connectToSonarCloudFrom,
+  connectToSonarQubeFrom,
   editSonarQubeConnection,
   editSonarCloudConnection
 } from './connected/connectionsetup';
@@ -152,8 +152,8 @@ export class CommandsManager {
       vscode.commands.registerCommand(Commands.AUTO_BIND_WORKSPACE_FOLDERS, () =>
         AutoBindingService.instance.autoBindWorkspace()
       ),
-      vscode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, () => connectToSonarQube(this.context)()),
-      vscode.commands.registerCommand(Commands.CONNECT_TO_SONARCLOUD, () => connectToSonarCloud(this.context)()),
+      vscode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQubeFrom(this.context)),
+      vscode.commands.registerCommand(Commands.CONNECT_TO_SONARCLOUD, connectToSonarCloudFrom(this.context)),
       vscode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(this.context)),
       vscode.commands.registerCommand(Commands.EDIT_SONARCLOUD_CONNECTION, editSonarCloudConnection(this.context)),
       vscode.commands.registerCommand(Commands.ADD_PROJECT_BINDING, connection =>

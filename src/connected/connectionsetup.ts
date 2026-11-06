@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 
 import { BindingService } from './binding';
 import { Connection } from './connections';
+import { sonarCloudFormValuesOf, sonarQubeFormValuesOf } from './missingConnection';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 import { ExtendedServer, ConnectionCheckResult, BindingSuggestionOrigin } from '../lsp/protocol';
 import {
@@ -49,12 +50,12 @@ const SONARQUBE_SERVER_LABEL = 'SonarQube Server';
 const SONARQUBE_CLOUD_LABEL = 'SonarQube Cloud';
 
 export function connectToSonarQube(context: vscode.ExtensionContext) {
-  return (serverUrl='', projectKey='', suggestionOrigin?: BindingSuggestionOrigin, folderUri?: vscode.Uri) => {
+  return (serverUrl='', projectKey='', suggestionOrigin?: BindingSuggestionOrigin, folderUri?: vscode.Uri, connectionId='') => {
     const initialState = {
       conn: {
         serverUrl,
         token: '',
-        connectionId: '',
+        connectionId,
         projectKey,
         suggestionOrigin,
         folderUri: folderUri?.toString(false)
@@ -66,12 +67,12 @@ export function connectToSonarQube(context: vscode.ExtensionContext) {
 
 
 export function connectToSonarCloud(context: vscode.ExtensionContext) {
-  return (organizationKey='', projectKey='', suggestionOrigin?: BindingSuggestionOrigin, region: SonarCloudRegion='EU', folderUri?: vscode.Uri) => {
+  return (organizationKey='', projectKey='', suggestionOrigin?: BindingSuggestionOrigin, region: SonarCloudRegion='EU', folderUri?: vscode.Uri, connectionId='') => {
     const initialState = {
       conn: {
         organizationKey,
         token: '',
-        connectionId: '',
+        connectionId,
         projectKey,
         suggestionOrigin,
         folderUri: folderUri?.toString(false),
@@ -79,6 +80,20 @@ export function connectToSonarCloud(context: vscode.ExtensionContext) {
       }
     };
     initializeAndRevealPanel(context, { mode: 'create', initialState }, SONARQUBE_CLOUD_LABEL);
+  };
+}
+
+export function connectToSonarQubeFrom(context: vscode.ExtensionContext) {
+  return (item?: { binding?: ExtendedServer.BindingInfo }) => {
+    const { serverUrl, connectionId } = sonarQubeFormValuesOf(item);
+    connectToSonarQube(context)(serverUrl, '', undefined, undefined, connectionId);
+  };
+}
+
+export function connectToSonarCloudFrom(context: vscode.ExtensionContext) {
+  return (item?: { binding?: ExtendedServer.BindingInfo }) => {
+    const { organization, region, connectionId } = sonarCloudFormValuesOf(item);
+    connectToSonarCloud(context)(organization, '', undefined, region, undefined, connectionId);
   };
 }
 
@@ -251,7 +266,7 @@ function renderConnectionSetupPanel(context: vscode.ExtensionContext, webview: v
           Connection Name
         </vscode-text-field>
         <input type="hidden" id="connectionId-initial" value="${initialConnectionId}" />
-        <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create'}" />
+        <input type="hidden" id="shouldGenerateConnectionId" value="${mode === 'create' && !initialConnectionId}" />
         <input type="hidden" id="projectKey" value="${maybeProjectKey}" />
         <input type="hidden" id="suggestionOrigin" value="${suggestionOrigin}" />
         <input type="hidden" id="folderUri" value="${maybeFolderUri}" />
