@@ -8,7 +8,15 @@
 
 import * as vscode from 'vscode';
 import { expect } from 'chai';
-import { AllConnectionsTreeDataProvider, ConnectionGroup, UnresolvedBindingItem } from '../../src/connected/connections';
+import * as sinon from 'sinon';
+import {
+  AllConnectionsTreeDataProvider,
+  ConnectionGroup,
+  ConnectionsNode,
+  ServerType,
+  UnresolvedBindingItem,
+  UnresolvedBindingsGroup
+} from '../../src/connected/connections';
 import { SonarLintExtendedLanguageClient } from '../../src/lsp/client';
 import * as path from 'path';
 import { sampleFolderLocation, SETUP_TEARDOWN_HOOK_TIMEOUT } from './commons';
@@ -35,6 +43,14 @@ const mockClient = {
     return projectKeysToNames;
   }
 } as SonarLintExtendedLanguageClient;
+
+const nextTick = () => new Promise(resolve => setTimeout(resolve, 0));
+
+async function childrenOnceTheNamesAreLoaded(provider: AllConnectionsTreeDataProvider, node: ConnectionsNode) {
+  await provider.getChildren(node);
+  await nextTick();
+  return provider.getChildren(node);
+}
 
 async function waitForBindingToReachTheLanguageServer(projectKey: string) {
   for (let attempt = 0; attempt < 50; attempt++) {
@@ -91,7 +107,145 @@ suite('Connected Mode Test Suite', () => {
     });
   });
 
+  suite('Names of the bound projects', () => {
+    const connectionId = 'connection';
+    let boundProjectKeys: sinon.SinonStub;
+
+    setup(() => {
+      boundProjectKeys = sinon.stub(BindingService.instance, 'getBoundProjectKeys').returns(['projectKey1', 'projectKey2']);
+    });
+
+    teardown(() => {
+      boundProjectKeys.restore();
+    });
+
+    function clientAnswering(answer: () => Promise<{ [k: string]: string }>) {
+      const requests: string[][] = [];
+      const client = {
+        getRemoteProjectNamesByKeys: (_connectionId: string, keys: string[]) => {
+          requests.push(keys);
+          return answer();
+        }
+      } as unknown as SonarLintExtendedLanguageClient;
+      return { client, requests };
+    }
+
+    test('should show the projects at once, by key, while their names are loaded', async () => {
+      let answerWith: (names: { [k: string]: string }) => void;
+      const { client } = clientAnswering(() => new Promise(resolve => (answerWith = resolve)));
+      const underTest = new AllConnectionsTreeDataProvider(client);
+
+      const projects = underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+
+      expect(projects.map(p => p.label)).to.deep.equal(['projectKey1', 'projectKey2']);
+      expect((projects[0].iconPath as ThemeIcon).id).to.equal('loading~spin');
+      answerWith(projectKeysToNames);
+    });
+
+    test('should refresh the tree and show the names once they are loaded', async () => {
+      const { client } = clientAnswering(async () => projectKeysToNames);
+      const underTest = new AllConnectionsTreeDataProvider(client);
+      let refreshed = 0;
+      underTest.onDidChangeTreeData(() => refreshed++);
+
+      underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      await nextTick();
+
+      expect(refreshed).to.equal(1);
+      const projects = underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      expect(projects.map(p => p.label)).to.deep.equal(['Project Name 1', 'Project Name 2']);
+      expect((projects[0].iconPath as ThemeIcon).id).to.equal('cloud');
+    });
+
+    test('should ask for the names only once, however often the tree is drawn', async () => {
+      const { client, requests } = clientAnswering(async () => projectKeysToNames);
+      const underTest = new AllConnectionsTreeDataProvider(client);
+
+      underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      await nextTick();
+      underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      await nextTick();
+
+      expect(requests).to.deep.equal([['projectKey1', 'projectKey2']]);
+    });
+
+    test('should only ask for the names it does not know yet', async () => {
+      const { client, requests } = clientAnswering(async () => projectKeysToNames);
+      const underTest = new AllConnectionsTreeDataProvider(client);
+      underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      await nextTick();
+      boundProjectKeys.returns(['projectKey1', 'projectKey2', 'projectKey3']);
+
+      underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      await nextTick();
+
+      expect(requests).to.deep.equal([['projectKey1', 'projectKey2'], ['projectKey3']]);
+    });
+
+    test('should say that a project is not found when the server does not know it', async () => {
+      const { client } = clientAnswering(async () => ({ projectKey1: 'Project Name 1' }));
+      const underTest = new AllConnectionsTreeDataProvider(client);
+      underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      await nextTick();
+
+      const projects = underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+
+      expect(projects.map(p => p.label)).to.deep.equal(['Project Name 1', '<project not found>']);
+    });
+
+    test('should mark the projects whose names could not be loaded, without asking again by itself', async () => {
+      const { client, requests } = clientAnswering(() => Promise.reject(new Error('offline')));
+      const underTest = new AllConnectionsTreeDataProvider(client);
+
+      underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      await nextTick();
+      const projects = underTest.getBoundProjects(connectionId, ServerType.SonarCloud);
+      await nextTick();
+
+      expect(projects.map(p => p.label)).to.deep.equal(['projectKey1', 'projectKey2']);
+      expect((projects[0].iconPath as ThemeIcon).id).to.equal('question');
+      expect(requests).to.have.length(1);
+    });
+  });
+
   suite('Bindings without connection', () => {
+    test('should say what the group is about, since it replaces the welcome content', () => {
+      const group = new UnresolvedBindingsGroup();
+
+      expect(group.label).to.equal('Needs attention');
+      expect(group.description).to.equal('no matching connection');
+      expect(group.tooltip).to.contain('not bound').and.to.contain('create the missing connection');
+      expect(group.contextValue).to.equal('unresolvedBindingsGroup');
+    });
+
+    const unresolvedBinding = {
+      scopeUri: 'file:///repo/moduleB/',
+      name: 'moduleB',
+      relativePath: 'moduleB',
+      projectKey: 'module-b',
+      source: 'SONAR_CONFIG' as const,
+      status: 'MISSING_CONNECTION' as const
+    };
+
+    test('should offer to create a SonarQube Server connection for a config naming a server', () => {
+      expect(new UnresolvedBindingItem({ ...unresolvedBinding, serverUrl: 'http://unknown' }).contextValue).to.equal(
+        'unresolvedBindingServer'
+      );
+    });
+
+    test('should offer to create a SonarQube Cloud connection for a config naming an organization', () => {
+      expect(new UnresolvedBindingItem({ ...unresolvedBinding, organization: 'my-org', region: 'EU' }).contextValue).to.equal(
+        'unresolvedBindingCloud'
+      );
+    });
+
+    test('should offer both when only the connection id of the folder settings is known', () => {
+      expect(new UnresolvedBindingItem({ ...unresolvedBinding, source: 'SETTINGS', connectionId: 'my-connection' }).contextValue).to.equal(
+        'unresolvedBindingUnknown'
+      );
+    });
+
     test('should show the folder with what it is declared bound to', () => {
       const item = new UnresolvedBindingItem({
         scopeUri: 'file:///repo/moduleB/',
@@ -100,12 +254,11 @@ suite('Connected Mode Test Suite', () => {
         projectKey: 'module-b',
         source: 'SONAR_CONFIG',
         status: 'MISSING_CONNECTION',
-        target: 'SonarQube Server http://unknown'
+        serverUrl: 'http://unknown'
       });
 
       expect(item.label).to.equal('moduleB');
       expect(item.description).to.equal('module-b, no connection for SonarQube Server http://unknown');
-      expect(item.contextValue).to.equal('unresolvedBinding');
       expect((item.iconPath as ThemeIcon).id).to.equal('warning');
     });
   });
@@ -150,7 +303,7 @@ suite('Connected Mode Test Suite', () => {
       expect(connectionNode.label).to.equal(testSQConfig[0].serverUrl);
       expect((connectionNode.iconPath as ThemeIcon).id).to.equal('circle-large-outline');
 
-      const connectionChildren = await underTest.getChildren(connectionNode);
+      const connectionChildren = await childrenOnceTheNamesAreLoaded(underTest, connectionNode);
       expect(connectionChildren.length).to.equal(1);
       const remoteProjectNode = connectionChildren[0];
       expect(remoteProjectNode.label).to.equal('Project Name 1');

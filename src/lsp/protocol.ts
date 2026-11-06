@@ -626,7 +626,9 @@ export namespace ExtendedServer {
     connectionId?: string;
     source: 'SETTINGS' | 'SONAR_CONFIG';
     status?: 'BOUND' | 'MISSING_CONNECTION';
-    target?: string;
+    serverUrl?: string;
+    organization?: string;
+    region?: string;
   }
 
   export namespace GetBindings {

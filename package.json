@@ -1057,22 +1057,22 @@
         },
         {
           "command": "SonarLint.ConnectToSonarQube",
-          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBindingsGroup",
+          "when": "view == SonarLint.ConnectedMode && viewItem =~ /^unresolvedBinding(Server|Unknown)$/",
           "group": "inline"
         },
         {
           "command": "SonarLint.ConnectToSonarCloud",
-          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBindingsGroup",
+          "when": "view == SonarLint.ConnectedMode && viewItem =~ /^unresolvedBinding(Cloud|Unknown)$/",
           "group": "inline"
         },
         {
           "command": "SonarLint.ConnectToSonarQube",
-          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBinding",
+          "when": "view == SonarLint.ConnectedMode && viewItem =~ /^unresolvedBinding(Server|Unknown)$/",
           "group": "navigation"
         },
         {
           "command": "SonarLint.ConnectToSonarCloud",
-          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBinding",
+          "when": "view == SonarLint.ConnectedMode && viewItem =~ /^unresolvedBinding(Cloud|Unknown)$/",
           "group": "navigation"
         },
         {

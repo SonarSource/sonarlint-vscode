@@ -430,7 +430,7 @@ suite('Bindings Test Suite', () => {
         projectKey: 'module-b',
         source: 'SONAR_CONFIG',
         status: 'MISSING_CONNECTION',
-        target: 'serverUrl=http://unknown'
+        serverUrl: 'http://unknown'
       };
 
       service.refreshBindings();
@@ -452,7 +452,7 @@ suite('Bindings Test Suite', () => {
         projectKey: 'module-b',
         source: 'SONAR_CONFIG',
         status: 'MISSING_CONNECTION',
-        target: 'SonarQube Server http://unknown'
+        serverUrl: 'http://unknown'
       };
       let warning: sinon.SinonStub;
 
