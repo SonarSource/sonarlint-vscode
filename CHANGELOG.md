@@ -3,7 +3,7 @@
 * Remove the Java Symbolic Execution analyzer (advanced Java reliability rules) from standalone mode. These rules remain available in Connected Mode with SonarQube Server commercial editions and SonarQube Cloud
 * Update Go analyzer 1.47 -> [1.48](https://github.com/SonarSource/sonar-go/releases/tag/1.48.0.9254)
 * Update PHP analyzer 4.1 -> [4.2](https://github.com/SonarSource/sonar-php/releases/tag/4.2.0.27261)
-* Update IaC analyzer 2.24 -> [2.25](https://github.com/SonarSource/sonar-iac/releases/tag/2.25.0.24536) -> [2.26](https://github.com/SonarSource/sonar-iac/releases/tag/2.26.0.24580)
+* Update IaC analyzer 2.24 -> [2.25](https://github.com/SonarSource/sonar-iac/releases/tag/2.25.0.24536) -> [2.26](https://github.com/SonarSource/sonar-iac/releases/tag/2.26.0.24580) -> [2.27](https://github.com/SonarSource/sonar-iac/releases/tag/2.27.0.24646)
 * Update Java analyzer 8.44 -> [8.46](https://github.com/SonarSource/sonar-java/releases/tag/8.46.0.59609)
 * Update Text & Secrets analyzer 2.53 -> [2.54](https://github.com/SonarSource/sonar-text/releases/tag/2.54.0.13918)
 
