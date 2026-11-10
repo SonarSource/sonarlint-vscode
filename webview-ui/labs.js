@@ -151,7 +151,7 @@ function renderFeatures(features) {
           </a>
         </div>
         <div class="feature-details" id="feature-details-${index}" hidden>
-          <p class="feature-description">${escapeHtml(feature.description)}</p>
+          ${feature.description.split('\n\n').map(paragraph => `<p class="feature-description">${escapeHtml(paragraph)}</p>`).join('')}
           <a href="#" class="learn-more-link" data-element-type="learn-more-link" data-feature-id="${escapeHtml(feature.id)}">
             Learn More
           </a>

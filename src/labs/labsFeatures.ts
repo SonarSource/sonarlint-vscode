@@ -29,7 +29,8 @@ export const LABS_FEATURES: LabsFeature[] = [
     id: 'shared_multi_project_binding',
     title: 'Shared, multi-project binding',
     description:
-      'Bind folders in your workspace to SonarQube Server or Cloud projects. SonarQube for IDE automatically applies the bindings defined in your repository’s shared configuration file, created with SonarQube CLI or edited manually.',
+      'Bind folders in your workspace to SonarQube Server or Cloud projects. SonarQube for IDE automatically applies the bindings defined in your repository’s shared configuration file, created with SonarQube CLI or edited manually.\n\n' +
+      'Unlike regular connected mode, the bindings are committed with your repository, so everyone who opens it gets them automatically. SonarQube CLI uses the same file.',
     imageFile: 'labs/shared_multi_project_binding.png',
     tags: [FeatureTag.NEW, FeatureTag.EXPERIMENTAL, FeatureTag.CONNECTED_MODE],
     learnMoreUrl: 'https://docs.sonarsource.com/sonarqube-for-vs-code/connect-your-ide/setup#shared-multi-project-binding',
