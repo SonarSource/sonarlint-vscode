@@ -1,3 +1,7 @@
+## 6.4
+
+* Introduce Shared, multi-project binding - an experimental feature available inside SonarQube for IDE Labs. It binds the folders of your workspace to SonarQube (Server, Cloud) projects using the shared configuration file of your repository, created with SonarQube CLI or edited manually
+
 ## 6.3
 
 * Remove the Java Symbolic Execution analyzer (advanced Java reliability rules) from standalone mode. These rules remain available in Connected Mode with SonarQube Server commercial editions and SonarQube Cloud
