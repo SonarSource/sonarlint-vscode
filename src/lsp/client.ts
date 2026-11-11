@@ -60,6 +60,10 @@ export class SonarLintExtendedLanguageClient extends LanguageClient {
     return this.sendRequest(ExtendedServer.GetRemoteProjectsForConnection.type, { connectionId });
   }
 
+  fuzzySearchProjects(connectionId: string, searchText: string) {
+    return this.sendRequest(ExtendedServer.FuzzySearchProjects.type, { connectionId, searchText });
+  }
+
   generateToken(baseServerUrl: string): Promise<ExtendedServer.GenerateTokenResponse> {
     return this.sendRequest(ExtendedServer.GenerateToken.type, { baseServerUrl });
   }

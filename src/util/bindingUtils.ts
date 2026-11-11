@@ -9,7 +9,7 @@
 
 import * as VSCode from 'vscode';
 import { ServerType } from '../connected/connections';
-import { BindingSuggestion } from '../lsp/protocol';
+import { BindingSuggestion, ServerProject } from '../lsp/protocol';
 import { SonarCloudRegion } from '../settings/connectionsettings';
 
 const EU_SONARCLOUD_BASE_URL = 'https://sonarcloud.io';
@@ -24,19 +24,18 @@ export function serverProjectsToQuickPickItems(serverProjects: BindingSuggestion
   const itemsList: VSCode.QuickPickItem[] = [];
   if (serverProjects) {
     for (const project of serverProjects) {
-      itemsList.push({
-        label: project.sonarProjectName,
-        description: project.sonarProjectKey,
-        buttons: [
-          {
-            iconPath: new VSCode.ThemeIcon('link-external'),
-            tooltip: `View in ${serverType}`
-          }
-        ]
-      } as AutoBindProjectQuickPickItem);
+      itemsList.push(projectToQuickPickItem({ key: project.sonarProjectKey, name: project.sonarProjectName }, serverType));
     }
   }
   return itemsList;
+}
+
+export function projectToQuickPickItem(project: ServerProject, serverType: ServerType): VSCode.QuickPickItem {
+  return {
+    label: project.name,
+    description: project.key,
+    buttons: [{ iconPath: new VSCode.ThemeIcon('link-external'), tooltip: `View in ${serverType}` }]
+  };
 }
 
 export function buildProjectOverviewBaseServerUrl(serverType: ServerType, serverUrlOrOrganizationKey: string, region?: SonarCloudRegion) {
