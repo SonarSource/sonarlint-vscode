@@ -1,6 +1,7 @@
 ## 6.4
 
 * Introduce Shared, multi-project binding - an experimental feature available inside SonarQube for IDE Labs. It binds the folders of your workspace to SonarQube (Server, Cloud) projects using the shared configuration file of your repository, created with SonarQube CLI or edited manually
+* Update Python analyzer 5.32 -> [5.33](https://github.com/SonarSource/sonar-python/releases/tag/5.33.0.48743)
 
 ## 6.3
 
