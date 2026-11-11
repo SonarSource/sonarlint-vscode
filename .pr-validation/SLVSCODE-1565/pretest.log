@@ -1,0 +1,34 @@
+
+> sonarlint-vscode@6.4.0 pretest
+> webpack --mode development && tsc -p ./
+
+Not enabling Sentry upload plugin
+asset extension.js 10.5 MiB [emitted] (name: main) 1 related asset
+orphan modules 1020 KiB [orphan] 80 modules
+runtime modules 1.81 KiB 5 modules
+modules by path ./node_modules/ 8.06 MiB 1235 modules
+modules by path ./src/ 682 KiB 89 modules
++ 46 modules
+
+WARNING in ./node_modules/@sentry/server-utils/build/esm/integrations/hono/honoIntegration.js 35:37-63
+module.createRequire failed parsing argument.
+ @ ./node_modules/@sentry/server-utils/build/esm/index.js 36:0-89 36:0-89 36:0-89
+ @ ./node_modules/@sentry/node/build/esm/index.js 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229
+ @ ./src/monitoring/monitoring.ts 44:15-38
+ @ ./src/extension.ts 46:21-55
+
+WARNING in ./node_modules/@sentry/server-utils/build/esm/integrations/hono/honoIntegration.js 35:37-63
+module.createRequire failed parsing argument.
+ @ ./node_modules/@sentry/server-utils/build/esm/index.js 36:0-89 36:0-89 36:0-89
+ @ ./node_modules/@sentry/node/build/esm/index.js 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229
+ @ ./src/monitoring/monitoring.ts 44:15-38
+ @ ./src/extension.ts 46:21-55
+
+WARNING in ./node_modules/@sentry/server-utils/build/esm/integrations/mastra.js 187:25-31
+module.createRequire failed parsing argument.
+ @ ./node_modules/@sentry/server-utils/build/esm/index.js 44:0-61 44:0-61
+ @ ./node_modules/@sentry/node/build/esm/index.js 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229 4:0-1229
+ @ ./src/monitoring/monitoring.ts 44:15-38
+ @ ./src/extension.ts 46:21-55
+
+webpack 5.111.0 compiled with 3 warnings in 15227 ms

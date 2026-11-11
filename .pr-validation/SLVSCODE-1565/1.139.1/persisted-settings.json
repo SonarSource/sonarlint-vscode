@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "validation",
+        "projectKey": "needle"
+    }
+}

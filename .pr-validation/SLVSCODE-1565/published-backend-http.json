@@ -1,0 +1,9 @@
+[
+  "/api/components/search.protobuf?qualifiers=TRK&ps=500&p=1",
+  "/api/system/status",
+  "/api/authentication/validate?format=json",
+  "/api/components/search.protobuf?qualifiers=TRK&q=needle&p=1&ps=10",
+  "/api/components/search.protobuf?qualifiers=TRK&q=empty&p=1&ps=10",
+  "/api/components/show?component=empty",
+  "/api/components/search.protobuf?qualifiers=TRK&q=failure&p=1&ps=10"
+]

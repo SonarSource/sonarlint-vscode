@@ -1,0 +1,70 @@
+{
+  "head": "a202195c40097e79116c1bf881ca790134a106cd",
+  "vscode": "1.139.1",
+  "slls": "6.4.0.79986",
+  "server": "Local HTTP fixture, not a live SonarQube deployment",
+  "proofs": [
+    "Initial catalogue loaded through published SLLS; needle is absent",
+    "Enter during loading does not bind",
+    "Trimmed remote query reaches Core; key-only result is active and visible",
+    "Native navigation reaches the other visible result",
+    "Clearing input immediately restores the saved grouped catalogue",
+    "Empty server success leaves native empty state and saves nothing",
+    "HTTP 500 clears busy/results and shows one nonmodal error",
+    "Picker recovers; Core first result is active again",
+    "Actual saveManualBinding persisted needle and sent manual-binding telemetry exactly once"
+  ],
+  "persisted": {
+    "connectionId": "validation",
+    "projectKey": "needle"
+  },
+  "saveCount": 1,
+  "telemetryCount": 1,
+  "rpcCalls": [
+    {
+      "method": "sonarlint/getBindingSuggestion",
+      "params": {
+        "configScopeId": "file:///tmp/sonar-project-search-validation/proof-1.139.1/project-search-demo",
+        "connectionId": "validation"
+      }
+    },
+    {
+      "method": "sonarlint/getRemoteProjectsForConnection",
+      "params": {
+        "connectionId": "validation"
+      }
+    },
+    {
+      "method": "sonarlint/fuzzySearchProjects",
+      "params": {
+        "connectionId": "validation",
+        "searchText": "needle"
+      }
+    },
+    {
+      "method": "sonarlint/fuzzySearchProjects",
+      "params": {
+        "connectionId": "validation",
+        "searchText": "empty"
+      }
+    },
+    {
+      "method": "sonarlint/fuzzySearchProjects",
+      "params": {
+        "connectionId": "validation",
+        "searchText": "failure"
+      }
+    },
+    {
+      "method": "sonarlint/fuzzySearchProjects",
+      "params": {
+        "connectionId": "validation",
+        "searchText": "needle"
+      }
+    },
+    {
+      "method": "sonarlint/addedManualBindings",
+      "notification": true
+    }
+  ]
+}

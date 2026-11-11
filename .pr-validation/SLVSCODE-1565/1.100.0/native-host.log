@@ -1,0 +1,23 @@
+Warning: 'cached-data' is not in the list of known options, but still passed to Electron/Chromium.
+[main 2026-11-11T16:32:51.727Z] update#setState disabled
+[main 2026-11-11T16:32:51.729Z] update#ctor - updates are disabled by the environment
+Started local extension host with pid 1508267.
+ChatSessionStore: Migrating 0 chat sessions from storage service to file system
+Started initializing default profile extensions in extensions installation folder. file:///tmp/sonar-project-search-validation/proof-1.100.0/extensions
+ComputeTargetPlatform: linux-x64
+Completed initializing default profile extensions in extensions installation folder. file:///tmp/sonar-project-search-validation/proof-1.100.0/extensions
+Loading development extension at /tmp/sonar-project-search-validation/fixture
+Settings Sync: Account status changed from uninitialized to unavailable
+PUBLISHED_LS { name: 'SonarLint Language Server', version: '6.4.0.79986' }
+PASS Initial catalogue loaded through published SLLS; needle is absent
+PASS Enter during loading does not bind
+PASS Trimmed remote query reaches Core; key-only result is active and visible
+PASS Native navigation reaches the other visible result
+PASS Clearing input immediately restores the saved grouped catalogue
+PASS Empty server success leaves native empty state and saves nothing
+PASS HTTP 500 clears busy/results and shows one nonmodal error
+PASS Picker recovers; Core first result is active again
+PASS Actual saveManualBinding persisted needle and sent manual-binding telemetry exactly once
+NATIVE_PUBLISHED_LS_PASS 1.100.0 9 assertions; persisted binding once
+[main 2026-11-11T16:33:13.125Z] Extension host with pid 1508267 exited with code: 0, signal: unknown.
+Exit code:   0

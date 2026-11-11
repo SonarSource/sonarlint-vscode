@@ -1,0 +1,678 @@
+[main 2026-11-11T15:34:07.614Z] StorageMainService: creating application shared storage
+[main 2026-11-11T15:34:07.679Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-11-11T15:34:07.679Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[main 2026-11-11T15:34:07.708Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-11-11T15:34:07.709Z] update#setState disabled
+[main 2026-11-11T15:34:07.709Z] update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[main 2026-11-11T15:34:09.224Z] AgentHostProcessManager: agent host started
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[main 2026-11-11T15:34:09.773Z] [AgentHost:stderr] (node:1434243) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[AgentHost:renderer] MessagePort acquired, creating client...
+Started local extension host with pid 1434345.
+[AgentHost:renderer] Protocol connection established; clientId=ab391f51-5237-492e-a03d-a23c01d14d93
+Loading development extension at <repository>
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Settings Sync: Account status changed from uninitialized to unavailable
+Initializing monitoring service in dogfooding environment
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+
+  Auto Binding Test Suite
+    Bindings Manager
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+      ✔ No autobinding when user said "don't ask again" for folder
+[File Watcher (node.js)] Watcher shutdown because watched path got deleted
+      ✔ No autobinding when user said "don't ask again" for workspace
+      ✔ Nothing crashes when folder does not exist
+      ✔ Analysis settings file is properly found when it exists (527ms)
+      ✔ Connected mode settings file is properly found when it exists (82ms)
+      ✔ Connected mode settings file from Visual Studio is properly found when it exists
+      ✔ Regular file is properly found and does not have content (73ms)
+      ✔ Do not propose binding when there are no connections (236ms)
+      ✔ Should not autobind workspace when no connection exists (144ms)
+      ✔ Should show warning message when all folders are already bound (853ms)
+      ✔ Should show binding suggestion notification (1004ms)
+  AutomaticAnalysisService Test Suite
+    ✔ should use default value when configuration is not set
+    ✔ should clear findings view message and update status bar when analysis is enabled (237ms)
+    ✔ should set findings view message and update status bar when analysis is disabled (207ms)
+  Binding Utils Test Suite
+    ✔ should build base server url
+  Bindings Test Suite
+    Bindings Manager
+      ✔ Save binding updates configuration (479ms)
+      ✔ Get remote projects items correctly maps keys and names
+      ✔ Folder selection QuickPick should allow to choose a folder (3014ms)
+      ✔ Remove bindings of the folders the language server asks for (231ms)
+      ✔ Ignore folders that are not in the workspace when removing bindings (105ms)
+      ✔ If connectionId not provided, it should default to <default> (155ms)
+Checking connection test
+      ✔ Create Or Edit Binding (749ms)
+      ✔ should get base server url
+Checking connection brokenConnection
+      ✔ Should not allow creating binding for broken connection
+    Assist Binding
+      ✔ Should not do anything when binding already exists (3098ms)
+      ✔ Should create requested binding (3013ms)
+    Loading the bindings
+      ✔ Should fetch once per refresh and announce every update
+      ✔ Should not send a request while the previous one is running
+      ✔ Should keep the previous bindings when a request fails and still serve the next refresh
+      ✔ Should keep the bindings without connection apart from the bound ones
+      Warning about the bindings without connection
+        ✔ Should warn once, however many times the bindings are refreshed
+        ✔ Should not warn when every binding has its connection
+        ✔ Should warn later if the first answer had none to report
+  Code diff
+    getExamplesFromDom()
+      ✔ Should get single code example pair from DOM
+      ✔ Should get 3 pairs of code examples from DOM
+      ✔ Should return empty list when there are no diff snippets
+    differentiateCode
+      ✔ Should return compliant and noncompliant code examples with diff
+      ✔ Should return list with same elements when there is no diff
+    decorateContextualHtmlContentWithDiff()
+      ✔ Should decorate contextual HTML content with diff
+  ANALYZE_VCS_CHANGED_FILES command
+    ✔ should send notification with workspace folder URIs when workspace folders exist
+    ✔ should send notification with undefined when no workspace folders exist
+    ✔ should focus on findings view after sending notification
+  CONFIGURE_MCP_SERVER command
+    ✔ refreshes the AI integrations view around MCP setup
+  AI integrations commands
+    ✔ registers standalone MCP configuration and integration view commands
+  Connected Mode Test Suite
+    getConnections()
+      ✔ should return same number of sonarqube settings as in config file
+      ✔ should return no sq/sc connections when config is blank
+      ✔ should return same number of sonarcloud settings as in config file
+    Names of the bound projects
+      ✔ should show the projects at once, by key, while their names are loaded
+      ✔ should refresh the tree and show the names once they are loaded
+      ✔ should ask for the names only once, however often the tree is drawn
+      ✔ should only ask for the names it does not know yet
+      ✔ should say that a project is not found when the server does not know it
+Error: offline
+	at <repository>/out/test/suite/connections.test.js:189:79
+	at Object.getRemoteProjectNamesByKeys (<repository>/out/test/suite/connections.test.js:134:28)
+	at AllConnectionsTreeDataProvider.loadMissingProjectNames (<repository>/out/src/connected/connections.js:276:51)
+	at AllConnectionsTreeDataProvider.getBoundProjects (<repository>/out/src/connected/connections.js:260:19)
+	at Context.<anonymous> (<repository>/out/test/suite/connections.test.js:191:23)
+	at callFn (file://<repository>/node_modules/mocha/lib/runnable.js:360:23)
+	at Test.run (file://<repository>/node_modules/mocha/lib/runnable.js:348:7)
+	at Runner.runTest (file://<repository>/node_modules/mocha/lib/runner.js:809:10)
+	at file://<repository>/node_modules/mocha/lib/runner.js:949:12
+	at next (file://<repository>/node_modules/mocha/lib/runner.js:724:14)
+	at file://<repository>/node_modules/mocha/lib/runner.js:734:7
+	at next (file://<repository>/node_modules/mocha/lib/runner.js:595:14)
+	at cbHookRun (file://<repository>/node_modules/mocha/lib/runner.js:682:7)
+	at done (file://<repository>/node_modules/mocha/lib/runnable.js:304:7)
+	at callFn (file://<repository>/node_modules/mocha/lib/runnable.js:385:9)
+	at Hook.run (file://<repository>/node_modules/mocha/lib/runnable.js:348:7)
+	at next (file://<repository>/node_modules/mocha/lib/runner.js:619:10)
+	at Immediate.<anonymous> (file://<repository>/node_modules/mocha/lib/runner.js:702:5)
+	at process.processImmediate (node:internal/timers:574:21)
+      ✔ should mark the projects whose names could not be loaded, without asking again by itself
+    Bindings without connection
+      ✔ should say what the group is about, since it replaces the welcome content
+      ✔ should offer to create a SonarQube Server connection for a config naming a server
+      ✔ should offer to create a SonarQube Cloud connection for a config naming an organization
+      ✔ should offer both when only the connection id of the folder settings is known
+      ✔ should show the folder with what it is declared bound to
+    ConnectedMode TreeView
+      ✔ should return empty lists when expanding SQ and SC tabs and no connections exist
+      ✔ should return singleton list when expanding SQ and one connection exists (323ms)
+      ✔ should include regions when expanding SC and two connections exist (43ms)
+      ✔ should return two element list with proper icons when expanding SC and two connections exist (49ms)
+  Connection Setup
+    ✔ should show SonarQube Cloud region selection defaulting to EU
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should show SonarQube creation webview when command is called (4088ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ Should provide default connectionId (4109ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should show SonarCloud creation webview when command is called (4004ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should edit default connection when command is called (6042ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should edit identified SonarQube connection when command is called (6041ms)
+    - should edit identified SonarCloud connection when command is called
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should NOT edit connection for which status check failed (6072ms)
+  handleInvalidTokenNotification
+    ✔ should execute EDIT_SONARQUBE_CONNECTION and focus ConnectedMode view when connectionId exists in SonarQube connections and user clicks Edit
+    ✔ should execute EDIT_SONARCLOUD_CONNECTION and focus ConnectedMode view when connectionId exists in SonarCloud connections and user clicks Edit
+    ✔ should not execute any command when user dismisses the error dialog
+    ✔ should return early and not show error message when connectionId was not found
+    ✔ should handle empty connections lists correctly
+  Extension Test Suite
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should report issue on single js file (9461ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should report issue on js file with URI-encoded characters (470ms)
+    ✔ consider file not ignored if it is not in workspace
+    ✔ should return git command results for files from workspace
+    ✔ should consider file not ignored if git extension is not enabled
+  Fix Suggestions Service Test Suite
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ fixSuggestionService.isBeforeContentIdentical should return true when before content matches
+    ✔ fixSuggestionService.isBeforeContentIdentical should return false when before content does not match
+  Flight Recorder Test Suite
+    ✔ Should not allow starting recorder without language server process
+    ✔ Should not allow capturing thread dump without recording started
+    ✔ Should not allow capturing heap dump without recording started
+    ✔ Should not allow capturing thread dump without language server running
+    ✔ Commands should be registered
+  Help and Feedback tree view test suite
+    ✔ getChildren should return non-labs items when labs is disabled
+    ✔ getChildren should include labs-only items when labs is enabled
+  Hotspots Test Suite
+    ✔ should show error when no file is found (50ms)
+    ✔ should show hotspot in found file (338ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should show hotspot when several files are found (246ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should use folder if provided
+    ✔ should use only opened folder if not provided
+    ✔ should scan nothing if no folder uri provided and no workspace folders opened
+    ✔ should let to choose form quick pick list if no folder uri provided and more than one workspace folder opened (121ms)
+    ✔ should not ask for confirmation if less files than threshold
+    ✔ should ask for confirmation if more files than threshold - reject
+    ✔ should ask for confirmation if more files than threshold - confirm
+    diagnosticSeverity
+      ✔ High probability maps to Error severity
+      ✔ Medium probability maps to Warning severity
+      ✔ Low probability maps to Info severity
+      ✔ should not change hotspot status when not permitted
+      ✔ should not change hotspot status when server is down
+      ✔ should not change hotspot status when no allowed statuses
+    formatStatus
+      ✔ Should correctly format status
+  issues
+    ✔ should adaptFlows
+    ✔ isFileLevelIssue
+    createDiagnosticFromIssue
+      ✔ should create diagnostic from regular issue
+      ✔ should create diagnostic from file-level issue
+  jre
+    buildUrl
+      ✔ should use defaults
+      ✔ should override defaults
+  locations
+    ✔ should initialize with empty tree
+    ✔ should show basic local issue with one additional location (48ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should show basic local issue with 2 flows (46ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should show "highlight-only" locations (73ms)
+    ✔ should show full taint vulnerability locations (45ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  Missing connection of an unresolved binding
+    ✔ should be a SonarQube Server connection to the URL of the config
+    ✔ should be a SonarQube Cloud connection to the organization and region of the config
+    ✔ should default to the EU region
+    ✔ should only know the connection id when the binding comes from the folder settings
+    ✔ should keep the connection id whatever the type of the connection
+  Description of a missing connection
+    ✔ should name the SonarQube Server URL
+    ✔ should name the SonarQube Cloud organization and region
+    ✔ should name the connection of the folder settings
+    ✔ should say so when nothing is known
+  Values the connection forms start with
+    ✔ should be empty when the command is not run from an unresolved binding
+    ✔ should hold the server URL of a config for the SonarQube Server form only
+    ✔ should hold the organization and region of a config for the SonarQube Cloud form only
+    ✔ should hold the connection id of the folder settings in both forms
+  pluginStatusPanel
+    resolveEnumValue
+      ✔ resolves ordinal number to enum name
+      ✔ resolves ordinal number to artifact source name
+      ✔ passes through string values unchanged
+      ✔ falls back to string representation for unknown ordinal
+      ✔ returns empty string for null or undefined
+    renderStatus
+      ✔ renders Active with green dot
+      ✔ renders Failed with red dot
+      ✔ renders Downloading with orange dot
+      ✔ renders Synced with green dot
+      ✔ renders unknown state as plain text
+    formatSource
+      ✔ formats EMBEDDED source as SonarQube for VS Code with extension version
+      ✔ formats ON_DEMAND source as SonarQube for VS Code with extension version
+      ✔ formats SONARQUBE_SERVER source without version when serverVersion is absent
+      ✔ formats SONARQUBE_SERVER source with version when serverVersion is provided
+      ✔ formats SONARQUBE_CLOUD source
+      ✔ formats unknown source as raw value
+    telemetry
+      ✔ supportedLanguagesPanelOpened is sent when the panel is shown
+      ✔ supportedLanguagesPanelOpened is not sent when IDE Labs is disabled
+      ✔ supportedLanguagesPanelCtaClicked is sent when the setup connection button is clicked
+  Dynamic project search
+    ✔ client sends the configured request and exact parameters
+    ✔ preserves grouped, deduplicated, alphabetized initial items without binding on selection
+    ✔ trims and debounces single characters, normalizes default ID, and activates Core first result
+    ✔ blank restores the original snapshot immediately and invalidates pending work
+    ✔ stale success and its finalizer cannot replace items or clear current busy state
+    ✔ stale failure cannot report an error or change a newer completed search
+    ✔ guards busy, empty, separator, and stale selections and accepts a current project once
+    ✔ current failure keeps the picker open for empty results and a successful retry
+    ✔ browser buttons do not bind or take ownership of busy state
+    ✔ dismissal ignores late success and disposes once
+    ✔ dismissal ignores late failure and disposes once
+    ✔ dismissal cancels debounce without making a request
+  RemediationService Test Suite
+    Event Tracking
+      ✔ should track issue event
+      ✔ should track hotspot event
+      ✔ should track fix suggestion event
+      ✔ should generate unique IDs for events
+    Clear Events
+      ✔ should clear all events
+      ✔ should clear viewed state when clearing events
+    Viewed State Tracking
+      ✔ should mark event as viewed
+      ✔ should track multiple viewed events
+      ✔ should return false for non-existent event ID
+      ✔ should handle marking same event as viewed multiple times
+    Event Change Notifications
+      ✔ should fire event when tracking new event
+      ✔ should fire event when marking as viewed
+      ✔ should fire event when clearing events
+  requirements
+    ✔ should parse Java version
+  rulepanel
+    ✔ should render monolithic description if there are no tabs
+    ✔ should render tabs description with correct context tab being checked
+    ✔ should correctly compute heading
+    ✔ should render empty rule params
+    ✔ should render rule params
+    ✔ should not render hotspot banner for not hotspot rules
+    ✔ should render hotspot banner for hotspot rules
+    ✔ should not render taint banner for not taint rules
+    ✔ should render hotspot banner for hotspot rules
+  SonarLint Rules view
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ should show the whole list of rules grouped by language (423ms)
+    allTrue
+      ✔ should return false on empty
+      ✔ should return false on array that contains at least one false
+      ✔ should return true on array that contains all true
+    allFalse
+      ✔ should return true on empty
+      ✔ should return false on array that contains at least one true
+      ✔ should return false on array that contains all false
+  SCM test suite
+    ✔ should parse git output
+    ✔ should get not ignored files from submodules
+  Shared Connected Mode service test suite
+    ✔ Should name file connectedMode.json when no solutions in the folder
+    ✔ Should name file by solution when one solution in the folder
+    ✔ Should name file by solution when one solution in the folder (.slnx format)
+    ✔ Should propose options when multiple solutions in the folder (3033ms)
+    ✔ Should create shared connected mode config file (2006ms)
+    ✔ Should deduplicate suggestions
+  Syntax Highlighting
+    ✔ sonarToHighlightJsLanguageKeyMapping()
+    ✔ Should highlight Rust code snippets
+    ✔ Should highlight both diffed and regular pre tags (38ms)
+  uri
+    ✔ should fix URI in code => ls message
+    ✔ should translate URI in ls => code message
+    ✔ should get relative path from full path without ws name
+    ✔ should get relative path from full path with ws name
+    ✔ should get file name from full path
+    ✔ should get the folder name from a full path with a trailing slash
+    ✔ should show no relative path for a sub-folder scope given with a trailing slash
+    ✔ should get URI from relative path
+  util
+    ✔ should detect --debug
+    ✔ should detect --debug-brk
+    ✔ should detect --inspect-brk
+    ✔ should fail to detect arg
+    ✔ should not have args
+    ✔ should recognize build running on ci pipelines
+    ✔ should recognize build running locallly
+    ✔ should find all files in folder
+    ✔ should create analysis files from file uris
+    ✔ should generate items for quick pick list from workspace folders
+    ✔ should convert glob pattern to regex
+    ✔ should build master regex pattern from array of glob patterns
+    ✔ should filter files by glob patterns
+    ✔ should filter files by ide exclusions
+    ✔ should convert SonarCloudRegion enum to label
+    ✔ should sanitize SonarCloudRegion user setting
+    ✔ should return correct VSCode settings base directory for each platform
+  utm
+    ✔ should return unchanged URL when no UTM is passed
+    ✔ should add UTM parameters to simple URL
+    ✔ should add UTM parameters to URL and preserve existing parameters
+  aiAgentUtils
+    ✔ detects extensions available in VS Code without reporting Cursor
+    ✔ requires Copilot to be active before reporting MCP support
+    ✔ reports Cursor only when hosted by Cursor
+    ✔ reports Windsurf plus installed extension agents
+    ✔ maps the current host and detected agents onto the SLLS request
+    ✔ keeps backend detections canonical, ordered with IDE agents first
+    ✔ falls back to OTHER for unrecognized hosts
+  AI integrations refresh publication
+    ✔ building state does not change MCP command availability
+    ✔ uninstall refreshes CLI and integrations and enables reinstall
+    ✔ keeps CLI setup feedback on webview load and clears it on explicit refresh
+    ✔ shows a generic error state and recovers on a later refresh
+    ✔ does not reject when the view is disposed during publication
+    ✔ a superseded refresh cannot enable MCP commands and remains successful
+    ✔ a superseded refresh cannot disable MCP commands and remains successful
+    ✔ reports a failed manual refresh without publishing its error over a newer state
+    ✔ discards pending refresh success after disposal or replacement of the view
+    ✔ discards pending refresh error after disposal or replacement of the view
+  AI integrations webview rendering
+    ✔ offers an uninstall icon and exposes cleanup feedback through Show output (112ms)
+    ✔ disables uninstall and output while CLI setup is in progress (164ms)
+    ✔ hides uninstall after the CLI is removed (156ms)
+    ✔ renders recording status with configuration path tooltips and a consistent integrate action (154ms)
+    ✔ provides a tooltip fallback when a recorded integration has no configuration path (190ms)
+    ✔ disables integration actions when setup is unavailable (166ms)
+    ✔ places MCP statuses under agent names with path tooltips and existing actions (155ms)
+    ✔ keeps MCP setup available in remote windows (150ms)
+  AIAgentsConfigurationWebviewProvider
+    ✔ records initial load only once per view opening
+    ✔ reports a manual refresh action around one eligible observation
+    ✔ builds CLI and MCP setup state without legacy fields
+    ✔ offers uninstall for any backend-supported local installation, and hides it remotely or when missing
+    ✔ routes uninstall callbacks and opens existing output
+    ✔ maps recording ordinals independently of configuration health
+    ✔ falls back to unknown for old responses and missing agent records
+    ✔ preserves duplicate and pathless configuration paths
+    ✔ does not infer detection from recorded integrations
+    ✔ recording status leaves authentication, remote and setup gates in force
+    ✔ builds independent MCP state for detected agents
+    ✔ omits inactive Copilot from standalone MCP rows
+    ✔ includes CLI-only agents and inspects their supported standalone configurations
+    ✔ keeps other MCP integrations available when one inspection fails
+    ✔ shows an existing standalone config as configured
+    ✔ exposes malformed and CLI-managed states independently
+    ✔ preserves an unusable CLI status
+    ✔ refreshes recorded integration state after CLI setup completes
+    ✔ routes MCP setup through the existing command
+    ✔ opens the SonarQube CLI guide from the CLI card
+    ✔ opens the Vortex documentation from the CLI card
+    ✔ reuses and reveals the installation terminal on a repeated setup request
+    ✔ prepares login without a connection when the IDE has none
+    ✔ prepares login with the recommended IDE connection
+    ✔ allows login when existing CLI authentication could not be verified
+    ✔ reports a cancelled login connection selection without starting a command
+    ✔ runs supported agent integration interactively
+    ✔ integrates a CLI-only agent after fresh backend validation
+    ✔ rejects a stale CLI integration target before command preparation
+    ✔ allows CLI setup while background MCP work is running
+    ✔ allows MCP setup while a CLI terminal remains open
+  AiIntegrationTelemetry
+    ✔ sends the action notification fields
+    ✔ reports named CLI status enums
+    ✔ deduplicates agents and detection sources and reports unknown for uninspected MCP
+    ✔ does not let notification failures interrupt an action
+  cliSetup
+    ✔ resolves a single primary action from CLI state
+    ✔ matches the enum ordinals used by the language server
+    ✔ allows agent integration only when local CLI auth is ready
+    ✔ selects the recommended connection, a single choice, or none
+    ✔ reports a cancelled connection pick when the user dismisses Quick Pick
+    ✔ finishes CLI telemetry only after the setup terminal exits
+    ✔ finishes an unsupported CLI attempt before opening a terminal
+    ✔ shows in-progress state before the setup terminal opens
+    ✔ reports the finished state when setup ends before a terminal opens
+    ✔ records only the observable terminal exit as a notice
+    ✔ disposal during install command preparation prevents opening a terminal
+    ✔ disposal during integrate command preparation prevents opening a terminal
+    CLI uninstall
+      ✔ confirmation cancellation makes no changes and does not take the setup lock
+      ✔ does not clear an install lock when uninstall is declined or confirms too late
+      ✔ uses noncancellable progress and blocks setup until the request finishes
+      ✔ names the Windows user Path and the Unix profiles the installer writes
+      ✔ maps backend status 0 to SUCCEEDED
+      ✔ maps backend status 1 to FAILED
+      ✔ maps backend status 2 to FAILED
+      ✔ maps backend status 99 to UNKNOWN
+      ✔ maps backend status undefined to UNKNOWN
+      ✔ keeps unavailable and failed fallback copy distinct
+      ✔ reports transport failures and refreshes the state
+      ✔ rejects remote and unsupported installations before prompting
+      ✔ does not uninstall or update the view after disposal during confirmation
+      ✔ reports cancellation when disposed before the progress task starts
+      ✔ retains a completed reset response after disposal without updating the view
+      ✔ rejects an already disposed session without reporting an attempt
+      ✔ reports a confirmation error as failed and releases the setup lock
+      ✔ reports a rejected confirmation after disposal as cancellation before the uninstall RPC
+      ✔ preserves a rejected running uninstall RPC as failed after disposal
+      ✔ reports success once before a failed refresh and releases the setup lock
+    saved connection authentication
+      ✔ forwards only the connection ID and cancellation token through the client
+      ✔ completes saved-token authentication and refreshes exactly once without a terminal
+      ✔ uses interactive login only when the saved credentials require it
+      ✔ uses interactive login when an older server does not support saved-token authentication
+      ✔ does not start interactive login for other RPC errors
+      ✔ keeps interactive login when there is no saved connection
+      ✔ shows UPGRADE_REQUIRED without interactive login (Update SonarQube CLI to the latest version.)
+      ✔ shows UPGRADE_REQUIRED without interactive login (no message)
+      ✔ shows FAILED without interactive login (The saved token was rejected.)
+      ✔ shows FAILED without interactive login (no message)
+      ✔ releases the operation after a failed request and allows a retry
+      ✔ cancels the RPC and ignores a late AUTHENTICATED result
+      ✔ cancels the RPC and ignores a late INTERACTIVE_LOGIN_REQUIRED result
+      ✔ reports a rejected cancelled request as cancellation
+      ✔ ignores a late MethodNotFound after cancellation
+      ✔ ignores a late MethodNotFound after disposal
+      ✔ disposal cancels the request without late completion or refresh
+      ✔ disposal during command preparation prevents opening the fallback terminal
+      ✔ ignores repeated clicks while token authentication is pending
+  MCP agent discovery
+    ✔ rejects a stale or unsupported standalone MCP target before reading its file
+    ✔ sets the MCP command context from CLI discovery without a server-started notification
+    ✔ retains the MCP command context after a transient discovery failure
+    ✔ refreshes a CLI-only standalone MCP configuration after server startup
+    ✔ keeps the MCP menu disabled when detected agents lack standalone support
+  MCP configuration paths
+    ✔ should return different config paths for different IDEs
+    ✔ uses the remote user data folder for Copilot in remote windows
+    ✔ keeps the Windsurf Next MCP configuration separate from Windsurf
+    ✔ should throw error for unsupported agent
+  MCP configuration workflow
+    ✔ creates a new entry with the selected connection and token
+    ✔ normalizes the default connection ID on creation
+    ✔ re-reads the file after user interaction before planning creation
+    ✔ reports failure when a concurrent edit prevents replacement
+    ✔ reports a failed file write
+    ✔ reports cancellation when the user declines creation without a token
+    ✔ can create an entry after the user explicitly proceeds without a token
+    ✔ reports unavailable connections and cancelled connection selection
+    ✔ does not plan malformed, CLI-managed, or unknown entries
+    ✔ refuses a blocked update plan
+    ✔ reports a missing IDE port without looking up connection credentials
+    ✔ leaves a standalone configuration without an IDE port untouched at startup
+    ✔ explains why manual setup cannot update a standalone entry without an IDE port
+    ✔ refreshes startup ports without connections, tokens, or generation
+    ✔ manual setup of an existing entry refreshes only the IDE port and gives accurate feedback
+    ✔ skips writing identical plans
+    ✔ skips absent and non-standalone files at startup
+    ✔ ignores invalid notification ports
+    ✔ logs startup discovery failures and clears the operation lock
+    ✔ rejects manual setup while a startup refresh is running
+    ✔ defers startup notifications during setup and uses the newest port
+    ✔ repeats an active startup pass with the newest port
+    ✔ records the chosen agent while setup is running and clears it afterwards
+    ✔ rejects a second manual setup without disturbing the running setup
+    ✔ configures MCP in remote windows
+FakeTimers: clearTimeout was invoked to clear a native timer instead of one created by this library.
+To automatically clean-up native timers, use `shouldClearNativeTimers`.
+	at clearTimer (<repository>/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1594:32)
+	at Object.clearTimeout (<repository>/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1995:20)
+	at clearTimeout (<repository>/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1671:38)
+	at Pn.cancel (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:29:77992)
+	at i._onDidReceiveAcknowledge (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:32:155679)
+	at i._receiveOneMessage (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:32:157143)
+	at $p.value (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:32:154952)
+	at T._deliver (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:28:3617)
+	at T.fire (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:28:3935)
+	at ws.fire (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:30:8627)
+	at $p.value (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:473:10003)
+	at T._deliver (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:28:3617)
+	at T.fire (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:28:3935)
+	at ws.fire (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:30:8627)
+	at MessagePortMain.<anonymous> (file://<repository>/.vscode-test/vscode-linux-x64-1.139.1/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:473:8171)
+	at MessagePortMain.emit (node:events:514:28)
+	at Object.emit (node:electron/js2c/utility_init:2:2934)
+    ✔ uses the latest startup port for the delayed Copilot activation retry
+    ✔ opens the selected configuration file
+    ✔ reports missing files and opening failures
+  Findings Tree Data Provider Filtering Test Suite
+    setFilter
+findingsFiltered fix_available
+      ✔ should set active filter and refresh
+findingsFiltered high_severity_only
+      ✔ should execute setContext command with correct filter value
+findingsFiltered open_files_only
+      ✔ should call telemetry findingsFiltered method
+findingsFiltered all
+findingsFiltered fix_available
+findingsFiltered open_files_only
+findingsFiltered high_severity_only
+findingsFiltered current_file_only
+      ✔ should handle all filter types
+    getActiveFilter
+findingsFiltered current_file_only
+      ✔ should return current active filter
+    getFilteredFindingsCount
+      ✔ should return total count when filter is All
+findingsFiltered fix_available
+      ✔ should return filtered count when filter is not All
+    matchesFilter
+findingsFiltered all
+      ✔ should match all findings when filter is All
+findingsFiltered fix_available
+      ✔ should match findings with AI code fix when filter is Fix_Available
+findingsFiltered fix_available
+      ✔ should match findings with quick fix when filter is Fix_Available
+findingsFiltered open_files_only
+      ✔ should match findings in open files when filter is Open_Files_Only
+findingsFiltered high_severity_only
+      ✔ should match high severity findings when filter is High_Severity_Only
+findingsFiltered current_file_only
+      ✔ should match findings in current file when filter is Current_File_Only
+    getRootFiles with filtering
+findingsFiltered fix_available
+      ✔ should return only files with filtered findings
+findingsFiltered all
+      ✔ should not include non-existing files
+findingsFiltered fix_available
+      ✔ should return empty array when no findings match filter
+    getNewIssuesFiles with filtering
+findingsFiltered fix_available
+      ✔ should return only new issues files with filtered findings
+    getOlderIssuesFiles with filtering
+findingsFiltered fix_available
+      ✔ should return only older issues files with filtered findings
+    getChildren with filtering
+findingsFiltered fix_available
+      ✔ should return filtered findings for a file
+findingsFiltered fix_available
+      ✔ should return filtered findings with category filter
+    getTotalFindingsCount
+findingsFiltered fix_available
+      ✔ should return total count of all findings regardless of filter
+  Findings Tree Data Provider Util Test Suite
+    getContextValueForFinding
+      ✔ should handle boolean parameter combinations correctly
+      selectAndApplyCodeAction
+        ✔ should show quick pick with code actions
+        ✔ should apply edit when code action has edit
+        ✔ should execute command when code action has command but no edit
+        ✔ should handle command with no arguments
+        ✔ should show warning when code action has no edit or command
+        ✔ should handle error when applying edit fails
+        ✔ should handle error when executing command fails
+        ✔ should do nothing when user cancels selection
+        ✔ should handle empty code actions array
+    getFilterContextValue
+      ✔ should return correct context values for all filter types
+      ✔ should return default value for unknown filter type
+    getFilterDisplayName
+      ✔ should return correct display names for all filter types
+      ✔ should return default value for unknown filter type
+  Findings Tree Data Provider Test Suite
+    showAllInfoForFinding
+      ✔ should execute hotspot commands for security hotspot with newHotspotItem context
+      ✔ should execute hotspot commands for security hotspot with knownHotspotItem context
+      ✔ should execute taint vulnerability commands for taint vulnerability
+      ✔ should execute issue commands for regular issue (not notebook)
+      ✔ should execute only issue details command for notebook issue
+  Findings Tree Data Provider Update Methods Test Suite
+    updateHotspots
+      ✔ should update hotspots for a file
+      ✔ should replace existing hotspots when updating
+      ✔ should remove file from cache when no findings remain
+    updateTaintVulnerabilities
+      ✔ should update taint vulnerabilities for a file
+      ✔ should replace existing taint vulnerabilities when updating
+    updateIssues
+      ✔ should update issues for a file
+      ✔ should handle files outside workspace folders without crashing
+      ✔ should replace existing issues when updating
+      ✔ should handle notebook issues correctly
+  IdeLabsFlagManagementService
+    ✔ returns false by default
+    ✔ join IDE Labs enables it by default
+    ✔ disables IDE Labs does not sign out from labs
+    ✔ isIdeLabsEnabled returns false if IDE Labs is not joined but enabled
+  LabsWebviewProvider
+    handleSignup
+      ✔ should post loading message and handle successful signup
+      ✔ should handle signup failure with custom error message
+      ✔ should handle exception during signup
+    Link handling
+      ✔ should route help link via Help and Feedback Link command
+      ✔ should open feedback link in browser and record it in telemetry
+      ✔ should open learn more link in browser and record it in telemetry
+  Exclude File or Folder Language Model Tool Test Suite
+    ✔ Should prepare invocation with confirmation
+    ✔ Should open file and trigger analysis
+  Exclude File or Folder Language Model Tool Test Suite
+    ✔ Should prepare invocation with confirmation
+    ✔ Should exclude requested file when not bound (43ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ Should throw error when bound (477ms)
+  List Security Hotspots Language Model Tool Test Suite
+    ✔ Should prepare invocation with confirmation
+Tool called: lm_sonarqube_list_potential_security_issues, Success: false
+    ✔ Should invoke Connected Mode tool when not bound
+  Set up Connected Mode Language Model Tool Test Suite
+    ✔ Should prepare invocation with confirmation
+Tool called: lm_sonarqube_setup_connected_mode, Success: true
+    ✔ Should trigger connection setup when neither connection nor binding exist
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/MjhjOTM1MTAtNWE0NC00MTZlLTk0ZmQtMjE1OTJmNjRjOGFh" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Tool called: lm_sonarqube_setup_connected_mode, Success: true
+    ✔ Should return informative message when folder is already bound (671ms)
+Tool called: lm_sonarqube_setup_connected_mode, Success: true
+    ✔ Should call auto-bind command when connection exists but no binding (304ms)
+  447 passing (1m)
+  1 pending
+[main 2026-11-11T15:35:35.082Z] Extension host with pid 1434345 exited with code: 0, signal: unknown.
+Exit code:   0

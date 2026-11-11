@@ -1,0 +1,9 @@
+PUBLISHED_LS { name: 'SonarLint Language Server', version: '6.4.0.79986' }
+CATALOGUE { catalogue: 'Catalogue project' }
+SEARCH_BEYOND_CATALOGUE {
+  topResults: [
+    { key: 'needle', name: 'Zulu key-only match' },
+    { key: 'another-project', name: 'Needle name match' }
+  ]
+}
+PUBLISHED_BACKEND_PASS catalogue exclusion, ordered remote results, empty success, HTTP failure and unknown connection

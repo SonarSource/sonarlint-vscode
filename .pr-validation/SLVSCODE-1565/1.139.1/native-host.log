@@ -1,0 +1,25 @@
+[main 2026-11-11T16:33:24.702Z] StorageMainService: creating application shared storage
+[main 2026-11-11T16:33:24.787Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-11-11T16:33:24.787Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[main 2026-11-11T16:33:24.815Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-11-11T16:33:24.815Z] update#setState disabled
+[main 2026-11-11T16:33:24.816Z] update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+Started local extension host with pid 1511230.
+Loading development extension at /tmp/sonar-project-search-validation/fixture
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+Settings Sync: Account status changed from uninitialized to unavailable
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+PUBLISHED_LS { name: 'SonarLint Language Server', version: '6.4.0.79986' }
+PASS Initial catalogue loaded through published SLLS; needle is absent
+PASS Enter during loading does not bind
+PASS Trimmed remote query reaches Core; key-only result is active and visible
+PASS Native navigation reaches the other visible result
+PASS Clearing input immediately restores the saved grouped catalogue
+PASS Empty server success leaves native empty state and saves nothing
+PASS HTTP 500 clears busy/results and shows one nonmodal error
+PASS Picker recovers; Core first result is active again
+PASS Actual saveManualBinding persisted needle and sent manual-binding telemetry exactly once
+NATIVE_PUBLISHED_LS_PASS 1.139.1 9 assertions; persisted binding once
+[main 2026-11-11T16:33:51.128Z] Extension host with pid 1511230 exited with code: 0, signal: unknown.
+Exit code:   0

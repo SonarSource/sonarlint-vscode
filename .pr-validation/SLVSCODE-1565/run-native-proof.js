@@ -1,0 +1,13 @@
+const fs=require('node:fs');const path=require('node:path');
+const repo=process.env.SONARLINT_SEARCH_REPO || process.cwd();
+const {runTests}=require(repo+'/node_modules/@vscode/test-electron');
+const version=process.argv[2];const root=__dirname;const output=root+'/proof-'+version;
+const profile=output+'/profile';const workspace=output+'/project-search-demo';
+fs.mkdirSync(root+'/fixture',{recursive:true});
+fs.mkdirSync(profile+'/User',{recursive:true});fs.mkdirSync(workspace+'/.vscode',{recursive:true});
+fs.writeFileSync(workspace+'/.vscode/settings.json','{}\n');
+fs.writeFileSync(profile+'/User/settings.json',JSON.stringify({'window.title':'PR 1294 - Fixture validation - VS Code '+version,'workbench.startupEditor':'none','workbench.colorTheme':'Default Dark Modern','editor.fontSize':18,'window.zoomLevel':0,'editor.minimap.enabled':false,'workbench.tips.enabled':false,'telemetry.telemetryLevel':'off','chat.disableAIFeatures':true}));
+fs.writeFileSync(workspace+'/VALIDATION.md','# PR #1294: dynamic project search\n\nAutomated native UI validation | VS Code '+version+'\nPublished SLLS 6.4.0.79986 + Core | local HTTP fixture\n\n1. Initial catalogue contains only Catalogue project.\n2. Search needle: remote key-only match appears.\n3. Clear: original grouped catalogue returns.\n4. Empty response and HTTP 500: no binding is saved.\n5. Retry and press Enter: needle is persisted once.\n\nThe fixture controls HTTP responses, not picker results.\nActual binding persistence and telemetry are asserted.\n');
+const manifest=JSON.parse(fs.readFileSync(repo+'/package.json','utf8'));
+fs.writeFileSync(root+'/fixture/package.json',JSON.stringify({name:'sonarlint-vscode',publisher:'SonarSource',version:'0.0.0',engines:{vscode:'^1.100.0'},displayName:'PR 1294 validation fixture',contributes:{configuration:manifest.contributes.configuration}},null,2));
+runTests({vscodeExecutablePath:path.join(repo,'.vscode-test','vscode-linux-x64-'+version,'code'),extensionDevelopmentPath:root+'/fixture',extensionTestsPath:root+'/native-proof.js',extensionTestsEnv:{SONARLINT_SEARCH_REPO:repo,SONARLINT_PROOF_OUTPUT:output},launchArgs:[workspace,'--disable-extensions','--disable-workspace-trust','--skip-welcome','--skip-release-notes','--no-sandbox','--disable-gpu','--ozone-platform=x11','--user-data-dir='+profile,'--extensions-dir='+output+'/extensions','--new-window','--password-store=basic']}).then(()=>process.exit(0),e=>{console.error(e);process.exit(1);});
