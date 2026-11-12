@@ -13,12 +13,13 @@ import { Commands } from '../util/commands';
 import { ConnectionSettingsService } from '../settings/connectionsettings';
 import { SonarLintExtendedLanguageClient } from '../lsp/client';
 import { Connection, ServerType, WorkspaceFolderItem } from './connections';
-import { buildProjectOverviewBaseServerUrl, serverProjectsToQuickPickItems } from '../util/bindingUtils';
+import { buildProjectOverviewBaseServerUrl, projectToQuickPickItem, serverProjectsToQuickPickItems } from '../util/bindingUtils';
 import { code2ProtocolConverter } from '../util/uri';
 import { DEFAULT_CONNECTION_ID } from '../commons';
 import { ExtendedClient, ExtendedServer } from '../lsp/protocol';
 import { DONT_ASK_AGAIN_ACTION } from '../util/showMessage';
 import { SharedConnectedModeSettingsService } from './sharedConnectedModeSettingsService';
+import { showRemoteProjectQuickPick } from './remoteProjectQuickPick';
 import OPEN_BROWSER = Commands.OPEN_BROWSER;
 
 const SONARLINT_CATEGORY = 'sonarlint';
@@ -232,41 +233,24 @@ export class BindingService {
       return;
     }
     const baseServerUrl = await this.getBaseServerUrl(connectionId, serverType);
-    let selectedRemoteProject;
     const suggestedProjects = await this.getSuggestedItems(connectionId, workspaceFolder, serverType);
     const remoteProjects = await this.getRemoteProjectsItems(connectionId, workspaceFolder, serverType);
     const remoteProjectsItems = this.deduplicateQuickPickItems(suggestedProjects, remoteProjects);
-    const allProjectsGroup = { label: 'All Projects', kind: VSCode.QuickPickItemKind.Separator };
-    const suggestedProjectsGroup = { label: 'Suggested Projects', kind: VSCode.QuickPickItemKind.Separator };
-    if (remoteProjects) {
-      const remoteProjectsQuickPick = VSCode.window.createQuickPick();
-      remoteProjectsQuickPick.title = `Select ${serverType} Project to Bind with '${selectedFolderName}/'`;
-      remoteProjectsQuickPick.placeholder = `Select the remote project you want to bind with '${selectedFolderName}/' folder`;
-      remoteProjectsQuickPick.items = [
-        suggestedProjectsGroup,
+    showRemoteProjectQuickPick({
+      selectedFolderName,
+      serverType,
+      initialItems: [
+        { label: 'Suggested Projects', kind: VSCode.QuickPickItemKind.Separator },
         ...suggestedProjects,
-        allProjectsGroup,
+        { label: 'All Projects', kind: VSCode.QuickPickItemKind.Separator },
         ...remoteProjectsItems
-      ];
-      remoteProjectsQuickPick.ignoreFocusOut = true;
-
-      remoteProjectsQuickPick.onDidTriggerItemButton(e => {
-        remoteProjectsQuickPick.busy = true;
-        VSCode.commands.executeCommand(
-          Commands.OPEN_BROWSER,
-          VSCode.Uri.parse(`${baseServerUrl}?id=${e.item.description}`)
-        );
-      });
-
-      remoteProjectsQuickPick.onDidChangeSelection(selection => {
-        selectedRemoteProject = selection[0];
-
-        void this.saveManualBinding(selectedRemoteProject.description, workspaceFolder, connectionId);
-        remoteProjectsQuickPick.dispose();
-      });
-
-      remoteProjectsQuickPick.show();
-    }
+      ],
+      searchProjects: searchText => this.languageClient.fuzzySearchProjects(connectionId || DEFAULT_CONNECTION_ID, searchText),
+      onAccept: projectKey => { void this.saveManualBinding(projectKey, workspaceFolder, connectionId); },
+      onOpenInBrowser: projectKey => {
+        VSCode.commands.executeCommand(Commands.OPEN_BROWSER, VSCode.Uri.parse(`${baseServerUrl}?id=${projectKey}`));
+      }
+    });
   }
 
   private deduplicateQuickPickItems(suggestedProjects: VSCode.QuickPickItem[], remoteProjects: VSCode.QuickPickItem[]) {
@@ -371,16 +355,7 @@ export class BindingService {
       }
 
       remoteProjects.forEach((v, k) => {
-        itemsList.push({
-          label: v,
-          description: k,
-          buttons: [
-            {
-              iconPath: new VSCode.ThemeIcon('link-external'),
-              tooltip: `View in ${serverType}`
-            }
-          ]
-        });
+        itemsList.push(projectToQuickPickItem({ key: k, name: v }, serverType));
       });
     } catch {
       VSCode.window.showErrorMessage(
@@ -416,7 +391,4 @@ export interface ProjectBinding {
   connectionId?: string;
 }
 
-export interface ServerProject {
-  key: string;
-  name: string;
-}
+export type { ServerProject } from '../lsp/protocol';
