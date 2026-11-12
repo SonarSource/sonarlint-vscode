@@ -12,6 +12,11 @@ export interface UriParams {
   uri: string;
 }
 
+export interface ServerProject {
+  key: string;
+  name: string;
+}
+
 interface SeverityDetails {
   severity?: string;
   type?: string;
@@ -604,6 +609,21 @@ export namespace ExtendedServer {
   export namespace GetRemoteProjectsForConnection {
     export const type = new lsp.RequestType<GetRemoteProjectsForConnectionParams, Map<string, string>, void>(
       'sonarlint/getRemoteProjectsForConnection'
+    );
+  }
+
+  export interface FuzzySearchProjectsParams {
+    connectionId: string;
+    searchText: string;
+  }
+
+  export interface FuzzySearchProjectsResponse {
+    topResults: ServerProject[];
+  }
+
+  export namespace FuzzySearchProjects {
+    export const type = new lsp.RequestType<FuzzySearchProjectsParams, FuzzySearchProjectsResponse, void>(
+      'sonarlint/fuzzySearchProjects'
     );
   }
 
