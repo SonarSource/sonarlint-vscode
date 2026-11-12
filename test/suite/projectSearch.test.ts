@@ -110,10 +110,11 @@ suite('Dynamic project search', () => {
 
   test('trims and debounces single characters, normalizes default ID, and activates Core first result', async () => {
     await open('');
+    const initialItems = picker.items;
     value.fire('old');
     await clock.tickAsync(200);
     value.fire(' n ');
-    expect(picker.items).to.deep.equal([]);
+    expect(picker.items).to.equal(initialItems);
     expect(picker.busy).to.be.true;
     await clock.tickAsync(299);
     expect(client.fuzzySearchProjects.called).to.be.false;
@@ -123,6 +124,33 @@ suite('Dynamic project search', () => {
     expect(picker.items.every(item => item.alwaysShow)).to.be.true;
     expect(picker.activeItems).to.deep.equal([picker.items[0]]);
     expect(picker.busy).to.be.false;
+  });
+
+  test('keeps previous search results during debounce and loading, then replaces them even with empty results', async () => {
+    await open();
+    await search('needle');
+    const previousItems = picker.items;
+    const pending = deferred();
+    client.fuzzySearchProjects.returns(pending.promise);
+    picker.selectedItems = [previousItems[0]];
+    value.fire('empty');
+    expect(picker.items).to.equal(previousItems);
+    expect(picker.activeItems).to.deep.equal([]);
+    expect(picker.busy).to.be.true;
+    accept.fire();
+    expect(save.called).to.be.false;
+    await clock.tickAsync(300);
+    expect(picker.items).to.equal(previousItems);
+    expect(picker.busy).to.be.true;
+    accept.fire();
+    expect(save.called).to.be.false;
+    pending.resolve({ topResults: [] });
+    await clock.tickAsync(0);
+    expect(picker.items).to.deep.equal([]);
+    expect(picker.activeItems).to.deep.equal([]);
+    expect(picker.busy).to.be.false;
+    accept.fire();
+    expect(save.called).to.be.false;
   });
 
   test('blank restores the original snapshot immediately and invalidates pending work', async () => {
@@ -149,11 +177,12 @@ suite('Dynamic project search', () => {
     const current = deferred();
     client.fuzzySearchProjects.onFirstCall().returns(old.promise).onSecondCall().returns(current.promise);
     await open();
+    const initialItems = picker.items;
     await search('old');
     await search('current');
     old.resolve(results);
     await clock.tickAsync(0);
-    expect(picker.items).to.deep.equal([]);
+    expect(picker.items).to.equal(initialItems);
     expect(picker.busy).to.be.true;
     current.resolve({ topResults: [{ key: 'current', name: 'Current' }] });
     await clock.tickAsync(0);
@@ -201,11 +230,16 @@ suite('Dynamic project search', () => {
   });
 
   test('current failure keeps the picker open for empty results and a successful retry', async () => {
-    client.fuzzySearchProjects.onFirstCall().rejects(new Error('offline')).onSecondCall().resolves({ topResults: [] });
+    client.fuzzySearchProjects.onSecondCall().rejects(new Error('offline')).onThirdCall().resolves({ topResults: [] });
     await open();
+    await search('needle');
+    picker.selectedItems = [picker.items[0]];
     await search('failed');
     expect(picker.items).to.deep.equal([]);
+    expect(picker.activeItems).to.deep.equal([]);
     expect(picker.busy).to.be.false;
+    accept.fire();
+    expect(save.called).to.be.false;
     expect(error.calledOnce).to.be.true;
     expect(picker.dispose.called).to.be.false;
     await search('empty');

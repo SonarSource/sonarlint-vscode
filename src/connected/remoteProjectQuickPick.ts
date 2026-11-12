@@ -52,6 +52,8 @@ export function showRemoteProjectQuickPick(options: RemoteProjectQuickPickOption
       }
     } catch {
       if (isCurrent()) {
+        picker.items = [];
+        picker.activeItems = [];
         void VSCode.window.showErrorMessage('Request Failed: Could not search remote projects. Please check the connection.');
       }
     } finally {
@@ -69,7 +71,9 @@ export function showRemoteProjectQuickPick(options: RemoteProjectQuickPickOption
     const requestGeneration = generation;
     clearTimeout(timer);
     const searchText = value.trim();
-    picker.items = searchText ? [] : options.initialItems;
+    if (!searchText) {
+      picker.items = options.initialItems;
+    }
     picker.activeItems = [];
     picker.busy = !!searchText;
     if (searchText) {
