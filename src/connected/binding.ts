@@ -25,6 +25,7 @@ const SONARLINT_CATEGORY = 'sonarlint';
 const BINDING_SETTINGS = 'connectedMode.project';
 const OPEN_FOLDER_ACTION = 'Open Folder';
 const BIND_MANUALLY_ACTION = 'Bind Manually';
+const PROJECT_SEARCH_DEBOUNCE_MS = 300;
 
 async function bindManuallyAction(workspaceFolder: VSCode.WorkspaceFolder) {
   const existingSettings = VSCode.workspace
@@ -265,61 +266,62 @@ export class BindingService {
         subscriptions.forEach(subscription => subscription.dispose());
         remoteProjectsQuickPick.dispose();
       };
-      subscriptions.push(remoteProjectsQuickPick.onDidChangeValue(value => {
-        if (closed) {
-          return;
-        }
-        const requestGeneration = ++generation;
-        clearTimeout(timer);
-        const searchText = value.trim();
-        currentItems = searchText ? [] : initialItems;
-        remoteProjectsQuickPick.items = currentItems;
-        remoteProjectsQuickPick.activeItems = [];
-        remoteProjectsQuickPick.busy = !!searchText;
-        if (!searchText) {
-          return;
-        }
-        const isCurrent = () => !closed && generation === requestGeneration;
-        timer = setTimeout(async () => {
-          try {
-            const response = await this.languageClient.fuzzySearchProjects(connectionId || DEFAULT_CONNECTION_ID, searchText);
-            if (isCurrent()) {
-              currentItems = response.topResults.map(project => ({ ...projectToQuickPickItem(project, serverType), alwaysShow: true }));
-              remoteProjectsQuickPick.items = currentItems;
-              remoteProjectsQuickPick.activeItems = currentItems.slice(0, 1);
-            }
-          } catch {
-            if (isCurrent()) {
-              currentItems = [];
-              remoteProjectsQuickPick.items = currentItems;
-              remoteProjectsQuickPick.activeItems = [];
-              void VSCode.window.showErrorMessage('Request Failed: Could not search remote projects. Please check the connection.');
-            }
-          } finally {
-            if (isCurrent()) {
-              remoteProjectsQuickPick.busy = false;
-            }
+      subscriptions.push(
+        remoteProjectsQuickPick.onDidChangeValue(value => {
+          if (closed) {
+            return;
           }
-        }, 300);
-      }));
-
-      subscriptions.push(remoteProjectsQuickPick.onDidTriggerItemButton(e => {
-        VSCode.commands.executeCommand(
-          Commands.OPEN_BROWSER,
-          VSCode.Uri.parse(`${baseServerUrl}?id=${e.item.description}`)
-        );
-      }));
-
-      subscriptions.push(remoteProjectsQuickPick.onDidAccept(() => {
-        const selectedRemoteProject = remoteProjectsQuickPick.selectedItems[0];
-        if (closed || remoteProjectsQuickPick.busy || !currentItems.includes(selectedRemoteProject)
-          || selectedRemoteProject.kind === VSCode.QuickPickItemKind.Separator) {
-          return;
-        }
-        cleanup();
-        void this.saveManualBinding(selectedRemoteProject.description, workspaceFolder, connectionId);
-      }));
-      subscriptions.push(remoteProjectsQuickPick.onDidHide(cleanup));
+          generation++;
+          const requestGeneration = generation;
+          clearTimeout(timer);
+          const searchText = value.trim();
+          currentItems = searchText ? [] : initialItems;
+          remoteProjectsQuickPick.items = currentItems;
+          remoteProjectsQuickPick.activeItems = [];
+          remoteProjectsQuickPick.busy = !!searchText;
+          if (!searchText) {
+            return;
+          }
+          const isCurrent = () => !closed && generation === requestGeneration;
+          timer = setTimeout(async () => {
+            try {
+              const response = await this.languageClient.fuzzySearchProjects(connectionId || DEFAULT_CONNECTION_ID, searchText);
+              if (isCurrent()) {
+                currentItems = response.topResults.map(project => ({ ...projectToQuickPickItem(project, serverType), alwaysShow: true }));
+                remoteProjectsQuickPick.items = currentItems;
+                remoteProjectsQuickPick.activeItems = currentItems.slice(0, 1);
+              }
+            } catch {
+              if (isCurrent()) {
+                currentItems = [];
+                remoteProjectsQuickPick.items = currentItems;
+                remoteProjectsQuickPick.activeItems = [];
+                void VSCode.window.showErrorMessage('Request Failed: Could not search remote projects. Please check the connection.');
+              }
+            } finally {
+              if (isCurrent()) {
+                remoteProjectsQuickPick.busy = false;
+              }
+            }
+          }, PROJECT_SEARCH_DEBOUNCE_MS);
+        }),
+        remoteProjectsQuickPick.onDidTriggerItemButton(e => {
+          VSCode.commands.executeCommand(
+            Commands.OPEN_BROWSER,
+            VSCode.Uri.parse(`${baseServerUrl}?id=${e.item.description}`)
+          );
+        }),
+        remoteProjectsQuickPick.onDidAccept(() => {
+          const selectedRemoteProject = remoteProjectsQuickPick.selectedItems[0];
+          if (closed || remoteProjectsQuickPick.busy || !currentItems.includes(selectedRemoteProject)
+            || selectedRemoteProject.kind === VSCode.QuickPickItemKind.Separator) {
+            return;
+          }
+          cleanup();
+          void this.saveManualBinding(selectedRemoteProject.description, workspaceFolder, connectionId);
+        }),
+        remoteProjectsQuickPick.onDidHide(cleanup)
+      );
 
       remoteProjectsQuickPick.show();
     }
