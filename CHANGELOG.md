@@ -3,6 +3,7 @@
 * Search remote projects dynamically when configuring a Connected Mode binding
 * Introduce Shared, multi-project binding - an experimental feature available inside SonarQube for IDE Labs. It binds the folders of your workspace to SonarQube (Server, Cloud) projects using the shared configuration file of your repository, created with SonarQube CLI or edited manually
 * Update Python analyzer 5.32 -> [5.33](https://github.com/SonarSource/sonar-python/releases/tag/5.33.0.48743)
+* Update Text & Secrets analyzer 2.54 -> [2.55](https://github.com/SonarSource/sonar-text/releases/tag/2.55.0.13968)
 
 ## 6.3
 
