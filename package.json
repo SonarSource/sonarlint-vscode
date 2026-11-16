@@ -1537,7 +1537,6 @@
     "bracketSpacing": true
   },
   "overrides": {
-    "ip-address": "^10.3.1",
-    "node-forge": "^1.4.3"
+    "ip-address": "^10.3.1"
   }
 }
