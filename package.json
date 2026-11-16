@@ -1538,6 +1538,6 @@
   },
   "overrides": {
     "ip-address": "^10.3.1",
-    "node-forge": "^1.4.1"
+    "node-forge": "^1.4.3"
   }
 }
