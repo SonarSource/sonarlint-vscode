@@ -223,7 +223,8 @@ suite('util', () => {
   test('should convert SonarCloudRegion enum to label', () => {
     expect(sonarCloudRegionToLabel(0)).to.equal('EU');
     expect(sonarCloudRegionToLabel(1)).to.equal('US');
-    expect(sonarCloudRegionToLabel(2)).to.equal('EU');
+    expect(sonarCloudRegionToLabel(2)).to.equal('AU');
+    expect(sonarCloudRegionToLabel(3)).to.equal('EU');
     expect(sonarCloudRegionToLabel(null)).to.equal('EU');
   });
 
@@ -232,6 +233,8 @@ suite('util', () => {
     expect(sanitizeSonarCloudRegionSetting('eu')).to.equal('EU');
     expect(sanitizeSonarCloudRegionSetting('US')).to.equal('US');
     expect(sanitizeSonarCloudRegionSetting('us')).to.equal('US');
+    expect(sanitizeSonarCloudRegionSetting('AU')).to.equal('AU');
+    expect(sanitizeSonarCloudRegionSetting('au')).to.equal('AU');
     expect(sanitizeSonarCloudRegionSetting('APJ')).to.equal('EU');
   });
 
