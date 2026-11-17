@@ -81,6 +81,25 @@ suite('Connection Setup', () => {
     assert.notInclude(html, 'hidden');
   });
 
+  test('should not offer AU in the SonarQube Cloud region selection', () => {
+    const html = renderServerUrlField({ conn: { organizationKey: '', connectionId: '', token: '' } }, 'create');
+
+    assert.notInclude(html, 'value="AU"');
+    assert.notInclude(html, 'sonarqube.au');
+    assert.notInclude(html, '<b>AU</b>');
+  });
+
+  test('should keep AU region of an existing connection without offering an AU option', () => {
+    const html = renderServerUrlField(
+      { conn: { organizationKey: 'org', connectionId: 'id', token: 'token', region: 'AU' } }, 'update');
+
+    assert.include(html, '<input type="hidden" id="region-initial" value="AU" />');
+    assert.notInclude(html, 'checked value="EU"');
+    assert.notInclude(html, 'checked value="US"');
+    assert.notInclude(html, 'value="AU">');
+    assert.notInclude(html, '<b>AU</b>');
+  });
+
   test('should show SonarQube creation webview when command is called', async () => {
     const connectionsBefore = getSonarQubeConnections();
     assert.deepStrictEqual(connectionsBefore, []);

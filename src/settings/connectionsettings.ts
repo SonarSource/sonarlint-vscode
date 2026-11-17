@@ -382,7 +382,7 @@ export interface SonarQubeConnection extends BaseConnection {
   serverUrl: string;
 }
 
-export type SonarCloudRegion = 'EU' | 'US';
+export type SonarCloudRegion = 'EU' | 'US' | 'AU';
 
 export interface SonarCloudConnection extends BaseConnection {
   organizationKey: string;
