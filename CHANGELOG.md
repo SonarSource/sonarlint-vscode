@@ -5,6 +5,7 @@
 * Update Python analyzer 5.32 -> [5.33](https://github.com/SonarSource/sonar-python/releases/tag/5.33.0.48743)
 * Update Text & Secrets analyzer 2.54 -> [2.55](https://github.com/SonarSource/sonar-text/releases/tag/2.55.0.13968)
 * Update JS/TS/CSS analyzer 14.4 -> [14.5](https://github.com/SonarSource/SonarJS/releases/tag/14.5.0.46527)
+* Update XML analyzer 2.19 -> [2.20](https://github.com/SonarSource/sonar-xml/releases/tag/2.20.0.18555)
 
 ## 6.3
 
