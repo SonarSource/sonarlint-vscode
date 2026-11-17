@@ -140,7 +140,7 @@ const SONARCLOUD_REGION_URLS = {
 };
 
 /**
- * The selected region, or the region of the existing connection when no radio is selected (e.g. AU, which is not offered as an option)
+ * The selected region, or the region of the existing connection when no radio is selected (e.g. AU, which has no radio)
  */
 function getRegion() {
   const selectedRegion = byId('region')?.value;
