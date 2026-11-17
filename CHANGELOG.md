@@ -4,6 +4,9 @@
 * Introduce Shared, multi-project binding - an experimental feature available inside SonarQube for IDE Labs. It binds the folders of your workspace to SonarQube (Server, Cloud) projects using the shared configuration file of your repository, created with SonarQube CLI or edited manually
 * Update Python analyzer 5.32 -> [5.33](https://github.com/SonarSource/sonar-python/releases/tag/5.33.0.48743)
 * Update Text & Secrets analyzer 2.54 -> [2.55](https://github.com/SonarSource/sonar-text/releases/tag/2.55.0.13968)
+* Update JS/TS/CSS analyzer 14.4 -> [14.5](https://github.com/SonarSource/SonarJS/releases/tag/14.5.0.46527)
+* Update XML analyzer 2.19 -> [2.20](https://github.com/SonarSource/sonar-xml/releases/tag/2.20.0.18555)
+* Update Go analyzer 1.48 -> [1.49](https://github.com/SonarSource/sonar-go/releases/tag/1.49.0.9582)
 
 ## 6.3
 
