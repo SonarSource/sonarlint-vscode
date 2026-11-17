@@ -133,6 +133,24 @@ function hasValidOrganizationKey() {
   return organizationKeyInput.getAttribute('selected') && organizationKeyInput.value.length > 0;
 }
 
+const SONARCLOUD_REGION_URLS = {
+  EU: 'https://sonarcloud.io',
+  US: 'https://sonarqube.us/',
+  AU: 'https://sonarqube.au'
+};
+
+/**
+ * The selected region, or the region of the existing connection when no radio is selected (e.g. AU, which is not offered as an option)
+ */
+function getRegion() {
+  const regionField = byId('region');
+  if (regionField && regionField.value) {
+    return regionField.value;
+  }
+  const initialRegion = byId('region-initial');
+  return initialRegion ? initialRegion.value : 'EU';
+}
+
 function onClickGenerateToken() {
   /**
    * @type {HTMLInputElement}
@@ -145,9 +163,8 @@ function onClickGenerateToken() {
   if (serverUrlElement) {
     serverUrl = serverUrlElement.value;
   } else {
-    const regionField = byId('region');
-    region = regionField ? regionField.value : 'EU';
-    serverUrl = region === 'US' ? 'https://sonarqube.us/' : 'https://sonarcloud.io';
+    region = getRegion();
+    serverUrl = SONARCLOUD_REGION_URLS[region] ?? SONARCLOUD_REGION_URLS.EU;
     preFilledOrganizationKey = initialOrganizationKey ? initialOrganizationKey.value : '';
   }
   byId('tokenGenerationProgress').classList.remove('hidden');
@@ -162,12 +179,11 @@ function onClickGenerateToken() {
 function onChangeToken() {
   saveState();
   toggleSaveConnectionButton();
-  const regionField = byId('region');
   const initialOrganizationKey = byId('organizationKey-initial');
   const tokenChangedMessage = {
     command: 'tokenChanged',
     token: byId('token').value,
-    region: regionField ? regionField.value : 'EU',
+    region: getRegion(),
     preFilledOrganizationKey: initialOrganizationKey ? initialOrganizationKey.value : ''
   };
   vscode.postMessage(tokenChangedMessage);
@@ -197,8 +213,7 @@ function onClickSaveConnection() {
   const token = byId('token').value;
   const suggestionOrigin = byId('suggestionOrigin').value;
   const disableNotifications = !byId('enableNotifications').checked;
-  const regionField = byId('region');
-  const region = regionField ? regionField.value : 'EU';
+  const region = getRegion();
   const saveConnectionMessage = {
     command: 'saveConnection',
     connectionId,

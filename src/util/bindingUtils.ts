@@ -14,10 +14,12 @@ import { SonarCloudRegion } from '../settings/connectionsettings';
 
 const EU_SONARCLOUD_BASE_URL = 'https://sonarcloud.io';
 const US_SONARCLOUD_BASE_URL = 'https://sonarqube.us';
+const AU_SONARCLOUD_BASE_URL = 'https://sonarqube.au';
 
 export const SONARCLOUD_REGION_URL_MAP: Record<SonarCloudRegion, string> = {
   'EU': EU_SONARCLOUD_BASE_URL,
-  'US': US_SONARCLOUD_BASE_URL
+  'US': US_SONARCLOUD_BASE_URL,
+  'AU': AU_SONARCLOUD_BASE_URL
 };
 
 export function serverProjectsToQuickPickItems(serverProjects: BindingSuggestion[], serverType: ServerType) {
