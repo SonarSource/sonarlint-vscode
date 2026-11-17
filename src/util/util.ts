@@ -345,6 +345,7 @@ export function sonarCloudRegionToLabel(region: number): SonarCloudRegion {
   switch (region) {
     case 0: return 'EU';
     case 1: return 'US';
+    case 2: return 'AU';
     default: return 'EU';
   }
 }
@@ -357,6 +358,7 @@ export function sanitizeSonarCloudRegionSetting(region: string): SonarCloudRegio
   switch (region.toUpperCase()) {
     case 'EU': return 'EU';
     case 'US': return 'US';
+    case 'AU': return 'AU';
     default: return 'EU';
   }
 }

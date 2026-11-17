@@ -17,8 +17,11 @@ suite('Binding Utils Test Suite', () => {
     const scBaseServerUrl = buildProjectOverviewBaseServerUrl(ServerType.SonarCloud, 'orgKey');
     const scBaseServerUrlUS = buildProjectOverviewBaseServerUrl(ServerType.SonarCloud, 'orgKey', 'US');
 
+    const scBaseServerUrlAU = buildProjectOverviewBaseServerUrl(ServerType.SonarCloud, 'orgKey', 'AU');
+
     expect(sqBaseServerUrl).to.be.equal('serverUrl/dashboard');
     expect(scBaseServerUrl).to.be.equal('https://sonarcloud.io/project/overview');
     expect(scBaseServerUrlUS).to.be.equal('https://sonarqube.us/project/overview');
+    expect(scBaseServerUrlAU).to.be.equal('https://sonarqube.au/project/overview');
   });
 });
