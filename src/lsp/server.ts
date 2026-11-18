@@ -36,6 +36,7 @@ export function languageServerCommand(
   const vmargs = sonarLintConfiguration.get('ls.vmargs', '');
   parseVMargs(params, vmargs);
 
+  params.push('-XX:-UseBASE64Intrinsics');
   params.push('-jar', serverJar);
   params.push('-stdio');
   params.push('-analyzers');
