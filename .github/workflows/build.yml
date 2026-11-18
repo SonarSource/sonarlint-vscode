@@ -23,7 +23,7 @@ jobs:
     outputs:
       BRANCH_NAME: ${{ steps.branch-name.outputs.BRANCH_NAME }}
     steps:
-      - uses: SonarSource/ci-github-actions/get-build-number@21206070b4306949454171904b8d2b4ec349b0c5 # v2
+      - uses: SonarSource/ci-github-actions/get-build-number@43609e4795f6400aa0b66dc1f5277f1fc3fb4768 # 2.6.0
 
       - name: Get branch name
         id: branch-name
@@ -61,7 +61,7 @@ jobs:
             development/kv/data/sign passphrase | PGP_PASSPHRASE;
             development/kv/data/sentry/sq-ide-upload token | SENTRY_UPLOAD_TOKEN;
 
-      - uses: SonarSource/ci-github-actions/get-build-number@21206070b4306949454171904b8d2b4ec349b0c5 # v2
+      - uses: SonarSource/ci-github-actions/get-build-number@43609e4795f6400aa0b66dc1f5277f1fc3fb4768 # 2.6.0
 
       - name: Get project version
         id: project_version
@@ -173,7 +173,7 @@ jobs:
             development/kv/data/next url | SONAR_URL;
             development/kv/data/next token | SONAR_TOKEN;
 
-      - uses: SonarSource/ci-github-actions/get-build-number@21206070b4306949454171904b8d2b4ec349b0c5 # v2
+      - uses: SonarSource/ci-github-actions/get-build-number@43609e4795f6400aa0b66dc1f5277f1fc3fb4768 # 2.6.0
 
       - name: Cache NPM dependencies
         uses: SonarSource/gh-action_cache@v1
@@ -396,7 +396,7 @@ jobs:
       - qa-tests
     if: ${{ github.event_name == 'pull_request' || github.ref_name == github.event.repository.default_branch || startsWith(github.ref_name, 'branch-') || startsWith(github.ref_name, 'dogfood-on-') }}
     steps:
-      - uses: SonarSource/ci-github-actions/promote@21206070b4306949454171904b8d2b4ec349b0c5 # v2
+      - uses: SonarSource/ci-github-actions/promote@43609e4795f6400aa0b66dc1f5277f1fc3fb4768 # 2.6.0
         env:
           PROJECT_VERSION: ${{ needs.build.outputs.PROJECT_VERSION }}
         with:
@@ -425,7 +425,7 @@ jobs:
             development/kv/data/repox url | ARTIFACTORY_URL;
             development/artifactory/token/{REPO_OWNER_NAME_DASH}-promoter access_token | ARTIFACTORY_API_KEY;
 
-      - uses: SonarSource/ci-github-actions/get-build-number@21206070b4306949454171904b8d2b4ec349b0c5 # v2
+      - uses: SonarSource/ci-github-actions/get-build-number@43609e4795f6400aa0b66dc1f5277f1fc3fb4768 # 2.6.0
 
       - name: Create dogfood.json
         env:
