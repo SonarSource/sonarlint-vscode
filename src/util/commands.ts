@@ -46,6 +46,7 @@ export namespace Commands {
 
   export const CONNECT_TO_SONARQUBE = 'SonarLint.ConnectToSonarQube';
   export const CONNECT_TO_SONARCLOUD = 'SonarLint.ConnectToSonarCloud';
+  export const CONNECT_UNRESOLVED_BINDING = 'SonarLint.ConnectUnresolvedBinding';
   export const EDIT_SONARQUBE_CONNECTION = 'SonarLint.EditSonarQubeConnection';
   export const EDIT_SONARCLOUD_CONNECTION = 'SonarLint.EditSonarCloudConnection';
   export const SHARE_CONNECTED_MODE_CONFIG = 'SonarLint.ShareConnectedModeConfiguration';
