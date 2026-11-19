@@ -97,6 +97,23 @@ export function connectToSonarCloudFrom(context: vscode.ExtensionContext) {
   };
 }
 
+/**
+ * For a binding whose kind of server cannot be inferred: ask which kind of connection to create, then open its form.
+ */
+export function connectUnresolvedBindingFrom(context: vscode.ExtensionContext) {
+  return async (item?: { binding?: ExtendedServer.BindingInfo }) => {
+    const choices = [
+      { label: 'SonarQube Cloud', connect: connectToSonarCloudFrom(context) },
+      { label: 'SonarQube Server', connect: connectToSonarQubeFrom(context) }
+    ];
+    const choice = await vscode.window.showQuickPick(choices, {
+      title: 'Create Missing Connection',
+      placeHolder: 'Select where the bound project is hosted'
+    });
+    choice?.connect(item);
+  };
+}
+
 export function editSonarQubeConnection(context: vscode.ExtensionContext) {
   return async (connection: string | Promise<Connection>) => {
     const connectionId = typeof connection === 'string' ? connection : (await connection).id;
