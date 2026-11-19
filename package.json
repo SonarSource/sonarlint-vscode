@@ -1522,7 +1522,7 @@
     {
       "groupId": "org.sonarsource.sonarlint.omnisharp",
       "artifactId": "sonarlint-omnisharp-plugin",
-      "version": "1.48.0.102133",
+      "version": "1.50.0.102227",
       "output": "analyzers/sonarlintomnisharp.jar",
       "requiresCredentials": true
     }
