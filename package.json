@@ -560,6 +560,12 @@
         "icon": "$(plus)"
       },
       {
+        "command": "SonarLint.ConnectUnresolvedBinding",
+        "title": "Create Missing Connection...",
+        "category": "SonarQube",
+        "icon": "$(plug)"
+      },
+      {
         "command": "SonarLint.EditSonarQubeConnection",
         "title": "Edit SonarQube Server Connection",
         "category": "SonarQube",
@@ -876,6 +882,12 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "SonarLint.ConnectUnresolvedBinding",
+          "when": "false"
+        }
+      ],
       "editor/title": [
         {
           "command": "SonarLint.AnalyseOpenFile",
@@ -1058,12 +1070,17 @@
         },
         {
           "command": "SonarLint.ConnectToSonarQube",
-          "when": "view == SonarLint.ConnectedMode && viewItem =~ /^unresolvedBinding(Server|Unknown)$/",
+          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBindingServer",
           "group": "inline"
         },
         {
           "command": "SonarLint.ConnectToSonarCloud",
-          "when": "view == SonarLint.ConnectedMode && viewItem =~ /^unresolvedBinding(Cloud|Unknown)$/",
+          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBindingCloud",
+          "group": "inline"
+        },
+        {
+          "command": "SonarLint.ConnectUnresolvedBinding",
+          "when": "view == SonarLint.ConnectedMode && viewItem == unresolvedBindingUnknown",
           "group": "inline"
         },
         {

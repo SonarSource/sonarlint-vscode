@@ -26,6 +26,7 @@ import { AllConnectionsTreeDataProvider, Connection, ConnectionType, Connections
 import {
   connectToSonarCloudFrom,
   connectToSonarQubeFrom,
+  connectUnresolvedBindingFrom,
   editSonarQubeConnection,
   editSonarCloudConnection
 } from './connected/connectionsetup';
@@ -154,6 +155,7 @@ export class CommandsManager {
       ),
       vscode.commands.registerCommand(Commands.CONNECT_TO_SONARQUBE, connectToSonarQubeFrom(this.context)),
       vscode.commands.registerCommand(Commands.CONNECT_TO_SONARCLOUD, connectToSonarCloudFrom(this.context)),
+      vscode.commands.registerCommand(Commands.CONNECT_UNRESOLVED_BINDING, connectUnresolvedBindingFrom(this.context)),
       vscode.commands.registerCommand(Commands.EDIT_SONARQUBE_CONNECTION, editSonarQubeConnection(this.context)),
       vscode.commands.registerCommand(Commands.EDIT_SONARCLOUD_CONNECTION, editSonarCloudConnection(this.context)),
       vscode.commands.registerCommand(Commands.ADD_PROJECT_BINDING, connection =>
