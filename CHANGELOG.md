@@ -7,6 +7,7 @@
 * Update JS/TS/CSS analyzer 14.4 -> [14.5](https://github.com/SonarSource/SonarJS/releases/tag/14.5.0.46527)
 * Update XML analyzer 2.19 -> [2.20](https://github.com/SonarSource/sonar-xml/releases/tag/2.20.0.18555)
 * Update Go analyzer 1.48 -> [1.49](https://github.com/SonarSource/sonar-go/releases/tag/1.49.0.9582)
+* Update IaC analyzer 2.27 -> [2.28](https://github.com/SonarSource/sonar-iac/releases/tag/2.28.0.24820)
 
 ## 6.3
 
