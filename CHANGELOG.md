@@ -1,3 +1,8 @@
+## 6.5
+
+* Update JS/TS/CSS analyzer 14.5 -> [14.6](https://github.com/SonarSource/SonarJS/releases/tag/14.6.0.46571)
+* Update IaC analyzer 2.27 -> [2.28](https://github.com/SonarSource/sonar-iac/releases/tag/2.28.0.24820)
+
 ## 6.4
 
 * Search remote projects dynamically when configuring a Connected Mode binding
