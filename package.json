@@ -1491,7 +1491,7 @@
     {
       "groupId": "org.sonarsource.javascript",
       "artifactId": "sonar-javascript-plugin",
-      "version": "14.5.0.46527",
+      "version": "14.6.0.46571",
       "output": "analyzers/sonarjs.jar"
     },
     {
@@ -1533,7 +1533,7 @@
     {
       "groupId": "org.sonarsource.iac",
       "artifactId": "sonar-iac-plugin",
-      "version": "2.27.0.24646",
+      "version": "2.28.0.24820",
       "output": "analyzers/sonariac.jar"
     },
     {
