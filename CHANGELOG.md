@@ -2,6 +2,7 @@
 
 * Update JS/TS/CSS analyzer 14.5 -> [14.6](https://github.com/SonarSource/SonarJS/releases/tag/14.6.0.46571)
 * Update IaC analyzer 2.27 -> [2.28](https://github.com/SonarSource/sonar-iac/releases/tag/2.28.0.24820)
+* Update Text & Secrets analyzer 2.55 -> [2.56](https://github.com/SonarSource/sonar-text/releases/tag/2.56.0.14025)
 
 ## 6.4
 
