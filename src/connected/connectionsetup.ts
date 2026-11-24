@@ -205,9 +205,10 @@ function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, server
       }
     );
     // Registered once per panel: the panel is reused across openings, so a per-open listener would stack up
-    connectionSetupPanel.webview.onDidReceiveMessage(handleMessage, null, context.subscriptions);
+    const messageListener = connectionSetupPanel.webview.onDidReceiveMessage(handleMessage);
     connectionSetupPanel.onDidDispose(
       () => {
+        messageListener.dispose();
         connectionSetupPanel = undefined;
       },
       null,

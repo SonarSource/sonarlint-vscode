@@ -291,13 +291,22 @@ suite('Connection Setup', () => {
 
   suite('message listener registration', () => {
     let messageListenerSpies: sinon.SinonSpy[];
+    let messageListenerDisposeSpies: sinon.SinonSpy[];
 
     setup(() => {
       messageListenerSpies = [];
+      messageListenerDisposeSpies = [];
       const createWebviewPanel = vscode.window.createWebviewPanel;
       sinon.stub(vscode.window, 'createWebviewPanel').callsFake((...args: Parameters<typeof createWebviewPanel>) => {
         const panel = createWebviewPanel(...args);
-        messageListenerSpies.push(sinon.spy(panel.webview, 'onDidReceiveMessage'));
+        const onDidReceiveMessage = panel.webview.onDidReceiveMessage;
+        messageListenerSpies.push(
+          sinon.stub(panel.webview, 'onDidReceiveMessage').callsFake((listener, thisArgs, disposables) => {
+            const messageListener = onDidReceiveMessage.call(panel.webview, listener, thisArgs, disposables);
+            messageListenerDisposeSpies.push(sinon.spy(messageListener, 'dispose'));
+            return messageListener;
+          })
+        );
         return panel;
       });
     });
@@ -323,6 +332,8 @@ suite('Connection Setup', () => {
       await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
       await sleep(sleepTime);
+
+      assert.isTrue(messageListenerDisposeSpies[0].called, 'the listener of a disposed panel is disposed with it');
 
       await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARCLOUD);
       await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
