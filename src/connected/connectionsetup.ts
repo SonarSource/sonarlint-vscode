@@ -323,16 +323,13 @@ export function renderServerUrlField(initialState, mode) {
   const region = initialState.conn.region ?? 'EU';
   const euChecked = region === 'EU' ? 'checked' : '';
   const usChecked = region === 'US' ? 'checked' : '';
-  // AU has no radio; the region of an existing connection is kept in a hidden field
-  const initialRegionField = region === 'EU' || region === 'US'
-    ? ''
-    : `<input type="hidden" id="region-initial" value="${escapeHtml(region)}" />`;
+  const auChecked = region === 'AU' ? 'checked' : '';
   return `<vscode-radio-group orientation=vertical id="region" ${mode === 'update' ? 'disabled' : ''}>
             <label slot="label">Select the SonarQube Cloud region you would like to connect to</label>
             <vscode-radio ${euChecked} value="EU"><b>EU</b> - sonarcloud.io</vscode-radio>
-            <vscode-radio ${usChecked} value="US"><b>US</b> - sonarqube.us (invite-only)</vscode-radio>
-          </vscode-radio-group>
-          ${initialRegionField}`;
+            <vscode-radio ${usChecked} value="US"><b>US</b> - sonarqube.us</vscode-radio>
+            <vscode-radio ${auChecked} value="AU"><b>AU</b> - sonarqube.au</vscode-radio>
+          </vscode-radio-group>`;
 }
 
 function renderGenerateTokenButton(connection, serverProductName) {

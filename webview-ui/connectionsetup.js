@@ -139,15 +139,8 @@ const SONARCLOUD_REGION_URLS = {
   AU: 'https://sonarqube.au'
 };
 
-/**
- * The selected region, or the region of the existing connection when no radio is selected (e.g. AU, which has no radio)
- */
 function getRegion() {
-  const selectedRegion = byId('region')?.value;
-  if (selectedRegion) {
-    return selectedRegion;
-  }
-  return byId('region-initial')?.value ?? 'EU';
+  return byId('region')?.value ?? 'EU';
 }
 
 function onClickGenerateToken() {
