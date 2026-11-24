@@ -143,7 +143,6 @@ function initializeAndRevealPanel(context: vscode.ExtensionContext, renderOption
 }
 
 function finishSetupAndRevealPanel(serverProductName: string) {
-  connectionSetupPanel.webview.onDidReceiveMessage(handleMessage);
   connectionSetupPanel.iconPath = {
     light: util.resolveExtensionFile('images', `${serverProductName.toLowerCase()}.svg`),
     dark: util.resolveExtensionFile('images', `${serverProductName.toLowerCase()}_dark.svg`)
@@ -205,6 +204,8 @@ function lazyCreateConnectionSetupPanel(context: vscode.ExtensionContext, server
         enableScripts: true
       }
     );
+    // Registered once per panel: the panel is reused across openings, so a per-open listener would stack up
+    connectionSetupPanel.webview.onDidReceiveMessage(handleMessage, null, context.subscriptions);
     connectionSetupPanel.onDidDispose(
       () => {
         connectionSetupPanel = undefined;
