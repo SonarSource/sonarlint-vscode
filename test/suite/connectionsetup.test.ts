@@ -289,6 +289,48 @@ suite('Connection Setup', () => {
     assert.deepStrictEqual(connectionsAfter, [{ connectionId, organizationKey, disableNotifications, region }]);
   }).timeout(TEN_SECONDS);
 
+  suite('message listener registration', () => {
+    let messageListenerSpies: sinon.SinonSpy[];
+
+    setup(() => {
+      messageListenerSpies = [];
+      const createWebviewPanel = vscode.window.createWebviewPanel;
+      sinon.stub(vscode.window, 'createWebviewPanel').callsFake((...args: Parameters<typeof createWebviewPanel>) => {
+        const panel = createWebviewPanel(...args);
+        messageListenerSpies.push(sinon.spy(panel.webview, 'onDidReceiveMessage'));
+        return panel;
+      });
+    });
+
+    function messageListenerCount() {
+      return messageListenerSpies.reduce((total, spy) => total + spy.callCount, 0);
+    }
+
+    teardown(() => {
+      sinon.restore();
+    });
+
+    test('should register a single message listener when the panel is opened several times', async () => {
+      await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
+      await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARCLOUD);
+      await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
+
+      assert.strictEqual(messageListenerCount(), 1);
+    }).timeout(TEN_SECONDS);
+
+    test('should register a message listener again when the panel is re-created after being disposed', async function () {
+      this.timeout(TEN_SECONDS);
+      await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      await sleep(sleepTime);
+
+      await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARCLOUD);
+      await vscode.commands.executeCommand(Commands.CONNECT_TO_SONARQUBE);
+
+      assert.strictEqual(messageListenerCount(), 2);
+    });
+  });
+
   test('should NOT edit connection for which status check failed', async () => {
     const mockClient = {
       async checkNewConnection(token: string, serverOrOrganization: string, isSonarQube: boolean) {
