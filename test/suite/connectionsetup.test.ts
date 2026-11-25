@@ -76,39 +76,56 @@ suite('Connection Setup', () => {
 
     assert.include(html, 'id="region"');
     assert.include(html, '<vscode-radio checked value="EU">');
-    assert.include(html, '<b>US</b> - sonarqube.us (invite-only)');
+    assert.include(html, '<b>US</b> - sonarqube.us</vscode-radio>');
+    assert.notInclude(html, 'invite-only');
     assert.notInclude(html, 'checked value="US"');
     assert.notInclude(html, 'hidden');
   });
 
-  test('should not offer AU in the SonarQube Cloud region selection', () => {
+  test('should offer AU unchecked in the SonarQube Cloud region selection when creating a connection', () => {
     const html = renderServerUrlField({ conn: { organizationKey: '', connectionId: '', token: '' } }, 'create');
 
-    assert.notInclude(html, 'value="AU"');
-    assert.notInclude(html, 'sonarqube.au');
-    assert.notInclude(html, '<b>AU</b>');
+    assert.include(html, '<vscode-radio  value="AU"><b>AU</b> - sonarqube.au</vscode-radio>');
+    assert.include(html, '<vscode-radio checked value="EU">');
+    assert.notInclude(html, 'checked value="AU"');
+    assert.notInclude(html, 'disabled');
   });
 
-  test('should keep AU region of an existing connection without offering an AU option', () => {
+  test('should check only the AU radio for an existing AU connection', () => {
     const html = renderServerUrlField(
       { conn: { organizationKey: 'org', connectionId: 'id', token: 'token', region: 'AU' } }, 'update');
 
-    assert.include(html, '<input type="hidden" id="region-initial" value="AU" />');
+    assert.include(html, '<vscode-radio checked value="AU"><b>AU</b> - sonarqube.au</vscode-radio>');
     assert.notInclude(html, 'checked value="EU"');
     assert.notInclude(html, 'checked value="US"');
-    assert.notInclude(html, 'value="AU">');
-    assert.notInclude(html, '<b>AU</b>');
+    assert.include(html, '<vscode-radio-group orientation=vertical id="region" disabled>');
+    assert.notInclude(html, 'hidden');
   });
 
-  test('should keep AU region when creating a connection from a suggestion without offering an AU option', () => {
+  test('should check only the AU radio when creating a connection from an AU suggestion', () => {
     const html = renderServerUrlField(
       { conn: { organizationKey: 'org', connectionId: '', token: '', region: 'AU' } }, 'create');
 
-    assert.include(html, '<input type="hidden" id="region-initial" value="AU" />');
+    assert.include(html, 'checked value="AU"');
     assert.notInclude(html, 'checked value="EU"');
     assert.notInclude(html, 'checked value="US"');
-    assert.notInclude(html, '<b>AU</b>');
     assert.notInclude(html, 'disabled');
+    assert.notInclude(html, 'hidden');
+  });
+
+  test('should keep EU and US rendering for existing connections', () => {
+    const us = renderServerUrlField(
+      { conn: { organizationKey: 'org', connectionId: 'id', token: 'token', region: 'US' } }, 'update');
+    assert.include(us, 'checked value="US"');
+    assert.notInclude(us, 'checked value="EU"');
+    assert.notInclude(us, 'checked value="AU"');
+    assert.include(us, 'id="region" disabled>');
+
+    const eu = renderServerUrlField(
+      { conn: { organizationKey: 'org', connectionId: 'id', token: 'token', region: 'EU' } }, 'update');
+    assert.include(eu, 'checked value="EU"');
+    assert.notInclude(eu, 'checked value="US"');
+    assert.notInclude(eu, 'checked value="AU"');
   });
 
   test('should show SonarQube creation webview when command is called', async () => {
