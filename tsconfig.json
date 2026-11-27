@@ -17,7 +17,7 @@
     "exclude": [
         "node_modules",
         ".vscode-test",
-        "its",
+        "e2e",
         "dogfood",
         "eslint-bridge"
     ]

@@ -15,7 +15,8 @@ node_modules
 webpack.config.js
 sonarlint-vscode.code-workspace
 coverage/
-its/
+e2e/
+run-e2e.sh
 dogfood/
 scripts/
 .github/

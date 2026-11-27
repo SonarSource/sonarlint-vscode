@@ -1,7 +1,7 @@
 [tools]
 node = '26'
 jfrog-cli = "2.77.0"
-# needed to run ITs, takes precedence over runner built-in Java
+# needed to run E2E tests, takes precedence over runner built-in Java
 java = '21'
 
 [tasks.install-system-deps]
