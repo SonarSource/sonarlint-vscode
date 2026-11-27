@@ -7,13 +7,13 @@ server
 analyzers
 .vscode-test
 coverage
-its/userdir
-!its/userdir/User
-!its/userdir/User/settings.json
+e2e/userdir
+!e2e/userdir/User
+!e2e/userdir/User/settings.json
 test/userdir
 !test/userdir/User
 !test/userdir/User/settings.json
-its/extdir*
+e2e/extdir*
 .DS_Store
 omnisharp
 .vs

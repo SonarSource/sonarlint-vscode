@@ -64,7 +64,7 @@ function main() {
   // Passed to --extensionTestsPath
   const extensionTestsPath = path.resolve(outPath, 'test/suite/index');
 
-  // Download VS Code, unzip it and run the integration test
+  // Run the test suite in the VS Code development host
   runTests({ extensionDevelopmentPath, extensionTestsPath, launchArgs })
     .catch(err => {
       console.error('Failed to run tests', err);

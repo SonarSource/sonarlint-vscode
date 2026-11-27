@@ -145,7 +145,7 @@ jobs:
           GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: npm run deploy-all
 
-      - name: Upload VSIX artifact for QA tests
+      - name: Upload VSIX artifact for E2E tests
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: universal-vsix-qa-artifact
@@ -284,7 +284,7 @@ jobs:
 
   qa-tests:
     runs-on: github-ubuntu-latest-m
-    name: Run ITs - ${{ matrix.qa_category }}
+    name: Extension E2E - ${{ matrix.qa_category }}
     needs:
       - prepare
       - build
@@ -344,7 +344,7 @@ jobs:
         with:
           dotnet-version: '10.0.401'
 
-      - name: Pin dotnet for integration tests
+      - name: Pin dotnet for E2E tests
         run: |
           echo "DOTNET_MULTILEVEL_LOOKUP=0" >> "$GITHUB_ENV"
           echo "DOTNET_ROOT=${{ runner.tool_cache }}/dotnet-it" >> "$GITHUB_ENV"
@@ -355,7 +355,7 @@ jobs:
         with:
           name: universal-vsix-qa-artifact
 
-      - name: Prepare integration tests
+      - name: Prepare E2E tests
         env:
           ARTIFACTORY_PRIVATE_READER_USERNAME: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_USER }}
           ARTIFACTORY_PRIVATE_READER_PASSWORD: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
@@ -365,17 +365,17 @@ jobs:
           npm ci
           npm run compile
           npm run prepare
-          cd its
+          cd e2e
           npm ci
 
-      - name: Run integration tests with recording
+      - name: Run E2E tests with recording
         env:
           DISPLAY: ":10"
           VIDEO_FILE: "vscode_qa-tests-${{ matrix.qa_category }}_${{ github.run_id }}.mp4"
           SCREEN_SIZE: "1280x960"
           VSCODE_VERSION: ${{ matrix.vscode_version }}
         run: |
-          cd its
+          cd e2e
           ../.github/scripts/run-with-video.sh npm test
 
       - name: Upload test recording
@@ -383,7 +383,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: its-test-recording-${{ matrix.qa_category }}
-          path: its/vscode_qa-tests-${{ matrix.qa_category }}_${{ github.run_id }}.mp4
+          path: e2e/vscode_qa-tests-${{ matrix.qa_category }}_${{ github.run_id }}.mp4
 
   promote:
     runs-on: github-ubuntu-latest-s

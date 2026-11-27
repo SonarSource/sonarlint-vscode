@@ -20,6 +20,12 @@ Press `F5` to launch a new VSCode instance with the extension installed.
 
 Open **Problems** panel with `control shift m` (or search for "Problems" with `F1`).
 
+### Running tests
+
+Run `npm test` from the repository root for unit tests and integration tests in the VS Code development host. Run `npm run test-build` for the build-script tests.
+
+Run `./run-e2e.sh` to package the extension, install the VSIX into VS Code and test diagnostics in sample workspaces. See the [extension E2E guide](e2e/README.md) for prerequisites.
+
 Packaging, publishing
 ---------------------
 

@@ -1,7 +1,7 @@
 {
-  "name": "sonarlint-its",
-  "displayName": "sonarlint-its",
-  "description": "SonarLint ITs",
+  "name": "sonarlint-e2e",
+  "displayName": "sonarlint-e2e",
+  "description": "SonarQube for VS Code extension E2E tests",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.36.0"

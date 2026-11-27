@@ -11,7 +11,7 @@
   "java.project.importOnFirstTimeStartup": "automatic",
   "editor.suggestSelection": "first",
   "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
-  // Disable SonarLint product telemetry in ITs
+  // Disable SonarLint product telemetry during tests
   "sonarlint.ls.vmargs": " -Dsonarlint.telemetry.disabled=true -Dsonarlint.monitoring.disabled=true ",
   // Enable auto import of Git repositories
   "git.openRepositoryInParentFolders": "always",

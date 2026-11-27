@@ -1,11 +1,3 @@
-npm i
-npm run package
+#!/usr/bin/env bash
 
-# Resolve Maven dependencies for Java samples before running ITs
-cd its/samples/sample-java-maven-multi-module
-mvn dependency:resolve -q
-cd ../../..
-
-cd its
-npm i
-npm test
+exec "$(dirname "$0")/run-e2e.sh" "$@"
